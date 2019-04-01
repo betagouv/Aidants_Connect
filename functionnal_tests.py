@@ -2,6 +2,7 @@ from selenium import webdriver
 import unittest
 import time
 
+
 class NewVisitorConnection(unittest.TestCase):
 
     def setUp(self):
@@ -14,3 +15,7 @@ class NewVisitorConnection(unittest.TestCase):
         self.browser.get('http://localhost:8000')
         hello_world = self.browser.find_element_by_id("hello_world").text
         self.assertEqual(hello_world, "Hello, World")
+
+
+if __name__ == '__main__':
+    unittest.main(warnings='ignore')
