@@ -12,3 +12,10 @@ class HomePageTest(TestCase):
     def test_root_url_returns_connection_html(self):
         response = self.client.get('/')
         self.assertTemplateUsed(response, 'aidant_connect_web/connection.html')
+
+
+class EnvironmentVariableTest(TestCase):
+
+    def test_environment_variables_are_accessible(self):
+        SECRET_KEY = os.getenv("TEST")
+        self.assertEqual(SECRET_KEY, "Everything is awesome")
