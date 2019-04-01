@@ -1,5 +1,7 @@
 venv/*
 .idea/*
-*.pyc
-*.cfg
+**/__pycache__/**
+db.sqlite3
+geckodriver.log
 
+.env
