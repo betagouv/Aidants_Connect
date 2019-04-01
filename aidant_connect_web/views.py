@@ -4,4 +4,4 @@ from django.shortcuts import render
 
 def connection(request):
 
-    return True
+    return render(request, 'aidant_connect_web/connection.html')
