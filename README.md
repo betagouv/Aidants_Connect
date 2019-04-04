@@ -27,6 +27,7 @@ TEST="Everything is awesome"
 ## How to run the unit tests
 
 ```
+flake8
 python manage.py test
 ```
 ## How to run the app

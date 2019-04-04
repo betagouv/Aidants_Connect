@@ -23,13 +23,29 @@ class HomePageTest(TestCase):
         base_url = os.getenv('FRANCE_CONNECT_URL')
         franceconnect_client_id = os.getenv('FRANCE_CONNECT_CLIENT_ID')
         franceconnect_callback_uri = f'{os.getenv("HOST")}/callback'
-        #scopes = [given_name, family_name, preferred_username, birthdate, gender, birthplace, birthcountry]
+        scopes = [
+          'given_name',
+          'family_name',
+          'preferred_username',
+          'birthdate',
+          'gender',
+          'birthplace',
+          'birthcountry'
+          ]
 
-        franceconnect_scopes = "openid%20given_name%20family_name%20preferred_username%20birthdate%20gender%20birthplace%20birthcountry"
+        franceconnect_scopes =  \
+            f'openid{"".join(["%20" + scope for scope in scopes])}'
         franceconnect_state = "customState11"
         franceconnect_nonce = "customNonce11"
 
-        parameters = f"response_type=code&client_id={franceconnect_client_id}&redirect_uri={franceconnect_callback_uri}&scope={franceconnect_scopes}&state={franceconnect_state}&nonce={franceconnect_nonce}"
+        parameters = \
+            f"response_type=code" \
+            f"&client_id={franceconnect_client_id}" \
+            f"&redirect_uri={franceconnect_callback_uri}" \
+            f"&scope={franceconnect_scopes}" \
+            f"&state={franceconnect_state}" \
+            f"&nonce={franceconnect_nonce}"
+
         expected_url = f"{base_url}/authorize?{parameters}"
         self.assertRedirects(
             response,

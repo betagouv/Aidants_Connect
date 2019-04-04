@@ -1,6 +1,5 @@
 from selenium import webdriver
 import unittest
-import time
 
 
 class NewVisitorConnection(unittest.TestCase):
