@@ -3,5 +3,7 @@ from aidant_connect_web import views
 
 urlpatterns = [
     path('', views.connection, name='connection'),
-    path('fc_authorize/', views.fc_authorize, name='fc_authorize')
+    path('fc_authorize/', views.fc_authorize, name='fc_authorize'),
+    path('callback/', views.fc_callback, name='fc_callback'),
+    path('switchboard/', views.switchboard, name='switchboard')
 ]

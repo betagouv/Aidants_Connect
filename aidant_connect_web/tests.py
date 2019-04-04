@@ -1,7 +1,7 @@
 import os
 from django.test import TestCase
 from django.urls import resolve
-from aidant_connect_web.views import connection, fc_authorize
+from aidant_connect_web.views import connection, fc_authorize, fc_callback, switchboard
 
 
 class HomePageTest(TestCase):
@@ -55,6 +55,29 @@ class HomePageTest(TestCase):
             msg_prefix='',
             fetch_redirect_response=False
         )
+
+    def test_fc_callback_resolves_to_fc_callback_view(self):
+        found = resolve('/callback/')
+        self.assertEqual(found.func, fc_callback)
+
+    def test_fc_process_redirects_switchboard_html(self):
+        response = self.client.get('/callback/')
+        self.assertRedirects(
+            response,
+            '/switchboard/',
+            status_code=302,
+            target_status_code=200,
+            msg_prefix='',
+            fetch_redirect_response=True
+        )
+
+    def test_switchboard_resolves_to_switchboard_view(self):
+        found = resolve('/switchboard/')
+        self.assertEqual(found.func, switchboard)
+
+    def test_switchboard_url_returns_switchboard_html(self):
+        response = self.client.get('/switchboard/')
+        self.assertTemplateUsed(response, 'aidant_connect_web/switchboard.html')
 
 
 class EnvironmentVariableTest(TestCase):

@@ -6,3 +6,4 @@ urllib3==1.24.1
 
 python-dotenv
 flake8
+requests
