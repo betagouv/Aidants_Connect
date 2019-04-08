@@ -41,3 +41,6 @@ python manage.py runserver 8000
 ```
 python functionnal_tests.py 
 ```
+
+## Test FranceConnect credentials
+[here](https://github.com/france-connect/identity-provider-example/blob/master/database.csv)

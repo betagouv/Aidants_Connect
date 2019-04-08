@@ -75,13 +75,36 @@ class HomePageTest(TestCase):
         found = resolve('/switchboard/')
         self.assertEqual(found.func, switchboard)
 
-    def test_switchboard_url_returns_switchboard_html(self):
+
+class SwitchBoardTestNotConnected(TestCase):
+
+    def setUp(self):
+        session = self.client.session
+        session['user_info'] = None
+        session.save()
+    def test_switchboard_url_returns_switchboard_html_when_connected(self):
         response = self.client.get('/switchboard/')
+
+        self.assertTemplateUsed(response, 'aidant_connect_web/connection.html')
+
+
+class SwitchBoardTestConnected(TestCase):
+
+    def setUp(self):
+        session = self.client.session
+        session['user_info'] = {
+            'given_name': "Melanie"
+        }
+        session.save()
+
+    def test_switchboard_url_returns_switchboard_html_when_connected(self):
+        response = self.client.get('/switchboard/')
+
         self.assertTemplateUsed(response, 'aidant_connect_web/switchboard.html')
 
 
 class EnvironmentVariableTest(TestCase):
 
     def test_environment_variables_are_accessible(self):
-        SECRET_KEY = os.getenv("TEST")
-        self.assertEqual(SECRET_KEY, "Everything is awesome")
+        secret_key = os.getenv("TEST")
+        self.assertEqual(secret_key, "Everything is awesome")

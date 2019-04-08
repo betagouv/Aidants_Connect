@@ -11,6 +11,7 @@ fc_callback_uri = f'{current_host}/callback'
 fc_client_id = os.getenv('FRANCE_CONNECT_CLIENT_ID')
 fc_client_secret = os.getenv('FRANCE_CONNECT_CLIENT_SECRET')
 
+
 def connection(request):
     return render(request, 'aidant_connect_web/connection.html')
 
@@ -64,7 +65,7 @@ def fc_callback(request):
         content = request_for_token.json()
 
         fc_access_token = content.get('access_token')
-        fc_id_token = content.get('id_token')
+        request.session['fc_id_token'] = content.get('id_token')
 
         headers_for_user_info = {'Authorization': f'Bearer {fc_access_token}'}
         request.session['user_info'] = python_request.get(
@@ -77,6 +78,10 @@ def fc_callback(request):
 
 def switchboard(request):
     user_info = request.session.get('user_info')
+
+    if user_info is None:
+        return render(request, 'aidant_connect_web/connection.html')
+    
     return render(
         request,
         'aidant_connect_web/switchboard.html',
