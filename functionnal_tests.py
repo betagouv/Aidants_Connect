@@ -4,10 +4,9 @@ import time
 
 
 class NewVisitorConnection(unittest.TestCase):
-
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.browser.get('http://localhost:1337')
+        self.browser.get("http://localhost:1337")
 
     def tearDown(self):
         self.browser.quit()
@@ -27,24 +26,20 @@ class NewVisitorConnection(unittest.TestCase):
         # Click on the 'Démonstration' identity provider
         fc_title = self.browser.title
         self.assertEqual("Connexion - choix du compte", fc_title)
-        demonstration_hex = \
-            self.browser.find_elements_by_class_name("hexLink")[1]
+        demonstration_hex = self.browser.find_elements_by_class_name("hexLink")[1]
         demonstration_hex.click()
         time.sleep(2)
 
         # Use the Aidant credentials (Mélaine)
+
         demo_title = self.browser.find_element_by_tag_name("h3").text
-        self.assertEqual(
-            demo_title,
-            "Fournisseur d'identité de démonstration"
-            )
+        self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
         submit_button = self.browser.find_elements_by_tag_name("input")[2]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
         time.sleep(2)
         welcome_aidant = self.browser.find_element_by_id("welcome_aidant").text
         self.assertEqual(welcome_aidant, "Bonjour Mélaine Évelyne")
-
         # Click on the FranceConnect button for usager
         fc_button = self.browser.find_element_by_id("bouton_fc")
         fc_button_link = fc_button.get_attribute("href")
@@ -55,8 +50,7 @@ class NewVisitorConnection(unittest.TestCase):
         # Click on the 'Démonstration' identity provider
         fc_title = self.browser.title
         self.assertEqual("Connexion - choix du compte", fc_title)
-        demonstration_hex = \
-            self.browser.find_elements_by_class_name("hexLink")[1]
+        demonstration_hex = self.browser.find_elements_by_class_name("hexLink")[0]
         demonstration_hex.click()
         time.sleep(2)
 
