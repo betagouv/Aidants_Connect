@@ -1,5 +1,10 @@
+appdirs==1.4.3
+attrs==19.1.0
+black==19.3b0
 certifi==2019.3.9
 chardet==3.0.4
+Click==7.0
+colorama==0.4.1
 Django==2.2
 entrypoints==0.3
 flake8==3.7.7
@@ -11,5 +16,8 @@ python-dotenv==0.10.1
 pytz==2018.9
 requests==2.21.0
 selenium==3.141.0
+six==1.12.0
 sqlparse==0.3.0
+structlog==19.1.0
+toml==0.10.0
 urllib3==1.24.1
