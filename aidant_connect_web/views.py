@@ -35,7 +35,7 @@ def fc_authorize(request, role="aidant"):
     connexion = Connection(state=state, redirectUrl=redirect_url)
     connexion.save()
 
-    log.msg("setting fc state", state=state)
+    log.msg("Creating a FC state", state=state)
     fc_nonce = "customNonce11"
     # The nounce is fixed for now as it doesn't seem to be used anywhere else.
 
@@ -59,7 +59,7 @@ def fc_authorize(request, role="aidant"):
     )
 
     authorize_url = f"{fc_base}/authorize?{parameters}"
-    log.msg("auth url", url=authorize_url)
+    log.msg("Sending /authorize", state=state)
     return redirect(authorize_url)
 
 
@@ -69,13 +69,12 @@ def fc_callback(request):
 
     try:
         connection_state = Connection.objects.get(state=state)
+        log.msg("Getting state after callback", state=connection_state.state)
     except Connection.DoesNotExist:
         log.msg(
-            "checking connection db", connections=Connection.objects.all(), state=state
+            "State not found in DB", connections=Connection.objects.all(), state=state
         )
         connection_state = None
-
-    log.msg("Getting state after callback", connection_state=connection_state)
 
     if not connection_state:
         return HttpResponseForbidden()
@@ -112,7 +111,8 @@ def fc_callback(request):
     logout_state = f"state={state}"
     logout_redirect = f"post_logout_redirect_uri=http://localhost:1337/logout-callback"
     logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
-    log.msg("logout redirect", url=logout_url)
+
+    log.msg("logout redirect", state=state)
 
     return redirect(logout_url)
 
@@ -124,13 +124,19 @@ def logout_callback(request):
         this_connection = Connection.objects.get(state=state)
     except Connection.DoesNotExist:
         log.msg(
-            "checking connection db", connections=Connection.objects.all(), state=state
+            "Connection not found", connections=Connection.objects.all(), state=state
         )
         this_connection = None
 
-    log.msg("Getting state after logout_callback", connection_state=this_connection)
+    log.msg(
+        "Getting state after logout_callback",
+        connection_state=this_connection,
+        state=state,
+    )
     if not this_connection:
         return HttpResponseForbidden()
+
+    log.msg("Redirecting to url", state=state, url=this_connection.redirectUrl)
 
     return redirect(this_connection.redirectUrl)
 
