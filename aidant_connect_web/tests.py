@@ -4,7 +4,13 @@ from datetime import timedelta
 from django.test import TestCase
 from django.urls import resolve
 from django.utils import timezone
-from aidant_connect_web.views import connection, fc_authorize, fc_callback, switchboard
+from aidant_connect_web.views import (
+    connection,
+    fc_authorize,
+    fc_callback,
+    switchboard,
+    identite_pivot,
+)
 from aidant_connect_web.models import Connection
 
 
@@ -140,6 +146,12 @@ class SwitchBoardTestConnected(TestCase):
         response = self.client.get("/switchboard/")
 
         self.assertTemplateUsed(response, "aidant_connect_web/switchboard.html")
+
+
+class IdentitePivotTestConnected(TestCase):
+    def test_switchboard_resolves_to_switchboard_view(self):
+        found = resolve("/identite_pivot/")
+        self.assertEqual(found.func, identite_pivot)
 
 
 class EnvironmentVariableTest(TestCase):

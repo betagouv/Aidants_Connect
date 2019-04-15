@@ -40,6 +40,7 @@ class NewVisitorConnection(unittest.TestCase):
         time.sleep(2)
         welcome_aidant = self.browser.find_element_by_id("welcome_aidant").text
         self.assertEqual(welcome_aidant, "Bonjour Mélaine Évelyne")
+        time.sleep(2)
         # Click on the FranceConnect button for usager
         fc_button = self.browser.find_element_by_id("bouton_fc")
         fc_button_link = fc_button.get_attribute("href")
@@ -54,24 +55,24 @@ class NewVisitorConnection(unittest.TestCase):
         demonstration_hex.click()
         time.sleep(2)
 
-        # Use the Usager credentials (mercier_eric@mail.com)
+        # Use the Usager credentials with a different FI (mercier_eric@mail.com)
 
-        # demo_title = self.browser.find_element_by_tag_name("h3").text
-        # self.assertEqual(
-        #     demo_title,
-        #     "Fournisseur d'identité de démonstration"
-        # )
-        # email_input = self.browser.find_elements_by_tag_name("input")[0]
-        # password_input = self.browser.find_elements_by_tag_name("input")[1]
-        # # TODO Input mercier_eric@mail.com
-        # # todo Input password
-        # submit_button = self.browser.find_elements_by_tag_name("input")[2]
-        # self.assertEqual(submit_button.get_attribute("type"), "submit")
-        # submit_button.click()
-        # time.sleep(2)
-        # welcome_aidant = self.browser.find_element_by_id("welcome_aidant").text
-        # self.assertEqual(welcome_aidant, "Bonjour Mélaine Évelyne")
+        demo_tag = self.browser.find_element_by_tag_name("h2").text
+        self.assertEqual(demo_tag, "J'accède avec mon mot de passe")
+        numero_fiscal_input = self.browser.find_element_by_id("LMDP_Spi_tmp")
+        numero_fiscal_input.send_keys("1234567891011")
+        password_input = self.browser.find_element_by_id("LMDP_Password_tmp")
+        password_input.send_keys("123")
+
+        submit_button = self.browser.find_element_by_id("valider")
+        submit_button.click()
+        time.sleep(2)
+
+        # Get Usager's identité privot
+
+        json = self.browser.find_element_by_tag_name("body").text
+        self.assertIn('given_name "Eric"', json)
 
 
-if __name__ == '__main__':
-    unittest.main(warnings='ignore')
+if __name__ == "__main__":
+    unittest.main(warnings="ignore")

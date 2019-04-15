@@ -6,5 +6,6 @@ urlpatterns = [
     path("fc_authorize/<str:role>/", views.fc_authorize, name="fc_authorize"),
     path("callback/", views.fc_callback, name="fc_callback"),
     path("switchboard/", views.switchboard, name="switchboard"),
-    path("logout-callback", views.logout_callback, name="logout_callback"),
+    path("logout-callback/", views.logout_callback, name="logout_callback"),
+    path("identite_pivot/", views.identite_pivot, name="identite_pivot"),
 ]

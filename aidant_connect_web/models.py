@@ -5,7 +5,7 @@ from datetime import timedelta
 
 def default_expiration_date():
     now = timezone.now()
-    return now + timedelta(minutes=1)
+    return now + timedelta(minutes=30)
 
 
 class Connection(models.Model):

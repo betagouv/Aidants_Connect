@@ -5,7 +5,7 @@ from secrets import token_urlsafe
 
 from django.utils import timezone
 from django.shortcuts import render, redirect
-from django.http import HttpResponseForbidden, Http404
+from django.http import HttpResponseForbidden, Http404, JsonResponse
 from aidant_connect_web.models import Connection
 
 fc_base = os.getenv("FRANCE_CONNECT_URL")
@@ -26,8 +26,8 @@ def fc_authorize(request, role="aidant"):
 
     if role == "aidant":
         redirect_url = "/switchboard/"
-    elif role == "aidé":
-        redirect_url = "/result/"
+    elif role == "usager":
+        redirect_url = "/identite_pivot/"
     else:
         raise Http404(f"{role} is not a compatible role")
 
@@ -145,3 +145,9 @@ def switchboard(request):
     return render(
         request, "aidant_connect_web/switchboard.html", {"user_info": user_info}
     )
+
+
+def identite_pivot(request):
+    id = request.session["user_info"]
+    # phrase = "{" + ", ".join([key + ": " + value for key, value in id.items()]) + "}"
+    return JsonResponse(id)
