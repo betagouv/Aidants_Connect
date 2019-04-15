@@ -52,12 +52,16 @@ jobs:
             flake8
       - run:
           name: run the server
-          command: python manage.py runserver 1337
+          command:  |
+            . venv/bin/activate
+            python manage.py runserver 1337
           background: true
 
       - run:
           name: run integration tests
-          command: python functionnal_tests.py
+          command: |
+            . venv/bin/activate
+            python functionnal_tests.py
 
 
       - store_artifacts:
