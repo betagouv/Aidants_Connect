@@ -53,7 +53,7 @@ jobs:
           command:  |
             . venv/bin/activate
             python manage.py migrate
-            python manage.py runserver 1337
+            python manage.py runserver
           background: true
 
       - run:

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenue sur AidantConnect</title>
+</head>
+<body>
+<p id="welcome_aidant">Bienvenue, aidant</p>
+<form method="post" >{% csrf_token %}
+    <div>
+        <input type="radio" id="good_user_info" name="user_info" value="good" checked>
+        <label for="good_user_info">Good User Info</label>
+    </div>
+    <div>
+        <input type="radio" id="bad_user_info" name="user_info" value="bad">
+        <label for="bad_user_info">Bad User Info</label>
+    </div>
+    <input type="hidden" name="state" value="{{state}}" />
+    <input type="submit" id="submit" value="Envoyer les informations de l'usager">
+</form>
+</body>
+</html>

@@ -30,9 +30,7 @@ Create a `.env` file at the root of the project with the following entries:
 ```
 HOST= <insert_your_data> #e.g. http://localhost:8000
 
-FRANCE_CONNECT_URL=<insert_your_data>
-FRANCE_CONNECT_CLIENT_ID=<insert_your_data>
-FRANCE_CONNECT_CLIENT_SECRET=<insert_your_data>
+FC_CALLBACK_URL=<insert_your_data>
 
 TEST="Everything is awesome"
 ```
