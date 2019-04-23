@@ -3,6 +3,7 @@ import structlog
 from secrets import token_urlsafe
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from aidant_connect_web.models import Connection
 
 current_host = os.getenv("HOST")
@@ -10,6 +11,7 @@ fc_callback_url = os.getenv("FC_CALLBACK_URL")
 log = structlog.get_logger()
 
 
+@login_required
 def authorize(request):
     if request.method == "GET":
         state = request.GET.get("state", False)
@@ -25,7 +27,7 @@ def authorize(request):
             code = token_urlsafe(64)
             this_connexion = Connection(state=state, code=code)
             this_connexion.save()
-
+            log.msg("the URI it redirects to", uri=f"{fc_callback_url}?code={code}&state={state}")
             return redirect(f"{fc_callback_url}?code={code}&state={state}")
         else:
             return HttpResponseForbidden()
