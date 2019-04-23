@@ -1,6 +1,8 @@
 import os
 from secrets import token_urlsafe
 import structlog
+from django.test.client import Client
+from django.contrib.auth.models import User
 
 from django.test import TestCase
 from django.urls import resolve
@@ -32,15 +34,24 @@ class ConnectionModelTest(TestCase):
 
 
 class AuthorizeTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
     def test_authorize_url_triggers_the_authorize_view(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
         found = resolve("/authorize/")
         self.assertEqual(found.func, authorize)
 
     def test_authorize_url_without_arguments_returns_403(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
         response = self.client.get("/authorize/")
         self.assertEqual(response.status_code, 403)
 
     def test_authorize_url_triggers_the_authorize_template(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
         fc_call_state = token_urlsafe(64)
         fc_call_nounce = token_urlsafe(64)
         fc_response_type = "code"
@@ -67,6 +78,7 @@ class AuthorizeTests(TestCase):
         self.assertTemplateUsed(response, "aidant_connect_web/authorize.html")
 
     def test_sending_user_information_triggers_callback(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
         response = self.client.post(
             "/authorize/", data={"user_info": "good", "state": "34"}
         )
