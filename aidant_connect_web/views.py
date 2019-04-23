@@ -27,7 +27,10 @@ def authorize(request):
             code = token_urlsafe(64)
             this_connexion = Connection(state=state, code=code)
             this_connexion.save()
-            log.msg("the URI it redirects to", uri=f"{fc_callback_url}?code={code}&state={state}")
+            log.msg(
+                "the URI it redirects to",
+                uri=f"{fc_callback_url}?code={code}&state={state}",
+            )
             return redirect(f"{fc_callback_url}?code={code}&state={state}")
         else:
             return HttpResponseForbidden()
