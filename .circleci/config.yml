@@ -48,20 +48,6 @@ jobs:
             . venv/bin/activate
             python manage.py test
             flake8
-      - run:
-          name: run the server
-          command:  |
-            . venv/bin/activate
-            python manage.py migrate
-            python manage.py runserver
-          background: true
-
-      - run:
-          name: run integration tests
-          command: |
-            . venv/bin/activate
-            python functionnal_tests.py
-
 
       - store_artifacts:
           path: test-reports
