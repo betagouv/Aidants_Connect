@@ -41,7 +41,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-## How to run the unit tests
+## How to run the tests
 
 ```
 flake8
@@ -59,11 +59,6 @@ Install [Gecko driver](https://github.com/mozilla/geckodriver/releases)
 
 ```
 brew install geckodriver
-```
-Then launch the tests
-
-```
-python functionnal_tests.py 
 ```
 
 ## Test FranceConnect credentials
