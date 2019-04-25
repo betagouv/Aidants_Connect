@@ -1,6 +1,7 @@
+from datetime import timedelta
 from django.db import models
 from django.utils import timezone
-from datetime import timedelta
+from django.contrib.auth.models import AbstractUser
 
 
 def default_expiration_date():
@@ -9,6 +10,10 @@ def default_expiration_date():
 
 
 class Connection(models.Model):
-    state = models.CharField(max_length=99)
-    code = models.CharField(max_length=100)
+    state = models.TextField()
+    code = models.TextField()
     expiresOn = models.DateTimeField(default=default_expiration_date)
+
+
+class User(AbstractUser):
+    pass

@@ -1,6 +1,6 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.firefox.webdriver import WebDriver
-from django.contrib.auth.models import User
+from aidant_connect_web.models import User
 
 
 class LoginPage(StaticLiveServerTestCase):
@@ -12,7 +12,7 @@ class LoginPage(StaticLiveServerTestCase):
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)
-        cls.selenium.get('%s%s' % (cls.live_server_url, '/authorize?state=34'))
+        cls.selenium.get(f"{cls.live_server_url}/authorize?state=34")
 
     @classmethod
     def tearDownClass(cls):

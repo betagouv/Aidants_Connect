@@ -7,9 +7,28 @@ AidantConnect is an app that allows people who want to assist FranceConnect user
 
 ## Stack
 Django
+PostgreSQL
 
 ## Environment
 AidantConnect runs on Python 3.7
+
+# How to setup the Database
+
+Install PostgreSQL
+```
+brew install postgresql
+createdb `whoami`
+```
+
+Create the database
+```
+psql
+```
+In the postgresql prompt
+``` 
+CREATE USER aidants_connect_team;
+CREATE DATABASE aidants_connect OWNER aidants_connect_team;
+```
 
 ## How to install the app
 
@@ -39,6 +58,11 @@ Run the migrations
 ```
 python manage.py makemigrations
 python manage.py migrate
+```
+
+Create a superuser
+```
+python manage.py createsuperuser --username name 
 ```
 
 ## How to run the tests
