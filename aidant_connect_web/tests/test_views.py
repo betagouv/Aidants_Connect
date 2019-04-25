@@ -1,13 +1,13 @@
 import os
 from secrets import token_urlsafe
 import structlog
-from django.test.client import Client
-from django.contrib.auth.models import User
 
+from django.test.client import Client
 from django.test import TestCase
 from django.urls import resolve
+
 from aidant_connect_web.views import authorize, token
-from aidant_connect_web.models import Connection
+from aidant_connect_web.models import Connection, User
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
 log = structlog.get_logger()
