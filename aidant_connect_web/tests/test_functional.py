@@ -24,7 +24,7 @@ class LoginPage(StaticLiveServerTestCase):
         login_field.send_keys("Thierry")
         password_field = self.selenium.find_element_by_id("id_password")
         password_field.send_keys("motdepassedethierry")
-        submit_button = self.selenium.find_element_by_xpath('//input[@value="login"]')
+        submit_button = self.selenium.find_element_by_xpath('//input[@value="Login"]')
         submit_button.click()
         welcome_aidant = self.selenium.find_element_by_id("welcome_aidant").text
         self.assertEqual(welcome_aidant, "Bienvenue, aidant")
