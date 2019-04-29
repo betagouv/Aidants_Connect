@@ -53,7 +53,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "aidant_connect.urls"
+ROOT_URLCONF = "aidants_connect.urls"
 
 TEMPLATES = [
     {
@@ -71,7 +71,7 @@ TEMPLATES = [
     }
 ]
 
-WSGI_APPLICATION = "aidant_connect.wsgi.application"
+WSGI_APPLICATION = "aidants_connect.wsgi.application"
 
 
 # Database
