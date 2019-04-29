@@ -45,6 +45,11 @@ Install the dependencies
 pip install -r requirements.txt
 ```
 
+If you get `ld: library not found for -lssl` as an error message, try:
+```
+export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
+```
+
 Create a `.env` file at the root of the project with the following entries:
 ```
 HOST= <insert_your_data> #e.g. http://localhost:8000
