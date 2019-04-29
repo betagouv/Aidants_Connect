@@ -9,5 +9,5 @@ urlpatterns = [
         views.LoginView.as_view(template_name="registration/login.html"),
         name="login",
     ),
-    path("", include("aidant_connect_web.urls")),
+    path("", include("aidants_connect_web.urls")),
 ]

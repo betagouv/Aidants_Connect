@@ -1,6 +1,6 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.firefox.webdriver import WebDriver
-from aidant_connect_web.models import User
+from aidants_connect_web.models import User
 
 
 class LoginPage(StaticLiveServerTestCase):

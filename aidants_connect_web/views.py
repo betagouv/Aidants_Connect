@@ -4,7 +4,7 @@ from secrets import token_urlsafe
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from aidant_connect_web.models import Connection
+from aidants_connect_web.models import Connection
 
 current_host = os.getenv("HOST")
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
@@ -18,7 +18,7 @@ def authorize(request):
         if state is False:
             return HttpResponseForbidden()
 
-        return render(request, "aidant_connect_web/authorize.html", {"state": state})
+        return render(request, "aidants_connect_web/authorize.html", {"state": state})
 
     else:
         user_info = request.POST.get("user_info")

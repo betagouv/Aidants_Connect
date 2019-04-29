@@ -5,8 +5,8 @@ from django.test.client import Client
 from django.test import TestCase
 from django.urls import resolve
 
-from aidant_connect_web.views import authorize, token
-from aidant_connect_web.models import Connection, User
+from aidants_connect_web.views import authorize, token
+from aidants_connect_web.models import Connection, User
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
 
@@ -73,7 +73,7 @@ class AuthorizeTests(TestCase):
             },
         )
 
-        self.assertTemplateUsed(response, "aidant_connect_web/authorize.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/authorize.html")
 
     def test_sending_user_information_triggers_callback(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
