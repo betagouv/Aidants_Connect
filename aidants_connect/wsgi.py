@@ -1,5 +1,5 @@
 """
-WSGI config for aidant_connect project.
+WSGI config for aidants_connect project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "aidant_connect.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "aidants_connect.settings")
 
 application = get_wsgi_application()

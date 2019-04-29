@@ -1,6 +1,6 @@
-# AidantConnect
+# Aidants Connect
 
-AidantConnect is an app that allows people who want to assist FranceConnect users to do so with full transparency.
+Aidants Connect is an app that allows people who want to assist FranceConnect users to do so with full transparency.
 
 [![CircleCI](https://circleci.com/gh/betagouv/AidantConnect/tree/master.svg?style=svg)](https://circleci.com/gh/betagouv/AidantConnect/tree/master)
 
@@ -14,7 +14,7 @@ AidantConnect runs on Python 3.7
 
 # How to setup the Database
 
-Install PostgreSQL
+Install PostgreSQL (for Mac OSX)
 ```
 brew install postgresql
 createdb `whoami`
@@ -24,7 +24,7 @@ Create the database
 ```
 psql
 ```
-In the postgresql prompt
+In the postgreSQL prompt
 ``` 
 CREATE USER aidants_connect_team;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
