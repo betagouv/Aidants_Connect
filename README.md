@@ -2,8 +2,7 @@
 
 Aidants Connect is an app that allows people who want to assist FranceConnect users to do so with full transparency.
 
-[![CircleCI](https://circleci.com/gh/betagouv/AidantConnect/tree/master.svg?style=svg)](https://circleci.com/gh/betagouv/AidantConnect/tree/master)
-
+[![CircleCI](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master.svg?style=svg)](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master)
 
 ## Stack
 Django
