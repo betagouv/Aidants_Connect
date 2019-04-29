@@ -37,5 +37,4 @@ def authorize(request):
 
 
 def token(request):
-
     return HttpResponse("OK")
