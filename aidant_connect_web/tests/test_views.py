@@ -1,6 +1,5 @@
 import os
 from secrets import token_urlsafe
-import structlog
 
 from django.test.client import Client
 from django.test import TestCase
@@ -10,7 +9,6 @@ from aidant_connect_web.views import authorize, token
 from aidant_connect_web.models import Connection, User
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
-log = structlog.get_logger()
 
 
 class ConnectionModelTest(TestCase):
