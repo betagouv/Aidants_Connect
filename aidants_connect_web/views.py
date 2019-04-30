@@ -2,6 +2,7 @@ import os
 import logging
 from secrets import token_urlsafe
 from django.http import HttpResponseForbidden, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from aidants_connect_web.models import Connection
@@ -39,6 +40,8 @@ def authorize(request):
         else:
             return HttpResponseForbidden()
 
-
+# Due to `no_referer` error
+# https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
+@csrf_exempt
 def token(request):
     return HttpResponse("OK")
