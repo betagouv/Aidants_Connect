@@ -78,17 +78,21 @@ WSGI_APPLICATION = "aidants_connect.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "aidants_connect",
-        "USER": "aidants_connect_team",
-        "PASSWORD": "",
-        "HOST": "localhost",
-        "PORT": "",
+        "NAME": os.getenv("DATABASE_NAME"),
+        "USER": os.getenv("DATABASE_USER"),
+        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+        "HOST": os.getenv("DATABASE_URL"),
+        "PORT": os.getenv("DATABASE_PORT"),
     }
 }
 
+ssl_option = os.getenv("DATABASE_SSL")
+if ssl_option:
+    DATABASES["default"]["OPTIONS"] = {"sslmode": ssl_option}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
