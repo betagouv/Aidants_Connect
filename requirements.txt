@@ -1,6 +1,7 @@
 Django==2.2
 entrypoints==0.3
 flake8==3.7.7
+gunicorn==19.9.0
 mccabe==0.6.1
 psycopg2==2.8.2
 pycodestyle==2.5.0
@@ -10,3 +11,4 @@ pytz==2019.1
 selenium==3.141.0
 sqlparse==0.3.0
 urllib3==1.25.1
+whitenoise==4.1.2

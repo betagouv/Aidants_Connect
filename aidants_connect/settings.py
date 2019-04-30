@@ -16,19 +16,19 @@ from dotenv import load_dotenv
 load_dotenv(verbose=True)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "tmywo+@s+))hsfpro^o7fcyu#7jye-ui8mp^pbw8jg5797+sjr"
+SECRET_KEY = os.getenv("APP_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG") or False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [os.getenv("HOST")]
 
 
 # Application definition
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -77,17 +78,21 @@ WSGI_APPLICATION = "aidants_connect.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "aidants_connect",
-        "USER": "aidants_connect_team",
-        "PASSWORD": "",
-        "HOST": "localhost",
-        "PORT": "",
+        "NAME": os.getenv("DATABASE_NAME"),
+        "USER": os.getenv("DATABASE_USER"),
+        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+        "HOST": os.getenv("DATABASE_URL"),
+        "PORT": os.getenv("DATABASE_PORT"),
     }
 }
 
+ssl_option = os.getenv("DATABASE_SSL")
+if ssl_option:
+    DATABASES["default"]["OPTIONS"] = {"sslmode": ssl_option}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -119,8 +124,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+STATIC_ROOT = "staticfiles"
 STATIC_URL = "/static/"
 
-LOGIN_REDIRECT_URL = '/'
 
-AUTH_USER_MODEL = 'aidants_connect_web.User'
+LOGIN_REDIRECT_URL = "/"
+
+AUTH_USER_MODEL = "aidants_connect_web.User"
