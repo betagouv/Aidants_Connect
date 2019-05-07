@@ -1,6 +1,9 @@
 import os
 import logging
+import jwt
+import time
 from secrets import token_urlsafe
+
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
@@ -11,6 +14,9 @@ from aidants_connect_web.models import Connection
 
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
+fc_client_id = os.getenv("FC_CLIENT_ID")
+fc_client_secret = os.getenv("FC_CLIENT_SECRET")
+host = os.getenv("HOST")
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
@@ -74,23 +80,32 @@ def token(request):
         return HttpResponseForbidden()
 
     id_token = {
-        'aud': '895fae591ccae777094931e269e46447',
-        'exp':1412953984,
-        'iat': 1412950384,
-        'iss':'http://impots-franceconnect.fr',
-        'sub': 4344343423,
-        'nonce': 34324432468
-        }
+        # The audience, the Client ID of your Auth0 Application
+        "aud": fc_client_id,
+        # The expiration time. in the format "seconds since epoch"
+        # TODO Check if 10 minutes is not too much
+        "exp": int(time.time()) + 600,
+        # The issued at time
+        "iat": int(time.time()),
+        # The issuer,  the URL of your Auth0 tenant
+        "iss": host,
+        # The unique identifier of the user
+        "sub": "4344343423",
+        "nonce": connection.nonce,
+    }
+    encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
+
     response = {
         "access_token": "N5ro73Y2UBpVYLc8xB137A",
         "expires_in": 3600,
-        "id_token": "irX5DyZU5P1MNP6vj4b5gQ",
+        "id_token": encoded_id_token.decode("utf-8"),
         "refresh_token": "5ieq7Bg173y99tT6MA",
         "token_type": "Bearer",
     }
     log.info(f"/token id_token:")
     log.info(id_token)
     definite_response = JsonResponse(response)
+    log.info("sending token payload")
     return definite_response
 
 
