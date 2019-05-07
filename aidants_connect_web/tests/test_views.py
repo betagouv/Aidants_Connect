@@ -94,8 +94,14 @@ class AuthorizeTests(TestCase):
 
     def test_sending_user_information_triggers_callback(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
+        connection = Connection()
+        connection.state = "test_state"
+        connection.code = "test_code"
+        connection.nonce = "test_nonce"
+        connection.save()
+
         response = self.client.post(
-            "/authorize/", data={"user_info": "good", "state": "34"}
+            "/authorize/", data={"user_info": "good", "state": "test_state"}
         )
         try:
             saved_items = Connection.objects.all()

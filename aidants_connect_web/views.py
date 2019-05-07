@@ -5,6 +5,8 @@ from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
+
 from aidants_connect_web.models import Connection
 
 
@@ -25,7 +27,10 @@ def authorize(request):
         code = token_urlsafe(64)
         this_connexion = Connection(state=state, code=code, nonce=nonce)
         this_connexion.save()
-        log.info("this is all the connections one", Connection.objects.all())
+        try:
+            log.info(f"this is all the connections one: {Connection.objects.all()}")
+        except ObjectDoesNotExist:
+            log.info("This connection does not exist")
         log.info("this is the starting state", state)
         if state is False:
             return HttpResponseForbidden()
@@ -35,15 +40,23 @@ def authorize(request):
     else:
         user_info = request.POST.get("user_info")
         this_state = request.POST.get("state")
-        log.info("this is all the connections", Connection.objects.all())
-        that_connection = Connection.objects.get(state=this_state)
+
+        try:
+            that_connection = Connection.objects.get(state=this_state)
+            state = that_connection.state
+            code = that_connection.code
+        except ObjectDoesNotExist:
+            log.info(f"No connection corresponds to the state: {this_state}")
+            return HttpResponseForbidden()
 
         if user_info == "good":
             log.debug(
                 "the URI it redirects to",
-                f"{fc_callback_url}?code={that_connection.code}&state={that_connection.state}",
+                f"{fc_callback_url}?code={code}&state={state}",
             )
-            return redirect(f"{fc_callback_url}?code={that_connection.code}&state={that_connection.state}")
+            return redirect(
+                f"{fc_callback_url}?code={code}&state={state}"
+            )
         else:
             return HttpResponseForbidden()
 
@@ -52,7 +65,7 @@ def authorize(request):
 # https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
 @csrf_exempt
 def token(request):
-    if request.method is "GET":
+    if request.method == "GET":
         log.info("This method is a get")
 
         return HttpResponse("You did a GET on a POST only route")
