@@ -6,6 +6,7 @@ from unittest.mock import patch
 from django.test.client import Client
 from django.test import TestCase
 from django.urls import resolve
+from django.core.exceptions import ObjectDoesNotExist
 
 from aidants_connect_web.views import home_page, authorize, token, user_info
 
@@ -96,7 +97,10 @@ class AuthorizeTests(TestCase):
         response = self.client.post(
             "/authorize/", data={"user_info": "good", "state": "34"}
         )
-        saved_items = Connection.objects.all()
+        try:
+            saved_items = Connection.objects.all()
+        except ObjectDoesNotExist:
+            raise AttributeError
         self.assertEqual(saved_items.count(), 1)
         code = saved_items[0].code
         state = saved_items[0].state
