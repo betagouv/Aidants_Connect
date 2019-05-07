@@ -70,6 +70,9 @@ DATABASE_PORT='' or <insert_your_data>
 FC_CLIENT_ID = <insert_your_data>
 FC_CLIENT_SECRET= <insert_your_data>
 
+FC_AS_FS_ID=<insert_your_data>
+FC_AS_FS_SECRET=<insert_your_data>
+
 # Optional
 DATABASE_SSL
 DEBUG

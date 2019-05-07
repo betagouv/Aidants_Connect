@@ -14,8 +14,8 @@ from aidants_connect_web.models import Connection
 
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
-fc_client_id = os.getenv("FC_CLIENT_ID")
-fc_client_secret = os.getenv("FC_CLIENT_SECRET")
+fc_client_id = os.getenv("FC_AS_FS_ID")
+fc_client_secret = os.getenv("FC_AS_FS_SECRET")
 host = os.getenv("HOST")
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -93,6 +93,8 @@ def token(request):
         "sub": "4344343423",
         "nonce": connection.nonce,
     }
+    log.info("type du client secret")
+    log.info(type(fc_client_secret))
     encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
 
     response = {
