@@ -11,6 +11,10 @@ fc_callback_url = os.getenv("FC_CALLBACK_URL")
 log = logging.getLogger()
 
 
+def home_page(request):
+    return render(request, "aidants_connect_web/home_page.html")
+
+
 @login_required
 def authorize(request):
     if request.method == "GET":
