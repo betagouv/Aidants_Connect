@@ -2,6 +2,7 @@ import os
 import json
 from secrets import token_urlsafe
 from unittest.mock import patch
+from freezegun import freeze_time
 
 from django.test.client import Client
 from django.test import TestCase
@@ -127,6 +128,7 @@ class TokenTests(TestCase):
         found = resolve("/token/")
         self.assertEqual(found.func, token)
 
+    @freeze_time("2012-01-14 03:21:34", tz_offset=2)
     def test_token_should_respond_when_given_correct_info(self):
         with patch.dict(
             "os.environ",

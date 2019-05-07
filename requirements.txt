@@ -1,6 +1,7 @@
 Django==2.2
 entrypoints==0.3
 flake8==3.7.7
+freezegun==0.3.11
 gunicorn==19.9.0
 mccabe==0.6.1
 psycopg2==2.8.2
