@@ -27,11 +27,7 @@ def authorize(request):
         code = token_urlsafe(64)
         this_connexion = Connection(state=state, code=code, nonce=nonce)
         this_connexion.save()
-        try:
-            log.info(f"this is all the connections one: {Connection.objects.all()}")
-        except ObjectDoesNotExist:
-            log.info("This connection does not exist")
-        log.info("this is the starting state", state)
+
         if state is False:
             return HttpResponseForbidden()
 
@@ -54,9 +50,7 @@ def authorize(request):
                 "the URI it redirects to",
                 f"{fc_callback_url}?code={code}&state={state}",
             )
-            return redirect(
-                f"{fc_callback_url}?code={code}&state={state}"
-            )
+            return redirect(f"{fc_callback_url}?code={code}&state={state}")
         else:
             return HttpResponseForbidden()
 
@@ -67,9 +61,17 @@ def authorize(request):
 def token(request):
     if request.method == "GET":
         log.info("This method is a get")
-
         return HttpResponse("You did a GET on a POST only route")
-    log.info("sending token payload")
+
+    code = request.POST.get("code")
+    log.info("the code is")
+    log.info(code)
+    try:
+        connection = Connection.objects.get(code=code)
+    except ObjectDoesNotExist:
+        log.info(f"/token No connection corresponds to the code")
+        log.info(code)
+        return HttpResponseForbidden()
 
     id_token = {
         'aud': '895fae591ccae777094931e269e46447',
@@ -86,9 +88,9 @@ def token(request):
         "refresh_token": "5ieq7Bg173y99tT6MA",
         "token_type": "Bearer",
     }
-
+    log.info(f"/token id_token:")
+    log.info(id_token)
     definite_response = JsonResponse(response)
-
     return definite_response
 
 
