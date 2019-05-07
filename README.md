@@ -16,6 +16,7 @@ AidantConnect runs on Python 3.7
 Install PostgreSQL (for Mac OSX)
 ```
 brew install postgresql
+brew services start postgresql
 createdb `whoami`
 ```
 
@@ -27,6 +28,7 @@ In the postgreSQL prompt
 ``` 
 CREATE USER aidants_connect_team;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
+ALTER USER aidants_connect_team CREATEDB;
 ```
 
 ## How to install the app
@@ -53,9 +55,29 @@ Create a `.env` file at the root of the project with the following entries:
 ```
 HOST= <insert_your_data> #e.g. http://localhost:8000
 
+APP_SECRET=<insert_your_secret>
+
 FC_CALLBACK_URL=<insert_your_data>
 
 TEST="Everything is awesome"
+
+DATABASE_NAME=aidants_connect
+DATABASE_USER=aidants_connect_team
+DATABASE_PASSWORD='' or <insert_your_data>
+DATABASE_URL='' or <insert_your_data>
+DATABASE_PORT='' or <insert_your_data>
+
+FC_CLIENT_ID = <insert_your_data>
+FC_CLIENT_SECRET= <insert_your_data>
+
+# Optional
+DATABASE_SSL
+DEBUG
+```
+
+Create a `staticfiles` directory
+```
+mkdir staticfiles
 ```
 
 Run the migrations
