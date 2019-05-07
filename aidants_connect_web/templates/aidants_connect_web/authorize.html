@@ -2,18 +2,20 @@
 
 {% block content %}
 <section class="section">
-  <p id="welcome_aidant">Bienvenue, aidant</p>
-  <form method="post" >{% csrf_token %}
-    <div class="form__group">
-      <input type="radio" id="good_user_info" name="user_info" value="good" checked>
-      <label for="good_user_info">Good User Info</label>
-    </div>
-    <div class="form__group">
-      <input type="radio" id="bad_user_info" name="user_info" value="bad">
-      <label for="bad_user_info">Bad User Info</label>
-    </div>
-    <input type="hidden" class="button" name="state" value="{{state}}" />
-    <input type="submit" id="submit" value="Envoyer les informations de l'usager">
-  </form>
+  <div class="container">
+    <h2 id="welcome_aidant">Bienvenue, aidant</h2>
+    <form method="post" >{% csrf_token %}
+      <div class="form__group">
+        <input type="radio" id="good_user_info" name="user_info" value="good" checked>
+        <label for="good_user_info">Good User Info</label>
+      </div>
+      <div class="form__group">
+        <input type="radio" id="bad_user_info" name="user_info" value="bad">
+        <label for="bad_user_info">Bad User Info</label>
+      </div>
+      <input type="hidden" class="button" name="state" value="{{state}}" />
+      <input type="submit" id="submit" value="Envoyer les informations de l'usager">
+    </form>
+    <div>
 </section>
 {% endblock content %}
