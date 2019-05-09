@@ -5,7 +5,7 @@ from django.test.client import Client
 from django.test import TestCase
 from django.urls import resolve
 
-from aidants_connect_web.views import authorize, token
+from aidants_connect_web.views import authorize, token, home_page
 from aidants_connect_web.models import Connection, User
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
@@ -29,6 +29,16 @@ class ConnectionModelTest(TestCase):
 
         self.assertEqual(first_saved_item.state, "aZeRtY")
         self.assertEqual(second_saved_item.state, "QsDfG")
+
+
+class homePageTests(TestCase):
+    def test_root_url_triggers_the_homepage_view(self):
+        found = resolve("/")
+        self.assertEqual(found.func, home_page)
+
+    def test_root_url_triggers_the_homepage_template(self):
+        response = self.client.get("/")
+        self.assertTemplateUsed(response, "aidants_connect_web/home_page.html")
 
 
 class AuthorizeTests(TestCase):
