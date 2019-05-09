@@ -15,6 +15,8 @@ class ConnectionModelTest(TestCase):
     def test_saving_and_retrieving_connexion(self):
         first_connexion = Connection()
         first_connexion.state = "aZeRtY"
+        first_connexion.code = "ert"
+        first_connexion.nonce = "varg"
         first_connexion.save()
 
         second_connexion = Connection()
@@ -28,6 +30,7 @@ class ConnectionModelTest(TestCase):
         second_saved_item = saved_items[1]
 
         self.assertEqual(first_saved_item.state, "aZeRtY")
+        self.assertEqual(first_saved_item.nonce, "varg")
         self.assertEqual(second_saved_item.state, "QsDfG")
 
 
@@ -74,7 +77,7 @@ class AuthorizeTests(TestCase):
             "/authorize/",
             data={
                 "state": fc_call_state,
-                "nonce": fc_call_nounce,
+                "nonce": fc_call_nonce,
                 "response_type": fc_response_type,
                 "client_id": fc_client_id,
                 "redirect_uri": fc_redirect_uri,
@@ -94,6 +97,7 @@ class AuthorizeTests(TestCase):
         self.assertEqual(saved_items.count(), 1)
         code = saved_items[0].code
         state = saved_items[0].state
+        self.assertNotEqual(saved_items[0].nonce, 'No Nonce Provided')
         url = f"{fc_callback_url}?code={code}&state={state}"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
