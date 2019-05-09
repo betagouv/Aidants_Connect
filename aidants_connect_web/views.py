@@ -13,10 +13,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from aidants_connect_web.models import Connection
 
 
-fc_callback_url = os.getenv("FC_CALLBACK_URL")
-fc_client_id = os.getenv("FC_AS_FS_ID")
-fc_client_secret = os.getenv("FC_AS_FS_SECRET")
-host = os.getenv("HOST")
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
@@ -27,6 +23,8 @@ def home_page(request):
 
 @login_required
 def authorize(request):
+    fc_callback_url = os.environ["FC_CALLBACK_URL"]
+
     if request.method == "GET":
         state = request.GET.get("state", False)
         nonce = request.GET.get("nonce", False)
@@ -65,6 +63,10 @@ def authorize(request):
 # https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
 @csrf_exempt
 def token(request):
+    fc_client_id = os.environ["FC_AS_FS_ID"]
+    fc_client_secret = os.environ["FC_AS_FS_SECRET"]
+    host = os.environ["HOST"]
+
     if request.method == "GET":
         log.info("This method is a get")
         return HttpResponse("You did a GET on a POST only route")
@@ -93,8 +95,8 @@ def token(request):
         "sub": "4344343423",
         "nonce": connection.nonce,
     }
-    log.info("type du client secret")
-    log.info(type(fc_client_secret))
+    log.info("client id")
+    log.info(os.environ["FC_AS_FS_ID"])
     encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
 
     response = {
