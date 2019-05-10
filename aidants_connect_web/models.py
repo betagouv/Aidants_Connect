@@ -12,6 +12,7 @@ def default_expiration_date():
 class Connection(models.Model):
     state = models.TextField()
     code = models.TextField()
+    nonce = models.TextField(default="No Nonce Provided")
     expiresOn = models.DateTimeField(default=default_expiration_date)
 
 
