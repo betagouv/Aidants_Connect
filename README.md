@@ -29,6 +29,7 @@ In the postgreSQL prompt
 CREATE USER aidants_connect_team;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
 ALTER USER aidants_connect_team CREATEDB;
+\q
 ```
 
 ## How to install the app
@@ -51,7 +52,9 @@ If you get `ld: library not found for -lssl` as an error message, try:
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
 ```
 
-Create a `.env` file at the root of the project with the following entries:
+Create a `.env` file at the root of the project
+ 
+Add the following entries to the `.env` file:
 ```
 HOST= <insert_your_data> #e.g. http://localhost:8000
 
@@ -67,8 +70,6 @@ DATABASE_PASSWORD='' or <insert_your_data>
 DATABASE_URL='' or <insert_your_data>
 DATABASE_PORT='' or <insert_your_data>
 
-FC_CLIENT_ID = <insert_your_data>
-FC_CLIENT_SECRET= <insert_your_data>
 
 FC_AS_FS_ID=<insert_your_data>
 FC_AS_FS_SECRET=<insert_your_data>
@@ -85,16 +86,23 @@ mkdir staticfiles
 
 Run the migrations
 ```
-python manage.py makemigrations
 python manage.py migrate
 ```
 
 Create a superuser
 ```
-python manage.py createsuperuser --username name 
+python manage.py createsuperuser --username <insert_admin_name> 
 ```
 
 ## How to run the tests
+Install [Firefox](https://www.mozilla.org/fr/firefox/download/thanks/)
+
+Install [Gecko driver](https://github.com/mozilla/geckodriver/releases)
+
+```
+brew install geckodriver
+```
+Then run:
 
 ```
 flake8
@@ -107,12 +115,6 @@ To run the app on port 8000
 python manage.py runserver 8000
 ```
 
-## How to run the functional tests
-Install [Gecko driver](https://github.com/mozilla/geckodriver/releases)
 
-```
-brew install geckodriver
-```
-
-## Test FranceConnect credentials
-[here](https://github.com/france-connect/identity-provider-example/blob/master/database.csv)
+## FranceConnect FI documentation
+[here](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-identite)
