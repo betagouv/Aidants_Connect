@@ -125,5 +125,7 @@ def user_info(request):
         "gender": "F",
         "birthplace": "70447",
         "birthcountry": "99100",
+        "sub": "123",
+        "email": "User@user.domain",
     }
     return JsonResponse(response)
