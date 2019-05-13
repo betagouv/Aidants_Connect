@@ -166,6 +166,28 @@ class TokenTests(TestCase):
 
             self.assertEqual(response_json, awaited_response)
 
+    def test_token_should_respond_403_when_given_wrong_grant_type(self):
+        with patch.dict(
+            "os.environ",
+            {
+                "FC_AS_FS_ID": "test_client_id",
+                "FC_AS_FS_SECRET": "test_client_secret",
+                "FC_CALLBACK_URL": "test_url.test_url",
+                "HOST": "localhost",
+            },
+        ):
+            response = self.client.post(
+                "/token/",
+                {
+                    "grant_type": "not_authorization_code",
+                    "redirect_uri": "test_url.test_url/oidc_callback",
+                    "client_id": "test_client_id",
+                    "client_secret": "test_client_secret",
+                    "code": "test_code",
+                },
+            )
+            self.assertEqual(response.status_code, 403)
+
 
 class UserInfoTests(TestCase):
     def test_token_url_triggers_token_view(self):
