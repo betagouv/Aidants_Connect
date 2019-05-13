@@ -71,6 +71,9 @@ def token(request):
         log.info("This method is a get")
         return HttpResponse("You did a GET on a POST only route")
 
+    if request.POST.get("grant_type") != "authorization_code":
+        return HttpResponseForbidden()
+
     code = request.POST.get("code")
     log.info("the code is")
     log.info(code)
