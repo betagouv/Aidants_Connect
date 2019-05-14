@@ -10,7 +10,7 @@ from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 
 from aidants_connect_web.views import home_page, authorize, token, user_info
-
+from aidants_connect_web.forms import UsagerForm
 from aidants_connect_web.models import Connection, User
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
@@ -69,6 +69,32 @@ class AuthorizeTests(TestCase):
         )
 
         self.assertTemplateUsed(response, "aidants_connect_web/authorize.html")
+
+    def test_authorize_page_uses_item_form(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        fc_call_state = token_urlsafe(4)
+        fc_call_nonce = token_urlsafe(4)
+        fc_response_type = "code"
+        fc_client_id = "FranceConnectInteg"
+        fc_redirect_uri = (
+            "https%3A%2F%2Ffcp.integ01.dev-franceconnect.fr%2Foidc_callback"
+        )
+        fc_scopes = "openid profile email address phone birth"
+        fc_acr_values = "eidas1"
+
+        response = self.client.get(
+            "/authorize/",
+            data={
+                "state": fc_call_state,
+                "nonce": fc_call_nonce,
+                "response_type": fc_response_type,
+                "client_id": fc_client_id,
+                "redirect_uri": fc_redirect_uri,
+                "scope": fc_scopes,
+                "acr_values": fc_acr_values,
+            },
+        )
+        self.assertIsInstance(response.context["form"], UsagerForm)
 
     def test_sending_user_information_triggers_callback(self):
         self.client.login(username="Thierry", password="motdepassedethierry")

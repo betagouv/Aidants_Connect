@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 
 from aidants_connect_web.models import Connection
+from aidants_connect_web.forms import UsagerForm
 
 
 logging.basicConfig(level=logging.INFO)
@@ -35,12 +36,16 @@ def authorize(request):
         if state is False:
             return HttpResponseForbidden()
 
-        return render(request, "aidants_connect_web/authorize.html", {"state": state})
+        return render(
+            request,
+            "aidants_connect_web/authorize.html",
+            {"state": state, "form": UsagerForm()},
+        )
 
     else:
-        user_info = request.POST.get("user_info")
         this_state = request.POST.get("state")
-
+        log.info("post received")
+        form = UsagerForm(request.POST)
         try:
             that_connection = Connection.objects.get(state=this_state)
             state = that_connection.state
@@ -49,11 +54,22 @@ def authorize(request):
             log.info(f"No connection corresponds to the state: {this_state}")
             return HttpResponseForbidden()
 
-        if user_info == "good":
+        if form.is_valid():
+            post = form.save(commit=False)
+
+            # post.sub
+            # post.birthplace
+            # post.birthcountry
+
+            post.save()
+            log.info("form")
+            log.info(form)
             log.debug(
                 "the URI it redirects to",
                 f"{fc_callback_url}?code={code}&state={state}",
             )
+            if os.environ("HOST") == "localhost":
+                return JsonResponse({"response": "ok"})
             return redirect(f"{fc_callback_url}?code={code}&state={state}")
         else:
             return HttpResponseForbidden()
