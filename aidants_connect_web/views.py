@@ -19,7 +19,8 @@ log = logging.getLogger()
 
 
 def home_page(request):
-    return render(request, "aidants_connect_web/home_page.html")
+    random_string = token_urlsafe(10)
+    return render(request, "aidants_connect_web/home_page.html", {"random_string": random_string})
 
 
 @login_required
