@@ -2,6 +2,7 @@ import os
 import logging
 import jwt
 import time
+import re
 from secrets import token_urlsafe
 
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
@@ -9,8 +10,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import model_to_dict
 
-from aidants_connect_web.models import Connection
+from aidants_connect_web.models import Connection, Usager
 from aidants_connect_web.forms import UsagerForm
 
 
@@ -20,7 +22,9 @@ log = logging.getLogger()
 
 def home_page(request):
     random_string = token_urlsafe(10)
-    return render(request, "aidants_connect_web/home_page.html", {"random_string": random_string})
+    return render(
+        request, "aidants_connect_web/home_page.html", {"random_string": random_string}
+    )
 
 
 @login_required
@@ -46,6 +50,7 @@ def authorize(request):
     else:
         this_state = request.POST.get("state")
         log.info("post received")
+        log.info(request.POST)
         form = UsagerForm(request.POST)
         try:
             that_connection = Connection.objects.get(state=this_state)
@@ -56,24 +61,27 @@ def authorize(request):
             return HttpResponseForbidden()
 
         if form.is_valid():
+            sub = token_urlsafe(64)
             post = form.save(commit=False)
 
-            # post.sub
+            post.sub = sub
             # post.birthplace
             # post.birthcountry
 
             post.save()
-            log.info("form")
-            log.info(form)
-            log.debug(
-                "the URI it redirects to",
-                f"{fc_callback_url}?code={code}&state={state}",
-            )
-            if os.environ("HOST") == "localhost":
-                return JsonResponse({"response": "ok"})
+
+            that_connection.sub_usager = sub
+            that_connection.save()
+            # if os.environ["HOST"] == "localhost":
+            #     return JsonResponse({"response": "ok"})
             return redirect(f"{fc_callback_url}?code={code}&state={state}")
         else:
-            return HttpResponseForbidden()
+            log.info("invalid form")
+            return render(
+                request,
+                "aidants_connect_web/authorize.html",
+                {"state": state, "form": form},
+            )
 
 
 # Due to `no_referer` error
@@ -112,15 +120,16 @@ def token(request):
         # The issuer,  the URL of your Auth0 tenant
         "iss": host,
         # The unique identifier of the user
-        "sub": "4344343423",
+        "sub": connection.sub_usager,
         "nonce": connection.nonce,
     }
-    log.info("client id")
-    log.info(os.environ["FC_AS_FS_ID"])
-    encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
 
+    encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
+    access_token = token_urlsafe(64)
+    connection.access_token = access_token
+    connection.save()
     response = {
-        "access_token": "N5ro73Y2UBpVYLc8xB137A",
+        "access_token": access_token,
         "expires_in": 3600,
         "id_token": encoded_id_token.decode("utf-8"),
         "refresh_token": "5ieq7Bg173y99tT6MA",
@@ -134,18 +143,29 @@ def token(request):
 
 
 def user_info(request):
-    # Entêtes
-    # HTTP: Authorization = 'Bearer <ACCESS_TOKEN>'
-    # <FI_URL>/api/user?schema=openid
-    response = {
-        "given_name": "Joséphine",
-        "family_name": "ST-PIERRE",
-        "preferred_username": "ST-PIERRE",
-        "birthdate": "1969-12-15",
-        "gender": "F",
-        "birthplace": "70447",
-        "birthcountry": "99100",
-        "sub": "123",
-        "email": "User@user.domain",
-    }
-    return JsonResponse(response)
+
+    auth_header = request.META.get('HTTP_AUTHORIZATION')
+
+    if not auth_header:
+        log.info("missing auth header")
+        return HttpResponseForbidden()
+
+    pattern = re.compile(r'^Bearer\s([A-Z-a-z-0-9-_/-]+)$')
+    if not pattern.match(auth_header):
+        log.info("Auth header has wrong format")
+        return HttpResponseForbidden()
+
+    auth_token = auth_header[7:]
+    connection = Connection.objects.get(access_token=auth_token)
+
+    usager = Usager.objects.get(sub=connection.sub_usager)
+    usager = model_to_dict(usager)
+    del usager["id"]
+    birthdate = usager["birthdate"]
+    birthplace = usager["birthplace"]
+    birthcountry = usager["birthcountry"]
+    usager["birthplace"] = str(birthplace)
+    usager["birthcountry"] = str(birthcountry)
+    usager["birthdate"] = str(birthdate)
+
+    return JsonResponse(usager, safe=False)

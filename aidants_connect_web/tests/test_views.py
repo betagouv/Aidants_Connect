@@ -2,6 +2,7 @@ import os
 import json
 from secrets import token_urlsafe
 from unittest.mock import patch
+from datetime import date
 from freezegun import freeze_time
 
 from django.test.client import Client
@@ -11,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from aidants_connect_web.views import home_page, authorize, token, user_info
 from aidants_connect_web.forms import UsagerForm
-from aidants_connect_web.models import Connection, User
+from aidants_connect_web.models import Connection, User, Usager
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
 
@@ -102,10 +103,23 @@ class AuthorizeTests(TestCase):
         connection.state = "test_state"
         connection.code = "test_code"
         connection.nonce = "test_nonce"
+        connection.sub = "test_sub"
         connection.save()
 
         response = self.client.post(
-            "/authorize/", data={"user_info": "good", "state": "test_state"}
+            "/authorize/",
+            data={
+                "state": "test_state",
+                "given_name": "Joséphine",
+                "family_name": "ST-PIERRE",
+                "preferred_username": "ST-PIERRE",
+                "birthdate": "1969-12-15",
+                "gender": "F",
+                "birthplace": "70447",
+                "birthcountry": "99100",
+                "sub": "123",
+                "email": "User@user.domain",
+            },
         )
         try:
             saved_items = Connection.objects.all()
@@ -125,6 +139,7 @@ class TokenTests(TestCase):
         self.connection.state = "test_state"
         self.connection.code = "test_code"
         self.connection.nonce = "test_nonce"
+        self.connection.sub_usager = "test_sub"
         self.connection.save()
 
     def test_token_url_triggers_token_view(self):
@@ -155,14 +170,15 @@ class TokenTests(TestCase):
             response_content = response.content.decode("utf-8")
             self.assertEqual(response.status_code, 200)
             response_json = json.loads(response_content)
+            connection = Connection.objects.get(code="test_code")
             awaited_response = {
-                "access_token": "N5ro73Y2UBpVYLc8xB137A",
+                "access_token": connection.access_token,
                 "expires_in": 3600,
                 "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2Nsa"
-                "WVudF9pZCIsImV4cCI6MTMyNjUxMTg5NCwiaWF0IjoxMzI2NTExMjk0LCJ"
-                "pc3MiOiJsb2NhbGhvc3QiLCJzdWIiOiI0MzQ0MzQzNDIzIiwibm9uY2UiO"
-                "iJ0ZXN0X25vbmNlIn0.NWhma6Egbxn34v1RVtAd2wQbkCJjAIN0qyNgdKQ"
-                "qROA",
+                            "WVudF9pZCIsImV4cCI6MTMyNjUxMTg5NCwiaWF0IjoxMzI2NTExMjk0LCJ"
+                            "pc3MiOiJsb2NhbGhvc3QiLCJzdWIiOiJ0ZXN0X3N1YiIsIm5vbmNl"
+                            "IjoidGVzdF9ub25jZSJ9.VeupzW4ejtdGl2oAgOalfFGdAnxlc66G"
+                            "SIzu3T3Ob7s",
                 "refresh_token": "5ieq7Bg173y99tT6MA",
                 "token_type": "Bearer",
             }
@@ -193,9 +209,71 @@ class TokenTests(TestCase):
 
 
 class UserInfoTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        self.connection = Connection()
+        self.connection.state = "test_state"
+        self.connection.code = "test_code"
+        self.connection.nonce = "test_nonce"
+        self.connection.sub_usager = "test_sub"
+        self.connection.access_token = "test_access_token"
+        self.connection.save()
+
+        self.usager = Usager()
+        self.usager.given_name = "Joséphine"
+        self.usager.family_name = "ST-PIERRE"
+        self.usager.preferred_username = "ST-PIERRE"
+        self.usager.birthdate = date(1969, 12, 25)
+        self.usager.gender = "F"
+        self.usager.birthplace = 70447
+        self.usager.birthcountry = 99100
+        self.usager.sub = "test_sub"
+        self.usager.email = "User@user.domain"
+        self.usager.save()
+
     def test_token_url_triggers_token_view(self):
         found = resolve("/userinfo/")
         self.assertEqual(found.func, user_info)
+
+    def test_user_info_is_given_when_access_token_is_right(self):
+        response = self.client.get(
+            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
+        )
+
+        FC_formated_info = {
+            "given_name": "Joséphine",
+            "family_name": "ST-PIERRE",
+            "preferred_username": "ST-PIERRE",
+            "birthdate": "1969-12-25",
+            "gender": "F",
+            "birthplace": "70447",
+            "birthcountry": "99100",
+            "sub": "test_sub",
+            "email": "User@user.domain",
+        }
+
+        content = response.json()
+
+        self.assertEqual(content, FC_formated_info)
+
+    def test_user_info_returns_403_when_authorization_is_badly_formated(self):
+        response = self.client.get(
+            "/userinfo/", **{"HTTP_AUTHORIZATION": "test_access_token"}
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_info_returns_403_when_authorization_has_wrong_token(self):
+        response = self.client.get(
+            "/userinfo/", **{"HTTP_AUTHORIZATION": "wrong_access_token"}
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_info_returns_403_when_authorization_has_wrong_intro(self):
+        response = self.client.get(
+            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer: test_access_token"}
+        )
+        self.assertEqual(response.status_code, 403)
 
 
 class EnvironmentVariableTest(TestCase):
