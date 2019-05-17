@@ -27,7 +27,10 @@ class UsagerForm(forms.models.ModelForm):
         }
         widgets = {
             "given_name": forms.TextInput(
-                attrs={"placeholder": "Exemple : Camille-Marie Claude", "value": "Éric Julien"}
+                attrs={
+                    "placeholder": "Exemple : Camille-Marie Claude",
+                    "value": "Éric Julien",
+                }
             ),
             "family_name": forms.TextInput(
                 attrs={"placeholder": "Exemple : Petit-Richard", "value": "MERCIER"}
@@ -35,14 +38,13 @@ class UsagerForm(forms.models.ModelForm):
             "preferred_username": forms.TextInput(
                 attrs={"placeholder": "Exemple : Bernard", "value": "MERCIER"}
             ),
-            "birthdate": forms.fields.DateField(
-                input_formats=['%Y-%m-%d'],
-                initial=date(1969, 3, 17)
+            "birthdate": forms.fields.DateInput(
+                format="%Y-%m-%d", attrs={"value": "1969-03-17"}
             ),
             "birthplace": forms.fields.TextInput(
                 attrs={"placeholder": "Code INSEE de la commune", "value": "95277"}
             ),
-            "email": forms.fields.EmailField(initial="user@user.user")
+            "email": forms.fields.EmailInput(attrs={"value": "user@user.user"}),
         }
         error_messages = {
             "given_name": {
