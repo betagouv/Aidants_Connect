@@ -15,6 +15,8 @@ class Connection(models.Model):
     code = models.TextField()
     nonce = models.TextField(default="No Nonce Provided")
     expiresOn = models.DateTimeField(default=default_expiration_date)
+    sub_usager = models.TextField(default="No sub Provided")
+    access_token = models.TextField(default="No token Provided")
 
 
 class User(AbstractUser):
