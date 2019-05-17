@@ -3,14 +3,24 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <h2 id="welcome_aidant">Bienvenue, aidant</h2>
     <form method="post" >
-        {% csrf_token %}
-      <div class="form__group">
-        {{ form.as_p }}
+      <h2 id="welcome_aidant">Bienvenue, aidant</h2>
+      {% csrf_token %}
+      {% if form.errors %}
+      <div class="notification">
+          {{ form.errors }}
       </div>
-      <input type="hidden" class="button" name="state" value="{{state}}" />
-      <input type="submit" id="submit" value="Envoyer les informations de l'usager">
+      {% endif %}
+      {% for field in form %}
+      <div class="form__group">
+        <label>{{ field.label_tag }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <div class="form__group">
+        <input type="hidden" name="state" value="{{state}}" />
+        <input class="button" type="submit" id="submit" value="Envoyer les informations de l'usager" />
+      </div>
     </form>
     <div>
 </section>
