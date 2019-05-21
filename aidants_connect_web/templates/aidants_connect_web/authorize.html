@@ -5,18 +5,54 @@
   <div class="container">
     <form method="post" >
       <h2 id="welcome_aidant">Bienvenue, aidant</h2>
+      <p>Vous pouvez entrer ici les informations de l’usager pour qui vous allez faire les démarches.</p>
       {% csrf_token %}
       {% if form.errors %}
       <div class="notification">
           {{ form.errors }}
       </div>
       {% endif %}
-      {% for field in form %}
       <div class="form__group">
-        <label>{{ field.label_tag }}</label>
-        {{ field }}
+        <div class="has-tooltip">
+          <label>{{ form.given_name.label_tag }}</label>
+          <span class="tooltip-info" data-tooltip="Votre ou vos prénoms, séparés par une espace">?️</span>
+        </div>
+        {{ form.given_name }}
       </div>
-      {% endfor %}
+      <div class="form__group">
+        <label>{{ form.family_name.label_tag }}</label>
+        {{ form.family_name }}
+      </div>
+      <div class="form__group">
+        <label>{{ form.preferred_username.label_tag }}</label>
+        {{ form.preferred_username }}
+      </div>
+      <div class="form__group">
+        <label>{{ form.birthdate.label_tag }}</label>
+        {{ form.birthdate }}
+      </div>
+      <div class="form__group">
+        <label>{{ form.gender.label_tag }}</label>
+        {{ form.gender }}
+      </div>
+      <div class="form__group">
+        <div class="has-tooltip">
+          <label>{{ form.birthplace.label_tag }}</label>
+          <span class="tooltip-info" data-tooltip="Code de référence de la commune de naissance à 5 caractères">?</span>
+        </div>
+        {{ form.birthplace }}
+      </div>
+      <div class="form__group">
+        <div class="has-tooltip">
+          <label>{{ form.birthcountry.label_tag }}</label>
+          <span class="tooltip-info" data-tooltip="Code de référence du pays de naissance (99100 pour la France)">?</span>
+        </div>
+        {{ form.birthcountry }}
+      </div>
+      <div class="form__group">
+        <label>{{ form.email.label_tag }}</label>
+        {{ form.email }}
+      </div>
       <div class="form__group">
         <input type="hidden" name="state" value="{{state}}" />
         <input class="button" type="submit" id="submit" value="Envoyer les informations de l'usager" />
