@@ -3,18 +3,24 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <h2 id="welcome_aidant">Bienvenue, aidant</h2>
-    <form method="post" >{% csrf_token %}
-      <div class="form__group">
-        <input type="radio" id="good_user_info" name="user_info" value="good" checked>
-        <label for="good_user_info">Good User Info</label>
+    <form method="post" >
+      <h2 id="welcome_aidant">Bienvenue, aidant</h2>
+      {% csrf_token %}
+      {% if form.errors %}
+      <div class="notification">
+          {{ form.errors }}
       </div>
+      {% endif %}
+      {% for field in form %}
       <div class="form__group">
-        <input type="radio" id="bad_user_info" name="user_info" value="bad">
-        <label for="bad_user_info">Bad User Info</label>
+        <label>{{ field.label_tag }}</label>
+        {{ field }}
       </div>
-      <input type="hidden" class="button" name="state" value="{{state}}" />
-      <input type="submit" id="submit" value="Envoyer les informations de l'usager">
+      {% endfor %}
+      <div class="form__group">
+        <input type="hidden" name="state" value="{{state}}" />
+        <input class="button" type="submit" id="submit" value="Envoyer les informations de l'usager" />
+      </div>
     </form>
     <div>
 </section>
