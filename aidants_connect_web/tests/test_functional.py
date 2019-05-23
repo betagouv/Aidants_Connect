@@ -46,6 +46,8 @@ class LoginPage(StaticLiveServerTestCase):
         submit_button.click()
         welcome_aidant = self.selenium.find_element_by_id("welcome_aidant").text
         self.assertEqual(welcome_aidant, "Bienvenue, aidant")
+        tooltips = self.selenium.find_elements_by_class_name("tooltip-info")
+        self.assertEqual(len(tooltips), 3)
         # button = self.browser.find_element_by_id("submit")
 
 
