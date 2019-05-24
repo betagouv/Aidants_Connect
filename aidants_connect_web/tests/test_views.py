@@ -44,6 +44,7 @@ class AuthorizeTests(TestCase):
         response = self.client.get("/authorize/")
         self.assertEqual(response.status_code, 403)
 
+
     def test_authorize_url_triggers_the_authorize_template(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         fc_call_state = token_urlsafe(4)
@@ -191,6 +192,45 @@ class TokenTests(TestCase):
                 "redirect_uri": "test_url.test_url/oidc_callback",
                 "client_id": "test_client_id",
                 "client_secret": "test_client_secret",
+                "code": "test_code",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_wrong_redirect_uri_triggers_403(self):
+        response = self.client.post(
+            "/token/",
+            {
+                "grant_type": "authorization_code",
+                "redirect_uri": "test_url.test_url/wrong_uri",
+                "client_id": "test_client_id",
+                "client_secret": "test_client_secret",
+                "code": "test_code",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_wrong_client_id_triggers_403(self):
+        response = self.client.post(
+            "/token/",
+            {
+                "grant_type": "authorization_code",
+                "redirect_uri": "test_url.test_url/oidc_callback",
+                "client_id": "wrong_client_id",
+                "client_secret": "test_client_secret",
+                "code": "test_code",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_wrong_client_secret_triggers_403(self):
+        response = self.client.post(
+            "/token/",
+            {
+                "grant_type": "authorization_code",
+                "redirect_uri": "test_url.test_url/oidc_callback",
+                "client_id": "test_client_id",
+                "client_secret": "wrong_client_secret",
                 "code": "test_code",
             },
         )

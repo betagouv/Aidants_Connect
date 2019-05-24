@@ -87,6 +87,7 @@ def authorize(request):
 # https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
 @csrf_exempt
 def token(request):
+    fc_callback_url = settings.FC_CALLBACK_URL
     fc_client_id = settings.FC_AS_FS_ID
     fc_client_secret = settings.FC_AS_FS_SECRET
     host = settings.HOST
@@ -96,6 +97,15 @@ def token(request):
         return HttpResponse("You did a GET on a POST only route")
 
     if request.POST.get("grant_type") != "authorization_code":
+        return HttpResponseForbidden()
+
+    if request.POST.get("redirect_uri") != f"{fc_callback_url}/oidc_callback":
+        return HttpResponseForbidden()
+
+    if request.POST.get("client_id") != fc_client_id:
+        return HttpResponseForbidden()
+
+    if request.POST.get("client_secret") != fc_client_secret:
         return HttpResponseForbidden()
 
     code = request.POST.get("code")
