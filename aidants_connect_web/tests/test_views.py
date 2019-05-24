@@ -1,8 +1,8 @@
 import os
 import json
+from pytz import timezone
 from secrets import token_urlsafe
-from unittest.mock import patch
-from datetime import date
+from datetime import date, datetime, timedelta
 from freezegun import freeze_time
 
 from django.test.client import Client
@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from aidants_connect_web.views import home_page, authorize, token, user_info
 from aidants_connect_web.forms import UsagerForm
-from aidants_connect_web.models import Connection, User, Usager
+from aidants_connect_web.models import Connection, User, Usager, CONNECTION_EXPIRATION_TIME
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
 
@@ -148,6 +148,8 @@ class TokenTests(TestCase):
         self.connection.code = "test_code"
         self.connection.nonce = "test_nonce"
         self.connection.sub_usager = "test_sub"
+        self.connection.expiresOn = datetime(2012, 1, 14, 3, 21, 34,
+                                             tzinfo=timezone('Europe/Paris'))
         self.connection.save()
         self.fc_request = {
                     "grant_type": "authorization_code",
@@ -161,8 +163,10 @@ class TokenTests(TestCase):
         found = resolve("/token/")
         self.assertEqual(found.func, token)
 
-    @freeze_time("2012-01-14 03:21:34", tz_offset=2)
+    date = datetime(2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone('Europe/Paris'))
+    @freeze_time(date)
     def test_correct_info_triggers_200(self):
+
         response = self.client.post(
                 "/token/", self.fc_request
             )
@@ -174,11 +178,11 @@ class TokenTests(TestCase):
         awaited_response = {
             "access_token": connection.access_token,
             "expires_in": 3600,
-            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2Nsa"
-                        "WVudF9pZCIsImV4cCI6MTMyNjUxMTg5NCwiaWF0IjoxMzI2NTExMjk0LCJ"
-                        "pc3MiOiJsb2NhbGhvc3QiLCJzdWIiOiJ0ZXN0X3N1YiIsIm5vbmNl"
-                        "IjoidGVzdF9ub25jZSJ9.VeupzW4ejtdGl2oAgOalfFGdAnxlc66G"
-                        "SIzu3T3Ob7s",
+            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"
+                        ".eyJhdWQiOiJ0ZXN0X2NsaWVudF9pZCIsImV4cCI6MTMyNjUxMTM1NCwiaWF0"
+                        "IjoxMzI2NTEwNzU0LCJpc3MiOiJsb2NhbGhvc3QiLCJzdWIiOiJ0ZXN0X3N1Yi"
+                        "IsIm5vbmNlIjoidGVzdF9ub25jZSJ9.bsAi3klcCr64b6bSG56mSVwIehifaka"
+                        "IZap7f_IS6oQ",
             "refresh_token": "5ieq7Bg173y99tT6MA",
             "token_type": "Bearer",
         }
@@ -225,6 +229,15 @@ class TokenTests(TestCase):
             "/token/", fc_request
         )
         self.assertEqual(response.status_code, 403)
+
+    date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
+    @freeze_time(date_expired)
+    def test_expired_code_triggers_403(self):
+        response = self.client.post(
+            "/token/", self.fc_request
+        )
+        self.assertEqual(response.status_code, 403)
+
 
 class UserInfoTests(TestCase):
     def setUp(self):

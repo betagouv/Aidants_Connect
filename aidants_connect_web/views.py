@@ -12,8 +12,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.conf import settings
+from django.utils import timezone
 
-from aidants_connect_web.models import Connection, Usager
+from aidants_connect_web.models import Connection, Usager, CONNECTION_EXPIRATION_TIME
 from aidants_connect_web.forms import UsagerForm
 
 
@@ -114,12 +115,21 @@ def token(request):
         log.info(code)
         return HttpResponseForbidden()
 
+    now = timezone.now()
+    if connection.expiresOn < now:
+        log.info("###")
+        log.info(connection.expiresOn)
+        log.info(now)
+        log.info("Code expired")
+        return HttpResponseForbidden()
+
+
     id_token = {
         # The audience, the Client ID of your Auth0 Application
         "aud": fc_client_id,
         # The expiration time. in the format "seconds since epoch"
         # TODO Check if 10 minutes is not too much
-        "exp": int(time.time()) + 600,
+        "exp": int(time.time()) + CONNECTION_EXPIRATION_TIME * 60,
         # The issued at time
         "iat": int(time.time()),
         # The issuer,  the URL of your Auth0 tenant
@@ -130,6 +140,7 @@ def token(request):
     }
 
     encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
+    log.info(encoded_id_token.decode("utf-8"))
     access_token = token_urlsafe(64)
     connection.access_token = access_token
     connection.save()
