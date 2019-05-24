@@ -6,7 +6,7 @@ from datetime import date
 from freezegun import freeze_time
 
 from django.test.client import Client
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -133,7 +133,14 @@ class AuthorizeTests(TestCase):
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
 
+@override_settings(
+        FC_AS_FS_ID="test_client_id",
+        FC_AS_FS_SECRET="test_client_secret",
+        FC_CALLBACK_URL="test_url.test_url",
+        HOST="localhost"
+    )
 class TokenTests(TestCase):
+
     def setUp(self):
         self.connection = Connection()
         self.connection.state = "test_state"
@@ -147,17 +154,8 @@ class TokenTests(TestCase):
         self.assertEqual(found.func, token)
 
     @freeze_time("2012-01-14 03:21:34", tz_offset=2)
-    def test_token_should_respond_when_given_correct_info(self):
-        with patch.dict(
-            "os.environ",
-            {
-                "FC_AS_FS_ID": "test_client_id",
-                "FC_AS_FS_SECRET": "test_client_secret",
-                "FC_CALLBACK_URL": "test_url.test_url",
-                "HOST": "localhost",
-            },
-        ):
-            response = self.client.post(
+    def test_correct_info_triggers_200(self):
+        response = self.client.post(
                 "/token/",
                 {
                     "grant_type": "authorization_code",
@@ -167,45 +165,37 @@ class TokenTests(TestCase):
                     "code": "test_code",
                 },
             )
-            response_content = response.content.decode("utf-8")
-            self.assertEqual(response.status_code, 200)
-            response_json = json.loads(response_content)
-            connection = Connection.objects.get(code="test_code")
-            awaited_response = {
-                "access_token": connection.access_token,
-                "expires_in": 3600,
-                "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2Nsa"
-                            "WVudF9pZCIsImV4cCI6MTMyNjUxMTg5NCwiaWF0IjoxMzI2NTExMjk0LCJ"
-                            "pc3MiOiJsb2NhbGhvc3QiLCJzdWIiOiJ0ZXN0X3N1YiIsIm5vbmNl"
-                            "IjoidGVzdF9ub25jZSJ9.VeupzW4ejtdGl2oAgOalfFGdAnxlc66G"
-                            "SIzu3T3Ob7s",
-                "refresh_token": "5ieq7Bg173y99tT6MA",
-                "token_type": "Bearer",
-            }
+        response_content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 200)
+        response_json = json.loads(response_content)
+        connection = Connection.objects.get(code="test_code")
+        awaited_response = {
+            "access_token": connection.access_token,
+            "expires_in": 3600,
+            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2Nsa"
+                        "WVudF9pZCIsImV4cCI6MTMyNjUxMTg5NCwiaWF0IjoxMzI2NTExMjk0LCJ"
+                        "pc3MiOiJsb2NhbGhvc3QiLCJzdWIiOiJ0ZXN0X3N1YiIsIm5vbmNl"
+                        "IjoidGVzdF9ub25jZSJ9.VeupzW4ejtdGl2oAgOalfFGdAnxlc66G"
+                        "SIzu3T3Ob7s",
+            "refresh_token": "5ieq7Bg173y99tT6MA",
+            "token_type": "Bearer",
+        }
 
-            self.assertEqual(response_json, awaited_response)
+        self.assertEqual(response_json, awaited_response)
 
-    def test_token_should_respond_403_when_given_wrong_grant_type(self):
-        with patch.dict(
-            "os.environ",
+    def test_wrong_grant_type_triggers_403(self):
+        response = self.client.post(
+            "/token/",
             {
-                "FC_AS_FS_ID": "test_client_id",
-                "FC_AS_FS_SECRET": "test_client_secret",
-                "FC_CALLBACK_URL": "test_url.test_url",
-                "HOST": "localhost",
+                "grant_type": "not_authorization_code",
+                "redirect_uri": "test_url.test_url/oidc_callback",
+                "client_id": "test_client_id",
+                "client_secret": "test_client_secret",
+                "code": "test_code",
             },
-        ):
-            response = self.client.post(
-                "/token/",
-                {
-                    "grant_type": "not_authorization_code",
-                    "redirect_uri": "test_url.test_url/oidc_callback",
-                    "client_id": "test_client_id",
-                    "client_secret": "test_client_secret",
-                    "code": "test_code",
-                },
-            )
-            self.assertEqual(response.status_code, 403)
+        )
+        self.assertEqual(response.status_code, 403)
+
 
 
 class UserInfoTests(TestCase):
