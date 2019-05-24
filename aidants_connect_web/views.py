@@ -11,6 +11,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
+from django.conf import settings
 
 from aidants_connect_web.models import Connection, Usager
 from aidants_connect_web.forms import UsagerForm
@@ -29,7 +30,8 @@ def home_page(request):
 
 @login_required
 def authorize(request):
-    fc_callback_url = os.environ["FC_CALLBACK_URL"]
+    fc_callback_url = settings.FC_CALLBACK_URL
+    log.info(fc_callback_url)
 
     if request.method == "GET":
         state = request.GET.get("state", False)
@@ -49,8 +51,6 @@ def authorize(request):
 
     else:
         this_state = request.POST.get("state")
-        log.info("post received")
-        log.info(request.POST)
         form = UsagerForm(request.POST)
         try:
             that_connection = Connection.objects.get(state=this_state)
@@ -72,8 +72,7 @@ def authorize(request):
 
             that_connection.sub_usager = sub
             that_connection.save()
-            # if os.environ["HOST"] == "localhost":
-            #     return JsonResponse({"response": "ok"})
+
             return redirect(f"{fc_callback_url}?code={code}&state={state}")
         else:
             log.info("invalid form")
@@ -88,9 +87,9 @@ def authorize(request):
 # https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
 @csrf_exempt
 def token(request):
-    fc_client_id = os.environ["FC_AS_FS_ID"]
-    fc_client_secret = os.environ["FC_AS_FS_SECRET"]
-    host = os.environ["HOST"]
+    fc_client_id = settings.FC_AS_FS_ID
+    fc_client_secret = settings.FC_AS_FS_SECRET
+    host = settings.HOST
 
     if request.method == "GET":
         log.info("This method is a get")
@@ -100,8 +99,7 @@ def token(request):
         return HttpResponseForbidden()
 
     code = request.POST.get("code")
-    log.info("the code is")
-    log.info(code)
+
     try:
         connection = Connection.objects.get(code=code)
     except ObjectDoesNotExist:
@@ -135,10 +133,8 @@ def token(request):
         "refresh_token": "5ieq7Bg173y99tT6MA",
         "token_type": "Bearer",
     }
-    log.info(f"/token id_token:")
-    log.info(id_token)
+
     definite_response = JsonResponse(response)
-    log.info("sending token payload")
     return definite_response
 
 
