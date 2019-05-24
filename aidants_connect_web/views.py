@@ -1,4 +1,3 @@
-import os
 import logging
 import jwt
 import time
@@ -101,7 +100,7 @@ def token(request):
         request.POST.get("grant_type") == "authorization_code",
         request.POST.get("redirect_uri") == f"{fc_callback_url}/oidc_callback",
         request.POST.get("client_id") == fc_client_id,
-        request.POST.get("client_secret") == fc_client_secret
+        request.POST.get("client_secret") == fc_client_secret,
     ]
     if not all(rules):
         return HttpResponseForbidden()
@@ -115,13 +114,9 @@ def token(request):
         log.info(code)
         return HttpResponseForbidden()
 
-        log.info("###")
-        log.info(connection.expiresOn)
-        log.info(now)
     if connection.expiresOn < timezone.now():
         log.info("Code expired")
         return HttpResponseForbidden()
-
 
     id_token = {
         # The audience, the Client ID of your Auth0 Application
@@ -157,13 +152,13 @@ def token(request):
 
 def user_info(request):
 
-    auth_header = request.META.get('HTTP_AUTHORIZATION')
+    auth_header = request.META.get("HTTP_AUTHORIZATION")
 
     if not auth_header:
         log.info("missing auth header")
         return HttpResponseForbidden()
 
-    pattern = re.compile(r'^Bearer\s([A-Z-a-z-0-9-_/-]+)$')
+    pattern = re.compile(r"^Bearer\s([A-Z-a-z-0-9-_/-]+)$")
     if not pattern.match(auth_header):
         log.info("Auth header has wrong format")
         return HttpResponseForbidden()

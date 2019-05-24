@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 CONNECTION_EXPIRATION_TIME = 10
 
+
 def default_expiration_date():
     now = timezone.now()
     return now + timedelta(minutes=CONNECTION_EXPIRATION_TIME)

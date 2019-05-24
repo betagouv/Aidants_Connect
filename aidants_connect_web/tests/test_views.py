@@ -12,7 +12,12 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from aidants_connect_web.views import home_page, authorize, token, user_info
 from aidants_connect_web.forms import UsagerForm
-from aidants_connect_web.models import Connection, User, Usager, CONNECTION_EXPIRATION_TIME
+from aidants_connect_web.models import (
+    Connection,
+    User,
+    Usager,
+    CONNECTION_EXPIRATION_TIME,
+)
 
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
 
@@ -43,7 +48,6 @@ class AuthorizeTests(TestCase):
         self.client.login(username="Thierry", password="motdepassedethierry")
         response = self.client.get("/authorize/")
         self.assertEqual(response.status_code, 403)
-
 
     def test_authorize_url_triggers_the_authorize_template(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -135,41 +139,40 @@ class AuthorizeTests(TestCase):
 
 
 @override_settings(
-        FC_AS_FS_ID="test_client_id",
-        FC_AS_FS_SECRET="test_client_secret",
-        FC_CALLBACK_URL="test_url.test_url",
-        HOST="localhost"
-    )
+    FC_AS_FS_ID="test_client_id",
+    FC_AS_FS_SECRET="test_client_secret",
+    FC_CALLBACK_URL="test_url.test_url",
+    HOST="localhost",
+)
 class TokenTests(TestCase):
-
     def setUp(self):
         self.connection = Connection()
         self.connection.state = "test_state"
         self.connection.code = "test_code"
         self.connection.nonce = "test_nonce"
         self.connection.sub_usager = "test_sub"
-        self.connection.expiresOn = datetime(2012, 1, 14, 3, 21, 34,
-                                             tzinfo=timezone('Europe/Paris'))
+        self.connection.expiresOn = datetime(
+            2012, 1, 14, 3, 21, 34, tzinfo=timezone("Europe/Paris")
+        )
         self.connection.save()
         self.fc_request = {
-                    "grant_type": "authorization_code",
-                    "redirect_uri": "test_url.test_url/oidc_callback",
-                    "client_id": "test_client_id",
-                    "client_secret": "test_client_secret",
-                    "code": "test_code",
-                }
+            "grant_type": "authorization_code",
+            "redirect_uri": "test_url.test_url/oidc_callback",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "code": "test_code",
+        }
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/token/")
         self.assertEqual(found.func, token)
 
-    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone('Europe/Paris'))
+    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
+
     @freeze_time(date)
     def test_correct_info_triggers_200(self):
 
-        response = self.client.post(
-                "/token/", self.fc_request
-            )
+        response = self.client.post("/token/", self.fc_request)
 
         response_content = response.content.decode("utf-8")
         self.assertEqual(response.status_code, 200)
@@ -191,50 +194,39 @@ class TokenTests(TestCase):
     def test_wrong_grant_type_triggers_403(self):
         fc_request = dict(self.fc_request)
         fc_request["grant_type"] = "not_authorization_code"
-        response = self.client.post(
-            "/token/", fc_request
-        )
+        response = self.client.post("/token/", fc_request)
         self.assertEqual(response.status_code, 403)
 
     def test_wrong_redirect_uri_triggers_403(self):
         fc_request = dict(self.fc_request)
         fc_request["redirect_uri"] = "test_url.test_url/wrong_uri"
 
-        response = self.client.post(
-            "/token/", fc_request
-        )
+        response = self.client.post("/token/", fc_request)
         self.assertEqual(response.status_code, 403)
 
     def test_wrong_client_id_triggers_403(self):
         fc_request = dict(self.fc_request)
         fc_request["client_id"] = "wrong_client_id"
-        response = self.client.post(
-            "/token/", fc_request
-        )
+        response = self.client.post("/token/", fc_request)
         self.assertEqual(response.status_code, 403)
 
     def test_wrong_client_secret_triggers_403(self):
         fc_request = dict(self.fc_request)
         fc_request["client_secret"] = "wrong_client_secret"
-        response = self.client.post(
-            "/token/", fc_request
-        )
+        response = self.client.post("/token/", fc_request)
         self.assertEqual(response.status_code, 403)
 
     def test_wrong_code_triggers_403(self):
         fc_request = dict(self.fc_request)
         fc_request["code"] = "wrong_code"
-        response = self.client.post(
-            "/token/", fc_request
-        )
+        response = self.client.post("/token/", fc_request)
         self.assertEqual(response.status_code, 403)
 
     date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
+
     @freeze_time(date_expired)
     def test_expired_code_triggers_403(self):
-        response = self.client.post(
-            "/token/", self.fc_request
-        )
+        response = self.client.post("/token/", self.fc_request)
         self.assertEqual(response.status_code, 403)
 
 
@@ -248,8 +240,9 @@ class UserInfoTests(TestCase):
         self.connection.nonce = "test_nonce"
         self.connection.sub_usager = "test_sub"
         self.connection.access_token = "test_access_token"
-        self.connection.expiresOn = datetime(2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone(
-            'Europe/Paris'))
+        self.connection.expiresOn = datetime(
+            2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
+        )
         self.connection.save()
 
         self.usager = Usager()
@@ -268,7 +261,8 @@ class UserInfoTests(TestCase):
         found = resolve("/userinfo/")
         self.assertEqual(found.func, user_info)
 
-    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone('Europe/Paris'))
+    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
+
     @freeze_time(date)
     def test_well_formatted_access_token_returns_200(self):
         response = self.client.get(
@@ -292,6 +286,7 @@ class UserInfoTests(TestCase):
         self.assertEqual(content, FC_formated_info)
 
     date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
+
     @freeze_time(date_expired)
     def test_expired_access_token_returns_403(self):
         response = self.client.get(
