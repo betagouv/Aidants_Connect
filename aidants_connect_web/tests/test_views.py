@@ -200,7 +200,6 @@ class TokenTests(TestCase):
         response = self.client.post(
             "/token/", fc_request
         )
-
         self.assertEqual(response.status_code, 403)
 
     def test_wrong_client_id_triggers_403(self):
@@ -219,6 +218,13 @@ class TokenTests(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_wrong_code_triggers_403(self):
+        fc_request = dict(self.fc_request)
+        fc_request["code"] = "wrong_code"
+        response = self.client.post(
+            "/token/", fc_request
+        )
+        self.assertEqual(response.status_code, 403)
 
 class UserInfoTests(TestCase):
     def setUp(self):
