@@ -96,16 +96,13 @@ def token(request):
         log.info("This method is a get")
         return HttpResponse("You did a GET on a POST only route")
 
-    if request.POST.get("grant_type") != "authorization_code":
-        return HttpResponseForbidden()
-
-    if request.POST.get("redirect_uri") != f"{fc_callback_url}/oidc_callback":
-        return HttpResponseForbidden()
-
-    if request.POST.get("client_id") != fc_client_id:
-        return HttpResponseForbidden()
-
-    if request.POST.get("client_secret") != fc_client_secret:
+    rules = [
+        request.POST.get("grant_type") == "authorization_code",
+        request.POST.get("redirect_uri") == f"{fc_callback_url}/oidc_callback",
+        request.POST.get("client_id") == fc_client_id,
+        request.POST.get("client_secret") == fc_client_secret
+    ]
+    if not all(rules):
         return HttpResponseForbidden()
 
     code = request.POST.get("code")

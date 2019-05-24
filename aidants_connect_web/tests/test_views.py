@@ -149,6 +149,13 @@ class TokenTests(TestCase):
         self.connection.nonce = "test_nonce"
         self.connection.sub_usager = "test_sub"
         self.connection.save()
+        self.fc_request = {
+                    "grant_type": "authorization_code",
+                    "redirect_uri": "test_url.test_url/oidc_callback",
+                    "client_id": "test_client_id",
+                    "client_secret": "test_client_secret",
+                    "code": "test_code",
+                }
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/token/")
@@ -157,15 +164,9 @@ class TokenTests(TestCase):
     @freeze_time("2012-01-14 03:21:34", tz_offset=2)
     def test_correct_info_triggers_200(self):
         response = self.client.post(
-                "/token/",
-                {
-                    "grant_type": "authorization_code",
-                    "redirect_uri": "test_url.test_url/oidc_callback",
-                    "client_id": "test_client_id",
-                    "client_secret": "test_client_secret",
-                    "code": "test_code",
-                },
+                "/token/", self.fc_request
             )
+
         response_content = response.content.decode("utf-8")
         self.assertEqual(response.status_code, 200)
         response_json = json.loads(response_content)
@@ -185,57 +186,38 @@ class TokenTests(TestCase):
         self.assertEqual(response_json, awaited_response)
 
     def test_wrong_grant_type_triggers_403(self):
+        fc_request = dict(self.fc_request)
+        fc_request["grant_type"] = "not_authorization_code"
         response = self.client.post(
-            "/token/",
-            {
-                "grant_type": "not_authorization_code",
-                "redirect_uri": "test_url.test_url/oidc_callback",
-                "client_id": "test_client_id",
-                "client_secret": "test_client_secret",
-                "code": "test_code",
-            },
+            "/token/", fc_request
         )
         self.assertEqual(response.status_code, 403)
 
     def test_wrong_redirect_uri_triggers_403(self):
+        fc_request = dict(self.fc_request)
+        fc_request["redirect_uri"] = "test_url.test_url/wrong_uri"
+
         response = self.client.post(
-            "/token/",
-            {
-                "grant_type": "authorization_code",
-                "redirect_uri": "test_url.test_url/wrong_uri",
-                "client_id": "test_client_id",
-                "client_secret": "test_client_secret",
-                "code": "test_code",
-            },
+            "/token/", fc_request
         )
+
         self.assertEqual(response.status_code, 403)
 
     def test_wrong_client_id_triggers_403(self):
+        fc_request = dict(self.fc_request)
+        fc_request["client_id"] = "wrong_client_id"
         response = self.client.post(
-            "/token/",
-            {
-                "grant_type": "authorization_code",
-                "redirect_uri": "test_url.test_url/oidc_callback",
-                "client_id": "wrong_client_id",
-                "client_secret": "test_client_secret",
-                "code": "test_code",
-            },
+            "/token/", fc_request
         )
         self.assertEqual(response.status_code, 403)
 
     def test_wrong_client_secret_triggers_403(self):
+        fc_request = dict(self.fc_request)
+        fc_request["client_secret"] = "wrong_client_secret"
         response = self.client.post(
-            "/token/",
-            {
-                "grant_type": "authorization_code",
-                "redirect_uri": "test_url.test_url/oidc_callback",
-                "client_id": "test_client_id",
-                "client_secret": "wrong_client_secret",
-                "code": "test_code",
-            },
+            "/token/", fc_request
         )
         self.assertEqual(response.status_code, 403)
-
 
 
 class UserInfoTests(TestCase):
