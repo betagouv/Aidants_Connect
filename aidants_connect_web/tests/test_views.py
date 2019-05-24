@@ -163,7 +163,7 @@ class TokenTests(TestCase):
         found = resolve("/token/")
         self.assertEqual(found.func, token)
 
-    date = datetime(2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone('Europe/Paris'))
+    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone('Europe/Paris'))
     @freeze_time(date)
     def test_correct_info_triggers_200(self):
 
@@ -178,11 +178,10 @@ class TokenTests(TestCase):
         awaited_response = {
             "access_token": connection.access_token,
             "expires_in": 3600,
-            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"
-                        ".eyJhdWQiOiJ0ZXN0X2NsaWVudF9pZCIsImV4cCI6MTMyNjUxMTM1NCwiaWF0"
-                        "IjoxMzI2NTEwNzU0LCJpc3MiOiJsb2NhbGhvc3QiLCJzdWIiOiJ0ZXN0X3N1Yi"
-                        "IsIm5vbmNlIjoidGVzdF9ub25jZSJ9.bsAi3klcCr64b6bSG56mSVwIehifaka"
-                        "IZap7f_IS6oQ",
+            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2NsaWVud"
+            "F9pZCIsImV4cCI6MTMyNjUxMTI5NCwiaWF0IjoxMzI2NTEwNjk0LCJpc3MiOiJ"
+            "sb2NhbGhvc3QiLCJzdWIiOiJ0ZXN0X3N1YiIsIm5vbmNlIjoidGVzdF9ub25jZ"
+            "SJ9.aYSfYJK_Lml15DY7MuhrUBI1wja70WBfeyKqiUBMLlE",
             "refresh_token": "5ieq7Bg173y99tT6MA",
             "token_type": "Bearer",
         }
@@ -249,6 +248,8 @@ class UserInfoTests(TestCase):
         self.connection.nonce = "test_nonce"
         self.connection.sub_usager = "test_sub"
         self.connection.access_token = "test_access_token"
+        self.connection.expiresOn = datetime(2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone(
+            'Europe/Paris'))
         self.connection.save()
 
         self.usager = Usager()
@@ -267,7 +268,9 @@ class UserInfoTests(TestCase):
         found = resolve("/userinfo/")
         self.assertEqual(found.func, user_info)
 
-    def test_user_info_is_given_when_access_token_is_right(self):
+    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone('Europe/Paris'))
+    @freeze_time(date)
+    def test_well_formatted_access_token_returns_200(self):
         response = self.client.get(
             "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
         )
@@ -288,21 +291,29 @@ class UserInfoTests(TestCase):
 
         self.assertEqual(content, FC_formated_info)
 
-    def test_user_info_returns_403_when_authorization_is_badly_formated(self):
+    date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
+    @freeze_time(date_expired)
+    def test_expired_access_token_returns_403(self):
+        response = self.client.get(
+            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_badly_formatted_authorization_header_triggers_403(self):
         response = self.client.get(
             "/userinfo/", **{"HTTP_AUTHORIZATION": "test_access_token"}
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_user_info_returns_403_when_authorization_has_wrong_token(self):
         response = self.client.get(
-            "/userinfo/", **{"HTTP_AUTHORIZATION": "wrong_access_token"}
+            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer: test_access_token"}
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_user_info_returns_403_when_authorization_has_wrong_intro(self):
+    def test_wrong_token_triggers_403(self):
         response = self.client.get(
-            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer: test_access_token"}
+            "/userinfo/", **{"HTTP_AUTHORIZATION": "wrong_access_token"}
         )
         self.assertEqual(response.status_code, 403)
 

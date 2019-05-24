@@ -115,11 +115,10 @@ def token(request):
         log.info(code)
         return HttpResponseForbidden()
 
-    now = timezone.now()
-    if connection.expiresOn < now:
         log.info("###")
         log.info(connection.expiresOn)
         log.info(now)
+    if connection.expiresOn < timezone.now():
         log.info("Code expired")
         return HttpResponseForbidden()
 
@@ -172,6 +171,8 @@ def user_info(request):
     auth_token = auth_header[7:]
     connection = Connection.objects.get(access_token=auth_token)
 
+    if connection.expiresOn < timezone.now():
+        return HttpResponseForbidden()
     usager = Usager.objects.get(sub=connection.sub_usager)
     usager = model_to_dict(usager)
     del usager["id"]
