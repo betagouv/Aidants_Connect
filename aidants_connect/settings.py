@@ -14,6 +14,10 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
+FC_CALLBACK_URL = os.environ["FC_CALLBACK_URL"]
+FC_AS_FS_ID = os.environ["FC_AS_FS_ID"]
+FC_AS_FS_SECRET = os.environ["FC_AS_FS_SECRET"]
+HOST = os.environ["HOST"]
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -31,7 +35,7 @@ if os.getenv("DEBUG") == "True":
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = [os.getenv("HOST")]
+ALLOWED_HOSTS = [os.environ["HOST"]]
 
 
 # Application definition

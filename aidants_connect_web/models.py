@@ -4,10 +4,12 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+CONNECTION_EXPIRATION_TIME = 10
+
 
 def default_expiration_date():
     now = timezone.now()
-    return now + timedelta(minutes=30)
+    return now + timedelta(minutes=CONNECTION_EXPIRATION_TIME)
 
 
 class Connection(models.Model):

@@ -1,4 +1,3 @@
-import os
 import logging
 import jwt
 import time
@@ -11,8 +10,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
+from django.conf import settings
+from django.utils import timezone
 
-from aidants_connect_web.models import Connection, Usager
+from aidants_connect_web.models import Connection, Usager, CONNECTION_EXPIRATION_TIME
 from aidants_connect_web.forms import UsagerForm
 
 
@@ -29,7 +30,8 @@ def home_page(request):
 
 @login_required
 def authorize(request):
-    fc_callback_url = os.environ["FC_CALLBACK_URL"]
+    fc_callback_url = settings.FC_CALLBACK_URL
+    log.info(fc_callback_url)
 
     if request.method == "GET":
         state = request.GET.get("state", False)
@@ -49,8 +51,6 @@ def authorize(request):
 
     else:
         this_state = request.POST.get("state")
-        log.info("post received")
-        log.info(request.POST)
         form = UsagerForm(request.POST)
         try:
             that_connection = Connection.objects.get(state=this_state)
@@ -72,8 +72,7 @@ def authorize(request):
 
             that_connection.sub_usager = sub
             that_connection.save()
-            # if os.environ["HOST"] == "localhost":
-            #     return JsonResponse({"response": "ok"})
+
             return redirect(f"{fc_callback_url}?code={code}&state={state}")
         else:
             log.info("invalid form")
@@ -88,20 +87,26 @@ def authorize(request):
 # https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
 @csrf_exempt
 def token(request):
-    fc_client_id = os.environ["FC_AS_FS_ID"]
-    fc_client_secret = os.environ["FC_AS_FS_SECRET"]
-    host = os.environ["HOST"]
+    fc_callback_url = settings.FC_CALLBACK_URL
+    fc_client_id = settings.FC_AS_FS_ID
+    fc_client_secret = settings.FC_AS_FS_SECRET
+    host = settings.HOST
 
     if request.method == "GET":
         log.info("This method is a get")
         return HttpResponse("You did a GET on a POST only route")
 
-    if request.POST.get("grant_type") != "authorization_code":
+    rules = [
+        request.POST.get("grant_type") == "authorization_code",
+        request.POST.get("redirect_uri") == f"{fc_callback_url}/oidc_callback",
+        request.POST.get("client_id") == fc_client_id,
+        request.POST.get("client_secret") == fc_client_secret,
+    ]
+    if not all(rules):
         return HttpResponseForbidden()
 
     code = request.POST.get("code")
-    log.info("the code is")
-    log.info(code)
+
     try:
         connection = Connection.objects.get(code=code)
     except ObjectDoesNotExist:
@@ -109,12 +114,16 @@ def token(request):
         log.info(code)
         return HttpResponseForbidden()
 
+    if connection.expiresOn < timezone.now():
+        log.info("Code expired")
+        return HttpResponseForbidden()
+
     id_token = {
         # The audience, the Client ID of your Auth0 Application
         "aud": fc_client_id,
         # The expiration time. in the format "seconds since epoch"
         # TODO Check if 10 minutes is not too much
-        "exp": int(time.time()) + 600,
+        "exp": int(time.time()) + CONNECTION_EXPIRATION_TIME * 60,
         # The issued at time
         "iat": int(time.time()),
         # The issuer,  the URL of your Auth0 tenant
@@ -125,6 +134,7 @@ def token(request):
     }
 
     encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
+    log.info(encoded_id_token.decode("utf-8"))
     access_token = token_urlsafe(64)
     connection.access_token = access_token
     connection.save()
@@ -135,22 +145,20 @@ def token(request):
         "refresh_token": "5ieq7Bg173y99tT6MA",
         "token_type": "Bearer",
     }
-    log.info(f"/token id_token:")
-    log.info(id_token)
+
     definite_response = JsonResponse(response)
-    log.info("sending token payload")
     return definite_response
 
 
 def user_info(request):
 
-    auth_header = request.META.get('HTTP_AUTHORIZATION')
+    auth_header = request.META.get("HTTP_AUTHORIZATION")
 
     if not auth_header:
         log.info("missing auth header")
         return HttpResponseForbidden()
 
-    pattern = re.compile(r'^Bearer\s([A-Z-a-z-0-9-_/-]+)$')
+    pattern = re.compile(r"^Bearer\s([A-Z-a-z-0-9-_/-]+)$")
     if not pattern.match(auth_header):
         log.info("Auth header has wrong format")
         return HttpResponseForbidden()
@@ -158,6 +166,8 @@ def user_info(request):
     auth_token = auth_header[7:]
     connection = Connection.objects.get(access_token=auth_token)
 
+    if connection.expiresOn < timezone.now():
+        return HttpResponseForbidden()
     usager = Usager.objects.get(sub=connection.sub_usager)
     usager = model_to_dict(usager)
     del usager["id"]
