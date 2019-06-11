@@ -7,3 +7,4 @@ geckodriver.log
 .env
 .integ.env
 staticfiles
+.DS_Store

@@ -1,13 +1,44 @@
 {% extends 'layouts/main.html' %}
 
+{% load static %}
+
 {% block content %}
+
 <section class="section">
-    <div class="container">
-  <h1>Bienvenue sur Aidants Connect</h1>
-  <p>
-      L’objectif est de permettre à un professionnel habilité préalablement de réaliser des démarches administratives en ligne à la place d’une personne ne parvenant pas à les faire seule via une connexion sécurisée.
-      Ce dispositif permettra un suivi des actions réalisées sur le compte de la personne, à destination des usagers et des autorités administratives compétentes, et une protection du professionnel déclarant comme de la personne accompagnée en cas d’erreur. L’enjeu est d’empêcher par un tiers l’utilisation de l’identité numérique d’une personne en difficulté avec les outils numériques (comme cela se fait en pratique, avec inscription des mots de passe dans un carnet papier).
-  </p><a href="/authorize?state={{ random_string }}&nonce=TY6">test</a></p>
-</div>
+  <div class="container">
+    <div class="row">
+      <div class="hero__description">
+        <h1>Bienvenue sur Aidants Connect</h1>
+        <p class="lead-text">
+          Le service qui permet aux aidants professionnels de réaliser des démarches administratives en ligne pour le compte d’une personne via une connexion sécurisée.
+        </p>
+        <p>Ce service permet :
+          <ul>
+            <li>une protection du professionel déclarant comme de la personne aidée en cas d’erreur ;</li>
+            <li>un suivi des actions réalisées sur le compte de la personne.</li>
+          </ul>
+        </p>
+      </div>
+      <div class="column__image">
+        <img src="{% static 'images/aidantsconnect.png' %}" />
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section section-grey">
+  <div class="container">
+    <div class="row">
+      <div class="column__image">
+        <img src="{% static 'images/aidantsconnect2.svg' %}" />
+      </div>
+      <div class="issues">
+        <h2>À quel problème répond Aidants Connect ?</h2>
+        <ul>
+          <li>13 millions de français en difficulté numérique</li>
+          <li>Dématérialisation de 250 démarches administratives "icôniques" d’ici 2022</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </section>
 {% endblock content %}

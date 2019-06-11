@@ -5,5 +5,12 @@
       <img class="navbar__logo" src="{% static 'images/logo-marianne.svg' %}"
         alt="aidantconnect.beta.gouv.fr" /><span class="navbar__domain">aidantconnect</span><img src="{% static 'images/pointbetagouvfr.svg' %}" class="navbar__gouvfr" alt="aidantconnect.beta.gouv.fr" />
     </a>
+    <nav role="navigation">
+      <ul class="nav__links">
+        <li class="nav__item">
+          <a href="/authorize?state={{ random_string }}&nonce=TY6">Se connecter</a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </header>
