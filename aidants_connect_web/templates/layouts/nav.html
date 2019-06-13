@@ -1,14 +1,21 @@
 {% load static %}
 <header class="navbar" role="navigation">
   <div class="navbar__container">
-    <a class="navbar__home" href="{% url 'login' %}">
+    <a class="navbar__home" href="{% url 'home_page' %}">
       <img class="navbar__logo" src="{% static 'images/logo-marianne.svg' %}"
         alt="aidantsconnect.beta.gouv.fr" /><span class="navbar__domain">aidantsconnect</span><img src="{% static 'images/pointbetagouvfr.svg' %}" class="navbar__gouvfr" alt="aidantsconnect.beta.gouv.fr" />
     </a>
     <nav role="navigation">
       <ul class="nav__links">
+
         <li class="nav__item">
-          <a href="/authorize?state={{ random_string }}&nonce=TY6">Se connecter</a>
+          <a href="{% url 'dashboard' %}">
+            {% if not user.is_authenticated %}
+              Se connecter
+            {% else %}
+              Espace aidant
+            {% endif %}
+          </a>
         </li>
       </ul>
     </nav>
