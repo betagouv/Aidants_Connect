@@ -42,3 +42,24 @@ class Usager(models.Model):
     )
     sub = models.TextField(default="No Sub yet")
     email = models.EmailField(blank=False)
+
+
+class Demarche(models.Model):
+    class Meta:
+        ordering = ["-weight"]
+
+    title = models.CharField(max_length=50, blank=False)
+    weight = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+
+
+class Mandat(models.Model):
+    aidant = models.ForeignKey(User, on_delete=models.CASCADE, default=0)
+    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
+    perimeter = models.ForeignKey(Demarche, on_delete=models.CASCADE, default=0)
+    creation_date = models.DateTimeField(default=timezone.now)
+    perimeter_other = models.TextField(blank=True)
+    personal_data = models.BooleanField(default=False)
+    brief = models.BooleanField(default=False)
