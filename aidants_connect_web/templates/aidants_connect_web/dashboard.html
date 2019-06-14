@@ -1,0 +1,38 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <a href="{% url 'france_connect' %}" class="button new__user">Ajouter un usager</a>
+    <h1>Bienvenue {{ user.username }} !</h1>
+    <div class="current__users">
+      <h2 class="subtitle">Les usagers avec qui vous avez un mandat en cours</h2>
+      {% if usagers %}
+      <input class="table__filter" type="text" placeholder="Tapez un nom pour retrouver un usager" />
+      <table class="table">
+        <thead>
+          <th>Nom</th>
+        </thead>
+        <tbody>
+          {% for usager in usagers %}
+          <tr>
+            <td>
+              <a>{{ usager }}</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="notification">Vous n’avez pas de mandat en cours.</div>
+      {% endif %}
+    </div>
+  <div>
+</section>
+{% endblock content %}

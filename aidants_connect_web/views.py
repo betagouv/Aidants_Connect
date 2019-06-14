@@ -13,8 +13,13 @@ from django.forms.models import model_to_dict
 from django.conf import settings
 from django.utils import timezone
 
-from aidants_connect_web.models import Connection, Usager, CONNECTION_EXPIRATION_TIME
-from aidants_connect_web.forms import UsagerForm
+from aidants_connect_web.models import (
+    Connection,
+    User,
+    Usager,
+    CONNECTION_EXPIRATION_TIME,
+)
+from aidants_connect_web.forms import UsagerForm, MandatForm
 
 
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +30,35 @@ def home_page(request):
     random_string = token_urlsafe(10)
     return render(
         request, "aidants_connect_web/home_page.html", {"random_string": random_string}
+    )
+
+
+@login_required
+def dashboard(request):
+    user = User.objects.get(id=request.user.id)
+    usagers = Usager.objects.select_related("mandat")
+    return render(
+        request, "aidants_connect_web/dashboard.html", {"user": user, "usager": usagers}
+    )
+
+
+@login_required
+def france_connect(request):
+    user = User.objects.get(id=request.user.id)
+    return render(
+        request,
+        "aidants_connect_web/mandat/france_connect.html",
+        {"user": user, "form": MandatForm()},
+    )
+
+
+@login_required
+def mandat(request):
+    user = User.objects.get(id=request.user.id)
+    return render(
+        request,
+        "aidants_connect_web/mandat/mandat.html",
+        {"user": user, "form": MandatForm()},
     )
 
 

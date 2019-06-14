@@ -43,6 +43,9 @@ class Usager(models.Model):
     sub = models.TextField(default="No Sub yet")
     email = models.EmailField(blank=False)
 
+    def __str__(self):
+        return self.given_name + " " + self.family_name
+
 
 class Demarche(models.Model):
     class Meta:

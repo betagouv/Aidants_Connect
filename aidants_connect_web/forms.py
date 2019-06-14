@@ -1,5 +1,5 @@
 from django import forms
-from aidants_connect_web.models import Usager
+from aidants_connect_web.models import Usager, Mandat
 
 
 class UsagerForm(forms.models.ModelForm):
@@ -51,4 +51,18 @@ class UsagerForm(forms.models.ModelForm):
                 "required": "Le champs Prénoms est obligatoire. "
                 "Ex : Camille-Marie Claude Dominique"
             }
+        }
+
+
+class MandatForm(forms.models.ModelForm):
+    class Meta:
+        model = Mandat
+        fields = ("perimeter", "perimeter_other", "personal_data", "brief")
+        labels = {
+            "perimeter": "Je souhaite effectuer :",
+            "perimeter_other": "Si autre, préciser la nature de la démarche :",
+        }
+        widgets = {
+            "perimeter": forms.RadioSelect,
+            "perimeter_other": forms.Textarea(attrs={"rows": 2}),
         }

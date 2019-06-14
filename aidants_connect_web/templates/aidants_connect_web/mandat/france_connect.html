@@ -1,0 +1,23 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/mandat.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-small">
+    <h1>Connexion à France Connect</h1>
+    {% if form.errors %}
+      <div class="notification">
+        {{ form.errors }}
+      </div>
+    {% endif %}
+    {% csrf_token %}
+    <p>Pour signer le mandat de délégation, l’usager doit s’identifier à France Connect.</p>
+    <a href="{% url 'fc_authorize' role='usager' %}" class="button">Se connecter à France Connect</a>
+  <div>
+</section>
+{% endblock content %}

@@ -1,0 +1,36 @@
+ul {
+  list-style-type: none;
+  padding: 0;
+  line-height: 1.875em;
+  margin: 0.5em 0 0;
+}
+
+ul input[type="radio"] {
+  margin-bottom: 0.25em;
+}
+
+.other__group {
+  margin-top: 0.5em;
+}
+
+fieldset {
+  flex-direction: column;
+  align-items: start;
+}
+
+fieldset .checkbox__group {
+  display: flex;
+  flex-direction: row;
+}
+
+fieldset .checkbox__group + .checkbox__group {
+  margin-top: 1em;
+}
+
+fieldset input[type="checkbox"] {
+  flex-shrink: 0;
+}
+
+fieldset .label-inline {
+  display: inline-block;
+}
