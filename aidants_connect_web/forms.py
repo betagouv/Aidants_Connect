@@ -59,7 +59,7 @@ class MandatForm(forms.models.ModelForm):
         model = Mandat
         fields = ("perimeter", "perimeter_other", "personal_data", "brief")
         labels = {
-            "perimeter": "Je souhaite effectuer :",
+            "perimeter": "Je souhaite :",
             "perimeter_other": "Si autre, préciser la nature de la démarche :",
         }
         widgets = {

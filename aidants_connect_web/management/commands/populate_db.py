@@ -6,8 +6,25 @@ from django.conf import settings
 def create_demarches():
     demarches = [
         {"id": 0, "title": "Autre", "weight": -1},
-        {"id": 1, "title": "Ma déclaration de revenus", "weight": 100},
-        {"id": 2, "title": "Un renouvellement de carte grise", "weight": 80},
+        {"id": 1, "title": "Déclarer mes revenus fiscaux", "weight": 100},
+        {"id": 2, "title": "Déclarer un changement d’adresse", "weight": 80},
+        {"id": 3, "title": "M’inscrire sur les listes électorales", "weight": 80},
+        {
+            "id": 4,
+            "title": "Renouveler mon passeport / ma carte nationale d’identité",
+            "weight": 80,
+        },
+        {
+            "id": 5,
+            "title": "Faire une démarche concernant mon permis / ma carte grise",
+            "weight": 80,
+        },
+        {
+            "id": 6,
+            "title": "Suivre ma demande de Revenu de Solidarité Active (RSA)",
+            "weight": 80,
+        },
+        {"id": 7, "title": "Faire une demande de carte de séjour", "weight": 80},
     ]
     for demarche in demarches:
         obj, created = Demarche.objects.update_or_create(

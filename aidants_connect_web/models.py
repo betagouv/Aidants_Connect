@@ -52,7 +52,7 @@ class Demarche(models.Model):
     class Meta:
         ordering = ["-weight"]
 
-    title = models.CharField(max_length=50, blank=False)
+    title = models.CharField(max_length=100, blank=False)
     weight = models.IntegerField(default=0)
 
     def __str__(self):
