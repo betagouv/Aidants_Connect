@@ -23,7 +23,7 @@
           {% for usager in usagers %}
           <tr>
             <td>
-              <a>{{ usager }}</a>
+              <a>{{ usager.given_name }} {{ usager.family_name }}</a>
             </td>
           </tr>
           {% endfor %}

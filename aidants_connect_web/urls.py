@@ -10,4 +10,7 @@ urlpatterns = [
     path("authorize/", views.authorize, name="authorize"),
     path("token/", views.token, name="token"),
     path("userinfo/", views.user_info, name="user_info"),
+    path("fc_authorize/<str:role>/", views.fc_authorize, name="fc_authorize"),
+    path("logout-callback/", views.logout_callback, name="logout_callback"),
+    path("identite_pivot/", views.identite_pivot, name="identite_pivot"),
 ]

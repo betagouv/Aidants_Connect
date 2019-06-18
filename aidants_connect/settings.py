@@ -35,7 +35,7 @@ if os.getenv("DEBUG") == "True":
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = [os.environ["HOST"]]
+ALLOWED_HOSTS = [os.environ["HOST"], "aidantsconnect.beta.gouv.fr"]
 
 
 # Application definition

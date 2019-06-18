@@ -17,7 +17,7 @@
     {% endif %}
     {% csrf_token %}
     <p>Pour signer le mandat de délégation, l’usager doit s’identifier à France Connect.</p>
-    <a href="{% url 'fc_authorize' role='usager' %}" class="button">Se connecter à France Connect</a>
+    <a href="{% url 'mandat' %}" class="button">Se connecter à France Connect</a>
   <div>
 </section>
 {% endblock content %}
