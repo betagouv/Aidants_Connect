@@ -9,21 +9,28 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <a href="{% url 'france_connect' %}" class="button new__user">Ajouter un usager</a>
+    <a href="{% url 'mandat' %}" class="button new__user">Ajouter un usager</a>
     <h1>Bienvenue {{ user.username }} !</h1>
+    {% if mandat %}<div class="notification">Le mandat a été créé avec succès !</div>{% endif %}
     <div class="current__users">
       <h2 class="subtitle">Les usagers avec qui vous avez un mandat en cours</h2>
       {% if usagers %}
       <input class="table__filter" type="text" placeholder="Tapez un nom pour retrouver un usager" />
       <table class="table">
         <thead>
-          <th>Nom</th>
+          <tr>
+            <th>Nom</th>
+            <th>Email</th>
+          </tr>
         </thead>
         <tbody>
           {% for usager in usagers %}
           <tr>
             <td>
               <a>{{ usager.given_name }} {{ usager.family_name }}</a>
+            </td>
+            <td>
+              {{ usager.email }}
             </td>
           </tr>
           {% endfor %}

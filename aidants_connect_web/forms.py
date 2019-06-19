@@ -66,3 +66,14 @@ class MandatForm(forms.models.ModelForm):
             "perimeter": forms.RadioSelect,
             "perimeter_other": forms.Textarea(attrs={"rows": 2}),
         }
+        error_messages = {
+            "perimeter": {
+                "required": "Le périmètre de la démarche n’a pas été renseigné."
+            },
+            "personal_data": {
+                "required": "Veuillez cocher le consentement à l’utilisation de vos données personnelles."
+            },
+            "brief": {
+                "required": "Veuillez confirmer que l’aidant vous a présenté le fonctionnement du service."
+            },
+        }

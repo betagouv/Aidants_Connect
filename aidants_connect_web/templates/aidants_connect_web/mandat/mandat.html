@@ -8,9 +8,20 @@
 
 {% block content %}
 <section class="section">
-  <div class="container">
+  <div class="container container-small">
+    <div class="information">
+      <h1>Signature d’un mandat de délégation</h1>
+      <p>Bonjour {{ user }}, vous accompagnez une personne pour la première fois ?
+      Une personne que vous avez déjà accompagnée vient pour effectuer une nouvelle démarche ?
+      </p>
+      <p>
+      Informez la personne des conditions d’un mandat de délégation, et invitez-la à signer ci-dessous</p>
+    </div>
     <form method="post">
-      <h1>Créer un mandat de délégation</h1>
+      {% if notification %}
+        <div class="notification">{{ notification }}</div>
+      {% endif %}
+      <h2>Choisir la démarche</h2>
       {% if form.errors %}
         <div class="notification">
           {{ form.errors }}
@@ -26,20 +37,7 @@
         </div>
       </div>
       <div class="form__group">
-        <fieldset>
-          <legend>En signant ce mandat, je confirme que :</legend>
-          <div class="checkbox__group">
-            {{ form.personal_data }}
-            <label class="label-inline">J’autorise {{ user.username }} à utiliser mes données à caractère personnel.</label>
-          </div>
-          <div class="checkbox__group">
-            {{ form.brief }}
-            <label class="label-inline">Je confime que {{ user.username }} m’a rappelé l’objet de l’intervention, la raison pour laquelle mes informations sont collectées et leur utilité ; l’existence de droits sur ses données (accès, rectification, suppression, etc.) et la possibilité de retirer mon consentement à tout moment.</label>
-          </div>
-        </fieldset>
-      </div>
-      <div class="form__group">
-        <input type="submit" value="Je signe avec France Connect" />
+        <input type="submit" class="fc_button" value="S’identifier avec France Connect" />
       </div>
     </form>
   <div>

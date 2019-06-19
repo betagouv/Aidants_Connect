@@ -10,12 +10,12 @@
 
         <li class="nav__item">
           {% if user.is_authenticated %}
-            <a href="{% url 'dashboard' %}">
+            <a href="{% url 'dashboard' mandat=0 %}">
               Espace aidant
             </a>
             <a href="{% url 'logout' %}">Se déconnecter</a>
           {% else %}
-            <a href="{% url 'dashboard' %}">
+            <a href="{% url 'dashboard' mandat=0 %}">
               Se connecter
             </a>
           {% endif %}

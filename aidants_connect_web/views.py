@@ -2,6 +2,7 @@ import logging
 import jwt
 import time
 import re
+from datetime import date
 from secrets import token_urlsafe
 
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
@@ -13,11 +14,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.sessions.backends.db import SessionStore
 
 from aidants_connect_web.models import (
     Connection,
     User,
     Usager,
+    Demarche,
     CONNECTION_EXPIRATION_TIME,
 )
 from aidants_connect_web.forms import UsagerForm, MandatForm
@@ -41,42 +44,124 @@ def logout_page(request):
 
 
 @login_required
-def dashboard(request):
+def dashboard(request, mandat=0):
     user = User.objects.get(id=request.user.id)
-    usagers = Usager.objects.select_related("mandat")
+
+    if mandat == 1:
+        usagers = [
+            {
+                "given_name": "George",
+                "family_name": "Abitbol",
+                "birthdate": date(1945, 10, 20),
+                "gender": "M",
+                "birthplace": 84016,
+                "birthcountry": 99100,
+                "email": "user@test.fr",
+            }
+        ]
+    else:
+        usagers = []
+    # usagers = Usager.objects.select_related("mandat")
+
     return render(
-        request, "aidants_connect_web/dashboard.html", {"user": user, "usager": usagers}
+        request,
+        "aidants_connect_web/dashboard.html",
+        {"user": user, "usagers": usagers, "mandat": mandat},
     )
 
 
 @login_required
-def france_connect(request):
+def recap(request):
     user = User.objects.get(id=request.user.id)
-    return render(
-        request,
-        "aidants_connect_web/mandat/france_connect.html",
-        {"user": user, "form": MandatForm()},
+    usager = Usager(
+        {
+            "given_name": "George",
+            "family_name": "Abitbol",
+            "birthdate": date(1945, 10, 20),
+            "gender": "M",
+            "birthplace": 84016,
+            "birthcountry": 99100,
+            "email": "user@test.fr",
+        }
     )
+    demarche = Demarche.objects.get(title=request.session.get("mandat")["perimeter"])
+
+    if request.method == "GET":
+        form = MandatForm(initial={"perimeter": demarche})
+        return render(
+            request,
+            "aidants_connect_web/mandat/recap.html",
+            {"user": user, "form": form, "demarche": demarche},
+        )
+
+    else:
+        form = MandatForm(request.POST)
+
+        # if form.is_valid():
+        #     usager.save()
+        #     mandat = form.save(commit=False)
+        #     mandat.perimeter = demarche
+        #     mandat.aidant = user
+        #     mandat.save()
+        #
+        #     return redirect("dashboard", mandat=True)
+        #
+        # else:
+        #     log.info("invalid form")
+        #     log.info(form.cleaned_data)
+        #     return render(
+        #         request,
+        #         "aidants_connect_web/mandat/recap.html",
+        #         {"user": user, "form": form},
+        #     )
+
+        return redirect("dashboard", mandat=1)
+
+
+@login_required
+def france_connect(request):
+    return render(request, "aidants_connect_web/mandat/france_connect.html")
 
 
 @login_required
 def mandat(request):
     user = User.objects.get(id=request.user.id)
+    form = MandatForm()
 
     if request.method == "GET":
         return render(
             request,
             "aidants_connect_web/mandat/mandat.html",
-            {"user": user, "form": MandatForm()},
+            {"user": user, "form": form},
         )
 
     else:
-        usagers = [{"given_name": "George", "family_name": "Abitbol"}]
-        return render(
-            request,
-            "aidants_connect_web/dashboard.html",
-            {"user": user, "usagers": usagers},
-        )
+        form = MandatForm(request.POST)
+
+        if form.is_valid():
+            try:
+                request.session["mandat"] = {
+                    "perimeter": form.cleaned_data["perimeter"].title,
+                    "perimeter_other": form.cleaned_data["perimeter_other"],
+                }
+            except ObjectDoesNotExist:
+                log.info("No perimeter found")
+
+            # return redirect("fc_authorize", role="usager")
+
+            # return render(
+            #     request,
+            #     "aidants_connect_web/mandat/mandat.html",
+            #     {
+            #         "user": user,
+            #         "form": form,
+            #         "notification": "Le formulaire a été rempli avec succès.",
+            #     },
+            # )
+
+            return redirect("france_connect")
+        else:
+            log.info("invalid form")
 
 
 @login_required

@@ -1,0 +1,46 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/mandat.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-small">
+    <form method="post">
+      {% if notification %}
+        <div class="notification">{{ notification }}</div>
+      {% endif %}
+      <h1>Résumé du mandat de délégation</h1>
+      {% if form.errors %}
+        <div class="notification">
+          {{ form.errors }}
+        </div>
+      {% endif %}
+      {% csrf_token %}
+      <div class="form__group">
+        <label>Je souhaite me faire accompagner pour :</label>
+        <strong>{{ demarche }}</strong>
+      </div>
+      <div class="form__group">
+        <fieldset>
+          <legend>En signant ce mandat, je confirme que :</legend>
+          <div class="checkbox__group">
+            {{ form.personal_data }}
+            <label class="label-inline" for="id_personal_data">J’autorise {{ user.username }} à utiliser mes données à caractère personnel.</label>
+          </div>
+          <div class="checkbox__group">
+            {{ form.brief }}
+            <label class="label-inline" for="id_brief">Je confime que {{ user.username }} m’a rappelé l’objet de l’intervention, la raison pour laquelle mes informations sont collectées et leur utilité ; l’existence de droits sur ses données (accès, rectification, suppression, etc.) et la possibilité de retirer mon consentement à tout moment.</label>
+          </div>
+        </fieldset>
+      </div>
+      <div class="form__group">
+        <input type="submit" class="button" value="Je signe le mandat" />
+      </div>
+    </form>
+  <div>
+</section>
+{% endblock content %}
