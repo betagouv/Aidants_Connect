@@ -13,4 +13,5 @@ urlpatterns = [
     path("fc_authorize/<str:role>/", views.fc_authorize, name="fc_authorize"),
     path("logout-callback/", views.logout_callback, name="logout_callback"),
     path("identite_pivot/", views.identite_pivot, name="identite_pivot"),
+    url(r"^logout/$", views.logout_page, name="logout"),
 ]

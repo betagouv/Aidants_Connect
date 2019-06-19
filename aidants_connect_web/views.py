@@ -7,6 +7,7 @@ from secrets import token_urlsafe
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
@@ -31,6 +32,12 @@ def home_page(request):
     return render(
         request, "aidants_connect_web/home_page.html", {"random_string": random_string}
     )
+
+
+@login_required
+def logout_page(request):
+    logout(request)
+    return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
 @login_required

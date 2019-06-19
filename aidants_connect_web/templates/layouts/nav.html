@@ -9,13 +9,16 @@
       <ul class="nav__links">
 
         <li class="nav__item">
-          <a href="{% url 'dashboard' %}">
-            {% if not user.is_authenticated %}
-              Se connecter
-            {% else %}
+          {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}">
               Espace aidant
-            {% endif %}
-          </a>
+            </a>
+            <a href="{% url 'logout' %}">Se déconnecter</a>
+          {% else %}
+            <a href="{% url 'dashboard' %}">
+              Se connecter
+            </a>
+          {% endif %}
         </li>
       </ul>
     </nav>
