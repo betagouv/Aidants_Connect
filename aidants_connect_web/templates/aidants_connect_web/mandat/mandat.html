@@ -11,12 +11,16 @@
   <div class="container container-small">
     <div class="information">
       <h1>Signature d’un mandat de délégation</h1>
-      <p>Bonjour {{ user }}, vous accompagnez une personne pour la première fois ?
+      <p>Bonjour {{ user.first_name }}, vous accompagnez une personne pour la première fois ?
       Une personne que vous avez déjà accompagnée vient pour effectuer une nouvelle démarche ?
       </p>
       <p>
       Informez la personne des conditions d’un mandat de délégation, et invitez-la à signer ci-dessous</p>
     </div>
+  </div>
+</section>
+<section class="section section-grey">
+  <div class="container container-small">
     <form method="post">
       {% if notification %}
         <div class="notification">{{ notification }}</div>

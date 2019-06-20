@@ -50,8 +50,8 @@ def dashboard(request, mandat=0):
     if mandat == 1:
         usagers = [
             {
-                "given_name": "George",
-                "family_name": "Abitbol",
+                "given_name": "Robert",
+                "family_name": "Dupont",
                 "birthdate": date(1945, 10, 20),
                 "gender": "M",
                 "birthplace": 84016,
@@ -73,10 +73,11 @@ def dashboard(request, mandat=0):
 @login_required
 def recap(request):
     user = User.objects.get(id=request.user.id)
+
     usager = Usager(
         {
-            "given_name": "George",
-            "family_name": "Abitbol",
+            "given_name": "Robert",
+            "family_name": "Dupont",
             "birthdate": date(1945, 10, 20),
             "gender": "M",
             "birthplace": 84016,
@@ -86,12 +87,16 @@ def recap(request):
     )
     demarche = Demarche.objects.get(title=request.session.get("mandat")["perimeter"])
 
+    other = False
+    if request.session.get("mandat")["perimeter"] == "Autre":
+        other = request.session.get("mandat")["perimeter_other"]
+
     if request.method == "GET":
         form = MandatForm(initial={"perimeter": demarche})
         return render(
             request,
             "aidants_connect_web/mandat/recap.html",
-            {"user": user, "form": form, "demarche": demarche},
+            {"user": user, "form": form, "demarche": demarche, "other": other},
         )
 
     else:

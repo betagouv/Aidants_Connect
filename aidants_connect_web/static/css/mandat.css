@@ -1,12 +1,12 @@
-.information {
-  margin-bottom: 5em;
+.hero__container {
+  min-height: 10em;
 }
 
 ul {
   list-style-type: none;
   padding: 0;
   line-height: 1.875em;
-  margin: 0.5em 0 0;
+  margin: 0;
 }
 
 ul input[type="radio"] {

@@ -9,13 +9,14 @@
 {% block content %}
 <section class="section">
   <div class="container container-small">
+    <div class="notification">Cette page temporaire se substitue à la connexion à France Connect</div>
     <h1>Connexion à France Connect</h1>
     {% if form.errors %}
       <div class="notification">
         {{ form.errors }}
       </div>
     {% endif %}
-    <p>Je me connecte en tant que George Abitbol</p>
+    <p>Je me connecte en tant que Robert Dupont</p>
     <a href="{% url 'recap' %}" class="button">M’identifier à France Connect</a>
   <div>
 </section>
