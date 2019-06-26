@@ -11,26 +11,32 @@
   <div class="container">
     <a href="{% url 'mandat' %}" class="button new__user">Ajouter un usager</a>
     <h1>Bienvenue sur votre espace aidant, {{ user.first_name }} !</h1>
-    {% if mandat %}<div class="notification success">Le mandat a été créé avec succès !</div>{% endif %}
+    {% if messages %}
+      <div class="notification success">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+      </div>
+    {% endif %}
     <div class="current__users">
       <h2 class="subtitle">Les usagers avec qui vous avez un mandat en cours</h2>
-      {% if usagers %}
-      <!--input class="table__filter" type="text" placeholder="Tapez un nom pour retrouver un usager" /-->
+      {% if mandats %}
+      <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" disabled>
       <table class="table">
         <thead>
           <tr>
             <th>Nom</th>
-            <th>Email</th>
+            <th>Périmètre de la démarche</th>
           </tr>
         </thead>
         <tbody>
-          {% for usager in usagers %}
+          {% for mandat in mandats %}
           <tr>
             <td>
-              {{ usager.given_name }} {{ usager.family_name }}
+              {{ mandat.usager }}
             </td>
             <td>
-              {{ usager.email }}
+              {{ mandat.perimeter }}
             </td>
           </tr>
           {% endfor %}

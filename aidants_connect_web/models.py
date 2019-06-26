@@ -65,5 +65,3 @@ class Mandat(models.Model):
     perimeter = models.ForeignKey(Demarche, on_delete=models.CASCADE, default=1)
     creation_date = models.DateTimeField(default=timezone.now)
     perimeter_other = models.TextField(blank=True)
-    personal_data = models.BooleanField(default=False)
-    brief = models.BooleanField(default=False)

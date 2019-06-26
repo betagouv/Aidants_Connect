@@ -57,7 +57,7 @@ class UsagerForm(forms.models.ModelForm):
 class MandatForm(forms.models.ModelForm):
     class Meta:
         model = Mandat
-        fields = ("perimeter", "perimeter_other", "personal_data", "brief")
+        fields = ("perimeter", "perimeter_other")
         labels = {
             "perimeter": "Je souhaite :",
             "perimeter_other": "Si autre, préciser la nature de la démarche :",
@@ -69,11 +69,23 @@ class MandatForm(forms.models.ModelForm):
         error_messages = {
             "perimeter": {
                 "required": "Le périmètre de la démarche n’a pas été renseigné."
-            },
-            "personal_data": {
-                "required": "Veuillez cocher le consentement à l’utilisation de vos données personnelles."
-            },
-            "brief": {
-                "required": "Veuillez confirmer que l’aidant vous a présenté le fonctionnement du service."
-            },
+            }
         }
+
+
+class RecapForm(forms.models.ModelForm):
+    class Meta:
+        model = Mandat
+        fields = ("perimeter", "perimeter_other")
+        widgets = {
+            "perimeter": forms.RadioSelect,
+            "perimeter_other": forms.Textarea(attrs={"rows": 2}),
+        }
+        error_messages = {
+            "perimeter": {
+                "required": "Le périmètre de la démarche n’a pas été renseigné."
+            }
+        }
+
+    personal_data = forms.BooleanField(required=True)
+    brief = forms.BooleanField(required=True)

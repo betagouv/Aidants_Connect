@@ -14,18 +14,15 @@
 </div>
 <section class="section section-grey">
   <div class="container">
-    <form method="post">
+    <form method="post" class="panel">
       {% if notification %}
         <div class="notification">{{ notification }}</div>
-      {% endif %}
-      {% if form.errors %}
-        <div class="notification">
-          {{ form.errors }}
-        </div>
       {% endif %}
       {% csrf_token %}
       <div class="form__group">
         <label>Je souhaite me faire accompagner pour :</label>
+        <input type="hidden" value="{{ form.perimeter.value }}" name="perimeter" id="id_perimeter"/>
+        <input type="hidden" value="{{ form.perimeter_other.value }}" name="perimeter_other" id="id_perimeter_other"/>
         <strong>{{ demarche }}{% if other %} - {{ other }}{% endif %}</strong>
       </div>
       <div class="form__group">
