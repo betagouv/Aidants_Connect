@@ -20,7 +20,7 @@
       {% endif %}
       {% csrf_token %}
       <div class="form__group">
-        <label>Je souhaite me faire accompagner pour :</label>
+        <label>Je, <strong>{{ usager }}</strong>, souhaite me faire accompagner pour :</label>
         <input type="hidden" value="{{ form.perimeter.value }}" name="perimeter" id="id_perimeter"/>
         <input type="hidden" value="{{ form.perimeter_other.value }}" name="perimeter_other" id="id_perimeter_other"/>
         <strong>{{ demarche }}{% if other %} - {{ other }}{% endif %}</strong>
@@ -30,11 +30,11 @@
           <legend>En signant ce mandat, je confirme que :</legend>
           <div class="checkbox__group">
             {{ form.personal_data }}
-            <label class="label-inline" for="id_personal_data">J’autorise {{ user.first_name }} {{ user.last_name }} à utiliser mes données à caractère personnel.</label>
+            <label class="label-inline" for="id_personal_data">J’autorise <strong>{{ user.first_name }} {{ user.last_name }}</strong> à utiliser mes données à caractère personnel.</label>
           </div>
           <div class="checkbox__group">
             {{ form.brief }}
-            <label class="label-inline" for="id_brief">Je confime que {{ user.first_name }} {{ user.last_name }} m’a rappelé l’objet de l’intervention, la raison pour laquelle mes informations sont collectées et leur utilité ; l’existence de droits sur ses données (accès, rectification, suppression, etc.) et la possibilité de retirer mon consentement à tout moment.</label>
+            <label class="label-inline" for="id_brief">Je confime que <strong>{{ user.first_name }} {{ user.last_name }}</strong> m’a rappelé l’objet de l’intervention, la raison pour laquelle mes informations sont collectées et leur utilité ; l’existence de droits sur ses données (accès, rectification, suppression, etc.) et la possibilité de retirer mon consentement à tout moment.</label>
           </div>
         </fieldset>
       </div>

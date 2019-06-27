@@ -73,6 +73,11 @@ class MandatForm(forms.models.ModelForm):
         }
 
 
+class FCForm(forms.Form):
+    given_name = forms.CharField(required=True, label="Prénom")
+    family_name = forms.CharField(required=True, label="Nom de famille")
+
+
 class RecapForm(forms.models.ModelForm):
     class Meta:
         model = Mandat

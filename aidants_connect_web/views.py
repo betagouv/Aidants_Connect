@@ -28,7 +28,7 @@ from aidants_connect_web.models import (
     Demarche,
     CONNECTION_EXPIRATION_TIME,
 )
-from aidants_connect_web.forms import UsagerForm, MandatForm, RecapForm
+from aidants_connect_web.forms import UsagerForm, MandatForm, RecapForm, FCForm
 
 
 logging.basicConfig(level=logging.INFO)
@@ -62,69 +62,6 @@ def dashboard(request):
 
 
 @login_required
-def recap(request):
-    user = User.objects.get(id=request.user.id)
-
-    serializer = MandatSerializer(data=request.session.get("mandat"))
-    serializer.is_valid()
-
-    mandat = serializer.validated_data
-
-    if request.method == "GET":
-        form = RecapForm(mandat)
-        log.info(mandat)
-        log.info(form)
-        return render(
-            request,
-            "aidants_connect_web/mandat/recap.html",
-            {
-                "user": user,
-                "form": form,
-                "demarche": mandat["perimeter"],
-                "other": mandat["perimeter_other"],
-            },
-        )
-
-    else:
-        form = RecapForm(request.POST)
-
-        if form.is_valid():
-            mandat = form.save(commit=False)
-            log.info(user)
-            mandat.aidant = user
-
-            usager = Usager.objects.create(
-                given_name="Robert",
-                family_name="Dupont",
-                birthdate=date(1945, 10, 20),
-                gender="M",
-                birthplace="84016",
-                birthcountry="99100",
-                email="user@test.fr",
-            )
-            mandat.usager = usager
-
-            mandat.save()
-            messages.success(request, "Le mandat a été créé avec succès !")
-
-            return redirect("dashboard")
-
-        else:
-            return render(
-                request,
-                "aidants_connect_web/mandat/recap.html",
-                {"user": user, "form": form},
-            )
-
-        # return redirect("dashboard", mandat=1)
-
-
-@login_required
-def france_connect(request):
-    return render(request, "aidants_connect_web/mandat/france_connect.html")
-
-
-@login_required
 def mandat(request):
     user = User.objects.get(id=request.user.id)
     form = MandatForm()
@@ -140,11 +77,8 @@ def mandat(request):
         form = MandatForm(request.POST)
 
         if form.is_valid():
-            try:
-                request.session["mandat"] = MandatSerializer(form.cleaned_data).data
-                log.info(request.session["mandat"])
-            except ObjectDoesNotExist:
-                log.info("No perimeter found")
+            request.session["mandat"] = MandatSerializer(form.cleaned_data).data
+            log.info(request.session["mandat"])
 
             # return redirect("fc_authorize", role="usager")
 
@@ -166,6 +100,91 @@ def mandat(request):
                 "aidants_connect_web/mandat/mandat.html",
                 {"user": user, "form": form},
             )
+
+
+@login_required
+def france_connect(request):
+
+    if request.method == "GET":
+        form = FCForm()
+
+        return render(
+            request, "aidants_connect_web/mandat/france_connect.html", {"form": form}
+        )
+    else:
+        form = FCForm(request.POST)
+        if form.is_valid():
+            request.session["usager"] = {
+                "given_name": form.cleaned_data["given_name"],
+                "family_name": form.cleaned_data["family_name"],
+            }
+            return redirect("recap")
+        else:
+            return render(
+                request,
+                "aidants_connect_web/mandat/france_connect.html",
+                {"form": form},
+            )
+
+
+@login_required
+def recap(request):
+    user = User.objects.get(id=request.user.id)
+    log.info(request.session.get("usager"))
+    usager = Usager(
+        given_name=request.session.get("usager")["given_name"],
+        family_name=request.session.get("usager")["family_name"],
+        birthdate=date(1945, 10, 20),
+        gender="M",
+        birthplace="84016",
+        birthcountry="99100",
+        email="user@test.fr",
+    )
+
+    serializer = MandatSerializer(data=request.session.get("mandat"))
+    serializer.is_valid()
+
+    mandat = serializer.validated_data
+
+    if request.method == "GET":
+        form = RecapForm(mandat)
+
+        return render(
+            request,
+            "aidants_connect_web/mandat/recap.html",
+            {
+                "user": user,
+                "usager": usager,
+                "form": form,
+                "demarche": mandat["perimeter"],
+                "other": mandat["perimeter_other"],
+            },
+        )
+
+    else:
+        form = RecapForm(request.POST)
+
+        if form.is_valid():
+            mandat = form.save(commit=False)
+            log.info(user)
+            mandat.aidant = user
+
+            usager.save()
+            mandat.usager = usager
+
+            mandat.save()
+            messages.success(request, "Le mandat a été créé avec succès !")
+
+            return redirect("dashboard")
+
+        else:
+            return render(
+                request,
+                "aidants_connect_web/mandat/recap.html",
+                {"user": user, "form": form},
+            )
+
+        # return redirect("dashboard", mandat=1)
 
 
 @login_required
