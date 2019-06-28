@@ -26,6 +26,7 @@ from aidants_connect_web.models import (
     Mandat,
     Usager,
     Demarche,
+    DemarcheCategory,
     CONNECTION_EXPIRATION_TIME,
 )
 from aidants_connect_web.forms import UsagerForm, MandatForm, RecapForm, FCForm
@@ -65,12 +66,20 @@ def dashboard(request):
 def mandat(request):
     user = User.objects.get(id=request.user.id)
     form = MandatForm()
+    categories = DemarcheCategory.objects.all()
+    demarches = Demarche.objects.all()
 
     if request.method == "GET":
+        log.info(form)
         return render(
             request,
             "aidants_connect_web/mandat/mandat.html",
-            {"user": user, "form": form},
+            {
+                "user": user,
+                "form": form,
+                "categories": categories,
+                "demarches": demarches,
+            },
         )
 
     else:
@@ -82,23 +91,18 @@ def mandat(request):
 
             # return redirect("fc_authorize", role="usager")
 
-            # return render(
-            #     request,
-            #     "aidants_connect_web/mandat/mandat.html",
-            #     {
-            #         "user": user,
-            #         "form": form,
-            #         "notification": "Le formulaire a été rempli avec succès.",
-            #     },
-            # )
-
             return redirect("france_connect")
         else:
             log.info("invalid form")
             return render(
                 request,
                 "aidants_connect_web/mandat/mandat.html",
-                {"user": user, "form": form},
+                {
+                    "user": user,
+                    "form": form,
+                    "categories": categories,
+                    "demarches": demarches,
+                },
             )
 
 
@@ -130,7 +134,6 @@ def france_connect(request):
 @login_required
 def recap(request):
     user = User.objects.get(id=request.user.id)
-    log.info(request.session.get("usager"))
     usager = Usager(
         given_name=request.session.get("usager")["given_name"],
         family_name=request.session.get("usager")["family_name"],
@@ -157,7 +160,7 @@ def recap(request):
                 "usager": usager,
                 "form": form,
                 "demarche": mandat["perimeter"],
-                "other": mandat["perimeter_other"],
+                "duration": mandat["duration"],
             },
         )
 
@@ -181,7 +184,13 @@ def recap(request):
             return render(
                 request,
                 "aidants_connect_web/mandat/recap.html",
-                {"user": user, "form": form},
+                {
+                    "user": user,
+                    "usager": usager,
+                    "form": form,
+                    "demarche": mandat["perimeter"],
+                    "duration": mandat["duration"],
+                },
             )
 
         # return redirect("dashboard", mandat=1)

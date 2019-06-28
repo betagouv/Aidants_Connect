@@ -11,11 +11,15 @@
   <div class="container container-small">
     <div class="information">
       <h1>Signature d’un mandat de délégation</h1>
-      <p>Bonjour {{ user.first_name }}, vous accompagnez une personne pour la première fois ?
-      Une personne que vous avez déjà accompagnée vient pour effectuer une nouvelle démarche ?
-      </p>
-      <p>
-      Informez la personne des conditions d’un mandat de délégation, et invitez-la à signer ci-dessous</p>
+      <h2 class="subtitle">Mentions à lire à la personne accompagnée</h2>
+      <p><strong>{{ user }}</strong> s’engage à :</p>
+      <ul>
+        <li>ne collecter et conserver que les informations strictement nécessaires aux démarches listées,</li>
+        <li>n’utiliser les informations fournies que pour les démarches listées. Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et demander l’autorisation,</li>
+        <li>mettre à jour puis à supprimer l’ensemble des informations relatives à l’usager lorsqu’elles ne sont plus nécessaires à la réalisation des démarches,</li>
+        <li>respecter la confidentialité des informations fournies,</li>
+        <li>prendre toutes les précautions pour assurer la sécurité des données personnelles transmises.</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -33,12 +37,28 @@
       {% endif %}
       {% csrf_token %}
       <div class="form__group">
-        <label>{{ form.perimeter.label_tag }}</label>
         {{ form.perimeter }}
-        <div class="other__group">
+
+        <!--{% for category in categories %}
+          <h3 class="subtitle">{{ category }}</h3>
+          <ul>
+            {% for choice in form.perimeter.field.choices %}
+              {% if choice.category == category %}
+                <li>
+                  <input type="radio" name="perimeter_{{choice.id}}" id="id_perimeter_{{choice.id}}" value="{{choice.id}}" />
+                  <label class="label-inline" for="id_perimeter_{{choice.id}}">{{ choice }}</label>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endfor%}div class="other__group">
           <label>{{ form.perimeter_other.label_tag }}</label>
           {{ form.perimeter_other }}
-        </div>
+        </div-->
+      </div>
+      <div class="form__group">
+        {{ form.duration.label_tag }}
+        {{ form.duration }}
       </div>
       <div class="form__group">
         <input type="submit" class="fc_button" value="S’identifier avec France Connect" />

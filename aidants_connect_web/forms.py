@@ -1,5 +1,5 @@
 from django import forms
-from aidants_connect_web.models import Usager, Mandat
+from aidants_connect_web.models import Usager, Mandat, Demarche
 
 
 class UsagerForm(forms.models.ModelForm):
@@ -55,21 +55,19 @@ class UsagerForm(forms.models.ModelForm):
 
 
 class MandatForm(forms.models.ModelForm):
+    # perimeter = forms.ChoiceField(
+    #     widget=forms.RadioSelect, choices=Demarche.objects.all(), initial=1
+    # )
     class Meta:
         model = Mandat
-        fields = ("perimeter", "perimeter_other")
-        labels = {
-            "perimeter": "Je souhaite :",
-            "perimeter_other": "Si autre, préciser la nature de la démarche :",
-        }
-        widgets = {
-            "perimeter": forms.RadioSelect,
-            "perimeter_other": forms.Textarea(attrs={"rows": 2}),
-        }
+        fields = ("perimeter", "duration")
+        labels = {"perimeter": "Je souhaite :", "duration": "Durée du mandat (en mois)"}
+        widgets = {"perimeter": forms.RadioSelect, "duration": forms.TextInput()}
         error_messages = {
             "perimeter": {
                 "required": "Le périmètre de la démarche n’a pas été renseigné."
-            }
+            },
+            "duration": {"required": "Veuillez indiquer la durée du mandat."},
         }
 
 
@@ -81,11 +79,8 @@ class FCForm(forms.Form):
 class RecapForm(forms.models.ModelForm):
     class Meta:
         model = Mandat
-        fields = ("perimeter", "perimeter_other")
-        widgets = {
-            "perimeter": forms.RadioSelect,
-            "perimeter_other": forms.Textarea(attrs={"rows": 2}),
-        }
+        fields = ("perimeter", "duration")
+        widgets = {"perimeter": forms.RadioSelect, "duration": forms.TextInput()}
         error_messages = {
             "perimeter": {
                 "required": "Le périmètre de la démarche n’a pas été renseigné."

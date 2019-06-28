@@ -25,6 +25,9 @@ class Connection(models.Model):
 class User(AbstractUser):
     pass
 
+    def __str__(self):
+        return self.first_name + " " + self.last_name
+
 
 class Usager(models.Model):
     given_name = models.TextField(blank=False)
@@ -48,11 +51,23 @@ class Usager(models.Model):
         return self.given_name + " " + self.family_name
 
 
-class Demarche(models.Model):
+class DemarcheCategory(models.Model):
     class Meta:
         ordering = ["-weight"]
 
+    title = models.CharField(max_length=100, blank=False, default=None)
+    weight = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+
+
+class Demarche(models.Model):
+    class Meta:
+        ordering = ["category", "-weight"]
+
     title = models.CharField(max_length=100, blank=False)
+    category = models.ForeignKey(DemarcheCategory, on_delete=models.CASCADE, default=0)
     weight = models.IntegerField(default=0)
 
     def __str__(self):
@@ -60,8 +75,14 @@ class Demarche(models.Model):
 
 
 class Mandat(models.Model):
+    class Meta:
+        ordering = ["-id"]
+
     aidant = models.ForeignKey(User, on_delete=models.CASCADE, default=0)
     usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
-    perimeter = models.ForeignKey(Demarche, on_delete=models.CASCADE, default=1)
+    perimeter = models.ForeignKey(
+        Demarche, on_delete=models.CASCADE, default=0, blank=False
+    )
     creation_date = models.DateTimeField(default=timezone.now)
+    duration = models.IntegerField(default=3)
     perimeter_other = models.TextField(blank=True)

@@ -27,6 +27,8 @@
           <tr>
             <th>Nom</th>
             <th>Périmètre de la démarche</th>
+            <th>Date de début</th>
+            <th>Durée</th>
           </tr>
         </thead>
         <tbody>
@@ -37,6 +39,12 @@
             </td>
             <td>
               {{ mandat.perimeter }}
+            </td>
+            <td>
+              {{ mandat.creation_date }}
+            </td>
+            <td>
+              {{ mandat.duration }} mois
             </td>
           </tr>
           {% endfor %}
