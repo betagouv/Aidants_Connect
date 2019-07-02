@@ -1,6 +1,5 @@
 from ...models import Demarche, DemarcheCategory
-from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
+from django.core.management.base import BaseCommand
 
 
 def create_categories():

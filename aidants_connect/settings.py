@@ -35,13 +35,12 @@ if os.getenv("DEBUG") == "True":
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = [os.environ["HOST"], "aidantsconnect.beta.gouv.fr"]
+ALLOWED_HOSTS = [os.environ["HOST"]]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    "rest_framework",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

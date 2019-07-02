@@ -1,12 +1,5 @@
 from django.test import TestCase
-from aidants_connect_web.models import (
-    Connection,
-    User,
-    Usager,
-    Demarche,
-    DemarcheCategory,
-    Mandat,
-)
+from aidants_connect_web.models import Connection, User, Usager, Mandat
 from datetime import date
 
 
@@ -68,33 +61,6 @@ class UsagerModelTest(TestCase):
         self.assertEqual(second_saved_item.family_name, "TEST Family Name éèà")
 
 
-class DemarcheModelTest(TestCase):
-    def test_saving_and_retrieving_demarche(self):
-        first_demarche = Demarche()
-        first_demarche.title = "Renouvellement de carte grise"
-        first_demarche.category = DemarcheCategory.objects.create(
-            id=0, title="Transport"
-        )
-        first_demarche.weight = 45
-        first_demarche.save()
-
-        second_demarche = Demarche()
-        second_demarche.title = "Déclaration de revenus"
-        first_demarche.category = DemarcheCategory.objects.create(id=9, title="Impôts")
-        second_demarche.weight = 100
-        second_demarche.save()
-
-        saved_items = Demarche.objects.all()
-        self.assertEqual(saved_items.count(), 2)
-
-        first_saved_item = saved_items[0]
-        second_saved_item = saved_items[1]
-
-        # demarches are ordered by weight
-        self.assertEqual(first_saved_item.title, "Déclaration de revenus")
-        self.assertEqual(second_saved_item.weight, 45)
-
-
 class MandatModelTest(TestCase):
     def test_saving_and_retrieving_mandat(self):
         first_mandat = Mandat()
@@ -109,11 +75,7 @@ class MandatModelTest(TestCase):
             birthcountry=99100,
             email="homer@simpson.com",
         )
-        first_mandat.perimeter = Demarche.objects.create(
-            title="Carte grise",
-            category=DemarcheCategory.objects.create(id=0, title="Transport"),
-        )
-        first_mandat.perimeter_other = ""
+        first_mandat.perimeter = "Carte grise"
         first_mandat.duration = 3
         first_mandat.save()
 
@@ -128,11 +90,7 @@ class MandatModelTest(TestCase):
             birthcountry=99100,
             email="ned@flanders.com",
         )
-        second_mandat.perimeter = Demarche.objects.create(
-            title="Revenus",
-            category=DemarcheCategory.objects.create(id=9, title="Impôts"),
-        )
-        second_mandat.perimeter_other = "Une démarche très compliquée"
+        second_mandat.perimeter = Revenus
         second_mandat.duration = 6
         second_mandat.save()
 

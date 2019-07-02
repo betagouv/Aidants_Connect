@@ -39,22 +39,6 @@
       <div class="form__group">
         {{ form.perimeter }}
 
-        <!--{% for category in categories %}
-          <h3 class="subtitle">{{ category }}</h3>
-          <ul>
-            {% for choice in form.perimeter.field.choices %}
-              {% if choice.category == category %}
-                <li>
-                  <input type="radio" name="perimeter_{{choice.id}}" id="id_perimeter_{{choice.id}}" value="{{choice.id}}" />
-                  <label class="label-inline" for="id_perimeter_{{choice.id}}">{{ choice }}</label>
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        {% endfor%}div class="other__group">
-          <label>{{ form.perimeter_other.label_tag }}</label>
-          {{ form.perimeter_other }}
-        </div-->
       </div>
       <div class="form__group">
         {{ form.duration.label_tag }}

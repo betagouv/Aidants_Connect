@@ -24,7 +24,12 @@
         <p><strong>{{ usager }}</strong> autorise <strong>{{ user }}</strong>,  <em>aidant.e numérique</em> au sein de <em>nom de l’organisme</em> à réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne suivantes :</p>
         <input type="hidden" value="{{ form.perimeter.value }}" name="perimeter" id="id_perimeter"/>
         <input type="hidden" value="{{ form.duration.value }}" name="duration" id="id_duration"/>
-        <strong>{{ demarche }}{% if other %} - {{ other }}{% endif %}</strong> pour une durée de : <strong>{{ duration }} mois</strong>
+        <ul>
+          {% for demarche in demarches %}
+          <li>{{ demarche }}</li>
+          {% endfor %}
+        </ul>
+        pour une durée de : <strong>{{ duration }} mois</strong>
       </div>
       <div class="form__group">
         <fieldset>

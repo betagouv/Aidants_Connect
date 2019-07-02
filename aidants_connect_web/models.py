@@ -51,38 +51,12 @@ class Usager(models.Model):
         return self.given_name + " " + self.family_name
 
 
-class DemarcheCategory(models.Model):
-    class Meta:
-        ordering = ["-weight"]
-
-    title = models.CharField(max_length=100, blank=False, default=None)
-    weight = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.title
-
-
-class Demarche(models.Model):
-    class Meta:
-        ordering = ["category", "-weight"]
-
-    title = models.CharField(max_length=100, blank=False)
-    category = models.ForeignKey(DemarcheCategory, on_delete=models.CASCADE, default=0)
-    weight = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.title
-
-
 class Mandat(models.Model):
     class Meta:
         ordering = ["-id"]
 
     aidant = models.ForeignKey(User, on_delete=models.CASCADE, default=0)
     usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
-    perimeter = models.ForeignKey(
-        Demarche, on_delete=models.CASCADE, default=0, blank=False
-    )
+    perimeter = models.CharField(blank=False, max_length=100)
     creation_date = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(default=3)
-    perimeter_other = models.TextField(blank=True)

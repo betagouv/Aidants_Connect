@@ -16,7 +16,6 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib.sessions.backends.db import SessionStore
 from django.core import serializers
-from .serializers import MandatSerializer
 from django.contrib import messages
 from django.contrib.messages import get_messages
 
@@ -25,8 +24,6 @@ from aidants_connect_web.models import (
     User,
     Mandat,
     Usager,
-    Demarche,
-    DemarcheCategory,
     CONNECTION_EXPIRATION_TIME,
 )
 from aidants_connect_web.forms import UsagerForm, MandatForm, RecapForm, FCForm
@@ -64,29 +61,23 @@ def dashboard(request):
 
 @login_required
 def mandat(request):
+
     user = User.objects.get(id=request.user.id)
     form = MandatForm()
-    categories = DemarcheCategory.objects.all()
-    demarches = Demarche.objects.all()
 
     if request.method == "GET":
         log.info(form)
         return render(
             request,
             "aidants_connect_web/mandat/mandat.html",
-            {
-                "user": user,
-                "form": form,
-                "categories": categories,
-                "demarches": demarches,
-            },
+            {"user": user, "form": form},
         )
 
     else:
         form = MandatForm(request.POST)
 
         if form.is_valid():
-            request.session["mandat"] = MandatSerializer(form.cleaned_data).data
+            request.session["mandat"] = form.cleaned_data
             log.info(request.session["mandat"])
 
             # return redirect("fc_authorize", role="usager")
@@ -97,12 +88,7 @@ def mandat(request):
             return render(
                 request,
                 "aidants_connect_web/mandat/mandat.html",
-                {
-                    "user": user,
-                    "form": form,
-                    "categories": categories,
-                    "demarches": demarches,
-                },
+                {"user": user, "form": form},
             )
 
 
@@ -144,10 +130,8 @@ def recap(request):
         email="user@test.fr",
     )
 
-    serializer = MandatSerializer(data=request.session.get("mandat"))
-    serializer.is_valid()
-
-    mandat = serializer.validated_data
+    mandat = request.session.get("mandat")
+    log.info(mandat)
 
     if request.method == "GET":
         form = RecapForm(mandat)
@@ -159,7 +143,7 @@ def recap(request):
                 "user": user,
                 "usager": usager,
                 "form": form,
-                "demarche": mandat["perimeter"],
+                "demarches": mandat["perimeter"],
                 "duration": mandat["duration"],
             },
         )
