@@ -38,7 +38,11 @@
               {{ mandat.usager }}
             </td>
             <td>
-              {{ mandat.perimeter }}
+              <ul>
+                {% for perimeter in mandat.perimeter_names %}
+                  <li>{{ perimeter }}</li>
+                {% endfor %}
+              </ul>
             </td>
             <td>
               {{ mandat.creation_date }}

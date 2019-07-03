@@ -1,91 +1,6 @@
 from django import forms
 from aidants_connect_web.models import Usager, Mandat
-
-DEMARCHES = (
-    (
-        "Logement",
-        [
-            ("chg_adresse", "Signaler un changement d’adresse"),
-            ("alloc_logement", "Demander une allocation logement"),
-            ("paiement_fact", "Demander une aide au paiement des factures"),
-            (
-                "renov_energ",
-                "Demander une aide pour la rénovation énergétique de mon logement",
-            ),
-            ("heberg_social", "Hébergement social"),
-            ("ehpad", "Ehpad"),
-        ],
-    ),
-    (
-        "Transport",
-        [
-            ("carte_grise", "Carte grise"),
-            ("permis_conduire", "Permis de conduire"),
-            ("infrac_route", "Infractions routières"),
-        ],
-    ),
-    (
-        "Santé",
-        [
-            ("affil_rembours_ss", "Affiliation ou remboursement sécurité sociale"),
-            ("hospitalisation", "Hospitalisation"),
-            ("soins_domicile", "Soins à domicile"),
-            ("invalid_tempo", "Invalidité temporaire"),
-            ("pension_invalid", "Pension d’invalidité"),
-        ],
-    ),
-    (
-        "Handicap",
-        [
-            ("alloc_handicap", "Allocations (AAH, AEEH, PCH)"),
-            ("cmuc", "Couverture maladie universelle complémentaire (CMU-C)"),
-            ("acs", "Aide au paiement d’une complémentaire santé (ACS)"),
-        ],
-    ),
-    (
-        "Aides sociales",
-        [
-            ("rsa", "Revenu de solidarité active (RSA)"),
-            ("apa", "Allocation personnalisée d’autonomie (APA)"),
-            ("aspa", "Allocation de solidarité aux personnes âgées (ASPA)"),
-            ("asi", "Allocation supplémentaire d’invalidité (ASI)"),
-            ("ass", "Allocation de solidarité spécifique (ASS)"),
-            ("prime_activite", "Prime d’activité"),
-            ("chq_energie", "Chèque énergie"),
-            ("alloc_famille", "Allocation familiale"),
-        ],
-    ),
-    (
-        "Famille",
-        [
-            ("naissance", "Naissance"),
-            ("adoption", "Adoption"),
-            ("pacs", "Pacs"),
-            ("mariage", "Mariage"),
-            ("divorce", "Divorce"),
-        ],
-    ),
-    (
-        "Papiers",
-        [
-            ("cni", "Carte d’identité"),
-            ("passeport", "Passeport"),
-            ("certificat_docs", "Certificat, copie, légalisation de document"),
-            ("livret_famille", "Livret de famille"),
-            ("chg_nom", "Changement de nom ou prénom"),
-            ("chg_sexe", "Changement de sexe"),
-        ],
-    ),
-    ("Elections", [("inscrpt_listes", "S’inscrire sur les listes électorales")]),
-    (
-        "Impôts",
-        [
-            ("decl_revenus", "Déclaration de revenus"),
-            ("impots_pro", "Impôts professionnels"),
-            ("taxe_habit", "Taxe d’habitation"),
-        ],
-    ),
-)
+from django.conf import settings
 
 
 class UsagerForm(forms.models.ModelForm):
@@ -141,9 +56,8 @@ class UsagerForm(forms.models.ModelForm):
 
 
 class MandatForm(forms.Form):
-
     perimeter = forms.MultipleChoiceField(
-        choices=DEMARCHES, widget=forms.CheckboxSelectMultiple
+        choices=settings.DEMARCHES, widget=forms.CheckboxSelectMultiple
     )
 
     duration = forms.CharField(required=True, initial=3)
@@ -152,12 +66,3 @@ class MandatForm(forms.Form):
 class FCForm(forms.Form):
     given_name = forms.CharField(required=True, label="Prénom")
     family_name = forms.CharField(required=True, label="Nom de famille")
-
-
-class RecapForm(forms.models.ModelForm):
-    class Meta:
-        model = Mandat
-        fields = ("perimeter", "duration")
-
-    personal_data = forms.BooleanField(required=True)
-    brief = forms.BooleanField(required=True)

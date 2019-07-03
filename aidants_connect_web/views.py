@@ -26,11 +26,23 @@ from aidants_connect_web.models import (
     Usager,
     CONNECTION_EXPIRATION_TIME,
 )
-from aidants_connect_web.forms import UsagerForm, MandatForm, RecapForm, FCForm
+from aidants_connect_web.forms import UsagerForm, MandatForm, FCForm
 
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
+
+
+def humanize_demarche_names(list_of_machine_names):
+    log.info(type(list_of_machine_names))
+    human_names = []
+    for p in list_of_machine_names:
+        log.info(p)
+        for category in settings.DEMARCHES:
+            for element in category[1]:
+                if element[0] == p:
+                    human_names.append(element[1])
+    return human_names
 
 
 def home_page(request):
@@ -49,8 +61,11 @@ def logout_page(request):
 @login_required
 def dashboard(request):
     messages = get_messages(request)
-    user = User.objects.get(id=request.user.id)
-    mandats = Mandat.objects.all().filter(aidant=request.user)
+    user = request.user
+    mandats = Mandat.objects.all().filter(aidant=request.user).order_by("creation_date")
+
+    for mandat in mandats:
+        mandat.perimeter_names = humanize_demarche_names(mandat.perimeter)
 
     return render(
         request,
@@ -134,7 +149,7 @@ def recap(request):
     log.info(mandat)
 
     if request.method == "GET":
-        form = RecapForm(mandat)
+        demarches = humanize_demarche_names(mandat["perimeter"])
 
         return render(
             request,
@@ -142,24 +157,23 @@ def recap(request):
             {
                 "user": user,
                 "usager": usager,
-                "form": form,
-                "demarches": mandat["perimeter"],
+                "demarches": demarches,
                 "duration": mandat["duration"],
             },
         )
 
     else:
-        form = RecapForm(request.POST)
+        form = request.POST
 
-        if form.is_valid():
-            mandat = form.save(commit=False)
-            log.info(user)
-            mandat.aidant = user
+        if form.get("personal_data") and form.get("brief"):
+            mandat["aidant"] = user
 
             usager.save()
-            mandat.usager = usager
+            mandat["usager"] = usager
 
-            mandat.save()
+            new_mandat = Mandat.objects.create(**mandat)
+            log.info(type(new_mandat.perimeter))
+
             messages.success(request, "Le mandat a été créé avec succès !")
 
             return redirect("dashboard")
@@ -171,9 +185,9 @@ def recap(request):
                 {
                     "user": user,
                     "usager": usager,
-                    "form": form,
                     "demarche": mandat["perimeter"],
                     "duration": mandat["duration"],
+                    "error": "Vous devez accepter les conditions de signature de mandat.",
                 },
             )
 

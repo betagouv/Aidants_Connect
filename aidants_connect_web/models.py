@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.postgres.fields import ArrayField
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -52,11 +53,9 @@ class Usager(models.Model):
 
 
 class Mandat(models.Model):
-    class Meta:
-        ordering = ["-id"]
 
     aidant = models.ForeignKey(User, on_delete=models.CASCADE, default=0)
     usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
-    perimeter = models.CharField(blank=False, max_length=100)
+    perimeter = ArrayField(models.CharField(blank=False, max_length=100))
     creation_date = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(default=3)
