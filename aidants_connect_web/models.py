@@ -23,10 +23,8 @@ class Connection(models.Model):
 
 
 class User(AbstractUser):
-    pass
-
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        return f"{self.first_name} {self.last_name}"
 
 
 class Usager(models.Model):
@@ -48,7 +46,7 @@ class Usager(models.Model):
     email = models.EmailField(blank=False)
 
     def __str__(self):
-        return self.given_name + " " + self.family_name
+        return f"{self.given_name} {self.family_name}"
 
 
 class Mandat(models.Model):
