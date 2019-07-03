@@ -10,7 +10,13 @@ from django.test import TestCase, override_settings
 from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 
-from aidants_connect_web.views import home_page, authorize, token, user_info
+from aidants_connect_web.views import (
+    home_page,
+    authorize,
+    token,
+    user_info,
+    logout_page,
+)
 from aidants_connect_web.forms import UsagerForm
 from aidants_connect_web.models import (
     Connection,
@@ -22,7 +28,7 @@ from aidants_connect_web.models import (
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
 
 
-class homePageTests(TestCase):
+class HomePageTests(TestCase):
     def test_root_url_triggers_the_homepage_view(self):
         found = resolve("/")
         self.assertEqual(found.func, home_page)
