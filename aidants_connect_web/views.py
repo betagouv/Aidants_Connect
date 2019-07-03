@@ -31,10 +31,8 @@ log = logging.getLogger()
 
 
 def humanize_demarche_names(list_of_machine_names):
-    log.info(type(list_of_machine_names))
     human_names = []
     for p in list_of_machine_names:
-        log.info(p)
         for category in settings.DEMARCHES:
             for element in category[1]:
                 if element[0] == p:
@@ -78,7 +76,6 @@ def mandat(request):
     form = MandatForm()
 
     if request.method == "GET":
-        log.info(form)
         return render(
             request,
             "aidants_connect_web/mandat/mandat.html",
@@ -91,11 +88,8 @@ def mandat(request):
         if form.is_valid():
             request.session["mandat"] = form.cleaned_data
 
-            # return redirect("fc_authorize", role="usager")
-
             return redirect("france_connect")
         else:
-            log.info("invalid form")
             return render(
                 request,
                 "aidants_connect_web/mandat/mandat.html",
@@ -185,8 +179,6 @@ def recap(request):
                     "error": "Vous devez accepter les conditions du mandat.",
                 },
             )
-
-        # return redirect("dashboard", mandat=1)
 
 
 @login_required
@@ -341,142 +333,3 @@ def user_info(request):
     usager["birthdate"] = str(birthdate)
 
     return JsonResponse(usager, safe=False)
-
-
-def fc_authorize(request, role="aidant"):
-
-    if role == "aidant":
-        redirect_url = "/switchboard/"
-    elif role == "usager":
-        redirect_url = "/identite_pivot/"
-    else:
-        raise Http404(f"{role} is not a compatible role")
-
-    state = token_urlsafe(16)
-    connexion = Connection(state=state, redirectUrl=redirect_url)
-    connexion.save()
-
-    log.info("setting fc state")
-    log.info(state)
-    fc_nonce = "customNonce11"
-    # The nounce is fixed for now as it doesn't seem to be used anywhere else.
-
-    fc_scopes = [
-        "given_name",
-        "family_name",
-        "preferred_username",
-        "birthdate",
-        "gender",
-        "birthplace",
-        "birthcountry",
-    ]
-
-    parameters = (
-        f"response_type=code"
-        f"&client_id={fc_id}"
-        f"&redirect_uri={fc_callback_uri}"
-        f"&scope={'openid' + ''.join(['%20' + scope for scope in fc_scopes])}"
-        f"&state={state}"
-        f"&nonce={fc_nonce}"
-    )
-
-    authorize_url = f"{fc_base}/authorize?{parameters}"
-    log.info("auth url")
-    log.info(authorize_url)
-    return redirect(authorize_url)
-
-
-def fc_callback(request):
-    code = request.GET.get("code")
-    state = request.GET.get("state")
-
-    try:
-        connection_state = Connection.objects.get(state=state)
-    except Connection.DoesNotExist:
-        log.info("checking connection db")
-        log.info(Connection.objects.all())
-        log.info(state)
-        connection_state = None
-
-    log.info("Getting state after callback")
-    log.info(connection_state)
-
-    if not connection_state:
-        return HttpResponseForbidden()
-    if connection_state.expiresOn < timezone.now():
-        return HttpResponseForbidden()
-
-    token_url = f"{fc_base}/token"
-    payload = {
-        "grant_type": "authorization_code",
-        "redirect_uri": fc_callback_uri,
-        "client_id": fc_id,
-        "client_secret": fc_secret,
-        "code": code,
-    }
-
-    headers = {"Accept": "application/json"}
-    request_for_token = python_request.post(token_url, data=payload, headers=headers)
-    content = request_for_token.json()
-
-    log.info("fc_token_content")
-    log.info(content)
-    fc_access_token = content.get("access_token")
-
-    fc_id_token = content.get("id_token")
-    log.info("fc_id_token")
-    log.info(fc_id_token)
-    # TODO understand why id_token is a string and not an object
-
-    request.session["user_info"] = python_request.get(
-        f"{fc_base}/userinfo?schema=openid",
-        headers={"Authorization": f"Bearer {fc_access_token}"},
-    ).json()
-
-    logout_base = f"{fc_base}/logout"
-    logout_id_token = f"id_token_hint={fc_id_token}"
-    logout_state = f"state={state}"
-    logout_redirect = f"post_logout_redirect_uri=http://localhost:1337/logout-callback"
-    logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
-    log.info("logout redirect")
-    log.info(logout_url)
-
-    return redirect(logout_url)
-
-
-def logout_callback(request):
-    state = request.GET.get("state")
-
-    try:
-        this_connection = Connection.objects.get(state=state)
-    except Connection.DoesNotExist:
-        log.info("checking connection db")
-        log.info(connections=Connection.objects.all())
-        log.info(state)
-        this_connection = None
-
-    log.info("Getting state after logout_callback")
-    log.info(this_connection)
-    if not this_connection:
-        return HttpResponseForbidden()
-
-    return redirect(this_connection.redirectUrl)
-
-
-def switchboard(request):
-
-    user_info = request.session.get("user_info")
-
-    if user_info is None:
-        return render(request, "aidant_connect_web/connection.html")
-
-    return render(
-        request, "aidant_connect_web/switchboard.html", {"user_info": user_info}
-    )
-
-
-def identite_pivot(request):
-    id = request.session["user_info"]
-    # phrase = "{" + ", ".join([key + ": " + value for key, value in id.items()]) + "}"
-
-    return JsonResponse(id)
