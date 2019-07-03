@@ -14,8 +14,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.conf import settings
 from django.utils import timezone
-from django.contrib.sessions.backends.db import SessionStore
-from django.core import serializers
 from django.contrib import messages
 from django.contrib.messages import get_messages
 
@@ -77,7 +75,7 @@ def dashboard(request):
 @login_required
 def mandat(request):
 
-    user = User.objects.get(id=request.user.id)
+    user = request.user
     form = MandatForm()
 
     if request.method == "GET":
@@ -93,7 +91,6 @@ def mandat(request):
 
         if form.is_valid():
             request.session["mandat"] = form.cleaned_data
-            log.info(request.session["mandat"])
 
             # return redirect("fc_authorize", role="usager")
 
@@ -134,7 +131,7 @@ def france_connect(request):
 
 @login_required
 def recap(request):
-    user = User.objects.get(id=request.user.id)
+    user = request.user
     usager = Usager(
         given_name=request.session.get("usager")["given_name"],
         family_name=request.session.get("usager")["family_name"],
@@ -146,7 +143,6 @@ def recap(request):
     )
 
     mandat = request.session.get("mandat")
-    log.info(mandat)
 
     if request.method == "GET":
         demarches = humanize_demarche_names(mandat["perimeter"])

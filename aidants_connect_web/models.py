@@ -20,7 +20,6 @@ class Connection(models.Model):
     expiresOn = models.DateTimeField(default=default_expiration_date)
     sub_usager = models.TextField(default="No sub Provided")
     access_token = models.TextField(default="No token Provided")
-    redirectUrl = models.CharField(max_length=100)
 
 
 class User(AbstractUser):
