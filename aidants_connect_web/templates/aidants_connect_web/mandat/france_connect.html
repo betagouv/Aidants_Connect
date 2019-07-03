@@ -1,0 +1,35 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/mandat.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-small">
+    <form method="post">
+      {% csrf_token %}
+      <div class="notification">Cette page temporaire se substitue à la connexion à France Connect</div>
+      <h1>Connexion à France Connect</h1>
+      {% if form.errors %}
+        <div class="notification">
+          {{ form.errors }}
+        </div>
+      {% endif %}
+      <div class="form__group">
+        <label>{{ form.given_name.label_tag }}</label>
+        {{ form.given_name }}
+      </div>
+      <div class="form__group">
+        <label>{{ form.family_name.label_tag }}</label>
+        {{ form.family_name }}
+      </div>
+      <div class="form__group">
+        <input type="submit" value="M’identifier à France Connect" class="button" />
+      </div>
+    </form>
+  <div>
+</section>
+{% endblock content %}

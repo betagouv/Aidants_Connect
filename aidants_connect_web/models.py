@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.postgres.fields import ArrayField
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -22,7 +23,8 @@ class Connection(models.Model):
 
 
 class User(AbstractUser):
-    pass
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
 
 class Usager(models.Model):
@@ -42,3 +44,15 @@ class Usager(models.Model):
     )
     sub = models.TextField(default="No Sub yet")
     email = models.EmailField(blank=False)
+
+    def __str__(self):
+        return f"{self.given_name} {self.family_name}"
+
+
+class Mandat(models.Model):
+
+    aidant = models.ForeignKey(User, on_delete=models.CASCADE, default=0)
+    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
+    perimeter = ArrayField(models.CharField(blank=False, max_length=100))
+    creation_date = models.DateTimeField(default=timezone.now)
+    duration = models.IntegerField(default=3)

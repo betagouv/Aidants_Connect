@@ -1,0 +1,53 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/mandat.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-small">
+    <div class="information">
+      <h1>Signature d’un mandat de délégation</h1>
+      <h2 class="subtitle">Mentions à lire à la personne accompagnée</h2>
+      <p><strong>{{ user }}</strong> s’engage à :</p>
+      <ul>
+        <li>ne collecter et conserver que les informations strictement nécessaires aux démarches listées,</li>
+        <li>n’utiliser les informations fournies que pour les démarches listées. Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et demander l’autorisation,</li>
+        <li>mettre à jour puis à supprimer l’ensemble des informations relatives à l’usager lorsqu’elles ne sont plus nécessaires à la réalisation des démarches,</li>
+        <li>respecter la confidentialité des informations fournies,</li>
+        <li>prendre toutes les précautions pour assurer la sécurité des données personnelles transmises.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="section section-grey">
+  <div class="container container-small">
+    <form method="post">
+      {% if notification %}
+        <div class="notification">{{ notification }}</div>
+      {% endif %}
+      <h2>Choisir la démarche</h2>
+      {% if form.errors %}
+        <div class="notification">
+          {{ form.errors }}
+        </div>
+      {% endif %}
+      {% csrf_token %}
+      <div class="form__group">
+        {{ form.perimeter }}
+
+      </div>
+      <div class="form__group">
+        {{ form.duration.label_tag }}
+        {{ form.duration }}
+      </div>
+      <div class="form__group">
+        <input type="submit" class="fc_button" value="S’identifier avec France Connect" />
+      </div>
+    </form>
+  <div>
+</section>
+{% endblock content %}

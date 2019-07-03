@@ -2,23 +2,42 @@ import logging
 import jwt
 import time
 import re
+from datetime import date
 from secrets import token_urlsafe
 
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.conf import settings
 from django.utils import timezone
+from django.contrib import messages
+from django.contrib.messages import get_messages
 
-from aidants_connect_web.models import Connection, Usager, CONNECTION_EXPIRATION_TIME
-from aidants_connect_web.forms import UsagerForm
+from aidants_connect_web.models import (
+    Connection,
+    Mandat,
+    Usager,
+    CONNECTION_EXPIRATION_TIME,
+)
+from aidants_connect_web.forms import UsagerForm, MandatForm, FCForm
 
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
+
+
+def humanize_demarche_names(list_of_machine_names):
+    human_names = []
+    for p in list_of_machine_names:
+        for category in settings.DEMARCHES:
+            for element in category[1]:
+                if element[0] == p:
+                    human_names.append(element[1])
+    return human_names
 
 
 def home_page(request):
@@ -26,6 +45,140 @@ def home_page(request):
     return render(
         request, "aidants_connect_web/home_page.html", {"random_string": random_string}
     )
+
+
+@login_required
+def logout_page(request):
+    logout(request)
+    return redirect(settings.LOGOUT_REDIRECT_URL)
+
+
+@login_required
+def dashboard(request):
+    messages = get_messages(request)
+    user = request.user
+    mandats = Mandat.objects.all().filter(aidant=request.user).order_by("creation_date")
+
+    for mandat in mandats:
+        mandat.perimeter_names = humanize_demarche_names(mandat.perimeter)
+
+    return render(
+        request,
+        "aidants_connect_web/dashboard.html",
+        {"user": user, "mandats": mandats, "messages": messages},
+    )
+
+
+@login_required
+def mandat(request):
+
+    user = request.user
+    form = MandatForm()
+
+    if request.method == "GET":
+        return render(
+            request,
+            "aidants_connect_web/mandat/mandat.html",
+            {"user": user, "form": form},
+        )
+
+    else:
+        form = MandatForm(request.POST)
+
+        if form.is_valid():
+            request.session["mandat"] = form.cleaned_data
+
+            return redirect("france_connect")
+        else:
+            return render(
+                request,
+                "aidants_connect_web/mandat/mandat.html",
+                {"user": user, "form": form},
+            )
+
+
+@login_required
+def france_connect(request):
+
+    if request.method == "GET":
+        form = FCForm()
+
+        return render(
+            request, "aidants_connect_web/mandat/france_connect.html", {"form": form}
+        )
+    else:
+        form = FCForm(request.POST)
+        if form.is_valid():
+            request.session["usager"] = {
+                "given_name": form.cleaned_data["given_name"],
+                "family_name": form.cleaned_data["family_name"],
+            }
+            return redirect("recap")
+        else:
+            return render(
+                request,
+                "aidants_connect_web/mandat/france_connect.html",
+                {"form": form},
+            )
+
+
+@login_required
+def recap(request):
+    user = request.user
+    usager = Usager(
+        given_name=request.session.get("usager")["given_name"],
+        family_name=request.session.get("usager")["family_name"],
+        birthdate=date(1945, 10, 20),
+        gender="M",
+        birthplace="84016",
+        birthcountry="99100",
+        email="user@test.fr",
+    )
+
+    mandat = request.session.get("mandat")
+
+    if request.method == "GET":
+        demarches = humanize_demarche_names(mandat["perimeter"])
+
+        return render(
+            request,
+            "aidants_connect_web/mandat/recap.html",
+            {
+                "user": user,
+                "usager": usager,
+                "demarches": demarches,
+                "duration": mandat["duration"],
+            },
+        )
+
+    else:
+        form = request.POST
+
+        if form.get("personal_data") and form.get("brief"):
+            mandat["aidant"] = user
+
+            usager.save()
+            mandat["usager"] = usager
+
+            new_mandat = Mandat.objects.create(**mandat)
+            log.info(type(new_mandat.perimeter))
+
+            messages.success(request, "Le mandat a été créé avec succès !")
+
+            return redirect("dashboard")
+
+        else:
+            return render(
+                request,
+                "aidants_connect_web/mandat/recap.html",
+                {
+                    "user": user,
+                    "usager": usager,
+                    "demarche": demarches,
+                    "duration": mandat["duration"],
+                    "error": "Vous devez accepter les conditions du mandat.",
+                },
+            )
 
 
 @login_required
@@ -57,7 +210,8 @@ def authorize(request):
             state = that_connection.state
             code = that_connection.code
         except ObjectDoesNotExist:
-            log.info(f"No connection corresponds to the state: {this_state}")
+            log.info("No connection corresponds to the state:")
+            log.info(this_state)
             return HttpResponseForbidden()
 
         if form.is_valid():
@@ -110,7 +264,7 @@ def token(request):
     try:
         connection = Connection.objects.get(code=code)
     except ObjectDoesNotExist:
-        log.info(f"/token No connection corresponds to the code")
+        log.info("/token No connection corresponds to the code")
         log.info(code)
         return HttpResponseForbidden()
 

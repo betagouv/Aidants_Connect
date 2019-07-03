@@ -1,5 +1,5 @@
 from django.test import TestCase
-from aidants_connect_web.models import Connection, Usager
+from aidants_connect_web.models import Connection, User, Usager, Mandat
 from datetime import date
 
 
@@ -59,3 +59,49 @@ class UsagerModelTest(TestCase):
         self.assertEqual(first_saved_item.given_name, "TEST NAME")
         self.assertEqual(str(first_saved_item.birthdate), "1902-06-30")
         self.assertEqual(second_saved_item.family_name, "TEST Family Name éèà")
+
+
+class MandatModelTest(TestCase):
+    def test_saving_and_retrieving_mandat(self):
+        first_mandat = Mandat()
+        first_mandat.aidant = User.objects.create(username="Marge")
+
+        first_mandat.usager = Usager.objects.create(
+            given_name="Homer",
+            family_name="Simpson",
+            birthdate="1902-06-30",
+            gender="M",
+            birthplace=27681,
+            birthcountry=99100,
+            email="homer@simpson.com",
+        )
+        first_mandat.perimeter = ["Carte grise", "Changement d'adresse"]
+        first_mandat.duration = 3
+        first_mandat.save()
+
+        second_mandat = Mandat()
+        second_mandat.aidant = User.objects.create(username="Patricia")
+        second_mandat.usager = Usager.objects.create(
+            given_name="Ned",
+            family_name="Flanders",
+            birthdate="1902-06-30",
+            gender="M",
+            birthplace=26934,
+            birthcountry=99100,
+            email="ned@flanders.com",
+        )
+        second_mandat.perimeter = ["Revenus"]
+        second_mandat.duration = 6
+        second_mandat.save()
+
+        saved_items = Mandat.objects.all()
+        self.assertEqual(saved_items.count(), 2)
+
+        first_saved_item = saved_items[0]
+        second_saved_item = saved_items[1]
+
+        self.assertEqual(first_saved_item.aidant.username, "Marge")
+        self.assertEqual(
+            first_saved_item.perimeter, ["Carte grise", "Changement d'adresse"]
+        )
+        self.assertEqual(second_saved_item.usager.family_name, "Flanders")

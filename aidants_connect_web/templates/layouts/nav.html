@@ -1,16 +1,31 @@
 {% load static %}
 <header class="navbar" role="navigation">
   <div class="navbar__container">
-    <a class="navbar__home" href="{% url 'login' %}">
+    <a class="navbar__home" href="{% url 'home_page' %}">
       <img class="navbar__logo" src="{% static 'images/logo-marianne.svg' %}"
         alt="aidantsconnect.beta.gouv.fr" /><span class="navbar__domain">aidantsconnect</span><img src="{% static 'images/pointbetagouvfr.svg' %}" class="navbar__gouvfr" alt="aidantsconnect.beta.gouv.fr" />
     </a>
     <nav role="navigation">
       <ul class="nav__links">
+
         <li class="nav__item">
-          <a href="/authorize?state={{ random_string }}&nonce=TY6">Se connecter</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" {% if request.path == '/dashboard/' %}class="active"{% endif %}>
+              Espace aidant
+            </a>
+          </li>
+          <li class="nav__item">
+            <a href="{% url 'logout' %}">Se déconnecter</a>
+          </li>
+          {% else %}
+          <li class="nav__item">
+            <a href="{% url 'dashboard' %}">
+              Se connecter
+            </a>
+          {% endif %}
         </li>
       </ul>
     </nav>
   </div>
 </header>
+<div class="notification warning full-width">Vous êtes sur un site en construction, l’interface proposée sera amenée à changer grâce à vos retours !</div>

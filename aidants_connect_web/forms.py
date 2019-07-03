@@ -1,5 +1,6 @@
 from django import forms
 from aidants_connect_web.models import Usager
+from django.conf import settings
 
 
 class UsagerForm(forms.models.ModelForm):
@@ -52,3 +53,16 @@ class UsagerForm(forms.models.ModelForm):
                 "Ex : Camille-Marie Claude Dominique"
             }
         }
+
+
+class MandatForm(forms.Form):
+    perimeter = forms.MultipleChoiceField(
+        choices=settings.DEMARCHES, widget=forms.CheckboxSelectMultiple
+    )
+
+    duration = forms.CharField(required=True, initial=3)
+
+
+class FCForm(forms.Form):
+    given_name = forms.CharField(required=True, label="Prénom")
+    family_name = forms.CharField(required=True, label="Nom de famille")

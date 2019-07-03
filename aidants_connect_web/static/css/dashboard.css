@@ -1,0 +1,15 @@
+h2.subtitle {
+  float: left;
+}
+
+.notification {
+  clear: both;
+}
+
+.new__user {
+  float: right;
+}
+
+.current__users {
+  margin-top: 3em;
+}
