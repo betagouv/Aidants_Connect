@@ -19,7 +19,6 @@ from django.contrib.messages import get_messages
 
 from aidants_connect_web.models import (
     Connection,
-    User,
     Mandat,
     Usager,
     CONNECTION_EXPIRATION_TIME,
@@ -181,9 +180,9 @@ def recap(request):
                 {
                     "user": user,
                     "usager": usager,
-                    "demarche": mandat["perimeter"],
+                    "demarche": demarches,
                     "duration": mandat["duration"],
-                    "error": "Vous devez accepter les conditions de signature de mandat.",
+                    "error": "Vous devez accepter les conditions du mandat.",
                 },
             )
 

@@ -1,5 +1,5 @@
 from django import forms
-from aidants_connect_web.models import Usager, Mandat
+from aidants_connect_web.models import Usager
 from django.conf import settings
 
 

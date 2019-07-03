@@ -75,7 +75,7 @@ class MandatModelTest(TestCase):
             birthcountry=99100,
             email="homer@simpson.com",
         )
-        first_mandat.perimeter = "Carte grise"
+        first_mandat.perimeter = ["Carte grise", "Changement d'adresse"]
         first_mandat.duration = 3
         first_mandat.save()
 
@@ -90,7 +90,7 @@ class MandatModelTest(TestCase):
             birthcountry=99100,
             email="ned@flanders.com",
         )
-        second_mandat.perimeter = Revenus
+        second_mandat.perimeter = ["Revenus"]
         second_mandat.duration = 6
         second_mandat.save()
 
@@ -100,7 +100,8 @@ class MandatModelTest(TestCase):
         first_saved_item = saved_items[0]
         second_saved_item = saved_items[1]
 
-        ## ordering is inverted in model
-        self.assertEqual(first_saved_item.aidant.username, "Patricia")
-        self.assertEqual(first_saved_item.usager.family_name, "Flanders")
-        self.assertEqual(second_saved_item.perimeter.title, "Carte grise")
+        self.assertEqual(first_saved_item.aidant.username, "Marge")
+        self.assertEqual(
+            first_saved_item.perimeter, ["Carte grise", "Changement d'adresse"]
+        )
+        self.assertEqual(second_saved_item.usager.family_name, "Flanders")
