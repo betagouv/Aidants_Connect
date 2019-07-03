@@ -32,6 +32,27 @@ class homePageTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/home_page.html")
 
 
+class LogoutPageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
+    def test_logout_url_triggers_the_logout_view(self):
+        found = resolve("/logout/")
+        self.assertEqual(found.func, logout_page)
+
+    def test_logout_url_triggers_loging_if_not_logged_in(self):
+        response = self.client.get("/logout/")
+        self.assertRedirects(response, "/accounts/login/?next=/logout/")
+
+    def test_logout_url_triggers_home_page_if_logged_in(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.get("/logout/")
+        self.assertRedirects(response, "/")
+
+
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
