@@ -3,7 +3,7 @@ from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import User
 
 
-class homePage(StaticLiveServerTestCase):
+class HomePage(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -25,30 +25,57 @@ class LoginPage(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+            username="Thierry",
+            email="thierry@thierry.com",
+            password="motdepassedethierry",
+            first_name="Thierry",
+            last_name="Martin",
         )
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)
-        cls.selenium.get(f"{cls.live_server_url}/authorize?state=34")
+        cls.selenium.get(f"{cls.live_server_url}/dashboard/")
 
     @classmethod
     def tearDownClass(cls):
         cls.selenium.quit()
         super().tearDownClass()
 
-    def test_page_loads(self):
+    def test_login(self):
         login_field = self.selenium.find_element_by_id("id_username")
         login_field.send_keys("Thierry")
         password_field = self.selenium.find_element_by_id("id_password")
         password_field.send_keys("motdepassedethierry")
         submit_button = self.selenium.find_element_by_xpath('//input[@value="Login"]')
         submit_button.click()
-        welcome_aidant = self.selenium.find_element_by_id("welcome_aidant").text
-        self.assertEqual(welcome_aidant, "Bienvenue, aidant")
-        tooltips = self.selenium.find_elements_by_class_name("tooltip-info")
-        self.assertEqual(len(tooltips), 3)
-        # button = self.browser.find_element_by_id("submit")
+        welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
+
+        # Create new user
+        self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
+        add_user_button = self.selenium.find_element_by_id("add_user")
+        add_user_button.click()
+        procedure_section = self.selenium.find_element_by_id("select_procedure")
+        procedure_title = procedure_section.find_element_by_tag_name("h2").text
+        self.assertEqual(procedure_title, "Choisir la démarche")
+
+        procedure_list = procedure_section.find_element_by_id("id_perimeter")
+        procedures = procedure_list.find_elements_by_tag_name("label")
+
+        print(procedures[0].__dict__)
+        procedures[0].click()
+        procedures[-1].click()
+        self.assertEqual(len(procedures), 40)
+
+        duration = procedure_section.find_element_by_id("id_duration")
+        duration.send_keys("6")
+
+        # FranceConnect
+        fc_button = self.selenium.find_element_by_id("submit_button")
+        # fc_button_link = fc_button.get_attribute("href")
+        # self.assertIn("fc_authorize", fc_button_link)
+        # fc_button.click()
+        # fc_title = self.selenium.title
+        # self.assertEqual("Connexion - choix du compte", fc_title)
 
 
 class Error404Page(StaticLiveServerTestCase):

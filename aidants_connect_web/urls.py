@@ -4,7 +4,7 @@ from aidants_connect_web import views
 
 urlpatterns = [
     path("", views.home_page, name="home_page"),
-    path("dashboard/>", views.dashboard, name="dashboard"),
+    path("dashboard/", views.dashboard, name="dashboard"),
     path("franceconnect/", views.france_connect, name="france_connect"),
     path("mandat/", views.mandat, name="mandat"),
     path("recap/", views.recap, name="recap"),

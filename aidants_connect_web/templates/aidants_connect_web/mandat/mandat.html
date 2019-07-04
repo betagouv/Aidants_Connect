@@ -23,7 +23,7 @@
     </div>
   </div>
 </section>
-<section class="section section-grey">
+<section id="select_procedure" class="section section-grey">
   <div class="container container-small">
     <form method="post">
       {% if notification %}
@@ -36,7 +36,7 @@
         </div>
       {% endif %}
       {% csrf_token %}
-      <div class="form__group">
+      <div class="form__group" id="procedure_list">
         {{ form.perimeter }}
 
       </div>
@@ -45,7 +45,7 @@
         {{ form.duration }}
       </div>
       <div class="form__group">
-        <input type="submit" class="fc_button" value="S’identifier avec France Connect" />
+        <input id="submit_button" type="submit" class="fc_button" value="S’identifier avec France Connect" />
       </div>
     </form>
   <div>
