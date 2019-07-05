@@ -10,7 +10,13 @@ from django.test import TestCase, override_settings
 from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 
-from aidants_connect_web.views import home_page, authorize, token, user_info
+from aidants_connect_web.views import (
+    home_page,
+    authorize,
+    token,
+    user_info,
+    logout_page,
+)
 from aidants_connect_web.forms import UsagerForm
 from aidants_connect_web.models import (
     Connection,
@@ -22,7 +28,7 @@ from aidants_connect_web.models import (
 fc_callback_url = os.getenv("FC_CALLBACK_URL")
 
 
-class homePageTests(TestCase):
+class HomePageTests(TestCase):
     def test_root_url_triggers_the_homepage_view(self):
         found = resolve("/")
         self.assertEqual(found.func, home_page)
@@ -30,6 +36,27 @@ class homePageTests(TestCase):
     def test_root_url_triggers_the_homepage_template(self):
         response = self.client.get("/")
         self.assertTemplateUsed(response, "aidants_connect_web/home_page.html")
+
+
+class LogoutPageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
+    def test_logout_url_triggers_the_logout_view(self):
+        found = resolve("/logout/")
+        self.assertEqual(found.func, logout_page)
+
+    def test_logout_url_triggers_loging_if_not_logged_in(self):
+        response = self.client.get("/logout/")
+        self.assertRedirects(response, "/accounts/login/?next=/logout/")
+
+    def test_logout_url_triggers_home_page_if_logged_in(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.get("/logout/")
+        self.assertRedirects(response, "/")
 
 
 class AuthorizeTests(TestCase):

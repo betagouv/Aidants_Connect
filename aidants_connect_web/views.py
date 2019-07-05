@@ -71,7 +71,6 @@ def dashboard(request):
 
 @login_required
 def mandat(request):
-
     user = request.user
     form = MandatForm()
 
@@ -87,7 +86,6 @@ def mandat(request):
 
         if form.is_valid():
             request.session["mandat"] = form.cleaned_data
-
             return redirect("france_connect")
         else:
             return render(
