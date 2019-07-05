@@ -96,31 +96,6 @@ def mandat(request):
 
 
 @login_required
-def france_connect(request):
-
-    if request.method == "GET":
-        form = FCForm()
-
-        return render(
-            request, "aidants_connect_web/mandat/france_connect.html", {"form": form}
-        )
-    else:
-        form = FCForm(request.POST)
-        if form.is_valid():
-            request.session["usager"] = {
-                "given_name": form.cleaned_data["given_name"],
-                "family_name": form.cleaned_data["family_name"],
-            }
-            return redirect("recap")
-        else:
-            return render(
-                request,
-                "aidants_connect_web/mandat/france_connect.html",
-                {"form": form},
-            )
-
-
-@login_required
 def recap(request):
     user = request.user
     usager = Usager(

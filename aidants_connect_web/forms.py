@@ -61,8 +61,3 @@ class MandatForm(forms.Form):
     )
 
     duration = forms.CharField(required=True, initial=3)
-
-
-class FCForm(forms.Form):
-    given_name = forms.CharField(required=True, label="Prénom")
-    family_name = forms.CharField(required=True, label="Nom de famille")

@@ -54,7 +54,6 @@ class Usager(models.Model):
 
 
 class Mandat(models.Model):
-
     aidant = models.ForeignKey(User, on_delete=models.CASCADE, default=0)
     usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
     perimeter = ArrayField(models.CharField(blank=False, max_length=100))
