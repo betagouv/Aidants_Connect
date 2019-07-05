@@ -306,6 +306,3 @@ def user_info(request):
     usager["birthdate"] = str(birthdate)
 
     return JsonResponse(usager, safe=False)
-
-
-
