@@ -119,6 +119,27 @@ To run the app on port 3000
 python manage.py runserver 3000
 ```
 
-
 ## FranceConnect FI documentation
 [here](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-identite)
+
+## Database from scratch
+```
+psql
+```
+then
+```
+
+DROP DATABASE aidants_connect;
+CREATE USER aidants_connect_team;
+CREATE DATABASE aidants_connect OWNER aidants_connect_team;
+ALTER USER aidants_connect_team CREATEDB;
+\q
+```
+then
+
+```
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+```
+
