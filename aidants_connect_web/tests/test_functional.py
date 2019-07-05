@@ -80,27 +80,23 @@ class LoginPage(StaticLiveServerTestCase):
         time.sleep(2)
 
         # Click on the 'Démonstration' identity provider
-        demonstration_hex = self.selenium.find_element_by_id("fi-identity-provider-example")
+        demonstration_hex = self.selenium.find_element_by_id(
+            "fi-identity-provider-example"
+        )
         demonstration_hex.click()
         time.sleep(2)
 
         # Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element_by_tag_name("h3").text
-        self.assertEqual(
-            demo_title,
-            "Fournisseur d'identité de démonstration"
-        )
+        self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
         submit_button = self.selenium.find_elements_by_tag_name("input")[2]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
-        time.sleep(2)
+        time.sleep(4)
         recap_title = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(recap_title, "Récapitulatif")
-        recap_text = self.selenium.find_elements_by_id("recap_text").text
+        recap_text = self.selenium.find_element_by_id("recap_text").text
         self.assertIn("Mélaine Évelyne TROIS", recap_text)
-
-
-
 
 
 class Error404Page(StaticLiveServerTestCase):
