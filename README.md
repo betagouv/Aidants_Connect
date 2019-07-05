@@ -57,11 +57,7 @@ Create a `.env` file at the root of the project
 Add the following entries to the `.env` file:
 ```
 HOST= <insert_your_data> #e.g. http://localhost:8000
-
 APP_SECRET=<insert_your_secret>
-
-FC_CALLBACK_URL=<insert_your_data>
-
 TEST="Everything is awesome"
 
 DATABASE_NAME=aidants_connect
@@ -70,9 +66,15 @@ DATABASE_PASSWORD='' or <insert_your_data>
 DATABASE_URL='' or <insert_your_data>
 DATABASE_PORT='' or <insert_your_data>
 
-
+FC_AS_FS_BASE_URL=<insert_your_data>
 FC_AS_FS_ID=<insert_your_data>
 FC_AS_FS_SECRET=<insert_your_data>
+FC_AS_FS_CALLBACK_URL=<insert_your_data>
+FC_AS_FS_TEST_PORT=<insert_your_data> or ''
+
+FC_AS_FI_ID=<insert_your_data>
+FC_AS_FI_SECRET=<insert_your_data>
+FC_AS_FI_CALLBACK_URL=<insert_your_data>
 
 # Optional
 DATABASE_SSL

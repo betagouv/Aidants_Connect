@@ -23,7 +23,7 @@ from aidants_connect_web.models import (
     Usager,
     CONNECTION_EXPIRATION_TIME,
 )
-from aidants_connect_web.forms import UsagerForm, MandatForm, FCForm
+from aidants_connect_web.forms import UsagerForm, MandatForm
 
 
 logging.basicConfig(level=logging.INFO)
@@ -156,7 +156,7 @@ def recap(request):
 
 @login_required
 def authorize(request):
-    fc_callback_url = settings.FC_CALLBACK_URL
+    fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
     log.info(fc_callback_url)
 
     if request.method == "GET":
@@ -214,9 +214,9 @@ def authorize(request):
 # https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
 @csrf_exempt
 def token(request):
-    fc_callback_url = settings.FC_CALLBACK_URL
-    fc_client_id = settings.FC_AS_FS_ID
-    fc_client_secret = settings.FC_AS_FS_SECRET
+    fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
+    fc_client_id = settings.FC_AS_FI_ID
+    fc_client_secret = settings.FC_AS_FI_SECRET
     host = settings.HOST
 
     if request.method == "GET":

@@ -9,6 +9,7 @@ from django.test.client import Client
 from django.test import TestCase, override_settings
 from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 
 from aidants_connect_web.views import (
     home_page,
@@ -25,7 +26,7 @@ from aidants_connect_web.models import (
     CONNECTION_EXPIRATION_TIME,
 )
 
-fc_callback_url = os.getenv("FC_CALLBACK_URL")
+fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
 class HomePageTests(TestCase):
@@ -166,9 +167,9 @@ class AuthorizeTests(TestCase):
 
 
 @override_settings(
-    FC_AS_FS_ID="test_client_id",
-    FC_AS_FS_SECRET="test_client_secret",
-    FC_CALLBACK_URL="test_url.test_url",
+    FC_AS_FI_ID="test_client_id",
+    FC_AS_FI_SECRET="test_client_secret",
+    FC_AS_FI_CALLBACK_URL="test_url.test_url",
     HOST="localhost",
 )
 class TokenTests(TestCase):

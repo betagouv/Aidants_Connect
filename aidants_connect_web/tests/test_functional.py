@@ -27,7 +27,7 @@ class LoginPage(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         # FC only calls back on specific port
-        cls.port = settings.FC_TEST_PORT
+        cls.port = settings.FC_AS_FS_TEST_PORT
         cls.user = User.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",

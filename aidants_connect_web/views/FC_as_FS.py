@@ -14,9 +14,9 @@ log = logging.getLogger()
 
 
 def fc_authorize(request):
-    fc_base = settings.FC_URL
-    fc_id = settings.FC_ID
-    fc_callback_uri = f"{settings.FC_CALLBACK_URI}/callback"
+    fc_base = settings.FC_AS_FS_BASE_URL
+    fc_id = settings.FC_AS_FS_ID
+    fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
 
     state = token_urlsafe(16)
     connexion = Connection(state=state, connection_type="FS")
@@ -50,11 +50,11 @@ def fc_authorize(request):
 
 
 def fc_callback(request):
-    fc_base = settings.FC_URL
-    fc_callback_uri = f"{settings.FC_CALLBACK_URI}/callback"
-    fc_callback_uri_logout = f"{settings.FC_CALLBACK_URI}/logout-callback"
-    fc_id = settings.FC_ID
-    fc_secret = settings.FC_SECRET
+    fc_base = settings.FC_AS_FS_BASE_URL
+    fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
+    fc_callback_uri_logout = f"{settings.FC_AS_FS_CALLBACK_URL}/logout-callback"
+    fc_id = settings.FC_AS_FS_ID
+    fc_secret = settings.FC_AS_FS_SECRET
 
     code = request.GET.get("code")
     state = request.GET.get("state")

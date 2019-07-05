@@ -15,22 +15,22 @@ from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
 
-# FC as FI
-FC_CALLBACK_URL = os.environ["FC_CALLBACK_URL"]
-FC_AS_FS_ID = os.environ["FC_AS_FS_ID"]
-FC_AS_FS_SECRET = os.environ["FC_AS_FS_SECRET"]
 HOST = os.environ["HOST"]
+# FC as FI
+FC_AS_FI_CALLBACK_URL = os.environ["FC_AS_FI_CALLBACK_URL"]
+FC_AS_FI_ID = os.environ["FC_AS_FI_ID"]
+FC_AS_FI_SECRET = os.environ["FC_AS_FI_SECRET"]
 
 # FC as FS
-FC_URL = os.environ["FC_URL"]
-FC_ID = os.environ["FC_ID"]
-FC_SECRET = os.environ["FC_SECRET"]
-FC_CALLBACK_URI = os.environ["FC_CALLBACK_URI"]
+FC_AS_FS_BASE_URL = os.environ["FC_AS_FS_BASE_URL"]
+FC_AS_FS_ID = os.environ["FC_AS_FS_ID"]
+FC_AS_FS_SECRET = os.environ["FC_AS_FS_SECRET"]
+FC_AS_FS_CALLBACK_URL = os.environ["FC_AS_FS_CALLBACK_URL"]
 
-if os.environ.get("FC_TEST_PORT") :
-    FC_TEST_PORT = int(os.environ["FC_TEST_PORT"])
+if os.environ.get("FC_AS_FS_TEST_PORT"):
+    FC_AS_FS_TEST_PORT = int(os.environ["FC_AS_FS_TEST_PORT"])
 else:
-    FC_TEST_PORT = 0
+    FC_AS_FS_TEST_PORT = 0
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
