@@ -1,6 +1,8 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.conf import settings
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import User
+import time
 
 
 class HomePage(StaticLiveServerTestCase):
@@ -24,6 +26,8 @@ class HomePage(StaticLiveServerTestCase):
 class LoginPage(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
+        # FC only calls back on specific port
+        cls.port = settings.FC_TEST_PORT
         cls.user = User.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",
@@ -61,7 +65,6 @@ class LoginPage(StaticLiveServerTestCase):
         procedure_list = procedure_section.find_element_by_id("id_perimeter")
         procedures = procedure_list.find_elements_by_tag_name("label")
 
-        print(procedures[0].__dict__)
         procedures[0].click()
         procedures[-1].click()
         self.assertEqual(len(procedures), 40)
@@ -71,11 +74,33 @@ class LoginPage(StaticLiveServerTestCase):
 
         # FranceConnect
         fc_button = self.selenium.find_element_by_id("submit_button")
-        # fc_button_link = fc_button.get_attribute("href")
-        # self.assertIn("fc_authorize", fc_button_link)
-        # fc_button.click()
-        # fc_title = self.selenium.title
-        # self.assertEqual("Connexion - choix du compte", fc_title)
+        fc_button.click()
+        fc_title = self.selenium.title
+        self.assertEqual("Connexion - choix du compte", fc_title)
+        time.sleep(2)
+
+        # Click on the 'Démonstration' identity provider
+        demonstration_hex = self.selenium.find_element_by_id("fi-identity-provider-example")
+        demonstration_hex.click()
+        time.sleep(2)
+
+        # Use the Mélaine_trois credentials
+        demo_title = self.selenium.find_element_by_tag_name("h3").text
+        self.assertEqual(
+            demo_title,
+            "Fournisseur d'identité de démonstration"
+        )
+        submit_button = self.selenium.find_elements_by_tag_name("input")[2]
+        self.assertEqual(submit_button.get_attribute("type"), "submit")
+        submit_button.click()
+        time.sleep(2)
+        recap_title = self.selenium.find_element_by_tag_name("h1").text
+        self.assertEqual(recap_title, "Récapitulatif")
+        recap_text = self.selenium.find_elements_by_id("recap_text").text
+        self.assertIn("Mélaine Évelyne TROIS", recap_text)
+
+
+
 
 
 class Error404Page(StaticLiveServerTestCase):

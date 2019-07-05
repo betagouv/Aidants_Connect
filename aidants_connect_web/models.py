@@ -20,6 +20,10 @@ class Connection(models.Model):
     expiresOn = models.DateTimeField(default=default_expiration_date)
     sub_usager = models.TextField(default="No sub Provided")
     access_token = models.TextField(default="No token Provided")
+    CONNECTION_TYPE = (("FS", "FC as FS"), ("FI", "FC as FI"))
+    connection_type = models.CharField(
+        max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
+    )
 
 
 class User(AbstractUser):

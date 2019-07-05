@@ -108,11 +108,15 @@ Then run:
 flake8
 python manage.py test
 ```
+
+The functional test run on `http://localhost:3000`
+Make sure nothing else is running on that port.
+
 ## How to run the app
 
-To run the app on port 8000
+To run the app on port 3000
 ```
-python manage.py runserver 8000
+python manage.py runserver 3000
 ```
 
 
