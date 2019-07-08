@@ -14,10 +14,24 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
-FC_CALLBACK_URL = os.environ["FC_CALLBACK_URL"]
+
+HOST = os.environ["HOST"]
+# FC as FI
+FC_AS_FI_CALLBACK_URL = os.environ["FC_AS_FI_CALLBACK_URL"]
+FC_AS_FI_ID = os.environ["FC_AS_FI_ID"]
+FC_AS_FI_SECRET = os.environ["FC_AS_FI_SECRET"]
+
+# FC as FS
+FC_AS_FS_BASE_URL = os.environ["FC_AS_FS_BASE_URL"]
 FC_AS_FS_ID = os.environ["FC_AS_FS_ID"]
 FC_AS_FS_SECRET = os.environ["FC_AS_FS_SECRET"]
-HOST = os.environ["HOST"]
+FC_AS_FS_CALLBACK_URL = os.environ["FC_AS_FS_CALLBACK_URL"]
+
+if os.environ.get("FC_AS_FS_TEST_PORT"):
+    FC_AS_FS_TEST_PORT = int(os.environ["FC_AS_FS_TEST_PORT"])
+else:
+    FC_AS_FS_TEST_PORT = 0
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))

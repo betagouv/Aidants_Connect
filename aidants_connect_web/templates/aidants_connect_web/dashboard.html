@@ -9,7 +9,7 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <a href="{% url 'mandat' %}" class="button new__user">Ajouter un usager</a>
+    <a href="{% url 'mandat' %}" class="button new__user" id="add_user">Ajouter un usager</a>
     <h1>Bienvenue sur votre espace aidant, {{ user.first_name }} !</h1>
     {% if messages %}
       <div class="notification success">

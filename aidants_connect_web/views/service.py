@@ -23,7 +23,7 @@ from aidants_connect_web.models import (
     Usager,
     CONNECTION_EXPIRATION_TIME,
 )
-from aidants_connect_web.forms import UsagerForm, MandatForm, FCForm
+from aidants_connect_web.forms import UsagerForm, MandatForm
 
 
 logging.basicConfig(level=logging.INFO)
@@ -86,37 +86,12 @@ def mandat(request):
 
         if form.is_valid():
             request.session["mandat"] = form.cleaned_data
-            return redirect("france_connect")
+            return redirect("fc_authorize")
         else:
             return render(
                 request,
                 "aidants_connect_web/mandat/mandat.html",
                 {"user": user, "form": form},
-            )
-
-
-@login_required
-def france_connect(request):
-
-    if request.method == "GET":
-        form = FCForm()
-
-        return render(
-            request, "aidants_connect_web/mandat/france_connect.html", {"form": form}
-        )
-    else:
-        form = FCForm(request.POST)
-        if form.is_valid():
-            request.session["usager"] = {
-                "given_name": form.cleaned_data["given_name"],
-                "family_name": form.cleaned_data["family_name"],
-            }
-            return redirect("recap")
-        else:
-            return render(
-                request,
-                "aidants_connect_web/mandat/france_connect.html",
-                {"form": form},
             )
 
 
@@ -181,7 +156,7 @@ def recap(request):
 
 @login_required
 def authorize(request):
-    fc_callback_url = settings.FC_CALLBACK_URL
+    fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
     log.info(fc_callback_url)
 
     if request.method == "GET":
@@ -239,9 +214,9 @@ def authorize(request):
 # https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
 @csrf_exempt
 def token(request):
-    fc_callback_url = settings.FC_CALLBACK_URL
-    fc_client_id = settings.FC_AS_FS_ID
-    fc_client_secret = settings.FC_AS_FS_SECRET
+    fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
+    fc_client_id = settings.FC_AS_FI_ID
+    fc_client_secret = settings.FC_AS_FI_SECRET
     host = settings.HOST
 
     if request.method == "GET":

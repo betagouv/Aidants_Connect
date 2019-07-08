@@ -57,11 +57,7 @@ Create a `.env` file at the root of the project
 Add the following entries to the `.env` file:
 ```
 HOST= <insert_your_data> #e.g. http://localhost:8000
-
 APP_SECRET=<insert_your_secret>
-
-FC_CALLBACK_URL=<insert_your_data>
-
 TEST="Everything is awesome"
 
 DATABASE_NAME=aidants_connect
@@ -70,9 +66,15 @@ DATABASE_PASSWORD='' or <insert_your_data>
 DATABASE_URL='' or <insert_your_data>
 DATABASE_PORT='' or <insert_your_data>
 
-
+FC_AS_FS_BASE_URL=<insert_your_data>
 FC_AS_FS_ID=<insert_your_data>
 FC_AS_FS_SECRET=<insert_your_data>
+FC_AS_FS_CALLBACK_URL=<insert_your_data>
+FC_AS_FS_TEST_PORT=<insert_your_data> or ''
+
+FC_AS_FI_ID=<insert_your_data>
+FC_AS_FI_SECRET=<insert_your_data>
+FC_AS_FI_CALLBACK_URL=<insert_your_data>
 
 # Optional
 DATABASE_SSL
@@ -108,13 +110,38 @@ Then run:
 flake8
 python manage.py test
 ```
+
+The functional test run on `http://localhost:3000`
+Make sure nothing else is running on that port.
+
 ## How to run the app
 
-To run the app on port 8000
+To run the app on port 3000
 ```
-python manage.py runserver 8000
+python manage.py runserver 3000
 ```
-
 
 ## FranceConnect FI documentation
 [here](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-identite)
+
+## Database from scratch
+```
+psql
+```
+then
+```
+
+DROP DATABASE aidants_connect;
+CREATE USER aidants_connect_team;
+CREATE DATABASE aidants_connect OWNER aidants_connect_team;
+ALTER USER aidants_connect_team CREATEDB;
+\q
+```
+then
+
+```
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+```
+
