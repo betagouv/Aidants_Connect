@@ -1,4 +1,5 @@
 import logging
+import jwt
 import requests as python_request
 from secrets import token_urlsafe
 
@@ -19,11 +20,9 @@ def fc_authorize(request):
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
 
     state = token_urlsafe(16)
-    connexion = Connection(state=state, connection_type="FS")
+    fc_nonce = token_urlsafe(16)
+    connexion = Connection(state=state, connection_type="FS", nonce=fc_nonce)
     connexion.save()
-
-    fc_nonce = "customNonce11"
-    # TODO Make the nounce dynamic
 
     fc_scopes = [
         "given_name",
@@ -68,8 +67,14 @@ def fc_callback(request):
         connection_state = None
 
     if not connection_state:
+        log.info("403: No connection available with this state.")
         return HttpResponseForbidden()
+
     if connection_state.expiresOn < timezone.now():
+        log.info("403: The connection has expired.")
+        return HttpResponseForbidden()
+    if not code:
+        log.info("403: No code has been provided.")
         return HttpResponseForbidden()
 
     token_url = f"{fc_base}/token"
@@ -82,13 +87,25 @@ def fc_callback(request):
     }
 
     headers = {"Accept": "application/json"}
-    request_for_token = python_request.post(token_url, data=payload, headers=headers)
-    content = request_for_token.json()
 
+    request_for_token = python_request.post(token_url, data=payload, headers=headers)
+
+    content = request_for_token.json()
     fc_access_token = content.get("access_token")
 
     fc_id_token = content.get("id_token")
-    # TODO Check that ID token is good
+    decoded_token = jwt.decode(
+        fc_id_token,
+        settings.FC_AS_FS_SECRET,
+        audience=settings.FC_AS_FS_ID,
+        algorithm="HS256",
+    )
+    if connection_state.nonce != decoded_token.get("nonce"):
+        log.info("403: The nonce is different than the one expected.")
+        return HttpResponseForbidden()
+    if connection_state.expiresOn < timezone.now():
+        log.info("403: The connection has expired.")
+        return HttpResponseForbidden()
 
     request.session["usager"] = python_request.get(
         f"{fc_base}/userinfo?schema=openid",
