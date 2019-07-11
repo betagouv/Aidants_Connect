@@ -230,6 +230,8 @@ def token(request):
         request.POST.get("client_secret") == fc_client_secret,
     ]
     if not all(rules):
+        log.info("403: Rules are not all abided")
+        log.info(rules)
         return HttpResponseForbidden()
 
     code = request.POST.get("code")
@@ -237,14 +239,13 @@ def token(request):
     try:
         connection = Connection.objects.get(code=code)
     except ObjectDoesNotExist:
-        log.info("/token No connection corresponds to the code")
+        log.info("403: /token No connection corresponds to the code")
         log.info(code)
         return HttpResponseForbidden()
 
     if connection.expiresOn < timezone.now():
-        log.info("Code expired")
+        log.info("403: Code expired")
         return HttpResponseForbidden()
-
     id_token = {
         # The audience, the Client ID of your Auth0 Application
         "aud": fc_client_id,
@@ -282,7 +283,7 @@ def user_info(request):
     auth_header = request.META.get("HTTP_AUTHORIZATION")
 
     if not auth_header:
-        log.info("missing auth header")
+        log.info("403: Missing auth header")
         return HttpResponseForbidden()
 
     pattern = re.compile(r"^Bearer\s([A-Z-a-z-0-9-_/-]+)$")
