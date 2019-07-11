@@ -185,7 +185,7 @@ class TokenTests(TestCase):
         self.connection.save()
         self.fc_request = {
             "grant_type": "authorization_code",
-            "redirect_uri": "test_url.test_url/oidc_callback",
+            "redirect_uri": "test_url.test_url",
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
             "code": "test_code",

@@ -225,7 +225,7 @@ def token(request):
 
     rules = [
         request.POST.get("grant_type") == "authorization_code",
-        request.POST.get("redirect_uri") == f"{fc_callback_url}/oidc_callback",
+        request.POST.get("redirect_uri") == fc_callback_url,
         request.POST.get("client_id") == fc_client_id,
         request.POST.get("client_secret") == fc_client_secret,
     ]
