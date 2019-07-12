@@ -37,6 +37,7 @@ class UsagerModelTest(TestCase):
         first_usager.birthplace = 27681
         first_usager.birthcountry = 99100
         first_usager.email = "user@test.user"
+        first_usager.sub = "1233"
         first_usager.save()
 
         second_usager = Usager()
@@ -48,6 +49,7 @@ class UsagerModelTest(TestCase):
         second_usager.birthplace = 84016
         second_usager.birthcountry = 99100
         second_usager.email = "other_user@test.user"
+        second_usager.sub = "1234"
         second_usager.save()
 
         saved_items = Usager.objects.all()

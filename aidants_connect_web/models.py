@@ -36,8 +36,8 @@ class Usager(models.Model):
     family_name = models.TextField(blank=False)
     preferred_username = models.TextField(blank=True)
     birthdate = models.DateField(blank=False)
-    GENDER = (("F", "Femme"), ("H", "Homme"))
-    gender = models.CharField(max_length=1, choices=GENDER, default="F", blank=False)
+    GENDER = (("female", "Femme"), ("male", "Homme"))
+    gender = models.CharField(max_length=6, choices=GENDER, default="F", blank=False)
     birthplace = models.PositiveIntegerField(
         validators=[MinValueValidator(9999), MaxValueValidator(100000)], blank=False
     )
@@ -46,7 +46,7 @@ class Usager(models.Model):
         default=99100,
         blank=False,
     )
-    sub = models.TextField(default="No Sub yet")
+    sub = models.TextField(blank=False)
     email = models.EmailField(blank=False)
 
     def __str__(self):

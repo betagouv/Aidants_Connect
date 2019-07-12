@@ -98,16 +98,18 @@ def mandat(request):
 @login_required
 def recap(request):
     user = request.user
+    # TODO check if user already exists via sub
+
     usager = Usager(
         given_name=request.session.get("usager")["given_name"],
         family_name=request.session.get("usager")["family_name"],
-        birthdate=date(1945, 10, 20),
-        gender="M",
-        birthplace="84016",
-        birthcountry="99100",
-        email="user@test.fr",
+        birthdate=request.session.get("usager")["birthdate"],
+        gender=request.session.get("usager")["gender"],
+        birthplace=request.session.get("usager")["birthplace"],
+        birthcountry=request.session.get("usager")["birthcountry"],
+        email=request.session.get("usager")["email"],
+        sub=request.session.get("usager")["sub"],
     )
-
     mandat = request.session.get("mandat")
 
     if request.method == "GET":
@@ -126,7 +128,6 @@ def recap(request):
 
     else:
         form = request.POST
-
         if form.get("personal_data") and form.get("brief"):
             mandat["aidant"] = user
 
@@ -167,17 +168,21 @@ def authorize(request):
         this_connexion.save()
 
         if state is False:
+            log.info("403: There is no state")
             return HttpResponseForbidden()
 
+        aidant = request.user
+        usagers_id = Mandat.objects.values_list("usager", flat=True)
+        # TODO Do we send the whole usager ? or only first name and last name and sub ?
+        usagers = [Usager.objects.get(id=usager_id) for usager_id in usagers_id]
         return render(
             request,
             "aidants_connect_web/authorize.html",
-            {"state": state, "form": UsagerForm()},
+            {"state": state, "usagers": usagers, "aidant": aidant},
         )
 
     else:
         this_state = request.POST.get("state")
-        form = UsagerForm(request.POST)
         try:
             that_connection = Connection.objects.get(state=this_state)
             state = that_connection.state
@@ -187,27 +192,12 @@ def authorize(request):
             log.info(this_state)
             return HttpResponseForbidden()
 
-        if form.is_valid():
-            sub = token_urlsafe(64)
-            post = form.save(commit=False)
+        # TODO check if connection has not expired
 
-            post.sub = sub
-            # post.birthplace
-            # post.birthcountry
+        that_connection.sub_usager = request.POST.get("chosen_user")
+        that_connection.save()
 
-            post.save()
-
-            that_connection.sub_usager = sub
-            that_connection.save()
-
-            return redirect(f"{fc_callback_url}?code={code}&state={state}")
-        else:
-            log.info("invalid form")
-            return render(
-                request,
-                "aidants_connect_web/authorize.html",
-                {"state": state, "form": form},
-            )
+        return redirect(f"{fc_callback_url}?code={code}&state={state}")
 
 
 # Due to `no_referer` error

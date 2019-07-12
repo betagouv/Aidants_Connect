@@ -13,19 +13,23 @@ from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
+from aidants_connect_web.forms import MandatForm
+
 from aidants_connect_web.views import (
     home_page,
     authorize,
     token,
     user_info,
     logout_page,
+    recap,
 )
-from aidants_connect_web.forms import UsagerForm
+
 from aidants_connect_web.models import (
     Connection,
     User,
     Usager,
     CONNECTION_EXPIRATION_TIME,
+    Mandat,
 )
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -62,12 +66,87 @@ class LogoutPageTests(TestCase):
         self.assertRedirects(response, "/")
 
 
+class RecapTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
+    def test_recap_url_triggers_the_recap_view(self):
+        found = resolve("/recap/")
+        self.assertEqual(found.func, recap)
+
+    def test_recap_url_triggers_the_recap_template(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = {
+            "given_name": "Fabrice",
+            "family_name": "Mercier",
+            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "female",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+        mandat_form = MandatForm(
+            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+        )
+        mandat_form.is_valid()
+        session["mandat"] = mandat_form.cleaned_data
+        session.save()
+
+        response = self.client.get("/recap/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/mandat/recap.html")
+
+    def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = {
+            "given_name": "Fabrice",
+            "family_name": "Mercier",
+            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "F",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+        mandat_form = MandatForm(
+            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+        )
+        mandat_form.is_valid()
+        session["mandat"] = mandat_form.cleaned_data
+        session.save()
+
+        response = self.client.post(
+            "/recap/", data={"personal_data": True, "brief": True}
+        )
+
+        self.assertRedirects(response, "/dashboard/")
+
+
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
+        self.usager = Usager()
+        self.usager.state = ("test_state",)
+        self.usager.given_name = ("Joséphine",)
+        self.usager.family_name = ("ST-PIERRE",)
+        self.usager.preferred_username = ("ST-PIERRE",)
+        self.usager.birthdate = ("1969-12-15",)
+        self.usager.gender = ("female",)
+        self.usager.birthplace = ("70447",)
+        self.usager.birthcountry = ("99100",)
+        self.usager.sub = ("123",)
+        self.usager.email = ("User@user.domain",)
 
     def test_authorize_url_triggers_the_authorize_view(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -106,55 +185,17 @@ class AuthorizeTests(TestCase):
 
         self.assertTemplateUsed(response, "aidants_connect_web/authorize.html")
 
-    def test_authorize_page_uses_item_form(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
-        fc_call_state = token_urlsafe(4)
-        fc_call_nonce = token_urlsafe(4)
-        fc_response_type = "code"
-        fc_client_id = "FranceConnectInteg"
-        fc_redirect_uri = (
-            "https%3A%2F%2Ffcp.integ01.dev-franceconnect.fr%2Foidc_callback"
-        )
-        fc_scopes = "openid profile email address phone birth"
-        fc_acr_values = "eidas1"
-
-        response = self.client.get(
-            "/authorize/",
-            data={
-                "state": fc_call_state,
-                "nonce": fc_call_nonce,
-                "response_type": fc_response_type,
-                "client_id": fc_client_id,
-                "redirect_uri": fc_redirect_uri,
-                "scope": fc_scopes,
-                "acr_values": fc_acr_values,
-            },
-        )
-        self.assertIsInstance(response.context["form"], UsagerForm)
-
     def test_sending_user_information_triggers_callback(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
-        connection = Connection()
-        connection.state = "test_state"
-        connection.code = "test_code"
-        connection.nonce = "test_nonce"
-        connection.sub = "test_sub"
-        connection.save()
+        c = Connection()
+        c.state = "test_state"
+        c.code = "test_code"
+        c.nonce = "test_nonce"
+        c.sub_usager = "test_sub"
+        c.save()
 
         response = self.client.post(
-            "/authorize/",
-            data={
-                "state": "test_state",
-                "given_name": "Joséphine",
-                "family_name": "ST-PIERRE",
-                "preferred_username": "ST-PIERRE",
-                "birthdate": "1969-12-15",
-                "gender": "F",
-                "birthplace": "70447",
-                "birthcountry": "99100",
-                "sub": "123",
-                "email": "User@user.domain",
-            },
+            "/authorize/", data={"state": "test_state", "chosen_user": "123"}
         )
         try:
             saved_items = Connection.objects.all()
