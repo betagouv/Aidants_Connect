@@ -33,7 +33,7 @@ class UsagerModelTest(TestCase):
         first_usager.family_name = "TEST Family Name éèà"
         first_usager.preferred_username = "I prefer being called this"
         first_usager.birthdate = date(1902, 6, 30)
-        first_usager.gender = "F"
+        first_usager.gender = "female"
         first_usager.birthplace = 27681
         first_usager.birthcountry = 99100
         first_usager.email = "user@test.user"
@@ -45,7 +45,7 @@ class UsagerModelTest(TestCase):
         second_usager.family_name = "TEST Family Name éèà"
         second_usager.preferred_username = "I prefer being called this"
         second_usager.birthdate = date(1945, 10, 20)
-        second_usager.gender = "M"
+        second_usager.gender = "male"
         second_usager.birthplace = 84016
         second_usager.birthcountry = 99100
         second_usager.email = "other_user@test.user"
@@ -72,7 +72,7 @@ class MandatModelTest(TestCase):
             given_name="Homer",
             family_name="Simpson",
             birthdate="1902-06-30",
-            gender="M",
+            gender="male",
             birthplace=27681,
             birthcountry=99100,
             email="homer@simpson.com",
@@ -87,7 +87,7 @@ class MandatModelTest(TestCase):
             given_name="Ned",
             family_name="Flanders",
             birthdate="1902-06-30",
-            gender="M",
+            gender="male",
             birthplace=26934,
             birthcountry=99100,
             email="ned@flanders.com",

@@ -28,7 +28,6 @@ from aidants_connect_web.models import (
     User,
     Usager,
     CONNECTION_EXPIRATION_TIME,
-    Mandat,
 )
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -233,7 +232,7 @@ class AuthorizeTests(TestCase):
         except ObjectDoesNotExist:
             raise AttributeError
         self.assertEqual(saved_items.count(), 1)
-        connection = Connection.objects.get(id=1)
+        connection = saved_items[0]
         code = connection.code
         state = connection.state
         self.assertEqual(connection.sub_usager, "123")

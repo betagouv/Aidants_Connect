@@ -35,10 +35,11 @@ class CreateNewMandat(StaticLiveServerTestCase):
         submit_button = self.selenium.find_element_by_xpath('//input[@value="Login"]')
         submit_button.click()
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
+        self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
+
         self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 0)
 
-        # Create new mandat
-        self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
+                # Create new mandat
         add_user_button = self.selenium.find_element_by_id("add_user")
         add_user_button.click()
         procedure_section = self.selenium.find_element_by_id("select_procedure")
