@@ -5,25 +5,7 @@ from aidants_connect_web.models import User
 import time
 
 
-class HomePage(StaticLiveServerTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(10)
-        cls.selenium.get(f"{cls.live_server_url}/")
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super().tearDownClass()
-
-    def test_page_loads(self):
-        H1 = self.selenium.find_element_by_tag_name("h1")
-        self.assertEqual(H1.text, "Bienvenue sur Aidants Connect")
-
-
-class LoginPage(StaticLiveServerTestCase):
+class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         # FC only calls back on specific port
@@ -93,27 +75,23 @@ class LoginPage(StaticLiveServerTestCase):
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
         time.sleep(4)
+
+        # Recap Page
         recap_title = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(recap_title, "Récapitulatif")
         recap_text = self.selenium.find_element_by_id("recap_text").text
         self.assertIn("Mélaine Évelyne TROIS", recap_text)
+        checkboxes = self.selenium.find_elements_by_tag_name("input")
+        checkboxes[0].click()
+        checkboxes[1].click()
+        submit_button = checkboxes[2]
+        self.assertEqual(submit_button.get_attribute("type"), "submit")
+        submit_button.click()
+        time.sleep(4)
+
+        # back to dashboard
+        self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
 
 
-class Error404Page(StaticLiveServerTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(10)
-        cls.selenium.get(f"{cls.live_server_url}/thiswontwork")
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super().tearDownClass()
 
-    def test_404_page(self):
-        H1 = self.selenium.find_element_by_tag_name("h1")
-        self.assertEqual(H1.text, "Cette page n’existe pas (404)")
-        link_to_home = self.selenium.find_element_by_id("to-home")
-        self.assertEqual(link_to_home.text, "Retourner à l’accueil")
