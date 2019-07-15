@@ -35,8 +35,9 @@ class CreateNewMandat(StaticLiveServerTestCase):
         submit_button = self.selenium.find_element_by_xpath('//input[@value="Login"]')
         submit_button.click()
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
+        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 0)
 
-        # Create new user
+        # Create new mandat
         self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
         add_user_button = self.selenium.find_element_by_id("add_user")
         add_user_button.click()
@@ -82,16 +83,17 @@ class CreateNewMandat(StaticLiveServerTestCase):
         recap_text = self.selenium.find_element_by_id("recap_text").text
         self.assertIn("Mélaine Évelyne TROIS", recap_text)
         checkboxes = self.selenium.find_elements_by_tag_name("input")
-        checkboxes[0].click()
-        checkboxes[1].click()
-        submit_button = checkboxes[2]
+        id_personal_data = checkboxes[1]
+        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
+        id_personal_data.click()
+        id_brief = checkboxes[2]
+        self.assertEqual(id_brief.get_attribute("id"), "id_brief")
+        id_brief.click()
+        submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
         time.sleep(4)
 
         # back to dashboard
         self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
-
-
-
-
+        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 2)
