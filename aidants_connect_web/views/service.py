@@ -11,6 +11,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.forms.models import model_to_dict
 from django.conf import settings
 from django.utils import timezone
@@ -100,16 +101,19 @@ def recap(request):
     user = request.user
     # TODO check if user already exists via sub
 
+    usager_data = request.session.get("usager")
+
     usager = Usager(
-        given_name=request.session.get("usager")["given_name"],
-        family_name=request.session.get("usager")["family_name"],
-        birthdate=request.session.get("usager")["birthdate"],
-        gender=request.session.get("usager")["gender"],
-        birthplace=request.session.get("usager")["birthplace"],
-        birthcountry=request.session.get("usager")["birthcountry"],
-        email=request.session.get("usager")["email"],
-        sub=request.session.get("usager")["sub"],
+        given_name=usager_data.get("given_name"),
+        family_name=usager_data.get("family_name"),
+        birthdate=usager_data.get("birthdate"),
+        gender=usager_data.get("gender"),
+        birthplace=usager_data.get("birthplace"),
+        birthcountry=usager_data.get("birthcountry"),
+        email=usager_data.get("email"),
+        sub=usager_data.get("sub"),
     )
+
     mandat = request.session.get("mandat")
 
     if request.method == "GET":
@@ -130,8 +134,13 @@ def recap(request):
         form = request.POST
         if form.get("personal_data") and form.get("brief"):
             mandat["aidant"] = user
+            try:
+                usager.save()
+            except IntegrityError as e:
+                log.error(e)
+                messages.error(request, f"The FranceConnect ID is not complete : {e}")
+                return redirect("dashboard")
 
-            usager.save()
             mandat["usager"] = usager
 
             new_mandat = Mandat.objects.create(**mandat)

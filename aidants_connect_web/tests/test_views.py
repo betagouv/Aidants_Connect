@@ -12,9 +12,9 @@ from django.test import TestCase, override_settings
 from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from django.contrib.messages import get_messages
 
 from aidants_connect_web.forms import MandatForm
-
 from aidants_connect_web.views import (
     home_page,
     authorize,
@@ -23,7 +23,6 @@ from aidants_connect_web.views import (
     logout_page,
     recap,
 )
-
 from aidants_connect_web.models import (
     Connection,
     User,
@@ -101,6 +100,7 @@ class RecapTests(TestCase):
         response = self.client.get("/recap/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/mandat/recap.html")
+        self.assertEqual(Usager.objects.all().count(), 0)
 
     def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -126,8 +126,39 @@ class RecapTests(TestCase):
         response = self.client.post(
             "/recap/", data={"personal_data": True, "brief": True}
         )
-
+        self.assertEqual(Usager.objects.all().count(), 1)
+        usager = Usager.objects.get(given_name="Fabrice")
+        self.assertEqual(
+            usager.sub,
+            "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+        )
+        self.assertEqual(usager.birthplace, 95277)
         self.assertRedirects(response, "/dashboard/")
+
+    def test_post_to_recap_without_sub_creates_error(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = {
+            "given_name": "Fabrice",
+            "family_name": "Mercier",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "F",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+        mandat_form = MandatForm(
+            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+        )
+        mandat_form.is_valid()
+        session["mandat"] = mandat_form.cleaned_data
+        session.save()
+        response = self.client.post(
+            "/recap/", data={"personal_data": True, "brief": True}
+        )
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
 
 
 class AuthorizeTests(TestCase):
@@ -202,9 +233,11 @@ class AuthorizeTests(TestCase):
         except ObjectDoesNotExist:
             raise AttributeError
         self.assertEqual(saved_items.count(), 1)
-        code = saved_items[0].code
-        state = saved_items[0].state
-        self.assertNotEqual(saved_items[0].nonce, "No Nonce Provided")
+        connection = Connection.objects.get(id=1)
+        code = connection.code
+        state = connection.state
+        self.assertEqual(connection.sub_usager, "123")
+        self.assertNotEqual(connection.nonce, "No Nonce Provided")
         url = f"{fc_callback_url}?code={code}&state={state}"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
