@@ -47,7 +47,10 @@ class Usager(models.Model):
         blank=False,
     )
     sub = models.TextField(blank=False)
-    email = models.EmailField(blank=False)
+
+    email = models.EmailField(
+        blank=False, default="noemailprovided@aidantconnect.beta.gouv.fr"
+    )
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"

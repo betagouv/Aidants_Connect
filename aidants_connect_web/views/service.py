@@ -110,9 +110,13 @@ def recap(request):
         gender=usager_data.get("gender"),
         birthplace=usager_data.get("birthplace"),
         birthcountry=usager_data.get("birthcountry"),
-        email=usager_data.get("email"),
+        # TODO fix identity provider example
+        # email=usager_data.get("email"),
         sub=usager_data.get("sub"),
     )
+
+    if usager_data.get("email"):
+        usager.email = usager_data.get("email")
 
     mandat = request.session.get("mandat")
 
@@ -137,6 +141,7 @@ def recap(request):
             try:
                 usager.save()
             except IntegrityError as e:
+                log.error("Error happened in Recap")
                 log.error(e)
                 messages.error(request, f"The FranceConnect ID is not complete : {e}")
                 return redirect("dashboard")
@@ -144,7 +149,6 @@ def recap(request):
             mandat["usager"] = usager
 
             new_mandat = Mandat.objects.create(**mandat)
-            log.info(type(new_mandat.perimeter))
 
             messages.success(request, "Le mandat a été créé avec succès !")
 
@@ -167,7 +171,6 @@ def recap(request):
 @login_required
 def authorize(request):
     fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
-    log.info(fc_callback_url)
 
     if request.method == "GET":
         state = request.GET.get("state", False)
@@ -261,7 +264,6 @@ def token(request):
     }
 
     encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
-    log.info(encoded_id_token.decode("utf-8"))
     access_token = token_urlsafe(64)
     connection.access_token = access_token
     connection.save()
