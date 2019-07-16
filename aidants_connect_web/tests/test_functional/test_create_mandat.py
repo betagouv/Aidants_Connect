@@ -70,19 +70,23 @@ class CreateNewMandat(StaticLiveServerTestCase):
         demonstration_hex.click()
         time.sleep(2)
 
-        # Use the Mélaine_trois credentials
+        # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element_by_tag_name("h3").text
         self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
         submit_button = self.selenium.find_elements_by_tag_name("input")[2]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
-        time.sleep(4)
 
-        # Recap Page
+        # FC - Validate the information
+        submit_button = self.selenium.find_element_by_tag_name("input")
+        submit_button.click()
+        time.sleep(2)
+
+        # Recap all the information for the Mandat
         recap_title = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(recap_title, "Récapitulatif")
         recap_text = self.selenium.find_element_by_id("recap_text").text
-        self.assertIn("Mélaine Évelyne TROIS", recap_text)
+        self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements_by_tag_name("input")
         id_personal_data = checkboxes[1]
         self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
