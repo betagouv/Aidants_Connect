@@ -261,6 +261,17 @@ class FISelectDemarcheTest(TestCase):
             sub="123",
             email="User@user.domain",
         )
+        self.usager2 = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="123",
+            email="User@user.domain",
+        )
         self.connection = Connection.objects.create(
             state="test_state", code="test_code", nonce="test_nonce", sub_usager="123"
         )

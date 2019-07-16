@@ -184,6 +184,7 @@ def authorize(request):
         usagers_id = Mandat.objects.values_list("usager", flat=True)
         # TODO Do we send the whole usager ? or only first name and last name and sub ?
         usagers = [Usager.objects.get(id=usager_id) for usager_id in usagers_id]
+
         return render(
             request,
             "aidants_connect_web/authorize.html",
@@ -207,6 +208,7 @@ def authorize(request):
 
         # TODO check if connection has not expired
         # TODO change "chosen_user" to chosen_usager
+
         that_connection.sub_usager = Usager.objects.get(
             id=request.POST.get("chosen_user")
         ).sub
@@ -221,7 +223,11 @@ def fi_select_demarche(request):
     if request.method == "GET":
         state = request.GET.get("state", False)
         sub_usager = Connection.objects.get(state=state).sub_usager
-        usager = Usager.objects.get(sub=sub_usager)
+        # TODO for Usager, should we use sub_usager or internal ID ?
+        # TODO Should we have different instances of the same usager for each aidant
+        #  ? for each mandat ? at all ?
+        # the [Ø] in the following line is in case the same user has several mandat
+        usager = Usager.objects.filter(sub=sub_usager)[0]
         mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
 
         demarches_per_mandat = mandats.values_list("perimeter", flat=True)
