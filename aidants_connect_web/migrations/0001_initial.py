@@ -15,76 +15,248 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ('auth', '0011_update_proxy_permissions'),
-    ]
+    dependencies = [("auth", "0011_update_proxy_permissions")]
 
     operations = [
         migrations.CreateModel(
-            name='User',
+            name="User",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
-                ('username', models.CharField(error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.', max_length=150, unique=True, validators=[django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='username')),
-                ('first_name', models.CharField(blank=True, max_length=30, verbose_name='first name')),
-                ('last_name', models.CharField(blank=True, max_length=150, verbose_name='last name')),
-                ('email', models.EmailField(blank=True, max_length=254, verbose_name='email address')),
-                ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
-                ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.Group', verbose_name='groups')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.Permission', verbose_name='user permissions')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("password", models.CharField(max_length=128, verbose_name="password")),
+                (
+                    "last_login",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="last login"
+                    ),
+                ),
+                (
+                    "is_superuser",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates that this user has all permissions without explicitly assigning them.",
+                        verbose_name="superuser status",
+                    ),
+                ),
+                (
+                    "username",
+                    models.CharField(
+                        error_messages={
+                            "unique": "A user with that username already exists."
+                        },
+                        help_text="Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                        max_length=150,
+                        unique=True,
+                        validators=[
+                            django.contrib.auth.validators.UnicodeUsernameValidator()
+                        ],
+                        verbose_name="username",
+                    ),
+                ),
+                (
+                    "first_name",
+                    models.CharField(
+                        blank=True, max_length=30, verbose_name="first name"
+                    ),
+                ),
+                (
+                    "last_name",
+                    models.CharField(
+                        blank=True, max_length=150, verbose_name="last name"
+                    ),
+                ),
+                (
+                    "email",
+                    models.EmailField(
+                        blank=True, max_length=254, verbose_name="email address"
+                    ),
+                ),
+                (
+                    "is_staff",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether the user can log into this admin site.",
+                        verbose_name="staff status",
+                    ),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
+                        verbose_name="active",
+                    ),
+                ),
+                (
+                    "date_joined",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date joined"
+                    ),
+                ),
+                (
+                    "groups",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="The groups this user belongs to. A user will get all permissions granted to each of their groups.",
+                        related_name="user_set",
+                        related_query_name="user",
+                        to="auth.Group",
+                        verbose_name="groups",
+                    ),
+                ),
+                (
+                    "user_permissions",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="Specific permissions for this user.",
+                        related_name="user_set",
+                        related_query_name="user",
+                        to="auth.Permission",
+                        verbose_name="user permissions",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'user',
-                'verbose_name_plural': 'users',
-                'abstract': False,
+                "verbose_name": "user",
+                "verbose_name_plural": "users",
+                "abstract": False,
             },
-            managers=[
-                ('objects', django.contrib.auth.models.UserManager()),
+            managers=[("objects", django.contrib.auth.models.UserManager())],
+        ),
+        migrations.CreateModel(
+            name="Connection",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("state", models.TextField()),
+                ("code", models.TextField()),
+                ("nonce", models.TextField(default="No Nonce Provided")),
+                (
+                    "expiresOn",
+                    models.DateTimeField(
+                        default=aidants_connect_web.models.default_expiration_date
+                    ),
+                ),
+                ("sub_usager", models.TextField(default="No sub Provided")),
+                ("access_token", models.TextField(default="No token Provided")),
+                (
+                    "connection_type",
+                    models.CharField(
+                        choices=[("FS", "FC as FS"), ("FI", "FC as FI")],
+                        default="FI",
+                        max_length=2,
+                    ),
+                ),
+                ("demarche", models.TextField(default="No demarche provided")),
+                ("complete", models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
-            name='Connection',
+            name="Usager",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state', models.TextField()),
-                ('code', models.TextField()),
-                ('nonce', models.TextField(default='No Nonce Provided')),
-                ('expiresOn', models.DateTimeField(default=aidants_connect_web.models.default_expiration_date)),
-                ('sub_usager', models.TextField(default='No sub Provided')),
-                ('access_token', models.TextField(default='No token Provided')),
-                ('connection_type', models.CharField(choices=[('FS', 'FC as FS'), ('FI', 'FC as FI')], default='FI', max_length=2)),
-                ('demarche', models.TextField(default='No demarche provided')),
-                ('complete', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("given_name", models.TextField()),
+                ("family_name", models.TextField()),
+                ("preferred_username", models.TextField(blank=True)),
+                ("birthdate", models.DateField()),
+                (
+                    "gender",
+                    models.CharField(
+                        choices=[("female", "Femme"), ("male", "Homme")],
+                        default="F",
+                        max_length=6,
+                    ),
+                ),
+                (
+                    "birthplace",
+                    models.PositiveIntegerField(
+                        validators=[
+                            django.core.validators.MinValueValidator(9999),
+                            django.core.validators.MaxValueValidator(100000),
+                        ]
+                    ),
+                ),
+                (
+                    "birthcountry",
+                    models.IntegerField(
+                        default=99100,
+                        validators=[
+                            django.core.validators.MinValueValidator(99100),
+                            django.core.validators.MaxValueValidator(99500),
+                        ],
+                    ),
+                ),
+                ("sub", models.TextField()),
+                (
+                    "email",
+                    models.EmailField(
+                        default="noemailprovided@aidantconnect.beta.gouv.fr",
+                        max_length=254,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Usager',
+            name="Mandat",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('given_name', models.TextField()),
-                ('family_name', models.TextField()),
-                ('preferred_username', models.TextField(blank=True)),
-                ('birthdate', models.DateField()),
-                ('gender', models.CharField(choices=[('female', 'Femme'), ('male', 'Homme')], default='F', max_length=6)),
-                ('birthplace', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(9999), django.core.validators.MaxValueValidator(100000)])),
-                ('birthcountry', models.IntegerField(default=99100, validators=[django.core.validators.MinValueValidator(99100), django.core.validators.MaxValueValidator(99500)])),
-                ('sub', models.TextField()),
-                ('email', models.EmailField(default='noemailprovided@aidantconnect.beta.gouv.fr', max_length=254)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Mandat',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('perimeter', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=100), size=None)),
-                ('creation_date', models.DateTimeField(default=django.utils.timezone.now)),
-                ('duration', models.IntegerField(default=3)),
-                ('aidant', models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('usager', models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, to='aidants_connect_web.Usager')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "perimeter",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(max_length=100), size=None
+                    ),
+                ),
+                (
+                    "creation_date",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                ("duration", models.IntegerField(default=3)),
+                (
+                    "aidant",
+                    models.ForeignKey(
+                        default=0,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "usager",
+                    models.ForeignKey(
+                        default=0,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="aidants_connect_web.Usager",
+                    ),
+                ),
             ],
         ),
     ]

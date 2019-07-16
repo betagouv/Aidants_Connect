@@ -39,7 +39,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
 
         self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 0)
 
-                # Create new mandat
+        # Create new mandat
         add_user_button = self.selenium.find_element_by_id("add_user")
         add_user_button.click()
         procedure_section = self.selenium.find_element_by_id("select_procedure")

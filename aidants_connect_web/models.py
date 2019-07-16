@@ -24,6 +24,8 @@ class Connection(models.Model):
     connection_type = models.CharField(
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
     )
+    demarche = models.TextField(default="No demarche provided")
+    complete = models.BooleanField(default=False)
 
 
 class User(AbstractUser):

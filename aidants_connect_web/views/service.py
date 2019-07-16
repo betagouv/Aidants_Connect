@@ -2,7 +2,6 @@ import logging
 import jwt
 import time
 import re
-from datetime import date
 from secrets import token_urlsafe
 
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
@@ -17,6 +16,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.messages import get_messages
+from django.urls import reverse
 
 from aidants_connect_web.models import (
     Connection,
@@ -24,7 +24,7 @@ from aidants_connect_web.models import (
     Usager,
     CONNECTION_EXPIRATION_TIME,
 )
-from aidants_connect_web.forms import UsagerForm, MandatForm
+from aidants_connect_web.forms import MandatForm
 
 
 logging.basicConfig(level=logging.INFO)
@@ -148,7 +148,7 @@ def recap(request):
 
             mandat["usager"] = usager
 
-            new_mandat = Mandat.objects.create(**mandat)
+            Mandat.objects.create(**mandat)
 
             messages.success(request, "Le mandat a été créé avec succès !")
 
@@ -170,15 +170,12 @@ def recap(request):
 
 @login_required
 def authorize(request):
-    fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
-
     if request.method == "GET":
         state = request.GET.get("state", False)
         nonce = request.GET.get("nonce", False)
         code = token_urlsafe(64)
         this_connexion = Connection(state=state, code=code, nonce=nonce)
         this_connexion.save()
-
         if state is False:
             log.info("403: There is no state")
             return HttpResponseForbidden()
@@ -198,18 +195,67 @@ def authorize(request):
         try:
             that_connection = Connection.objects.get(state=this_state)
             state = that_connection.state
+
+        except ObjectDoesNotExist:
+            log.info("No connection corresponds to the state:")
+            log.info(this_state)
+            return HttpResponseForbidden()
+        except Connection.MultipleObjectsReturned:
+            log.info("This connection is not unique. State:")
+            log.info(this_state)
+            return HttpResponseForbidden()
+
+        # TODO check if connection has not expired
+        # TODO change "chosen_user" to chosen_usager
+        that_connection.sub_usager = Usager.objects.get(
+            id=request.POST.get("chosen_user")
+        ).sub
+        that_connection.save()
+        select_demarches_url = f"{reverse('fi_select_demarche')}?state={state}"
+        return redirect(select_demarches_url)
+
+
+@login_required
+def fi_select_demarche(request):
+
+    if request.method == "GET":
+        state = request.GET.get("state", False)
+        sub_usager = Connection.objects.get(state=state).sub_usager
+        usager = Usager.objects.get(sub=sub_usager)
+        mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
+
+        demarches_per_mandat = mandats.values_list("perimeter", flat=True)
+
+        demarches = set(
+            [demarche for sublist in demarches_per_mandat for demarche in sublist]
+        )
+
+        return render(
+            request,
+            "aidants_connect_web/fi_select_demarche.html",
+            {"state": state, "demarches": demarches, "aidant": request.user.first_name},
+        )
+    else:
+        this_state = request.POST.get("state")
+        try:
+            that_connection = Connection.objects.get(state=this_state)
             code = that_connection.code
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the state:")
             log.info(this_state)
             return HttpResponseForbidden()
+        except Connection.MultipleObjectsReturned:
+            log.info("This connection is not unique. State:")
+            log.info(this_state)
+            return HttpResponseForbidden()
 
         # TODO check if connection has not expired
-
-        that_connection.sub_usager = request.POST.get("chosen_user")
+        that_connection.demarche = request.POST.get("chosen_demarche")
+        that_connection.complete = True
         that_connection.save()
 
-        return redirect(f"{fc_callback_url}?code={code}&state={state}")
+        fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
+        return redirect(f"{fc_callback_url}?code={code}&state={this_state}")
 
 
 # Due to `no_referer` error

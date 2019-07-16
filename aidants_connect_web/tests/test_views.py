@@ -13,6 +13,7 @@ from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib.messages import get_messages
+from django.urls import reverse
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views import (
@@ -22,11 +23,13 @@ from aidants_connect_web.views import (
     user_info,
     logout_page,
     recap,
+    fi_select_demarche,
 )
 from aidants_connect_web.models import (
     Connection,
     User,
     Usager,
+    Mandat,
     CONNECTION_EXPIRATION_TIME,
 )
 
@@ -166,17 +169,17 @@ class AuthorizeTests(TestCase):
         self.user = User.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
-        self.usager = Usager()
-        self.usager.state = ("test_state",)
-        self.usager.given_name = ("Joséphine",)
-        self.usager.family_name = ("ST-PIERRE",)
-        self.usager.preferred_username = ("ST-PIERRE",)
-        self.usager.birthdate = ("1969-12-15",)
-        self.usager.gender = ("female",)
-        self.usager.birthplace = ("70447",)
-        self.usager.birthcountry = ("99100",)
-        self.usager.sub = ("123",)
-        self.usager.email = ("User@user.domain",)
+        self.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="123",
+            email="User@user.domain",
+        )
 
     def test_authorize_url_triggers_the_authorize_view(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -223,9 +226,9 @@ class AuthorizeTests(TestCase):
         c.nonce = "test_nonce"
         c.sub_usager = "test_sub"
         c.save()
-
+        usager_id = self.usager.id
         response = self.client.post(
-            "/authorize/", data={"state": "test_state", "chosen_user": "123"}
+            "/authorize/", data={"state": "test_state", "chosen_user": usager_id}
         )
         try:
             saved_items = Connection.objects.all()
@@ -233,12 +236,71 @@ class AuthorizeTests(TestCase):
             raise AttributeError
         self.assertEqual(saved_items.count(), 1)
         connection = saved_items[0]
-        code = connection.code
         state = connection.state
         self.assertEqual(connection.sub_usager, "123")
         self.assertNotEqual(connection.nonce, "No Nonce Provided")
-        url = f"{fc_callback_url}?code={code}&state={state}"
+
+        url = reverse("fi_select_demarche") + "?state=" + state
         self.assertRedirects(response, url, fetch_redirect_response=False)
+
+
+class FISelectDemarcheTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+        self.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="123",
+            email="User@user.domain",
+        )
+        self.connection = Connection.objects.create(
+            state="test_state", code="test_code", nonce="test_nonce", sub_usager="123"
+        )
+        self.mandat = Mandat.objects.create(
+            aidant=self.user,
+            usager=self.usager,
+            perimeter=["naissance", "aspa"],
+            duration=6,
+        )
+
+        self.mandat_2 = Mandat.objects.create(
+            aidant=self.user, usager=self.usager, perimeter=["carte_grise"], duration=3
+        )
+
+        self.mandat_3 = Mandat.objects.create(
+            aidant=self.user, usager=self.usager, perimeter=["aspa"], duration=3
+        )
+
+    def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        found = resolve("/select_demarche/")
+        self.assertEqual(found.func, fi_select_demarche)
+
+    def test_FI_select_demarche_triggers_FI_select_demarche_template(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+
+        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+
+        self.assertTemplateUsed(response, "aidants_connect_web/fi_select_demarche.html")
+
+    def test_get_perimeters_for_one_usager_and_two_mandats(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+
+        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+        self.assertEqual(
+            response.context["demarches"], {"naissance", "aspa", "carte_grise"}
+        )
+
+    # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
+    #  code}&state={state}"
 
 
 @override_settings(

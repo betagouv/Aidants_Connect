@@ -8,6 +8,7 @@ from .service import (
     token,
     user_info,
     humanize_demarche_names,
+    fi_select_demarche,
 )
 from .FC_as_FS import fc_authorize, fc_callback
 
@@ -23,4 +24,5 @@ __all__ = [
     humanize_demarche_names,
     fc_authorize,
     fc_callback,
+    fi_select_demarche,
 ]

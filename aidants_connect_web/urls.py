@@ -14,4 +14,5 @@ urlpatterns = [
     path("fc_authorize/", views.fc_authorize, name="fc_authorize"),
     path("callback/", views.fc_callback, name="fc_callback"),
     path("logout-callback/", views.recap, name="recap"),
+    path("select_demarche/", views.fi_select_demarche, name="fi_select_demarche"),
 ]
