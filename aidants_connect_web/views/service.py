@@ -349,7 +349,8 @@ def user_info(request):
 
     if connection.expiresOn < timezone.now():
         return HttpResponseForbidden()
-    usager = Usager.objects.get(sub=connection.sub_usager)
+    # TODO decide how to deal with user having several mandats/aidants
+    usager = Usager.objects.filter(sub=connection.sub_usager)[0]
     usager = model_to_dict(usager)
     del usager["id"]
     birthdate = usager["birthdate"]

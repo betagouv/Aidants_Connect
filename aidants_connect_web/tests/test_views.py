@@ -421,17 +421,29 @@ class UserInfoTests(TestCase):
         )
         self.connection.save()
 
-        self.usager = Usager()
-        self.usager.given_name = "Joséphine"
-        self.usager.family_name = "ST-PIERRE"
-        self.usager.preferred_username = "ST-PIERRE"
-        self.usager.birthdate = date(1969, 12, 25)
-        self.usager.gender = "F"
-        self.usager.birthplace = 70447
-        self.usager.birthcountry = 99100
-        self.usager.sub = "test_sub"
-        self.usager.email = "User@user.domain"
-        self.usager.save()
+        self.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate=date(1969, 12, 25),
+            gender="F",
+            birthplace=70447,
+            birthcountry=99100,
+            sub="test_sub",
+            email="User@user.domain",
+        )
+
+        self.usager_2 = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate=date(1969, 12, 25),
+            gender="F",
+            birthplace=70447,
+            birthcountry=99100,
+            sub="test_sub",
+            email="User@user.domain",
+        )
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/userinfo/")
