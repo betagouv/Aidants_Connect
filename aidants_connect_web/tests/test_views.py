@@ -12,19 +12,24 @@ from django.test import TestCase, override_settings
 from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from django.contrib.messages import get_messages
+from django.urls import reverse
 
+from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views import (
     home_page,
     authorize,
     token,
     user_info,
     logout_page,
+    recap,
+    fi_select_demarche,
 )
-from aidants_connect_web.forms import UsagerForm
 from aidants_connect_web.models import (
     Connection,
     User,
     Usager,
+    Mandat,
     CONNECTION_EXPIRATION_TIME,
 )
 
@@ -62,11 +67,118 @@ class LogoutPageTests(TestCase):
         self.assertRedirects(response, "/")
 
 
+class RecapTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
+    def test_recap_url_triggers_the_recap_view(self):
+        found = resolve("/recap/")
+        self.assertEqual(found.func, recap)
+
+    def test_recap_url_triggers_the_recap_template(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = {
+            "given_name": "Fabrice",
+            "family_name": "Mercier",
+            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "female",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+        mandat_form = MandatForm(
+            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+        )
+        mandat_form.is_valid()
+        session["mandat"] = mandat_form.cleaned_data
+        session.save()
+
+        response = self.client.get("/recap/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/mandat/recap.html")
+        self.assertEqual(Usager.objects.all().count(), 0)
+
+    def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = {
+            "given_name": "Fabrice",
+            "family_name": "Mercier",
+            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "F",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+        mandat_form = MandatForm(
+            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+        )
+        mandat_form.is_valid()
+        session["mandat"] = mandat_form.cleaned_data
+        session.save()
+
+        response = self.client.post(
+            "/recap/", data={"personal_data": True, "brief": True}
+        )
+        self.assertEqual(Usager.objects.all().count(), 1)
+        usager = Usager.objects.get(given_name="Fabrice")
+        self.assertEqual(
+            usager.sub,
+            "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+        )
+        self.assertEqual(usager.birthplace, 95277)
+        self.assertRedirects(response, "/dashboard/")
+
+    def test_post_to_recap_without_sub_creates_error(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = {
+            "given_name": "Fabrice",
+            "family_name": "Mercier",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "F",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+        mandat_form = MandatForm(
+            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+        )
+        mandat_form.is_valid()
+        session["mandat"] = mandat_form.cleaned_data
+        session.save()
+        response = self.client.post(
+            "/recap/", data={"personal_data": True, "brief": True}
+        )
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+
+
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+        self.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="123",
+            email="User@user.domain",
         )
 
     def test_authorize_url_triggers_the_authorize_view(self):
@@ -106,66 +218,100 @@ class AuthorizeTests(TestCase):
 
         self.assertTemplateUsed(response, "aidants_connect_web/authorize.html")
 
-    def test_authorize_page_uses_item_form(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
-        fc_call_state = token_urlsafe(4)
-        fc_call_nonce = token_urlsafe(4)
-        fc_response_type = "code"
-        fc_client_id = "FranceConnectInteg"
-        fc_redirect_uri = (
-            "https%3A%2F%2Ffcp.integ01.dev-franceconnect.fr%2Foidc_callback"
-        )
-        fc_scopes = "openid profile email address phone birth"
-        fc_acr_values = "eidas1"
-
-        response = self.client.get(
-            "/authorize/",
-            data={
-                "state": fc_call_state,
-                "nonce": fc_call_nonce,
-                "response_type": fc_response_type,
-                "client_id": fc_client_id,
-                "redirect_uri": fc_redirect_uri,
-                "scope": fc_scopes,
-                "acr_values": fc_acr_values,
-            },
-        )
-        self.assertIsInstance(response.context["form"], UsagerForm)
-
     def test_sending_user_information_triggers_callback(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
-        connection = Connection()
-        connection.state = "test_state"
-        connection.code = "test_code"
-        connection.nonce = "test_nonce"
-        connection.sub = "test_sub"
-        connection.save()
-
+        c = Connection()
+        c.state = "test_state"
+        c.code = "test_code"
+        c.nonce = "test_nonce"
+        c.sub_usager = "test_sub"
+        c.save()
+        usager_id = self.usager.id
         response = self.client.post(
-            "/authorize/",
-            data={
-                "state": "test_state",
-                "given_name": "Joséphine",
-                "family_name": "ST-PIERRE",
-                "preferred_username": "ST-PIERRE",
-                "birthdate": "1969-12-15",
-                "gender": "F",
-                "birthplace": "70447",
-                "birthcountry": "99100",
-                "sub": "123",
-                "email": "User@user.domain",
-            },
+            "/authorize/", data={"state": "test_state", "chosen_user": usager_id}
         )
         try:
             saved_items = Connection.objects.all()
         except ObjectDoesNotExist:
             raise AttributeError
         self.assertEqual(saved_items.count(), 1)
-        code = saved_items[0].code
-        state = saved_items[0].state
-        self.assertNotEqual(saved_items[0].nonce, "No Nonce Provided")
-        url = f"{fc_callback_url}?code={code}&state={state}"
+        connection = saved_items[0]
+        state = connection.state
+        self.assertEqual(connection.sub_usager, "123")
+        self.assertNotEqual(connection.nonce, "No Nonce Provided")
+
+        url = reverse("fi_select_demarche") + "?state=" + state
         self.assertRedirects(response, url, fetch_redirect_response=False)
+
+
+class FISelectDemarcheTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+        self.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="123",
+            email="User@user.domain",
+        )
+        self.usager2 = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="123",
+            email="User@user.domain",
+        )
+        self.connection = Connection.objects.create(
+            state="test_state", code="test_code", nonce="test_nonce", sub_usager="123"
+        )
+        self.mandat = Mandat.objects.create(
+            aidant=self.user,
+            usager=self.usager,
+            perimeter=["naissance", "aspa"],
+            duration=6,
+        )
+
+        self.mandat_2 = Mandat.objects.create(
+            aidant=self.user, usager=self.usager, perimeter=["carte_grise"], duration=3
+        )
+
+        self.mandat_3 = Mandat.objects.create(
+            aidant=self.user, usager=self.usager, perimeter=["aspa"], duration=3
+        )
+
+    def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        found = resolve("/select_demarche/")
+        self.assertEqual(found.func, fi_select_demarche)
+
+    def test_FI_select_demarche_triggers_FI_select_demarche_template(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+
+        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+
+        self.assertTemplateUsed(response, "aidants_connect_web/fi_select_demarche.html")
+
+    def test_get_perimeters_for_one_usager_and_two_mandats(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+
+        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+        self.assertEqual(
+            response.context["demarches"], {"naissance", "aspa", "carte_grise"}
+        )
+
+    # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
+    #  code}&state={state}"
 
 
 @override_settings(
@@ -275,17 +421,29 @@ class UserInfoTests(TestCase):
         )
         self.connection.save()
 
-        self.usager = Usager()
-        self.usager.given_name = "Joséphine"
-        self.usager.family_name = "ST-PIERRE"
-        self.usager.preferred_username = "ST-PIERRE"
-        self.usager.birthdate = date(1969, 12, 25)
-        self.usager.gender = "F"
-        self.usager.birthplace = 70447
-        self.usager.birthcountry = 99100
-        self.usager.sub = "test_sub"
-        self.usager.email = "User@user.domain"
-        self.usager.save()
+        self.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate=date(1969, 12, 25),
+            gender="F",
+            birthplace=70447,
+            birthcountry=99100,
+            sub="test_sub",
+            email="User@user.domain",
+        )
+
+        self.usager_2 = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate=date(1969, 12, 25),
+            gender="F",
+            birthplace=70447,
+            birthcountry=99100,
+            sub="test_sub",
+            email="User@user.domain",
+        )
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/userinfo/")

@@ -24,6 +24,8 @@ class Connection(models.Model):
     connection_type = models.CharField(
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
     )
+    demarche = models.TextField(default="No demarche provided")
+    complete = models.BooleanField(default=False)
 
 
 class User(AbstractUser):
@@ -36,8 +38,8 @@ class Usager(models.Model):
     family_name = models.TextField(blank=False)
     preferred_username = models.TextField(blank=True)
     birthdate = models.DateField(blank=False)
-    GENDER = (("F", "Femme"), ("H", "Homme"))
-    gender = models.CharField(max_length=1, choices=GENDER, default="F", blank=False)
+    GENDER = (("female", "Femme"), ("male", "Homme"))
+    gender = models.CharField(max_length=6, choices=GENDER, default="F", blank=False)
     birthplace = models.PositiveIntegerField(
         validators=[MinValueValidator(9999), MaxValueValidator(100000)], blank=False
     )
@@ -46,8 +48,11 @@ class Usager(models.Model):
         default=99100,
         blank=False,
     )
-    sub = models.TextField(default="No Sub yet")
-    email = models.EmailField(blank=False)
+    sub = models.TextField(blank=False)
+
+    email = models.EmailField(
+        blank=False, default="noemailprovided@aidantconnect.beta.gouv.fr"
+    )
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"

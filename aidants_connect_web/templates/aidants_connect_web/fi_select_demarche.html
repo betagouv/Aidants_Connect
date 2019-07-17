@@ -1,0 +1,17 @@
+{% extends 'layouts/main.html' %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <form method="post" >
+      <h2 id="welcome_aidant">Bienvenue, {{aidant}}</h2>
+      <p id="instructions">Sélectionnez une démarche</p>
+      {% csrf_token %}
+        <input type="hidden" name="state" value="{{state}}" />
+          {% for demarche in demarches %}
+              <button class="button" type="submit" id="submit" name="chosen_demarche" value={{ demarche }}>{{ demarche }}</button>
+        {% endfor %}
+    </form>
+    </div>
+</section>
+{% endblock content %}

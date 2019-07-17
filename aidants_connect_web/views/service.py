@@ -2,7 +2,6 @@ import logging
 import jwt
 import time
 import re
-from datetime import date
 from secrets import token_urlsafe
 
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
@@ -11,11 +10,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.forms.models import model_to_dict
 from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.messages import get_messages
+from django.urls import reverse
 
 from aidants_connect_web.models import (
     Connection,
@@ -23,7 +24,7 @@ from aidants_connect_web.models import (
     Usager,
     CONNECTION_EXPIRATION_TIME,
 )
-from aidants_connect_web.forms import UsagerForm, MandatForm
+from aidants_connect_web.forms import MandatForm
 
 
 logging.basicConfig(level=logging.INFO)
@@ -98,15 +99,24 @@ def mandat(request):
 @login_required
 def recap(request):
     user = request.user
+    # TODO check if user already exists via sub
+
+    usager_data = request.session.get("usager")
+
     usager = Usager(
-        given_name=request.session.get("usager")["given_name"],
-        family_name=request.session.get("usager")["family_name"],
-        birthdate=date(1945, 10, 20),
-        gender="M",
-        birthplace="84016",
-        birthcountry="99100",
-        email="user@test.fr",
+        given_name=usager_data.get("given_name"),
+        family_name=usager_data.get("family_name"),
+        birthdate=usager_data.get("birthdate"),
+        gender=usager_data.get("gender"),
+        birthplace=usager_data.get("birthplace"),
+        birthcountry=usager_data.get("birthcountry"),
+        # TODO fix identity provider example
+        # email=usager_data.get("email"),
+        sub=usager_data.get("sub"),
     )
+
+    if usager_data.get("email"):
+        usager.email = usager_data.get("email")
 
     mandat = request.session.get("mandat")
 
@@ -126,15 +136,19 @@ def recap(request):
 
     else:
         form = request.POST
-
         if form.get("personal_data") and form.get("brief"):
             mandat["aidant"] = user
+            try:
+                usager.save()
+            except IntegrityError as e:
+                log.error("Error happened in Recap")
+                log.error(e)
+                messages.error(request, f"The FranceConnect ID is not complete : {e}")
+                return redirect("dashboard")
 
-            usager.save()
             mandat["usager"] = usager
 
-            new_mandat = Mandat.objects.create(**mandat)
-            log.info(type(new_mandat.perimeter))
+            Mandat.objects.create(**mandat)
 
             messages.success(request, "Le mandat a été créé avec succès !")
 
@@ -156,58 +170,98 @@ def recap(request):
 
 @login_required
 def authorize(request):
-    fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
-    log.info(fc_callback_url)
-
     if request.method == "GET":
         state = request.GET.get("state", False)
         nonce = request.GET.get("nonce", False)
         code = token_urlsafe(64)
         this_connexion = Connection(state=state, code=code, nonce=nonce)
         this_connexion.save()
-
         if state is False:
+            log.info("403: There is no state")
             return HttpResponseForbidden()
+
+        aidant = request.user
+        usagers_id = Mandat.objects.values_list("usager", flat=True)
+        # TODO Do we send the whole usager ? or only first name and last name and sub ?
+        usagers = [Usager.objects.get(id=usager_id) for usager_id in usagers_id]
 
         return render(
             request,
             "aidants_connect_web/authorize.html",
-            {"state": state, "form": UsagerForm()},
+            {"state": state, "usagers": usagers, "aidant": aidant},
         )
 
     else:
         this_state = request.POST.get("state")
-        form = UsagerForm(request.POST)
         try:
             that_connection = Connection.objects.get(state=this_state)
             state = that_connection.state
+
+        except ObjectDoesNotExist:
+            log.info("No connection corresponds to the state:")
+            log.info(this_state)
+            return HttpResponseForbidden()
+        except Connection.MultipleObjectsReturned:
+            log.info("This connection is not unique. State:")
+            log.info(this_state)
+            return HttpResponseForbidden()
+
+        # TODO check if connection has not expired
+        # TODO change "chosen_user" to chosen_usager
+
+        that_connection.sub_usager = Usager.objects.get(
+            id=request.POST.get("chosen_user")
+        ).sub
+        that_connection.save()
+        select_demarches_url = f"{reverse('fi_select_demarche')}?state={state}"
+        return redirect(select_demarches_url)
+
+
+@login_required
+def fi_select_demarche(request):
+
+    if request.method == "GET":
+        state = request.GET.get("state", False)
+        sub_usager = Connection.objects.get(state=state).sub_usager
+        # TODO for Usager, should we use sub_usager or internal ID ?
+        # TODO Should we have different instances of the same usager for each aidant
+        #  ? for each mandat ? at all ?
+        # the [Ø] in the following line is in case the same user has several mandat
+        usager = Usager.objects.filter(sub=sub_usager)[0]
+        mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
+
+        demarches_per_mandat = mandats.values_list("perimeter", flat=True)
+
+        demarches = set(
+            [demarche for sublist in demarches_per_mandat for demarche in sublist]
+        )
+
+        return render(
+            request,
+            "aidants_connect_web/fi_select_demarche.html",
+            {"state": state, "demarches": demarches, "aidant": request.user.first_name},
+        )
+    else:
+        this_state = request.POST.get("state")
+        try:
+            that_connection = Connection.objects.get(state=this_state)
             code = that_connection.code
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the state:")
             log.info(this_state)
             return HttpResponseForbidden()
+        except Connection.MultipleObjectsReturned:
+            log.info("This connection is not unique. State:")
+            log.info(this_state)
+            return HttpResponseForbidden()
 
-        if form.is_valid():
-            sub = token_urlsafe(64)
-            post = form.save(commit=False)
+        # TODO check if connection has not expired
+        that_connection.demarche = request.POST.get("chosen_demarche")
+        that_connection.complete = True
+        that_connection.save()
 
-            post.sub = sub
-            # post.birthplace
-            # post.birthcountry
-
-            post.save()
-
-            that_connection.sub_usager = sub
-            that_connection.save()
-
-            return redirect(f"{fc_callback_url}?code={code}&state={state}")
-        else:
-            log.info("invalid form")
-            return render(
-                request,
-                "aidants_connect_web/authorize.html",
-                {"state": state, "form": form},
-            )
+        fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
+        return redirect(f"{fc_callback_url}?code={code}&state={this_state}")
 
 
 # Due to `no_referer` error
@@ -262,7 +316,6 @@ def token(request):
     }
 
     encoded_id_token = jwt.encode(id_token, fc_client_secret, algorithm="HS256")
-    log.info(encoded_id_token.decode("utf-8"))
     access_token = token_urlsafe(64)
     connection.access_token = access_token
     connection.save()
@@ -296,7 +349,8 @@ def user_info(request):
 
     if connection.expiresOn < timezone.now():
         return HttpResponseForbidden()
-    usager = Usager.objects.get(sub=connection.sub_usager)
+    # TODO decide how to deal with user having several mandats/aidants
+    usager = Usager.objects.filter(sub=connection.sub_usager)[0]
     usager = model_to_dict(usager)
     del usager["id"]
     birthdate = usager["birthdate"]
