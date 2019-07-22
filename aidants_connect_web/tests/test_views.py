@@ -621,7 +621,7 @@ class GenerateMandatPDF(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEquals(
             response.get("Content-Disposition"),
-            "attachment; filename='somefilename.pdf'",
+            "inline; filename='mandat_aidants_connect.pdf'",
         )
 
     def test_pdf_contains_text(self):
