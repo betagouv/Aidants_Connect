@@ -194,9 +194,9 @@ def generate_mandat_pdf(request):
         {
             "usager": f"{usager['given_name']} {usager['family_name']}",
             "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",
-            "profession": "secretaire",
-            "organisme": "Ville de Marseille",
-            "lieu": "Marseille",
+            "profession": aidant.profession,
+            "organisme": aidant.organisme,
+            "lieu": aidant.ville,
             "date": date.strftime(date.today(), "%A %-d %B %Y").lower(),
             "demarches": humanize_demarche_names(mandat["perimeter"]),
             "duree": f"{mandat['duration']} mois",
