@@ -610,13 +610,37 @@ class GenerateMandatPDF(TestCase):
         self.user = User.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
+        self.user.last_name = "Goneau"
+        self.user.first_name = "Thierry"
+        self.user.save()
 
     def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
         found = resolve("/generate_mandat_pdf/")
         self.assertEqual(found.func, generate_mandat_pdf)
 
+    test_usager = {
+            "given_name": "Fabrice",
+            "family_name": "MERCIER",
+            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "female",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+
+    test_mandat = {
+            "perimeter": ['apa'],
+            "duration": "6"
+        }
+
     def test_response_is_a_pdf_download(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = self.test_usager
+        session["mandat"] = self.test_mandat
+        session.save()
         response = self.client.get("/generate_mandat_pdf/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(
@@ -624,11 +648,23 @@ class GenerateMandatPDF(TestCase):
             "inline; filename='mandat_aidants_connect.pdf'",
         )
 
+    @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
     def test_pdf_contains_text(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = self.test_usager
+        session["mandat"] = self.test_mandat
+        session.save()
         response = self.client.get("/generate_mandat_pdf/")
         content = io.BytesIO(response.content)
         pdfReader = PyPDF2.PdfFileReader(content)
         pageObj = pdfReader.getPage(0)
         page = pageObj.extractText()
         self.assertIn("mandataire", page)
+        self.assertIn("Thierry GONEAU", page)
+        self.assertIn("Fabrice MERCIER", page)
+        self.assertIn("Allocation", page)
+        self.assertIn("6 mois", page)
+        # if this fails, check if info is not on second page
+        self.assertIn("18 juillet 2020", page)
+

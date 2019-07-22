@@ -2,6 +2,8 @@ import logging
 import jwt
 import time
 import re
+import locale
+from datetime import date
 from secrets import token_urlsafe
 from weasyprint import HTML
 
@@ -29,6 +31,7 @@ from aidants_connect_web.models import (
 )
 from aidants_connect_web.forms import MandatForm
 
+locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -183,18 +186,20 @@ def recap(request):
 
 @login_required
 def generate_mandat_pdf(request):
-
+    aidant = request.user
+    usager = request.session["usager"]
+    mandat = request.session["mandat"]
     html_string = render_to_string(
         "aidants_connect_web/mandat/pdf_mandat.html",
         {
-            "usager": "Valérie Crampois",
-            "aidant": "Nelly Grigois",
+            "usager": f"{usager['given_name']} {usager['family_name']}",
+            "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",
             "profession": "secretaire",
             "organisme": "Ville de Marseille",
             "lieu": "Marseille",
-            "date": "18 juillet 2020",
-            "demarches": ["RSA", "ASPA"],
-            "duree": "3 mois",
+            "date": date.strftime(date.today(), "%A %-d %B %Y").lower(),
+            "demarches": humanize_demarche_names(mandat["perimeter"]),
+            "duree": f"{mandat['duration']} mois",
         },
     )
 
