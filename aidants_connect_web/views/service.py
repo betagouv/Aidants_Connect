@@ -3,6 +3,7 @@ import jwt
 import time
 import re
 from secrets import token_urlsafe
+from weasyprint import HTML
 
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -10,6 +11,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import FileSystemStorage
 from django.db import IntegrityError
 from django.forms.models import model_to_dict
 from django.conf import settings
@@ -17,6 +19,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.urls import reverse
+from django.template.loader import render_to_string
 
 from aidants_connect_web.models import (
     Connection,
@@ -175,9 +178,31 @@ def recap(request):
 
 @login_required
 def generate_mandat_pdf(request):
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = "attachment; filename='somefilename.pdf'"
-    return response
+
+    html_string = render_to_string(
+        "aidants_connect_web/mandat/pdf_mandat.html",
+        {
+            "usager": "Valérie Crampois",
+            "aidant": "Nelly Grigois",
+            "profession": "secretaire",
+            "organisme": "Ville de Marseille",
+            "lieu": "Marseille",
+            "date": "18 juillet 2020",
+            "demarches": ["RSA", "ASPA"],
+            "duree": "3 mois",
+        },
+    )
+
+    html = HTML(string=html_string)
+    html.write_pdf(target="/tmp/mandat_aidants_connect.pdf")
+
+    fs = FileSystemStorage("/tmp")
+    with fs.open("mandat_aidants_connect.pdf") as pdf:
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response[
+            "Content-Disposition"
+        ] = "inline; filename='mandat_aidants_connect.pdf'"
+        return response
 
 
 @login_required
