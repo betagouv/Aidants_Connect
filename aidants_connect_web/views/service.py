@@ -179,6 +179,13 @@ def recap(request):
 
 
 @login_required
+def generate_mandat_pdf(request):
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = "attachment; filename='somefilename.pdf'"
+    return response
+
+
+@login_required
 def authorize(request):
     if request.method == "GET":
         state = request.GET.get("state", False)
