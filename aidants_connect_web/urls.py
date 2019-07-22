@@ -15,4 +15,5 @@ urlpatterns = [
     path("callback/", views.fc_callback, name="fc_callback"),
     path("logout-callback/", views.recap, name="recap"),
     path("select_demarche/", views.fi_select_demarche, name="fi_select_demarche"),
+    path("generate_mandat_pdf/", views.generate_mandat_pdf, name="generate_mandat_pdf"),
 ]

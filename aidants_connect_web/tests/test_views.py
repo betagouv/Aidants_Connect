@@ -2,6 +2,8 @@ import os
 import json
 import mock
 import jwt
+import io
+import PyPDF2
 from pytz import timezone
 from secrets import token_urlsafe
 from datetime import date, datetime, timedelta
@@ -24,6 +26,7 @@ from aidants_connect_web.views import (
     logout_page,
     recap,
     fi_select_demarche,
+    generate_mandat_pdf,
 )
 from aidants_connect_web.models import (
     Connection,
@@ -599,3 +602,33 @@ class FCCallback(TestCase):
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
         self.assertEqual(response.status_code, 403)
+
+
+class GenerateMandatPDF(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
+    def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
+        found = resolve("/generate_mandat_pdf/")
+        self.assertEqual(found.func, generate_mandat_pdf)
+
+    def test_response_is_a_pdf_download(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.get("/generate_mandat_pdf/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEquals(
+            response.get("Content-Disposition"),
+            "attachment; filename='somefilename.pdf'",
+        )
+
+    def test_pdf_contains_text(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.get("/generate_mandat_pdf/")
+        content = io.BytesIO(response.content)
+        pdfReader = PyPDF2.PdfFileReader(content)
+        pageObj = pdfReader.getPage(0)
+        page = pageObj.extractText()
+        self.assertIn("mandataire", page)

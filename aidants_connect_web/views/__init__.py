@@ -9,6 +9,7 @@ from .service import (
     user_info,
     humanize_demarche_names,
     fi_select_demarche,
+    generate_mandat_pdf,
 )
 from .FC_as_FS import fc_authorize, fc_callback
 
@@ -25,4 +26,5 @@ __all__ = [
     fc_authorize,
     fc_callback,
     fi_select_demarche,
+    generate_mandat_pdf,
 ]
