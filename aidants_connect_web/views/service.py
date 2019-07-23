@@ -139,7 +139,17 @@ def recap(request):
         if form.get("personal_data") and form.get("brief"):
             mandat["aidant"] = user
             try:
-                usager.save()
+                usager, created = Usager.objects.update_or_create(
+                    sub=usager.sub,
+                    defaults={
+                        "given_name": usager.given_name,
+                        "family_name": usager.family_name,
+                        "birthdate": usager.birthdate,
+                        "gender": usager.gender,
+                        "birthplace": usager.birthplace,
+                        "birthcountry": usager.birthcountry,
+                    },
+                )
             except IntegrityError as e:
                 log.error("Error happened in Recap")
                 log.error(e)
