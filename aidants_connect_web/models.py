@@ -48,7 +48,7 @@ class Usager(models.Model):
         default=99100,
         blank=False,
     )
-    sub = models.TextField(blank=False)
+    sub = models.TextField(blank=False, unique=True)
 
     email = models.EmailField(
         blank=False, default="noemailprovided@aidantconnect.beta.gouv.fr"

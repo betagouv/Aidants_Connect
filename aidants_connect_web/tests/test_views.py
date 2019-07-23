@@ -262,14 +262,14 @@ class FISelectDemarcheTest(TestCase):
             email="User@user.domain",
         )
         self.usager2 = Usager.objects.create(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate="1969-12-15",
-            gender="female",
+            given_name="Fabrice",
+            family_name="MERCIER",
+            preferred_username="TROIS",
+            birthdate="1981-07-27",
+            gender="male",
             birthplace="70447",
             birthcountry="99100",
-            sub="123",
+            sub="124",
             email="User@user.domain",
         )
         self.connection = Connection.objects.create(
@@ -441,7 +441,7 @@ class UserInfoTests(TestCase):
             gender="F",
             birthplace=70447,
             birthcountry=99100,
-            sub="test_sub",
+            sub="test_sub2",
             email="User@user.domain",
         )
 
