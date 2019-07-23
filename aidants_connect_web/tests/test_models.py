@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.db.utils import IntegrityError
 from aidants_connect_web.models import Connection, User, Usager, Mandat
 from datetime import date
 
@@ -109,3 +110,24 @@ class MandatModelTest(TestCase):
             first_saved_item.perimeter, ["Carte grise", "Changement d'adresse"]
         )
         self.assertEqual(second_saved_item.usager.family_name, "Flanders")
+
+
+class UserModelTest(TestCase):
+    def test_what_happens_to_password_when_not_set(self):
+        aidant = User.objects.create(username="Marge")
+        self.assertEqual(aidant.password, "")
+
+    def test_what_happens_when_username_not_set(self):
+        aidant = User.objects.create()
+        self.assertEqual(aidant.username, "")
+
+    def test_what_happens_when_a_user_tries_to_use_same_username(self):
+        User.objects.create()
+        self.assertRaises(IntegrityError, User.objects.create)
+
+    def test_aidant_fills_all_the_information(self):
+        self.assertEqual(len(User.objects.all()), 0)
+        User.objects.create(username="bhameau@domain.user")
+        self.assertEqual(len(User.objects.all()), 1)
+        User.objects.create(username="cgireau@domain.user")
+        self.assertEqual(len(User.objects.all()), 2)
