@@ -29,9 +29,9 @@ class Connection(models.Model):
 
 
 class User(AbstractUser):
-    profession = models.TextField(default="No profession", blank=False)
-    organisme = models.TextField(default="No organisme", blank=False)
-    ville = models.TextField(default="No ville", blank=False)
+    profession = models.TextField(blank=False)
+    organisme = models.TextField(blank=False)
+    ville = models.TextField(blank=False)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
