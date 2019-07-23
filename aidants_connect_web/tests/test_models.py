@@ -76,6 +76,7 @@ class MandatModelTest(TestCase):
             birthplace=27681,
             birthcountry=99100,
             email="homer@simpson.com",
+            sub="123",
         )
         first_mandat.perimeter = ["Carte grise", "Changement d'adresse"]
         first_mandat.duration = 3
@@ -91,6 +92,7 @@ class MandatModelTest(TestCase):
             birthplace=26934,
             birthcountry=99100,
             email="ned@flanders.com",
+            sub="1234",
         )
         second_mandat.perimeter = ["Revenus"]
         second_mandat.duration = 6

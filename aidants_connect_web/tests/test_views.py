@@ -162,6 +162,41 @@ class RecapTests(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
+    def test_post_to_recap_checks_existing_sub_and_updates_info(self):
+        self.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="123",
+            email="User@user.domain",
+        )
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        session = self.client.session
+        session["usager"] = {
+            "given_name": "Fabrice",
+            "family_name": "Mercier",
+            "sub": "123",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "female",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+        mandat_form = MandatForm(
+            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+        )
+        mandat_form.is_valid()
+        session["mandat"] = mandat_form.cleaned_data
+        session.save()
+        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.assertEqual(Usager.objects.all().count(), 1)
+        self.assertEqual(Usager.objects.first().given_name, "Fabrice")
+
 
 class AuthorizeTests(TestCase):
     def setUp(self):
