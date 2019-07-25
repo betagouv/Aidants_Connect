@@ -122,8 +122,8 @@ class UserModelTest(TestCase):
         self.assertEqual(aidant.username, "")
 
     def test_what_happens_when_a_user_tries_to_use_same_username(self):
-        User.objects.create()
-        self.assertRaises(IntegrityError, User.objects.create)
+        User.objects.create(username="Marge")
+        self.assertRaises(IntegrityError, User.objects.create, username="Marge")
 
     def test_aidant_fills_all_the_information(self):
         self.assertEqual(len(User.objects.all()), 0)

@@ -1,11 +1,11 @@
 from django.contrib import admin
 from aidants_connect_web.forms import UserChangeForm, UserCreationForm
 from django.contrib.auth.models import Group
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from aidants_connect_web.models import User, Usager, Mandat
 
 
-class UserAdmin(UserAdmin):
+class UserAdmin(DjangoUserAdmin):
     # The forms to add and change user instances
     form = UserChangeForm
     add_form = UserCreationForm
