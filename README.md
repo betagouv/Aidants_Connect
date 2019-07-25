@@ -130,15 +130,12 @@ psql
 ```
 then
 ```
-
 DROP DATABASE aidants_connect;
-CREATE USER aidants_connect_team;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
 ALTER USER aidants_connect_team CREATEDB;
 \q
 ```
 then
-
 ```
 python manage.py makemigrations
 python manage.py migrate

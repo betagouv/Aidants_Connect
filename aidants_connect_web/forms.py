@@ -29,6 +29,7 @@ class UserCreationForm(forms.ModelForm):
     )
     first_name = forms.CharField(label="Prénom")
     email = forms.EmailField(label="Email", widget=forms.EmailInput())
+    username = forms.CharField(required=False)
     last_name = forms.CharField(label="Nom de famille")
 
     profession = forms.CharField(label="Profession")
@@ -37,7 +38,28 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = "email", "last_name", "first_name", "profession", "organisme", "ville"
+        fields = (
+            "email",
+            "last_name",
+            "first_name",
+            "profession",
+            "organisme",
+            "ville",
+            "username",
+        )
+
+    def clean(self):
+        super().clean()
+        cleaned_data = self.cleaned_data
+        user_email = cleaned_data.get("email")
+        if user_email in User.objects.all().values_list("username", flat=True):
+            self.add_error(
+                "email", forms.ValidationError("This email is already " "taken")
+            )
+        else:
+            cleaned_data["username"] = user_email
+
+        return cleaned_data
 
     def _post_clean(self):
         super()._post_clean()
@@ -52,7 +74,6 @@ class UserCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = user.email
         user.set_password(self.cleaned_data["password"])
         if commit:
             user.save()
@@ -72,7 +93,15 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = "__all__"
+        fields = (
+            "email",
+            "last_name",
+            "first_name",
+            "profession",
+            "organisme",
+            "ville",
+            "username",
+        )
         field_classes = {"email": EmailField}
 
     def clean_password(self):
@@ -80,3 +109,16 @@ class UserChangeForm(forms.ModelForm):
         # This is done here, rather than on the field, because the
         # field does not have access to the initial value
         return self.initial.get("password")
+
+    def clean(self):
+        super().clean()
+        cleaned_data = self.cleaned_data
+        user_email = cleaned_data.get("email")
+        if user_email in User.objects.all().values_list("username", flat=True):
+            self.add_error(
+                "email", forms.ValidationError("This email is already " "taken")
+            )
+        else:
+            cleaned_data["username"] = user_email
+
+        return cleaned_data
