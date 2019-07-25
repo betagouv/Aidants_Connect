@@ -110,13 +110,8 @@ def recap(request):
         gender=usager_data.get("gender"),
         birthplace=usager_data.get("birthplace"),
         birthcountry=usager_data.get("birthcountry"),
-        # TODO fix identity provider example
-        # email=usager_data.get("email"),
         sub=usager_data.get("sub"),
     )
-
-    if usager_data.get("email"):
-        usager.email = usager_data.get("email")
 
     mandat = request.session.get("mandat")
 
