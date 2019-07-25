@@ -2,7 +2,7 @@ import logging
 import jwt
 import time
 import re
-import locale
+from django.utils import formats
 from datetime import date
 from secrets import token_urlsafe
 from weasyprint import HTML
@@ -31,7 +31,6 @@ from aidants_connect_web.models import (
 )
 from aidants_connect_web.forms import MandatForm
 
-locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -197,7 +196,7 @@ def generate_mandat_pdf(request):
             "profession": aidant.profession,
             "organisme": aidant.organisme,
             "lieu": aidant.ville,
-            "date": date.strftime(date.today(), "%A %-d %B %Y").lower(),
+            "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": humanize_demarche_names(mandat["perimeter"]),
             "duree": f"{mandat['duration']} mois",
         },
