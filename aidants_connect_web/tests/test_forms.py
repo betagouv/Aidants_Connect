@@ -5,7 +5,6 @@ from aidants_connect_web.forms import UserCreationForm, UserChangeForm, MandatFo
 from aidants_connect_web.models import User
 
 
-
 class UserCreationFormTest(TestCase):
     def setUp(self):
         self.data = {
@@ -199,28 +198,23 @@ class UserChangeFormTest(TestCase):
         self.assertEqual(self.aidant2.username, "abernart@domain.user")
         self.assertEqual(form.errors["email"], ["This email is already taken"])
 
+
 class MandatFormTest(TestCase):
     def test_form_renders_item_text_input(self):
         form = MandatForm()
-        self.assertIn("Carte grise", form.as_p())
+        self.assertIn("Étranger", form.as_p())
 
     def test_validation_for_blank_items(self):
-        form = MandatForm(data={"perimeter": ["chg_adresse"], "duration": "16"})
+        form = MandatForm(data={"perimeter": ["etranger"], "duration": "16"})
         self.assertTrue(form.is_valid())
 
         form_2 = MandatForm(data={"perimeter": [], "duration": "16"})
         self.assertFalse(form_2.is_valid())
-        self.assertEqual(
-            form_2.errors["perimeter"],
-            ["Ce champ est obligatoire."],
-        )
+        self.assertEqual(form_2.errors["perimeter"], ["Ce champ est obligatoire."])
 
-        form_3 = MandatForm(data={"perimeter": ["chg_adresse"], "duration": ""})
+        form_3 = MandatForm(data={"perimeter": ["travail"], "duration": ""})
         self.assertFalse(form_3.is_valid())
-        self.assertEqual(
-            form_3.errors["duration"],
-            ["Ce champ est obligatoire."],
-        )
+        self.assertEqual(form_3.errors["duration"], ["Ce champ est obligatoire."])
 
     def test_non_existing_perimeter_triggers_error(self):
         form = MandatForm(data={"perimeter": ["test"], "duration": "16"})
@@ -231,9 +225,6 @@ class MandatFormTest(TestCase):
         )
 
     def test_non_integer_duration_triggers_error(self):
-        form = MandatForm(data={"perimeter": ["chg_adresse"], "duration": "test"})
+        form = MandatForm(data={"perimeter": ["argent"], "duration": "test"})
         self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors["duration"],
-            ["Saisissez un nombre entier."],
-        )
+        self.assertEqual(form.errors["duration"], ["Saisissez un nombre entier."])
