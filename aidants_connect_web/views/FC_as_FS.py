@@ -2,6 +2,7 @@ import logging
 import jwt
 import requests as python_request
 from secrets import token_urlsafe
+from jwt.api_jwt import ExpiredSignatureError
 
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
@@ -95,12 +96,18 @@ def fc_callback(request):
     fc_access_token = content.get("access_token")
 
     fc_id_token = content.get("id_token")
-    decoded_token = jwt.decode(
-        fc_id_token,
-        settings.FC_AS_FS_SECRET,
-        audience=settings.FC_AS_FS_ID,
-        algorithm="HS256",
-    )
+
+    try:
+        decoded_token = jwt.decode(
+            fc_id_token,
+            settings.FC_AS_FS_SECRET,
+            audience=settings.FC_AS_FS_ID,
+            algorithm="HS256",
+        )
+    except ExpiredSignatureError:
+        log.info("403: token signature has expired.")
+        return HttpResponseForbidden()
+
     if connection_state.nonce != decoded_token.get("nonce"):
         log.info("403: The nonce is different than the one expected.")
         return HttpResponseForbidden()
