@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.forms.models import model_to_dict
 
 from aidants_connect_web.forms import UserCreationForm, UserChangeForm
 from aidants_connect_web.models import User
@@ -113,47 +114,84 @@ class UserChangeFormTest(TestCase):
             last_name="Bernard",
             email="abernart@domain.user",
             username="abernart@domain.user",
-            password="fkgjfdùkqbnqùfkn",
             profession="Mediateur",
             organisme="Association Aide'o'Web",
             ville="Nantes",
         )
 
+        self.aidant2.set_password("nananana")
+
     def test_change_email_propagates_to_username(self):
         self.assertEqual(self.aidant2.first_name, "Armand")
+        self.assertEqual(self.aidant2.email, "abernart@domain.user")
+        self.assertEqual(self.aidant2.username, "abernart@domain.user")
+        self.assertEqual(self.aidant2.first_name, "Armand")
 
+        changed_data = {
+            "first_name": "Armand",
+            "last_name": "Bernart",
+            "username": "abernart@domain.user",
+            "email": "goodbye@domain.user",
+            "profession": "Mediateur",
+            "organisme": "Association Aide'o'Web",
+            "ville": "Nantes",
+        }
         form = UserChangeForm(
-            data={
-                "first_name": "Armand",
-                "last_name": "Bernart",
-                "username": "abernart@domain.user",
-                "email": "goodbye@domain.user",
-                "profession": "Mediateur",
-                "organisme": "Association Aide'o'Web",
-                "ville": "Nantes",
-            }
+            data=changed_data,
+            initial=model_to_dict(self.aidant2),
+            instance=self.aidant2,
         )
-        form.instance = self.aidant2
+
         self.assertTrue(form.is_valid())
         self.assertEqual(self.aidant2.email, "goodbye@domain.user")
         self.assertEqual(self.aidant2.username, "goodbye@domain.user")
         self.assertEqual(self.aidant2.first_name, "Armand")
-        self.assertEqual(self.aidant2.password, "fkgjfdùkqbnqùfkn")
+        form.save()
+        self.assertCountEqual(form.errors, [])
+
+    def test_change_date_propagates_to_user_profile(self):
+        self.assertEqual(self.aidant2.first_name, "Armand")
+        self.assertEqual(self.aidant2.email, "abernart@domain.user")
+        self.assertEqual(self.aidant2.username, "abernart@domain.user")
+        self.assertEqual(self.aidant2.first_name, "Armand")
+
+        changed_data = {
+            "first_name": "Armand",
+            "last_name": "test",
+            "username": "abernart@domain.user",
+            "email": "abernart@domain.user",
+            "profession": "Mediateur",
+            "organisme": "Association Aide'o'Web",
+            "ville": "Nantes",
+        }
+        form = UserChangeForm(
+            data=changed_data,
+            initial=model_to_dict(self.aidant2),
+            instance=self.aidant2,
+        )
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(self.aidant2.email, "abernart@domain.user")
+        self.assertEqual(self.aidant2.username, "abernart@domain.user")
+        self.assertEqual(self.aidant2.last_name, "test")
 
     def test_change_to_email_fails_if_email_exists(self):
+        changed_data = {
+            "first_name": "Armand",
+            "last_name": "Bernart",
+            "username": "abernart@domain.user",
+            "email": "hello@domain.user",
+            "profession": "Mediateur",
+            "organisme": "Association Aide'o'Web",
+            "ville": "Nantes",
+        }
 
         form = UserChangeForm(
-            data={
-                "first_name": "Armand",
-                "last_name": "Bernart",
-                "username": "abernart@domain.user",
-                "email": "hello@domain.user",
-                "profession": "Mediateur",
-                "organisme": "Association Aide'o'Web",
-                "ville": "Nantes",
-            }
+            data=changed_data,
+            initial=model_to_dict(self.aidant2),
+            instance=self.aidant2,
         )
-        form.instance = self.aidant2
+
         self.assertFalse(form.is_valid())
         self.assertEqual(self.aidant2.first_name, "Armand")
         self.assertEqual(self.aidant2.email, "abernart@domain.user")

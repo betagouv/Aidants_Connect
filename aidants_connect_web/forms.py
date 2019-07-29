@@ -113,12 +113,16 @@ class UserChangeForm(forms.ModelForm):
     def clean(self):
         super().clean()
         cleaned_data = self.cleaned_data
-        user_email = cleaned_data.get("email")
-        if user_email in User.objects.all().values_list("username", flat=True):
-            self.add_error(
-                "email", forms.ValidationError("This email is already " "taken")
-            )
-        else:
-            cleaned_data["username"] = user_email
+        data_email = cleaned_data.get("email")
+        initial_email = self.instance.email
+
+        if data_email != initial_email:
+            claimed_emails = User.objects.all().values_list("username", flat=True)
+            if data_email in claimed_emails:
+                self.add_error(
+                    "email", forms.ValidationError("This email is already taken")
+                )
+            else:
+                cleaned_data["username"] = data_email
 
         return cleaned_data
