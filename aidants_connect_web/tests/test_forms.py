@@ -119,7 +119,7 @@ class UserChangeFormTest(TestCase):
             ville="Nantes",
         )
 
-    def test_change_email_propergates_to_username(self):
+    def test_change_email_propagates_to_username(self):
         self.assertEqual(self.aidant2.first_name, "Armand")
 
         form = UserChangeForm(
