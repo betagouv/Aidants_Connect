@@ -96,7 +96,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
         }
         mandat_form = MandatForm(
-            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+            data={"perimeter": ["papiers", "logement"], "duration": 3}
         )
         mandat_form.is_valid()
         session["mandat"] = mandat_form.cleaned_data
@@ -122,7 +122,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
         }
         mandat_form = MandatForm(
-            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+            data={"perimeter": ["papiers", "logement"], "duration": 3}
         )
         mandat_form.is_valid()
         session["mandat"] = mandat_form.cleaned_data
@@ -154,7 +154,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
         }
         mandat_form = MandatForm(
-            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+            data={"perimeter": ["papiers", "logement"], "duration": 3}
         )
         mandat_form.is_valid()
         session["mandat"] = mandat_form.cleaned_data
@@ -191,7 +191,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
         }
         mandat_form = MandatForm(
-            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+            data={"perimeter": ["papiers", "logement"], "duration": 3}
         )
         mandat_form.is_valid()
         session["mandat"] = mandat_form.cleaned_data

@@ -51,7 +51,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
 
         procedures[0].click()
         procedures[-1].click()
-        self.assertEqual(len(procedures), 40)
+        self.assertEqual(len(procedures), 10)
 
         duration = procedure_section.find_element_by_id("id_duration")
         duration.send_keys("6")

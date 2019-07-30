@@ -155,16 +155,87 @@ LOGOUT_REDIRECT_URL = "home_page"
 AUTH_USER_MODEL = "aidants_connect_web.User"
 
 
+
 DEMARCHES = [
-    ("papiers", "Papiers - Citoyenneté"),
-    ("famille", "Famille"),
-    ("social", "Social - Santé"),
-    ("travail", "Travail"),
-    ("logement", "Logement"),
-    ("Transport", "Transport"),
-    ("argent", "Argent"),
-    ("justice", "Justice"),
-    ("etranger", "Étranger"),
-    ("loisir", "Loisir")
+    ("papiers", {
+        "nom_machine": "PAPIERS",
+        "titre": "PAPIERS - CITOYENNETÉ",
+        "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/papiers.png",
+        }
+     ),
+    ("famille", {
+        "nom machine" : "FAMILLE",
+        "titre" : "FAMILLE",
+        "description": "Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+        },
+    ),
+    ("social", {
+        "nom machine" : "SOCIAL",
+        "titre" : "SOCIAL - SANTÉ",
+        "description": "Carte vitale, Chômage, Handicap, RSA, Personnes âgées…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+        },
+    ),
+    ("travail", {
+        "nom machine" : "TRAVAIL",
+        "titre" : "TRAVAIL",
+        "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+        },
+    ),
+    ("logement", {
+        "nom machine" : "LOGEMENT",
+        "titre" : "LOGEMENT",
+        "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+        },
+    ),
+    ("transport", {
+        "nom machine" : "TRANSPORTS",
+        "titre" : "TRANSPORTS",
+        "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+        },
+    ),
+    ("argent", {
+        "nom machine" : "ARGENT",
+        "titre" : "ARGENT",
+        "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
+               "Surendettement…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+
+    }),
+    ("justice", {
+        "nom machine" : "JUSTICE",
+        "titre" : "JUSTICE",
+        "description": "Casier judiciaire, Plainte, Aide juridictionnelle, Saisie…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+
+    }),
+    ("etranger", {
+        "nom machine" : "ÉTRANGER",
+        "titre" : "ÉTRANGER",
+        "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+
+    }),
+    ("loisir", {
+        "nom machine" : "LOISIRS",
+        "titre" : "LOISIRS",
+        "description": "Animaux, Permis bateau, Tourisme, Permis de chasser,",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+                "/papiers.png",
+    })
+
 
 ]
