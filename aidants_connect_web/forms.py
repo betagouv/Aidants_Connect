@@ -7,14 +7,6 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 
-class MandatForm(forms.Form):
-    perimeter = forms.MultipleChoiceField(
-        choices=settings.DEMARCHES, widget=forms.CheckboxSelectMultiple
-    )
-
-    duration = forms.CharField(required=True, initial=3)
-
-
 class UserCreationForm(forms.ModelForm):
     """
     A form that creates a user, with no privileges, from the given email and
@@ -126,3 +118,12 @@ class UserChangeForm(forms.ModelForm):
                 cleaned_data["username"] = data_email
 
         return cleaned_data
+
+
+class MandatForm(forms.Form):
+
+    perimeter = forms.MultipleChoiceField(
+        choices=settings.DEMARCHES, widget=forms.CheckboxSelectMultiple
+    )
+
+    duration = forms.IntegerField(required=True, initial=3)
