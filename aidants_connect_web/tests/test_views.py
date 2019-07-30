@@ -262,9 +262,9 @@ class AuthorizeTests(TestCase):
         c.state = "test_state"
         c.code = "test_code"
         c.nonce = "test_nonce"
-        c.sub_usager = "test_sub"
+        c.usager = self.usager
         c.save()
-        usager_id = self.usager.id
+        usager_id = c.usager.id
         response = self.client.post(
             "/authorize/", data={"state": "test_state", "chosen_user": usager_id}
         )
@@ -275,7 +275,7 @@ class AuthorizeTests(TestCase):
         self.assertEqual(saved_items.count(), 1)
         connection = saved_items[0]
         state = connection.state
-        self.assertEqual(connection.sub_usager, "123")
+        self.assertEqual(connection.usager.sub, "123")
         self.assertNotEqual(connection.nonce, "No Nonce Provided")
 
         url = reverse("fi_select_demarche") + "?state=" + state
@@ -311,7 +311,7 @@ class FISelectDemarcheTest(TestCase):
             email="User@user.domain",
         )
         self.connection = Connection.objects.create(
-            state="test_state", code="test_code", nonce="test_nonce", sub_usager="123"
+            state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
         )
         self.mandat = Mandat.objects.create(
             aidant=self.user,
@@ -325,7 +325,7 @@ class FISelectDemarcheTest(TestCase):
         )
 
         self.mandat_3 = Mandat.objects.create(
-            aidant=self.user, usager=self.usager, perimeter=["aspa"], duration=3
+            aidant=self.user, usager=self.usager2, perimeter=["aspa"], duration=3
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -364,7 +364,17 @@ class TokenTests(TestCase):
         self.connection.state = "test_state"
         self.connection.code = "test_code"
         self.connection.nonce = "test_nonce"
-        self.connection.sub_usager = "test_sub"
+        self.connection.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="test_sub",
+            email="User@user.domain",
+        )
         self.connection.expiresOn = datetime(
             2012, 1, 14, 3, 21, 34, tzinfo=timezone("Europe/Paris")
         )
@@ -448,17 +458,6 @@ class UserInfoTests(TestCase):
     def setUp(self):
         self.client = Client()
 
-        self.connection = Connection()
-        self.connection.state = "test_state"
-        self.connection.code = "test_code"
-        self.connection.nonce = "test_nonce"
-        self.connection.sub_usager = "test_sub"
-        self.connection.access_token = "test_access_token"
-        self.connection.expiresOn = datetime(
-            2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
-        )
-        self.connection.save()
-
         self.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -482,6 +481,17 @@ class UserInfoTests(TestCase):
             sub="test_sub2",
             email="User@user.domain",
         )
+
+        self.connection = Connection()
+        self.connection.state = "test_state"
+        self.connection.code = "test_code"
+        self.connection.nonce = "test_nonce"
+        self.connection.usager = self.usager
+        self.connection.access_token = "test_access_token"
+        self.connection.expiresOn = datetime(
+            2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
+        )
+        self.connection.save()
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/userinfo/")

@@ -10,10 +10,32 @@ class ConnectionModelTest(TestCase):
         first_connexion.state = "aZeRtY"
         first_connexion.code = "ert"
         first_connexion.nonce = "varg"
+        first_connexion.usager = Usager.objects.create(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate="1969-12-15",
+            gender="female",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="123",
+            email="User@user.domain",
+        )
         first_connexion.save()
 
         second_connexion = Connection()
         second_connexion.state = "QsDfG"
+        second_connexion.usager = Usager.objects.create(
+            given_name="Fabrice",
+            family_name="MERCIER",
+            preferred_username="TROIS",
+            birthdate="1981-07-27",
+            gender="male",
+            birthplace="70447",
+            birthcountry="99100",
+            sub="124",
+            email="User@user.domain",
+        )
         second_connexion.save()
 
         saved_items = Connection.objects.all()
@@ -24,7 +46,9 @@ class ConnectionModelTest(TestCase):
 
         self.assertEqual(first_saved_item.state, "aZeRtY")
         self.assertEqual(first_saved_item.nonce, "varg")
+        self.assertEqual(first_saved_item.usager.given_name, "Joséphine")
         self.assertEqual(second_saved_item.state, "QsDfG")
+        self.assertEqual(second_saved_item.usager.gender, "male")
 
 
 class UsagerModelTest(TestCase):
