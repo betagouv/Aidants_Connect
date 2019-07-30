@@ -3,7 +3,6 @@ import jwt
 import requests as python_request
 from secrets import token_urlsafe
 from jwt.api_jwt import ExpiredSignatureError
-from time import time
 
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
@@ -105,26 +104,8 @@ def fc_callback(request):
             algorithm="HS256",
         )
     except ExpiredSignatureError:
-        # Due to a change in behavior in FC, this hack does not validate the
-        # expiration date
-        decoded_token = jwt.decode(
-            fc_id_token,
-            settings.FC_AS_FS_SECRET,
-            audience=settings.FC_AS_FS_ID,
-            algorithm="HS256",
-            verify=False,
-        )
-        log.info("FAKE 403: token signature has expired.")
-        log.info(decoded_token)
-
-        now = time()
-        log.info(now)
-        expiration_date = decoded_token.get("exp")
-        log.info(expiration_date)
-        log.info("time since expiration")
-        log.info(now - expiration_date)
-        # TODO investigate why the exp is always 10 seconds late
-        pass
+        log.info("403: token signature has expired.")
+        return HttpResponseForbidden()
 
     if connection_state.nonce != decoded_token.get("nonce"):
         log.info("403: The nonce is different than the one expected.")
