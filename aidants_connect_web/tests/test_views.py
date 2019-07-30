@@ -612,6 +612,9 @@ class GenerateMandatPDF(TestCase):
         )
         self.user.last_name = "Goneau"
         self.user.first_name = "Thierry"
+        self.user.profession = "secrétaire"
+        self.user.organisme = "COMMUNE DE HOULBEC COCHEREL"
+        self.user.ville = "HOULBEC COCHEREL"
         self.user.save()
 
     def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
@@ -619,21 +622,18 @@ class GenerateMandatPDF(TestCase):
         self.assertEqual(found.func, generate_mandat_pdf)
 
     test_usager = {
-            "given_name": "Fabrice",
-            "family_name": "MERCIER",
-            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
-            "preferred_username": "TROIS",
-            "birthdate": "1981-07-27",
-            "gender": "female",
-            "birthplace": "95277",
-            "birthcountry": "99100",
-            "email": "test@test.com",
-        }
+        "given_name": "Fabrice",
+        "family_name": "MERCIER",
+        "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+        "preferred_username": "TROIS",
+        "birthdate": "1981-07-27",
+        "gender": "female",
+        "birthplace": "95277",
+        "birthcountry": "99100",
+        "email": "test@test.com",
+    }
 
-    test_mandat = {
-            "perimeter": ['apa'],
-            "duration": "6"
-        }
+    test_mandat = {"perimeter": ["apa"], "duration": "6"}
 
     def test_response_is_a_pdf_download(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -665,6 +665,8 @@ class GenerateMandatPDF(TestCase):
         self.assertIn("Fabrice MERCIER", page)
         self.assertIn("Allocation", page)
         self.assertIn("6 mois", page)
+        self.assertIn("HOULBEC COCHEREL", page)
+        self.assertIn("COMMUNE", page)
+        self.assertIn("secrétaire", page)
         # if this fails, check if info is not on second page
         self.assertIn("18 juillet 2020", page)
-
