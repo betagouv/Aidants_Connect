@@ -13,21 +13,6 @@ def default_expiration_date():
     return now + timedelta(minutes=CONNECTION_EXPIRATION_TIME)
 
 
-class Connection(models.Model):
-    state = models.TextField()
-    code = models.TextField()
-    nonce = models.TextField(default="No Nonce Provided")
-    expiresOn = models.DateTimeField(default=default_expiration_date)
-    sub_usager = models.TextField(default="No sub Provided")
-    access_token = models.TextField(default="No token Provided")
-    CONNECTION_TYPE = (("FS", "FC as FS"), ("FI", "FC as FI"))
-    connection_type = models.CharField(
-        max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
-    )
-    demarche = models.TextField(default="No demarche provided")
-    complete = models.BooleanField(default=False)
-
-
 class User(AbstractUser):
     profession = models.TextField(blank=False)
     organisme = models.TextField(blank=False)
@@ -60,6 +45,21 @@ class Usager(models.Model):
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
+
+
+class Connection(models.Model):
+    state = models.TextField()
+    code = models.TextField()
+    nonce = models.TextField(default="No Nonce Provided")
+    expiresOn = models.DateTimeField(default=default_expiration_date)
+    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, blank=True, null=True)
+    access_token = models.TextField(default="No token Provided")
+    CONNECTION_TYPE = (("FS", "FC as FS"), ("FI", "FC as FI"))
+    connection_type = models.CharField(
+        max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
+    )
+    demarche = models.TextField(default="No demarche provided")
+    complete = models.BooleanField(default=False)
 
 
 class Mandat(models.Model):
