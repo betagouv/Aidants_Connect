@@ -37,6 +37,7 @@ log = logging.getLogger()
 
 
 def humanize_demarche_names(list_of_machine_names):
+    # TODO retionalize this
     human_names = []
     for p in list_of_machine_names:
         for category in settings.DEMARCHES:
@@ -67,7 +68,7 @@ def dashboard(request):
 
     for mandat in mandats:
         mandat.perimeter_names = humanize_demarche_names(mandat.perimeter)
-
+    # todo change the "mois" in "jours"
     return render(
         request,
         "aidants_connect_web/dashboard.html",
@@ -121,7 +122,13 @@ def recap(request):
     mandat = request.session.get("mandat")
 
     if request.method == "GET":
-        demarches = humanize_demarche_names(mandat["perimeter"])
+        demarches_list = dict(settings.DEMARCHES)
+        demarches = [
+            f"{demarches_list[machine_name]['titre']}:"
+            f" {demarches_list[machine_name]['description']}"
+            for machine_name in mandat["perimeter"]
+        ]
+        duration = "1 jour" if mandat["duration"] == "short" else "1 an"
 
         return render(
             request,
@@ -130,14 +137,13 @@ def recap(request):
                 "user": user,
                 "usager": usager,
                 "demarches": demarches,
-                "duration": mandat["duration"],
+                "duration": duration,
             },
         )
 
     else:
         form = request.POST
         if form.get("personal_data") and form.get("brief"):
-            mandat["aidant"] = user
             try:
                 usager, created = Usager.objects.update_or_create(
                     sub=usager.sub,
@@ -155,10 +161,13 @@ def recap(request):
                 log.error(e)
                 messages.error(request, f"The FranceConnect ID is not complete : {e}")
                 return redirect("dashboard")
-
-            mandat["usager"] = usager
-
-            Mandat.objects.create(**mandat)
+            duration_in_days = 1 if mandat["duration"] == "short" else 365
+            Mandat.objects.create(
+                aidant=user,
+                usager=usager,
+                perimeter=mandat["perimeter"],
+                duration=duration_in_days,
+            )
 
             messages.success(request, "Le mandat a été créé avec succès !")
 
