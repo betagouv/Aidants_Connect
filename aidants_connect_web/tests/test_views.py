@@ -165,7 +165,7 @@ class RecapTests(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
-    def test_post_to_recap_checks_existing_sub_and_updates_info(self):
+    def test_post_to_recap_checks_existing_sub_and_doesnt_update_info(self):
         self.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -176,6 +176,7 @@ class RecapTests(TestCase):
             birthcountry="99100",
             sub="123",
             email="User@user.domain",
+            creation_date="2019-08-05T15:49:13.972Z",
         )
         self.client.login(username="Thierry", password="motdepassedethierry")
         session = self.client.session
@@ -190,6 +191,7 @@ class RecapTests(TestCase):
             "birthcountry": "99100",
             "email": "test@test.com",
         }
+        creation_date = self.usager.creation_date
         mandat_form = MandatForm(
             data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
         )
@@ -198,7 +200,9 @@ class RecapTests(TestCase):
         session.save()
         self.client.post("/recap/", data={"personal_data": True, "brief": True})
         self.assertEqual(Usager.objects.all().count(), 1)
-        self.assertEqual(Usager.objects.first().given_name, "Fabrice")
+        self.assertEqual(Usager.objects.first().given_name, "Joséphine")
+        self.assertEqual(Usager.objects.filter(sub="123").count(), 1)
+        self.assertEqual(Usager.objects.filter(creation_date=creation_date).count(), 1)
 
 
 class AuthorizeTests(TestCase):
@@ -468,6 +472,7 @@ class UserInfoTests(TestCase):
             birthcountry=99100,
             sub="test_sub",
             email="User@user.domain",
+            creation_date="2019-08-05T15:49:13.972Z",
         )
 
         self.usager_2 = Usager.objects.create(
@@ -480,6 +485,7 @@ class UserInfoTests(TestCase):
             birthcountry=99100,
             sub="test_sub2",
             email="User@user.domain",
+            creation_date="2019-08-05T15:49:13.972Z",
         )
 
         self.connection = Connection()
@@ -515,6 +521,7 @@ class UserInfoTests(TestCase):
             "birthcountry": "99100",
             "sub": "test_sub",
             "email": "User@user.domain",
+            "creation_date": "2019-08-05T15:49:13.972Z",
         }
 
         content = response.json()

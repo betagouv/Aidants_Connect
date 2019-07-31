@@ -139,7 +139,9 @@ def recap(request):
         if form.get("personal_data") and form.get("brief"):
             mandat["aidant"] = user
             try:
-                usager, created = Usager.objects.update_or_create(
+                # if created is missing, the returned usager is not an instance
+                # of the model
+                usager, created = Usager.objects.get_or_create(
                     sub=usager.sub,
                     defaults={
                         "given_name": usager.given_name,
