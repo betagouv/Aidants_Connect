@@ -43,6 +43,8 @@ class Usager(models.Model):
         blank=False, default="noemailprovided@aidantconnect.beta.gouv.fr"
     )
 
+    creation_date = models.DateTimeField(default=timezone.now)
+
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
 
