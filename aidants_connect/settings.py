@@ -169,7 +169,7 @@ DEMARCHES = [
         "titre" : "FAMILLE",
         "description": "Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/famille.png",
         },
     ),
     ("social", {
@@ -177,7 +177,7 @@ DEMARCHES = [
         "titre" : "SOCIAL - SANTÉ",
         "description": "Carte vitale, Chômage, Handicap, RSA, Personnes âgées…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/sante.png",
         },
     ),
     ("travail", {
@@ -185,7 +185,7 @@ DEMARCHES = [
         "titre" : "TRAVAIL",
         "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/travail.png",
         },
     ),
     ("logement", {
@@ -193,7 +193,7 @@ DEMARCHES = [
         "titre" : "LOGEMENT",
         "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/logement.png",
         },
     ),
     ("transport", {
@@ -201,7 +201,7 @@ DEMARCHES = [
         "titre" : "TRANSPORTS",
         "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/transports.png",
         },
     ),
     ("argent", {
@@ -210,7 +210,7 @@ DEMARCHES = [
         "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
                "Surendettement…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/argent.png",
 
     }),
     ("justice", {
@@ -218,7 +218,7 @@ DEMARCHES = [
         "titre" : "JUSTICE",
         "description": "Casier judiciaire, Plainte, Aide juridictionnelle, Saisie…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/justice.png",
 
     }),
     ("etranger", {
@@ -226,15 +226,15 @@ DEMARCHES = [
         "titre" : "ÉTRANGER",
         "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/etrangers.png",
 
     }),
-    ("loisir", {
+    ("loisirs", {
         "nom machine" : "LOISIRS",
         "titre" : "LOISIRS",
         "description": "Animaux, Permis bateau, Tourisme, Permis de chasser,",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-                "/papiers.png",
+                "/loisirs.png",
     })
 
 
