@@ -6,17 +6,20 @@
   <link href="{% static 'css/mandat.css' %}" rel="stylesheet">
     <style type="text/css" media="screen">
 
-    .tile label {
-        padding: 12px 30px;
-          width: 100%;
-          display: block;
-          text-align: left;
-          color: black;
-          cursor: pointer;
-          position: relative;
-          z-index: 2;
-          transition: color 100ms ease-in;
-          overflow: hidden;
+    .tiles {
+        width: 40em;
+    }
+
+    .tile label {padding: 12px 30px;
+        width: 100%;
+        display: block;
+        text-align: left;
+        color: black;
+        cursor: pointer;
+        position: relative;
+        z-index: 2;
+        transition: color 100ms ease-in;
+        overflow: hidden;
     }
 
 
@@ -39,12 +42,12 @@
         background-color: white;
         background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.414 11L4 12.414l5.414 5.414L20.828 6.414 19.414 5l-10 10z' fill='%23fff' fill-rule='nonzero'/%3E%3C/svg%3E ");
         background-repeat: no-repeat;
-        background-position: 2px 3px;
+        background-position: 3px 4px;
         border-radius: 50%;
         z-index: 2;
         position: absolute;
-        right: 30px;
-        top: 50%;
+        right: 10px;
+        top: 25px;
         transform: translateY(-50%);
         cursor: pointer;
         transition: all 100ms ease-in;
@@ -60,20 +63,23 @@
         background-color: #003b80;
         border-color: white;
     }
-
+    .tile b {
+        font-size: large;
+    }
     .tile input {
-          width: 32px;
-          height: 32px;
           order: 1;
           z-index: 2;
-          position: absolute;
-          right: 30px;
-          top: 50%;
+          position: relative;
           transform: translateY(-50%);
           cursor: pointer;
           visibility: hidden;
         }
+    @media (max-width: 800px) {
+        .tiles {
+           width: 30em;
+        }
 
+    }
     </style>
 {% endblock extracss %}
 
@@ -97,13 +103,13 @@
   </div>
 </section>
 <section id="select_procedure" class="section section-grey">
-  <div class="container container-small">
+  <div class="container">
     <form method="post">
       {% if notification %}
         <div class="notification">{{ notification }}</div>
       {% endif %}
-    <div class="tiles>">
-      <h2>Choisir le(s) types de démarche(s)</h2>
+    <div class="tiles"">
+      <h2>Étape 1: Sélectionnez la ou les démarche(s)</h2>
       {% if form.errors %}
         <div class="notification">
           {{ form.errors }}
@@ -113,16 +119,17 @@
       <div class="grid" id="procedure_list">
         {% for value, label in form.perimeter.field.choices %}
            <div class="tile">
-                    <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="perimeters"/>
-
+                <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="perimeter"/>
                    <label for="button-{{ value }}">
-                       <div style="display: flex; align-items: center">
+                       <div style="display: flex; flex-direction: column">
+                          <div style="display: flex; align-items: center">
                            <img src={{ label.icon }}>
                            <b>{{ label.titre }}</b>
+                           </div>
+                           <div>
+                               {{ label.description }}
+                           </div>
                        </div>
-
-                        <p>{{ label.description }}</p>
-
                    </label>
 
            </div>
@@ -130,11 +137,19 @@
         {% endfor %}
 
       </div>
-      <div class="form__group">
-        {{ form.duration.label_tag }}
-        {{ form.duration }}
+      <div class=tiles>
+        <h2 style="margin-top: 2em">Étape 2: Choisissez la durée du mandat</h2>
+        <div style="display: flex; flex-direction: row">
+          {% for value, label in form.duration.field.choices %}
+              <div class="tile" style="display: flex; flex-direction: row">
+              <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duration"/>
+              <label for="button-{{ value }}"><b>{{ label.title }}</b> {{ label.description }}</label>
+              </div>
+          {% endfor %}
+        </div>
       </div>
       <div class="form__group">
+          <h2 style="margin-top: 2em">Étape 3: Connectez l'usager à FranceConnect</h2>
         <input id="submit_button" type="submit" class="fc_button" value="S’identifier avec France Connect" />
       </div>
     </div>

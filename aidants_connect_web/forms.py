@@ -125,5 +125,8 @@ class MandatForm(forms.Form):
     perimeter = forms.MultipleChoiceField(
         choices=settings.DEMARCHES, widget=forms.CheckboxSelectMultiple
     )
-
-    duration = forms.IntegerField(required=True, initial=3)
+    DURATIONS = [
+        ("short", {"title": "Mandat court", "description": "(1 jour)"}),
+        ("long", {"title": "Mandat long", "description": "(12 mois)"}),
+    ]
+    duration = forms.ChoiceField(choices=DURATIONS, required=True, initial=3)
