@@ -3,8 +3,10 @@ from django.conf import settings
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import User
 import time
+from django.test import tag
 
 
+@tag("functional")
 class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
