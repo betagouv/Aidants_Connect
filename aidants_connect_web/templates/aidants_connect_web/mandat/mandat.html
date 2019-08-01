@@ -3,90 +3,13 @@
 {% load static %}
 
 {% block extracss %}
-  <link href="{% static 'css/mandat.css' %}" rel="stylesheet">
-    <style type="text/css" media="screen">
-
-    .tiles {
-        width: 40em;
-    }
-
-    .tile label {padding: 12px 30px;
-        width: 100%;
-        display: block;
-        text-align: left;
-        color: black;
-        cursor: pointer;
-        position: relative;
-        z-index: 2;
-        transition: color 100ms ease-in;
-        overflow: hidden;
-    }
-
-
-    .tile label::before {
-        width: 10px;
-        height: 10px;
-        content: '';
-        position: absolute;
-        background-color: #003b80;
-        left: 50%;
-        top: 50%;
-        opacity: 0;
-        z-index: -1;
-    }
-    .tile label::after {
-        width: 32px;
-        height: 32px;
-        content: '';
-        border: 2px solid #003b80;
-        background-color: white;
-        background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.414 11L4 12.414l5.414 5.414L20.828 6.414 19.414 5l-10 10z' fill='%23fff' fill-rule='nonzero'/%3E%3C/svg%3E ");
-        background-repeat: no-repeat;
-        background-position: 3px 4px;
-        border-radius: 50%;
-        z-index: 2;
-        position: absolute;
-        right: 10px;
-        top: 25px;
-        transform: translateY(-50%);
-        cursor: pointer;
-        transition: all 100ms ease-in;
-     }
-    .tile input:checked ~ label {
-        color: white;
-    }
-    .tile input:checked ~ label::before {
-        transform: translate(-50%, -50%) scale3d(56, 56, 1);
-        opacity: 1;
-    }
-    .tile input:checked ~ label::after {
-        background-color: #003b80;
-        border-color: white;
-    }
-    .tile b {
-        font-size: large;
-    }
-    .tile input {
-          order: 1;
-          z-index: 2;
-          position: relative;
-          transform: translateY(-50%);
-          cursor: pointer;
-          visibility: hidden;
-        }
-    @media (max-width: 800px) {
-        .tiles {
-           width: 30em;
-        }
-
-    }
-    </style>
+<link href="{% static 'css/mandat.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 
 
 {% block content %}
-<section class="section">
+<section id="engagement"class="section">
   <div class="container container-small">
     <div class="information">
       <h1>Signature d’un mandat de délégation</h1>
@@ -102,59 +25,55 @@
     </div>
   </div>
 </section>
-<section id="select_procedure" class="section section-grey">
+<section id="mandat_specifications" class="section section-grey">
   <div class="container">
     <form method="post">
       {% if notification %}
-        <div class="notification">{{ notification }}</div>
+      <div class="notification">{{ notification }}</div>
       {% endif %}
-    <div class="tiles"">
-      <h2>Étape 1: Sélectionnez la ou les démarche(s)</h2>
-      {% if form.errors %}
+      <div id="demarches" class="tiles">
+        <h2>Étape 1: Sélectionnez la ou les démarche(s)</h2>
+        {% if form.errors %}
         <div class="notification">
-          {{ form.errors }}
+        {{ form.errors }}
         </div>
-      {% endif %}
-      {% csrf_token %}
-      <div class="grid" id="procedure_list">
-        {% for value, label in form.perimeter.field.choices %}
-           <div class="tile">
+        {% endif %}
+        {% csrf_token %}
+        <div id="demarches_list" class="grid">
+            {% for value, label in form.perimeter.field.choices %}
+            <div id="{{ value }}" class="tile">
                 <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="perimeter"/>
-                   <label for="button-{{ value }}">
-                       <div style="display: flex; flex-direction: column">
-                          <div style="display: flex; align-items: center">
-                           <img src={{ label.icon }}>
-                           <b>{{ label.titre }}</b>
-                           </div>
-                           <div>
-                               {{ label.description }}
-                           </div>
-                       </div>
-                   </label>
-
-           </div>
-
-        {% endfor %}
-
-      </div>
-      <div class=tiles>
-        <h2 style="margin-top: 2em">Étape 2: Choisissez la durée du mandat</h2>
-        <div style="display: flex; flex-direction: row">
-          {% for value, label in form.duration.field.choices %}
-              <div class="tile" style="display: flex; flex-direction: row">
-              <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duration"/>
-              <label for="button-{{ value }}"><b>{{ label.title }}</b> {{ label.description }}</label>
-              </div>
-          {% endfor %}
+                <label id="label-{{ value }}" for="button-{{ value }}">
+                    <div style="display: flex; flex-direction: column">
+                        <div style="display: flex; align-items: center">
+                            <img src={{ label.icon }}>
+                            <p>{{ label.titre }}</p>
+                        </div>
+                        <div>
+                            {{ label.description }}
+                        </div>
+                   </div>
+                </label>
+            </div>
+            {% endfor %}
         </div>
-      </div>
-      <div class="form__group">
-          <h2 style="margin-top: 2em">Étape 3: Connectez l'usager à FranceConnect</h2>
-        <input id="submit_button" type="submit" class="fc_button" value="S’identifier avec France Connect" />
-      </div>
-    </div>
+        </div>
+      <div id="duration" >
+            <h2 style="margin-top: 2em">Étape 2: Choisissez la durée du mandat</h2>
+            <div id="duration_list" class="grid" >
+              {% for value, label in form.duration.field.choices %}
+                  <div id="{{ value }}" class="tile" style="display: flex; flex-direction: row">
+                    <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duration"/>
+                    <label id="label-{{ value }}" for="button-{{ value }}"><b>{{ label.title }}</b> {{ label.description }}</label>
+                  </div>
+              {% endfor %}
+            </div>
+        </div>
+      <div id="france_connection" class="form__group">
+            <h2 style="margin-top: 2em">Étape 3: Connectez l'usager à FranceConnect</h2>
+            <input id="submit_button" type="submit" class="fc_button" value="S’identifier avec France Connect" />
+        </div>
     </form>
-
   <div>
 </section>
 {% endblock content %}

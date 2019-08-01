@@ -1,51 +1,74 @@
-.hero__container {
-  min-height: 10em;
+form {
+    max-width: 40em;
 }
 
-ul {
-  line-height: 1.875em;
-  margin: 0;
+.tile p {
+    font-weight: bold;
 }
 
-form ul {
-  list-style-type: none;
+.tile label {padding: 12px 30px;
+    width: 100%;
+    display: block;
+    text-align: left;
+    color: black;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: color 100ms ease-in;
+    overflow: hidden;
 }
 
-ul input[type="radio"] {
-  margin-bottom: 0.25em;
+.tile label::before {
+    width: 10px;
+    height: 10px;
+    content: '';
+    position: absolute;
+    background-color: #003b80;
+    left: 50%;
+    top: 50%;
+    opacity: 0;
+    z-index: -1;
+}
+.tile label::after {
+    width: 32px;
+    height: 32px;
+    content: '';
+    border: 2px solid #003b80;
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.414 11L4 12.414l5.414 5.414L20.828 6.414 19.414 5l-10 10z' fill='%23fff' fill-rule='nonzero'/%3E%3C/svg%3E ");
+    background-repeat: no-repeat;
+    background-position: 3px 4px;
+    border-radius: 50%;
+    z-index: 2;
+    position: absolute;
+    right: 10px;
+    top: 25px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: all 100ms ease-in;
+ }
+.tile input:checked ~ label {
+    color: white;
+}
+.tile input:checked ~ label::before {
+    transform: translate(-50%, -50%) scale3d(56, 56, 1);
+    opacity: 1;
 }
 
-.other__group {
-  margin-top: 0.5em;
+.tile input:checked ~ label::after {
+    background-color: #003b80;
+    border-color: white;
 }
 
-fieldset {
-  flex-direction: column;
-  align-items: start;
+.tile b {
+    font-size: large;
 }
+.tile input {
+      order: 1;
+      z-index: 2;
+      position: relative;
+      transform: translateY(-50%);
+      cursor: pointer;
+      visibility: hidden;
+    }
 
-fieldset .checkbox__group {
-  display: flex;
-  flex-direction: row;
-}
-
-fieldset .checkbox__group + .checkbox__group {
-  margin-top: 1em;
-}
-
-fieldset input[type="checkbox"] {
-  flex-shrink: 0;
-}
-
-fieldset .label-inline {
-  display: inline-block;
-}
-
-h3.subtitle {
-  color: #1c1c1c;
-  margin-bottom: 0.5em;
-}
-
-button.button {
-  margin-bottom: 1em;
-}
