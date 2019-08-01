@@ -36,15 +36,20 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-def humanize_demarche_names(list_of_machine_names):
-    # TODO retionalize this
-    human_names = []
-    for p in list_of_machine_names:
-        for category in settings.DEMARCHES:
-            for element in category[1]:
-                if element[0] == p:
-                    human_names.append(element[1])
-    return human_names
+def humanize_demarche_names(machine_names: list) -> list:
+    """
+    >>> humanize_demarche_names(['argent'])
+    ["ARGENT: Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
+            "Surendettement…"]
+    :param machine_names:
+    :return: list of human names and description
+    """
+    demarches_list = dict(settings.DEMARCHES)
+    return [
+        f"{demarches_list[machine_name]['titre']}: "
+        f"{demarches_list[machine_name]['description']}"
+        for machine_name in machine_names
+    ]
 
 
 def home_page(request):
@@ -192,6 +197,8 @@ def generate_mandat_pdf(request):
     aidant = request.user
     usager = request.session["usager"]
     mandat = request.session["mandat"]
+    demarches = mandat["perimeter"]
+    duration = "1 jour" if mandat["duration"] == "short" else "1 an"
     html_string = render_to_string(
         "aidants_connect_web/mandat/pdf_mandat.html",
         {
@@ -201,8 +208,8 @@ def generate_mandat_pdf(request):
             "organisme": aidant.organisme,
             "lieu": aidant.ville,
             "date": formats.date_format(date.today(), "l j F Y"),
-            "demarches": humanize_demarche_names(mandat["perimeter"]),
-            "duree": f"{mandat['duration']} mois",
+            "demarches": humanize_demarche_names(demarches),
+            "duree": duration,
         },
     )
 

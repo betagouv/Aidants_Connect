@@ -202,13 +202,13 @@ class UserChangeFormTest(TestCase):
 class MandatFormTest(TestCase):
     def test_form_renders_item_text_input(self):
         form = MandatForm()
-        self.assertIn("Étranger", form.as_p())
+        self.assertIn("ARGENT", form.as_p())
 
     def test_validation_for_blank_items(self):
-        form = MandatForm(data={"perimeter": ["etranger"], "duration": "16"})
+        form = MandatForm(data={"perimeter": ["argent"], "duration": "short"})
         self.assertTrue(form.is_valid())
 
-        form_2 = MandatForm(data={"perimeter": [], "duration": "16"})
+        form_2 = MandatForm(data={"perimeter": [], "duration": "short"})
         self.assertFalse(form_2.is_valid())
         self.assertEqual(form_2.errors["perimeter"], ["Ce champ est obligatoire."])
 
@@ -227,4 +227,7 @@ class MandatFormTest(TestCase):
     def test_non_integer_duration_triggers_error(self):
         form = MandatForm(data={"perimeter": ["argent"], "duration": "test"})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors["duration"], ["Saisissez un nombre entier."])
+        self.assertEqual(
+            form.errors["duration"],
+            ["Sélectionnez un choix valide. test n'en fait pas partie."],
+        )
