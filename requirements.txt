@@ -1,4 +1,4 @@
-Django==2.2.3
+Django==2.2.4
 entrypoints==0.3
 flake8==3.7.7
 freezegun==0.3.11
