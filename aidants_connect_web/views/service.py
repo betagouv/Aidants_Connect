@@ -250,9 +250,7 @@ def authorize(request):
         # TODO check if connection has not expired
         # TODO change "chosen_user" to chosen_usager
 
-        that_connection.sub_usager = Usager.objects.get(
-            id=request.POST.get("chosen_user")
-        ).sub
+        that_connection.usager = Usager.objects.get(id=request.POST.get("chosen_user"))
         that_connection.save()
         select_demarches_url = f"{reverse('fi_select_demarche')}?state={state}"
         return redirect(select_demarches_url)
@@ -263,12 +261,11 @@ def fi_select_demarche(request):
 
     if request.method == "GET":
         state = request.GET.get("state", False)
-        sub_usager = Connection.objects.get(state=state).sub_usager
+        usager = Connection.objects.get(state=state).usager
         # TODO for Usager, should we use sub_usager or internal ID ?
         # TODO Should we have different instances of the same usager for each aidant
         #  ? for each mandat ? at all ?
         # the [Ø] in the following line is in case the same user has several mandat
-        usager = Usager.objects.filter(sub=sub_usager)[0]
         mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
 
         demarches_per_mandat = mandats.values_list("perimeter", flat=True)
@@ -352,7 +349,7 @@ def token(request):
         # The issuer,  the URL of your Auth0 tenant
         "iss": host,
         # The unique identifier of the user
-        "sub": connection.sub_usager,
+        "sub": connection.usager.sub,
         "nonce": connection.nonce,
     }
 
@@ -391,8 +388,7 @@ def user_info(request):
     if connection.expiresOn < timezone.now():
         return HttpResponseForbidden()
     # TODO decide how to deal with user having several mandats/aidants
-    usager = Usager.objects.filter(sub=connection.sub_usager)[0]
-    usager = model_to_dict(usager)
+    usager = model_to_dict(connection.usager)
     del usager["id"]
     birthdate = usager["birthdate"]
     birthplace = usager["birthplace"]
