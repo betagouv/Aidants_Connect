@@ -202,7 +202,7 @@ class UserChangeFormTest(TestCase):
 class MandatFormTest(TestCase):
     def test_form_renders_item_text_input(self):
         form = MandatForm()
-        self.assertIn("ARGENT", form.as_p())
+        self.assertIn("argent", form.as_p())
 
     def test_validation_for_blank_items(self):
         form = MandatForm(data={"perimeter": ["argent"], "duration": "short"})

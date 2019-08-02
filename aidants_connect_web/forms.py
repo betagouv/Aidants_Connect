@@ -122,8 +122,10 @@ class UserChangeForm(forms.ModelForm):
 
 class MandatForm(forms.Form):
 
+    DEMARCHES = [(key, value) for key, value in settings.DEMARCHES.items()]
+
     perimeter = forms.MultipleChoiceField(
-        choices=settings.DEMARCHES, widget=forms.CheckboxSelectMultiple
+        choices=DEMARCHES, widget=forms.CheckboxSelectMultiple
     )
     DURATIONS = [
         ("short", {"title": "Mandat court", "description": "(1 jour)"}),

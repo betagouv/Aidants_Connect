@@ -44,9 +44,9 @@ def humanize_demarche_names(machine_names: list) -> list:
     :param machine_names:
     :return: list of human names and description
     """
-    demarches_list = dict(settings.DEMARCHES)
+    demarches_list = settings.DEMARCHES
     return [
-        f"{demarches_list[machine_name]['titre']}: "
+        f"{demarches_list[machine_name]['titre'].upper()}: "
         f"{demarches_list[machine_name]['description']}"
         for machine_name in machine_names
     ]
@@ -127,12 +127,7 @@ def recap(request):
     mandat = request.session.get("mandat")
 
     if request.method == "GET":
-        demarches_list = dict(settings.DEMARCHES)
-        demarches = [
-            f"{demarches_list[machine_name]['titre']}:"
-            f" {demarches_list[machine_name]['description']}"
-            for machine_name in mandat["perimeter"]
-        ]
+        demarches = humanize_demarche_names(mandat["perimeter"])
         duration = "1 jour" if mandat["duration"] == "short" else "1 an"
 
         return render(
