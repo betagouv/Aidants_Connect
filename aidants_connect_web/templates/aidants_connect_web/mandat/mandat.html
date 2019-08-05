@@ -67,8 +67,15 @@
                     <label id="label-{{ value }}" for="button-{{ value }}"><b>{{ label.title }}</b> {{ label.description }}</label>
                   </div>
               {% endfor %}
+                <div id="custom-end-date" class="tile" style="display: flex; flex-direction: row">
+                    <input id="button-custom-end-date" type="radio" value="custom-end-date" name="duration" disabled/>
+                    <label id="label-custom-end-date" for="button-custom-end-date">
+                        <p ><b>Sélectionnez une date</b> (disponible bientôt)</p>
+                        <input style="visibility: initial; margin-top: 1em;" type="date" id="custom-end-date" name="custom-end-date" disabled>
+                    </label>
+                </div>
             </div>
-        </div>
+
       <div id="france_connection" class="form__group">
             <h2 style="margin-top: 2em">Étape 3: Connectez l'usager à FranceConnect</h2>
             <input id="submit_button" type="submit" class="fc_button" value="S’identifier avec France Connect" />
