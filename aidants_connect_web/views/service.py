@@ -222,8 +222,9 @@ def authorize(request):
             return HttpResponseForbidden()
 
         aidant = request.user
-        usagers_id = Mandat.objects.values_list("usager", flat=True)
-        # TODO Do we send the whole usager ? or only first name and last name and sub ?
+        mandats_for_aidant = Mandat.objects.filter(aidant=aidant)
+        usagers_id = mandats_for_aidant.values_list("usager", flat=True)
+        # TODO Do we send the whole usager ? or only first name and last name and id ?
         usagers = [Usager.objects.get(id=usager_id) for usager_id in usagers_id]
 
         return render(
