@@ -13,3 +13,24 @@ h2.subtitle {
 .current__users {
   margin-top: 3em;
 }
+
+/* Workaround for border not displaying correctly with rowspan */
+.table td {
+  position: relative;
+}
+
+.table td:after {
+  position: absolute;
+  content: "";
+  top: 0;
+  left: 0;
+  background-color: transparent;
+  border-bottom: 1px solid #c9d3df;
+  width: 100%;
+  height: 100%;
+}
+
+.table tbody:hover td[rowspan],
+.table tr:hover td {
+   background-color: #fafbfc;
+}
