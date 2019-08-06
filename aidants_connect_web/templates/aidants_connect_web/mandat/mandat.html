@@ -32,7 +32,7 @@
       <div class="notification">{{ notification }}</div>
       {% endif %}
       <div id="demarches" class="tiles">
-        <h2>Étape 1: Sélectionnez la ou les démarche(s)</h2>
+        <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
         {% if form.errors %}
         <div class="notification">
         {{ form.errors }}
@@ -43,41 +43,38 @@
             {% for value, label in form.perimeter.field.choices %}
             <div id="{{ value }}" class="tile">
                 <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="perimeter"/>
-                <label id="label-{{ value }}" for="button-{{ value }}">
-                    <div style="display: flex; flex-direction: column">
-                        <div style="display: flex; align-items: center">
-                            <img src={{ label.icon }}>
-                            <p style="text-transform: uppercase">{{ label.titre }}</p>
-                        </div>
-                        <div>
-                            {{ label.description }}
-                        </div>
-                   </div>
+                <label id="label-demarche" for="button-{{ value }}">
+                    <img src={{ label.icon }}>
+                    <h3>{{ label.titre }}</h3>
+                    <p>{{ label.description }}</p>
                 </label>
             </div>
             {% endfor %}
         </div>
         </div>
       <div id="duration" >
-            <h2 style="margin-top: 2em">Étape 2: Choisissez la durée du mandat</h2>
+            <h2 id="step-title">Étape 2 : Choisissez la durée du mandat</h2>
             <div id="duration_list" class="grid" >
               {% for value, label in form.duration.field.choices %}
-                  <div id="{{ value }}" class="tile" style="display: flex; flex-direction: row">
+                  <div id="{{ value }}" class="tile">
                     <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duration"/>
-                    <label id="label-{{ value }}" for="button-{{ value }}"><b>{{ label.title }}</b> {{ label.description }}</label>
+                    <label id="label-duration" for="button-{{ value }}">
+                        <h3>{{ label.title }}</h3>
+                        <span>{{ label.description }}</span>
+                    </label>
                   </div>
               {% endfor %}
-                <div id="custom-end-date" class="tile" style="display: flex; flex-direction: row">
+                <div id="custom-end-date" class="tile">
                     <input id="button-custom-end-date" type="radio" value="custom-end-date" name="duration" disabled/>
                     <label id="label-custom-end-date" for="button-custom-end-date">
-                        <p ><b>Sélectionnez une date</b> (disponible bientôt)</p>
-                        <input style="visibility: initial; margin-top: 1em;" type="date" id="custom-end-date" name="custom-end-date" disabled>
+                        <h3>Sélectionnez une date</h3><span>(disponible bientôt)</span>
+                        <input id="input-custom-end-date" type="date" name="custom-end-date" disabled>
                     </label>
                 </div>
             </div>
 
       <div id="france_connection" class="form__group">
-            <h2 style="margin-top: 2em">Étape 3: Connectez l'usager à FranceConnect</h2>
+            <h2 id="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
             <input id="submit_button" type="submit" class="fc_button" value="S’identifier avec France Connect" />
         </div>
     </form>

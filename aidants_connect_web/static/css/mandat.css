@@ -1,13 +1,31 @@
+
+
 form {
     max-width: 40em;
 }
 
-.tile p {
-    font-weight: bold;
+
+.tile {
+    padding: 0;
 }
 
-.tile label {padding: 12px 30px;
+.tile h3 {
+    font-size: 1.2em;
+}
+
+.tile input {
+      order: 1;
+      z-index: 2;
+      position: absolute;
+      transform: translateY(-50%);
+      cursor: pointer;
+      visibility: hidden;
+    }
+
+.tile label {
+    padding: 12px 30px;
     width: 100%;
+    height: 100%;
     display: block;
     text-align: left;
     color: black;
@@ -18,17 +36,6 @@ form {
     overflow: hidden;
 }
 
-.tile label::before {
-    width: 10px;
-    height: 10px;
-    content: '';
-    position: absolute;
-    background-color: #003b80;
-    left: 50%;
-    top: 50%;
-    opacity: 0;
-    z-index: -1;
-}
 .tile label::after {
     width: 32px;
     height: 32px;
@@ -49,10 +56,7 @@ form {
  }
 .tile input:checked ~ label {
     color: white;
-}
-.tile input:checked ~ label::before {
-    transform: translate(-50%, -50%) scale3d(56, 56, 1);
-    opacity: 1;
+    background-color: #003b80;
 }
 
 .tile input:checked ~ label::after {
@@ -60,15 +64,33 @@ form {
     border-color: white;
 }
 
-.tile b {
-    font-size: large;
-}
-.tile input {
-      order: 1;
-      z-index: 2;
-      position: relative;
-      transform: translateY(-50%);
-      cursor: pointer;
-      visibility: hidden;
-    }
 
+#step-title {
+    margin-top: 2em;
+}
+
+#label-demarche {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#label-demarche>h3{
+    text-transform: uppercase;
+}
+
+#label-duration {
+    display: flex;
+    flex-direction: column;
+}
+
+#label-custom-end-date {
+    padding-bottom: 0px;
+    display: flex;
+    flex-direction: column;
+}
+#input-custom-end-date  {
+    visibility: initial;
+    margin-top: 1.7em;
+    position: relative;
+}
