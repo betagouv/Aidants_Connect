@@ -155,88 +155,65 @@ LOGOUT_REDIRECT_URL = "home_page"
 AUTH_USER_MODEL = "aidants_connect_web.User"
 
 
-DEMARCHES = (
-    (
-        "Logement",
-        [
-            ("chg_adresse", "Signaler un changement d’adresse"),
-            ("alloc_logement", "Demander une allocation logement"),
-            ("paiement_fact", "Demander une aide au paiement des factures"),
-            (
-                "renov_energ",
-                "Demander une aide pour la rénovation énergétique de mon logement",
-            ),
-            ("heberg_social", "Hébergement social"),
-            ("ehpad", "Ehpad"),
-        ],
-    ),
-    (
-        "Transport",
-        [
-            ("carte_grise", "Carte grise"),
-            ("permis_conduire", "Permis de conduire"),
-            ("infrac_route", "Infractions routières"),
-        ],
-    ),
-    (
-        "Santé",
-        [
-            ("affil_rembours_ss", "Affiliation ou remboursement sécurité sociale"),
-            ("hospitalisation", "Hospitalisation"),
-            ("soins_domicile", "Soins à domicile"),
-            ("invalid_tempo", "Invalidité temporaire"),
-            ("pension_invalid", "Pension d’invalidité"),
-        ],
-    ),
-    (
-        "Handicap",
-        [
-            ("alloc_handicap", "Allocations (AAH, AEEH, PCH)"),
-            ("cmuc", "Couverture maladie universelle complémentaire (CMU-C)"),
-            ("acs", "Aide au paiement d’une complémentaire santé (ACS)"),
-        ],
-    ),
-    (
-        "Aides sociales",
-        [
-            ("rsa", "Revenu de solidarité active (RSA)"),
-            ("apa", "Allocation personnalisée d’autonomie (APA)"),
-            ("aspa", "Allocation de solidarité aux personnes âgées (ASPA)"),
-            ("asi", "Allocation supplémentaire d’invalidité (ASI)"),
-            ("ass", "Allocation de solidarité spécifique (ASS)"),
-            ("prime_activite", "Prime d’activité"),
-            ("chq_energie", "Chèque énergie"),
-            ("alloc_famille", "Allocation familiale"),
-        ],
-    ),
-    (
-        "Famille",
-        [
-            ("naissance", "Naissance"),
-            ("adoption", "Adoption"),
-            ("pacs", "Pacs"),
-            ("mariage", "Mariage"),
-            ("divorce", "Divorce"),
-        ],
-    ),
-    (
-        "Papiers",
-        [
-            ("cni", "Carte d’identité"),
-            ("passeport", "Passeport"),
-            ("certificat_docs", "Certificat, copie, légalisation de document"),
-            ("livret_famille", "Livret de famille"),
-            ("chg_nom", "Changement de nom ou prénom"),
-            ("chg_sexe", "Changement de sexe"),
-        ],
-    ),
-    ("Elections", [("inscrpt_listes", "S’inscrire sur les listes électorales")]),
-    (
-        "Impôts",
-        [
-            ("decl_revenus", "Déclaration de revenus"),
-            ("impots_pro", "Impôts professionnels"),
-            ("taxe_habit", "Taxe d’habitation"),
-        ],
-    ),
-)
+DEMARCHES = {
+    "papiers": {
+        "titre": "Papiers - Citoyenneté",
+        "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/papiers.png",
+    },
+    "famille": {
+        "titre": "Famille",
+        "description": "Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/famille.png",
+    },
+    "social": {
+        "titre": "Social - Santé",
+        "description": "Carte vitale, Chômage, Handicap, RSA, Personnes âgées…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/sante.png",
+    },
+    "travail": {
+        "titre": "Travail",
+        "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/travail.png",
+    },
+    "logement": {
+        "titre": "Logement",
+        "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/logement.png",
+    },
+    "transport": {
+        "titre": "Transports",
+        "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/transports.png",
+    },
+    "argent": {
+        "titre": "Argent",
+        "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
+        "Surendettement…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/argent.png",
+    },
+    "justice": {
+        "titre": "Justice",
+        "description": "Casier judiciaire, Plainte, Aide juridictionnelle, Saisie…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/justice.png",
+    },
+    "etranger": {
+        "titre": "Étranger",
+        "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/etrangers.png",
+    },
+    "loisirs": {
+        "titre": "Loisirs",
+        "description": "Animaux, Permis bateau, Tourisme, Permis de chasser,",
+        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
+        "/loisirs.png",
+    },
+}

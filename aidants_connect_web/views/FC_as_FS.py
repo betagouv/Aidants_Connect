@@ -33,7 +33,7 @@ def fc_authorize(request):
         "gender",
         "birthplace",
         "birthcountry",
-        "email"
+        "email",
     ]
 
     parameters = (

@@ -3,8 +3,10 @@ from django.conf import settings
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import User
 import time
+from django.test import tag
 
 
+@tag("functional")
 class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
@@ -42,19 +44,22 @@ class CreateNewMandat(StaticLiveServerTestCase):
         # Create new mandat
         add_user_button = self.selenium.find_element_by_id("add_user")
         add_user_button.click()
-        procedure_section = self.selenium.find_element_by_id("select_procedure")
-        procedure_title = procedure_section.find_element_by_tag_name("h2").text
-        self.assertEqual(procedure_title, "Choisir la démarche")
+        demarches_section = self.selenium.find_element_by_id("demarches")
+        demarche_title = demarches_section.find_element_by_tag_name("h2").text
+        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
 
-        procedure_list = procedure_section.find_element_by_id("id_perimeter")
-        procedures = procedure_list.find_elements_by_tag_name("label")
+        demarches_section.find_element_by_id("argent").find_element_by_tag_name(
+            "label").click()
+        demarches_section.find_element_by_id("famille").find_element_by_tag_name(
+            "label").click()
 
-        procedures[0].click()
-        procedures[-1].click()
-        self.assertEqual(len(procedures), 40)
+        demarches_grid = self.selenium.find_element_by_id("demarches_list")
+        demarches = demarches_grid.find_elements_by_tag_name("input")
+        self.assertEqual(len(demarches), 10)
 
-        duration = procedure_section.find_element_by_id("id_duration")
-        duration.send_keys("6")
+        duration_section = self.selenium.find_element_by_id("duration")
+        duration_section.find_element_by_id("long").find_element_by_tag_name(
+            "label").click()
 
         # FranceConnect
         fc_button = self.selenium.find_element_by_id("submit_button")

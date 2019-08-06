@@ -1,7 +1,9 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.firefox.webdriver import WebDriver
+from django.test import tag
 
 
+@tag("functional")
 class Error404Page(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.forms.models import model_to_dict
 
-from aidants_connect_web.forms import UserCreationForm, UserChangeForm
+from aidants_connect_web.forms import UserCreationForm, UserChangeForm, MandatForm
 from aidants_connect_web.models import User
 
 
@@ -197,3 +197,37 @@ class UserChangeFormTest(TestCase):
         self.assertEqual(self.aidant2.email, "abernart@domain.user")
         self.assertEqual(self.aidant2.username, "abernart@domain.user")
         self.assertEqual(form.errors["email"], ["This email is already taken"])
+
+
+class MandatFormTest(TestCase):
+    def test_form_renders_item_text_input(self):
+        form = MandatForm()
+        self.assertIn("argent", form.as_p())
+
+    def test_validation_for_blank_items(self):
+        form = MandatForm(data={"perimeter": ["argent"], "duration": "short"})
+        self.assertTrue(form.is_valid())
+
+        form_2 = MandatForm(data={"perimeter": [], "duration": "short"})
+        self.assertFalse(form_2.is_valid())
+        self.assertEqual(form_2.errors["perimeter"], ["Ce champ est obligatoire."])
+
+        form_3 = MandatForm(data={"perimeter": ["travail"], "duration": ""})
+        self.assertFalse(form_3.is_valid())
+        self.assertEqual(form_3.errors["duration"], ["Ce champ est obligatoire."])
+
+    def test_non_existing_perimeter_triggers_error(self):
+        form = MandatForm(data={"perimeter": ["test"], "duration": "16"})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["perimeter"],
+            ["Sélectionnez un choix valide. test n'en fait pas partie."],
+        )
+
+    def test_non_integer_duration_triggers_error(self):
+        form = MandatForm(data={"perimeter": ["argent"], "duration": "test"})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["duration"],
+            ["Sélectionnez un choix valide. test n'en fait pas partie."],
+        )

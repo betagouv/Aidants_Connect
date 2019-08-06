@@ -36,14 +36,20 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-def humanize_demarche_names(list_of_machine_names):
-    human_names = []
-    for p in list_of_machine_names:
-        for category in settings.DEMARCHES:
-            for element in category[1]:
-                if element[0] == p:
-                    human_names.append(element[1])
-    return human_names
+def humanize_demarche_names(machine_names: list) -> list:
+    """
+    >>> humanize_demarche_names(['argent'])
+    ["ARGENT: Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
+            "Surendettement…"]
+    :param machine_names:
+    :return: list of human names and description
+    """
+    demarches_list = settings.DEMARCHES
+    return [
+        f"{demarches_list[machine_name]['titre'].upper()}: "
+        f"{demarches_list[machine_name]['description']}"
+        for machine_name in machine_names
+    ]
 
 
 def home_page(request):
@@ -67,7 +73,7 @@ def dashboard(request):
 
     for mandat in mandats:
         mandat.perimeter_names = humanize_demarche_names(mandat.perimeter)
-
+    # todo change the "mois" in "jours"
     return render(
         request,
         "aidants_connect_web/dashboard.html",
@@ -122,6 +128,7 @@ def recap(request):
 
     if request.method == "GET":
         demarches = humanize_demarche_names(mandat["perimeter"])
+        duration = "1 jour" if mandat["duration"] == "short" else "1 an"
 
         return render(
             request,
@@ -130,14 +137,13 @@ def recap(request):
                 "user": user,
                 "usager": usager,
                 "demarches": demarches,
-                "duration": mandat["duration"],
+                "duration": duration,
             },
         )
 
     else:
         form = request.POST
         if form.get("personal_data") and form.get("brief"):
-            mandat["aidant"] = user
             try:
                 usager, created = Usager.objects.update_or_create(
                     sub=usager.sub,
@@ -155,10 +161,13 @@ def recap(request):
                 log.error(e)
                 messages.error(request, f"The FranceConnect ID is not complete : {e}")
                 return redirect("dashboard")
-
-            mandat["usager"] = usager
-
-            Mandat.objects.create(**mandat)
+            duration_in_days = 1 if mandat["duration"] == "short" else 365
+            Mandat.objects.create(
+                aidant=user,
+                usager=usager,
+                perimeter=mandat["perimeter"],
+                duration=duration_in_days,
+            )
 
             messages.success(request, "Le mandat a été créé avec succès !")
 
@@ -183,6 +192,8 @@ def generate_mandat_pdf(request):
     aidant = request.user
     usager = request.session["usager"]
     mandat = request.session["mandat"]
+    demarches = mandat["perimeter"]
+    duration = "1 jour" if mandat["duration"] == "short" else "1 an"
     html_string = render_to_string(
         "aidants_connect_web/mandat/pdf_mandat.html",
         {
@@ -192,8 +203,8 @@ def generate_mandat_pdf(request):
             "organisme": aidant.organisme,
             "lieu": aidant.ville,
             "date": formats.date_format(date.today(), "l j F Y"),
-            "demarches": humanize_demarche_names(mandat["perimeter"]),
-            "duree": f"{mandat['duration']} mois",
+            "demarches": humanize_demarche_names(demarches),
+            "duree": duration,
         },
     )
 

@@ -96,7 +96,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
         }
         mandat_form = MandatForm(
-            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+            data={"perimeter": ["papiers", "logement"], "duration": "long"}
         )
         mandat_form.is_valid()
         session["mandat"] = mandat_form.cleaned_data
@@ -122,7 +122,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
         }
         mandat_form = MandatForm(
-            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+            data={"perimeter": ["papiers", "logement"], "duration": "short"}
         )
         mandat_form.is_valid()
         session["mandat"] = mandat_form.cleaned_data
@@ -154,7 +154,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
         }
         mandat_form = MandatForm(
-            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+            data={"perimeter": ["papiers", "logement"], "duration": "long"}
         )
         mandat_form.is_valid()
         session["mandat"] = mandat_form.cleaned_data
@@ -191,7 +191,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
         }
         mandat_form = MandatForm(
-            data={"perimeter": ["chg_adresse", "heberg_social"], "duration": 3}
+            data={"perimeter": ["papiers", "logement"], "duration": "short"}
         )
         mandat_form.is_valid()
         session["mandat"] = mandat_form.cleaned_data
@@ -643,7 +643,7 @@ class GenerateMandatPDF(TestCase):
         "email": "test@test.com",
     }
 
-    test_mandat = {"perimeter": ["apa"], "duration": "6"}
+    test_mandat = {"perimeter": ["famille"], "duration": "short"}
 
     def test_response_is_a_pdf_download(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -674,7 +674,7 @@ class GenerateMandatPDF(TestCase):
         self.assertIn("Thierry GONEAU", page)
         self.assertIn("Fabrice MERCIER", page)
         self.assertIn("Allocation", page)
-        self.assertIn("6 mois", page)
+        self.assertIn("1 jour", page)
         self.assertIn("HOULBEC COCHEREL", page)
         self.assertIn("COMMUNE", page)
         self.assertIn("secrétaire", page)
