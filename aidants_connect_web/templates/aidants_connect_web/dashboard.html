@@ -52,7 +52,7 @@
                   <li>{{ mandat.creation_date }}</li>
                 </ul>
               </td>
-              <td>{{ mandat.duration }} mois</td>
+              <td>{{ mandat.duration }} {% if mandat.duration < 2 %}jour{% else %}jours{% endif %}</td>
             </tr>
             {% endfor %}
           {% endfor %}

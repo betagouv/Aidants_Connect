@@ -94,3 +94,12 @@ form {
     margin-top: 1.7em;
     position: relative;
 }
+
+.mandat__agreement fieldset {
+  flex-direction: column;
+  align-items: start;
+}
+
+.mandat__agreement .checkbox__group + .checkbox__group {
+  margin-top: 1em;
+}
