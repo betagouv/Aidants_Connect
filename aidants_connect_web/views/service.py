@@ -262,9 +262,10 @@ def authorize(request):
             return HttpResponseForbidden()
 
         # TODO check if connection has not expired
-        # TODO change "chosen_user" to chosen_usager
 
-        that_connection.usager = Usager.objects.get(id=request.POST.get("chosen_user"))
+        that_connection.usager = Usager.objects.get(
+            id=request.POST.get("chosen_usager")
+        )
         that_connection.save()
         select_demarches_url = f"{reverse('fi_select_demarche')}?state={state}"
         return redirect(select_demarches_url)

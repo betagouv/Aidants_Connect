@@ -1,7 +1,7 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
 from selenium.webdriver.firefox.webdriver import WebDriver
-from aidants_connect_web.models import User, Usager, Mandat
+from aidants_connect_web.models import Aidant, Usager, Mandat
 from datetime import date
 
 
@@ -10,7 +10,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
     def setUpClass(cls):
         # FC only calls back on specific port
         cls.port = settings.FC_AS_FS_TEST_PORT
-        cls.user = User.objects.create_user(
+        cls.user = Aidant.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",
             password="motdepassedethierry",
@@ -26,7 +26,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
             birthplace=70447,
             birthcountry=99100,
             sub="test_sub",
-            email="User@user.domain",
+            email="Aidant@user.domain",
         )
         cls.usager2 = Usager.objects.create(
             given_name="Corentin",
@@ -37,22 +37,22 @@ class CreateNewMandat(StaticLiveServerTestCase):
             birthplace=70447,
             birthcountry=99100,
             sub="test_sub2",
-            email="User2@user.domain",
+            email="Aidant2@user.domain",
         )
         cls.mandat = Mandat.objects.create(
-            aidant=User.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             perimeter=["social"],
             duration=1,
         )
         cls.mandat2 = Mandat.objects.create(
-            aidant=User.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             perimeter=["papiers"],
             duration=1,
         )
         cls.mandat3 = Mandat.objects.create(
-            aidant=User.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub2"),
             perimeter=["famille"],
             duration=365,

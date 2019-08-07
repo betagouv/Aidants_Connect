@@ -9,7 +9,7 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <a href="{% url 'mandat' %}" class="button new__user" id="add_user">Ajouter un usager</a>
+    <a href="{% url 'mandat' %}" class="button new__usager" id="add_usager">Ajouter un usager</a>
     <h1>Bienvenue sur votre espace aidant, {{ aidant.first_name }} !</h1>
     {% if messages %}
       <div class="notification success">
@@ -18,7 +18,7 @@
           {% endfor %}
       </div>
     {% endif %}
-    <div class="current__users">
+    <div class="current__usagers">
       <h2 class="subtitle">Les usagers avec qui vous avez un mandat en cours</h2>
       {% if mandats %}
       <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" disabled>

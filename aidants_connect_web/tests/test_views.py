@@ -270,7 +270,7 @@ class AuthorizeTests(TestCase):
         c.save()
         usager_id = c.usager.id
         response = self.client.post(
-            "/authorize/", data={"state": "test_state", "chosen_user": usager_id}
+            "/authorize/", data={"state": "test_state", "chosen_usager": usager_id}
         )
         try:
             saved_items = Connection.objects.all()
