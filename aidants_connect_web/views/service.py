@@ -68,8 +68,8 @@ def logout_page(request):
 @login_required
 def dashboard(request):
     messages = get_messages(request)
-    user = request.user
-    mandats = Mandat.objects.all().filter(aidant=request.user).order_by("creation_date")
+    aidant = request.user
+    mandats = Mandat.objects.all().filter(aidant=aidant).order_by("creation_date")
 
     for mandat in mandats:
         mandat.perimeter_names = humanize_demarche_names(mandat.perimeter)
@@ -77,20 +77,20 @@ def dashboard(request):
     return render(
         request,
         "aidants_connect_web/dashboard.html",
-        {"user": user, "mandats": mandats, "messages": messages},
+        {"aidant": aidant, "mandats": mandats, "messages": messages},
     )
 
 
 @login_required
 def mandat(request):
-    user = request.user
+    aidant = request.user
     form = MandatForm()
 
     if request.method == "GET":
         return render(
             request,
             "aidants_connect_web/mandat/mandat.html",
-            {"user": user, "form": form},
+            {"aidant": aidant, "form": form},
         )
 
     else:
@@ -103,13 +103,13 @@ def mandat(request):
             return render(
                 request,
                 "aidants_connect_web/mandat/mandat.html",
-                {"user": user, "form": form},
+                {"aidant": aidant, "form": form},
             )
 
 
 @login_required
 def recap(request):
-    user = request.user
+    aidant = request.user
     # TODO check if user already exists via sub
 
     usager_data = request.session.get("usager")
@@ -134,7 +134,7 @@ def recap(request):
             request,
             "aidants_connect_web/mandat/recap.html",
             {
-                "user": user,
+                "aidant": aidant,
                 "usager": usager,
                 "demarches": demarches,
                 "duration": duration,
@@ -165,7 +165,7 @@ def recap(request):
                 return redirect("dashboard")
             duration_in_days = 1 if mandat["duration"] == "short" else 365
             Mandat.objects.create(
-                aidant=user,
+                aidant=aidant,
                 usager=usager,
                 perimeter=mandat["perimeter"],
                 duration=duration_in_days,
@@ -180,7 +180,7 @@ def recap(request):
                 request,
                 "aidants_connect_web/mandat/recap.html",
                 {
-                    "user": user,
+                    "aidant": aidant,
                     "usager": usager,
                     "demarche": demarches,
                     "duration": mandat["duration"],

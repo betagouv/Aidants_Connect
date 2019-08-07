@@ -2,14 +2,14 @@ from django import forms
 from django.forms import EmailField
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth import password_validation
-from aidants_connect_web.models import User
+from aidants_connect_web.models import Aidant
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 
-class UserCreationForm(forms.ModelForm):
+class AidantCreationForm(forms.ModelForm):
     """
-    A form that creates a user, with no privileges, from the given email and
+    A form that creates an aidant, with no privileges, from the given email and
     password.
     """
 
@@ -29,7 +29,7 @@ class UserCreationForm(forms.ModelForm):
     ville = forms.CharField(label="ville")
 
     class Meta:
-        model = User
+        model = Aidant
         fields = (
             "email",
             "last_name",
@@ -43,13 +43,13 @@ class UserCreationForm(forms.ModelForm):
     def clean(self):
         super().clean()
         cleaned_data = self.cleaned_data
-        user_email = cleaned_data.get("email")
-        if user_email in User.objects.all().values_list("username", flat=True):
+        aidant_email = cleaned_data.get("email")
+        if aidant_email in Aidant.objects.all().values_list("username", flat=True):
             self.add_error(
                 "email", forms.ValidationError("This email is already " "taken")
             )
         else:
-            cleaned_data["username"] = user_email
+            cleaned_data["username"] = aidant_email
 
         return cleaned_data
 
@@ -65,26 +65,26 @@ class UserCreationForm(forms.ModelForm):
                 self.add_error("password", error)
 
     def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password"])
+        aidant = super().save(commit=False)
+        aidant.set_password(self.cleaned_data["password"])
         if commit:
-            user.save()
-        return user
+            aidant.save()
+        return aidant
 
 
-class UserChangeForm(forms.ModelForm):
+class AidantChangeForm(forms.ModelForm):
 
     password = ReadOnlyPasswordHashField(
         label=_("Password"),
         help_text=_(
             "Raw passwords are not stored, so there is no way to see this "
-            "user’s password, but you can change the password using "
+            "aidant’s password, but you can change the password using "
             '<a href="../password/">this form</a>.'
         ),
     )
 
     class Meta:
-        model = User
+        model = Aidant
         fields = (
             "email",
             "last_name",
@@ -97,7 +97,7 @@ class UserChangeForm(forms.ModelForm):
         field_classes = {"email": EmailField}
 
     def clean_password(self):
-        # Regardless of what the user provides, return the initial value.
+        # Regardless of what the aidant provides, return the initial value.
         # This is done here, rather than on the field, because the
         # field does not have access to the initial value
         return self.initial.get("password")
@@ -109,7 +109,7 @@ class UserChangeForm(forms.ModelForm):
         initial_email = self.instance.email
 
         if data_email != initial_email:
-            claimed_emails = User.objects.all().values_list("username", flat=True)
+            claimed_emails = Aidant.objects.all().values_list("username", flat=True)
             if data_email in claimed_emails:
                 self.add_error(
                     "email", forms.ValidationError("This email is already taken")

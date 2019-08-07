@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.db.utils import IntegrityError
-from aidants_connect_web.models import Connection, User, Usager, Mandat
+from aidants_connect_web.models import Connection, Aidant, Usager, Mandat
 from datetime import date
 
 
@@ -91,7 +91,7 @@ class UsagerModelTest(TestCase):
 class MandatModelTest(TestCase):
     def test_saving_and_retrieving_mandat(self):
         first_mandat = Mandat()
-        first_mandat.aidant = User.objects.create(username="Marge")
+        first_mandat.aidant = Aidant.objects.create(username="Marge")
 
         first_mandat.usager = Usager.objects.create(
             given_name="Homer",
@@ -108,7 +108,7 @@ class MandatModelTest(TestCase):
         first_mandat.save()
 
         second_mandat = Mandat()
-        second_mandat.aidant = User.objects.create(username="Patricia")
+        second_mandat.aidant = Aidant.objects.create(username="Patricia")
         second_mandat.usager = Usager.objects.create(
             given_name="Ned",
             family_name="Flanders",
@@ -136,22 +136,22 @@ class MandatModelTest(TestCase):
         self.assertEqual(second_saved_item.usager.family_name, "Flanders")
 
 
-class UserModelTest(TestCase):
+class AidantModelTest(TestCase):
     def test_what_happens_to_password_when_not_set(self):
-        aidant = User.objects.create(username="Marge")
+        aidant = Aidant.objects.create(username="Marge")
         self.assertEqual(aidant.password, "")
 
     def test_what_happens_when_username_not_set(self):
-        aidant = User.objects.create()
+        aidant = Aidant.objects.create()
         self.assertEqual(aidant.username, "")
 
-    def test_what_happens_when_a_user_tries_to_use_same_username(self):
-        User.objects.create(username="Marge")
-        self.assertRaises(IntegrityError, User.objects.create, username="Marge")
+    def test_what_happens_when_an_aidant_tries_to_use_same_username(self):
+        Aidant.objects.create(username="Marge")
+        self.assertRaises(IntegrityError, Aidant.objects.create, username="Marge")
 
     def test_aidant_fills_all_the_information(self):
-        self.assertEqual(len(User.objects.all()), 0)
-        User.objects.create(username="bhameau@domain.user")
-        self.assertEqual(len(User.objects.all()), 1)
-        User.objects.create(username="cgireau@domain.user")
-        self.assertEqual(len(User.objects.all()), 2)
+        self.assertEqual(len(Aidant.objects.all()), 0)
+        Aidant.objects.create(username="bhameau@domain.user")
+        self.assertEqual(len(Aidant.objects.all()), 1)
+        Aidant.objects.create(username="cgireau@domain.user")
+        self.assertEqual(len(Aidant.objects.all()), 2)

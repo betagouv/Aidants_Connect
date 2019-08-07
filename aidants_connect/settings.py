@@ -152,7 +152,7 @@ STATIC_URL = "/static/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"
 
-AUTH_USER_MODEL = "aidants_connect_web.User"
+AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 
 
 DEMARCHES = {

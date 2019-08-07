@@ -1,7 +1,7 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
 from selenium.webdriver.firefox.webdriver import WebDriver
-from aidants_connect_web.models import User
+from aidants_connect_web.models import Aidant
 import time
 from django.test import tag
 
@@ -12,7 +12,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
     def setUpClass(cls):
         # FC only calls back on specific port
         cls.port = settings.FC_AS_FS_TEST_PORT
-        cls.user = User.objects.create_user(
+        cls.aidant = Aidant.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",
             password="motdepassedethierry",

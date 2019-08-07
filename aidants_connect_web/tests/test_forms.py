@@ -1,11 +1,11 @@
 from django.test import TestCase
 from django.forms.models import model_to_dict
 
-from aidants_connect_web.forms import UserCreationForm, UserChangeForm, MandatForm
-from aidants_connect_web.models import User
+from aidants_connect_web.forms import AidantCreationForm, AidantChangeForm, MandatForm
+from aidants_connect_web.models import Aidant
 
 
-class UserCreationFormTest(TestCase):
+class AidantCreationFormTest(TestCase):
     def setUp(self):
         self.data = {
             "first_name": "Heliette",
@@ -17,7 +17,7 @@ class UserCreationFormTest(TestCase):
             "organisme": "Bibliothèque Dumas",
             "ville": "Vernon",
         }
-        self.existing_user = User.objects.create(
+        self.existing_aidant = Aidant.objects.create(
             first_name="Armand",
             last_name="Giraud",
             email="agiraud@domain.user",
@@ -29,13 +29,13 @@ class UserCreationFormTest(TestCase):
         )
 
     def test_from_renders_item_text_input(self):
-        form = UserCreationForm()
+        form = AidantCreationForm()
         self.assertIn("Email", form.as_p())
 
     def test_errors_for_blank_items(self):
         def field_test(name_of_field: str, data_set: dict) -> None:
             data_set[name_of_field] = ""
-            form = UserCreationForm(data=data_set)
+            form = AidantCreationForm(data=data_set)
             self.assertFalse(form.is_valid())
             self.assertEqual(form.errors[name_of_field], ["Ce champ est obligatoire."])
 
@@ -51,15 +51,15 @@ class UserCreationFormTest(TestCase):
             field_test(field, self.data.copy())
 
     def test_validation_for_all_items(self):
-        form = UserCreationForm(data=self.data.copy())
+        form = AidantCreationForm(data=self.data.copy())
         self.assertTrue(form.is_valid())
         form.save()
-        self.assertEqual(User.objects.all().count(), 2)
-        new_user = User.objects.get(email="hbernart@domain.user")
-        self.assertEqual(new_user.username, "hbernart@domain.user")
+        self.assertEqual(Aidant.objects.all().count(), 2)
+        new_aidant = Aidant.objects.get(email="hbernart@domain.user")
+        self.assertEqual(new_aidant.username, "hbernart@domain.user")
 
-    def test_cannot_create_new_user_with_same_email(self):
-        User.objects.create(
+    def test_cannot_create_new_aidant_with_same_email(self):
+        Aidant.objects.create(
             first_name="Henri",
             last_name="Bernart",
             email="hbernart@domain.user",
@@ -70,36 +70,36 @@ class UserCreationFormTest(TestCase):
             ville="Nîmes",
         )
 
-        form = UserCreationForm(data=self.data)
+        form = AidantCreationForm(data=self.data)
         self.assertFalse(form.is_valid())
 
-    def test_cannot_create_new_user_with_unsound_password(self):
+    def test_cannot_create_new_aidant_with_unsound_password(self):
         data_set = self.data.copy()
 
         # settings.py AUTH_PASSWORD_VALIDATORS.MinimumLengthValidator
         data_set["password"] = "lala"
-        form = UserCreationForm(data=data_set)
+        form = AidantCreationForm(data=data_set)
         self.assertFalse(form.is_valid())
 
         # settings.py AUTH_PASSWORD_VALIDATORS.CommonPasswordValidator
         data_set["password"] = "password"
-        form = UserCreationForm(data=data_set)
+        form = AidantCreationForm(data=data_set)
         self.assertFalse(form.is_valid())
 
         # settings.py AUTH_PASSWORD_VALIDATORS.UserAttributeSimilarityValidator
         data_set["password"] = "Bernart"
-        form = UserCreationForm(data=data_set)
+        form = AidantCreationForm(data=data_set)
         self.assertFalse(form.is_valid())
 
         # settings.py AUTH_PASSWORD_VALIDATORS.NumericPasswordValidator
         data_set["password"] = "1234567890"
-        form = UserCreationForm(data=data_set)
+        form = AidantCreationForm(data=data_set)
         self.assertFalse(form.is_valid())
 
 
-class UserChangeFormTest(TestCase):
+class AidantChangeFormTest(TestCase):
     def setUp(self):
-        User.objects.create(
+        Aidant.objects.create(
             first_name="Henri",
             last_name="Bernard",
             email="hello@domain.user",
@@ -109,7 +109,7 @@ class UserChangeFormTest(TestCase):
             organisme="Association Aide au Numérique",
             ville="Nîmes",
         )
-        self.aidant2 = User.objects.create(
+        self.aidant2 = Aidant.objects.create(
             first_name="Armand",
             last_name="Bernard",
             email="abernart@domain.user",
@@ -136,7 +136,7 @@ class UserChangeFormTest(TestCase):
             "organisme": "Association Aide'o'Web",
             "ville": "Nantes",
         }
-        form = UserChangeForm(
+        form = AidantChangeForm(
             data=changed_data,
             initial=model_to_dict(self.aidant2),
             instance=self.aidant2,
@@ -149,7 +149,7 @@ class UserChangeFormTest(TestCase):
         form.save()
         self.assertCountEqual(form.errors, [])
 
-    def test_change_date_propagates_to_user_profile(self):
+    def test_change_date_propagates_to_aidant_profile(self):
         self.assertEqual(self.aidant2.first_name, "Armand")
         self.assertEqual(self.aidant2.email, "abernart@domain.user")
         self.assertEqual(self.aidant2.username, "abernart@domain.user")
@@ -164,7 +164,7 @@ class UserChangeFormTest(TestCase):
             "organisme": "Association Aide'o'Web",
             "ville": "Nantes",
         }
-        form = UserChangeForm(
+        form = AidantChangeForm(
             data=changed_data,
             initial=model_to_dict(self.aidant2),
             instance=self.aidant2,
@@ -186,7 +186,7 @@ class UserChangeFormTest(TestCase):
             "ville": "Nantes",
         }
 
-        form = UserChangeForm(
+        form = AidantChangeForm(
             data=changed_data,
             initial=model_to_dict(self.aidant2),
             instance=self.aidant2,
