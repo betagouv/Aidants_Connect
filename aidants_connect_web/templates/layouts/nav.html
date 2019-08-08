@@ -10,7 +10,7 @@
 
         <li class="nav__item">
           {% if aidant.is_authenticated %}
-            <a href="{% url 'dashboard' %}" {% if request.path == '/dashboard/' %}class="active"{% endif %}>
+            <a href="{% url 'mandats' %}" {% if request.path == '/mandats/' %}class="active"{% endif %}>
               Espace aidant
             </a>
           </li>
@@ -19,7 +19,7 @@
           </li>
           {% else %}
           <li class="nav__item">
-            <a href="{% url 'dashboard' %}">
+            <a href="{% url 'mandats' %}">
               Se connecter
             </a>
           {% endif %}

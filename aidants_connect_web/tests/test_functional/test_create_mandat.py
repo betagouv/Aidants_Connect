@@ -22,7 +22,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)
-        cls.selenium.get(f"{cls.live_server_url}/dashboard/")
+        cls.selenium.get(f"{cls.live_server_url}/mandats/")
 
     @classmethod
     def tearDownClass(cls):

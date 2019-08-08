@@ -107,7 +107,7 @@ class RecapTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/mandat/recap.html")
         self.assertEqual(Usager.objects.all().count(), 0)
 
-    def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
+    def test_post_to_recap_with_correct_data_redirects_to_mandats(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         session = self.client.session
         session["usager"] = {
@@ -138,7 +138,7 @@ class RecapTests(TestCase):
             "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
         )
         self.assertEqual(usager.birthplace, 95277)
-        self.assertRedirects(response, "/dashboard/")
+        self.assertRedirects(response, "/mandats/")
 
     def test_post_to_recap_without_sub_creates_error(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
