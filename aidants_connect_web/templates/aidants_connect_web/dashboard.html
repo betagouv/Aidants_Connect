@@ -32,25 +32,29 @@
           </tr>
         </thead>
         <tbody>
-          {% for mandat in mandats %}
+          {% regroup mandats by usager as usagers %}
+          {% for usager in usagers %}
           <tr>
-            <td>
-              {{ mandat.usager }}
+            <td class="usager" rowspan="{{ usager.list|length|add:"1" }}">
+              {{ usager.grouper }}
             </td>
-            <td>
-              <ul>
-                {% for perimeter in mandat.perimeter_names %}
-                  <li>{{ perimeter }}</li>
-                {% endfor %}
-              </ul>
-            </td>
-            <td>
-              {{ mandat.creation_date }}
-            </td>
-            <td>
-              {{ mandat.duration }} mois
-            </td>
-          </tr>
+            {% for mandat in usager.list %}
+              {% if loop.index > 1 %}
+            </tr><tr>
+              {% endif %}
+              <td>
+                <ul>
+                  <li>{{ mandat.perimeter_names|join:", " }}</li>
+                </ul>
+              </td>
+              <td>
+                <ul>
+                  <li>{{ mandat.creation_date }}</li>
+                </ul>
+              </td>
+              <td>{{ mandat.duration }} {% if mandat.duration < 2 %}jour{% else %}jours{% endif %}</td>
+            </tr>
+            {% endfor %}
           {% endfor %}
         </tbody>
       </table>
