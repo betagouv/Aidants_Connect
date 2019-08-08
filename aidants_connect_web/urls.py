@@ -4,6 +4,7 @@ from aidants_connect_web import views
 
 urlpatterns = [
     path("", views.home_page, name="home_page"),
+    path("dashboard/", views.dashboard, name="dashboard"),
     path("mandats/", views.mandats, name="mandats"),
     path("new_mandat/", views.new_mandat, name="new_mandat"),
     path("recap/", views.recap, name="recap"),

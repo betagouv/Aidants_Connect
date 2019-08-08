@@ -1,0 +1,19 @@
+a, a:visited {
+    text-decoration: none;
+    color: black;
+}
+
+a:hover {
+    background-color: #0053b3;
+    color: white;
+}
+
+.top-icon {
+    font-size: 2em;
+    margin: .5em;
+}
+
+.label a {
+     color:black;
+     background-color: #ebeff3;
+}

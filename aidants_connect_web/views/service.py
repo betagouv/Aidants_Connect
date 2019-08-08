@@ -66,6 +66,12 @@ def logout_page(request):
 
 
 @login_required
+def dashboard(request):
+    messages = get_messages(request)
+    return render(request, "aidants_connect_web/dashboard.html", {"messages": messages})
+
+
+@login_required
 def mandats(request):
     messages = get_messages(request)
     aidant = request.user
@@ -162,7 +168,7 @@ def recap(request):
                 log.error("Error happened in Recap")
                 log.error(e)
                 messages.error(request, f"The FranceConnect ID is not complete : {e}")
-                return redirect("mandats")
+                return redirect("dashboard")
             duration_in_days = 1 if mandat["duration"] == "short" else 365
             Mandat.objects.create(
                 aidant=aidant,
@@ -173,7 +179,7 @@ def recap(request):
 
             messages.success(request, "Le mandat a été créé avec succès !")
 
-            return redirect("mandats")
+            return redirect("dashboard")
 
         else:
             return render(

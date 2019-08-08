@@ -1,6 +1,7 @@
 from .service import (
     home_page,
     logout_page,
+    dashboard,
     mandats,
     new_mandat,
     recap,
@@ -16,6 +17,7 @@ from .FC_as_FS import fc_authorize, fc_callback
 __all__ = [
     home_page,
     logout_page,
+    dashboard,
     mandats,
     new_mandat,
     recap,

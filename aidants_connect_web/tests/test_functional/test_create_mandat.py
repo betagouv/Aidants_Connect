@@ -29,7 +29,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         cls.selenium.quit()
         super().tearDownClass()
 
-    def test_login(self):
+    def test_create_new_mandat(self):
         login_field = self.selenium.find_element_by_id("id_username")
         login_field.send_keys("Thierry")
         password_field = self.selenium.find_element_by_id("id_password")
@@ -109,4 +109,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
 
         # back to dashboard
         self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
+        self.selenium.find_element_by_id("view_mandats").click()
+
+        # See all mandats page
         self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 2)
