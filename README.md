@@ -65,6 +65,7 @@ DATABASE_USER=aidants_connect_team
 DATABASE_PASSWORD='' or <insert_your_data>
 DATABASE_URL='' or <insert_your_data>
 DATABASE_PORT='' or <insert_your_data>
+# Can be replaced by a POSTGRES_URL (from https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING)
 
 FC_AS_FS_BASE_URL=<insert_your_data>
 FC_AS_FS_ID=<insert_your_data>

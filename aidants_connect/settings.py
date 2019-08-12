@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 from dotenv import load_dotenv
+from aidants_connect.postgres_url import turn_psql_url_into_param
 
 load_dotenv(verbose=True)
 
@@ -99,19 +100,36 @@ WSGI_APPLICATION = "aidants_connect.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DATABASE_NAME"),
-        "USER": os.getenv("DATABASE_USER"),
-        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-        "HOST": os.getenv("DATABASE_URL"),
-        "PORT": os.getenv("DATABASE_PORT"),
+postgres_url = os.getenv("POSTGRESQL_URL")
+if postgres_url:
+    environment_info = turn_psql_url_into_param(postgres_url)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": environment_info.get("db_name"),
+            "USER": environment_info.get("db_user"),
+            "PASSWORD": environment_info.get("db_password"),
+            "HOST": environment_info.get("db_host"),
+            "PORT": environment_info.get("db_port"),
+        }
     }
-}
 
-ssl_option = os.getenv("DATABASE_SSL")
+    ssl_option = environment_info.get("sslmode")
+
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DATABASE_NAME"),
+            "USER": os.getenv("DATABASE_USER"),
+            "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+            "HOST": os.getenv("DATABASE_URL"),
+            "PORT": os.getenv("DATABASE_PORT"),
+        }
+    }
+
+    ssl_option = os.getenv("DATABASE_SSL")
+
 if ssl_option:
     DATABASES["default"]["OPTIONS"] = {"sslmode": ssl_option}
 
