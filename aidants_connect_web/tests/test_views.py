@@ -30,7 +30,7 @@ from aidants_connect_web.views import (
 )
 from aidants_connect_web.models import (
     Connection,
-    User,
+    Aidant,
     Usager,
     Mandat,
     CONNECTION_EXPIRATION_TIME,
@@ -52,7 +52,7 @@ class HomePageTests(TestCase):
 class LogoutPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(
+        self.aidant = Aidant.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
 
@@ -73,7 +73,7 @@ class LogoutPageTests(TestCase):
 class RecapTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(
+        self.aidant = Aidant.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
 
@@ -208,7 +208,7 @@ class RecapTests(TestCase):
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(
+        self.aidant = Aidant.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
         self.usager = Usager.objects.create(
@@ -270,7 +270,7 @@ class AuthorizeTests(TestCase):
         c.save()
         usager_id = c.usager.id
         response = self.client.post(
-            "/authorize/", data={"state": "test_state", "chosen_user": usager_id}
+            "/authorize/", data={"state": "test_state", "chosen_usager": usager_id}
         )
         try:
             saved_items = Connection.objects.all()
@@ -289,7 +289,7 @@ class AuthorizeTests(TestCase):
 class FISelectDemarcheTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(
+        self.aidant = Aidant.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
         self.usager = Usager.objects.create(
@@ -318,18 +318,21 @@ class FISelectDemarcheTest(TestCase):
             state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
         )
         self.mandat = Mandat.objects.create(
-            aidant=self.user,
+            aidant=self.aidant,
             usager=self.usager,
             perimeter=["naissance", "aspa"],
             duration=6,
         )
 
         self.mandat_2 = Mandat.objects.create(
-            aidant=self.user, usager=self.usager, perimeter=["carte_grise"], duration=3
+            aidant=self.aidant,
+            usager=self.usager,
+            perimeter=["carte_grise"],
+            duration=3,
         )
 
         self.mandat_3 = Mandat.objects.create(
-            aidant=self.user, usager=self.usager2, perimeter=["aspa"], duration=3
+            aidant=self.aidant, usager=self.usager2, perimeter=["aspa"], duration=3
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -624,15 +627,15 @@ class FCCallback(TestCase):
 class GenerateMandatPDF(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(
+        self.aidant = Aidant.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
-        self.user.last_name = "Goneau"
-        self.user.first_name = "Thierry"
-        self.user.profession = "secrétaire"
-        self.user.organisme = "COMMUNE DE HOULBEC COCHEREL"
-        self.user.ville = "HOULBEC COCHEREL"
-        self.user.save()
+        self.aidant.last_name = "Goneau"
+        self.aidant.first_name = "Thierry"
+        self.aidant.profession = "secrétaire"
+        self.aidant.organisme = "COMMUNE DE HOULBEC COCHEREL"
+        self.aidant.ville = "HOULBEC COCHEREL"
+        self.aidant.save()
 
     def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
         found = resolve("/generate_mandat_pdf/")

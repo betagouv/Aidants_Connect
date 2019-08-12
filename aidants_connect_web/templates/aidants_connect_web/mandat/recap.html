@@ -21,7 +21,7 @@
       {% endif %}
       {% csrf_token %}
       <div class="form__group">
-        <p id="recap_text"><strong>{{ usager }}</strong> autorise <strong>{{ user }}</strong>,  <em>aidant.e numérique</em> au sein de <em>nom de l’organisme</em> à réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne suivantes :</p>
+        <p id="recap_text"><strong>{{ usager }}</strong> autorise <strong>{{ aidant }}</strong>,  <em>aidant·e numérique</em> au sein de <em>nom de l’organisme</em>{{ aidant.organisme }} à réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne suivantes :</p>
         <ul>
           {% for demarche in demarches %}
           <li>{{ demarche }}</li>
@@ -34,11 +34,11 @@
           <legend>À cette fin :</legend>
           <div class="checkbox__group">
             <input type="checkbox" name="personal_data" id="id_personal_data" />
-            <label class="label-inline" for="id_personal_data">J’autorise <strong>{{ user.first_name }} {{ user.last_name }}</strong> à utiliser mes données à caractère personnel.</label>
+            <label class="label-inline" for="id_personal_data">J’autorise <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> à utiliser mes données à caractère personnel.</label>
           </div>
           <div class="checkbox__group">
             <input type="checkbox" name="brief" id="id_brief" />
-            <label class="label-inline" for="id_brief">Je confime que <strong>{{ user.first_name }} {{ user.last_name }}</strong> m’a rappelé l’objet de l’intervention, la raison pour laquelle mes informations sont collectées et leur utilité ; les droits sur mes données (accès, rectification, suppression, etc.)</label>
+            <label class="label-inline" for="id_brief">Je confime que <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> m’a rappelé l’objet de l’intervention, la raison pour laquelle mes informations sont collectées et leur utilité ; les droits sur mes données (accès, rectification, suppression, etc.)</label>
           </div>
         </fieldset>
       </div>

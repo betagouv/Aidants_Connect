@@ -1,7 +1,7 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
 from selenium.webdriver.firefox.webdriver import WebDriver
-from aidants_connect_web.models import User
+from aidants_connect_web.models import Aidant
 import time
 from django.test import tag
 
@@ -12,7 +12,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
     def setUpClass(cls):
         # FC only calls back on specific port
         cls.port = settings.FC_AS_FS_TEST_PORT
-        cls.user = User.objects.create_user(
+        cls.aidant = Aidant.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",
             password="motdepassedethierry",
@@ -42,16 +42,18 @@ class CreateNewMandat(StaticLiveServerTestCase):
         self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 0)
 
         # Create new mandat
-        add_user_button = self.selenium.find_element_by_id("add_user")
-        add_user_button.click()
+        add_usager_button = self.selenium.find_element_by_id("add_usager")
+        add_usager_button.click()
         demarches_section = self.selenium.find_element_by_id("demarches")
         demarche_title = demarches_section.find_element_by_tag_name("h2").text
         self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
 
         demarches_section.find_element_by_id("argent").find_element_by_tag_name(
-            "label").click()
+            "label"
+        ).click()
         demarches_section.find_element_by_id("famille").find_element_by_tag_name(
-            "label").click()
+            "label"
+        ).click()
 
         demarches_grid = self.selenium.find_element_by_id("demarches_list")
         demarches = demarches_grid.find_elements_by_tag_name("input")
@@ -59,7 +61,8 @@ class CreateNewMandat(StaticLiveServerTestCase):
 
         duration_section = self.selenium.find_element_by_id("duration")
         duration_section.find_element_by_id("long").find_element_by_tag_name(
-            "label").click()
+            "label"
+        ).click()
 
         # FranceConnect
         fc_button = self.selenium.find_element_by_id("submit_button")

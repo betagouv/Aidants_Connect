@@ -1,6 +1,6 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.firefox.webdriver import WebDriver
-from aidants_connect_web.models import User, Usager, Mandat
+from aidants_connect_web.models import Aidant, Usager, Mandat
 from datetime import date
 import time
 from django.test import tag
@@ -11,14 +11,14 @@ class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         # FC only calls back on specific port
-        cls.user = User.objects.create_user(
+        cls.aidant = Aidant.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",
             password="motdepassedethierry",
             first_name="Thierry",
             last_name="Martin",
         )
-        User.objects.create_user(
+        Aidant.objects.create_user(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
             password="motdepassedejacqueline",
@@ -50,14 +50,14 @@ class CreateNewMandat(StaticLiveServerTestCase):
         )
 
         cls.mandat = Mandat.objects.create(
-            aidant=User.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             perimeter=["Revenus"],
             duration=6,
         )
 
         cls.mandat = Mandat.objects.create(
-            aidant=User.objects.get(username="jfremont@domain.user"),
+            aidant=Aidant.objects.get(username="jfremont@domain.user"),
             usager=Usager.objects.get(sub="test_sub"),
             perimeter=["Logement"],
             duration=12,
