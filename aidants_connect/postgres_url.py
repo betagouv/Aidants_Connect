@@ -3,7 +3,7 @@ def turn_psql_url_into_param(postgres_url: str) -> dict:
     """
     >>> turn_psql_url_into_param(
     ... 'postgres://USERNAME:PASSWORD@URL:PORT/USER?sslmode=SSLMODE') == {
-    ... 'db_user':'USERNAME', 'db_password': 'PASSWORD', 'db_url': 'URL', 'db_port':
+    ... 'db_user':'USERNAME', 'db_password': 'PASSWORD', 'db_host': 'URL', 'db_port':
     ... 'PORT', 'db_name': 'USER', 'sslmode': 'SSLMODE'}
     True
     >>> turn_psql_url_into_param(
@@ -14,36 +14,36 @@ def turn_psql_url_into_param(postgres_url: str) -> dict:
 
     >>> turn_psql_url_into_param(
     ... 'postgres://USERNAME:PASSWORD@URL:PORT/USER') == {
-    ... 'db_user': 'USERNAME', 'db_password': 'PASSWORD', 'db_url': 'URL',
+    ... 'db_user': 'USERNAME', 'db_password': 'PASSWORD', 'db_host': 'URL',
     ... 'db_port': 'PORT', 'db_name': 'USER'}
     True
 
     >>> turn_psql_url_into_param("postgresql://") == {}
     True
 
-    >>> turn_psql_url_into_param('postgresql://localhost') == {'db_url':
+    >>> turn_psql_url_into_param('postgresql://localhost') == {'db_host':
     ... 'localhost'}
     True
 
-    >>> turn_psql_url_into_param('postgresql://localhost:5433') == {'db_url':
+    >>> turn_psql_url_into_param('postgresql://localhost:5433') == {'db_host':
     ... 'localhost', 'db_port': '5433'}
     True
 
-    >>> turn_psql_url_into_param('postgresql://localhost/mydb') == {'db_url':
+    >>> turn_psql_url_into_param('postgresql://localhost/mydb') == {'db_host':
     ... 'localhost', 'db_name': 'mydb'}
     True
 
-    >>> turn_psql_url_into_param('postgresql://user@localhost') == {'db_url':
+    >>> turn_psql_url_into_param('postgresql://user@localhost') == {'db_host':
     ... 'localhost', 'db_user': 'user'}
     True
 
     >>> turn_psql_url_into_param('postgresql://user:secret@localhost') == {
-    ... 'db_url': 'localhost', 'db_user': 'user', 'db_password': 'secret'}
+    ... 'db_host': 'localhost', 'db_user': 'user', 'db_password': 'secret'}
     True
 
     >>> turn_psql_url_into_param('postgresql://oto@localhost/ther?'
     ... 'connect_timeout=10&application_name=myapp') == {
-    ... 'db_url': 'localhost', 'db_user': 'oto', 'db_name': 'ther',
+    ... 'db_host': 'localhost', 'db_user': 'oto', 'db_name': 'ther',
     ... 'connect_timeout': '10', 'application_name': 'myapp'}
     True
     """
@@ -85,7 +85,7 @@ def turn_psql_url_into_param(postgres_url: str) -> dict:
 
     url_and_port = db_info[0]
     url_and_port = url_and_port.split(":")
-    response["db_url"] = url_and_port[0]
+    response["db_host"] = url_and_port[0]
     if len(url_and_port) > 1:
         response["db_port"] = url_and_port[1]
     return response
