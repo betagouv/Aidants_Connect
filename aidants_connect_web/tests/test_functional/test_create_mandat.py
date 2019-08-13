@@ -1,9 +1,9 @@
+import time
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
+from django.test import tag
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant
-import time
-from django.test import tag
 
 
 @tag("functional")

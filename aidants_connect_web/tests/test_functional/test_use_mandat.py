@@ -1,16 +1,15 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.test import tag
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant, Usager, Mandat
 from datetime import date
 import time
-from django.test import tag
 
 
 @tag("functional")
 class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
-        # FC only calls back on specific port
         cls.aidant = Aidant.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",
