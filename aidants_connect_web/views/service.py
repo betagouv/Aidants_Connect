@@ -68,6 +68,12 @@ def logout_page(request):
 @login_required
 def dashboard(request):
     messages = get_messages(request)
+    return render(request, "aidants_connect_web/dashboard.html", {"messages": messages})
+
+
+@login_required
+def mandats(request):
+    messages = get_messages(request)
     aidant = request.user
     mandats = Mandat.objects.all().filter(aidant=aidant).order_by("creation_date")
 
@@ -76,20 +82,20 @@ def dashboard(request):
     # todo change the "mois" in "jours"
     return render(
         request,
-        "aidants_connect_web/dashboard.html",
+        "aidants_connect_web/mandats.html",
         {"aidant": aidant, "mandats": mandats, "messages": messages},
     )
 
 
 @login_required
-def mandat(request):
+def new_mandat(request):
     aidant = request.user
     form = MandatForm()
 
     if request.method == "GET":
         return render(
             request,
-            "aidants_connect_web/mandat/mandat.html",
+            "aidants_connect_web/new_mandat/new_mandat.html",
             {"aidant": aidant, "form": form},
         )
 
@@ -102,7 +108,7 @@ def mandat(request):
         else:
             return render(
                 request,
-                "aidants_connect_web/mandat/mandat.html",
+                "aidants_connect_web/new_mandat/new_mandat.html",
                 {"aidant": aidant, "form": form},
             )
 
@@ -132,7 +138,7 @@ def recap(request):
 
         return render(
             request,
-            "aidants_connect_web/mandat/recap.html",
+            "aidants_connect_web/new_mandat/recap.html",
             {
                 "aidant": aidant,
                 "usager": usager,
@@ -178,7 +184,7 @@ def recap(request):
         else:
             return render(
                 request,
-                "aidants_connect_web/mandat/recap.html",
+                "aidants_connect_web/new_mandat/recap.html",
                 {
                     "aidant": aidant,
                     "usager": usager,
@@ -197,7 +203,7 @@ def generate_mandat_pdf(request):
     demarches = mandat["perimeter"]
     duration = "1 jour" if mandat["duration"] == "short" else "1 an"
     html_string = render_to_string(
-        "aidants_connect_web/mandat/pdf_mandat.html",
+        "aidants_connect_web/new_mandat/pdf_mandat.html",
         {
             "usager": f"{usager['given_name']} {usager['family_name']}",
             "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",

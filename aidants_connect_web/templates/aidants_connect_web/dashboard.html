@@ -1,16 +1,15 @@
 {% extends 'layouts/main.html' %}
 
 {% load static %}
-
 {% block extracss %}
-  <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
 {% endblock extracss %}
+
 
 {% block content %}
 <section class="section">
   <div class="container">
-    <a href="{% url 'mandat' %}" class="button new__usager" id="add_usager">Ajouter un usager</a>
-    <h1>Bienvenue sur votre espace aidant, {{ aidant.first_name }} !</h1>
+    <h1>Bienvenue sur votre Espace Aidant, {{ aidant.first_name }} !</h1>
     {% if messages %}
       <div class="notification success">
           {% for message in messages %}
@@ -18,50 +17,81 @@
           {% endfor %}
       </div>
     {% endif %}
-    <div class="current__usagers">
-      <h2 class="subtitle">Les usagers avec qui vous avez un mandat en cours</h2>
-      {% if mandats %}
-      <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" disabled>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Nom</th>
-            <th>Périmètre de la démarche</th>
-            <th>Date de début</th>
-            <th>Durée</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% regroup mandats by usager as usagers %}
-          {% for usager in usagers %}
-          <tr>
-            <td class="usager" rowspan="{{ usager.list|length|add:"1" }}">
-              {{ usager.grouper }}
-            </td>
-            {% for mandat in usager.list %}
-              {% if loop.index > 1 %}
-            </tr><tr>
-              {% endif %}
-              <td>
-                <ul>
-                  <li>{{ mandat.perimeter_names|join:", " }}</li>
-                </ul>
-              </td>
-              <td>
-                <ul>
-                  <li>{{ mandat.creation_date }}</li>
-                </ul>
-              </td>
-              <td>{{ mandat.duration }} {% if mandat.duration < 2 %}jour{% else %}jours{% endif %}</td>
-            </tr>
-            {% endfor %}
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-        <div class="notification">Vous n’avez pas de mandat en cours.</div>
-      {% endif %}
-    </div>
-  <div>
+  </div>
 </section>
+<section class="section section-grey">
+    <div class="container">
+    <div class="tiles">
+        <h2>Vos services</h2>
+          <div class="grid">
+              <a href="{% url 'mandats' %}" class="tile" id="view_mandats">
+                  <div class="top-icon">📂</div>
+                  <h3>Voir mes mandats </h3>
+              </a>
+
+              <a href="{% url 'new_mandat' %}" class="tile" id="add_usager">
+                  <div class="top-icon">✨</div>
+                  <h3>Ajouter un usager</h3>
+              </a>
+
+          </div>
+      </div>
+    </div>
+<section class="section section-grey">
+    <div class="container">
+      <h2>Vos ressources</h2>
+      <div class="row">
+          <div class="card">
+            <div class="card__cover">
+               <img src="https://societenumerique.gouv.fr/wp-content/uploads/2018/05/mockupkit-1.png" alt="Écran montrant le site du kit d'intervention rapide">
+            </div>
+              <div class="card__extra">
+                <div class="label">MSN</div>
+                <div class="label">inclusion</div>
+              </div>
+              <div class="card__content">
+                <h3>Kit d'intervention rapide</h3>
+                <div class="card__meta"><span>Équipe Aidants Connect</span></div>
+                <p>Ce site a pour objectif de permettre à toute personne, en particulier les non professionnels
+                    de la médiation numérique, d’aborder rapidement les principaux enjeux de l’accompagnement
+                    des individus en difficulté sur les outils numériques.</p>
+              </div>
+              <div class="card__extra">
+                  <div class="label"><a href="https://kit-inclusion.societenumerique.gouv.fr">lien externe</a></div>
+              </div>
+          </div>
+          <div class="card">
+            <div class="card__cover">
+               <img src="" alt="Écran montrant le site du kit d'intervention rapide">
+            </div>
+              <div class="card__extra">
+                <div class="label">impots.gouv.fr</div>
+                <div class="label">dgfip</div>
+              </div>
+              <div class="card__content">
+                <h3>Site de démonstration des impôts</h3>
+                <div class="card__meta"><span>Équipe Aidants Connect</span></div>
+                <p>Ce site est une copie du site des impôts permettant de simuler les déclarations en ligne
+                    sans manipuler les données personnelles de la personne accompagnée.</p>
+              </div>
+              <div class="card__extra">
+                  <div class="label"><a href="https://kit-inclusion.societenumerique.gouv.fr">lien externe</a></div>
+              </div>
+
+          </div>
+          <div class="card">
+            <div class="card__cover">
+               <img src="" alt="Écran montrant le site du kit d'intervention rapide">
+            </div>
+              <div class="card__content">
+                <h3>Forum des aidants</h3>
+                <div class="card__meta"><span>Équipe Aidants Connect</span></div>
+                <p>Bientôt disponible</p>
+              </div>
+          </div>
+
+      </div>
+  </div>
+</section>
+
 {% endblock content %}

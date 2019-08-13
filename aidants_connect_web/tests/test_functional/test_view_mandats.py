@@ -1,15 +1,14 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.conf import settings
+from django.test import tag
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant, Usager, Mandat
 from datetime import date
 
 
-class CreateNewMandat(StaticLiveServerTestCase):
+@tag("functional")
+class ViewMandats(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
-        # FC only calls back on specific port
-        cls.port = settings.FC_AS_FS_TEST_PORT
         cls.user = Aidant.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",
@@ -70,7 +69,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
     def test_grouped_mandats(self):
         self.selenium.get(f"{self.live_server_url}/dashboard/")
 
-        # login
+        # Login
         login_field = self.selenium.find_element_by_id("id_username")
         login_field.send_keys("Thierry")
         password_field = self.selenium.find_element_by_id("id_password")
@@ -78,7 +77,10 @@ class CreateNewMandat(StaticLiveServerTestCase):
         submit_button = self.selenium.find_element_by_xpath('//input[@value="Login"]')
         submit_button.click()
 
-        # back to dashboard
+        # Dashboard
+        self.selenium.find_element_by_id("view_mandats").click()
+
+        # Mandat List
         self.assertEqual(len(self.selenium.find_elements_by_class_name("usager")), 2)
         rows = self.selenium.find_elements_by_tag_name("tr")
         # The first row is the title row

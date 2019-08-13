@@ -104,10 +104,10 @@ class RecapTests(TestCase):
 
         response = self.client.get("/recap/")
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "aidants_connect_web/mandat/recap.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/new_mandat/recap.html")
         self.assertEqual(Usager.objects.all().count(), 0)
 
-    def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
+    def test_post_to_recap_with_correct_data_redirects_to_mandats(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         session = self.client.session
         session["usager"] = {

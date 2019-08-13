@@ -53,7 +53,7 @@ def fc_authorize(request):
 def fc_callback(request):
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
-    fc_callback_uri_logout = f"{settings.FC_AS_FS_CALLBACK_URL}/logout-callback"
+    # fc_callback_uri_logout = f"{settings.FC_AS_FS_CALLBACK_URL}/logout-callback"
     fc_id = settings.FC_AS_FS_ID
     fc_secret = settings.FC_AS_FS_SECRET
 
@@ -120,10 +120,11 @@ def fc_callback(request):
         headers={"Authorization": f"Bearer {fc_access_token}"},
     ).json()
 
-    logout_base = f"{fc_base}/logout"
-    logout_id_token = f"id_token_hint={fc_id_token}"
-    logout_state = f"state={state}"
-    logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
-    logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
-
-    return redirect(logout_url)
+    # logout_base = f"{fc_base}/logout"
+    # logout_id_token = f"id_token_hint={fc_id_token}"
+    # logout_state = f"state={state}"
+    # logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
+    # logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
+    # TODO reactivate when FC issue is fixes
+    # return redirect(logout_url)
+    return redirect("recap")

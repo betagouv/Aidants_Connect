@@ -1,9 +1,9 @@
+import time
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
+from django.test import tag
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant
-import time
-from django.test import tag
 
 
 @tag("functional")
@@ -22,14 +22,14 @@ class CreateNewMandat(StaticLiveServerTestCase):
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)
-        cls.selenium.get(f"{cls.live_server_url}/dashboard/")
+        cls.selenium.get(f"{cls.live_server_url}/mandats/")
 
     @classmethod
     def tearDownClass(cls):
         cls.selenium.quit()
         super().tearDownClass()
 
-    def test_login(self):
+    def test_create_new_mandat(self):
         login_field = self.selenium.find_element_by_id("id_username")
         login_field.send_keys("Thierry")
         password_field = self.selenium.find_element_by_id("id_password")
@@ -109,4 +109,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
 
         # back to dashboard
         self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
+        self.selenium.find_element_by_id("view_mandats").click()
+
+        # See all mandats page
         self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 2)

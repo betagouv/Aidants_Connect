@@ -1,0 +1,67 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/mandats.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <a href="{% url 'new_mandat' %}" class="button new__usager" id="add_usager">Ajouter un usager</a>
+    <h1>Bienvenue sur votre espace aidant, {{ aidant.first_name }} !</h1>
+    {% if messages %}
+      <div class="notification success">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+      </div>
+    {% endif %}
+    <div class="current__usagers">
+      <h2 class="subtitle">Les usagers avec qui vous avez un mandat en cours</h2>
+      {% if mandats %}
+      <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" disabled>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Périmètre de la démarche</th>
+            <th>Date de début</th>
+            <th>Durée</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% regroup mandats by usager as usagers %}
+          {% for usager in usagers %}
+          <tr>
+            <td class="usager" rowspan="{{ usager.list|length|add:"1" }}">
+              {{ usager.grouper }}
+            </td>
+            {% for mandat in usager.list %}
+              {% if loop.index > 1 %}
+            </tr><tr>
+              {% endif %}
+              <td>
+                <ul>
+                  <li>{{ mandat.perimeter_names|join:", " }}</li>
+                </ul>
+              </td>
+              <td>
+                <ul>
+                  <li>{{ mandat.creation_date }}</li>
+                </ul>
+              </td>
+              <td>{{ mandat.duration }} {% if mandat.duration < 2 %}jour{% else %}jours{% endif %}</td>
+            </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="notification">Vous n’avez pas de mandat en cours.</div>
+      {% endif %}
+    </div>
+  <div>
+</section>
+{% endblock content %}

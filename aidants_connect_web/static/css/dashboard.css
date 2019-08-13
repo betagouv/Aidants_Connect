@@ -1,36 +1,19 @@
-h2.subtitle {
-  float: left;
+a, a:visited {
+    text-decoration: none;
+    color: black;
 }
 
-.notification {
-  clear: both;
+a:hover {
+    background-color: #0053b3;
+    color: white;
 }
 
-.new__usager {
-  float: right;
+.top-icon {
+    font-size: 2em;
+    margin: .5em;
 }
 
-.current__usagers {
-  margin-top: 3em;
-}
-
-/* Workaround for border not displaying correctly with rowspan */
-.table td {
-  position: relative;
-}
-
-.table td:after {
-  position: absolute;
-  content: "";
-  top: 0;
-  left: 0;
-  background-color: transparent;
-  border-bottom: 1px solid #c9d3df;
-  width: 100%;
-  height: 100%;
-}
-
-.table tbody:hover td[rowspan],
-.table tr:hover td {
-   background-color: #fafbfc;
+.label a {
+     color:black;
+     background-color: #ebeff3;
 }
