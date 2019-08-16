@@ -6,7 +6,7 @@ from datetime import date
 import time
 
 
-@tag("functional")
+@tag("functional", "id_provider")
 class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):

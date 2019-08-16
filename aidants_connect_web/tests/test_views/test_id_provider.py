@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 from freezegun import freeze_time
 
 from django.test.client import Client
-from django.test import TestCase, override_settings
+from django.test import TestCase, override_settings, tag
 from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -23,6 +23,7 @@ from aidants_connect_web.models import (
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
+@tag("id_provider")
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()

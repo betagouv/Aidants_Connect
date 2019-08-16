@@ -44,7 +44,7 @@ def authorize(request):
 
         return render(
             request,
-            "aidants_connect_web/authorize.html",
+            "aidants_connect_web/id_provider/authorize.html",
             {"state": state, "usagers": usagers, "aidant": aidant},
         )
 
@@ -93,7 +93,7 @@ def fi_select_demarche(request):
 
         return render(
             request,
-            "aidants_connect_web/fi_select_demarche.html",
+            "aidants_connect_web/id_provider/fi_select_demarche.html",
             {"state": state, "demarches": demarches, "aidant": request.user.first_name},
         )
     else:
