@@ -18,16 +18,7 @@ from django.contrib.messages import get_messages
 from django.urls import reverse
 
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.views import (
-    home_page,
-    authorize,
-    token,
-    user_info,
-    logout_page,
-    recap,
-    fi_select_demarche,
-    generate_mandat_pdf,
-)
+from aidants_connect_web.views import service, id_provider
 from aidants_connect_web.models import (
     Connection,
     Aidant,
@@ -42,7 +33,7 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 class HomePageTests(TestCase):
     def test_root_url_triggers_the_homepage_view(self):
         found = resolve("/")
-        self.assertEqual(found.func, home_page)
+        self.assertEqual(found.func, service.home_page)
 
     def test_root_url_triggers_the_homepage_template(self):
         response = self.client.get("/")
@@ -58,7 +49,7 @@ class LogoutPageTests(TestCase):
 
     def test_logout_url_triggers_the_logout_view(self):
         found = resolve("/logout/")
-        self.assertEqual(found.func, logout_page)
+        self.assertEqual(found.func, service.logout_page)
 
     def test_logout_url_triggers_loging_if_not_logged_in(self):
         response = self.client.get("/logout/")
@@ -79,7 +70,7 @@ class RecapTests(TestCase):
 
     def test_recap_url_triggers_the_recap_view(self):
         found = resolve("/recap/")
-        self.assertEqual(found.func, recap)
+        self.assertEqual(found.func, service.recap)
 
     def test_recap_url_triggers_the_recap_template(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -226,7 +217,7 @@ class AuthorizeTests(TestCase):
     def test_authorize_url_triggers_the_authorize_view(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         found = resolve("/authorize/")
-        self.assertEqual(found.func, authorize)
+        self.assertEqual(found.func, id_provider.authorize)
 
     def test_authorize_url_without_arguments_returns_403(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -338,7 +329,7 @@ class FISelectDemarcheTest(TestCase):
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         found = resolve("/select_demarche/")
-        self.assertEqual(found.func, fi_select_demarche)
+        self.assertEqual(found.func, id_provider.fi_select_demarche)
 
     def test_FI_select_demarche_triggers_FI_select_demarche_template(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -396,7 +387,7 @@ class TokenTests(TestCase):
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/token/")
-        self.assertEqual(found.func, token)
+        self.assertEqual(found.func, id_provider.token)
 
     date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
 
@@ -504,7 +495,7 @@ class UserInfoTests(TestCase):
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/userinfo/")
-        self.assertEqual(found.func, user_info)
+        self.assertEqual(found.func, id_provider.user_info)
 
     date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
 
@@ -639,7 +630,7 @@ class GenerateMandatPDF(TestCase):
 
     def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
         found = resolve("/generate_mandat_pdf/")
-        self.assertEqual(found.func, generate_mandat_pdf)
+        self.assertEqual(found.func, service.generate_mandat_pdf)
 
     test_usager = {
         "given_name": "Fabrice",

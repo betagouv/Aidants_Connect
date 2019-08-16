@@ -55,13 +55,13 @@ def turn_psql_url_into_param(postgres_url: str) -> dict:
     # Get parameters
     params_start = postgres_url.rfind("?")
     if not params_start == -1:
-        params = postgres_url[params_start + 1:]
+        params = postgres_url[params_start + 1 :]
         params = [param.split("=") for param in params.split("&")]
         for param in params:
             response[param[0]] = param[1]
-        user_and_db_info = postgres_url[postgres_url.find("://") + 3: params_start]
+        user_and_db_info = postgres_url[postgres_url.find("://") + 3 : params_start]
     else:
-        user_and_db_info = postgres_url[postgres_url.find("://") + 3:]
+        user_and_db_info = postgres_url[postgres_url.find("://") + 3 :]
 
     if not user_and_db_info:
         return response
