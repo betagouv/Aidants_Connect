@@ -1,5 +1,5 @@
 from django.urls import path
-from aidants_connect_web.views import service, FC_as_FS, id_provider
+from aidants_connect_web.views import service, FC_as_FS, id_provider, new_mandat
 
 
 urlpatterns = [
@@ -8,11 +8,12 @@ urlpatterns = [
     path("dashboard/", service.dashboard, name="dashboard"),
     path("mandats/", service.mandats, name="mandats"),
     # new mandat
-    path("new_mandat/", service.new_mandat, name="new_mandat"),
-    path("recap/", service.recap, name="recap"),
-    path("logout-callback/", service.recap, name="recap"),
+    path("new_mandat/", new_mandat.new_mandat, name="new_mandat"),
+    path("recap/", new_mandat.recap, name="recap"),
+    path("logout-callback/", new_mandat.recap, name="recap"),
     path(
-        "generate_mandat_pdf/", service.generate_mandat_pdf, name="generate_mandat_pdf"
+        "generate_mandat_pdf/", new_mandat.generate_mandat_pdf,
+        name="generate_mandat_pdf"
     ),
     # id_provider
     path("authorize/", id_provider.authorize, name="authorize"),
