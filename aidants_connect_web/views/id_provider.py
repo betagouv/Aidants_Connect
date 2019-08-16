@@ -38,7 +38,11 @@ def authorize(request):
         # TODO check nounce ...
         aidant = request.user
         mandats_for_aidant = Mandat.objects.filter(aidant=aidant)
-        usagers = Usager.objects.filter(mandat__in=mandats_for_aidant).distinct()
+        usagers = (
+            Usager.objects.filter(mandat__in=mandats_for_aidant)
+            .distinct()
+            .order_by("family_name")
+        )
         # TODO Do we send the whole usager ? or only first name and last name and id ?
         return render(
             request,
@@ -63,6 +67,7 @@ def authorize(request):
 
         # TODO check if connection has not expired
 
+        log.info(request.POST.get("chosen-usager"))
         that_connection.usager = Usager.objects.get(
             id=request.POST.get("chosen_usager")
         )
@@ -84,15 +89,21 @@ def fi_select_demarche(request):
         mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
 
         demarches_per_mandat = mandats.values_list("perimeter", flat=True)
-
-        demarches = set(
-            [demarche for sublist in demarches_per_mandat for demarche in sublist]
-        )
+        all_demarches = settings.DEMARCHES
+        demarches = {
+            demarche: all_demarches[demarche]
+            for sublist in demarches_per_mandat
+            for demarche in sublist
+        }
 
         return render(
             request,
             "aidants_connect_web/id_provider/fi_select_demarche.html",
-            {"state": state, "demarches": demarches, "aidant": request.user.first_name},
+            {
+                "state": state,
+                "demarches": demarches,
+                "aidant": request.user.get_full_name(),
+            },
         )
     else:
         this_state = request.POST.get("state")

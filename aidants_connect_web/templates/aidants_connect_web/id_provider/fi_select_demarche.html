@@ -1,17 +1,35 @@
 {% extends 'layouts/main.html' %}
 
+{% load static %}
+
+{% block extracss %}
+<link href="{% static 'css/id_provider.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+
 {% block content %}
-<section class="section">
+<section class="section section-grey">
   <div class="container">
     <form method="post" >
-      <h2 id="welcome_aidant">Bienvenue, {{aidant}}</h2>
-      <p id="instructions">Sélectionnez une démarche</p>
+      <h2 id="welcome_aidant">Sélectionnez le type de démarche que vous allez effectuer</h2>
+      <p id="instructions">En selectionnant une démarche, vous allez FranceConnecter [Nom de l'usager] (Changer d'usager)</p>
       {% csrf_token %}
         <input type="hidden" name="state" value="{{state}}" />
-          {% for demarche in demarches %}
-              <button class="button" type="submit" id="submit" name="chosen_demarche" value={{ demarche }}>{{ demarche }}</button>
-        {% endfor %}
+        <div id="demarches_list" class="grid">
+            {% for demarche, demarche_info in demarches.items %}
+            <div id="{{ demarche }}" class="tile">
+                <input id="button-{{ demarche }}" type="submit" value="{{ demarche }}" name="chosen_demarche"/>
+                <label id="label_demarche" for="button-{{ demarche }}">
+                    <img src="{{ demarche_info.icon }}">
+                    <h3>{{ demarche_info.titre }}</h3>
+                    <p>{{ demarche_info.description }}</p>
+                </label>
+            </div>
+            {% endfor %}
+        </div>
     </form>
+    <p>Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat a expiré.
+    Pour créer un nouveau mandat, rendez-vous sur <a href="aidantsconnect.beta.gouv.fr">aidantsconnect.beta.gouv.fr</a></p>
     </div>
 </section>
 {% endblock content %}

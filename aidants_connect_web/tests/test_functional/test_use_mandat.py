@@ -51,21 +51,21 @@ class CreateNewMandat(StaticLiveServerTestCase):
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
-            perimeter=["Revenus"],
+            perimeter=["argent"],
             duration=6,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
-            perimeter=["Famille"],
+            perimeter=["famille"],
             duration=12,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="jfremont@domain.user"),
             usager=Usager.objects.get(sub="test_sub"),
-            perimeter=["Logement"],
+            perimeter=["logement"],
             duration=12,
         )
 
@@ -93,15 +93,15 @@ class CreateNewMandat(StaticLiveServerTestCase):
         # Select usager
         welcome_aidant = browser.find_element_by_tag_name("h2").text
         self.assertEqual(welcome_aidant, "Bienvenue, Thierry")
-        usagers = browser.find_elements_by_id("submit")
+        usagers = browser.find_elements_by_id("label-usager")
         self.assertEqual(len(usagers), 1)
-        self.assertEqual(usagers[0].text, "Joséphine ST-PIERRE")
+        self.assertEqual(usagers[0].text, "ST-PIERRE Joséphine")
         usagers[0].click()
 
         # Select Démarche
         step2_title = browser.find_element_by_id("instructions").text
-        self.assertEqual(step2_title, "Sélectionnez une démarche")
-        demarches = browser.find_elements_by_id("submit")
+        self.assertIn("En selectionnant une démarche", step2_title)
+        demarches = browser.find_elements_by_id("label_demarche")
         self.assertEqual(len(demarches), 2)
         last_demarche = demarches[-1]
         last_demarche.click()

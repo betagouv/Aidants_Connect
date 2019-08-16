@@ -116,14 +116,12 @@ class AuthorizeTests(TestCase):
         self.assertEqual(len(response.context["usagers"]), 1)
         self.assertIsInstance(response.context["aidant"], Aidant)
 
+    @tag("this")
     def test_sending_user_information_triggers_callback(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
-        c = Connection()
-        c.state = "test_state"
-        c.code = "test_code"
-        c.nonce = "test_nonce"
-        c.usager = self.usager
-        c.save()
+        c = Connection.objects.create(
+            state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
+        )
         usager_id = c.usager.id
         response = self.client.post(
             "/authorize/", data={"state": "test_state", "chosen_usager": usager_id}
