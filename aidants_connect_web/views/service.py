@@ -15,10 +15,7 @@ from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.template.loader import render_to_string
 
-from aidants_connect_web.models import (
-    Mandat,
-    Usager,
-)
+from aidants_connect_web.models import Mandat, Usager
 from aidants_connect_web.forms import MandatForm
 
 
