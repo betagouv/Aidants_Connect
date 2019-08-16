@@ -48,14 +48,21 @@ class CreateNewMandat(StaticLiveServerTestCase):
             email="akasteing@user.domain",
         )
 
-        cls.mandat = Mandat.objects.create(
+        Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             perimeter=["Revenus"],
             duration=6,
         )
 
-        cls.mandat = Mandat.objects.create(
+        Mandat.objects.create(
+            aidant=Aidant.objects.get(username="Thierry"),
+            usager=Usager.objects.get(sub="test_sub"),
+            perimeter=["Famille"],
+            duration=12,
+        )
+
+        Mandat.objects.create(
             aidant=Aidant.objects.get(username="jfremont@domain.user"),
             usager=Usager.objects.get(sub="test_sub"),
             perimeter=["Logement"],
@@ -94,8 +101,9 @@ class CreateNewMandat(StaticLiveServerTestCase):
         # Select Démarche
         step2_title = browser.find_element_by_id("instructions").text
         self.assertEqual(step2_title, "Sélectionnez une démarche")
-        demarche = browser.find_elements_by_id("submit")[-1]
-        self.assertIn(demarche.text, "Revenus")
-        demarche.click()
+        demarches = browser.find_elements_by_id("submit")
+        self.assertEqual(len(demarches), 2)
+        last_demarche = demarches[-1]
+        last_demarche.click()
         time.sleep(2)
         self.assertIn("fcp.integ01.dev-franceconnect.fr", browser.current_url)

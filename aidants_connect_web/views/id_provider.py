@@ -35,13 +35,11 @@ def authorize(request):
         if state is False:
             log.info("403: There is no state")
             return HttpResponseForbidden()
-
+        # TODO check nounce ...
         aidant = request.user
         mandats_for_aidant = Mandat.objects.filter(aidant=aidant)
-        usagers_id = mandats_for_aidant.values_list("usager", flat=True)
+        usagers = Usager.objects.filter(mandat__in=mandats_for_aidant).distinct()
         # TODO Do we send the whole usager ? or only first name and last name and id ?
-        usagers = [Usager.objects.get(id=usager_id) for usager_id in usagers_id]
-
         return render(
             request,
             "aidants_connect_web/id_provider/authorize.html",
@@ -82,7 +80,7 @@ def fi_select_demarche(request):
         # TODO for Usager, should we use sub_usager or internal ID ?
         # TODO Should we have different instances of the same usager for each aidant
         #  ? for each mandat ? at all ?
-        # the [Ø] in the following line is in case the same user has several mandat
+
         mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
 
         demarches_per_mandat = mandats.values_list("perimeter", flat=True)
