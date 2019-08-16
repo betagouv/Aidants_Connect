@@ -203,7 +203,7 @@ DEMARCHES = {
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
         "/logement.png",
     },
-    "transport": {
+    "transports": {
         "titre": "Transports",
         "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"

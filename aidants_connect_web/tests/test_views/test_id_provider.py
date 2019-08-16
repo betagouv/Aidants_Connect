@@ -4,8 +4,9 @@ from secrets import token_urlsafe
 from datetime import date, datetime, timedelta
 from freezegun import freeze_time
 
+from django.db.models.query import QuerySet
 from django.test.client import Client
-from django.test import TestCase, override_settings
+from django.test import TestCase, override_settings, tag
 from django.urls import resolve
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -23,11 +24,15 @@ from aidants_connect_web.models import (
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
+@tag("id_provider")
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant = Aidant.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+        Aidant.objects.create_user(
+            "Jacques", "jacques@domain.user", "motdepassedejacques"
         )
         self.usager = Usager.objects.create(
             given_name="Joséphine",
@@ -39,6 +44,26 @@ class AuthorizeTests(TestCase):
             birthcountry="99100",
             sub="123",
             email="User@user.domain",
+        )
+        Mandat.objects.create(
+            aidant=Aidant.objects.get(username="Thierry"),
+            usager=Usager.objects.get(sub="123"),
+            perimeter=["Revenus"],
+            duration=6,
+        )
+
+        Mandat.objects.create(
+            aidant=Aidant.objects.get(username="Thierry"),
+            usager=Usager.objects.get(sub="123"),
+            perimeter=["Famille"],
+            duration=12,
+        )
+
+        Mandat.objects.create(
+            aidant=Aidant.objects.get(username="Jacques"),
+            usager=Usager.objects.get(sub="123"),
+            perimeter=["Logement"],
+            duration=12,
         )
 
     def test_authorize_url_triggers_the_authorize_view(self):
@@ -54,38 +79,49 @@ class AuthorizeTests(TestCase):
     def test_authorize_url_triggers_the_authorize_template(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         fc_call_state = token_urlsafe(4)
-        fc_call_nonce = token_urlsafe(4)
-        fc_response_type = "code"
-        fc_client_id = "FranceConnectInteg"
-        fc_redirect_uri = (
-            "https%3A%2F%2Ffcp.integ01.dev-franceconnect.fr%2Foidc_callback"
-        )
-        fc_scopes = "openid profile email address phone birth"
-        fc_acr_values = "eidas1"
+        # fc_call_nonce = token_urlsafe(4)
+        # fc_response_type = "code"
+        # fc_client_id = "FranceConnectInteg"
+        # fc_redirect_uri = (
+        #     "https%3A%2F%2Ffcp.integ01.dev-franceconnect.fr%2Foidc_callback"
+        # )
+        # fc_scopes = "openid profile email address phone birth"
+        # fc_acr_values = "eidas1"
 
         response = self.client.get(
             "/authorize/",
             data={
                 "state": fc_call_state,
-                "nonce": fc_call_nonce,
-                "response_type": fc_response_type,
-                "client_id": fc_client_id,
-                "redirect_uri": fc_redirect_uri,
-                "scope": fc_scopes,
-                "acr_values": fc_acr_values,
+                # "nonce": fc_call_nonce,
+                # "response_type": fc_response_type,
+                # "client_id": fc_client_id,
+                # "redirect_uri": fc_redirect_uri,
+                # "scope": fc_scopes,
+                # "acr_values": fc_acr_values,
             },
         )
 
-        self.assertTemplateUsed(response, "aidants_connect_web/authorize.html")
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/id_provider/authorize.html"
+        )
 
+    def test_authorize_sends_the_correct_amount_of_usagers(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        fc_call_state = token_urlsafe(4)
+
+        response = self.client.get("/authorize/", data={"state": fc_call_state})
+
+        self.assertIsInstance(response.context["state"], str)
+        self.assertIsInstance(response.context["usagers"], QuerySet)
+        self.assertEqual(len(response.context["usagers"]), 1)
+        self.assertIsInstance(response.context["aidant"], Aidant)
+
+    @tag("this")
     def test_sending_user_information_triggers_callback(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
-        c = Connection()
-        c.state = "test_state"
-        c.code = "test_code"
-        c.nonce = "test_nonce"
-        c.usager = self.usager
-        c.save()
+        c = Connection.objects.create(
+            state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
+        )
         usager_id = c.usager.id
         response = self.client.post(
             "/authorize/", data={"state": "test_state", "chosen_usager": usager_id}
@@ -104,6 +140,7 @@ class AuthorizeTests(TestCase):
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
 
+@tag("id_provider")
 class FISelectDemarcheTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -138,14 +175,14 @@ class FISelectDemarcheTest(TestCase):
         self.mandat = Mandat.objects.create(
             aidant=self.aidant,
             usager=self.usager,
-            perimeter=["naissance", "aspa"],
+            perimeter=["transports", "logement"],
             duration=6,
         )
 
         self.mandat_2 = Mandat.objects.create(
             aidant=self.aidant,
             usager=self.usager,
-            perimeter=["carte_grise"],
+            perimeter=["famille"],
             duration=3,
         )
 
@@ -163,20 +200,24 @@ class FISelectDemarcheTest(TestCase):
 
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
 
-        self.assertTemplateUsed(response, "aidants_connect_web/fi_select_demarche.html")
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/id_provider/fi_select_demarche.html"
+        )
 
     def test_get_perimeters_for_one_usager_and_two_mandats(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
 
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
+        mandats = [key for key, value in response.context["demarches"].items()]
         self.assertEqual(
-            response.context["demarches"], {"naissance", "aspa", "carte_grise"}
+            mandats, ['transports', 'logement', 'famille']
         )
 
     # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
     #  code}&state={state}"
 
 
+@tag("id_provider")
 @override_settings(
     FC_AS_FI_ID="test_client_id",
     FC_AS_FI_SECRET="test_client_secret",
@@ -279,6 +320,7 @@ class TokenTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
+@tag("id_provider")
 class UserInfoTests(TestCase):
     def setUp(self):
         self.client = Client()
