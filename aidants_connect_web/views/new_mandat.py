@@ -11,7 +11,7 @@ from django.db import IntegrityError
 from django.contrib import messages
 from django.template.loader import render_to_string
 
-from aidants_connect_web.models import Mandat, Usager
+from aidants_connect_web.models import Mandat, Usager, Journal
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views.service import humanize_demarche_names
 
@@ -109,7 +109,14 @@ def recap(request):
                 perimeter=mandat["perimeter"],
                 duration=duration_in_days,
             )
-
+            # TODO make FC_token dynamic
+            Journal.objects.mandat_creation(
+                aidant=aidant,
+                usager=usager,
+                demarches=mandat["perimeter"],
+                duree=duration_in_days,
+                fc_token="gjfododo",
+            )
             messages.success(request, "Le mandat a été créé avec succès !")
 
             return redirect("dashboard")

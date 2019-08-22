@@ -12,7 +12,7 @@ from django.contrib.messages import get_messages
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views import new_mandat
-from aidants_connect_web.models import Aidant, Usager
+from aidants_connect_web.models import Aidant, Usager, Journal
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -54,7 +54,7 @@ class RecapTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/new_mandat/recap.html")
         self.assertEqual(Usager.objects.all().count(), 0)
 
-    def test_post_to_recap_with_correct_data_redirects_to_mandats(self):
+    def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         session = self.client.session
         session["usager"] = {
@@ -86,6 +86,10 @@ class RecapTests(TestCase):
         )
         self.assertEqual(usager.birthplace, 95277)
         self.assertRedirects(response, "/dashboard/")
+
+        entries = Journal.objects.all()
+        self.assertEqual(entries.count(), 1)
+        self.assertEqual(entries[0].action, "create_mandat")
 
     def test_post_to_recap_without_sub_creates_error(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
