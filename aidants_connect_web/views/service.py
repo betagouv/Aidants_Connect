@@ -45,8 +45,13 @@ def logout_page(request):
 
 @login_required
 def dashboard(request):
+    aidant = request.user
     messages = get_messages(request)
-    return render(request, "aidants_connect_web/dashboard.html", {"messages": messages})
+    return render(
+        request,
+        "aidants_connect_web/dashboard.html",
+        {"aidant": aidant, "messages": messages},
+    )
 
 
 @login_required
