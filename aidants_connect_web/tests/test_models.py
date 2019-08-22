@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.db.utils import IntegrityError
-from aidants_connect_web.models import Connection, Aidant, Usager, Mandat
+from aidants_connect_web.models import Connection, Aidant, Usager, Mandat, Journal
 from datetime import date
 
 
@@ -155,3 +155,61 @@ class AidantModelTest(TestCase):
         self.assertEqual(len(Aidant.objects.all()), 1)
         Aidant.objects.create(username="cgireau@domain.user")
         self.assertEqual(len(Aidant.objects.all()), 2)
+
+
+class JournalModelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.entry1 = Journal.objects.create(action="connect_aidant", initiator="ABC")
+        cls.aidant_thierry = Aidant.objects.create_user(
+            username="Thierry",
+            email="thierry@thierry.com",
+            password="motdepassedethierry",
+            first_name="Thierry",
+            last_name="Martin",
+            organisme="Commune de Vernon",
+        )
+        cls.usager_ned = Usager.objects.create(
+            given_name="Ned",
+            family_name="Flanders",
+            birthdate="1902-06-30",
+            gender="male",
+            birthplace=26934,
+            birthcountry=99100,
+            email="ned@flanders.com",
+            sub="1234",
+        )
+
+    def test_a_journal_entry_can_be_created(self):
+        self.assertEqual(len(Journal.objects.all()), 1)
+
+    def test_logging_of_aidant_conection(self):
+        id = Journal.objects.connection(aidant=self.aidant_thierry)
+        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(id.action, "connect_aidant")
+        self.assertEqual(
+            id.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
+        )
+
+    def test_log_mandat_creation_complete(self):
+        id = Journal.objects.mandat_creation(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarches=["logement", "famille", "transports"],
+            duree=365,
+            fc_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(id.action, "create_mandat")
+        self.assertEqual(id.usager, "Ned Flanders - 1 - ned@flanders.com")
+
+    def test_log_mandat_use_complete(self):
+        id = Journal.objects.mandat_use(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarche="transports",
+            access_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(id.action, "use_mandat")
+        self.assertEqual(id.demarches, ["transports"])
