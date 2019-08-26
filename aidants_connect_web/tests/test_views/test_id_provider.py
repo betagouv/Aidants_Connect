@@ -347,6 +347,10 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
+        self.aidant = Aidant.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
         self.connection = Connection.objects.create(
             state="test_state",
             code="test_code",
@@ -356,9 +360,7 @@ class UserInfoTests(TestCase):
             expiresOn=datetime(
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
             ),
-        )
-        self.aidant = Aidant.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+            aidant=self.aidant,
         )
 
     def test_token_url_triggers_token_view(self):
@@ -393,15 +395,14 @@ class UserInfoTests(TestCase):
 
     @freeze_time(date)
     def test_mandat_use_triggers_journal_entry(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
 
         self.client.get(
             "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
         )
 
-        journal_entries = Journal.objects.all().order_by("creation_date")
-        self.assertEqual(journal_entries.count(), 2)
-        self.assertEqual(journal_entries[1].action, "use_mandat")
+        journal_entries = Journal.objects.all()
+        self.assertEqual(journal_entries.count(), 1)
+        self.assertEqual(journal_entries[0].action, "use_mandat")
 
     date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
 

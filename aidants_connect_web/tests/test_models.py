@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.db.utils import IntegrityError
 from aidants_connect_web.models import Connection, Aidant, Usager, Mandat, Journal
 from datetime import date
@@ -157,6 +157,7 @@ class AidantModelTest(TestCase):
         self.assertEqual(len(Aidant.objects.all()), 2)
 
 
+@tag("journal")
 class JournalModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -184,15 +185,15 @@ class JournalModelTest(TestCase):
         self.assertEqual(len(Journal.objects.all()), 1)
 
     def test_logging_of_aidant_conection(self):
-        id = Journal.objects.connection(aidant=self.aidant_thierry)
+        entry = Journal.objects.connection(aidant=self.aidant_thierry)
         self.assertEqual(len(Journal.objects.all()), 2)
-        self.assertEqual(id.action, "connect_aidant")
+        self.assertEqual(entry.action, "connect_aidant")
         self.assertEqual(
-            id.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
+            entry.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
         )
 
     def test_log_mandat_creation_complete(self):
-        id = Journal.objects.mandat_creation(
+        entry = Journal.objects.mandat_creation(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarches=["logement", "famille", "transports"],
@@ -200,16 +201,16 @@ class JournalModelTest(TestCase):
             fc_token="fjfgjfdkldlzlsmqqxxcn",
         )
         self.assertEqual(len(Journal.objects.all()), 2)
-        self.assertEqual(id.action, "create_mandat")
-        self.assertEqual(id.usager, "Ned Flanders - 1 - ned@flanders.com")
+        self.assertEqual(entry.action, "create_mandat")
+        self.assertIn("Ned Flanders", entry.usager)
 
     def test_log_mandat_use_complete(self):
-        id = Journal.objects.mandat_use(
+        entry = Journal.objects.mandat_use(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarche="transports",
             access_token="fjfgjfdkldlzlsmqqxxcn",
         )
         self.assertEqual(len(Journal.objects.all()), 2)
-        self.assertEqual(id.action, "use_mandat")
-        self.assertEqual(id.demarches, ["transports"])
+        self.assertEqual(entry.action, "use_mandat")
+        self.assertEqual(entry.demarches, ["transports"])

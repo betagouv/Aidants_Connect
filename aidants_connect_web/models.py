@@ -67,6 +67,7 @@ class Connection(models.Model):
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
     )
     demarche = models.TextField(default="No demarche provided")
+    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, blank=True, null=True)
     complete = models.BooleanField(default=False)
 
 
