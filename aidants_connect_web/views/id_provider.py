@@ -18,6 +18,7 @@ from aidants_connect_web.models import (
     Mandat,
     Usager,
     CONNECTION_EXPIRATION_TIME,
+    Journal,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -221,4 +222,7 @@ def user_info(request):
     usager["birthcountry"] = str(birthcountry)
     usager["birthdate"] = str(birthdate)
 
+    Journal.objects.mandat_use(
+        request.user, connection.usager, connection.demarche, connection.access_token
+    )
     return JsonResponse(usager, safe=False)

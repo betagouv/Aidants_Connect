@@ -19,6 +19,7 @@ from aidants_connect_web.models import (
     Usager,
     Mandat,
     CONNECTION_EXPIRATION_TIME,
+    Journal,
 )
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -356,6 +357,8 @@ class UserInfoTests(TestCase):
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
             ),
         )
+        self.aidant = Aidant.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
 
     def test_token_url_triggers_token_view(self):
@@ -386,6 +389,18 @@ class UserInfoTests(TestCase):
         content = response.json()
 
         self.assertEqual(content, FC_formated_info)
+
+    @freeze_time(date)
+    def test_mandat_use_triggers_journal_entry(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+
+        self.client.get(
+            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
+        )
+
+        journal_entries = Journal.objects.all().order_by("creation_date")
+        self.assertEqual(journal_entries.count(), 2)
+        self.assertEqual(journal_entries[1].action, "use_mandat")
 
     date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
 
