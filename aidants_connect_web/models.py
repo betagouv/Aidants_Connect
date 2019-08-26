@@ -137,3 +137,12 @@ class Journal(models.Model):
     access_token = models.TextField(blank=True, null=True)
 
     objects = JournalManager()
+
+    def save(self, *args, **kwargs):
+        if self.id:
+            raise NotImplementedError("Editing is not allowed on journal entries")
+        else:
+            super(Journal, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise NotImplementedError("Deleting is not allowed on journal entries")

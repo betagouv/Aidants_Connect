@@ -214,3 +214,30 @@ class JournalModelTest(TestCase):
         self.assertEqual(len(Journal.objects.all()), 2)
         self.assertEqual(entry.action, "use_mandat")
         self.assertEqual(entry.demarches, ["transports"])
+
+    def test_it_is_impossible_to_change_an_existing_entry(self):
+        entry = Journal.objects.mandat_use(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarche="transports",
+            access_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+
+        entry.demarches = ["logement"]
+        entry_id = entry.id
+        self.assertRaises(NotImplementedError, lambda: entry.save())
+
+        self.assertEqual(Journal.objects.get(id=entry_id).demarches, ["transports"])
+
+    def test_it_is_impossible_to_delete_an_existing_entry(self):
+        entry = Journal.objects.mandat_use(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarche="transports",
+            access_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+        entry_id = entry.id
+
+        self.assertRaises(NotImplementedError, lambda: entry.delete())
+
+        self.assertEqual(Journal.objects.get(id=entry_id).demarches, ["transports"])
