@@ -18,6 +18,7 @@ from aidants_connect_web.models import (
     Mandat,
     Usager,
     CONNECTION_EXPIRATION_TIME,
+    Journal,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -67,7 +68,6 @@ def authorize(request):
 
         # TODO check if connection has not expired
 
-        log.info(request.POST.get("chosen-usager"))
         that_connection.usager = Usager.objects.get(
             id=request.POST.get("chosen_usager")
         )
@@ -122,6 +122,7 @@ def fi_select_demarche(request):
         # TODO check if connection has not expired
         that_connection.demarche = request.POST.get("chosen_demarche")
         that_connection.complete = True
+        that_connection.aidant = request.user
         that_connection.save()
 
         fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -196,7 +197,6 @@ def token(request):
 
 
 def user_info(request):
-
     auth_header = request.META.get("HTTP_AUTHORIZATION")
 
     if not auth_header:
@@ -213,7 +213,7 @@ def user_info(request):
 
     if connection.expiresOn < timezone.now():
         return HttpResponseForbidden()
-    # TODO decide how to deal with user having several mandats/aidants
+
     usager = model_to_dict(connection.usager)
     del usager["id"]
     birthdate = usager["birthdate"]
@@ -223,4 +223,10 @@ def user_info(request):
     usager["birthcountry"] = str(birthcountry)
     usager["birthdate"] = str(birthdate)
 
+    Journal.objects.mandat_use(
+        connection.aidant,
+        connection.usager,
+        connection.demarche,
+        connection.access_token,
+    )
     return JsonResponse(usager, safe=False)

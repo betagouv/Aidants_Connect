@@ -8,3 +8,5 @@ geckodriver.log
 .integ.env
 staticfiles
 .DS_Store
+
+*/fixtures/*

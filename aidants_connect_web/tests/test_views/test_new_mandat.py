@@ -5,18 +5,19 @@ from datetime import datetime
 from freezegun import freeze_time
 
 from django.test.client import Client
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.urls import resolve
 from django.conf import settings
 from django.contrib.messages import get_messages
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views import new_mandat
-from aidants_connect_web.models import Aidant, Usager
+from aidants_connect_web.models import Aidant, Usager, Journal
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
+@tag("new_mandat")
 class RecapTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -54,7 +55,7 @@ class RecapTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/new_mandat/recap.html")
         self.assertEqual(Usager.objects.all().count(), 0)
 
-    def test_post_to_recap_with_correct_data_redirects_to_mandats(self):
+    def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         session = self.client.session
         session["usager"] = {
@@ -86,6 +87,10 @@ class RecapTests(TestCase):
         )
         self.assertEqual(usager.birthplace, 95277)
         self.assertRedirects(response, "/dashboard/")
+
+        entries = Journal.objects.all().order_by("-creation_date")
+        self.assertEqual(entries.count(), 2)
+        self.assertEqual(entries[0].action, "create_mandat")
 
     def test_post_to_recap_without_sub_creates_error(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
@@ -152,6 +157,7 @@ class RecapTests(TestCase):
         self.assertEqual(Usager.objects.filter(creation_date=creation_date).count(), 1)
 
 
+@tag("new_mandat")
 class GenerateMandatPDF(TestCase):
     def setUp(self):
         self.client = Client()

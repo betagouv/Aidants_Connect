@@ -1,16 +1,17 @@
 import os
 
 from django.test.client import Client
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.urls import resolve
 from django.conf import settings
 
 from aidants_connect_web.views import service
-from aidants_connect_web.models import Aidant
+from aidants_connect_web.models import Aidant, Journal
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
+@tag("service")
 class HomePageTests(TestCase):
     def test_root_url_triggers_the_homepage_view(self):
         found = resolve("/")
@@ -21,6 +22,27 @@ class HomePageTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/home_page.html")
 
 
+@tag("service")
+class LoginPageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.aidant = Aidant.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
+    def test_journal_records_when_aidant_logs_in(self):
+        self.assertEqual(len(Journal.objects.all()), 0)
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.get("/dashboard/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/dashboard.html")
+        self.assertEqual(Journal.objects.count(), 1)
+        self.assertEqual(Journal.objects.all()[0].action, "connect_aidant")
+        self.client.get("/mandats/")
+        self.assertEqual(Journal.objects.count(), 1)
+
+
+@tag("service")
 class LogoutPageTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -42,6 +64,7 @@ class LogoutPageTests(TestCase):
         self.assertRedirects(response, "/")
 
 
+@tag("service")
 class EnvironmentVariableTest(TestCase):
     def test_environment_variables_are_accessible(self):
         secret_key = os.getenv("TEST")

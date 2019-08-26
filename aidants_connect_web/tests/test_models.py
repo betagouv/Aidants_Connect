@@ -1,6 +1,6 @@
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.db.utils import IntegrityError
-from aidants_connect_web.models import Connection, Aidant, Usager, Mandat
+from aidants_connect_web.models import Connection, Aidant, Usager, Mandat, Journal
 from datetime import date
 
 
@@ -155,3 +155,89 @@ class AidantModelTest(TestCase):
         self.assertEqual(len(Aidant.objects.all()), 1)
         Aidant.objects.create(username="cgireau@domain.user")
         self.assertEqual(len(Aidant.objects.all()), 2)
+
+
+@tag("journal")
+class JournalModelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.entry1 = Journal.objects.create(action="connect_aidant", initiator="ABC")
+        cls.aidant_thierry = Aidant.objects.create_user(
+            username="Thierry",
+            email="thierry@thierry.com",
+            password="motdepassedethierry",
+            first_name="Thierry",
+            last_name="Martin",
+            organisme="Commune de Vernon",
+        )
+        cls.usager_ned = Usager.objects.create(
+            given_name="Ned",
+            family_name="Flanders",
+            birthdate="1902-06-30",
+            gender="male",
+            birthplace=26934,
+            birthcountry=99100,
+            email="ned@flanders.com",
+            sub="1234",
+        )
+
+    def test_a_journal_entry_can_be_created(self):
+        self.assertEqual(len(Journal.objects.all()), 1)
+
+    def test_logging_of_aidant_conection(self):
+        entry = Journal.objects.connection(aidant=self.aidant_thierry)
+        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(entry.action, "connect_aidant")
+        self.assertEqual(
+            entry.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
+        )
+
+    def test_log_mandat_creation_complete(self):
+        entry = Journal.objects.mandat_creation(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarches=["logement", "famille", "transports"],
+            duree=365,
+            fc_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(entry.action, "create_mandat")
+        self.assertIn("Ned Flanders", entry.usager)
+
+    def test_log_mandat_use_complete(self):
+        entry = Journal.objects.mandat_use(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarche="transports",
+            access_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(entry.action, "use_mandat")
+        self.assertEqual(entry.demarches, ["transports"])
+
+    def test_it_is_impossible_to_change_an_existing_entry(self):
+        entry = Journal.objects.mandat_use(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarche="transports",
+            access_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+
+        entry.demarches = ["logement"]
+        entry_id = entry.id
+        self.assertRaises(NotImplementedError, lambda: entry.save())
+
+        self.assertEqual(Journal.objects.get(id=entry_id).demarches, ["transports"])
+
+    def test_it_is_impossible_to_delete_an_existing_entry(self):
+        entry = Journal.objects.mandat_use(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarche="transports",
+            access_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+        entry_id = entry.id
+
+        self.assertRaises(NotImplementedError, lambda: entry.delete())
+
+        self.assertEqual(Journal.objects.get(id=entry_id).demarches, ["transports"])
