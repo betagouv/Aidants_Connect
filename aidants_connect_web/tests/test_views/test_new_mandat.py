@@ -88,8 +88,8 @@ class RecapTests(TestCase):
         self.assertEqual(usager.birthplace, 95277)
         self.assertRedirects(response, "/dashboard/")
 
-        entries = Journal.objects.all()
-        self.assertEqual(entries.count(), 1)
+        entries = Journal.objects.all().order_by("-creation_date")
+        self.assertEqual(entries.count(), 2)
         self.assertEqual(entries[0].action, "create_mandat")
 
     def test_post_to_recap_without_sub_creates_error(self):

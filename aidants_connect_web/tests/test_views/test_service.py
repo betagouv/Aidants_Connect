@@ -6,7 +6,7 @@ from django.urls import resolve
 from django.conf import settings
 
 from aidants_connect_web.views import service
-from aidants_connect_web.models import Aidant
+from aidants_connect_web.models import Aidant, Journal
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -23,6 +23,24 @@ class HomePageTests(TestCase):
 
 
 @tag("service")
+class LoginPageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.aidant = Aidant.objects.create_user(
+            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        )
+
+    def test_journal_records_when_aidant_logs_in(self):
+        self.assertEqual(len(Journal.objects.all()), 0)
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.get("/dashboard/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/dashboard.html")
+        self.assertEqual(Journal.objects.count(), 1)
+        self.assertEqual(Journal.objects.all()[0].action, "connect_aidant")
+        self.client.get("/mandats/")
+        self.assertEqual(Journal.objects.count(), 1)
+
 
 @tag("service")
 class LogoutPageTests(TestCase):
