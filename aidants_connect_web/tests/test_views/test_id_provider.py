@@ -369,6 +369,7 @@ class UserInfoTests(TestCase):
 
     @freeze_time(date)
     def test_well_formatted_access_token_returns_200(self):
+
         response = self.client.get(
             "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
         )

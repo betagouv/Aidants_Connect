@@ -122,6 +122,7 @@ def fi_select_demarche(request):
         # TODO check if connection has not expired
         that_connection.demarche = request.POST.get("chosen_demarche")
         that_connection.complete = True
+        that_connection.aidant = request.user
         that_connection.save()
 
         fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -223,6 +224,9 @@ def user_info(request):
     usager["birthdate"] = str(birthdate)
 
     Journal.objects.mandat_use(
-        request.user, connection.usager, connection.demarche, connection.access_token
+        connection.aidant,
+        connection.usager,
+        connection.demarche,
+        connection.access_token,
     )
     return JsonResponse(usager, safe=False)

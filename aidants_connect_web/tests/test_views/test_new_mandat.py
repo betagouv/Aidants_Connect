@@ -17,7 +17,7 @@ from aidants_connect_web.models import Aidant, Usager, Journal
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
-@tag('new_mandat')
+@tag("new_mandat")
 class RecapTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -157,7 +157,7 @@ class RecapTests(TestCase):
         self.assertEqual(Usager.objects.filter(creation_date=creation_date).count(), 1)
 
 
-@tag('new_mandat')
+@tag("new_mandat")
 class GenerateMandatPDF(TestCase):
     def setUp(self):
         self.client = Client()
