@@ -2,7 +2,7 @@ from django.contrib import admin
 from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from aidants_connect_web.models import Aidant, Usager, Mandat
+from aidants_connect_web.models import Aidant, Usager, Mandat, Journal
 
 
 class AidantAdmin(DjangoUserAdmin):
@@ -58,6 +58,7 @@ class AidantAdmin(DjangoUserAdmin):
 admin.site.register(Aidant, AidantAdmin)
 admin.site.register(Usager)
 admin.site.register(Mandat)
+admin.site.register(Journal)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 admin.site.unregister(Group)
