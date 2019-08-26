@@ -67,7 +67,6 @@ def authorize(request):
 
         # TODO check if connection has not expired
 
-        log.info(request.POST.get("chosen-usager"))
         that_connection.usager = Usager.objects.get(
             id=request.POST.get("chosen_usager")
         )
@@ -196,7 +195,6 @@ def token(request):
 
 
 def user_info(request):
-
     auth_header = request.META.get("HTTP_AUTHORIZATION")
 
     if not auth_header:
@@ -213,7 +211,7 @@ def user_info(request):
 
     if connection.expiresOn < timezone.now():
         return HttpResponseForbidden()
-    # TODO decide how to deal with user having several mandats/aidants
+
     usager = model_to_dict(connection.usager)
     del usager["id"]
     birthdate = usager["birthdate"]

@@ -180,10 +180,7 @@ class FISelectDemarcheTest(TestCase):
         )
 
         self.mandat_2 = Mandat.objects.create(
-            aidant=self.aidant,
-            usager=self.usager,
-            perimeter=["famille"],
-            duration=3,
+            aidant=self.aidant, usager=self.usager, perimeter=["famille"], duration=3
         )
 
         self.mandat_3 = Mandat.objects.create(
@@ -209,9 +206,7 @@ class FISelectDemarcheTest(TestCase):
 
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
         mandats = [key for key, value in response.context["demarches"].items()]
-        self.assertEqual(
-            mandats, ['transports', 'logement', 'famille']
-        )
+        self.assertEqual(mandats, ["transports", "logement", "famille"])
 
     # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
     #  code}&state={state}"
@@ -351,16 +346,17 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
-        self.connection = Connection()
-        self.connection.state = "test_state"
-        self.connection.code = "test_code"
-        self.connection.nonce = "test_nonce"
-        self.connection.usager = self.usager
-        self.connection.access_token = "test_access_token"
-        self.connection.expiresOn = datetime(
-            2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
+        self.connection = Connection.objects.create(
+            state="test_state",
+            code="test_code",
+            nonce="test_nonce",
+            usager=self.usager,
+            access_token="test_access_token",
+            expiresOn=datetime(
+                2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
+            ),
         )
-        self.connection.save()
+        )
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/userinfo/")

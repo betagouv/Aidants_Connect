@@ -1,7 +1,7 @@
 import os
 
 from django.test.client import Client
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.urls import resolve
 from django.conf import settings
 
@@ -11,6 +11,7 @@ from aidants_connect_web.models import Aidant
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
+@tag("service")
 class HomePageTests(TestCase):
     def test_root_url_triggers_the_homepage_view(self):
         found = resolve("/")
@@ -21,6 +22,9 @@ class HomePageTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/home_page.html")
 
 
+@tag("service")
+
+@tag("service")
 class LogoutPageTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -42,6 +46,7 @@ class LogoutPageTests(TestCase):
         self.assertRedirects(response, "/")
 
 
+@tag("service")
 class EnvironmentVariableTest(TestCase):
     def test_environment_variables_are_accessible(self):
         secret_key = os.getenv("TEST")
