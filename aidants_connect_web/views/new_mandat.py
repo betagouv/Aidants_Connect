@@ -128,7 +128,7 @@ def recap(request):
                 {
                     "aidant": aidant,
                     "usager": usager,
-                    "demarche": demarches,
+                    "demarche": humanize_demarche_names(mandat["perimeter"]),
                     "duration": mandat["duration"],
                     "error": "Vous devez accepter les conditions du mandat.",
                 },
