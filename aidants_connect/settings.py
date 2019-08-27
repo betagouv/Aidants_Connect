@@ -234,4 +234,9 @@ DEMARCHES = {
         "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
         "/loisirs.png",
     },
+    "No démarche": {
+            "titre": "No démarche",
+            "description": "Aucune démarche n'a été spécifiée",
+            "icon": "",
+        },
 }
