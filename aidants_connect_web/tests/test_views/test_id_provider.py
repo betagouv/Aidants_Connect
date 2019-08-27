@@ -49,21 +49,21 @@ class AuthorizeTests(TestCase):
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="123"),
-            perimeter=["Revenus"],
+            demarche="Revenus",
             duration=6,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="123"),
-            perimeter=["Famille"],
+            demarche="Famille",
             duration=12,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Jacques"),
             usager=Usager.objects.get(sub="123"),
-            perimeter=["Logement"],
+            demarche="Logement",
             duration=12,
         )
 
@@ -174,18 +174,15 @@ class FISelectDemarcheTest(TestCase):
             state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
         )
         self.mandat = Mandat.objects.create(
-            aidant=self.aidant,
-            usager=self.usager,
-            perimeter=["transports", "logement"],
-            duration=6,
+            aidant=self.aidant, usager=self.usager, demarche="transports", duration=6
         )
 
         self.mandat_2 = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager, perimeter=["famille"], duration=3
+            aidant=self.aidant, usager=self.usager, demarche="famille", duration=3
         )
 
         self.mandat_3 = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager2, perimeter=["aspa"], duration=3
+            aidant=self.aidant, usager=self.usager2, demarche="logement", duration=3
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -206,8 +203,8 @@ class FISelectDemarcheTest(TestCase):
         self.client.login(username="Thierry", password="motdepassedethierry")
 
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
-        mandats = [key for key, value in response.context["demarches"].items()]
-        self.assertEqual(mandats, ["transports", "logement", "famille"])
+        mandats = [mandat.demarche for mandat in response.context["mandats"]]
+        self.assertEqual(mandats, ["transports", "famille"])
 
     # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
     #  code}&state={state}"
@@ -351,6 +348,10 @@ class UserInfoTests(TestCase):
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
 
+        self.mandat = Mandat.objects.create(
+            aidant=self.aidant, usager=self.usager, demarche="transports", duration=6
+        )
+
         self.connection = Connection.objects.create(
             state="test_state",
             code="test_code",
@@ -361,6 +362,7 @@ class UserInfoTests(TestCase):
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
             ),
             aidant=self.aidant,
+            mandat=self.mandat,
         )
 
     def test_token_url_triggers_token_view(self):

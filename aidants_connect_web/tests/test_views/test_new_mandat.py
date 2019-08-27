@@ -160,16 +160,17 @@ class RecapTests(TestCase):
 @tag("new_mandat")
 class GenerateMandatPDF(TestCase):
     def setUp(self):
-        self.client = Client()
-        self.aidant = Aidant.objects.create_user(
+        aidant_thierry = Aidant.objects.create_user(
             "Thierry", "thierry@thierry.com", "motdepassedethierry"
         )
-        self.aidant.last_name = "Goneau"
-        self.aidant.first_name = "Thierry"
-        self.aidant.profession = "secrétaire"
-        self.aidant.organisme = "COMMUNE DE HOULBEC COCHEREL"
-        self.aidant.ville = "HOULBEC COCHEREL"
-        self.aidant.save()
+        self.client = Client(
+            aidant=aidant_thierry,
+            last_name="Goneau",
+            first_name="Thierry",
+            profession="secrétaire",
+            organisme="COMMUNE DE HOULBEC COCHEREL",
+            ville="HOULBEC COCHEREL",
+        )
 
     def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
         found = resolve("/generate_mandat_pdf/")

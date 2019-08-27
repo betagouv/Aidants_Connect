@@ -66,7 +66,10 @@ def recap(request):
     mandat = request.session.get("mandat")
 
     if request.method == "GET":
-        demarches = humanize_demarche_names(mandat["perimeter"])
+        demarches = [
+            humanize_demarche_names(demarche) for demarche in mandat["perimeter"]
+        ]
+
         duration = "1 jour" if mandat["duration"] == "short" else "1 an"
 
         return render(
@@ -103,20 +106,23 @@ def recap(request):
                 messages.error(request, f"The FranceConnect ID is not complete : {e}")
                 return redirect("dashboard")
             duration_in_days = 1 if mandat["duration"] == "short" else 365
-            Mandat.objects.create(
-                aidant=aidant,
-                usager=usager,
-                perimeter=mandat["perimeter"],
-                duration=duration_in_days,
-            )
-            # TODO make FC_token dynamic
+
             for demarche in mandat["perimeter"]:
+                this_mandat = Mandat.objects.create(
+                    aidant=aidant,
+                    usager=usager,
+                    demarche=demarche,
+                    duration=duration_in_days,
+                )
+                # TODO make FC_token dynamic
+
                 Journal.objects.mandat_creation(
                     aidant=aidant,
                     usager=usager,
                     demarche=demarche,
                     duree=duration_in_days,
                     fc_token="gjfododo",
+                    mandat=this_mandat,
                 )
             messages.success(request, "Le mandat a été créé avec succès !")
 
@@ -152,7 +158,7 @@ def generate_mandat_pdf(request):
             "organisme": aidant.organisme,
             "lieu": aidant.ville,
             "date": formats.date_format(date.today(), "l j F Y"),
-            "demarches": humanize_demarche_names(demarches),
+            "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duration,
         },
     )

@@ -56,9 +56,8 @@ def mandats(request):
     aidant = request.user
     mandats = Mandat.objects.all().filter(aidant=aidant).order_by("creation_date")
 
-    for mandat in mandats:
-        mandat.perimeter_names = humanize_demarche_names(mandat.perimeter)
     # TODO change the "mois" in "jours"
+    # TODO should we have human readable names for demarche ?
     return render(
         request,
         "aidants_connect_web/mandats.html",
