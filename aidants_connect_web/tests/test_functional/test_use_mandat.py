@@ -51,21 +51,21 @@ class CreateNewMandat(StaticLiveServerTestCase):
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
-            perimeter=["argent"],
+            demarche="argent",
             duration=6,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
-            perimeter=["famille"],
+            demarche="famille",
             duration=12,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="jfremont@domain.user"),
             usager=Usager.objects.get(sub="test_sub"),
-            perimeter=["logement"],
+            demarche="logement",
             duration=12,
         )
 

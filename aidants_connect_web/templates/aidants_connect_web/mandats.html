@@ -35,16 +35,16 @@
           {% regroup mandats by usager as usagers %}
           {% for usager in usagers %}
           <tr>
-            <td class="usager" rowspan="{{ usager.list|length|add:"1" }}">
+            <td class="usager" rowspan="{{ usager.list|length}}">
               {{ usager.grouper }}
             </td>
-            {% for mandat in usager.list %}
-              {% if loop.index > 1 %}
-            </tr><tr>
+              {% for mandat in usager.list %}
+          {% if loop.index > 1 %}
+          </tr><tr>
               {% endif %}
               <td>
                 <ul>
-                  <li>{{ mandat.perimeter_names|join:", " }}</li>
+                  <li>{{ mandat.demarche}}</li>
                 </ul>
               </td>
               <td>
