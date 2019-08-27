@@ -86,7 +86,7 @@ class JournalManager(models.Manager):
         return journal_entry
 
     def mandat_creation(
-        self, aidant: Aidant, usager: Usager, demarches: list, duree: int, fc_token: str
+        self, aidant: Aidant, usager: Usager, demarche: str, duree: int, fc_token: str
     ):
 
         initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
@@ -96,7 +96,7 @@ class JournalManager(models.Manager):
             initiator=initiator,
             usager=usager,
             action="create_mandat",
-            demarches=demarches,
+            demarche=demarche,
             duree=duree,
             access_token=fc_token,
         )
@@ -113,7 +113,7 @@ class JournalManager(models.Manager):
             initiator=initiator,
             usager=usager,
             action="use_mandat",
-            demarches=[demarche],
+            demarche=demarche,
             access_token=access_token,
         )
         return journal_entry
@@ -131,9 +131,9 @@ class Journal(models.Model):
     # automatic
     creation_date = models.DateTimeField(auto_now_add=True)
     # action dependant
-    demarches = ArrayField(models.CharField(max_length=100), blank=True, null=True)
+    demarche = models.CharField(max_length=100, blank=True, null=True)
     usager = models.TextField(blank=True, null=True)
-    duree = models.IntegerField(blank=True, null=True)
+    duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
 
     objects = JournalManager()

@@ -110,13 +110,14 @@ def recap(request):
                 duration=duration_in_days,
             )
             # TODO make FC_token dynamic
-            Journal.objects.mandat_creation(
-                aidant=aidant,
-                usager=usager,
-                demarches=mandat["perimeter"],
-                duree=duration_in_days,
-                fc_token="gjfododo",
-            )
+            for demarche in mandat["perimeter"]:
+                Journal.objects.mandat_creation(
+                    aidant=aidant,
+                    usager=usager,
+                    demarche=demarche,
+                    duree=duration_in_days,
+                    fc_token="gjfododo",
+                )
             messages.success(request, "Le mandat a été créé avec succès !")
 
             return redirect("dashboard")
