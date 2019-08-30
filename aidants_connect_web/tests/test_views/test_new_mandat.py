@@ -17,12 +17,46 @@ from aidants_connect_web.models import Aidant, Usager, Journal
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
+@tag("new_mandat", "this")
+class NewMandatTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.aidant = Aidant.objects.create_user(
+            "thierry@thierry.com", "thierry@thierry.com", "motdepassedethierry"
+        )
+
+    def test_new_mandat_url_triggers_new_mandat_view(self):
+        found = resolve("/new_mandat/")
+        self.assertEqual(found.func, new_mandat.new_mandat)
+
+    def test_new_mandat_url_triggers_new_mandat_template(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get("/new_mandat/")
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/new_mandat/new_mandat.html"
+        )
+
+    def test_badly_formated_form_triggers_original_template(self):
+        self.client.force_login(self.aidant)
+        data = {"perimeter": ["papiers", "logement"], "duration": "RAMDAM"}
+        response = self.client.post("/new_mandat/", data=data)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/new_mandat/new_mandat.html"
+        )
+
+    def test_well_formated_form_triggers_redirect_to_FC(self):
+        self.client.force_login(self.aidant)
+        data = {"perimeter": ["papiers", "logement"], "duration": "short"}
+        response = self.client.post("/new_mandat/", data=data)
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+
+
 @tag("new_mandat")
 class RecapTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant = Aidant.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+            "thierry@thierry.com", "thierry@thierry.com", "motdepassedethierry"
         )
 
     def test_recap_url_triggers_the_recap_view(self):
@@ -30,7 +64,9 @@ class RecapTests(TestCase):
         self.assertEqual(found.func, new_mandat.recap)
 
     def test_recap_url_triggers_the_recap_template(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.login(
+            username="thierry@thierry.com", password="motdepassedethierry"
+        )
         session = self.client.session
         session["usager"] = {
             "given_name": "Fabrice",
@@ -56,7 +92,9 @@ class RecapTests(TestCase):
         self.assertEqual(Usager.objects.all().count(), 0)
 
     def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.login(
+            username="thierry@thierry.com", password="motdepassedethierry"
+        )
         session = self.client.session
         session["usager"] = {
             "given_name": "Fabrice",
@@ -93,7 +131,9 @@ class RecapTests(TestCase):
         self.assertEqual(entries[0].action, "create_mandat")
 
     def test_post_to_recap_without_sub_creates_error(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.login(
+            username="thierry@thierry.com", password="motdepassedethierry"
+        )
         session = self.client.session
         session["usager"] = {
             "given_name": "Fabrice",
@@ -131,7 +171,9 @@ class RecapTests(TestCase):
             email="User@user.domain",
             creation_date="2019-08-05T15:49:13.972Z",
         )
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.login(
+            username="thierry@thierry.com", password="motdepassedethierry"
+        )
         session = self.client.session
         session["usager"] = {
             "given_name": "Fabrice",
@@ -211,7 +253,6 @@ class GenerateMandatPDF(TestCase):
             "inline; filename='mandat_aidants_connect.pdf'",
         )
 
-    @tag("that")
     @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
     def test_pdf_contains_text(self):
         self.client.login(

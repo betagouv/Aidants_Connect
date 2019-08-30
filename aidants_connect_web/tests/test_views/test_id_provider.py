@@ -117,7 +117,6 @@ class AuthorizeTests(TestCase):
         self.assertEqual(len(response.context["usagers"]), 1)
         self.assertIsInstance(response.context["aidant"], Aidant)
 
-    @tag("this")
     def test_sending_user_information_triggers_callback(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         c = Connection.objects.create(
@@ -205,7 +204,9 @@ class FISelectDemarcheTest(TestCase):
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
         demarches = response.context["demarches"]
         mandats = [demarche for demarche in demarches]
-        self.assertEqual(mandats, ["famille", "transports"])
+        self.assertIn("famille", mandats)
+        self.assertIn("transports", mandats)
+        self.assertEqual(len(mandats), 2)
 
     # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
     #  code}&state={state}"
