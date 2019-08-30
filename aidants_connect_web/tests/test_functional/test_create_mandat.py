@@ -112,4 +112,4 @@ class CreateNewMandat(StaticLiveServerTestCase):
         self.selenium.find_element_by_id("view_mandats").click()
 
         # See all mandats page
-        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 2)
+        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 3)

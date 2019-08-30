@@ -104,6 +104,7 @@ class RecapTests(TestCase):
             "birthplace": "95277",
             "birthcountry": "99100",
             "email": "test@test.com",
+            "sub": "123",
         }
         mandat_form = MandatForm(
             data={"perimeter": ["papiers", "logement"], "duration": "long"}
@@ -160,41 +161,48 @@ class RecapTests(TestCase):
 @tag("new_mandat")
 class GenerateMandatPDF(TestCase):
     def setUp(self):
-        aidant_thierry = Aidant.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
-        )
-        self.client = Client(
-            aidant=aidant_thierry,
+        self.aidant_thierry = Aidant.objects.create_user(
+            username="thierry@thierry.com",
+            email="thierry@thierry.com",
+            password="motdepassedethierry",
             last_name="Goneau",
             first_name="Thierry",
             profession="secrétaire",
             organisme="COMMUNE DE HOULBEC COCHEREL",
             ville="HOULBEC COCHEREL",
         )
+        self.client = Client()
+
+        self.test_usager = {
+            "given_name": "Fabrice",
+            "family_name": "MERCIER",
+            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": "female",
+            "birthplace": "95277",
+            "birthcountry": "99100",
+            "email": "test@test.com",
+        }
+
+        self.mandat_form = MandatForm(
+            data={"perimeter": ["papiers", "logement"], "duration": "short"}
+        )
 
     def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
         found = resolve("/generate_mandat_pdf/")
         self.assertEqual(found.func, new_mandat.generate_mandat_pdf)
 
-    test_usager = {
-        "given_name": "Fabrice",
-        "family_name": "MERCIER",
-        "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
-        "preferred_username": "TROIS",
-        "birthdate": "1981-07-27",
-        "gender": "female",
-        "birthplace": "95277",
-        "birthcountry": "99100",
-        "email": "test@test.com",
-    }
-
-    test_mandat = {"perimeter": ["famille"], "duration": "short"}
-
     def test_response_is_a_pdf_download(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.login(
+            username="thierry@thierry.com", password="motdepassedethierry"
+        )
         session = self.client.session
         session["usager"] = self.test_usager
-        session["mandat"] = self.test_mandat
+        session["duration"] = 3
+        mandat_prep = self.mandat_form
+        mandat_prep.is_valid()
+        session["mandat"] = mandat_prep.cleaned_data
         session.save()
         response = self.client.get("/generate_mandat_pdf/")
         self.assertEqual(response.status_code, 200)
@@ -203,12 +211,18 @@ class GenerateMandatPDF(TestCase):
             "inline; filename='mandat_aidants_connect.pdf'",
         )
 
+    @tag("that")
     @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
     def test_pdf_contains_text(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.login(
+            username="thierry@thierry.com", password="motdepassedethierry"
+        )
         session = self.client.session
         session["usager"] = self.test_usager
-        session["mandat"] = self.test_mandat
+        mandat_prep = self.mandat_form
+        mandat_prep.is_valid()
+        session["mandat"] = mandat_prep.cleaned_data
+        session["duration"] = 3
         session.save()
         response = self.client.get("/generate_mandat_pdf/")
         content = io.BytesIO(response.content)

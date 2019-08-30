@@ -203,8 +203,9 @@ class FISelectDemarcheTest(TestCase):
         self.client.login(username="Thierry", password="motdepassedethierry")
 
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
-        mandats = [mandat.demarche for mandat in response.context["mandats"]]
-        self.assertEqual(mandats, ["transports", "famille"])
+        demarches = response.context["demarches"]
+        mandats = [demarche for demarche in demarches]
+        self.assertEqual(mandats, ["famille", "transports"])
 
     # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
     #  code}&state={state}"
