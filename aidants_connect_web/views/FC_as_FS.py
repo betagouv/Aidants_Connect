@@ -15,16 +15,18 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
+# TODO add login required ?
 def fc_authorize(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
+
+    connection.state = token_urlsafe(16)
+    connection.nonce = token_urlsafe(16)
+    connection.connection_type = "FS"
+    connection.save()
+
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_id = settings.FC_AS_FS_ID
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
-
-    state = token_urlsafe(16)
-    fc_nonce = token_urlsafe(16)
-    connexion = Connection(state=state, connection_type="FS", nonce=fc_nonce)
-    connexion.save()
-
     fc_scopes = [
         "given_name",
         "family_name",
@@ -41,8 +43,8 @@ def fc_authorize(request):
         f"&client_id={fc_id}"
         f"&redirect_uri={fc_callback_uri}"
         f"&scope={'openid' + ''.join(['%20' + scope for scope in fc_scopes])}"
-        f"&state={state}"
-        f"&nonce={fc_nonce}"
+        f"&state={connection.state}"
+        f"&nonce={connection.nonce}"
     )
 
     authorize_url = f"{fc_base}/authorize?{parameters}"

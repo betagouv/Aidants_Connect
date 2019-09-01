@@ -12,7 +12,7 @@ from django.contrib.messages import get_messages
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views import new_mandat
-from aidants_connect_web.models import Aidant, Usager, Journal
+from aidants_connect_web.models import Aidant, Usager, Journal, Connection
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -58,6 +58,8 @@ class RecapTests(TestCase):
         self.aidant = Aidant.objects.create_user(
             "thierry@thierry.com", "thierry@thierry.com", "motdepassedethierry"
         )
+        Connection.objects.create(id=1, demarches=["papiers", "logement"], duration=365)
+        Connection.objects.create(id=2, demarches=["papiers", "logement"], duration=1)
 
     def test_recap_url_triggers_the_recap_view(self):
         found = resolve("/recap/")
@@ -79,11 +81,7 @@ class RecapTests(TestCase):
             "birthcountry": "99100",
             "email": "test@test.com",
         }
-        mandat_form = MandatForm(
-            data={"perimeter": ["papiers", "logement"], "duration": "long"}
-        )
-        mandat_form.is_valid()
-        session["mandat"] = mandat_form.cleaned_data
+        session["connection"] = 1
         session.save()
 
         response = self.client.get("/recap/")
@@ -107,11 +105,8 @@ class RecapTests(TestCase):
             "birthcountry": "99100",
             "email": "test@test.com",
         }
-        mandat_form = MandatForm(
-            data={"perimeter": ["papiers", "logement"], "duration": "short"}
-        )
-        mandat_form.is_valid()
-        session["mandat"] = mandat_form.cleaned_data
+
+        session["connection"] = 2
         session.save()
 
         response = self.client.post(
@@ -146,11 +141,7 @@ class RecapTests(TestCase):
             "email": "test@test.com",
             "sub": "123",
         }
-        mandat_form = MandatForm(
-            data={"perimeter": ["papiers", "logement"], "duration": "long"}
-        )
-        mandat_form.is_valid()
-        session["mandat"] = mandat_form.cleaned_data
+        session["connection"] = 2
         session.save()
         response = self.client.post(
             "/recap/", data={"personal_data": True, "brief": True}
@@ -187,13 +178,10 @@ class RecapTests(TestCase):
             "birthcountry": "99100",
             "email": "test@test.com",
         }
-        creation_date = self.usager.creation_date
-        mandat_form = MandatForm(
-            data={"perimeter": ["papiers", "logement"], "duration": "short"}
-        )
-        mandat_form.is_valid()
-        session["mandat"] = mandat_form.cleaned_data
+        session["connection"] = 2
         session.save()
+        creation_date = self.usager.creation_date
+
         self.client.post("/recap/", data={"personal_data": True, "brief": True})
         self.assertEqual(Usager.objects.all().count(), 1)
         self.assertEqual(Usager.objects.first().given_name, "Joséphine")

@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.postgres.fields import ArrayField
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -63,16 +64,19 @@ class Mandat(models.Model):
 
 
 class Connection(models.Model):
-    state = models.TextField()
-    code = models.TextField()
-    nonce = models.TextField(default="No Nonce Provided")
-    expiresOn = models.DateTimeField(default=default_expiration_date)
-    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, blank=True, null=True)
-    access_token = models.TextField(default="No token Provided")
-    CONNECTION_TYPE = (("FS", "FC as FS"), ("FI", "FC as FI"))
+    state = models.TextField()  # FS
+    nonce = models.TextField(default="No Nonce Provided")  # FS
+    CONNECTION_TYPE = (("FS", "FC as FS"), ("FI", "FC as FI"))  # FS
     connection_type = models.CharField(
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
     )
+
+    demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
+    duration = models.IntegerField(blank=False, null=True)  # FS
+    code = models.TextField()
+    expiresOn = models.DateTimeField(default=default_expiration_date)
+    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, blank=True, null=True)
+    access_token = models.TextField(default="No token Provided")
     demarche = models.TextField(default="No demarche provided")
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, blank=True, null=True)
     complete = models.BooleanField(default=False)
