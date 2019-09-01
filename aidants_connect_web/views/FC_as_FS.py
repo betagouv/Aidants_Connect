@@ -61,18 +61,18 @@ def fc_callback(request):
     state = request.GET.get("state")
 
     try:
-        connection_state = Connection.objects.get(state=state)
+        connection = Connection.objects.get(state=state)
     except Connection.DoesNotExist:
         log.info("FC as FS - This state does not seem to exist")
         log.info(Connection.objects.all())
         log.info(state)
-        connection_state = None
+        connection = None
 
-    if not connection_state:
+    if not connection:
         log.info("403: No connection available with this state.")
         return HttpResponseForbidden()
 
-    if connection_state.expiresOn < timezone.now():
+    if connection.expiresOn < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
     if not code:
@@ -108,10 +108,10 @@ def fc_callback(request):
         log.info("403: token signature has expired.")
         return HttpResponseForbidden()
 
-    if connection_state.nonce != decoded_token.get("nonce"):
+    if connection.nonce != decoded_token.get("nonce"):
         log.info("403: The nonce is different than the one expected.")
         return HttpResponseForbidden()
-    if connection_state.expiresOn < timezone.now():
+    if connection.expiresOn < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
 

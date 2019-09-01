@@ -6,7 +6,7 @@ from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant
 
 
-@tag("functional")
+@tag("functional", "new_mandat")
 class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):

@@ -174,6 +174,7 @@ class RecapTests(TestCase):
         self.client.login(
             username="thierry@thierry.com", password="motdepassedethierry"
         )
+
         session = self.client.session
         session["usager"] = {
             "given_name": "Fabrice",

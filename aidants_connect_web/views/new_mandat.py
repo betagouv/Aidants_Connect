@@ -11,7 +11,7 @@ from django.db import IntegrityError
 from django.contrib import messages
 from django.template.loader import render_to_string
 
-from aidants_connect_web.models import Mandat, Usager, Journal
+from aidants_connect_web.models import Mandat, Usager, Journal, Connection
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views.service import humanize_demarche_names
 
@@ -36,7 +36,12 @@ def new_mandat(request):
         form = MandatForm(request.POST)
 
         if form.is_valid():
-            request.session["mandat"] = form.cleaned_data
+            data = form.cleaned_data
+            duration = 1 if data["duration"] == "short" else 365
+            connection = Connection.objects.create(
+                demarches=data["perimeter"], duration=duration
+            )
+            request.session["connection"] = connection.pk
             return redirect("fc_authorize")
         else:
             return render(
@@ -48,6 +53,7 @@ def new_mandat(request):
 
 @login_required
 def recap(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     # TODO check if user already exists via sub
 
@@ -67,10 +73,10 @@ def recap(request):
 
     if request.method == "GET":
         demarches = [
-            humanize_demarche_names(demarche) for demarche in mandat["perimeter"]
+            humanize_demarche_names(demarche) for demarche in connection.demarches
         ]
 
-        duration = "1 jour" if mandat["duration"] == "short" else "1 an"
+        duration = "1 jour" if connection.duration == 1 else "1 an"
 
         return render(
             request,
@@ -105,9 +111,9 @@ def recap(request):
                 log.error(e)
                 messages.error(request, f"The FranceConnect ID is not complete : {e}")
                 return redirect("dashboard")
-            duration_in_days = 1 if mandat["duration"] == "short" else 365
+            duration_in_days = connection.duration
 
-            for demarche in mandat["perimeter"]:
+            for demarche in connection.demarches:
                 this_mandat = Mandat.objects.create(
                     aidant=aidant,
                     usager=usager,
