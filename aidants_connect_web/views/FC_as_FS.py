@@ -4,12 +4,15 @@ import requests as python_request
 from secrets import token_urlsafe
 from jwt.api_jwt import ExpiredSignatureError
 
+from django.contrib import messages
+from django.db import IntegrityError
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
 from django.conf import settings
 from django.utils import timezone
 
-from aidants_connect_web.models import Connection
+
+from aidants_connect_web.models import Connection, Usager
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -116,11 +119,18 @@ def fc_callback(request):
     if connection.expiresOn < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
+    try:
+        usager = Usager.objects.get(sub=decoded_token["sub"])
 
-    request.session["usager"] = python_request.get(
-        f"{fc_base}/userinfo?schema=openid",
-        headers={"Authorization": f"Bearer {fc_access_token}"},
-    ).json()
+    except Usager.DoesNotExist:
+
+        usager, error = get_user_info(fc_base, connection.access_token)
+        if error:
+            messages.error(request, error)
+            return redirect("dashboard")
+
+    connection.usager = usager
+    connection.save()
 
     # logout_base = f"{fc_base}/logout"
     # logout_id_token = f"id_token_hint={fc_id_token}"
@@ -130,3 +140,27 @@ def fc_callback(request):
     # TODO reactivate when FC issue is fixes
     # return redirect(logout_url)
     return redirect("recap")
+
+
+def get_user_info(fc_base: str, access_token: str) -> tuple:
+    fc_user_info = python_request.get(
+        f"{fc_base}/userinfo?schema=openid",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    user_info = fc_user_info.json()
+    try:
+        usager = Usager.objects.create(
+            given_name=user_info.get("given_name"),
+            family_name=user_info.get("family_name"),
+            birthdate=user_info.get("birthdate"),
+            gender=user_info.get("gender"),
+            birthplace=user_info.get("birthplace"),
+            birthcountry=user_info.get("birthcountry"),
+            sub=user_info.get("sub"),
+        )
+        return usager, None
+
+    except IntegrityError as e:
+        log.error("Error happened in Recap")
+        log.error(e)
+        return None, f"The FranceConnect ID is not complete: {e}"

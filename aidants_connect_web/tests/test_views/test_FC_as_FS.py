@@ -69,3 +69,53 @@ class FCCallback(TestCase):
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
         self.assertEqual(response.status_code, 403)
+@tag("new_mandat", "FC_as_FS")
+class GetUserInfoTests(TestCase):
+
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
+    def test_well_formated_user_info_outputs_usager(self, mock_get):
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        mock_response.json = mock.Mock(
+            return_value={
+                "given_name": "Fabrice",
+                "family_name": "Mercier",
+                "sub": "123",
+                "preferred_username": "TROIS",
+                "birthdate": "1981-07-27",
+                "gender": "female",
+                "birthplace": "95277",
+                "birthcountry": "99100",
+                "email": "test@test.com",
+            }
+        )
+        mock_get.return_value = mock_response
+
+        usager, error = get_user_info("abc", "def")
+
+        self.assertEqual(usager.given_name, "Fabrice")
+        self.assertEqual(error, None)
+
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
+    def test_badly_formated_user_info_outputs_error(self, mock_get):
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        mock_response.json = mock.Mock(
+            return_value={
+                "family_name": "Mercier",
+                "sub": "123",
+                "preferred_username": "TROIS",
+                "birthdate": "1981-07-27",
+                "gender": "female",
+                "birthplace": "95277",
+                "birthcountry": "99100",
+                "email": "test@test.com",
+            }
+        )
+        mock_get.return_value = mock_response
+        usager, error = get_user_info("abc", "def")
+
+        self.assertEqual(usager, None)
+        self.assertIn("The FranceConnect ID is not complete:", error)
