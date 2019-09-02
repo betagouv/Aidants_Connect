@@ -17,7 +17,7 @@ from aidants_connect_web.models import Aidant, Usager, Journal, Connection
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
-@tag("new_mandat", "this")
+@tag("new_mandat")
 class NewMandatTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -58,8 +58,27 @@ class RecapTests(TestCase):
         self.aidant = Aidant.objects.create_user(
             "thierry@thierry.com", "thierry@thierry.com", "motdepassedethierry"
         )
-        Connection.objects.create(id=1, demarches=["papiers", "logement"], duration=365)
-        Connection.objects.create(id=2, demarches=["papiers", "logement"], duration=1)
+        self.test_usager = Usager.objects.create(
+            given_name="Fabrice",
+            family_name="MERCIER",
+            sub="46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+            preferred_username="TROIS",
+            birthdate="1981-07-27",
+            gender="female",
+            birthplace="95277",
+            birthcountry="99100",
+            email="test@test.com",
+        )
+        Connection.objects.create(
+            id=1,
+            demarches=["papiers", "logement"],
+            duration=365,
+            usager=self.test_usager,
+        )
+        Connection.objects.create(
+            id=2, demarches=["papiers", "logement"], duration=1, usager=self.test_usager
+        )
+        Connection.objects.create(id=3, demarches=["papiers", "logement"], duration=1)
 
     def test_recap_url_triggers_the_recap_view(self):
         found = resolve("/recap/")
@@ -70,41 +89,18 @@ class RecapTests(TestCase):
             username="thierry@thierry.com", password="motdepassedethierry"
         )
         session = self.client.session
-        session["usager"] = {
-            "given_name": "Fabrice",
-            "family_name": "Mercier",
-            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
-            "preferred_username": "TROIS",
-            "birthdate": "1981-07-27",
-            "gender": "female",
-            "birthplace": "95277",
-            "birthcountry": "99100",
-            "email": "test@test.com",
-        }
         session["connection"] = 1
         session.save()
 
         response = self.client.get("/recap/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/new_mandat/recap.html")
-        self.assertEqual(Usager.objects.all().count(), 0)
 
     def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
         self.client.login(
             username="thierry@thierry.com", password="motdepassedethierry"
         )
         session = self.client.session
-        session["usager"] = {
-            "given_name": "Fabrice",
-            "family_name": "Mercier",
-            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
-            "preferred_username": "TROIS",
-            "birthdate": "1981-07-27",
-            "gender": "F",
-            "birthplace": "95277",
-            "birthcountry": "99100",
-            "email": "test@test.com",
-        }
 
         session["connection"] = 2
         session.save()
@@ -125,68 +121,18 @@ class RecapTests(TestCase):
         self.assertEqual(entries.count(), 3)
         self.assertEqual(entries[0].action, "create_mandat")
 
-    def test_post_to_recap_without_sub_creates_error(self):
+    def test_post_to_recap_without_usager_creates_error(self):
         self.client.login(
             username="thierry@thierry.com", password="motdepassedethierry"
         )
         session = self.client.session
-        session["usager"] = {
-            "given_name": "Fabrice",
-            "family_name": "Mercier",
-            "preferred_username": "TROIS",
-            "birthdate": "1981-07-27",
-            "gender": "F",
-            "birthplace": "95277",
-            "birthcountry": "99100",
-            "email": "test@test.com",
-            "sub": "123",
-        }
-        session["connection"] = 2
+        session["connection"] = 3
         session.save()
         response = self.client.post(
             "/recap/", data={"personal_data": True, "brief": True}
         )
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
-
-    def test_post_to_recap_checks_existing_sub_and_doesnt_update_info(self):
-        self.usager = Usager.objects.create(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate="1969-12-15",
-            gender="female",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="123",
-            email="User@user.domain",
-            creation_date="2019-08-05T15:49:13.972Z",
-        )
-        self.client.login(
-            username="thierry@thierry.com", password="motdepassedethierry"
-        )
-
-        session = self.client.session
-        session["usager"] = {
-            "given_name": "Fabrice",
-            "family_name": "Mercier",
-            "sub": "123",
-            "preferred_username": "TROIS",
-            "birthdate": "1981-07-27",
-            "gender": "female",
-            "birthplace": "95277",
-            "birthcountry": "99100",
-            "email": "test@test.com",
-        }
-        session["connection"] = 2
-        session.save()
-        creation_date = self.usager.creation_date
-
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
-        self.assertEqual(Usager.objects.all().count(), 1)
-        self.assertEqual(Usager.objects.first().given_name, "Joséphine")
-        self.assertEqual(Usager.objects.filter(sub="123").count(), 1)
-        self.assertEqual(Usager.objects.filter(creation_date=creation_date).count(), 1)
 
 
 @tag("new_mandat")
@@ -204,20 +150,29 @@ class GenerateMandatPDF(TestCase):
         )
         self.client = Client()
 
-        self.test_usager = {
-            "given_name": "Fabrice",
-            "family_name": "MERCIER",
-            "sub": "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
-            "preferred_username": "TROIS",
-            "birthdate": "1981-07-27",
-            "gender": "female",
-            "birthplace": "95277",
-            "birthcountry": "99100",
-            "email": "test@test.com",
-        }
-
+        self.test_usager = Usager.objects.create(
+            given_name="Fabrice",
+            family_name="MERCIER",
+            sub="46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+            preferred_username="TROIS",
+            birthdate="1981-07-27",
+            gender="female",
+            birthplace="95277",
+            birthcountry="99100",
+            email="test@test.com",
+        )
         self.mandat_form = MandatForm(
             data={"perimeter": ["papiers", "logement"], "duration": "short"}
+        )
+
+        Connection.objects.create(
+            id=1,
+            state="test_another_state",
+            connection_type="FS",
+            nonce="test_another_nonce",
+            demarches=["papiers", "logement"],
+            duration=1,
+            usager=self.test_usager,
         )
 
     def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
@@ -229,12 +184,9 @@ class GenerateMandatPDF(TestCase):
             username="thierry@thierry.com", password="motdepassedethierry"
         )
         session = self.client.session
-        session["usager"] = self.test_usager
-        session["duration"] = 3
-        mandat_prep = self.mandat_form
-        mandat_prep.is_valid()
-        session["mandat"] = mandat_prep.cleaned_data
+        session["connection"] = 1
         session.save()
+
         response = self.client.get("/generate_mandat_pdf/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(
@@ -247,13 +199,11 @@ class GenerateMandatPDF(TestCase):
         self.client.login(
             username="thierry@thierry.com", password="motdepassedethierry"
         )
+
         session = self.client.session
-        session["usager"] = self.test_usager
-        mandat_prep = self.mandat_form
-        mandat_prep.is_valid()
-        session["mandat"] = mandat_prep.cleaned_data
-        session["duration"] = 3
+        session["connection"] = 1
         session.save()
+
         response = self.client.get("/generate_mandat_pdf/")
         content = io.BytesIO(response.content)
         pdfReader = PyPDF2.PdfFileReader(content)

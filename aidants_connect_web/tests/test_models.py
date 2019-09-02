@@ -89,7 +89,6 @@ class UsagerModelTest(TestCase):
 
 
 class MandatModelTest(TestCase):
-    @tag("this")
     def test_saving_and_retrieving_mandat(self):
         aidant_marge = Aidant.objects.create(username="Marge")
         aidant_patricia = Aidant.objects.create(username="Patricia")

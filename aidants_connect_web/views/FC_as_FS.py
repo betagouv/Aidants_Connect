@@ -4,11 +4,11 @@ import requests as python_request
 from secrets import token_urlsafe
 from jwt.api_jwt import ExpiredSignatureError
 
+from django.conf import settings
 from django.contrib import messages
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
-from django.conf import settings
 from django.utils import timezone
 
 
@@ -62,24 +62,20 @@ def fc_callback(request):
     fc_id = settings.FC_AS_FS_ID
     fc_secret = settings.FC_AS_FS_SECRET
 
-    code = request.GET.get("code")
     state = request.GET.get("state")
 
     try:
         connection = Connection.objects.get(state=state)
     except Connection.DoesNotExist:
         log.info("FC as FS - This state does not seem to exist")
-        log.info(Connection.objects.all())
         log.info(state)
-        connection = None
-
-    if not connection:
-        log.info("403: No connection available with this state.")
         return HttpResponseForbidden()
 
     if connection.expiresOn < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
+
+    code = request.GET.get("code")
     if not code:
         log.info("403: No code has been provided.")
         return HttpResponseForbidden()
@@ -96,10 +92,9 @@ def fc_callback(request):
     headers = {"Accept": "application/json"}
 
     request_for_token = python_request.post(token_url, data=payload, headers=headers)
-
     content = request_for_token.json()
-    fc_access_token = content.get("access_token")
-
+    connection.access_token = content.get("access_token")
+    connection.save()
     fc_id_token = content.get("id_token")
 
     try:
@@ -112,7 +107,6 @@ def fc_callback(request):
     except ExpiredSignatureError:
         log.info("403: token signature has expired.")
         return HttpResponseForbidden()
-
     if connection.nonce != decoded_token.get("nonce"):
         log.info("403: The nonce is different than the one expected.")
         return HttpResponseForbidden()
@@ -137,7 +131,7 @@ def fc_callback(request):
     # logout_state = f"state={state}"
     # logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
     # logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
-    # TODO reactivate when FC issue is fixes
+    # TODO reactivate when FC issue is fixed
     # return redirect(logout_url)
     return redirect("recap")
 
