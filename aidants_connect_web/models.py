@@ -70,13 +70,15 @@ class Connection(models.Model):
     connection_type = models.CharField(
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
     )
-
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
     duration = models.IntegerField(blank=False, null=True)  # FS
+    usager = models.ForeignKey(
+        Usager, on_delete=models.CASCADE, blank=True, null=True
+    )  # FS
+    expiresOn = models.DateTimeField(default=default_expiration_date)  # FS
+    access_token = models.TextField(default="No token Provided")  # FS
+
     code = models.TextField()
-    expiresOn = models.DateTimeField(default=default_expiration_date)
-    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, blank=True, null=True)
-    access_token = models.TextField(default="No token Provided")
     demarche = models.TextField(default="No demarche provided")
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, blank=True, null=True)
     complete = models.BooleanField(default=False)
