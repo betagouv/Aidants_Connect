@@ -13,7 +13,7 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from django.template.loader import render_to_string
 
-from aidants_connect_web.models import Mandat, Journal, Connection
+from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views.service import humanize_demarche_names
 
@@ -79,29 +79,22 @@ def recap(request):
     else:
         form = request.POST
         if form.get("personal_data") and form.get("brief"):
-
             for demarche in connection.demarches:
                 try:
-                    this_mandat = Mandat.objects.create(
+                    Mandat.objects.create(
                         aidant=aidant,
                         usager=usager,
                         demarche=demarche,
                         duration=connection.duration,
+                        modified_by_access_token=connection.access_token,
                     )
 
-                    Journal.objects.mandat_creation(
-                        aidant=aidant,
-                        usager=usager,
-                        demarche=demarche,
-                        duree=connection.duration,
-                        fc_token=connection.access_token,
-                        mandat=this_mandat,
-                    )
                 except IntegrityError as e:
                     log.error("Error happened in Recap")
                     log.error(e)
                     messages.error(request, f"No Usager was given : {e}")
                     return redirect("dashboard")
+
             messages.success(request, "Le mandat a été créé avec succès !")
 
             return redirect("dashboard")

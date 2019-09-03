@@ -56,8 +56,15 @@ class RecapTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant = Aidant.objects.create_user(
-            "thierry@thierry.com", "thierry@thierry.com", "motdepassedethierry"
+            username="thierry@thierry.com",
+            email="thierry@thierry.com",
+            password="motdepassedethierry",
+            first_name="Thierry",
+            last_name="Groucheau",
+            organisme="Commune de Vernon",
+            profession="Médiateur",
         )
+
         self.test_usager = Usager.objects.create(
             given_name="Fabrice",
             family_name="MERCIER",

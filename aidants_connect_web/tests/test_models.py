@@ -185,27 +185,27 @@ class JournalModelTest(TestCase):
         )
 
     def test_a_journal_entry_can_be_created(self):
-        self.assertEqual(len(Journal.objects.all()), 1)
+        # Aidant connects and first mandat is created
+        self.assertEqual(len(Journal.objects.all()), 2)
 
     def test_logging_of_aidant_conection(self):
         entry = Journal.objects.connection(aidant=self.aidant_thierry)
-        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "connect_aidant")
         self.assertEqual(
             entry.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
         )
 
     def test_log_mandat_creation_complete(self):
-        entry = Journal.objects.mandat_creation(
+        entry = Mandat.objects.create(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarche="logement",
-            duree=365,
-            fc_token="fjfgjfdkldlzlsmqqxxcn",
-            mandat=self.first_mandat,
+            duration=365,
+            modified_by_access_token="fdjgqermoghmqeroigh"
         )
 
-        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "create_mandat")
         self.assertIn("Ned Flanders", entry.usager)
         self.assertEqual(entry.mandat, self.first_mandat.id)
@@ -218,7 +218,7 @@ class JournalModelTest(TestCase):
             access_token="fjfgjfdkldlzlsmqqxxcn",
             mandat=self.first_mandat,
         )
-        self.assertEqual(len(Journal.objects.all()), 2)
+        self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "use_mandat")
         self.assertEqual(entry.demarche, "transports")
 

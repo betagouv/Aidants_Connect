@@ -405,8 +405,9 @@ class UserInfoTests(TestCase):
         )
 
         journal_entries = Journal.objects.all()
-        self.assertEqual(journal_entries.count(), 1)
-        self.assertEqual(journal_entries[0].action, "use_mandat")
+
+        self.assertEqual(journal_entries.count(), 2)
+        self.assertEqual(journal_entries[1].action, "use_mandat")
 
     date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
 
