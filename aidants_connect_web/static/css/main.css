@@ -9,6 +9,14 @@ body {
   border: 0;
 }
 
+.navbar__container {
+  overflow-x: scroll;
+}
+
+a.navbar__home:hover {
+  background-color: #ebeff3;
+}
+
 main {
   flex-grow: 1;
 }

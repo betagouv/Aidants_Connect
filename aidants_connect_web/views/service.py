@@ -29,7 +29,9 @@ def humanize_demarche_names(name: str) -> str:
 def home_page(request):
     random_string = token_urlsafe(10)
     return render(
-        request, "aidants_connect_web/home_page.html", {"random_string": random_string}
+        request,
+        "aidants_connect_web/home_page.html",
+        {"random_string": random_string, "aidant": request.user},
     )
 
 
