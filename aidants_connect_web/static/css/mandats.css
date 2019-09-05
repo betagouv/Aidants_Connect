@@ -41,4 +41,6 @@ h1 {
 
 .table ul {
   list-style: none;
+  padding: 0 0.5em;
+  margin: 0;
 }
