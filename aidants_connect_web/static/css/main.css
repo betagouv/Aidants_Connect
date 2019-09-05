@@ -32,6 +32,10 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   margin-top: 1em;
 }
 
+.hero__container {
+  min-height: 20em;
+}
+
 .column__image {
   display: flex;
   justify-content: center;
