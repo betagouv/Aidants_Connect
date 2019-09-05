@@ -37,7 +37,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         submit_button = self.selenium.find_element_by_xpath('//input[@value="Login"]')
         submit_button.click()
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
-        self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
+        self.assertEqual(welcome_aidant, "Vos mandats")
 
         self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 0)
 
@@ -108,7 +108,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         time.sleep(4)
 
         # back to dashboard
-        self.assertEqual(welcome_aidant, "Bienvenue sur votre espace aidant, Thierry !")
+        self.assertEqual(welcome_aidant, "Vos mandats")
         self.selenium.find_element_by_id("view_mandats").click()
 
         # See all mandats page
