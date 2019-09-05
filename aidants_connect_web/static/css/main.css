@@ -13,6 +13,17 @@ main {
   flex-grow: 1;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Source Sans Pro";
+  font-weight: 400;
+}
+
+h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
+  font-family: "Evolventa";
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
 .column__image {
   display: flex;
   justify-content: center;
