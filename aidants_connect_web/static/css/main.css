@@ -17,6 +17,10 @@ a.navbar__home:hover {
   background-color: #ebeff3;
 }
 
+.container.container-small {
+  max-width: 40em;
+}
+
 main {
   flex-grow: 1;
 }
