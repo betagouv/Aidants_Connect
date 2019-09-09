@@ -14,20 +14,16 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-def humanize_demarche_names(machine_names: list) -> list:
+def humanize_demarche_names(name: str) -> str:
     """
-    >>> humanize_demarche_names(['argent'])
-    ["ARGENT: Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
-            "Surendettement…"]
+    >>> humanize_demarche_names('argent')
+    "ARGENT: Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
+            "Surendettement…"
     :param machine_names:
     :return: list of human names and description
     """
-    demarches_list = settings.DEMARCHES
-    return [
-        f"{demarches_list[machine_name]['titre'].upper()}: "
-        f"{demarches_list[machine_name]['description']}"
-        for machine_name in machine_names
-    ]
+    demarches = settings.DEMARCHES
+    return f"{demarches[name]['titre'].upper()}: {demarches[name]['description']}"
 
 
 def home_page(request):
@@ -60,9 +56,8 @@ def mandats(request):
     aidant = request.user
     mandats = Mandat.objects.all().filter(aidant=aidant).order_by("creation_date")
 
-    for mandat in mandats:
-        mandat.perimeter_names = humanize_demarche_names(mandat.perimeter)
     # TODO change the "mois" in "jours"
+    # TODO should we have human readable names for demarche ?
     return render(
         request,
         "aidants_connect_web/mandats.html",

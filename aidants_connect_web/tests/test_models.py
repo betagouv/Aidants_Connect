@@ -90,10 +90,9 @@ class UsagerModelTest(TestCase):
 
 class MandatModelTest(TestCase):
     def test_saving_and_retrieving_mandat(self):
-        first_mandat = Mandat()
-        first_mandat.aidant = Aidant.objects.create(username="Marge")
-
-        first_mandat.usager = Usager.objects.create(
+        aidant_marge = Aidant.objects.create(username="Marge")
+        aidant_patricia = Aidant.objects.create(username="Patricia")
+        usager_homer = Usager.objects.create(
             given_name="Homer",
             family_name="Simpson",
             birthdate="1902-06-30",
@@ -103,13 +102,7 @@ class MandatModelTest(TestCase):
             email="homer@simpson.com",
             sub="123",
         )
-        first_mandat.perimeter = ["Carte grise", "Changement d'adresse"]
-        first_mandat.duration = 3
-        first_mandat.save()
-
-        second_mandat = Mandat()
-        second_mandat.aidant = Aidant.objects.create(username="Patricia")
-        second_mandat.usager = Usager.objects.create(
+        usager_ned = Usager.objects.create(
             given_name="Ned",
             family_name="Flanders",
             birthdate="1902-06-30",
@@ -119,9 +112,14 @@ class MandatModelTest(TestCase):
             email="ned@flanders.com",
             sub="1234",
         )
-        second_mandat.perimeter = ["Revenus"]
-        second_mandat.duration = 6
-        second_mandat.save()
+
+        Mandat.objects.create(
+            aidant=aidant_marge, usager=usager_homer, demarche="Carte grise", duration=3
+        )
+
+        Mandat.objects.create(
+            aidant=aidant_patricia, usager=usager_ned, demarche="Revenus", duration=6
+        )
 
         saved_items = Mandat.objects.all()
         self.assertEqual(saved_items.count(), 2)
@@ -130,9 +128,7 @@ class MandatModelTest(TestCase):
         second_saved_item = saved_items[1]
 
         self.assertEqual(first_saved_item.aidant.username, "Marge")
-        self.assertEqual(
-            first_saved_item.perimeter, ["Carte grise", "Changement d'adresse"]
-        )
+        self.assertEqual(first_saved_item.demarche, "Carte grise")
         self.assertEqual(second_saved_item.usager.family_name, "Flanders")
 
 
@@ -181,6 +177,13 @@ class JournalModelTest(TestCase):
             sub="1234",
         )
 
+        cls.first_mandat = Mandat.objects.create(
+            aidant=cls.aidant_thierry,
+            usager=cls.usager_ned,
+            demarche="Revenus",
+            duration=6,
+        )
+
     def test_a_journal_entry_can_be_created(self):
         self.assertEqual(len(Journal.objects.all()), 1)
 
@@ -196,13 +199,16 @@ class JournalModelTest(TestCase):
         entry = Journal.objects.mandat_creation(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
-            demarches=["logement", "famille", "transports"],
+            demarche="logement",
             duree=365,
             fc_token="fjfgjfdkldlzlsmqqxxcn",
+            mandat=self.first_mandat,
         )
+
         self.assertEqual(len(Journal.objects.all()), 2)
         self.assertEqual(entry.action, "create_mandat")
         self.assertIn("Ned Flanders", entry.usager)
+        self.assertEqual(entry.mandat, self.first_mandat.id)
 
     def test_log_mandat_use_complete(self):
         entry = Journal.objects.mandat_use(
@@ -210,10 +216,11 @@ class JournalModelTest(TestCase):
             usager=self.usager_ned,
             demarche="transports",
             access_token="fjfgjfdkldlzlsmqqxxcn",
+            mandat=self.first_mandat,
         )
         self.assertEqual(len(Journal.objects.all()), 2)
         self.assertEqual(entry.action, "use_mandat")
-        self.assertEqual(entry.demarches, ["transports"])
+        self.assertEqual(entry.demarche, "transports")
 
     def test_it_is_impossible_to_change_an_existing_entry(self):
         entry = Journal.objects.mandat_use(
@@ -221,13 +228,14 @@ class JournalModelTest(TestCase):
             usager=self.usager_ned,
             demarche="transports",
             access_token="fjfgjfdkldlzlsmqqxxcn",
+            mandat=self.first_mandat,
         )
 
         entry.demarches = ["logement"]
         entry_id = entry.id
         self.assertRaises(NotImplementedError, lambda: entry.save())
 
-        self.assertEqual(Journal.objects.get(id=entry_id).demarches, ["transports"])
+        self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")
 
     def test_it_is_impossible_to_delete_an_existing_entry(self):
         entry = Journal.objects.mandat_use(
@@ -235,9 +243,10 @@ class JournalModelTest(TestCase):
             usager=self.usager_ned,
             demarche="transports",
             access_token="fjfgjfdkldlzlsmqqxxcn",
+            mandat=self.first_mandat,
         )
         entry_id = entry.id
 
         self.assertRaises(NotImplementedError, lambda: entry.delete())
 
-        self.assertEqual(Journal.objects.get(id=entry_id).demarches, ["transports"])
+        self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")

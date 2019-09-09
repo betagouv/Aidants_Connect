@@ -1,3 +1,4 @@
+
 h2.subtitle {
   float: left;
 }
@@ -33,4 +34,7 @@ h2.subtitle {
 .table tbody:hover td[rowspan],
 .table tr:hover td {
    background-color: #fafbfc;
+}
+.table ul {
+  list-style: none;
 }

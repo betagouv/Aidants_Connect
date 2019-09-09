@@ -55,28 +55,34 @@ class Usager(models.Model):
         return f"{self.given_name} {self.family_name}"
 
 
-class Connection(models.Model):
-    state = models.TextField()
-    code = models.TextField()
-    nonce = models.TextField(default="No Nonce Provided")
-    expiresOn = models.DateTimeField(default=default_expiration_date)
-    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, blank=True, null=True)
-    access_token = models.TextField(default="No token Provided")
-    CONNECTION_TYPE = (("FS", "FC as FS"), ("FI", "FC as FI"))
-    connection_type = models.CharField(
-        max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
-    )
-    demarche = models.TextField(default="No demarche provided")
-    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, blank=True, null=True)
-    complete = models.BooleanField(default=False)
-
-
 class Mandat(models.Model):
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, default=0)
     usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
-    perimeter = ArrayField(models.CharField(blank=False, max_length=100))
+    demarche = models.CharField(blank=False, max_length=100)
     creation_date = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(default=3)
+
+
+class Connection(models.Model):
+    state = models.TextField()  # FS
+    nonce = models.TextField(default="No Nonce Provided")  # FS
+    CONNECTION_TYPE = (("FS", "FC as FS"), ("FI", "FC as FI"))  # FS
+    connection_type = models.CharField(
+        max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
+    )
+    demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
+    duration = models.IntegerField(blank=False, null=True)  # FS
+    usager = models.ForeignKey(
+        Usager, on_delete=models.CASCADE, blank=True, null=True
+    )  # FS
+    expiresOn = models.DateTimeField(default=default_expiration_date)  # FS
+    access_token = models.TextField(default="No token Provided")  # FS
+
+    code = models.TextField()
+    demarche = models.TextField(default="No demarche provided")
+    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, blank=True, null=True)
+    complete = models.BooleanField(default=False)
+    mandat = models.ForeignKey(Mandat, on_delete=models.CASCADE, blank=True, null=True)
 
 
 class JournalManager(models.Manager):
@@ -86,7 +92,13 @@ class JournalManager(models.Manager):
         return journal_entry
 
     def mandat_creation(
-        self, aidant: Aidant, usager: Usager, demarches: list, duree: int, fc_token: str
+        self,
+        aidant: Aidant,
+        usager: Usager,
+        demarche: str,
+        duree: int,
+        fc_token: str,
+        mandat: Mandat,
     ):
 
         initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
@@ -96,14 +108,20 @@ class JournalManager(models.Manager):
             initiator=initiator,
             usager=usager,
             action="create_mandat",
-            demarches=demarches,
+            demarche=demarche,
             duree=duree,
             access_token=fc_token,
+            mandat=mandat.id,
         )
         return journal_entry
 
     def mandat_use(
-        self, aidant: Aidant, usager: Usager, demarche: str, access_token: str
+        self,
+        aidant: Aidant,
+        usager: Usager,
+        demarche: str,
+        access_token: str,
+        mandat: Mandat,
     ):
 
         initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
@@ -113,8 +131,9 @@ class JournalManager(models.Manager):
             initiator=initiator,
             usager=usager,
             action="use_mandat",
-            demarches=[demarche],
+            demarche=demarche,
             access_token=access_token,
+            mandat=mandat.id,
         )
         return journal_entry
 
@@ -131,10 +150,11 @@ class Journal(models.Model):
     # automatic
     creation_date = models.DateTimeField(auto_now_add=True)
     # action dependant
-    demarches = ArrayField(models.CharField(max_length=100), blank=True, null=True)
+    demarche = models.CharField(max_length=100, blank=True, null=True)
     usager = models.TextField(blank=True, null=True)
-    duree = models.IntegerField(blank=True, null=True)
+    duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
+    mandat = models.IntegerField(blank=True, null=True)
 
     objects = JournalManager()
 

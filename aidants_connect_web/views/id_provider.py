@@ -85,15 +85,13 @@ def fi_select_demarche(request):
         # TODO for Usager, should we use sub_usager or internal ID ?
         # TODO Should we have different instances of the same usager for each aidant
         #  ? for each mandat ? at all ?
+        all_demarches = settings.DEMARCHES
 
         mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
+        nom_demarches = set(mandats.values_list("demarche", flat=True))
 
-        demarches_per_mandat = mandats.values_list("perimeter", flat=True)
-        all_demarches = settings.DEMARCHES
         demarches = {
-            demarche: all_demarches[demarche]
-            for sublist in demarches_per_mandat
-            for demarche in sublist
+            nom_demarche: all_demarches[nom_demarche] for nom_demarche in nom_demarches
         }
 
         return render(
@@ -101,8 +99,8 @@ def fi_select_demarche(request):
             "aidants_connect_web/id_provider/fi_select_demarche.html",
             {
                 "state": state,
-                "demarches": demarches,
                 "aidant": request.user.get_full_name(),
+                "demarches": demarches,
             },
         )
     else:
@@ -120,7 +118,11 @@ def fi_select_demarche(request):
             return HttpResponseForbidden()
 
         # TODO check if connection has not expired
-        that_connection.demarche = request.POST.get("chosen_demarche")
+        chosen_demarche = request.POST.get("chosen_demarche")
+        that_connection.demarche = chosen_demarche
+        that_connection.mandat = Mandat.objects.get(
+            usager=that_connection.usager, aidant=request.user, demarche=chosen_demarche
+        )
         that_connection.complete = True
         that_connection.aidant = request.user
         that_connection.save()
@@ -224,9 +226,10 @@ def user_info(request):
     usager["birthdate"] = str(birthdate)
 
     Journal.objects.mandat_use(
-        connection.aidant,
-        connection.usager,
-        connection.demarche,
-        connection.access_token,
+        aidant=connection.aidant,
+        usager=connection.usager,
+        demarche=connection.demarche,
+        access_token=connection.access_token,
+        mandat=connection.mandat,
     )
     return JsonResponse(usager, safe=False)

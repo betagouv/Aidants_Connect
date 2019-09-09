@@ -41,19 +41,19 @@ class ViewMandats(StaticLiveServerTestCase):
         cls.mandat = Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
-            perimeter=["social"],
+            demarche=["social"],
             duration=1,
         )
         cls.mandat2 = Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
-            perimeter=["papiers"],
+            demarche=["papiers"],
             duration=1,
         )
         cls.mandat3 = Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub2"),
-            perimeter=["famille"],
+            demarche=["famille"],
             duration=365,
         )
         super().setUpClass()

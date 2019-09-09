@@ -6,7 +6,7 @@ from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant
 
 
-@tag("functional")
+@tag("functional", "new_mandat")
 class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
@@ -112,4 +112,4 @@ class CreateNewMandat(StaticLiveServerTestCase):
         self.selenium.find_element_by_id("view_mandats").click()
 
         # See all mandats page
-        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 2)
+        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 3)

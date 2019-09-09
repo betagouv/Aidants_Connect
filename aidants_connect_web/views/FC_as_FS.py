@@ -4,27 +4,32 @@ import requests as python_request
 from secrets import token_urlsafe
 from jwt.api_jwt import ExpiredSignatureError
 
+from django.conf import settings
+from django.contrib import messages
+from django.db import IntegrityError
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
-from django.conf import settings
 from django.utils import timezone
 
-from aidants_connect_web.models import Connection
+
+from aidants_connect_web.models import Connection, Usager
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
+# TODO add login required ?
 def fc_authorize(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
+
+    connection.state = token_urlsafe(16)
+    connection.nonce = token_urlsafe(16)
+    connection.connection_type = "FS"
+    connection.save()
+
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_id = settings.FC_AS_FS_ID
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
-
-    state = token_urlsafe(16)
-    fc_nonce = token_urlsafe(16)
-    connexion = Connection(state=state, connection_type="FS", nonce=fc_nonce)
-    connexion.save()
-
     fc_scopes = [
         "given_name",
         "family_name",
@@ -41,8 +46,8 @@ def fc_authorize(request):
         f"&client_id={fc_id}"
         f"&redirect_uri={fc_callback_uri}"
         f"&scope={'openid' + ''.join(['%20' + scope for scope in fc_scopes])}"
-        f"&state={state}"
-        f"&nonce={fc_nonce}"
+        f"&state={connection.state}"
+        f"&nonce={connection.nonce}"
     )
 
     authorize_url = f"{fc_base}/authorize?{parameters}"
@@ -57,24 +62,20 @@ def fc_callback(request):
     fc_id = settings.FC_AS_FS_ID
     fc_secret = settings.FC_AS_FS_SECRET
 
-    code = request.GET.get("code")
     state = request.GET.get("state")
 
     try:
-        connection_state = Connection.objects.get(state=state)
+        connection = Connection.objects.get(state=state)
     except Connection.DoesNotExist:
         log.info("FC as FS - This state does not seem to exist")
-        log.info(Connection.objects.all())
         log.info(state)
-        connection_state = None
-
-    if not connection_state:
-        log.info("403: No connection available with this state.")
         return HttpResponseForbidden()
 
-    if connection_state.expiresOn < timezone.now():
+    if connection.expiresOn < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
+
+    code = request.GET.get("code")
     if not code:
         log.info("403: No code has been provided.")
         return HttpResponseForbidden()
@@ -91,10 +92,9 @@ def fc_callback(request):
     headers = {"Accept": "application/json"}
 
     request_for_token = python_request.post(token_url, data=payload, headers=headers)
-
     content = request_for_token.json()
-    fc_access_token = content.get("access_token")
-
+    connection.access_token = content.get("access_token")
+    connection.save()
     fc_id_token = content.get("id_token")
 
     try:
@@ -107,24 +107,54 @@ def fc_callback(request):
     except ExpiredSignatureError:
         log.info("403: token signature has expired.")
         return HttpResponseForbidden()
-
-    if connection_state.nonce != decoded_token.get("nonce"):
+    if connection.nonce != decoded_token.get("nonce"):
         log.info("403: The nonce is different than the one expected.")
         return HttpResponseForbidden()
-    if connection_state.expiresOn < timezone.now():
+    if connection.expiresOn < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
+    try:
+        usager = Usager.objects.get(sub=decoded_token["sub"])
 
-    request.session["usager"] = python_request.get(
-        f"{fc_base}/userinfo?schema=openid",
-        headers={"Authorization": f"Bearer {fc_access_token}"},
-    ).json()
+    except Usager.DoesNotExist:
+
+        usager, error = get_user_info(fc_base, connection.access_token)
+        if error:
+            messages.error(request, error)
+            return redirect("dashboard")
+
+    connection.usager = usager
+    connection.save()
 
     # logout_base = f"{fc_base}/logout"
     # logout_id_token = f"id_token_hint={fc_id_token}"
     # logout_state = f"state={state}"
     # logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
     # logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
-    # TODO reactivate when FC issue is fixes
+    # TODO reactivate when FC issue is fixed
     # return redirect(logout_url)
     return redirect("recap")
+
+
+def get_user_info(fc_base: str, access_token: str) -> tuple:
+    fc_user_info = python_request.get(
+        f"{fc_base}/userinfo?schema=openid",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    user_info = fc_user_info.json()
+    try:
+        usager = Usager.objects.create(
+            given_name=user_info.get("given_name"),
+            family_name=user_info.get("family_name"),
+            birthdate=user_info.get("birthdate"),
+            gender=user_info.get("gender"),
+            birthplace=user_info.get("birthplace"),
+            birthcountry=user_info.get("birthcountry"),
+            sub=user_info.get("sub"),
+        )
+        return usager, None
+
+    except IntegrityError as e:
+        log.error("Error happened in Recap")
+        log.error(e)
+        return None, f"The FranceConnect ID is not complete: {e}"
