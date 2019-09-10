@@ -9,8 +9,43 @@ body {
   border: 0;
 }
 
+.navbar__container {
+  overflow-x: scroll;
+}
+
+a.navbar__home:hover {
+  background-color: #ebeff3;
+}
+
+.container.container-small {
+  max-width: 40em;
+}
+
 main {
   flex-grow: 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Source Sans Pro";
+  font-weight: 400;
+}
+
+h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
+  font-family: "Evolventa";
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+.footer__social {
+  margin: 0;
+}
+
+.footer__links {
+  margin-top: 1em;
+}
+
+.hero__container {
+  min-height: 20em;
 }
 
 .column__image {

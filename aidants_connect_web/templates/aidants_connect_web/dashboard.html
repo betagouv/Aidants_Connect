@@ -9,7 +9,6 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <h1>Bienvenue sur votre Espace Aidant, {{ aidant.first_name }} !</h1>
     {% if messages %}
       <div class="notification success">
           {% for message in messages %}
@@ -17,26 +16,22 @@
           {% endfor %}
       </div>
     {% endif %}
-  </div>
-</section>
-<section class="section section-grey">
-    <div class="container">
+    <h1 class="brand">Bienvenue sur votre Espace Aidant, {{ aidant.first_name }} !</h1>
     <div class="tiles">
-        <h2>Vos services</h2>
-          <div class="grid">
-              <a href="{% url 'mandats' %}" class="tile" id="view_mandats">
-                  <div class="top-icon">📂</div>
-                  <h3>Voir mes mandats </h3>
-              </a>
-
-              <a href="{% url 'new_mandat' %}" class="tile" id="add_usager">
-                  <div class="top-icon">✨</div>
-                  <h3>Ajouter un usager</h3>
-              </a>
-
-          </div>
+      <h2>Vos services</h2>
+      <div class="grid">
+        <a href="{% url 'mandats' %}" class="tile" id="view_mandats">
+          <div class="top-icon">📂</div>
+          <h3>Voir mes mandats </h3>
+        </a>
+        <a href="{% url 'new_mandat' %}" class="tile" id="add_usager">
+          <div class="top-icon">✨</div>
+          <h3>Ajouter un usager</h3>
+        </a>
       </div>
     </div>
+  </div>
+</section>
 <section class="section section-grey">
     <div class="container">
       <h2>Vos ressources</h2>
@@ -45,46 +40,37 @@
             <div class="card__cover">
                <img src="https://societenumerique.gouv.fr/wp-content/uploads/2018/05/mockupkit-1.png" alt="Écran montrant le site du kit d'intervention rapide">
             </div>
-              <div class="card__extra">
-                <div class="label">MSN</div>
-                <div class="label">inclusion</div>
-              </div>
-              <div class="card__content">
-                <h3>Kit d'intervention rapide</h3>
-                <div class="card__meta"><span>Équipe Aidants Connect</span></div>
-                <p>Ce site a pour objectif de permettre à toute personne, en particulier les non professionnels
-                    de la médiation numérique, d’aborder rapidement les principaux enjeux de l’accompagnement
-                    des individus en difficulté sur les outils numériques.</p>
-              </div>
-              <div class="card__extra">
-                  <div class="label"><a href="https://kit-inclusion.societenumerique.gouv.fr">lien externe</a></div>
-              </div>
+            <div class="card__content">
+              <h3 class="brand">Kit d'intervention rapide</h3>
+              <div class="card__meta"><span>Mission Société Numérique</span></div>
+              <p>Ce site a pour objectif de permettre à toute personne, en particulier les non professionnels
+                  de la médiation numérique, d’aborder rapidement les principaux enjeux de l’accompagnement
+                  des individus en difficulté sur les outils numériques.</p>
+            </div>
+            <div class="card__extra">
+                <div class="label"><a href="https://kit-inclusion.societenumerique.gouv.fr">https://kit-inclusion.societenumerique.gouv.fr</a></div>
+            </div>
           </div>
           <div class="card">
             <div class="card__cover">
                <img src="" alt="Écran montrant le site du kit d'intervention rapide">
             </div>
-              <div class="card__extra">
-                <div class="label">impots.gouv.fr</div>
-                <div class="label">dgfip</div>
-              </div>
-              <div class="card__content">
-                <h3>Site de démonstration des impôts</h3>
-                <div class="card__meta"><span>Équipe Aidants Connect</span></div>
-                <p>Ce site est une copie du site des impôts permettant de simuler les déclarations en ligne
-                    sans manipuler les données personnelles de la personne accompagnée.</p>
-              </div>
-              <div class="card__extra">
-                  <div class="label"><a href="https://kit-inclusion.societenumerique.gouv.fr">lien externe</a></div>
-              </div>
-
+            <div class="card__content">
+              <h3 class="brand">Site de démonstration des impôts</h3>
+              <div class="card__meta"><span>Direction Générale des Finances Publiques</span></div>
+              <p>Ce site est une copie du site des impôts permettant de simuler les déclarations en ligne
+                  sans manipuler les données personnelles de la personne accompagnée.</p>
+            </div>
+            <div class="card__extra">
+                <div class="label"><a href="https://impots.societenumerique.gouv.fr/">https://impots.societenumerique.gouv.fr/</a></div>
+            </div>
           </div>
           <div class="card">
             <div class="card__cover">
                <img src="" alt="Écran montrant le site du kit d'intervention rapide">
             </div>
               <div class="card__content">
-                <h3>Forum des aidants</h3>
+                <h3 class="brand">Forum des aidants</h3>
                 <div class="card__meta"><span>Équipe Aidants Connect</span></div>
                 <p>Bientôt disponible</p>
               </div>

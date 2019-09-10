@@ -1,5 +1,8 @@
+h1 {
+  margin-top: 0;
+}
 
-h2.subtitle {
+.current__usagers h2 {
   float: left;
 }
 
@@ -35,6 +38,9 @@ h2.subtitle {
 .table tr:hover td {
    background-color: #fafbfc;
 }
+
 .table ul {
   list-style: none;
+  padding: 0 0.5em;
+  margin: 0;
 }

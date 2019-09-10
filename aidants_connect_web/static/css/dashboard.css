@@ -17,3 +17,15 @@ a:hover {
      color:black;
      background-color: #ebeff3;
 }
+
+.tiles {
+  margin-top: 3em;
+}
+
+.tile {
+  background-color: #ebeff3;
+}
+
+.notification {
+  margin-bottom: 3em;
+}
