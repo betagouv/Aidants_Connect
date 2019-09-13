@@ -57,6 +57,7 @@ ALLOWED_HOSTS = [os.environ["HOST"]]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
+    "magicauth",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -74,6 +75,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.contrib.sites.middleware.CurrentSiteMiddleware",
 ]
 
 ROOT_URLCONF = "aidants_connect.urls"
@@ -234,3 +236,10 @@ DEMARCHES = {
         "/loisirs.png",
     },
 }
+
+# Magic Auth
+MAGICAUTH_EMAIL_FIELD = "email"
+MAGICAUTH_FROM_EMAIL = "test@domain.user"
+MAGICAUTH_LOGGED_IN_REDIRECT_URL_NAME = "dashboard"
+MAGICAUTH_LOGIN_VIEW_TEMPLATE = "login/login.html"
+MAGICAUTH_EMAIL_SENT_VIEW_TEMPLATE = "login/email_sent.html"
