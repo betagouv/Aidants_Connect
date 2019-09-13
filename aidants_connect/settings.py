@@ -243,3 +243,8 @@ MAGICAUTH_FROM_EMAIL = "test@domain.user"
 MAGICAUTH_LOGGED_IN_REDIRECT_URL_NAME = "dashboard"
 MAGICAUTH_LOGIN_VIEW_TEMPLATE = "login/login.html"
 MAGICAUTH_EMAIL_SENT_VIEW_TEMPLATE = "login/email_sent.html"
+
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = (
+    os.path.dirname(os.path.abspath(__file__)) + "/tmp/app-messages"
+)  # change this to a proper location
