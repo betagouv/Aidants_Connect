@@ -7,6 +7,7 @@ from secrets import token_urlsafe
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 from django.utils import timezone
@@ -60,10 +61,12 @@ def authorize(request):
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the state:")
             log.info(this_state)
+            logout(request)
             return HttpResponseForbidden()
         except Connection.MultipleObjectsReturned:
             log.info("This connection is not unique. State:")
             log.info(this_state)
+            logout(request)
             return HttpResponseForbidden()
 
         # TODO check if connection has not expired
@@ -82,9 +85,6 @@ def fi_select_demarche(request):
     if request.method == "GET":
         state = request.GET.get("state", False)
         usager = Connection.objects.get(state=state).usager
-        # TODO for Usager, should we use sub_usager or internal ID ?
-        # TODO Should we have different instances of the same usager for each aidant
-        #  ? for each mandat ? at all ?
         all_demarches = settings.DEMARCHES
 
         mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
@@ -106,28 +106,31 @@ def fi_select_demarche(request):
     else:
         this_state = request.POST.get("state")
         try:
-            that_connection = Connection.objects.get(state=this_state)
-            code = that_connection.code
+            connection = Connection.objects.get(state=this_state)
+            code = connection.code
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the state:")
             log.info(this_state)
+            logout(request)
             return HttpResponseForbidden()
         except Connection.MultipleObjectsReturned:
             log.info("This connection is not unique. State:")
             log.info(this_state)
+            logout(request)
             return HttpResponseForbidden()
 
         # TODO check if connection has not expired
         chosen_demarche = request.POST.get("chosen_demarche")
-        that_connection.demarche = chosen_demarche
-        that_connection.mandat = Mandat.objects.get(
-            usager=that_connection.usager, aidant=request.user, demarche=chosen_demarche
+        connection.demarche = chosen_demarche
+        connection.mandat = Mandat.objects.get(
+            usager=connection.usager, aidant=request.user, demarche=chosen_demarche
         )
-        that_connection.complete = True
-        that_connection.aidant = request.user
-        that_connection.save()
+        connection.complete = True
+        connection.aidant = request.user
+        connection.save()
 
         fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
+        logout(request)
         return redirect(f"{fc_callback_url}?code={code}&state={this_state}")
 
 

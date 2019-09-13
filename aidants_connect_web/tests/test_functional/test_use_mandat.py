@@ -79,8 +79,9 @@ class CreateNewMandat(StaticLiveServerTestCase):
         super().tearDownClass()
 
     def test_mandataires(self):
-        self.selenium.get(f"{self.live_server_url}/authorize/?state=34")
         browser = self.selenium
+
+        browser.get(f"{self.live_server_url}/authorize/?state=34")
 
         # Login
         login_field = browser.find_element_by_id("id_username")
@@ -107,3 +108,8 @@ class CreateNewMandat(StaticLiveServerTestCase):
         last_demarche.click()
         time.sleep(2)
         self.assertIn("fcp.integ01.dev-franceconnect.fr", browser.current_url)
+
+        # Check user has been logged out by
+        # checking if they are redirected to the login page
+        browser.get(f"{self.live_server_url}/authorize/?state=35")
+        browser.find_element_by_id("id_username")
