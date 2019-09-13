@@ -235,7 +235,6 @@ class FCCallback(TestCase):
 
 @tag("new_mandat", "FC_as_FS")
 class GetUserInfoTests(TestCase):
-
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
     def test_well_formated_user_info_outputs_usager(self, mock_get):
         mock_response = mock.Mock()
