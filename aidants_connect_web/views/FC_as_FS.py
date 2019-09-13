@@ -131,7 +131,6 @@ def fc_callback(request):
     logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
     logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
     return redirect(logout_url)
-    # return redirect("recap")
 
 
 def get_user_info(fc_base: str, access_token: str) -> tuple:
