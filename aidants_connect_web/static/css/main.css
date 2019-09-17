@@ -52,30 +52,12 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   margin-top: 1em;
 }
 
-.hero__container {
-  min-height: 20em;
+.footer__links h2 {
+  word-break: break-word;
 }
 
-.column__image {
-  display: flex;
-  justify-content: center;
-}
-
-.column__image img {
-  max-width: 100%;
-  max-height: 20em;
-}
-
-.issues {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: end;
-  justify-content: center;
-}
-
-.issues ul {
-  list-style-type: disclosure-closed;
+.footer__links a:visited {
+  color: #fff;
 }
 
 @media (max-width: 699px) {

@@ -1,0 +1,54 @@
+.hero__container {
+  padding: 5em 0 20em;
+  background: url("../images/aidantsconnect-illustration.svg") bottom center no-repeat;
+}
+
+.hero__description {
+  margin: 0 auto;
+}
+
+.lead-text {
+  line-height: 1.25em;
+}
+
+.panel {
+  color: black;
+}
+
+.panel + .panel {
+  margin-top: 0;
+}
+
+.panel p:first-child {
+  margin-top: 0;
+}
+
+.section-color {
+  background-image: none;
+  background-color: #b4e1fa;
+  color: black;
+}
+
+.tile {
+  font-size: 1.25em;
+  color: black;
+}
+
+.tile-colored {
+  background-color: #ebeff3;
+}
+
+.tile__icon {
+  height: 4em;
+  margin-bottom: 1em;
+}
+
+.issues {
+  margin-bottom: 5em;
+}
+
+.logo__fc {
+  height: 2em;
+  vertical-align: middle;
+  margin-left: 0.5em;
+}

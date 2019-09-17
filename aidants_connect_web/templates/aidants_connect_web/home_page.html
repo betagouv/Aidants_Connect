@@ -4,42 +4,63 @@
 
 {% block content %}
 
+<<<<<<< HEAD
 <div class="notification warning full-width">Vous êtes sur un site en construction, l’interface proposée sera amenée à changer grâce à vos retours !</div>
 <section class="section">
   <div class="container">
+=======
+{% block extracss %}
+  <link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+<div class="hero">
+  <div class="hero__container">
+>>>>>>> landing page rework
     <div class="row">
-      <div class="hero__description">
+      <div class="hero__description text-center">
         <h1 class="brand">Bienvenue sur Aidants Connect</h1>
         <p class="lead-text">
           Le service qui permet aux aidants professionnels de réaliser des démarches administratives en ligne pour le compte d’une personne via une connexion sécurisée.
         </p>
-        <p>Ce service permet :
-          <ul>
-            <li>une protection du professionel déclarant comme de la personne aidée en cas d’erreur ;</li>
-            <li>un suivi des actions réalisées sur le compte de la personne.</li>
-          </ul>
-        </p>
-      </div>
-      <div class="column__image">
-        <img src="{% static 'images/aidantsconnect.png' %}" />
       </div>
     </div>
   </div>
-</section>
+</div>
+<div class="notification full-width">Vous êtes sur un site en construction, l’interface proposée sera amenée à changer grâce à vos <a href="https://github.com/betagouv/Aidants_Connect/issues/new">retours</a> !</div>
 <section class="section section-grey">
+  <div class="container container-small">
+    <h2 class="text-center">Pourquoi Aidants Connect ?</h2>
+    <div class="issues">
+      <p>Aujourd’hui, <strong>13 millions</strong> de français sont en <strong>difficulté numérique</strong> et ne peuvent ainsi pas réaliser de démarches en ligne. Pourtant, il est prévu que les <strong>250 démarches administratives "icôniques" soient dématérialisées</strong> d’ici 2022.</p>
+      <p>Des aidants professionnels accompagnent au quotidien les usagers dans leurs démarches, mais cela pose des questions de sécurité et de responsabilité.
+      </p>
+    </div>
+  </div>
   <div class="container">
-    <div class="row">
-      <div class="column__image">
-        <img src="{% static 'images/aidantsconnect2.svg' %}" />
-      </div>
-      <div class="issues">
-        <h2>À quel problème répond Aidants Connect ?</h2>
-        <ul>
-          <li>13 millions de français en difficulté numérique</li>
-          <li>Dématérialisation de 250 démarches administratives "icôniques" d’ici 2022</li>
-        </ul>
+    <h2 class="text-center">Les démarches en ligne réalisées avec Aidants Connect assurent :</h2>
+      <div class="row">
+        <div class="tile tile-colored text-center">
+          <img class="tile__icon" src="{% static 'images/shield.svg' %}" />
+          une protection de l’aidant professionel comme de l’usager accompagné en cas d’erreur</div>
+        <div class="tile tile-colored text-center">
+          <img class="tile__icon" src="{% static 'images/note.svg' %}" />
+          un suivi des actions réalisées sur le compte de la personne</div>
       </div>
     </div>
   </div>
 </section>
+<section class="section">
+  <div class="container container-small">
+    <h2 class="text-center">Aidants Connect est un service qui utilise <img class="logo__fc" src="{% static 'images/fc_logo_v2.png'%}" /></h2>
+    <p class="text-center">France Connect permet de sécuriser la connexion des usagers grâce à son système d'identification qui ne stocke pas les données personnelles.</p>
+  </div>
+</section>
+<section class="section section-color">
+  <div class="container container-small">
+    <h2 class="text-center">Comment utiliser Aidants Connect ?</h2>
+    <p class="text-center">Le service est encore en construction, et sera prochainement disponible en bêta-test début 2020 auprès de structures participant aux Territoires d’Action pour un Numérique Inclusif.</p>
+  </div>
+</section>
+{% include 'aidants_connect_web/resources.html' %}
+
 {% endblock content %}
