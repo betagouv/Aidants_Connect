@@ -20,8 +20,6 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name="connection",
-            name="duration",
-            field=models.IntegerField(null=True),
+            model_name="connection", name="duree", field=models.IntegerField(null=True)
         ),
     ]

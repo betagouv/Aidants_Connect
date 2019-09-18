@@ -39,9 +39,9 @@ def new_mandat(request):
 
         if form.is_valid():
             data = form.cleaned_data
-            duration = 1 if data["duration"] == "short" else 365
+            duree = 1 if data["duree"] == "short" else 365
             connection = Connection.objects.create(
-                demarches=data["perimeter"], duration=duration
+                demarches=data["perimeter"], duree=duree
             )
             request.session["connection"] = connection.pk
             return redirect("fc_authorize")
@@ -59,7 +59,7 @@ def recap(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
-    duration = "1 jour" if connection.duration == 1 else "1 an"
+    duree = "1 jour" if connection.duree == 1 else "1 an"
     demarches_description = [
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
@@ -72,7 +72,7 @@ def recap(request):
                 "aidant": aidant,
                 "usager": usager,
                 "demarches": demarches_description,
-                "duration": duration,
+                "duree": duree,
             },
         )
 
@@ -85,7 +85,7 @@ def recap(request):
                         aidant=aidant,
                         usager=usager,
                         demarche=demarche,
-                        duration=connection.duration,
+                        duree=connection.duree,
                         modified_by_access_token=connection.access_token,
                     )
 
@@ -107,7 +107,7 @@ def recap(request):
                     "aidant": aidant,
                     "usager": usager,
                     "demarche": demarches_description,
-                    "duration": duration,
+                    "duree": duree,
                     "error": "Vous devez accepter les conditions du mandat.",
                 },
             )
@@ -121,7 +121,7 @@ def generate_mandat_pdf(request):
     usager = connection.usager
     demarches = connection.demarches
 
-    duration = "1 jour" if connection.duration == 1 else "1 an"
+    duree = "1 jour" if connection.duree == 1 else "1 an"
 
     html_string = render_to_string(
         "aidants_connect_web/new_mandat/pdf_mandat.html",
@@ -133,7 +133,7 @@ def generate_mandat_pdf(request):
             "lieu": aidant.ville,
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
-            "duree": duration,
+            "duree": duree,
         },
     )
 

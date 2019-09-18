@@ -208,7 +208,7 @@ class Migration(migrations.Migration):
                     "creation_date",
                     models.DateTimeField(default=django.utils.timezone.now),
                 ),
-                ("duration", models.IntegerField(default=3)),
+                ("duree", models.IntegerField(default=3)),
                 (
                     "aidant",
                     models.ForeignKey(

@@ -52,20 +52,20 @@
             {% endfor %}
         </div>
         </div>
-      <div id="duration" >
+      <div id="duree" >
             <h2 id="step-title">Étape 2 : Choisissez la durée du mandat</h2>
-            <div id="duration_list" class="grid" >
-              {% for value, label in form.duration.field.choices %}
+            <div id="duree_list" class="grid" >
+              {% for value, label in form.duree.field.choices %}
                   <div id="{{ value }}" class="tile">
-                    <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duration"/>
-                    <label id="label-duration" for="button-{{ value }}">
+                    <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree"/>
+                    <label id="label-duree" for="button-{{ value }}">
                         <h3>{{ label.title }}</h3>
                         <span>{{ label.description }}</span>
                     </label>
                   </div>
               {% endfor %}
                 <div id="custom-end-date" class="tile">
-                    <input id="button-custom-end-date" type="radio" value="custom-end-date" name="duration" disabled/>
+                    <input id="button-custom-end-date" type="radio" value="custom-end-date" name="duree" disabled/>
                     <label id="label-custom-end-date" for="button-custom-end-date">
                         <h3>Sélectionnez une date</h3><span>(disponible bientôt)</span>
                         <input id="input-custom-end-date" type="date" name="custom-end-date" disabled>

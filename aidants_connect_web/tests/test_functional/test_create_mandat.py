@@ -59,8 +59,8 @@ class CreateNewMandat(StaticLiveServerTestCase):
         demarches = demarches_grid.find_elements_by_tag_name("input")
         self.assertEqual(len(demarches), 10)
 
-        duration_section = self.selenium.find_element_by_id("duration")
-        duration_section.find_element_by_id("long").find_element_by_tag_name(
+        duree_section = self.selenium.find_element_by_id("duree")
+        duree_section.find_element_by_id("long").find_element_by_tag_name(
             "label"
         ).click()
 

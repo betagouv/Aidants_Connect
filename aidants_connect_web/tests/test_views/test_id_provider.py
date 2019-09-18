@@ -50,21 +50,21 @@ class AuthorizeTests(TestCase):
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="123"),
             demarche="Revenus",
-            duration=6,
+            duree=6,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="123"),
             demarche="Famille",
-            duration=12,
+            duree=12,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Jacques"),
             usager=Usager.objects.get(sub="123"),
             demarche="Logement",
-            duration=12,
+            duree=12,
         )
 
     def test_authorize_url_triggers_the_authorize_view(self):
@@ -173,15 +173,15 @@ class FISelectDemarcheTest(TestCase):
             state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
         )
         self.mandat = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager, demarche="transports", duration=6
+            aidant=self.aidant, usager=self.usager, demarche="transports", duree=6
         )
 
         self.mandat_2 = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager, demarche="famille", duration=3
+            aidant=self.aidant, usager=self.usager, demarche="famille", duree=3
         )
 
         self.mandat_3 = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager2, demarche="logement", duration=3
+            aidant=self.aidant, usager=self.usager2, demarche="logement", duree=3
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -351,7 +351,7 @@ class UserInfoTests(TestCase):
         )
 
         self.mandat = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager, demarche="transports", duration=6
+            aidant=self.aidant, usager=self.usager, demarche="transports", duree=6
         )
 
         self.connection = Connection.objects.create(

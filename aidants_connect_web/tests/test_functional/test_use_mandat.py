@@ -52,21 +52,21 @@ class CreateNewMandat(StaticLiveServerTestCase):
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche="argent",
-            duration=6,
+            duree=6,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche="famille",
-            duration=12,
+            duree=12,
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="jfremont@domain.user"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche="logement",
-            duration=12,
+            duree=12,
         )
 
         super().setUpClass()

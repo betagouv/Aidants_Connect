@@ -114,11 +114,11 @@ class MandatModelTest(TestCase):
         )
 
         Mandat.objects.create(
-            aidant=aidant_marge, usager=usager_homer, demarche="Carte grise", duration=3
+            aidant=aidant_marge, usager=usager_homer, demarche="Carte grise", duree=3
         )
 
         Mandat.objects.create(
-            aidant=aidant_patricia, usager=usager_ned, demarche="Revenus", duration=6
+            aidant=aidant_patricia, usager=usager_ned, demarche="Revenus", duree=6
         )
 
         saved_items = Mandat.objects.all()
@@ -181,7 +181,7 @@ class JournalModelTest(TestCase):
             aidant=cls.aidant_thierry,
             usager=cls.usager_ned,
             demarche="Revenus",
-            duration=6,
+            duree=6,
         )
 
     def test_a_journal_entry_can_be_created(self):
@@ -196,19 +196,21 @@ class JournalModelTest(TestCase):
             entry.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
         )
 
+    @tag("this")
     def test_log_mandat_creation_complete(self):
-        entry = Mandat.objects.create(
+        mandat = Mandat.objects.create(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarche="logement",
-            duration=365,
-            modified_by_access_token="fdjgqermoghmqeroigh"
+            duree=365,
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
+
+        entry = Journal.objects.all().last()
         self.assertEqual(entry.action, "create_mandat")
         self.assertIn("Ned Flanders", entry.usager)
-        self.assertEqual(entry.mandat, self.first_mandat.id)
+        self.assertEqual(entry.mandat, mandat.id)
 
     def test_log_mandat_use_complete(self):
         entry = Journal.objects.mandat_use(

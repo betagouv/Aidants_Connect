@@ -95,13 +95,15 @@ class JournalManager(models.Manager):
         return journal_entry
 
     def mandat_creation(self, mandat: Mandat):
+        aidant = mandat.aidant
+        usager = mandat.usager
 
-        initiator = f"{mandat.aidant.get_full_name()} - {mandat.aidant.organisme} - {mandat.aidant.email}"
-        usager = f"{mandat.usager.get_full_name()} - {mandat.usager.id} - {mandat.usager.email}"
+        initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
+        usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
         journal_entry = self.create(
             initiator=initiator,
-            usager=usager,
+            usager=usager_info,
             action="create_mandat",
             demarche=mandat.demarche,
             duree=mandat.duree,
@@ -120,11 +122,11 @@ class JournalManager(models.Manager):
     ):
 
         initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
-        usager = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
+        usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
         journal_entry = self.create(
             initiator=initiator,
-            usager=usager,
+            usager=usager_info,
             action="use_mandat",
             demarche=demarche,
             access_token=access_token,
