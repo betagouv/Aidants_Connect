@@ -172,7 +172,6 @@ LOGOUT_REDIRECT_URL = "home_page"
 
 AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 
-
 DEMARCHES = {
     "papiers": {
         "titre": "Papiers - Citoyenneté",
