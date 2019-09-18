@@ -1,60 +1,61 @@
 # Aidants Connect
-
-Aidants Connect is an app that allows people who want to assist FranceConnect users to do so with full transparency.
-
 [![CircleCI](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master.svg?style=svg)](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master)
 
-## Stack
-Django
-PostgreSQL
+Aidants Connect est une application web qui propose à des aidants les fonctionnalités suivantes :
+- créer un mandat de connexion via FranceConnect avec un ou plusieurs usagers sur un périmètre et une durée définis ;
+- connecter via FranceConnect un usager dans les conditions des mandats créés ;
+- accéder à des ressources sur l'accompagnement des usagers ;
+- accéder à un suivi de ses mandats.
 
-## Environment
-AidantConnect runs on Python 3.7
+### Pile technique
+- Python 3.7
+- Django 2.2
+- PostgreSQL
 
-# How to setup the Database
+## Comment installer la base de données (pour Mac OSX)
 
-Install PostgreSQL (for Mac OSX)
-```
+Installer PostgreSQL
+```sh
 brew install postgresql
 brew services start postgresql
 createdb `whoami`
 ```
 
-Create the database
-```
+Créer la base de données
+```sh
 psql
 ```
-In the postgreSQL prompt
-``` 
+
+Dans l'invite de commmande postgreSQL :
+```
 CREATE USER aidants_connect_team;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
 ALTER USER aidants_connect_team CREATEDB;
 \q
 ```
 
-## How to install the app
+## Installer l'application
 
-Use a virtual environment in your working directory
-
+Dans votre répertoire de travail, créez et activez un environnement virtuel
 ```
 virtualenv venv
 source venv/bin/activate
 ```
 
-Install the dependencies
+Installer les dépendances
 
 ```
 pip install -r requirements.txt
 ```
 
-If you get `ld: library not found for -lssl` as an error message, try:
+Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayer :
 ```
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
 ```
 
-Create a `.env` file at the root of the project
+Créer un fichier `.env` à la racine de votre projet et y ajouter les éléments suivants :
  
-Add the following entries to the `.env` file:
+
 ```
 HOST= <insert_your_data> #e.g. http://localhost:8000
 APP_SECRET=<insert_your_secret>
@@ -82,61 +83,65 @@ DATABASE_SSL
 DEBUG
 ```
 
-Create a `staticfiles` directory
+Créer un repertoire `staticfiles` 
 ```
 mkdir staticfiles
 ```
 
-Run the migrations
+Appliquer les migrations de la base de données
 ```
 python manage.py migrate
 ```
 
-Create a superuser
+Créer un `superuser`
 ```
 python manage.py createsuperuser --username <insert_admin_name> 
 ```
 
-## How to run the tests
-Install [Firefox](https://www.mozilla.org/fr/firefox/download/thanks/)
-
-Install [Gecko driver](https://github.com/mozilla/geckodriver/releases)
+### Lancer les tests
+Installer les éléments suivants :
+- [Firefox](https://www.mozilla.org/fr/firefox/download/thanks/)
+- [Gecko driver](https://github.com/mozilla/geckodriver/releases)
 
 ```
 brew install geckodriver
 ```
-Then run:
+puis lancer les commandes suivantes :
 
 ```
 flake8
 python manage.py test
 ```
 
-The functional test run on `http://localhost:3000`
-Make sure nothing else is running on that port.
+Les tests fonctionnels sont lancés sur `http://localhost:3000`.
+Il faut s'assurer que rien d'autre n'occupe ce port pendant les tests.
 
-## How to run the app
+## Lancer l'application
 
-To run the app on port 3000
+Pour lancer l'application sur le port 3000 :
 ```
 python manage.py runserver 3000
 ```
 
-## FranceConnect FI documentation
+## Annexes
+### Documentation de FranceConnect FI 
 [here](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-identite)
 
-## Database from scratch
+### Ré-initialiser la base de données
+
+Dans le shell
 ```
 psql
 ```
-then
+puis, dans l'invite de commande psql
 ```
 DROP DATABASE aidants_connect;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
 ALTER USER aidants_connect_team CREATEDB;
 \q
 ```
-then
+
+puis dans le shell
 ```
 python manage.py makemigrations
 python manage.py migrate
