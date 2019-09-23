@@ -38,7 +38,7 @@ class NewMandatTests(TestCase):
 
     def test_badly_formated_form_triggers_original_template(self):
         self.client.force_login(self.aidant)
-        data = {"perimeter": ["papiers", "logement"], "duration": "RAMDAM"}
+        data = {"perimeter": ["papiers", "logement"], "duree": "RAMDAM"}
         response = self.client.post("/new_mandat/", data=data)
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
@@ -46,7 +46,7 @@ class NewMandatTests(TestCase):
 
     def test_well_formated_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant)
-        data = {"perimeter": ["papiers", "logement"], "duration": "short"}
+        data = {"perimeter": ["papiers", "logement"], "duree": "short"}
         response = self.client.post("/new_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 
@@ -56,8 +56,15 @@ class RecapTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant = Aidant.objects.create_user(
-            "thierry@thierry.com", "thierry@thierry.com", "motdepassedethierry"
+            username="thierry@thierry.com",
+            email="thierry@thierry.com",
+            password="motdepassedethierry",
+            first_name="Thierry",
+            last_name="Groucheau",
+            organisme="Commune de Vernon",
+            profession="Médiateur",
         )
+
         self.test_usager = Usager.objects.create(
             given_name="Fabrice",
             family_name="MERCIER",
@@ -70,15 +77,12 @@ class RecapTests(TestCase):
             email="test@test.com",
         )
         Connection.objects.create(
-            id=1,
-            demarches=["papiers", "logement"],
-            duration=365,
-            usager=self.test_usager,
+            id=1, demarches=["papiers", "logement"], duree=365, usager=self.test_usager
         )
         Connection.objects.create(
-            id=2, demarches=["papiers", "logement"], duration=1, usager=self.test_usager
+            id=2, demarches=["papiers", "logement"], duree=1, usager=self.test_usager
         )
-        Connection.objects.create(id=3, demarches=["papiers", "logement"], duration=1)
+        Connection.objects.create(id=3, demarches=["papiers", "logement"], duree=1)
 
     def test_recap_url_triggers_the_recap_view(self):
         found = resolve("/recap/")
@@ -162,7 +166,7 @@ class GenerateMandatPDF(TestCase):
             email="test@test.com",
         )
         self.mandat_form = MandatForm(
-            data={"perimeter": ["papiers", "logement"], "duration": "short"}
+            data={"perimeter": ["papiers", "logement"], "duree": "short"}
         )
 
         Connection.objects.create(
@@ -171,7 +175,7 @@ class GenerateMandatPDF(TestCase):
             connection_type="FS",
             nonce="test_another_nonce",
             demarches=["papiers", "logement"],
-            duration=1,
+            duree=1,
             usager=self.test_usager,
         )
 

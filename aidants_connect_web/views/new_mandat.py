@@ -13,7 +13,7 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from django.template.loader import render_to_string
 
-from aidants_connect_web.models import Mandat, Journal, Connection
+from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views.service import humanize_demarche_names
 
@@ -39,9 +39,9 @@ def new_mandat(request):
 
         if form.is_valid():
             data = form.cleaned_data
-            duration = 1 if data["duration"] == "short" else 365
+            duree = 1 if data["duree"] == "short" else 365
             connection = Connection.objects.create(
-                demarches=data["perimeter"], duration=duration
+                demarches=data["perimeter"], duree=duree
             )
             request.session["connection"] = connection.pk
             return redirect("fc_authorize")
@@ -59,7 +59,7 @@ def recap(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
-    duration = "1 jour" if connection.duration == 1 else "1 an"
+    duree = "1 jour" if connection.duree == 1 else "1 an"
     demarches_description = [
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
@@ -72,36 +72,29 @@ def recap(request):
                 "aidant": aidant,
                 "usager": usager,
                 "demarches": demarches_description,
-                "duration": duration,
+                "duree": duree,
             },
         )
 
     else:
         form = request.POST
         if form.get("personal_data") and form.get("brief"):
-
             for demarche in connection.demarches:
                 try:
-                    this_mandat = Mandat.objects.create(
+                    Mandat.objects.create(
                         aidant=aidant,
                         usager=usager,
                         demarche=demarche,
-                        duration=connection.duration,
+                        duree=connection.duree,
+                        modified_by_access_token=connection.access_token,
                     )
 
-                    Journal.objects.mandat_creation(
-                        aidant=aidant,
-                        usager=usager,
-                        demarche=demarche,
-                        duree=connection.duration,
-                        fc_token=connection.access_token,
-                        mandat=this_mandat,
-                    )
                 except IntegrityError as e:
                     log.error("Error happened in Recap")
                     log.error(e)
                     messages.error(request, f"No Usager was given : {e}")
                     return redirect("dashboard")
+
             messages.success(request, "Le mandat a été créé avec succès !")
 
             return redirect("dashboard")
@@ -114,7 +107,7 @@ def recap(request):
                     "aidant": aidant,
                     "usager": usager,
                     "demarche": demarches_description,
-                    "duration": duration,
+                    "duree": duree,
                     "error": "Vous devez accepter les conditions du mandat.",
                 },
             )
@@ -128,7 +121,7 @@ def generate_mandat_pdf(request):
     usager = connection.usager
     demarches = connection.demarches
 
-    duration = "1 jour" if connection.duration == 1 else "1 an"
+    duree = "1 jour" if connection.duree == 1 else "1 an"
 
     html_string = render_to_string(
         "aidants_connect_web/new_mandat/pdf_mandat.html",
@@ -140,7 +133,7 @@ def generate_mandat_pdf(request):
             "lieu": aidant.ville,
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
-            "duree": duration,
+            "duree": duree,
         },
     )
 

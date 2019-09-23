@@ -42,19 +42,19 @@ class ViewMandats(StaticLiveServerTestCase):
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche=["social"],
-            duration=1,
+            duree=1,
         )
         cls.mandat2 = Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche=["papiers"],
-            duration=1,
+            duree=1,
         )
         cls.mandat3 = Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub2"),
             demarche=["famille"],
-            duration=365,
+            duree=365,
         )
         super().setUpClass()
         cls.selenium = WebDriver()

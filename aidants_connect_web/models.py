@@ -60,7 +60,10 @@ class Mandat(models.Model):
     usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
     demarche = models.CharField(blank=False, max_length=100)
     creation_date = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField(default=3)
+    duree = models.IntegerField(default=3)
+    modified_by_access_token = models.TextField(
+        blank=False, default="No token provided"
+    )
 
 
 class Connection(models.Model):
@@ -71,7 +74,7 @@ class Connection(models.Model):
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
     )
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
-    duration = models.IntegerField(blank=False, null=True)  # FS
+    duree = models.IntegerField(blank=False, null=True)  # FS
     usager = models.ForeignKey(
         Usager, on_delete=models.CASCADE, blank=True, null=True
     )  # FS
@@ -91,26 +94,20 @@ class JournalManager(models.Manager):
         journal_entry = self.create(initiator=initiator, action="connect_aidant")
         return journal_entry
 
-    def mandat_creation(
-        self,
-        aidant: Aidant,
-        usager: Usager,
-        demarche: str,
-        duree: int,
-        fc_token: str,
-        mandat: Mandat,
-    ):
+    def mandat_creation(self, mandat: Mandat):
+        aidant = mandat.aidant
+        usager = mandat.usager
 
         initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
-        usager = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
+        usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
         journal_entry = self.create(
             initiator=initiator,
-            usager=usager,
+            usager=usager_info,
             action="create_mandat",
-            demarche=demarche,
-            duree=duree,
-            access_token=fc_token,
+            demarche=mandat.demarche,
+            duree=mandat.duree,
+            access_token=mandat.modified_by_access_token,
             mandat=mandat.id,
         )
         return journal_entry
@@ -125,11 +122,11 @@ class JournalManager(models.Manager):
     ):
 
         initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
-        usager = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
+        usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
         journal_entry = self.create(
             initiator=initiator,
-            usager=usager,
+            usager=usager_info,
             action="use_mandat",
             demarche=demarche,
             access_token=access_token,
