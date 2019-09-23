@@ -27,6 +27,8 @@ urlpatterns = [
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
+    # misc
+    path("ressources/", service.resources, name="resources"),
 ]
 
 urlpatterns.extend(magicauth_urls)

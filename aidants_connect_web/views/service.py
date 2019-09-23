@@ -65,3 +65,7 @@ def mandats(request):
         "aidants_connect_web/mandats.html",
         {"aidant": aidant, "mandats": mandats, "messages": messages},
     )
+
+
+def resources(request):
+    return render(request, "aidants_connect_web/resources.html")
