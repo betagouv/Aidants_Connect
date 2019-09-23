@@ -1,10 +1,19 @@
 .hero__container {
-  padding: 5em 0 20em;
-  background: url("../images/aidantsconnect-illustration.svg") bottom center no-repeat;
+  padding-bottom: 0;
 }
 
 .hero__description {
   margin: 0 auto;
+  padding: 0 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+@media (max-width: 749px) {
+  .section {
+    padding: 2em 0;
+  }
 }
 
 .lead-text {
@@ -45,6 +54,8 @@
 
 .issues {
   margin-bottom: 5em;
+  font-size: 1.3em;
+  line-height: 1.5;
 }
 
 .logo__fc {
