@@ -1,3 +1,11 @@
+h1 {
+  font-size: 1.5em;
+}
+
+.hero__container {
+  min-height: 10em;
+}
+
 form {
     max-width: 40em;
 }
@@ -5,12 +13,18 @@ form {
 .row_grid {
     max-width: 50em;
 }
+
+.grid {
+  width: 100%;
+}
+
 .tile {
     padding: 0;
 }
 
 .tile h3 {
     font-size: 1.2em;
+    margin-bottom: 0;
 }
 .tile input {
       order: 1;
@@ -48,3 +62,9 @@ form {
     color: white;
 }
 
+
+@media (max-width: 699px) {
+  .mandat-select__section {
+      padding: 2em 0;
+  }
+}

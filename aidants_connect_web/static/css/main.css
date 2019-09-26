@@ -69,3 +69,17 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 .issues ul {
   list-style-type: disclosure-closed;
 }
+
+@media (max-width: 699px) {
+  form {
+    padding: 0 1em;
+  }
+
+  input.button:active {
+    width: 100%;
+  }
+
+  .hero__container {
+    min-height: 10em;
+  }
+}
