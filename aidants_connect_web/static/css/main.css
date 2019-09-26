@@ -17,6 +17,14 @@ a.navbar__home:hover {
   background-color: #ebeff3;
 }
 
+.nav__item a:hover {
+  color: #000;
+}
+
+.nav__item a.active:hover {
+  color: #fff;
+}
+
 .container.container-small {
   max-width: 40em;
 }
