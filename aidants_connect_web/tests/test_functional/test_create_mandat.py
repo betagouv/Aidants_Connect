@@ -2,6 +2,7 @@ import time
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
 from django.test import tag
+from django.core import mail
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant
 
@@ -30,12 +31,8 @@ class CreateNewMandat(StaticLiveServerTestCase):
         super().tearDownClass()
 
     def test_create_new_mandat(self):
-        login_field = self.selenium.find_element_by_id("id_username")
-        login_field.send_keys("Thierry")
-        password_field = self.selenium.find_element_by_id("id_password")
-        password_field.send_keys("motdepassedethierry")
-        submit_button = self.selenium.find_element_by_xpath('//input[@value="Login"]')
-        submit_button.click()
+        self.login_aidant()
+
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(welcome_aidant, "Vos mandats")
 
@@ -113,3 +110,18 @@ class CreateNewMandat(StaticLiveServerTestCase):
 
         # See all mandats page
         self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 3)
+
+    def login_aidant(self):
+        login_field = self.selenium.find_element_by_id("id_email")
+        login_field.send_keys("thierry@thierry.com")
+        submit_button = self.selenium.find_element_by_xpath('//button')
+        submit_button.click()
+        email_sent_title = self.selenium.find_element_by_tag_name("h1").text
+        self.assertEqual(email_sent_title,
+                         "Un email vous a été envoyé pour vous connecter.")
+        self.assertEqual(len(mail.outbox), 1)
+        token_email = mail.outbox[0].body
+        line_containing_magic_link = token_email.split("\n")[2]
+        magic_link_https = line_containing_magic_link.split()[-1]
+        magic_link_http = magic_link_https.replace("https", "http")
+        self.selenium.get(magic_link_http)

@@ -1,4 +1,5 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.core import mail
 from django.test import tag
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant, Usager, Mandat
@@ -7,7 +8,7 @@ import time
 
 
 @tag("functional", "id_provider")
-class CreateNewMandat(StaticLiveServerTestCase):
+class UseNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         cls.aidant = Aidant.objects.create_user(
@@ -84,12 +85,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         browser.get(f"{self.live_server_url}/authorize/?state=34")
 
         # Login
-        login_field = browser.find_element_by_id("id_username")
-        login_field.send_keys("Thierry")
-        password_field = browser.find_element_by_id("id_password")
-        password_field.send_keys("motdepassedethierry")
-        submit_button = browser.find_element_by_xpath('//input[@value="Login"]')
-        submit_button.click()
+        self.login_aidant()
 
         # Select usager
         welcome_aidant = browser.find_element_by_tag_name("h1").text
@@ -113,5 +109,23 @@ class CreateNewMandat(StaticLiveServerTestCase):
 
         # Check user has been logged out by
         # checking if they are redirected to the login page
+        self.aidant_is_disconnected(browser)
+
+    def aidant_is_disconnected(self, browser):
         browser.get(f"{self.live_server_url}/authorize/?state=35")
-        browser.find_element_by_id("id_username")
+        browser.find_element_by_id("id_email")
+
+    def login_aidant(self):
+        login_field = self.selenium.find_element_by_id("id_email")
+        login_field.send_keys("thierry@thierry.com")
+        submit_button = self.selenium.find_element_by_xpath('//button')
+        submit_button.click()
+        email_sent_title = self.selenium.find_element_by_tag_name("h1").text
+        self.assertEqual(email_sent_title,
+                         "Un email vous a été envoyé pour vous connecter.")
+        self.assertEqual(len(mail.outbox), 1)
+        token_email = mail.outbox[0].body
+        line_containing_magic_link = token_email.split("\n")[2]
+        magic_link_https = line_containing_magic_link.split()[-1]
+        magic_link_http = magic_link_https.replace("https", "http")
+        self.selenium.get(magic_link_http)
