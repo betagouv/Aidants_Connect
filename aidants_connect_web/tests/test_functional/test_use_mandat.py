@@ -92,8 +92,10 @@ class CreateNewMandat(StaticLiveServerTestCase):
         submit_button.click()
 
         # Select usager
-        welcome_aidant = browser.find_element_by_tag_name("h2").text
-        self.assertEqual(welcome_aidant, "Bienvenue, Thierry")
+        welcome_aidant = browser.find_element_by_tag_name("h1").text
+        self.assertEqual(
+            welcome_aidant, "Bienvenue sur votre Espace Aidants Connect, Thierry"
+        )
         usagers = browser.find_elements_by_id("label-usager")
         self.assertEqual(len(usagers), 1)
         self.assertEqual(usagers[0].text, "ST-PIERRE Joséphine")

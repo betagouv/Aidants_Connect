@@ -24,6 +24,19 @@ a:hover {
 
 .tile {
   background-color: #ebeff3;
+  display: inline-block;
+  width: auto;
+}
+
+@supports(display: grid) {
+  .tile {
+    width: 100%;
+    display: flex;
+  }
+}
+
+.tile + .tile {
+  margin-left: 1em;
 }
 
 .notification {
