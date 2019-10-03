@@ -4,71 +4,65 @@
 
 {% block content %}
 
-<<<<<<< HEAD
-<div class="notification warning full-width">Vous êtes sur un site en construction, l’interface proposée sera amenée à changer grâce à vos retours !</div>
-<section class="section">
-  <div class="container">
-=======
 {% block extracss %}
-  <link href="{% static 'css/home.css' %}" rel="stylesheet">
+<link href="{% static 'css/home.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 <div class="hero">
   <div class="hero__container">
->>>>>>> landing page rework
     <div class="row">
       <div class="hero__description text-center">
         <h1 class="brand">Bienvenue sur Aidants Connect</h1>
         <p class="lead-text">
-          Le service qui permet aux aidants professionnels de réaliser des démarches administratives en ligne pour le compte d’une personne via une connexion sécurisée.
+          Vous accompagnez régulièrement des personnes en difficulté avec le numérique dans la réalisation de démarches en ligne ? Aidants Connect est fait pour vous !
         </p>
-        <img src="{% static "images/aidantsconnect-illustration.svg" %}" alt="" />
+        <p>Ce service sécurise et facilite le « faire pour le compte de ».</p>
       </div>
+      <img src="{% static "images/aidantsconnect-illustration.svg" %}" alt="" />
     </div>
   </div>
 </div>
 <div class="notification full-width">Vous êtes sur un site en construction, l’interface proposée sera amenée à changer grâce à vos <a href="https://github.com/betagouv/Aidants_Connect/issues/new">retours</a> !</div>
-<section class="section section-grey">
-  <div class="container container-small">
-    <h2 class="text-center">Pourquoi Aidants Connect ?</h2>
-    <div class="issues">
-      <p>Aujourd’hui, <strong>13 millions</strong> de français sont en <strong>difficulté numérique</strong> et ne peuvent ainsi pas réaliser de démarches en ligne. Pourtant, il est prévu que les <strong>250 démarches administratives "icôniques" soient dématérialisées</strong> d’ici 2022.</p>
-      <p>Des aidants professionnels accompagnent au quotidien les usagers dans leurs démarches, mais cela pose des questions de sécurité et de responsabilité.
-      </p>
-    </div>
-  </div>
+<section class="section section-grey ac-service">
   <div class="container">
-    <h2 class="text-center">Les démarches en ligne réalisées avec Aidants Connect assurent :</h2>
-      <div class="row">
-        <div class="tile tile-colored text-center">
-          <img class="tile__icon" src="{% static 'images/shield.svg' %}" />
-          une protection de l’aidant professionel comme de l’usager accompagné en cas d’erreur</div>
-        <div class="tile tile-colored text-center">
-          <img class="tile__icon" src="{% static 'images/note.svg' %}" />
-          un suivi des actions réalisées sur le compte de la personne</div>
+    <h2 class="text-center">Le service Aidants Connect</h2>
+    <div class="row">
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/key.svg' %}" />
+        <h3>Aidants Connect sécurise juridiquement les aidants</h3>
+        <p>qui accompagnent ces usagers sur les enjeux de confidentialité et de sécurité des données</p>
+      </div>
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/help.svg' %}" />
+        <h3>Aidants Connect garantit un accompagnement humain</h3>
+        <p>pour toutes les personnes qui, pour diverses raisons, ne peuvent pas faire leurs démarches en ligne</p></div>
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/people.svg' %}" />
+        <h3>Aidants Connect s’adresse à une diversité d’aidants professionnels</h3>
+        <p>Travailleurs sociaux, agents publics d’accueil, médiateurs numériques...</p>
+      </div>
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/build.svg' %}" />
+        <h3>Aidants Connect a été co-construits avec des aidants</h3>
+        <p>Des ateliers utilisateurs ont eu lieu dans une dizaine de territoires</p>
+      </div>
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/cycle.svg' %}" />
+        <h3>Aidants Connect est évolutif</h3>
+        <p>Le service s’adapte aux réalités du terrain et aux besoins des aidants</p>
       </div>
     </div>
   </div>
 </section>
 <section class="section">
+  <div class="container">
+    <h2>Des outils à votre disposition</h2>
+    {% include 'aidants_connect_web/resource_list.html' %}
+  </div>
+</section>
+<section class="section section-grey fc-desc">
   <div class="container container-small">
     <h2 class="text-center">Aidants Connect est un service qui utilise <img class="logo__fc" src="{% static 'images/fc_logo_v2.png'%}" /></h2>
-    <p class="text-center">France Connect permet de sécuriser la connexion des usagers grâce à son système d'identification qui ne stocke pas les données personnelles.</p>
-  </div>
-</section>
-<section class="section section-color">
-  <div class="container container-small">
-    <h2 class="text-center">Comment utiliser Aidants Connect ?</h2>
-    <p class="text-center">Le service est encore en construction, et sera prochainement disponible en bêta-test début 2020 auprès de structures participant aux Territoires d’Action pour un Numérique Inclusif.</p>
-  </div>
-</section>
-<section class="section section-grey">
-  <div class="container container-small">
-    <h2>Un petit coup de pouce ?</h2>
-    <p>
-      Nous avons quelques ressources sous la main pour vous aider à accompagner les usagers dans leurs démarches. N’hésitez pas à les consulter !
-    </p>
-    <a href="{% url 'resources' %}" class="button">Voir les ressources</a>
   </div>
 </section>
 

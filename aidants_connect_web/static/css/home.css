@@ -1,13 +1,15 @@
-.hero__container {
-  padding-bottom: 0;
+.hero .row > * {
+  max-width: none;
+}
+
+.hero .row > img {
+  max-width: 40%;
 }
 
 .hero__description {
-  margin: 0 auto;
-  padding: 0 1em;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 @media (max-width: 749px) {
@@ -38,13 +40,24 @@
   color: black;
 }
 
+.ac-service .row {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .tile {
   font-size: 1.25em;
   color: black;
+  max-width: 18em;
 }
 
 .tile-colored {
   background-color: #ebeff3;
+}
+
+.tile h3 {
+  font-size: 1.25em;
+  line-height: 1.25em;
 }
 
 .tile__icon {
@@ -62,4 +75,8 @@
   height: 2em;
   vertical-align: middle;
   margin-left: 0.5em;
+}
+
+.fc-desc h2 {
+  margin-bottom: 0;
 }
