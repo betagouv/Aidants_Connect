@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  app:
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/app
+    command: /bin/bash -lc "gunicorn aidants_connect.wsgi --bind 0.0.0.0:3000 --log-file -"
+    working_dir: /app
+    environment:
+      HOST: localhost
+      APP_SECRET: test_secret
+      DATABASE_NAME: aidants_connect
+      DATABASE_USER: aidants_connect_team
+      DATABASE_PASSWORD: test_db_pwd
+      FC_AS_FS_BASE_URL: https://bogus
+      FC_AS_FS_ID: bogus
+      FC_AS_FS_SECRET: bogus
+      FC_AS_FS_CALLBACK_URL: https://bogus
+      FC_AS_FS_TEST_PORT: 3000
+      FC_AS_FI_ID: bogus
+      FC_AS_FI_SECRET: bogus
+      FC_AS_FI_CALLBACK_URL: https://bogus
+      DEBUG: "True"
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: aidants_connect
+      POSTGRES_USER: aidants_connect_team
+      POSTGRES_PASSWORD: test_db_pwd
