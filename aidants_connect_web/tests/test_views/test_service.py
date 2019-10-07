@@ -22,7 +22,7 @@ class HomePageTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/home_page.html")
 
 
-@tag("service", "this")
+@tag("service")
 class LoginPageTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -40,7 +40,6 @@ class LoginPageTests(TestCase):
         self.assertEqual(Journal.objects.all()[0].action, "connect_aidant")
         self.client.get("/mandats/")
         self.assertEqual(Journal.objects.count(), 1)
-
 
     def test_login_view_redirects_to_next_if_aidant_is_authenticated(self):
         self.assertEqual(len(Journal.objects.all()), 0)
