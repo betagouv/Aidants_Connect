@@ -7,10 +7,11 @@ services:
       - 3000:3000
     volumes:
       - ./:/app
-    command: /bin/bash -lc "python manage.py migrate && gunicorn aidants_connect.wsgi --bind 0.0.0.0:3000 --log-file -"
+    command: /bin/bash -lc "python manage.py migrate && PYTHONUNBUFFERED=1 honcho start"
     working_dir: /app
     environment:
       HOST: localhost
+      PORT: 3000
       APP_SECRET: test_secret
       DATABASE_NAME: aidants_connect
       DATABASE_USER: aidants_connect_team
