@@ -15,6 +15,7 @@ services:
       DATABASE_NAME: aidants_connect
       DATABASE_USER: aidants_connect_team
       DATABASE_PASSWORD: test_db_pwd
+      DATABASE_HOST: postgres
       FC_AS_FS_BASE_URL: https://bogus
       FC_AS_FS_ID: bogus
       FC_AS_FS_SECRET: bogus

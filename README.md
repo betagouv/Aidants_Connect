@@ -53,10 +53,9 @@ Si la commande précédente déclenche le message d'erreur suivant `ld: library 
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
 ```
 
-Changer le fichier `.env.example` à la racine du projet en .env` et ajoutez vos informations :
+Changer le fichier `.env.example` à la racine du projet en `.env` et ajouter vos informations :
 - Les informations `FC_AS_FS` et `FC_AS_``I``` sont à récupérer via des habilitations FranceConnect
 - Les valeur de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
-
 
 Créer un repertoire `staticfiles` 
 ```
