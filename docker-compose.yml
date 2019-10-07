@@ -7,7 +7,7 @@ services:
       - 3000:3000
     volumes:
       - ./:/app
-    command: /bin/bash -lc "gunicorn aidants_connect.wsgi --bind 0.0.0.0:3000 --log-file -"
+    command: /bin/bash -lc "python manage.py migrate && gunicorn aidants_connect.wsgi --bind 0.0.0.0:3000 --log-file -"
     working_dir: /app
     environment:
       HOST: localhost
