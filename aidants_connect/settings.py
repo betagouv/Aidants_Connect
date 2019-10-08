@@ -239,12 +239,21 @@ DEMARCHES = {
 
 # Magic Auth
 MAGICAUTH_EMAIL_FIELD = "email"
-MAGICAUTH_FROM_EMAIL = "test@domain.user"
+MAGICAUTH_FROM_EMAIL = os.getenv("MAGICAUTH_FROM_EMAIL")
 MAGICAUTH_LOGGED_IN_REDIRECT_URL_NAME = "dashboard"
 MAGICAUTH_LOGIN_VIEW_TEMPLATE = "login/login.html"
 MAGICAUTH_EMAIL_SENT_VIEW_TEMPLATE = "login/email_sent.html"
 
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+# Emails
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+## if file based email backend is used (debug)
 EMAIL_FILE_PATH = (
-    os.path.dirname(os.path.abspath(__file__)) + "/tmp/app-messages"
-)  # change this to a proper location
+    os.path.dirname(os.path.abspath(__file__)) + "/tmp_email_as_file"
+)
+## if smtp backend is used
+EMAIL_HOST = os.getenv("EMAIL_HOST", None)
+EMAIL_PORT = os.getenv("EMAIL_PORT", None)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", None)
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", None)
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", None)
