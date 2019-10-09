@@ -196,7 +196,6 @@ class JournalModelTest(TestCase):
             entry.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
         )
 
-    @tag("this")
     def test_log_mandat_creation_complete(self):
         mandat = Mandat.objects.create(
             aidant=self.aidant_thierry,

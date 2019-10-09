@@ -41,6 +41,13 @@ class LoginPageTests(TestCase):
         self.client.get("/mandats/")
         self.assertEqual(Journal.objects.count(), 1)
 
+    def test_login_view_redirects_to_next_if_aidant_is_authenticated(self):
+        self.assertEqual(len(Journal.objects.all()), 0)
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.get("/accounts/login/?next=/dashboard/", follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/dashboard.html")
+
 
 @tag("service")
 class LogoutPageTests(TestCase):

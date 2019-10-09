@@ -78,6 +78,18 @@ FC_AS_FI_ID=<insert_your_data>
 FC_AS_FI_SECRET=<insert_your_data>
 FC_AS_FI_CALLBACK_URL=<insert_your_data>
 
+# if you are debugging, and want to use the file based email backend
+EMAIL_BACKEND = django.core.mail.backends.filebased.EmailBackend
+
+# If you want to use the default smtp backend
+EMAIL_HOST = <insert_your_data>
+EMAIL_PORT = <insert_your_data>
+EMAIL_HOST_USER = <insert_your_data>
+EMAIL_HOST_PASSWORD = <insert_your_data>
+
+# email address the connexion email is sent from
+MAGICAUTH_FROM_EMAIL = "test@domain.user"
+
 # Optional
 DATABASE_SSL
 DEBUG
