@@ -33,34 +33,35 @@
         <fieldset>
           <legend>À cette fin :</legend>
           <div class="checkbox__group">
-            <input type="checkbox" name="personal_data" id="id_personal_data" />
+            {{ form.personal_data }}
             <label class="label-inline" for="id_personal_data">J’autorise <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> à utiliser mes données à caractère personnel.</label>
           </div>
           <div class="checkbox__group">
-            <input type="checkbox" name="brief" id="id_brief" />
+            {{ form.brief }}
             <label class="label-inline" for="id_brief">Je confime que <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> m’a rappelé l’objet de l’intervention, la raison pour laquelle mes informations sont collectées et leur utilité ; les droits sur mes données (accès, rectification, suppression, etc.)</label>
           </div>
         </fieldset>
       </div>
       <div class="form__group">
         <label for="contact_method_list">Souhaitez-vous indiquer un moyen de contact ? Il nous servira à vous joindre en cas d’avancée de dossier.</label>
-        <select onchange="showContactMethod()" id="contact_method_list" name="contact_method_chosen">
-          {% for m in contact_method_list %}
-            <option value="{{ m.0 }}" {% if contact_method_chosen == m.0 %}selected="selected"{% endif %}>{{ m.1 }}</option>
+        <!--select onchange="showContactMethod()" id="contact_method_list" name="contact_method_chosen">
+          {% for method in contact_method_list %}
+            <option value="{{ method.0 }}" {% if contact_method_chosen == method.0 %}selected="selected"{% endif %}>{{ method.1 }}</option>
           {% endfor %}
-        </select>
+        </select-->
+        {{ form.preferred_contact_method }}
       </div>
       <div class="form__group contact__method-choice hidden email">
-        <label for="id_email">Adresse e-mail :</label>
-        <input type="text" name="email" value="{{ contact_email }} " />
+        <label for="id_contact_email">{{ form.contact_email.label }}</label>
+        {{ form.contact_email }}
       </div>
       <div class="form__group contact__method-choice hidden phone">
-        <label for="id_phone">Numéro de téléphone :</label>
-        <input type="text" name="phone" value="{{ contact_phone }}" />
+        <label for="id_contact_phone">{{ form.contact_phone.label }}</label>
+        {{ form.contact_phone }}
       </div>
       <div class="form__group contact__method-choice hidden address">
-        <label for="id_address">Adresse :</label>
-        <textarea type="text" name="address">{{ contact_address }}</textarea>
+        <label for="id_address">{{ form.contact_address.label }}</label>
+        {{ form.contact_address }}
       </div>
       <div class="form__group">
         <input type="submit" class="button" value="J’accepte" />

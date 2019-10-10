@@ -293,6 +293,7 @@ SECURE_HSTS_SECONDS = os.getenv("SECURE_HSTS_SECONDS")
 
 CONTACT_METHOD = (
     ("", "Aucun"),
+    ("phone", "Téléphone"),
     ("sms", "SMS"),
     ("email", "Email"),
     ("address", "Courrier"),

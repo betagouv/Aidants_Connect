@@ -49,16 +49,29 @@ class Usager(models.Model):
 
     creation_date = models.DateTimeField(default=timezone.now)
 
-    preferred_contact_method = models.CharField(max_length=8, blank=True)
+    preferred_contact_method = models.CharField(
+        max_length=8, blank=True, null=True, default=""
+    )
     contact_address = JSONField(blank=True, null=True)
-    contact_email = models.EmailField(blank=True)
-    contact_phone = models.CharField(max_length=12, blank=True)
+    contact_email = models.EmailField(blank=True, null=True)
+    contact_phone = models.CharField(max_length=12, blank=True, null=True)
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
 
     def get_full_name(self):
         return f"{self.given_name} {self.family_name}"
+
+    def get_contact_method(self):
+        return dict(settings.CONTACT_METHOD)[self.preferred_contact_method]
+
+    def get_contact(self):
+        if self.preferred_contact_method == "sms":
+            return self.contact_phone
+        if self.preferred_contact_method == "email":
+            return self.contact_email
+        if self.preferred_contact_method == "address":
+            return self.contact_address
 
 
 class Mandat(models.Model):

@@ -1,20 +1,27 @@
-function showContactMethod() {
-  const contactMethod = document.getElementById("contact_method_list").value;
+function showContactMethod(method) {
+  const contactValue = method.value
   const methodList = document.getElementsByClassName("contact__method-choice");
   for (let i = 0; i < methodList.length; i++) {
       methodList[i].classList.add('hidden')
   }
-  if (contactMethod === "sms") {
+  if (contactValue === "sms" || contactValue === "phone") {
     document.getElementsByClassName("phone")[0].classList.remove('hidden')
   }
-  if (contactMethod === "email") {
+  if (contactValue === "email") {
     document.getElementsByClassName("email")[0].classList.remove('hidden')
   }
-  if (contactMethod === "address") {
+  if (contactValue === "address") {
     document.getElementsByClassName("address")[0].classList.remove('hidden')
   }
 }
 
 window.onload = function() {
-  showContactMethod()
+  const contactMethod = document.getElementById("id_preferred_contact_method")
+  if (contactMethod) {
+    showContactMethod(contactMethod)
+  }
+
+  contactMethod.addEventListener('change', (event) => {
+    showContactMethod(contactMethod)
+  })
 }

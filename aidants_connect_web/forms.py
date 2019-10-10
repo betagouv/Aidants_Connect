@@ -2,7 +2,7 @@ from django import forms
 from django.forms import EmailField
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth import password_validation
-from aidants_connect_web.models import Aidant
+from aidants_connect_web.models import Aidant, Usager
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
@@ -132,3 +132,27 @@ class MandatForm(forms.Form):
         ("long", {"title": "Mandat long", "description": "(12 mois)"}),
     ]
     duree = forms.ChoiceField(choices=DUREES, required=True, initial=3)
+
+
+class RecapForm(forms.ModelForm):
+    class Meta:
+        model = Usager
+        fields = (
+            "preferred_contact_method",
+            "contact_phone",
+            "contact_email",
+            "contact_address",
+        )
+        labels = {
+            "contact_phone": "Numéro de téléphone",
+            "contact_email": "Adresse email",
+            "contact_address": "Adresse postale",
+        }
+
+    personal_data = forms.BooleanField(required=True)
+    brief = forms.BooleanField(required=True)
+    preferred_contact_method = forms.ChoiceField(
+        choices=settings.CONTACT_METHOD, required=False
+    )
+    contact_email = forms.EmailField(label="Adresse email", required=False)
+    contact_address = forms.Textarea(attrs={"initial": None})

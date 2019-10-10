@@ -15,7 +15,7 @@ from django.contrib import messages
 from django.template.loader import render_to_string
 
 from aidants_connect_web.models import Mandat, Connection
-from aidants_connect_web.forms import MandatForm
+from aidants_connect_web.forms import MandatForm, RecapForm
 from aidants_connect_web.views.service import humanize_demarche_names
 
 
@@ -64,12 +64,14 @@ def recap(request):
     demarches_description = [
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
+    form = RecapForm()
     if request.method == "GET":
 
         return render(
             request,
             "aidants_connect_web/new_mandat/recap.html",
             {
+                "form": form,
                 "aidant": aidant,
                 "usager": usager,
                 "demarches": demarches_description,
@@ -79,17 +81,19 @@ def recap(request):
         )
 
     else:
-        form = request.POST
-        if form.get("personal_data") and form.get("brief"):
-            form_chosen_method = form.get("contact_method_chosen")
-            if form_chosen_method == "sms":
-                usager.contact_phone = form.get("phone")
-            elif form_chosen_method == "email":
-                usager.contact_email = form.get("email")
-            elif form_chosen_method == "address":
-                usager.contact_address = form.get("address")
-            usager.preferred_contact_method = form_chosen_method
-            usager.save()
+        form = RecapForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            form_chosen_method = data["preferred_contact_method"]
+            if form_chosen_method:
+                if form_chosen_method == "sms":
+                    usager.contact_phone = data["contact_phone"]
+                elif form_chosen_method == "email":
+                    usager.contact_email = data["contact_email"]
+                elif form_chosen_method == "address":
+                    usager.contact_address = data["contact_address"]
+                usager.preferred_contact_method = form_chosen_method
+                usager.save()
 
             for demarche in connection.demarches:
                 try:
@@ -122,12 +126,8 @@ def recap(request):
                     "usager": usager,
                     "demarche": demarches_description,
                     "duree": duree,
-                    "error": "Vous devez accepter les conditions du mandat.",
                     "contact_method_list": settings.CONTACT_METHOD,
-                    "contact_method_chosen": form.get("contact_method_chosen"),
-                    "contact_email": form.get("email"),
-                    "contact_phone": form.get("phone"),
-                    "contact_address": form.get("address"),
+                    "form": form,
                 },
             )
 

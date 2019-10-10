@@ -1,6 +1,7 @@
 {% extends 'layouts/main.html' %}
 
 {% load static %}
+{% load mandats %}
 
 {% block extracss %}
   <link href="{% static 'css/mandats.css' %}" rel="stylesheet">
@@ -37,6 +38,12 @@
           <tr>
             <td class="usager" rowspan="{{ usager.list|length}}">
               {{ usager.grouper }}
+              {% if usager.grouper.preferred_contact_method != "" %}
+              <dl>
+                <dt>Moyen de contact préféré : {{ usager.grouper|contact_method }}</dt>
+                <dd><button class="show-contact">Afficher</button><span class="contact hidden">{{ usager.grouper|contact|linebreaks }}</span></dd>
+              </dl>
+              {% endif %}
             </td>
               {% for mandat in usager.list %}
           {% if loop.index > 1 %}
@@ -44,7 +51,7 @@
               {% endif %}
               <td>
                 <ul>
-                  <li>{{ mandat.demarche}}</li>
+                  <li>{{ mandat.demarche }}</li>
                 </ul>
               </td>
               <td>
@@ -65,3 +72,7 @@
   <div>
 </section>
 {% endblock content %}
+
+{% block extrajs %}
+  <script type="text/javascript" src="{% static 'js/mandats.js' %}"></script>
+{% endblock extrajs %}
