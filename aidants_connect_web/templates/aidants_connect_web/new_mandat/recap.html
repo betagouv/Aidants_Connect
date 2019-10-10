@@ -43,9 +43,33 @@
         </fieldset>
       </div>
       <div class="form__group">
+        <label for="contact_method_list">Souhaitez-vous indiquer un moyen de contact ? Il nous servira à vous joindre en cas d’avancée de dossier.</label>
+        <select onchange="showContactMethod()" id="contact_method_list" name="contact_method_chosen">
+          {% for m in contact_method_list %}
+            <option value="{{ m.0 }}" {% if contact_method_chosen == m.0 %}selected="selected"{% endif %}>{{ m.1 }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form__group contact__method-choice hidden email">
+        <label for="id_email">Adresse e-mail :</label>
+        <input type="text" name="email" value="{{ contact_email }} " />
+      </div>
+      <div class="form__group contact__method-choice hidden phone">
+        <label for="id_phone">Numéro de téléphone :</label>
+        <input type="text" name="phone" value="{{ contact_phone }}" />
+      </div>
+      <div class="form__group contact__method-choice hidden address">
+        <label for="id_address">Adresse :</label>
+        <textarea type="text" name="address">{{ contact_address }}</textarea>
+      </div>
+      <div class="form__group">
         <input type="submit" class="button" value="J’accepte" />
       </div>
     </form>
   <div>
 </section>
 {% endblock content %}
+
+{% block extrajs %}
+  <script type="text/javascript" src="{% static 'js/new_mandat.js' %}"></script>
+{% endblock extrajs %}

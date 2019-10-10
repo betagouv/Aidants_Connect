@@ -81,3 +81,7 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
     min-height: 10em;
   }
 }
+
+.hidden {
+  display: none;
+}

@@ -290,3 +290,10 @@ CSRF_COOKIE_SECURE = False if os.getenv("CSRF_COOKIE_SECURE") == "False" else Tr
 # SSL security
 SECURE_SSL_REDIRECT = False if os.getenv("SECURE_SSL_REDIRECT") == "False" else True
 SECURE_HSTS_SECONDS = os.getenv("SECURE_HSTS_SECONDS")
+
+CONTACT_METHOD = (
+    ("", "Aucun"),
+    ("sms", "SMS"),
+    ("email", "Email"),
+    ("address", "Courrier"),
+)

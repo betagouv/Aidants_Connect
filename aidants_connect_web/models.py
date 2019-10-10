@@ -3,7 +3,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
+from django.conf import settings
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -47,6 +48,11 @@ class Usager(models.Model):
     )
 
     creation_date = models.DateTimeField(default=timezone.now)
+
+    preferred_contact_method = models.CharField(max_length=8, blank=True)
+    contact_address = JSONField(blank=True, null=True)
+    contact_email = models.EmailField(blank=True)
+    contact_phone = models.CharField(max_length=12, blank=True)
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"

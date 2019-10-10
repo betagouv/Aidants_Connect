@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
+from django.conf import settings
 
 from django.contrib import messages
 from django.template.loader import render_to_string
@@ -73,12 +74,23 @@ def recap(request):
                 "usager": usager,
                 "demarches": demarches_description,
                 "duree": duree,
+                "contact_method_list": settings.CONTACT_METHOD,
             },
         )
 
     else:
         form = request.POST
         if form.get("personal_data") and form.get("brief"):
+            form_chosen_method = form.get("contact_method_chosen")
+            if form_chosen_method == "sms":
+                usager.contact_phone = form.get("phone")
+            elif form_chosen_method == "email":
+                usager.contact_email = form.get("email")
+            elif form_chosen_method == "address":
+                usager.contact_address = form.get("address")
+            usager.preferred_contact_method = form_chosen_method
+            usager.save()
+
             for demarche in connection.demarches:
                 try:
                     Mandat.objects.update_or_create(
@@ -111,6 +123,11 @@ def recap(request):
                     "demarche": demarches_description,
                     "duree": duree,
                     "error": "Vous devez accepter les conditions du mandat.",
+                    "contact_method_list": settings.CONTACT_METHOD,
+                    "contact_method_chosen": form.get("contact_method_chosen"),
+                    "contact_email": form.get("email"),
+                    "contact_phone": form.get("phone"),
+                    "contact_address": form.get("address"),
                 },
             )
 
