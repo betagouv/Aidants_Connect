@@ -4,7 +4,7 @@ import re
 import time
 
 from secrets import token_urlsafe
-from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import logout
@@ -31,13 +31,18 @@ def authorize(request):
     if request.method == "GET":
         state = request.GET.get("state", False)
         nonce = request.GET.get("nonce", False)
+
+        if state is False:
+            log.info("403: There is no state")
+            return HttpResponseBadRequest()
+        elif nonce is False:
+            log.info("403: There is no nonce")
+            return HttpResponseBadRequest()
+
         code = token_urlsafe(64)
         this_connexion = Connection(state=state, code=code, nonce=nonce)
         this_connexion.save()
-        if state is False:
-            log.info("403: There is no state")
-            return HttpResponseForbidden()
-        # TODO check nounce ...
+
         aidant = request.user
         mandats_for_aidant = Mandat.objects.filter(aidant=aidant)
         usagers = (
@@ -45,7 +50,6 @@ def authorize(request):
             .distinct()
             .order_by("family_name")
         )
-        # TODO Do we send the whole usager ? or only first name and last name and id ?
         return render(
             request,
             "aidants_connect_web/id_provider/authorize.html",
@@ -144,7 +148,6 @@ def token(request):
     host = settings.HOST
 
     if request.method == "GET":
-        log.info("This method is a get")
         return HttpResponse("You did a GET on a POST only route")
 
     rules = [
@@ -170,6 +173,7 @@ def token(request):
     if connection.expiresOn < timezone.now():
         log.info("403: Code expired")
         return HttpResponseForbidden()
+
     id_token = {
         # The audience, the Client ID of your Auth0 Application
         "aud": fc_client_id,
