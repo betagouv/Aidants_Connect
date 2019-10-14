@@ -82,7 +82,7 @@ class UseNewMandat(StaticLiveServerTestCase):
     def test_mandataires(self):
         browser = self.selenium
 
-        browser.get(f"{self.live_server_url}/authorize/?state=34")
+        browser.get(f"{self.live_server_url}/authorize/?state=34&nonce=45")
 
         # Login
         self.login_aidant()

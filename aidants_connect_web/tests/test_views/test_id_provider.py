@@ -72,15 +72,15 @@ class AuthorizeTests(TestCase):
         found = resolve("/authorize/")
         self.assertEqual(found.func, id_provider.authorize)
 
-    def test_authorize_url_without_arguments_returns_403(self):
+    def test_authorize_url_without_arguments_returns_400(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         response = self.client.get("/authorize/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
     def test_authorize_url_triggers_the_authorize_template(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
         fc_call_state = token_urlsafe(4)
-        # fc_call_nonce = token_urlsafe(4)
+        fc_call_nonce = token_urlsafe(4)
         # fc_response_type = "code"
         # fc_client_id = "FranceConnectInteg"
         # fc_redirect_uri = (
@@ -93,7 +93,7 @@ class AuthorizeTests(TestCase):
             "/authorize/",
             data={
                 "state": fc_call_state,
-                # "nonce": fc_call_nonce,
+                "nonce": fc_call_nonce,
                 # "response_type": fc_response_type,
                 # "client_id": fc_client_id,
                 # "redirect_uri": fc_redirect_uri,
@@ -110,7 +110,7 @@ class AuthorizeTests(TestCase):
         self.client.login(username="Thierry", password="motdepassedethierry")
         fc_call_state = token_urlsafe(4)
 
-        response = self.client.get("/authorize/", data={"state": fc_call_state})
+        response = self.client.get("/authorize/", data={"state": fc_call_state, "nonce": "fc_call_nonce"})
 
         self.assertIsInstance(response.context["state"], str)
         self.assertIsInstance(response.context["usagers"], QuerySet)
