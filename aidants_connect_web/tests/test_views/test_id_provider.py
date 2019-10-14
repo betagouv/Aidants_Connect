@@ -110,7 +110,9 @@ class AuthorizeTests(TestCase):
         self.client.login(username="Thierry", password="motdepassedethierry")
         fc_call_state = token_urlsafe(4)
 
-        response = self.client.get("/authorize/", data={"state": fc_call_state, "nonce": "fc_call_nonce"})
+        response = self.client.get(
+            "/authorize/", data={"state": fc_call_state, "nonce": "fc_call_nonce"}
+        )
 
         self.assertIsInstance(response.context["state"], str)
         self.assertIsInstance(response.context["usagers"], QuerySet)

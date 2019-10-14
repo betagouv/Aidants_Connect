@@ -4,7 +4,12 @@ import re
 import time
 
 from secrets import token_urlsafe
-from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.http import (
+    HttpResponseForbidden,
+    HttpResponse,
+    JsonResponse,
+    HttpResponseBadRequest,
+)
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import logout
