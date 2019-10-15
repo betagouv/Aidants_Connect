@@ -4,42 +4,66 @@
 
 {% block content %}
 
-<div class="notification warning full-width">Vous êtes sur un site en construction, l’interface proposée sera amenée à changer grâce à vos retours !</div>
-<section class="section">
-  <div class="container">
+{% block extracss %}
+<link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+<div class="hero">
+  <div class="hero__container">
     <div class="row">
-      <div class="hero__description">
+      <div class="hero__description text-center">
         <h1 class="brand">Bienvenue sur Aidants Connect</h1>
         <p class="lead-text">
-          Le service qui permet aux aidants professionnels de réaliser des démarches administratives en ligne pour le compte d’une personne via une connexion sécurisée.
+          Vous accompagnez régulièrement des personnes en difficulté avec le numérique dans la réalisation de démarches en ligne ? Aidants Connect est fait pour vous !
         </p>
-        <p>Ce service permet :
-          <ul>
-            <li>une protection du professionel déclarant comme de la personne aidée en cas d’erreur ;</li>
-            <li>un suivi des actions réalisées sur le compte de la personne.</li>
-          </ul>
-        </p>
+        <p>Ce service sécurise et facilite le « faire pour le compte de ».</p>
       </div>
-      <div class="column__image">
-        <img src="{% static 'images/aidantsconnect.png' %}" />
-      </div>
+      <img src="{% static "images/aidantsconnect-illustration.svg" %}" alt="" />
     </div>
   </div>
-</section>
-<section class="section section-grey">
+</div>
+<div class="notification full-width">Vous êtes sur un site en construction, l’interface proposée sera amenée à changer grâce à vos <a href="https://github.com/betagouv/Aidants_Connect/issues/new">retours</a> !</div>
+<section class="section section-grey ac-service">
   <div class="container">
+    <h2 class="text-center">Le service Aidants Connect</h2>
     <div class="row">
-      <div class="column__image">
-        <img src="{% static 'images/aidantsconnect2.svg' %}" />
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/key.svg' %}" />
+        <h3>Aidants Connect sécurise juridiquement les aidants</h3>
+        <p>qui accompagnent ces usagers sur les enjeux de confidentialité et de sécurité des données</p>
       </div>
-      <div class="issues">
-        <h2>À quel problème répond Aidants Connect ?</h2>
-        <ul>
-          <li>13 millions de français en difficulté numérique</li>
-          <li>Dématérialisation de 250 démarches administratives "icôniques" d’ici 2022</li>
-        </ul>
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/help.svg' %}" />
+        <h3>Aidants Connect garantit un accompagnement humain</h3>
+        <p>pour toutes les personnes qui, pour diverses raisons, ne peuvent pas faire leurs démarches en ligne</p></div>
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/people.svg' %}" />
+        <h3>Aidants Connect s’adresse à une diversité d’aidants professionnels</h3>
+        <p>Travailleurs sociaux, agents publics d’accueil, médiateurs numériques...</p>
+      </div>
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/build.svg' %}" />
+        <h3>Aidants Connect a été co-construits avec des aidants</h3>
+        <p>Des ateliers utilisateurs ont eu lieu dans une dizaine de territoires</p>
+      </div>
+      <div class="tile tile-colored text-center">
+        <img class="tile__icon" src="{% static 'images/cycle.svg' %}" />
+        <h3>Aidants Connect est évolutif</h3>
+        <p>Le service s’adapte aux réalités du terrain et aux besoins des aidants</p>
       </div>
     </div>
   </div>
 </section>
+<section class="section">
+  <div class="container">
+    <h2>Des outils à votre disposition</h2>
+    {% include 'aidants_connect_web/resource_list.html' %}
+  </div>
+</section>
+<section class="section section-grey fc-desc">
+  <div class="container container-small">
+    <h2 class="text-center">Aidants Connect est un service qui utilise <img class="logo__fc" src="{% static 'images/fc_logo_v2.png'%}" /></h2>
+  </div>
+</section>
+
 {% endblock content %}
