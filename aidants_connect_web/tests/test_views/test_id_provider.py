@@ -383,6 +383,10 @@ class UserInfoTests(TestCase):
             sub="test_sub",
             email="User@user.domain",
             creation_date="2019-08-05T15:49:13.972Z",
+            preferred_contact_method="",
+            contact_phone="",
+            contact_email="",
+            contact_address=None,
         )
 
         self.usager_2 = Usager.objects.create(
@@ -444,6 +448,10 @@ class UserInfoTests(TestCase):
             "sub": "test_sub",
             "email": "User@user.domain",
             "creation_date": "2019-08-05T15:49:13.972Z",
+            "preferred_contact_method": "",
+            "contact_phone": "",
+            "contact_email": "",
+            "contact_address": None,
         }
 
         content = response.json()

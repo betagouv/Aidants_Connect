@@ -94,6 +94,14 @@ class CreateNewMandat(StaticLiveServerTestCase):
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements_by_tag_name("input")
         id_personal_data = checkboxes[1]
+        contact = self.selenium.find_element_by_tag_name("select")
+        for option in contact.find_elements_by_tag_name("option"):
+            if option.text == "SMS":
+                option.click()
+                break
+
+        phone = self.selenium.find_element_by_name("phone")
+        phone.send_keys("0636656565")
         self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
         id_personal_data.click()
         id_brief = checkboxes[2]

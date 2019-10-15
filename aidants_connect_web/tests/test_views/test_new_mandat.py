@@ -95,7 +95,8 @@ class RecapTests(TestCase):
         session.save()
 
         response = self.client.post(
-            "/recap/", data={"personal_data": True, "brief": True}
+            "/recap/",
+            data={"personal_data": True, "brief": True, "contact_method_chosen": ""},
         )
         self.assertEqual(Usager.objects.all().count(), 1)
         usager = Usager.objects.get(given_name="Fabrice")
@@ -119,7 +120,8 @@ class RecapTests(TestCase):
         session["connection"] = mandat_builder.id
         session.save()
         response = self.client.post(
-            "/recap/", data={"personal_data": True, "brief": True}
+            "/recap/",
+            data={"personal_data": True, "brief": True, "contact_method_chosen": ""},
         )
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
@@ -135,7 +137,10 @@ class RecapTests(TestCase):
         session["connection"] = mandat_builder_1.id
         session.save()
         # trigger the mandat creation/update
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.post(
+            "/recap/",
+            data={"personal_data": True, "brief": True, "preferred_contact_method": ""},
+        )
 
         self.assertEqual(Mandat.objects.count(), 1)
         last_journal_entry = Journal.objects.last()
@@ -150,7 +155,10 @@ class RecapTests(TestCase):
         session["connection"] = mandat_builder_2.id
         session.save()
         # trigger the mandat creation/update
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.post(
+            "/recap/",
+            data={"personal_data": True, "brief": True, "preferred_contact_method": ""},
+        )
 
         self.assertEqual(Mandat.objects.count(), 1)
         updated_mandat = Mandat.objects.get(
@@ -171,7 +179,10 @@ class RecapTests(TestCase):
         session["connection"] = mandat_builder_1.id
         session.save()
         # trigger the mandat creation/update
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.post(
+            "/recap/",
+            data={"personal_data": True, "brief": True, "preferred_contact_method": ""},
+        )
         self.client.logout()
 
         # second session : Create same mandat with other aidant
@@ -184,7 +195,10 @@ class RecapTests(TestCase):
         session.save()
 
         # trigger the mandat creation/update
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.post(
+            "/recap/",
+            data={"personal_data": True, "brief": True, "preferred_contact_method": ""},
+        )
 
         self.assertEqual(Mandat.objects.count(), 2)
         first_mandat = Mandat.objects.get(

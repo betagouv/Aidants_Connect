@@ -222,6 +222,7 @@ class FCCallback(TestCase):
                 birthplace="70447",
                 birthcountry="99100",
                 email="User@user.domain",
+                preferred_contact_method="",
             ),
             None,
         )

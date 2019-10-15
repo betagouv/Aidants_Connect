@@ -36,6 +36,7 @@ class UseNewMandat(StaticLiveServerTestCase):
             birthcountry=99100,
             sub="test_sub",
             email="User@user.domain",
+            preferred_contact_method="",
         )
 
         Usager.objects.create(
@@ -48,6 +49,7 @@ class UseNewMandat(StaticLiveServerTestCase):
             birthcountry=99100,
             sub="test_sub_2",
             email="akasteing@user.domain",
+            preferred_contact_method="",
         )
 
         Mandat.objects.create(

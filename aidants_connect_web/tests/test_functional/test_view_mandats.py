@@ -29,6 +29,7 @@ class ViewMandats(StaticLiveServerTestCase):
             birthcountry=99100,
             sub="test_sub",
             email="Aidant@user.domain",
+            preferred_contact_method="",
         )
         cls.usager2 = Usager.objects.create(
             given_name="Corentin",
@@ -40,6 +41,8 @@ class ViewMandats(StaticLiveServerTestCase):
             birthcountry=99100,
             sub="test_sub2",
             email="Aidant2@user.domain",
+            preferred_contact_method="email",
+            contact_email="coco@dupuis.fr",
         )
         cls.mandat = Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
@@ -84,3 +87,13 @@ class ViewMandats(StaticLiveServerTestCase):
         # The first row is the title row
         mandats = rows[1:]
         self.assertEqual(len(mandats), 3)
+
+
+        # Check if contacts exist
+        show_contact = self.selenium.find_elements_by_class_name("show-contact")
+        self.assertEqual(len(show_contact), 1)
+        
+        show_contact[0].click()
+        contact = self.selenium.find_elements_by_class_name("contact")[0]
+        self.assertEqual(contact.text, "coco@dupuis.fr")
+

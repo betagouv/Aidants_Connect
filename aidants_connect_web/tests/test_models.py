@@ -75,6 +75,8 @@ class UsagerModelTest(TestCase):
         second_usager.birthcountry = 99100
         second_usager.email = "other_user@test.user"
         second_usager.sub = "1234"
+        second_usager.preferred_contact_method = "sms"
+        second_usager.contact_phone = "0636656565"
         second_usager.save()
 
         saved_items = Usager.objects.all()
@@ -86,6 +88,8 @@ class UsagerModelTest(TestCase):
         self.assertEqual(first_saved_item.given_name, "TEST NAME")
         self.assertEqual(str(first_saved_item.birthdate), "1902-06-30")
         self.assertEqual(second_saved_item.family_name, "TEST Family Name éèà")
+        self.assertEqual(second_saved_item.preferred_contact_method, "sms")
+        self.assertEqual(second_saved_item.contact_phone, "0636656565")
 
 
 @tag("models")
