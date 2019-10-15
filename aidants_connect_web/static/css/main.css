@@ -60,6 +60,10 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   color: #fff;
 }
 
+.footer__logo .logo__beta {
+  width: 170px;
+}
+
 @media (max-width: 699px) {
   form {
     padding: 0 1em;
