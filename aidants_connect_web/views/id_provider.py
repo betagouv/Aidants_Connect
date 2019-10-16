@@ -38,10 +38,10 @@ def authorize(request):
         nonce = request.GET.get("nonce", False)
 
         if state is False:
-            log.info("403: There is no state")
+            log.info("400 Bad request: There is no state")
             return HttpResponseBadRequest()
         elif nonce is False:
-            log.info("403: There is no nonce")
+            log.info("400 Bad request: There is no nonce")
             return HttpResponseBadRequest()
 
         code = token_urlsafe(64)
