@@ -90,6 +90,11 @@ EMAIL_HOST_PASSWORD = <insert_your_data>
 # email address the connexion email is sent from
 MAGICAUTH_FROM_EMAIL = "test@domain.user"
 
+# Information for the admin page
+ADMIN_URL = site-admin/
+ADMIN_NAME = Cayce Pollard
+ADMIN_EMAIL = cayce.pollard@domain.user
+
 # Optional
 DATABASE_SSL
 DEBUG

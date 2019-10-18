@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "aidants_connect_web",
+    "admin_honeypot",
 ]
 
 MIDDLEWARE = [
@@ -170,7 +171,6 @@ USE_TZ = True
 STATIC_ROOT = "staticfiles"
 STATIC_URL = "/static/"
 
-
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"
 
@@ -262,6 +262,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", None)
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", None)
 
+# Security headers
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
@@ -278,3 +279,6 @@ CSP_SCRIPT_SRC = ("'self'", "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
 
+# Admin Page settings
+ADMIN_URL = os.getenv("ADMIN_URL")
+ADMINS = [(os.getenv("ADMIN_NAME"), os.getenv("ADMIN_EMAIL"))]
