@@ -5,6 +5,10 @@ body {
   justify-content: space-between;
 }
 
+.previews {
+    display: none;
+}
+
 .navbar {
   border: 0;
 }
