@@ -282,3 +282,11 @@ CSP_OBJECT_SRC = ("'none'",)
 # Admin Page settings
 ADMIN_URL = os.getenv("ADMIN_URL")
 ADMINS = [(os.getenv("ADMIN_NAME"), os.getenv("ADMIN_EMAIL"))]
+
+# Cookie security
+SESSION_COOKIE_SECURE = False if os.getenv("SESSION_COOKIE_SECURE") == "False" else True
+CSRF_COOKIE_SECURE = False if os.getenv("CSRF_COOKIE_SECURE") == "False" else True
+
+# SSL security
+SECURE_SSL_REDIRECT = False if os.getenv("SECURE_SSL_REDIRECT") == "False" else True
+SECURE_HSTS_SECONDS = os.getenv("SECURE_HSTS_SECONDS")

@@ -95,6 +95,12 @@ ADMIN_URL = site-admin/
 ADMIN_NAME = Cayce Pollard
 ADMIN_EMAIL = cayce.pollard@domain.user
 
+# Force secure connection (can not work for local development)
+SESSION_COOKIE_SECURE = False when testing, True if using https
+CSRF_COOKIE_SECURE = False when testing, True if using https
+SECURE_HSTS_SECONDS = 0 if using http, production target 1 year
+SECURE_SSL_REDIRECT = False if using http, True if using https
+
 # Optional
 DATABASE_SSL
 DEBUG
