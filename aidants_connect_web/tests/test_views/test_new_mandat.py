@@ -13,6 +13,7 @@ from django.contrib.messages import get_messages
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views import new_mandat
 from aidants_connect_web.models import Aidant, Usager, Journal, Connection
+from aidants_connect_web.tests import factories
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -21,23 +22,21 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 class NewMandatTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = Aidant.objects.create_user(
-            "thierry@thierry.com", "thierry@thierry.com", "motdepassedethierry"
-        )
+        self.aidant_thierry = factories.UserFactory()
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
         found = resolve("/new_mandat/")
         self.assertEqual(found.func, new_mandat.new_mandat)
 
     def test_new_mandat_url_triggers_new_mandat_template(self):
-        self.client.force_login(self.aidant)
+        self.client.force_login(self.aidant_thierry)
         response = self.client.get("/new_mandat/")
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
 
     def test_badly_formated_form_triggers_original_template(self):
-        self.client.force_login(self.aidant)
+        self.client.force_login(self.aidant_thierry)
         data = {"perimeter": ["papiers", "logement"], "duree": "RAMDAM"}
         response = self.client.post("/new_mandat/", data=data)
         self.assertTemplateUsed(
@@ -45,7 +44,7 @@ class NewMandatTests(TestCase):
         )
 
     def test_well_formated_form_triggers_redirect_to_FC(self):
-        self.client.force_login(self.aidant)
+        self.client.force_login(self.aidant_thierry)
         data = {"perimeter": ["papiers", "logement"], "duree": "short"}
         response = self.client.post("/new_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
@@ -55,15 +54,7 @@ class NewMandatTests(TestCase):
 class RecapTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = Aidant.objects.create_user(
-            username="thierry@thierry.com",
-            email="thierry@thierry.com",
-            password="motdepassedethierry",
-            first_name="Thierry",
-            last_name="Groucheau",
-            organisme="Commune de Vernon",
-            profession="Médiateur",
-        )
+        self.aidant_thierry = factories.UserFactory()
 
         self.test_usager = Usager.objects.create(
             given_name="Fabrice",
@@ -89,9 +80,7 @@ class RecapTests(TestCase):
         self.assertEqual(found.func, new_mandat.recap)
 
     def test_recap_url_triggers_the_recap_template(self):
-        self.client.login(
-            username="thierry@thierry.com", password="motdepassedethierry"
-        )
+        self.client.force_login(self.aidant_thierry)
         session = self.client.session
         session["connection"] = 1
         session.save()
@@ -101,9 +90,7 @@ class RecapTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/new_mandat/recap.html")
 
     def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
-        self.client.login(
-            username="thierry@thierry.com", password="motdepassedethierry"
-        )
+        self.client.force_login(self.aidant_thierry)
         session = self.client.session
 
         session["connection"] = 2
@@ -126,9 +113,7 @@ class RecapTests(TestCase):
         self.assertEqual(entries[0].action, "create_mandat")
 
     def test_post_to_recap_without_usager_creates_error(self):
-        self.client.login(
-            username="thierry@thierry.com", password="motdepassedethierry"
-        )
+        self.client.force_login(self.aidant_thierry)
         session = self.client.session
         session["connection"] = 3
         session.save()
@@ -142,16 +127,7 @@ class RecapTests(TestCase):
 @tag("new_mandat")
 class GenerateMandatPDF(TestCase):
     def setUp(self):
-        self.aidant_thierry = Aidant.objects.create_user(
-            username="thierry@thierry.com",
-            email="thierry@thierry.com",
-            password="motdepassedethierry",
-            last_name="Goneau",
-            first_name="Thierry",
-            profession="secrétaire",
-            organisme="COMMUNE DE HOULBEC COCHEREL",
-            ville="HOULBEC COCHEREL",
-        )
+        self.aidant_thierry = factories.UserFactory()
         self.client = Client()
 
         self.test_usager = Usager.objects.create(
@@ -184,9 +160,7 @@ class GenerateMandatPDF(TestCase):
         self.assertEqual(found.func, new_mandat.generate_mandat_pdf)
 
     def test_response_is_a_pdf_download(self):
-        self.client.login(
-            username="thierry@thierry.com", password="motdepassedethierry"
-        )
+        self.client.force_login(self.aidant_thierry)
         session = self.client.session
         session["connection"] = 1
         session.save()
@@ -200,9 +174,7 @@ class GenerateMandatPDF(TestCase):
 
     @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
     def test_pdf_contains_text(self):
-        self.client.login(
-            username="thierry@thierry.com", password="motdepassedethierry"
-        )
+        self.client.force_login(self.aidant_thierry)
 
         session = self.client.session
         session["connection"] = 1
