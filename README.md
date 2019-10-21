@@ -53,47 +53,10 @@ Si la commande précédente déclenche le message d'erreur suivant `ld: library 
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
 ```
 
-Créer un fichier `.env` à la racine de votre projet et y ajouter les éléments suivants :
- 
+Changer le fichier `.env.example` à la racine du projet en .env` et ajoutez vos informations :
+- Les informations `FC_AS_FS` et `FC_AS_``I``` sont à récupérer via des habilitations FranceConnect
+- Les valeur de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
 
-```
-HOST= <insert_your_data> #e.g. http://localhost:8000
-APP_SECRET=<insert_your_secret>
-TEST="Everything is awesome"
-
-DATABASE_NAME=aidants_connect
-DATABASE_USER=aidants_connect_team
-DATABASE_PASSWORD='' or <insert_your_data>
-DATABASE_URL='' or <insert_your_data>
-DATABASE_PORT='' or <insert_your_data>
-# Can be replaced by a POSTGRES_URL (from https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING)
-
-FC_AS_FS_BASE_URL=<insert_your_data>
-FC_AS_FS_ID=<insert_your_data>
-FC_AS_FS_SECRET=<insert_your_data>
-FC_AS_FS_CALLBACK_URL=<insert_your_data>
-FC_AS_FS_TEST_PORT=<insert_your_data> or ''
-
-FC_AS_FI_ID=<insert_your_data>
-FC_AS_FI_SECRET=<insert_your_data>
-FC_AS_FI_CALLBACK_URL=<insert_your_data>
-
-# if you are debugging, and want to use the file based email backend
-EMAIL_BACKEND = django.core.mail.backends.filebased.EmailBackend
-
-# If you want to use the default smtp backend
-EMAIL_HOST = <insert_your_data>
-EMAIL_PORT = <insert_your_data>
-EMAIL_HOST_USER = <insert_your_data>
-EMAIL_HOST_PASSWORD = <insert_your_data>
-
-# email address the connexion email is sent from
-MAGICAUTH_FROM_EMAIL = "test@domain.user"
-
-# Optional
-DATABASE_SSL
-DEBUG
-```
 
 Créer un repertoire `staticfiles` 
 ```

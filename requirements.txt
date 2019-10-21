@@ -18,3 +18,7 @@ mock==3.0.5
 WeasyPrint==48
 PyPDF2==1.26.0
 git+git://github.com/betagouv/django-magicauth@redirect_to_next
+django-referrer-policy==1.0
+django-admin-honeypot==1.1.0
+django-csp==3.5
+

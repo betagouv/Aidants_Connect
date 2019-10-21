@@ -7,7 +7,7 @@ from aidants_connect_web.models import Aidant, Usager, Mandat
 from datetime import date
 
 
-@tag("functional")
+@tag("functional", "this")
 class ViewMandats(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
