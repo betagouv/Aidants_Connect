@@ -12,7 +12,7 @@ from django.contrib.messages import get_messages
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views import new_mandat
-from aidants_connect_web.models import Aidant, Usager, Journal, Connection
+from aidants_connect_web.models import Usager, Journal, Connection, Mandat
 from aidants_connect_web.tests import factories
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -55,6 +55,7 @@ class RecapTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant_thierry = factories.UserFactory()
+        self.aidant_monique = factories.UserFactory(username="monique@monique.com")
 
         self.test_usager = Usager.objects.create(
             given_name="Fabrice",
@@ -74,6 +75,10 @@ class RecapTests(TestCase):
             id=2, demarches=["papiers", "logement"], duree=1, usager=self.test_usager
         )
         Connection.objects.create(id=3, demarches=["papiers", "logement"], duree=1)
+
+        Connection.objects.create(
+            id=4, demarches=["papiers"], duree=6, usager=self.test_usager
+        )
 
     def test_recap_url_triggers_the_recap_view(self):
         found = resolve("/recap/")
@@ -123,6 +128,73 @@ class RecapTests(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
+    def test_updating_mandat_for_for_same_aidant(self):
+        self.client.force_login(self.aidant_thierry)
+
+        # first session : creating the mandat
+        session = self.client.session
+        session["connection"] = 2
+        session.save()
+        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.assertEqual(Mandat.objects.count(), 2)
+        journal_entries = Journal.objects.all()
+        self.assertEqual(journal_entries.count(), 3)
+        self.assertEqual(journal_entries[1].action, "create_mandat")
+        self.assertEqual(journal_entries[2].action, "create_mandat")
+
+        # second session : updating the mandat
+        session = self.client.session
+        session["connection"] = 4
+        session.save()
+
+        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+
+        self.assertEqual(Mandat.objects.count(), 2)
+        first_mandat = Mandat.objects.get(demarche="papiers")
+        self.assertEqual(first_mandat.usager.given_name, "Fabrice")
+        self.assertEqual(first_mandat.duree, 6)
+
+        journal_entries = Journal.objects.all()
+        self.assertEqual(journal_entries.count(), 4)
+        self.assertEqual(journal_entries[3].action, "update_mandat")
+
+    def test_not_updating_mandat_for_different_aidant(self):
+        self.client.force_login(self.aidant_thierry)
+
+        # first session : creating the mandat
+        session = self.client.session
+        session["connection"] = 2
+        session.save()
+        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.logout()
+
+        # second session : updating the mandat
+
+        self.client.force_login(self.aidant_monique)
+
+        session = self.client.session
+        session["connection"] = 4
+        session.save()
+
+        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+
+        self.assertEqual(Mandat.objects.count(), 3)
+        first_mandat = Mandat.objects.all()[0]
+        self.assertEqual(first_mandat.usager.given_name, "Fabrice")
+        self.assertEqual(first_mandat.demarche, "papiers")
+        self.assertEqual(first_mandat.aidant, self.aidant_thierry)
+        self.assertEqual(first_mandat.duree, 1)
+
+        third_mandat = Mandat.objects.all()[2]
+        self.assertEqual(third_mandat.usager.given_name, "Fabrice")
+        self.assertEqual(third_mandat.demarche, "papiers")
+        self.assertEqual(third_mandat.aidant, self.aidant_monique)
+        self.assertEqual(third_mandat.duree, 6)
+
+        journal_entries = Journal.objects.all()
+        self.assertEqual(journal_entries.count(), 5)
+        self.assertEqual(journal_entries[4].action, "create_mandat")
+
 
 @tag("new_mandat")
 class GenerateMandatPDF(TestCase):
@@ -164,7 +236,6 @@ class GenerateMandatPDF(TestCase):
         session = self.client.session
         session["connection"] = 1
         session.save()
-
         response = self.client.get("/generate_mandat_pdf/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(

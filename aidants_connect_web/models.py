@@ -65,6 +65,9 @@ class Mandat(models.Model):
         blank=False, default="No token provided"
     )
 
+    class Meta:
+        unique_together = ["aidant", "demarche", "usager"]
+
 
 class Connection(models.Model):
     state = models.TextField()  # FS
@@ -105,6 +108,24 @@ class JournalManager(models.Manager):
             initiator=initiator,
             usager=usager_info,
             action="create_mandat",
+            demarche=mandat.demarche,
+            duree=mandat.duree,
+            access_token=mandat.modified_by_access_token,
+            mandat=mandat.id,
+        )
+        return journal_entry
+
+    def mandat_update(self, mandat: Mandat):
+        aidant = mandat.aidant
+        usager = mandat.usager
+
+        initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
+        usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
+
+        journal_entry = self.create(
+            initiator=initiator,
+            usager=usager_info,
+            action="update_mandat",
             demarche=mandat.demarche,
             duree=mandat.duree,
             access_token=mandat.modified_by_access_token,

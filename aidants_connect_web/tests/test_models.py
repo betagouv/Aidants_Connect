@@ -139,6 +139,24 @@ class MandatModelTest(TestCase):
         self.assertEqual(first_mandat.demarche, "Carte grise")
         self.assertEqual(second_mandat.usager.family_name, "Flanders")
 
+    def test_cannot_have_two_mandat_for_user_demarche_tuple(self):
+        Mandat.objects.create(
+            aidant=self.aidant_marge,
+            usager=self.usager_homer,
+            demarche="Logement",
+            duree=3,
+        )
+        self.assertEqual(Mandat.objects.count(), 1)
+
+        self.assertRaises(
+            IntegrityError,
+            Mandat.objects.create,
+            aidant=self.aidant_marge,
+            usager=self.usager_homer,
+            demarche="Logement",
+            duree=6,
+        )
+
 
 class AidantModelTest(TestCase):
     def test_what_happens_to_password_when_not_set(self):

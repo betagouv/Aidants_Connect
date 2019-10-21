@@ -10,5 +10,8 @@ def on_login(sender, user, request, **kwargs):
 
 
 @receiver(post_save, sender=Mandat)
-def on_mandat_change(sender, instance, **kwargs):
-    Journal.objects.mandat_creation(instance)
+def on_mandat_change(sender, instance, created, **kwargs):
+    if created:
+        Journal.objects.mandat_creation(instance)
+    else:
+        Journal.objects.mandat_update(instance)
