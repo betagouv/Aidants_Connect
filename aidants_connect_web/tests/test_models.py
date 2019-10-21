@@ -88,11 +88,12 @@ class UsagerModelTest(TestCase):
         self.assertEqual(second_saved_item.family_name, "TEST Family Name éèà")
 
 
+@tag("models")
 class MandatModelTest(TestCase):
-    def test_saving_and_retrieving_mandat(self):
-        aidant_marge = Aidant.objects.create(username="Marge")
-        aidant_patricia = Aidant.objects.create(username="Patricia")
-        usager_homer = Usager.objects.create(
+    def setUp(self) -> None:
+        self.aidant_marge = Aidant.objects.create(username="Marge")
+        self.aidant_patricia = Aidant.objects.create(username="Patricia")
+        self.usager_homer = Usager.objects.create(
             given_name="Homer",
             family_name="Simpson",
             birthdate="1902-06-30",
@@ -102,7 +103,7 @@ class MandatModelTest(TestCase):
             email="homer@simpson.com",
             sub="123",
         )
-        usager_ned = Usager.objects.create(
+        self.usager_ned = Usager.objects.create(
             given_name="Ned",
             family_name="Flanders",
             birthdate="1902-06-30",
@@ -113,23 +114,30 @@ class MandatModelTest(TestCase):
             sub="1234",
         )
 
-        Mandat.objects.create(
-            aidant=aidant_marge, usager=usager_homer, demarche="Carte grise", duree=3
+    def test_saving_and_retrieving_mandat(self):
+        first_mandat = Mandat.objects.create(
+            aidant=self.aidant_marge,
+            usager=self.usager_homer,
+            demarche="Carte grise",
+            duree=3,
+        )
+        second_mandat = Mandat.objects.create(
+            aidant=self.aidant_patricia,
+            usager=self.usager_ned,
+            demarche="Revenus",
+            duree=6,
         )
 
-        Mandat.objects.create(
-            aidant=aidant_patricia, usager=usager_ned, demarche="Revenus", duree=6
-        )
+        self.assertEqual(Mandat.objects.count(), 2)
 
-        saved_items = Mandat.objects.all()
-        self.assertEqual(saved_items.count(), 2)
+        journal_entries = Journal.objects.all()
+        self.assertEqual(journal_entries.count(), 2)
+        self.assertEqual(journal_entries[0].action, "create_mandat")
+        self.assertEqual(journal_entries[1].action, "create_mandat")
 
-        first_saved_item = saved_items[0]
-        second_saved_item = saved_items[1]
-
-        self.assertEqual(first_saved_item.aidant.username, "Marge")
-        self.assertEqual(first_saved_item.demarche, "Carte grise")
-        self.assertEqual(second_saved_item.usager.family_name, "Flanders")
+        self.assertEqual(first_mandat.aidant.username, "Marge")
+        self.assertEqual(first_mandat.demarche, "Carte grise")
+        self.assertEqual(second_mandat.usager.family_name, "Flanders")
 
 
 class AidantModelTest(TestCase):
