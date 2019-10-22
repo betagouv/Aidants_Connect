@@ -270,8 +270,27 @@ class FISelectDemarcheTest(TestCase):
         self.assertNotIn("logement", mandats)
         self.assertEqual(len(mandats), 2)
 
-    # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
-    #  code}&state={state}"
+    @freeze_time(date_further_away)
+    def test_post_to_select_demarche_triggers_redirect(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.post(
+            "/select_demarche/",
+            data={"state": "test_state", "chosen_demarche": "famille"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url, f"{fc_callback_url}?code=test_code&state=test_state"
+        )
+
+    @freeze_time(date_further_away)
+    def test_post_to_select_demarche_with_expired_demarche_triggers_403(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.post(
+            "/select_demarche/",
+            data={"state": "test_state", "chosen_demarche": "logement"},
+        )
+        self.assertEqual(response.status_code, 403)
+
 
 
 @tag("id_provider")

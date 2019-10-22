@@ -180,10 +180,19 @@ def fi_select_demarche(request):
 
         # TODO check if connection has not expired
         chosen_demarche = request.POST.get("chosen_demarche")
+        try:
+            chosen_mandat = Mandat.objects.get(
+                usager=connection.usager,
+                aidant=request.user,
+                demarche=chosen_demarche,
+                expiration_date__gt=timezone.now(),
+            )
+        except Mandat.DoesNotExist:
+            log.info("The mandat asked does not exist")
+            return HttpResponseForbidden()
+
         connection.demarche = chosen_demarche
-        connection.mandat = Mandat.objects.get(
-            usager=connection.usager, aidant=request.user, demarche=chosen_demarche
-        )
+        connection.mandat = chosen_mandat
         connection.complete = True
         connection.aidant = request.user
         connection.save()
