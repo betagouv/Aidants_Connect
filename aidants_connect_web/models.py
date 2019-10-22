@@ -4,6 +4,8 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
+from django.db.models.signals import post_init
+from django.dispatch import receiver
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -56,17 +58,29 @@ class Usager(models.Model):
 
 
 class Mandat(models.Model):
-    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, default=0)
-    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
-    demarche = models.CharField(blank=False, max_length=100)
-    creation_date = models.DateTimeField(default=timezone.now)
+    # Journal entry creation information
     duree = models.IntegerField(default=3)
     modified_by_access_token = models.TextField(
         blank=False, default="No token provided"
     )
+    # Mandat information
+    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, default=0)
+    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
+    demarche = models.CharField(blank=False, max_length=100)
+    # Mandat expiration date management
+    creation_date = models.DateTimeField(default=timezone.now)
+    expiration_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ["aidant", "demarche", "usager"]
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expiration_date
+
+@receiver(post_init, sender=Mandat)
+def generate_expiration_date(sender, instance, **kwargs):
+    instance.expiration_date = instance.creation_date + timedelta(days=instance.duree)
 
 
 class Connection(models.Model):

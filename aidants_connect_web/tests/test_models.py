@@ -1,7 +1,9 @@
 from django.test import TestCase, tag
 from django.db.utils import IntegrityError
 from aidants_connect_web.models import Connection, Aidant, Usager, Mandat, Journal
-from datetime import date
+from datetime import date, datetime
+from freezegun import freeze_time
+from pytz import timezone
 
 
 class ConnectionModelTest(TestCase):
@@ -157,6 +159,25 @@ class MandatModelTest(TestCase):
             usager=self.usager_homer,
             demarche="Logement",
             duree=6,
+        )
+
+    fake_date = datetime(2019, 1, 14, tzinfo=timezone("Europe/Paris"))
+
+    @freeze_time(fake_date)
+    def test_mandat_expiration_date_setting(self):
+        mandat_1 = Mandat.objects.create(
+            aidant=self.aidant_marge,
+            usager=self.usager_homer,
+            demarche="Carte grise",
+            duree=3,
+        )
+        self.assertEqual(
+            mandat_1.creation_date,
+            datetime(2019, 1, 14, tzinfo=timezone("Europe/Paris")),
+        )
+        self.assertEqual(
+            mandat_1.expiration_date,
+            datetime(2019, 1, 17, tzinfo=timezone("Europe/Paris")),
         )
 
 
