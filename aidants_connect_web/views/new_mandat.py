@@ -81,12 +81,14 @@ def recap(request):
         if form.get("personal_data") and form.get("brief"):
             for demarche in connection.demarches:
                 try:
-                    Mandat.objects.create(
+                    Mandat.objects.update_or_create(
                         aidant=aidant,
                         usager=usager,
                         demarche=demarche,
-                        duree=connection.duree,
-                        modified_by_access_token=connection.access_token,
+                        defaults={
+                            "duree": connection.duree,
+                            "modified_by_access_token": connection.access_token,
+                        },
                     )
 
                 except IntegrityError as e:
