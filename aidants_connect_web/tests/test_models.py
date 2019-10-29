@@ -90,10 +90,11 @@ class UsagerModelTest(TestCase):
 
 @tag("models")
 class MandatModelTest(TestCase):
-    def setUp(self) -> None:
-        self.aidant_marge = Aidant.objects.create(username="Marge")
-        self.aidant_patricia = Aidant.objects.create(username="Patricia")
-        self.usager_homer = Usager.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_marge = Aidant.objects.create(username="Marge")
+        cls.aidant_patricia = Aidant.objects.create(username="Patricia")
+        cls.usager_homer = Usager.objects.create(
             given_name="Homer",
             family_name="Simpson",
             birthdate="1902-06-30",
@@ -103,7 +104,7 @@ class MandatModelTest(TestCase):
             email="homer@simpson.com",
             sub="123",
         )
-        self.usager_ned = Usager.objects.create(
+        cls.usager_ned = Usager.objects.create(
             given_name="Ned",
             family_name="Flanders",
             birthdate="1902-06-30",
@@ -121,6 +122,7 @@ class MandatModelTest(TestCase):
             demarche="Carte grise",
             duree=3,
         )
+
         second_mandat = Mandat.objects.create(
             aidant=self.aidant_patricia,
             usager=self.usager_ned,
