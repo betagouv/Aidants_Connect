@@ -103,6 +103,10 @@ python manage.py runserver 3000
 
 ### Ré-initialiser la base de données
 
+Récupérez les données
+```
+python manage.py dumpdata --exclude auth.permission --exclude contenttypes > db.json
+```
 Dans le shell
 ```
 psql
@@ -119,6 +123,13 @@ puis dans le shell
 ```
 python manage.py makemigrations
 python manage.py migrate
+```
+Chargez les données
+```bash
+python manage.py loaddata db.json
+```
+ou 
+```
 python manage.py createsuperuser
 ```
 
