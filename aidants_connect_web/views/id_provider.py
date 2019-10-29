@@ -143,10 +143,8 @@ def fi_select_demarche(request):
         state = request.GET.get("state", False)
         usager = Connection.objects.get(state=state).usager
         all_demarches = settings.DEMARCHES
-        mandats = Mandat.objects.filter(usager=usager, aidant=request.user).exclude(
-            expiration_date__lt=timezone.now()
-        )
-        nom_demarches = set(mandats.values_list("demarche", flat=True))
+        aidant = request.user
+        nom_demarches = aidant.get_current_demarches_for_usager(usager)
 
         demarches = {
             nom_demarche: all_demarches[nom_demarche] for nom_demarche in nom_demarches

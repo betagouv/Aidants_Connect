@@ -40,6 +40,16 @@ class Aidant(AbstractUser):
         )
         return usagers
 
+    def get_current_demarches_for_usager(self, usager):
+        """
+        :param usager:
+        :return: list of demarche the usager and the aidant have a active mandat for
+        """
+        mandats = Mandat.objects.filter(usager=usager, aidant=self).exclude(
+            expiration_date__lt=timezone.now()
+        )
+        return mandats.values_list("demarche", flat=True)
+
 
 class Usager(models.Model):
     given_name = models.TextField(blank=False)
