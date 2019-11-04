@@ -176,19 +176,34 @@ def token(request):
     if request.method == "GET":
         return HttpResponse("You did a GET on a POST only route")
 
-    rules = [
-        request.POST.get("grant_type") == "authorization_code",
-        request.POST.get("redirect_uri") == fc_callback_url,
-        request.POST.get("client_id") == fc_client_id,
-        request.POST.get("client_secret") == fc_client_secret,
-    ]
-    if not all(rules):
-        log.info("403: Rules are not all abided")
-        log.info(rules)
-        return HttpResponseForbidden()
+    parameters = {
+        "code": request.POST.get("code"),
+        "grant_type": request.POST.get("grant_type"),
+        "redirect_uri": request.POST.get("redirect_uri"),
+        "client_id": request.POST.get("client_id"),
+        "client_secret": request.POST.get("client_secret"),
+    }
+    expected_static_parameters = {
+        "grant_type": "authorization_code",
+        "redirect_uri": fc_callback_url,
+        "client_id": fc_client_id,
+        "client_secret": fc_client_secret,
+    }
 
-    code = request.POST.get("code")
+    for parameter, value in parameters.items():
+        if not value:
+            error_message = f"400 Bad request: There is no {parameter} @ token"
+            log.info(error_message)
+            return HttpResponseBadRequest()
+        if (
+                parameter in expected_static_parameters
+                and value != expected_static_parameters[parameter]
+        ):
+            error_message = f"403 forbidden request: unexpected {parameter} @ token"
+            log.info(error_message)
+            return HttpResponseForbidden()
 
+    code = parameters["code"]
     try:
         connection = Connection.objects.get(code=code)
     except ObjectDoesNotExist:

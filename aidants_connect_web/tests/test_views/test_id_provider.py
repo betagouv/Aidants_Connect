@@ -337,6 +337,12 @@ class TokenTests(TestCase):
         fc_request["code"] = "wrong_code"
         response = self.client.post("/token/", fc_request)
         self.assertEqual(response.status_code, 403)
+    def test_missing_parameters_triggers_bad_request(self):
+        for parameter in self.fc_request:
+            bad_request = dict(self.fc_request)
+            del bad_request[parameter]
+            response = self.client.post("/token/", bad_request)
+            self.assertEqual(response.status_code, 400)
 
     date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
 
