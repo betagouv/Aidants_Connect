@@ -21,6 +21,7 @@ from aidants_connect_web.models import (
     CONNECTION_EXPIRATION_TIME,
     Journal,
 )
+from aidants_connect_web.tests import factories
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -29,8 +30,9 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = Aidant.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
+        self.aidant_thierry = factories.UserFactory()
+        self.aidant_jacques = factories.UserFactory(
+            username="jacques@domain.user", email="jacques@domain.user"
         )
         Aidant.objects.create_user(
             "Jacques", "jacques@domain.user", "motdepassedejacques"
@@ -47,38 +49,38 @@ class AuthorizeTests(TestCase):
             email="User@user.domain",
         )
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Revenus",
             duree=6,
         )
 
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Famille",
             duree=12,
         )
 
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="Jacques"),
+            aidant=Aidant.objects.get(username=self.aidant_jacques.username),
             usager=Usager.objects.get(sub="123"),
             demarche="Logement",
             duree=12,
         )
 
     def test_authorize_url_triggers_the_authorize_view(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         found = resolve("/authorize/")
         self.assertEqual(found.func, id_provider.authorize)
 
     def test_authorize_url_without_arguments_returns_400(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         response = self.client.get("/authorize/")
         self.assertEqual(response.status_code, 400)
 
     def test_authorize_url_triggers_the_authorize_template(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         good_data = {
             "state": token_urlsafe(4),
             "nonce": token_urlsafe(4),
@@ -96,8 +98,7 @@ class AuthorizeTests(TestCase):
         )
 
     def test_authorize_url_without_right_parameters_triggers_bad_request(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
-
+        self.client.force_login(self.aidant_thierry)
         good_data = {
             "state": token_urlsafe(4),
             "nonce": token_urlsafe(4),
@@ -116,7 +117,7 @@ class AuthorizeTests(TestCase):
             self.assertEqual(response.status_code, 400)
 
     def test_authorize_url_with_wrong_parameters_triggers_403(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
 
         dynamic_data = {"state": token_urlsafe(4), "nonce": token_urlsafe(4)}
         good_static_data = {
@@ -136,8 +137,7 @@ class AuthorizeTests(TestCase):
             self.assertEqual(response.status_code, 403)
 
     def test_authorize_sends_the_correct_amount_of_usagers(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
-        fc_call_state = token_urlsafe(4)
+        self.client.force_login(self.aidant_thierry)
 
         response = self.client.get(
             "/authorize/",
@@ -158,7 +158,7 @@ class AuthorizeTests(TestCase):
         self.assertIsInstance(response.context["aidant"], Aidant)
 
     def test_sending_user_information_triggers_callback(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         c = Connection.objects.create(
             state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
         )
@@ -184,9 +184,7 @@ class AuthorizeTests(TestCase):
 class FISelectDemarcheTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = Aidant.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
-        )
+        self.aidant_thierry = factories.UserFactory()
         self.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -213,24 +211,30 @@ class FISelectDemarcheTest(TestCase):
             state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
         )
         self.mandat = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager, demarche="transports", duree=6
+            aidant=self.aidant_thierry,
+            usager=self.usager,
+            demarche="transports",
+            duree=6,
         )
 
         self.mandat_2 = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager, demarche="famille", duree=3
+            aidant=self.aidant_thierry, usager=self.usager, demarche="famille", duree=3
         )
 
         self.mandat_3 = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager2, demarche="logement", duree=3
+            aidant=self.aidant_thierry,
+            usager=self.usager2,
+            demarche="logement",
+            duree=3,
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         found = resolve("/select_demarche/")
         self.assertEqual(found.func, id_provider.fi_select_demarche)
 
     def test_FI_select_demarche_triggers_FI_select_demarche_template(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
 
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
 
@@ -239,7 +243,7 @@ class FISelectDemarcheTest(TestCase):
         )
 
     def test_get_perimeters_for_one_usager_and_two_mandats(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
 
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
         demarches = response.context["demarches"]
@@ -346,6 +350,8 @@ class TokenTests(TestCase):
         fc_request["code"] = "wrong_code"
         response = self.client.post("/token/", fc_request)
         self.assertEqual(response.status_code, 403)
+
+    @tag("thisi")
     def test_missing_parameters_triggers_bad_request(self):
         for parameter in self.fc_request:
             bad_request = dict(self.fc_request)
@@ -392,12 +398,13 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
-        self.aidant = Aidant.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
-        )
+        self.aidant_thierry = factories.UserFactory()
 
         self.mandat = Mandat.objects.create(
-            aidant=self.aidant, usager=self.usager, demarche="transports", duree=6
+            aidant=self.aidant_thierry,
+            usager=self.usager,
+            demarche="transports",
+            duree=6,
         )
 
         self.connection = Connection.objects.create(
@@ -409,7 +416,7 @@ class UserInfoTests(TestCase):
             expiresOn=datetime(
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
             ),
-            aidant=self.aidant,
+            aidant=self.aidant_thierry,
             mandat=self.mandat,
         )
 
