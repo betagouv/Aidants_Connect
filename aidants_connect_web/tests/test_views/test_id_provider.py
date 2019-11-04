@@ -140,7 +140,16 @@ class AuthorizeTests(TestCase):
         fc_call_state = token_urlsafe(4)
 
         response = self.client.get(
-            "/authorize/", data={"state": fc_call_state, "nonce": "fc_call_nonce"}
+            "/authorize/",
+            data={
+                "state": token_urlsafe(4),
+                "nonce": "fc_call_nonce",
+                "response_type": "code",
+                "client_id": settings.FC_AS_FI_ID,
+                "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+                "scope": "openid profile email address phone birth",
+                "acr_values": "eidas1",
+            },
         )
 
         self.assertIsInstance(response.context["state"], str)

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core import mail
 from django.test import tag
@@ -82,7 +83,18 @@ class UseNewMandat(StaticLiveServerTestCase):
     def test_mandataires(self):
         browser = self.selenium
 
-        browser.get(f"{self.live_server_url}/authorize/?state=34&nonce=45")
+        parameters = (
+            f"state=34"
+            f"&nonce=45"
+            f"&response_type=code"
+            f"&client_id={settings.FC_AS_FI_ID}"
+            f"&redirect_uri={settings.FC_AS_FI_CALLBACK_URL}"
+            f"&scope=openid profile email address phone birth"
+            f"&acr_values=eidas1"
+        )
+
+        url = f"{self.live_server_url}/authorize/?{parameters}"
+        browser.get(url)
 
         # Login
         self.login_aidant()
