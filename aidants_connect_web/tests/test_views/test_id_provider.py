@@ -79,32 +79,61 @@ class AuthorizeTests(TestCase):
 
     def test_authorize_url_triggers_the_authorize_template(self):
         self.client.login(username="Thierry", password="motdepassedethierry")
-        fc_call_state = token_urlsafe(4)
-        fc_call_nonce = token_urlsafe(4)
-        # fc_response_type = "code"
-        # fc_client_id = "FranceConnectInteg"
-        # fc_redirect_uri = (
-        #     "https%3A%2F%2Ffcp.integ01.dev-franceconnect.fr%2Foidc_callback"
-        # )
-        # fc_scopes = "openid profile email address phone birth"
-        # fc_acr_values = "eidas1"
+        good_data = {
+            "state": token_urlsafe(4),
+            "nonce": token_urlsafe(4),
+            "response_type": "code",
+            "client_id": settings.FC_AS_FI_ID,
+            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+            "scope": "openid profile email address phone birth",
+            "acr_values": "eidas1",
+        }
 
-        response = self.client.get(
-            "/authorize/",
-            data={
-                "state": fc_call_state,
-                "nonce": fc_call_nonce,
-                # "response_type": fc_response_type,
-                # "client_id": fc_client_id,
-                # "redirect_uri": fc_redirect_uri,
-                # "scope": fc_scopes,
-                # "acr_values": fc_acr_values,
-            },
-        )
+        response = self.client.get("/authorize/", data=good_data)
 
         self.assertTemplateUsed(
             response, "aidants_connect_web/id_provider/authorize.html"
         )
+
+    def test_authorize_url_without_right_parameters_triggers_bad_request(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+
+        good_data = {
+            "state": token_urlsafe(4),
+            "nonce": token_urlsafe(4),
+            "response_type": "code",
+            "client_id": settings.FC_AS_FI_ID,
+            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+            "scope": "openid profile email address phone birth",
+            "acr_values": "eidas1",
+        }
+
+        for data, value in good_data.items():
+            data_with_missing_item = good_data.copy()
+            del data_with_missing_item[data]
+            response = self.client.get("/authorize/", data=data_with_missing_item)
+
+            self.assertEqual(response.status_code, 400)
+
+    def test_authorize_url_with_wrong_parameters_triggers_403(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+
+        dynamic_data = {"state": token_urlsafe(4), "nonce": token_urlsafe(4)}
+        good_static_data = {
+            "response_type": "code",
+            "client_id": settings.FC_AS_FI_ID,
+            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+            "scope": "openid profile email address phone birth",
+            "acr_values": "eidas1",
+        }
+
+        for data, value in good_static_data.items():
+            static_data_with_wrong_item = good_static_data.copy()
+            static_data_with_wrong_item[data] = "wrong_data"
+            sent_data = {**dynamic_data, **static_data_with_wrong_item}
+            response = self.client.get("/authorize/", data=sent_data)
+
+            self.assertEqual(response.status_code, 403)
 
     def test_authorize_sends_the_correct_amount_of_usagers(self):
         self.client.login(username="Thierry", password="motdepassedethierry")

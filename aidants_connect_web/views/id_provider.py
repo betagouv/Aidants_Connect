@@ -34,18 +34,39 @@ log = logging.getLogger()
 @login_required
 def authorize(request):
     if request.method == "GET":
-        state = request.GET.get("state", False)
-        nonce = request.GET.get("nonce", False)
-
-        if state is False:
-            log.info("400 Bad request: There is no state")
-            return HttpResponseBadRequest()
-        elif nonce is False:
-            log.info("400 Bad request: There is no nonce")
-            return HttpResponseBadRequest()
+        parameters = {
+            "state": request.GET.get("state", False),
+            "nonce": request.GET.get("nonce", False),
+            "response_type": request.GET.get("response_type", False),
+            "client_id": request.GET.get("client_id", False),
+            "redirect_uri": request.GET.get("redirect_uri", False),
+            "scope": request.GET.get("scope", False),
+            "acr_values": request.GET.get("acr_values", False),
+        }
+        expected_static_parameters = {
+            "response_type": "code",
+            "client_id": settings.FC_AS_FI_ID,
+            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+            "scope": "openid profile email address phone birth",
+            "acr_values": "eidas1",
+        }
+        for parameter, value in parameters.items():
+            if value is False:
+                error_message = f"400 Bad request: There is no {parameter}"
+                log.info(error_message)
+                return HttpResponseBadRequest()
+            if (
+                parameter in expected_static_parameters
+                and parameters[parameter] != expected_static_parameters[parameter]
+            ):
+                error_message = f"403 forbidden request: unexpected {parameter} @ authorize"
+                log.info(error_message)
+                return HttpResponseForbidden()
 
         code = token_urlsafe(64)
-        this_connexion = Connection(state=state, code=code, nonce=nonce)
+        this_connexion = Connection(
+            state=parameters["state"], code=code, nonce=parameters["nonce"]
+        )
         this_connexion.save()
 
         aidant = request.user
@@ -58,7 +79,7 @@ def authorize(request):
         return render(
             request,
             "aidants_connect_web/id_provider/authorize.html",
-            {"state": state, "usagers": usagers, "aidant": aidant},
+            {"state": parameters["state"], "usagers": usagers, "aidant": aidant},
         )
 
     else:
