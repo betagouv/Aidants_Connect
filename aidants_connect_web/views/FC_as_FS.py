@@ -47,6 +47,7 @@ def fc_authorize(request):
         f"&scope={'openid' + ''.join(['%20' + scope for scope in fc_scopes])}"
         f"&state={connection.state}"
         f"&nonce={connection.nonce}"
+        f"&acr_values=eidas1"
     )
 
     authorize_url = f"{fc_base}/authorize?{parameters}"
