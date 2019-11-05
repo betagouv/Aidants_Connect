@@ -1,7 +1,9 @@
+{% load static %}
+
 <div class="row">
     <div class="card">
       <div class="card__cover">
-         <img src="https://societenumerique.gouv.fr/wp-content/uploads/2018/05/mockupkit-1.png" alt="Écran montrant le site du kit d'intervention rapide">
+         <img src="{% static "images/ressources/kitinterventionrimage.png" %}"  alt="Écran montrant le site du kit d'intervention rapide">
       </div>
       <div class="card__content">
         <h3 class="brand">Kit d'intervention rapide</h3>
@@ -16,7 +18,7 @@
     </div>
     <div class="card">
       <div class="card__cover">
-         <img src="" alt="Écran montrant le site du kit d'intervention rapide">
+         <img src="{% static "images/ressources/maquetteimpotsimage.png" %}" alt="Écran montrant le site de démonstration des impôts">
       </div>
       <div class="card__content">
         <h3 class="brand">Site de démonstration des impôts</h3>
@@ -30,7 +32,7 @@
     </div>
     <div class="card">
       <div class="card__cover">
-         <img src="" alt="Écran montrant le site du kit d'intervention rapide">
+         <img src="{% static "images/ressources/forumimage.png" %}" alt="Écran montrant le forum des aidants">
       </div>
         <div class="card__content">
           <h3 class="brand">Forum des aidants</h3>
