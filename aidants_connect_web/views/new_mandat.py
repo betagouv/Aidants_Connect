@@ -17,6 +17,9 @@ from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views.service import humanize_demarche_names
 
+from datetime import timedelta
+from django.utils import timezone
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -86,8 +89,10 @@ def recap(request):
                         usager=usager,
                         demarche=demarche,
                         defaults={
-                            "duree": connection.duree,
-                            "modified_by_access_token": connection.access_token,
+                            "expiration_date": timezone.now()
+                            + timedelta(days=connection.duree),
+                            "last_mandat_renewal_date": timezone.now(),
+                            "last_mandat_renewal_token": connection.access_token,
                         },
                     )
 

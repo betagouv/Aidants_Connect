@@ -4,8 +4,6 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
-from django.db.models.signals import post_init
-from django.dispatch import receiver
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -82,11 +80,6 @@ class Usager(models.Model):
 
 
 class Mandat(models.Model):
-    # Journal entry creation information
-    duree = models.IntegerField(default=3)
-    modified_by_access_token = models.TextField(
-        blank=False, default="No token provided"
-    )
     # Mandat information
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, default=0)
     usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
@@ -94,6 +87,11 @@ class Mandat(models.Model):
     # Mandat expiration date management
     creation_date = models.DateTimeField(default=timezone.now)
     expiration_date = models.DateTimeField(default=timezone.now)
+    last_mandat_renewal_date = models.DateTimeField(default=timezone.now)
+    # Journal entry creation information
+    last_mandat_renewal_token = models.TextField(
+        blank=False, default="No token provided"
+    )
 
     class Meta:
         unique_together = ["aidant", "demarche", "usager"]
@@ -102,10 +100,13 @@ class Mandat(models.Model):
     def is_expired(self):
         return timezone.now() > self.expiration_date
 
-
-@receiver(post_init, sender=Mandat)
-def generate_expiration_date(sender, instance, **kwargs):
-    instance.expiration_date = instance.creation_date + timedelta(days=instance.duree)
+    @property
+    def duree_in_days(self):
+        duree_for_computer = self.expiration_date - self.last_mandat_renewal_date
+        # we add one day so that duration is human friendly
+        # i.e. for a human, there is one day between now and tomorrow at the same time,
+        # and 0 for a computer
+        return duree_for_computer.days + 1
 
 
 class Connection(models.Model):
@@ -146,14 +147,13 @@ class JournalManager(models.Manager):
 
         initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
-
         journal_entry = self.create(
             initiator=initiator,
             usager=usager_info,
             action="create_mandat",
             demarche=mandat.demarche,
-            duree=mandat.duree,
-            access_token=mandat.modified_by_access_token,
+            duree=mandat.duree_in_days,
+            access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
         )
         return journal_entry
@@ -170,8 +170,8 @@ class JournalManager(models.Manager):
             usager=usager_info,
             action="update_mandat",
             demarche=mandat.demarche,
-            duree=mandat.duree,
-            access_token=mandat.modified_by_access_token,
+            duree=mandat.duree_in_days,
+            access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
         )
         return journal_entry
