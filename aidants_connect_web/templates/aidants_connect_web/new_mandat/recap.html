@@ -44,11 +44,6 @@
       </div>
       <div class="form__group">
         <label for="contact_method_list">Souhaitez-vous indiquer un moyen de contact ? Il nous servira à vous joindre en cas d’avancée de dossier.</label>
-        <!--select onchange="showContactMethod()" id="contact_method_list" name="contact_method_chosen">
-          {% for method in contact_method_list %}
-            <option value="{{ method.0 }}" {% if contact_method_chosen == method.0 %}selected="selected"{% endif %}>{{ method.1 }}</option>
-          {% endfor %}
-        </select-->
         {{ form.preferred_contact_method }}
       </div>
       <div class="form__group contact__method-choice hidden email">
@@ -62,6 +57,8 @@
       <div class="form__group contact__method-choice hidden address">
         <label for="id_address">{{ form.contact_address.label }}</label>
         {{ form.contact_address }}
+        <ul id="address__suggestions" class="hidden">
+        </ul>
       </div>
       <div class="form__group">
         <input type="submit" class="button" value="J’accepte" />

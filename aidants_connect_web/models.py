@@ -63,7 +63,10 @@ class Usager(models.Model):
         return f"{self.given_name} {self.family_name}"
 
     def get_contact_method(self):
-        return dict(settings.CONTACT_METHOD)[self.preferred_contact_method]
+        if self.preferred_contact_method:
+            return dict(settings.CONTACT_METHOD)
+        else:
+            return ""
 
     def get_contact(self):
         contact_method = self.preferred_contact_method

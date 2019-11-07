@@ -86,13 +86,16 @@ def recap(request):
             data = form.cleaned_data
             form_chosen_method = data["preferred_contact_method"]
             if form_chosen_method:
-                if form_chosen_method == "sms":
+                if (form_chosen_method in ["sms", "phone"]) and data["contact_phone"]:
                     usager.contact_phone = data["contact_phone"]
-                elif form_chosen_method == "email":
+                elif form_chosen_method == "email" and data["contact_email"]:
                     usager.contact_email = data["contact_email"]
-                elif form_chosen_method == "address":
+                elif form_chosen_method == "address" and data["contact_address"]:
                     usager.contact_address = data["contact_address"]
+                else:
+                    form_chosen_method = ""
                 usager.preferred_contact_method = form_chosen_method
+
                 usager.save()
 
             for demarche in connection.demarches:

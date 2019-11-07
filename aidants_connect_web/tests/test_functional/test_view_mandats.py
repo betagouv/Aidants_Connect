@@ -88,12 +88,10 @@ class ViewMandats(StaticLiveServerTestCase):
         mandats = rows[1:]
         self.assertEqual(len(mandats), 3)
 
-
         # Check if contacts exist
         show_contact = self.selenium.find_elements_by_class_name("show-contact")
         self.assertEqual(len(show_contact), 1)
-        
+
         show_contact[0].click()
         contact = self.selenium.find_elements_by_class_name("contact")[0]
         self.assertEqual(contact.text, "coco@dupuis.fr")
-

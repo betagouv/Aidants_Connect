@@ -100,7 +100,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
                 option.click()
                 break
 
-        phone = self.selenium.find_element_by_name("phone")
+        phone = self.selenium.find_element_by_name("contact_phone")
         phone.send_keys("0636656565")
         self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
         id_personal_data.click()
