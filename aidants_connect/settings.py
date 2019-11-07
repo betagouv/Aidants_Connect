@@ -269,11 +269,12 @@ X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
 # Content security policy
-CSP_DEFAULT_SRC = ("'self'",)
+CSP_DEFAULT_SRC = ("'self'", "https://api-adresse.data.gouv.fr")
 CSP_IMG_SRC = (
     "'self'",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
     "https://societenumerique.gouv.fr/wp-content/uploads/2018/05/mockupkit-1.png",
+    "data:",
 )
 CSP_SCRIPT_SRC = ("'self'", "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E='")
 CSP_STYLE_SRC = ("'self'",)
