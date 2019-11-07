@@ -155,4 +155,4 @@ class RecapForm(forms.ModelForm):
         choices=settings.CONTACT_METHOD, required=False
     )
     contact_email = forms.EmailField(label="Adresse email", required=False)
-    contact_address = forms.Textarea(attrs={"initial": None})
+    contact_address = forms.CharField(widget=forms.TextInput(), required=False)

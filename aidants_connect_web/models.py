@@ -3,7 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 
 CONNECTION_EXPIRATION_TIME = 10
@@ -52,7 +52,7 @@ class Usager(models.Model):
     preferred_contact_method = models.CharField(
         max_length=8, blank=True, null=True, default=""
     )
-    contact_address = JSONField(blank=True, null=True)
+    contact_address = models.TextField(blank=True, null=True)
     contact_email = models.EmailField(blank=True, null=True)
     contact_phone = models.CharField(max_length=12, blank=True, null=True)
 
@@ -66,7 +66,8 @@ class Usager(models.Model):
         return dict(settings.CONTACT_METHOD)[self.preferred_contact_method]
 
     def get_contact(self):
-        if self.preferred_contact_method == "sms":
+        contact_method = self.preferred_contact_method
+        if contact_method == "sms" or contact_method == "phone":
             return self.contact_phone
         if self.preferred_contact_method == "email":
             return self.contact_email
