@@ -157,6 +157,9 @@ class RecapTests(TestCase):
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
         )
         self.assertEqual(updated_mandat.duree_in_days, 6)
+        self.assertTrue(
+            updated_mandat.creation_date < updated_mandat.last_mandat_renewal_date
+        )
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "update_mandat")
