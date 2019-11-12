@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.core import mail
 from django.test import tag
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant, Usager, Mandat
+from aidants_connect_web.tests.test_functional.utilities import login_aidant
 from datetime import date
 import time
 
@@ -11,8 +11,8 @@ import time
 @tag("functional", "id_provider")
 class UseNewMandat(StaticLiveServerTestCase):
     @classmethod
-    def setUpClass(cls):
-        cls.aidant = Aidant.objects.create_user(
+    def setUp(self):
+        self.aidant = Aidant.objects.create_user(
             username="Thierry",
             email="thierry@thierry.com",
             password="motdepassedethierry",
@@ -26,7 +26,7 @@ class UseNewMandat(StaticLiveServerTestCase):
             first_name="Jacqueline",
             last_name="Fremont",
         )
-        cls.usager = Usager.objects.create(
+        self.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -72,16 +72,25 @@ class UseNewMandat(StaticLiveServerTestCase):
         )
 
         super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(3)
+        self.selenium = WebDriver()
+        self.selenium.implicitly_wait(3)
 
     @classmethod
     def tearDownClass(cls):
         cls.selenium.quit()
         super().tearDownClass()
 
-    def test_mandataires(self):
+    def test_use_mandat_with_preloging(self):
+        self.use_a_mandat(prelogin=True)
+
+    def test_use_mandat_without_preloging(self):
+        self.use_a_mandat(prelogin=False)
+
+    def use_a_mandat(self, prelogin: bool):
         browser = self.selenium
+        if prelogin:
+            browser.get(f"{self.live_server_url}/dashboard/")
+            login_aidant(self)
 
         parameters = (
             f"state=34"
@@ -96,8 +105,8 @@ class UseNewMandat(StaticLiveServerTestCase):
         url = f"{self.live_server_url}/authorize/?{parameters}"
         browser.get(url)
 
-        # Login
-        self.login_aidant()
+        if not prelogin:
+            login_aidant(self)
 
         # Select usager
         welcome_aidant = browser.find_element_by_tag_name("h1").text
@@ -126,19 +135,3 @@ class UseNewMandat(StaticLiveServerTestCase):
     def aidant_is_disconnected(self, browser):
         browser.get(f"{self.live_server_url}/authorize/?state=35")
         browser.find_element_by_id("id_email")
-
-    def login_aidant(self):
-        login_field = self.selenium.find_element_by_id("id_email")
-        login_field.send_keys("thierry@thierry.com")
-        submit_button = self.selenium.find_element_by_xpath("//button")
-        submit_button.click()
-        email_sent_title = self.selenium.find_element_by_tag_name("h1").text
-        self.assertEqual(
-            email_sent_title, "Un email vous a été envoyé pour vous connecter."
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        token_email = mail.outbox[0].body
-        line_containing_magic_link = token_email.split("\n")[2]
-        magic_link_https = line_containing_magic_link.split()[-1]
-        magic_link_http = magic_link_https.replace("https", "http")
-        self.selenium.get(magic_link_http)
