@@ -26,6 +26,20 @@ class Aidant(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    def get_usagers_with_current_mandat(self):
+        """
+        :return: a queryset of usagers who have a current mandat with the aidant
+        """
+        mandats_for_aidant = Mandat.objects.filter(aidant=self).exclude(
+            expiration_date__lt=timezone.now()
+        )
+        usagers = (
+            Usager.objects.filter(mandat__in=mandats_for_aidant)
+            .distinct()
+            .order_by("family_name")
+        )
+        return usagers
+
 
 class Usager(models.Model):
     given_name = models.TextField(blank=False)
@@ -103,6 +117,10 @@ class Connection(models.Model):
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, blank=True, null=True)
     complete = models.BooleanField(default=False)
     mandat = models.ForeignKey(Mandat, on_delete=models.CASCADE, blank=True, null=True)
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expiresOn
 
 
 class JournalManager(models.Manager):
