@@ -196,17 +196,7 @@ class FISelectDemarcheTest(TestCase):
             sub="123",
             email="User@user.domain",
         )
-        self.usager2 = Usager.objects.create(
-            given_name="Fabrice",
-            family_name="MERCIER",
-            preferred_username="TROIS",
-            birthdate="1981-07-27",
-            gender="male",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="124",
-            email="User@user.domain",
-        )
+
         self.connection = Connection.objects.create(
             state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
         )
@@ -215,17 +205,29 @@ class FISelectDemarcheTest(TestCase):
             usager=self.usager,
             demarche="transports",
             duree=6,
+            creation_date=datetime(
+                2019, 1, 5, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")
+            ),
         )
 
         self.mandat_2 = Mandat.objects.create(
-            aidant=self.aidant_thierry, usager=self.usager, demarche="famille", duree=3
+            aidant=self.aidant_thierry,
+            usager=self.usager,
+            demarche="famille",
+            duree=6,
+            creation_date=datetime(
+                2019, 1, 5, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")
+            ),
         )
 
         self.mandat_3 = Mandat.objects.create(
             aidant=self.aidant_thierry,
-            usager=self.usager2,
+            usager=self.usager,
             demarche="logement",
             duree=3,
+            creation_date=datetime(
+                2019, 1, 5, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")
+            ),
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -235,13 +237,14 @@ class FISelectDemarcheTest(TestCase):
 
     def test_FI_select_demarche_triggers_FI_select_demarche_template(self):
         self.client.force_login(self.aidant_thierry)
-
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
-
         self.assertTemplateUsed(
             response, "aidants_connect_web/id_provider/fi_select_demarche.html"
         )
 
+    date_close = datetime(2019, 1, 6, 9, tzinfo=timezone("Europe/Paris"))
+
+    @freeze_time(date_close)
     def test_get_perimeters_for_one_usager_and_two_mandats(self):
         self.client.force_login(self.aidant_thierry)
 
@@ -250,6 +253,21 @@ class FISelectDemarcheTest(TestCase):
         mandats = [demarche for demarche in demarches]
         self.assertIn("famille", mandats)
         self.assertIn("transports", mandats)
+        self.assertIn("logement", mandats)
+        self.assertEqual(len(mandats), 3)
+
+    date_further_away = datetime(2019, 1, 9, 9, tzinfo=timezone("Europe/Paris"))
+
+    @freeze_time(date_further_away)
+    def test_expired_mandat_does_not_appear(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+
+        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+        demarches = response.context["demarches"]
+        mandats = [demarche for demarche in demarches]
+        self.assertIn("famille", mandats)
+        self.assertIn("transports", mandats)
+        self.assertNotIn("logement", mandats)
         self.assertEqual(len(mandats), 2)
 
     # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={

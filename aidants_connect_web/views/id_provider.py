@@ -2,7 +2,6 @@ import jwt
 import logging
 import re
 import time
-
 from secrets import token_urlsafe
 from django.http import (
     HttpResponseForbidden,
@@ -145,8 +144,9 @@ def fi_select_demarche(request):
         state = request.GET.get("state", False)
         usager = Connection.objects.get(state=state).usager
         all_demarches = settings.DEMARCHES
-
-        mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
+        mandats = Mandat.objects.filter(usager=usager, aidant=request.user).exclude(
+            expiration_date__lt=timezone.now()
+        )
         nom_demarches = set(mandats.values_list("demarche", flat=True))
 
         demarches = {
