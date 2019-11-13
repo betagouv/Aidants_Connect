@@ -8,7 +8,6 @@ from django.db.models.query import QuerySet
 from django.test.client import Client
 from django.test import TestCase, override_settings, tag
 from django.urls import resolve
-from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.urls import reverse
 
@@ -47,6 +46,7 @@ class AuthorizeTests(TestCase):
             birthcountry="99100",
             sub="123",
             email="User@user.domain",
+            id=1,
         )
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
@@ -67,6 +67,16 @@ class AuthorizeTests(TestCase):
             usager=Usager.objects.get(sub="123"),
             demarche="Logement",
             duree=12,
+        )
+        date_further_away_minus_one_hour = datetime(
+            2019, 1, 9, 8, tzinfo=timezone("Europe/Paris")
+        )
+        Connection.objects.create(
+            state="test_expiration_date_triggered",
+            code="test_code",
+            nonce="test_nonce",
+            usager=Usager.objects.get(sub="123"),
+            expiresOn=date_further_away_minus_one_hour,
         )
 
     def test_authorize_url_triggers_the_authorize_view(self):
@@ -166,18 +176,26 @@ class AuthorizeTests(TestCase):
         response = self.client.post(
             "/authorize/", data={"state": "test_state", "chosen_usager": usager_id}
         )
-        try:
-            saved_items = Connection.objects.all()
-        except ObjectDoesNotExist:
-            raise AttributeError
-        self.assertEqual(saved_items.count(), 1)
-        connection = saved_items[0]
+        saved_items = Connection.objects.all()
+        self.assertEqual(saved_items.count(), 2)
+        connection = saved_items[1]
         state = connection.state
         self.assertEqual(connection.usager.sub, "123")
         self.assertNotEqual(connection.nonce, "No Nonce Provided")
 
         url = reverse("fi_select_demarche") + "?state=" + state
         self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    date_further_away = datetime(2019, 1, 9, 9, tzinfo=timezone("Europe/Paris"))
+
+    @freeze_time(date_further_away)
+    def test_post_to_authorize_with_expired_connexion_triggers_bad_request(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.post(
+            "/authorize/",
+            data={"state": "test_expiration_date_triggered", "chosen_usager": 1},
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 @tag("id_provider")
@@ -200,6 +218,18 @@ class FISelectDemarcheTest(TestCase):
         self.connection = Connection.objects.create(
             state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
         )
+
+        date_further_away_minus_one_hour = datetime(
+            2019, 1, 9, 8, tzinfo=timezone("Europe/Paris")
+        )
+        self.connection = Connection.objects.create(
+            state="test_expiration_date_triggered",
+            code="test_code",
+            nonce="test_nonce",
+            usager=self.usager,
+            expiresOn=date_further_away_minus_one_hour,
+        )
+
         self.mandat = Mandat.objects.create(
             aidant=self.aidant_thierry,
             usager=self.usager,
@@ -291,6 +321,17 @@ class FISelectDemarcheTest(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    @freeze_time(date_further_away)
+    def test_post_to_select_demarche_with_expired_connexion_triggers_timeout(self):
+        self.client.login(username="Thierry", password="motdepassedethierry")
+        response = self.client.post(
+            "/select_demarche/",
+            data={
+                "state": "test_expiration_date_triggered",
+                "chosen_demarche": "famille",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 @tag("id_provider")

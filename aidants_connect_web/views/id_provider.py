@@ -2,6 +2,7 @@ import jwt
 import logging
 import re
 import time
+
 from secrets import token_urlsafe
 from django.http import (
     HttpResponseForbidden,
@@ -61,6 +62,9 @@ def check_request_parameters(
     return 0, "all good"
 
 
+def has_the_connexion_expired(connexion: Connection) -> bool:
+    return True if connexion.expiresOn < timezone.now() else False
+
 @login_required
 def authorize(request):
     if request.method == "GET":
@@ -114,6 +118,9 @@ def authorize(request):
         this_state = request.POST.get("state")
         try:
             that_connection = Connection.objects.get(state=this_state)
+            if has_the_connexion_expired(that_connection):
+                log.info("Connexion has expired at authorize")
+                return HttpResponseBadRequest()
             state = that_connection.state
 
         except ObjectDoesNotExist:
@@ -126,8 +133,6 @@ def authorize(request):
             log.info(this_state)
             logout(request)
             return HttpResponseForbidden()
-
-        # TODO check if connection has not expired
 
         that_connection.usager = Usager.objects.get(
             id=request.POST.get("chosen_usager")
@@ -166,6 +171,9 @@ def fi_select_demarche(request):
         this_state = request.POST.get("state")
         try:
             connection = Connection.objects.get(state=this_state)
+            if has_the_connexion_expired(connection):
+                log.info("Connexion has expired at select demarche")
+                return HttpResponseBadRequest()
             code = connection.code
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the state:")
@@ -178,7 +186,6 @@ def fi_select_demarche(request):
             logout(request)
             return HttpResponseForbidden()
 
-        # TODO check if connection has not expired
         chosen_demarche = request.POST.get("chosen_demarche")
         try:
             chosen_mandat = Mandat.objects.get(
