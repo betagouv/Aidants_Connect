@@ -92,16 +92,16 @@ def authorize(request):
             )
 
         code = token_urlsafe(64)
-        Connection.objects.create(
-            state=state,
-            code=code,
-            nonce=nonce
-        )
+        Connection.objects.create(state=state, code=code, nonce=nonce)
         aidant = request.user
         return render(
             request,
             "aidants_connect_web/id_provider/authorize.html",
-            {"state": parameters["state"], "usagers": aidant.get_usagers_with_current_mandat(), "aidant": aidant},
+            {
+                "state": state,
+                "usagers": aidant.get_usagers_with_current_mandat(),
+                "aidant": aidant,
+            },
         )
 
     else:
@@ -122,9 +122,7 @@ def authorize(request):
             log.info(state)
             logout(request)
             return HttpResponseForbidden()
-        chosen_usager = Usager.objects.get(
-            id=request.POST.get("chosen_usager")
-        )
+        chosen_usager = Usager.objects.get(id=request.POST.get("chosen_usager"))
         if chosen_usager not in request.user.get_usagers_with_current_mandat():
             log.info("This usager does not have a valid mandat with the aidant")
             log.info(request.user.id)
@@ -142,12 +140,13 @@ def fi_select_demarche(request):
     if request.method == "GET":
         state = request.GET.get("state", False)
         usager = Connection.objects.get(state=state).usager
-        all_demarches = settings.DEMARCHES
+        demarches_rich_text = settings.DEMARCHES
         aidant = request.user
         nom_demarches = aidant.get_current_demarches_for_usager(usager)
 
         demarches = {
-            nom_demarche: all_demarches[nom_demarche] for nom_demarche in nom_demarches
+            nom_demarche: demarches_rich_text[nom_demarche]
+            for nom_demarche in nom_demarches
         }
 
         return render(

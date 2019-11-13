@@ -102,6 +102,7 @@ class Mandat(models.Model):
     def is_expired(self):
         return timezone.now() > self.expiration_date
 
+
 @receiver(post_init, sender=Mandat)
 def generate_expiration_date(sender, instance, **kwargs):
     instance.expiration_date = instance.creation_date + timedelta(days=instance.duree)
