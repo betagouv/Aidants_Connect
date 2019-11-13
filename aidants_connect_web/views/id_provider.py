@@ -31,21 +31,70 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
+def check_request_parameters(
+    parameters: dict, expected_static_parameters: dict, view_name: str
+) -> tuple:
+    """
+    When a request arrives, this function checks that all requested parameters are
+    present (if nos, returns (1, "missing parameter") and if the static parameters are
+    correct (if not, returns (1, "forbidden parameter value")). If all is good, returns
+    (0, "all is good")
+    :param parameters: dict of all parameters expected in the request
+    (None if the parameter was not present)
+    :param expected_static_parameters: subset of parameters that are not dynamic
+    :param view_name: str with the name of the view for logging purposes
+    :return: tuple (error, message) where error is a bool and message an str
+    """
+    for parameter, value in parameters.items():
+        if not value:
+            error_message = f"400 Bad request: There is no {parameter} @ {view_name}"
+            log.info(error_message)
+            return 1, "missing parameter"
+        if (
+            parameter in expected_static_parameters
+            and value != expected_static_parameters[parameter]
+        ):
+            error_message = (
+                f"403 forbidden request: unexpected {parameter} @ {view_name}"
+            )
+            log.info(error_message)
+            return 1, "forbidden parameter value"
+    return 0, "all good"
+
+
 @login_required
 def authorize(request):
     if request.method == "GET":
-        state = request.GET.get("state", False)
-        nonce = request.GET.get("nonce", False)
-
-        if state is False:
-            log.info("400 Bad request: There is no state")
-            return HttpResponseBadRequest()
-        elif nonce is False:
-            log.info("400 Bad request: There is no nonce")
-            return HttpResponseBadRequest()
+        parameters = {
+            "state": request.GET.get("state"),
+            "nonce": request.GET.get("nonce"),
+            "response_type": request.GET.get("response_type"),
+            "client_id": request.GET.get("client_id"),
+            "redirect_uri": request.GET.get("redirect_uri"),
+            "scope": request.GET.get("scope"),
+            "acr_values": request.GET.get("acr_values"),
+        }
+        expected_static_parameters = {
+            "response_type": "code",
+            "client_id": settings.FC_AS_FI_ID,
+            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+            "scope": "openid profile email address phone birth",
+            "acr_values": "eidas1",
+        }
+        error, message = check_request_parameters(
+            parameters, expected_static_parameters, "authorize"
+        )
+        if error:
+            return (
+                HttpResponseBadRequest()
+                if message == "missing parameter"
+                else HttpResponseForbidden()
+            )
 
         code = token_urlsafe(64)
-        this_connexion = Connection(state=state, code=code, nonce=nonce)
+        this_connexion = Connection(
+            state=parameters["state"], code=code, nonce=parameters["nonce"]
+        )
         this_connexion.save()
 
         aidant = request.user
@@ -58,10 +107,11 @@ def authorize(request):
         return render(
             request,
             "aidants_connect_web/id_provider/authorize.html",
-            {"state": state, "usagers": usagers, "aidant": aidant},
+            {"state": parameters["state"], "usagers": usagers, "aidant": aidant},
         )
 
     else:
+        # TODO refactor this
         this_state = request.POST.get("state")
         try:
             that_connection = Connection.objects.get(state=this_state)
@@ -155,19 +205,31 @@ def token(request):
     if request.method == "GET":
         return HttpResponse("You did a GET on a POST only route")
 
-    rules = [
-        request.POST.get("grant_type") == "authorization_code",
-        request.POST.get("redirect_uri") == fc_callback_url,
-        request.POST.get("client_id") == fc_client_id,
-        request.POST.get("client_secret") == fc_client_secret,
-    ]
-    if not all(rules):
-        log.info("403: Rules are not all abided")
-        log.info(rules)
-        return HttpResponseForbidden()
+    parameters = {
+        "code": request.POST.get("code"),
+        "grant_type": request.POST.get("grant_type"),
+        "redirect_uri": request.POST.get("redirect_uri"),
+        "client_id": request.POST.get("client_id"),
+        "client_secret": request.POST.get("client_secret"),
+    }
+    expected_static_parameters = {
+        "grant_type": "authorization_code",
+        "redirect_uri": fc_callback_url,
+        "client_id": fc_client_id,
+        "client_secret": fc_client_secret,
+    }
 
-    code = request.POST.get("code")
+    error, message = check_request_parameters(
+        parameters, expected_static_parameters, "token"
+    )
+    if error:
+        return (
+            HttpResponseBadRequest()
+            if message == "missing parameter"
+            else HttpResponseForbidden()
+        )
 
+    code = parameters["code"]
     try:
         connection = Connection.objects.get(code=code)
     except ObjectDoesNotExist:
