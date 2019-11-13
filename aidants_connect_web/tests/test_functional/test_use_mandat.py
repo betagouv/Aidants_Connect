@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
+from django.utils import timezone
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant, Usager, Mandat
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
-from datetime import date
+from datetime import date, timedelta
+
 import time
 
 
@@ -54,21 +56,21 @@ class UseNewMandat(StaticLiveServerTestCase):
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche="argent",
-            duree=6,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche="famille",
-            duree=12,
+            expiration_date=timezone.now() + timedelta(days=12),
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="jfremont@domain.user"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche="logement",
-            duree=12,
+            expiration_date=timezone.now() + timedelta(days=12),
         )
 
         super().setUpClass()

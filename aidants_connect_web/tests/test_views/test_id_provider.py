@@ -1,5 +1,5 @@
 import json
-from pytz import timezone
+from pytz import timezone as pytz_timezone
 from secrets import token_urlsafe
 from datetime import date, datetime, timedelta
 from freezegun import freeze_time
@@ -8,6 +8,7 @@ from django.db.models.query import QuerySet
 from django.test.client import Client
 from django.test import TestCase, override_settings, tag
 from django.urls import resolve
+from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
 
@@ -52,24 +53,24 @@ class AuthorizeTests(TestCase):
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Revenus",
-            duree=6,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Famille",
-            duree=12,
+            expiration_date=timezone.now() + timedelta(days=12),
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username=self.aidant_jacques.username),
             usager=Usager.objects.get(sub="123"),
             demarche="Logement",
-            duree=12,
+            expiration_date=timezone.now() + timedelta(days=12),
         )
         date_further_away_minus_one_hour = datetime(
-            2019, 1, 9, 8, tzinfo=timezone("Europe/Paris")
+            2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
         )
         Connection.objects.create(
             state="test_expiration_date_triggered",
@@ -186,7 +187,7 @@ class AuthorizeTests(TestCase):
         url = reverse("fi_select_demarche") + "?state=" + state
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
-    date_further_away = datetime(2019, 1, 9, 9, tzinfo=timezone("Europe/Paris"))
+    date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_further_away)
     def test_post_to_authorize_with_expired_connexion_triggers_bad_request(self):
@@ -220,7 +221,7 @@ class FISelectDemarcheTest(TestCase):
         )
 
         date_further_away_minus_one_hour = datetime(
-            2019, 1, 9, 8, tzinfo=timezone("Europe/Paris")
+            2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
         )
         self.connection = Connection.objects.create(
             state="test_expiration_date_triggered",
@@ -229,35 +230,31 @@ class FISelectDemarcheTest(TestCase):
             usager=self.usager,
             expiresOn=date_further_away_minus_one_hour,
         )
-
+        mandat_creation_date = datetime(
+            2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
+        )
         self.mandat = Mandat.objects.create(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
-            duree=6,
-            creation_date=datetime(
-                2019, 1, 5, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")
-            ),
+            expiration_date=mandat_creation_date + timedelta(days=6),
+            creation_date=mandat_creation_date,
         )
 
         self.mandat_2 = Mandat.objects.create(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="famille",
-            duree=6,
-            creation_date=datetime(
-                2019, 1, 5, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")
-            ),
+            expiration_date=mandat_creation_date + timedelta(days=6),
+            creation_date=mandat_creation_date,
         )
 
         self.mandat_3 = Mandat.objects.create(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="logement",
-            duree=3,
-            creation_date=datetime(
-                2019, 1, 5, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")
-            ),
+            expiration_date=mandat_creation_date + timedelta(days=3),
+            creation_date=mandat_creation_date,
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -272,7 +269,7 @@ class FISelectDemarcheTest(TestCase):
             response, "aidants_connect_web/id_provider/fi_select_demarche.html"
         )
 
-    date_close = datetime(2019, 1, 6, 9, tzinfo=timezone("Europe/Paris"))
+    date_close = datetime(2019, 1, 6, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_close)
     def test_get_perimeters_for_one_usager_and_two_mandats(self):
@@ -286,7 +283,7 @@ class FISelectDemarcheTest(TestCase):
         self.assertIn("logement", mandats)
         self.assertEqual(len(mandats), 3)
 
-    date_further_away = datetime(2019, 1, 9, 9, tzinfo=timezone("Europe/Paris"))
+    date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_further_away)
     def test_expired_mandat_does_not_appear(self):
@@ -359,7 +356,7 @@ class TokenTests(TestCase):
             email="User@user.domain",
         )
         self.connection.expiresOn = datetime(
-            2012, 1, 14, 3, 21, 34, tzinfo=timezone("Europe/Paris")
+            2012, 1, 14, 3, 21, 34, tzinfo=pytz_timezone("Europe/Paris")
         )
         self.connection.save()
         self.fc_request = {
@@ -374,7 +371,7 @@ class TokenTests(TestCase):
         found = resolve("/token/")
         self.assertEqual(found.func, id_provider.token)
 
-    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
+    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date)
     def test_correct_info_triggers_200(self):
@@ -482,7 +479,7 @@ class UserInfoTests(TestCase):
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
-            duree=6,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
 
         self.connection = Connection.objects.create(
@@ -492,7 +489,7 @@ class UserInfoTests(TestCase):
             usager=self.usager,
             access_token="test_access_token",
             expiresOn=datetime(
-                2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
+                2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
             aidant=self.aidant_thierry,
             mandat=self.mandat,
@@ -502,7 +499,7 @@ class UserInfoTests(TestCase):
         found = resolve("/userinfo/")
         self.assertEqual(found.func, id_provider.user_info)
 
-    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
+    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date)
     def test_well_formatted_access_token_returns_200(self):
