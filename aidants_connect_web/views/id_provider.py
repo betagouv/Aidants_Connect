@@ -92,13 +92,15 @@ def authorize(request):
             )
 
         code = token_urlsafe(64)
-        Connection.objects.create(state=state, code=code, nonce=nonce)
+        Connection.objects.create(
+            state=parameters["state"], code=code, nonce=parameters["nonce"]
+        )
         aidant = request.user
         return render(
             request,
             "aidants_connect_web/id_provider/authorize.html",
             {
-                "state": state,
+                "state": parameters["state"],
                 "usagers": aidant.get_usagers_with_current_mandat(),
                 "aidant": aidant,
             },

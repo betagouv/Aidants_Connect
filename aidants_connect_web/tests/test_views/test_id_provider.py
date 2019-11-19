@@ -191,7 +191,7 @@ class AuthorizeTests(TestCase):
 
     @freeze_time(date_further_away)
     def test_post_to_authorize_with_expired_connexion_triggers_bad_request(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/authorize/",
             data={"state": "test_expiration_date_triggered", "chosen_usager": 1},
@@ -285,12 +285,13 @@ class FISelectDemarcheTest(TestCase):
 
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
+    @tag("this")
     @freeze_time(date_further_away)
     def test_expired_mandat_does_not_appear(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
-
+        self.client.force_login(self.aidant_thierry)
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
         demarches = response.context["demarches"]
+
         mandats = [demarche for demarche in demarches]
         self.assertIn("famille", mandats)
         self.assertIn("transports", mandats)
@@ -299,7 +300,7 @@ class FISelectDemarcheTest(TestCase):
 
     @freeze_time(date_further_away)
     def test_post_to_select_demarche_triggers_redirect(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
             data={"state": "test_state", "chosen_demarche": "famille"},
@@ -311,7 +312,7 @@ class FISelectDemarcheTest(TestCase):
 
     @freeze_time(date_further_away)
     def test_post_to_select_demarche_with_expired_demarche_triggers_403(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
             data={"state": "test_state", "chosen_demarche": "logement"},
@@ -320,7 +321,7 @@ class FISelectDemarcheTest(TestCase):
 
     @freeze_time(date_further_away)
     def test_post_to_select_demarche_with_expired_connexion_triggers_timeout(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
             data={
