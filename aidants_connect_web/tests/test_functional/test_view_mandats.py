@@ -1,14 +1,13 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-
 from django.test import tag
+from django.utils import timezone
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant, Usager, Mandat
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
+from datetime import date, timedelta
 
-from datetime import date
 
-
-@tag("functional", "this")
+@tag("functional")
 class ViewMandats(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
@@ -45,19 +44,19 @@ class ViewMandats(StaticLiveServerTestCase):
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche=["social"],
-            duree=1,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
         cls.mandat2 = Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche=["papiers"],
-            duree=1,
+            expiration_date=timezone.now() + timedelta(days=1),
         )
         cls.mandat3 = Mandat.objects.create(
             aidant=Aidant.objects.get(username="Thierry"),
             usager=Usager.objects.get(sub="test_sub2"),
             demarche=["famille"],
-            duree=365,
+            expiration_date=timezone.now() + timedelta(days=365),
         )
         super().setUpClass()
         cls.selenium = WebDriver()

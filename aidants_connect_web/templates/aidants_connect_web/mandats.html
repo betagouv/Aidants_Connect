@@ -28,7 +28,7 @@
             <th>Nom</th>
             <th>Périmètre de la démarche</th>
             <th>Date de début</th>
-            <th>Durée</th>
+            <th>Date de fin</th>
           </tr>
         </thead>
         <tbody>
@@ -52,7 +52,11 @@
                   <li>{{ mandat.creation_date }}</li>
                 </ul>
               </td>
-              <td>{{ mandat.duree }} {% if mandat.duree < 2 %}jour{% else %}jours{% endif %}</td>
+              {% if mandat.is_expired %}
+              <td>Expiré</td>
+              {% else %}
+              <td>{{ mandat.expiration_date }}</td>
+              {% endif %}
             </tr>
             {% endfor %}
           {% endfor %}

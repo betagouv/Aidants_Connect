@@ -1,7 +1,10 @@
 from django.test import TestCase, tag
 from django.db.utils import IntegrityError
+from django.utils import timezone
 from aidants_connect_web.models import Connection, Aidant, Usager, Mandat, Journal
-from datetime import date
+from datetime import date, datetime, timedelta
+from freezegun import freeze_time
+from pytz import timezone as pytz_timezone
 
 
 class ConnectionModelTest(TestCase):
@@ -90,10 +93,11 @@ class UsagerModelTest(TestCase):
 
 @tag("models")
 class MandatModelTest(TestCase):
-    def setUp(self) -> None:
-        self.aidant_marge = Aidant.objects.create(username="Marge")
-        self.aidant_patricia = Aidant.objects.create(username="Patricia")
-        self.usager_homer = Usager.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_marge = Aidant.objects.create(username="Marge")
+        cls.aidant_patricia = Aidant.objects.create(username="Patricia")
+        cls.usager_homer = Usager.objects.create(
             given_name="Homer",
             family_name="Simpson",
             birthdate="1902-06-30",
@@ -103,7 +107,7 @@ class MandatModelTest(TestCase):
             email="homer@simpson.com",
             sub="123",
         )
-        self.usager_ned = Usager.objects.create(
+        cls.usager_ned = Usager.objects.create(
             given_name="Ned",
             family_name="Flanders",
             birthdate="1902-06-30",
@@ -119,13 +123,14 @@ class MandatModelTest(TestCase):
             aidant=self.aidant_marge,
             usager=self.usager_homer,
             demarche="Carte grise",
-            duree=3,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
+
         second_mandat = Mandat.objects.create(
             aidant=self.aidant_patricia,
             usager=self.usager_ned,
             demarche="Revenus",
-            duree=6,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
 
         self.assertEqual(Mandat.objects.count(), 2)
@@ -144,7 +149,7 @@ class MandatModelTest(TestCase):
             aidant=self.aidant_marge,
             usager=self.usager_homer,
             demarche="Logement",
-            duree=3,
+            expiration_date=timezone.now() + timedelta(days=3),
         )
         self.assertEqual(Mandat.objects.count(), 1)
 
@@ -154,7 +159,26 @@ class MandatModelTest(TestCase):
             aidant=self.aidant_marge,
             usager=self.usager_homer,
             demarche="Logement",
-            duree=6,
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+
+    fake_date = datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris"))
+
+    @freeze_time(fake_date)
+    def test_mandat_expiration_date_setting(self):
+        mandat_1 = Mandat.objects.create(
+            aidant=self.aidant_marge,
+            usager=self.usager_homer,
+            demarche="Carte grise",
+            expiration_date=timezone.now() + timedelta(days=3),
+        )
+        self.assertEqual(
+            mandat_1.creation_date,
+            datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris")),
+        )
+        self.assertEqual(
+            mandat_1.expiration_date,
+            datetime(2019, 1, 17, tzinfo=pytz_timezone("Europe/Paris")),
         )
 
 
@@ -207,7 +231,7 @@ class JournalModelTest(TestCase):
             aidant=cls.aidant_thierry,
             usager=cls.usager_ned,
             demarche="Revenus",
-            duree=6,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
 
     def test_a_journal_entry_can_be_created(self):
@@ -227,7 +251,7 @@ class JournalModelTest(TestCase):
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarche="logement",
-            duree=365,
+            expiration_date=timezone.now() + timedelta(days=365),
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)

@@ -1,5 +1,5 @@
 import json
-from pytz import timezone
+from pytz import timezone as pytz_timezone
 from secrets import token_urlsafe
 from datetime import date, datetime, timedelta
 from freezegun import freeze_time
@@ -8,7 +8,7 @@ from django.db.models.query import QuerySet
 from django.test.client import Client
 from django.test import TestCase, override_settings, tag
 from django.urls import resolve
-from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
 
@@ -47,26 +47,37 @@ class AuthorizeTests(TestCase):
             birthcountry="99100",
             sub="123",
             email="User@user.domain",
+            id=1,
         )
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Revenus",
-            duree=6,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Famille",
-            duree=12,
+            expiration_date=timezone.now() + timedelta(days=12),
         )
 
         Mandat.objects.create(
             aidant=Aidant.objects.get(username=self.aidant_jacques.username),
             usager=Usager.objects.get(sub="123"),
             demarche="Logement",
-            duree=12,
+            expiration_date=timezone.now() + timedelta(days=12),
+        )
+        date_further_away_minus_one_hour = datetime(
+            2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
+        )
+        Connection.objects.create(
+            state="test_expiration_date_triggered",
+            code="test_code",
+            nonce="test_nonce",
+            usager=Usager.objects.get(sub="123"),
+            expiresOn=date_further_away_minus_one_hour,
         )
 
     def test_authorize_url_triggers_the_authorize_view(self):
@@ -166,18 +177,26 @@ class AuthorizeTests(TestCase):
         response = self.client.post(
             "/authorize/", data={"state": "test_state", "chosen_usager": usager_id}
         )
-        try:
-            saved_items = Connection.objects.all()
-        except ObjectDoesNotExist:
-            raise AttributeError
-        self.assertEqual(saved_items.count(), 1)
-        connection = saved_items[0]
+        saved_items = Connection.objects.all()
+        self.assertEqual(saved_items.count(), 2)
+        connection = saved_items[1]
         state = connection.state
         self.assertEqual(connection.usager.sub, "123")
         self.assertNotEqual(connection.nonce, "No Nonce Provided")
 
         url = reverse("fi_select_demarche") + "?state=" + state
         self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
+
+    @freeze_time(date_further_away)
+    def test_post_to_authorize_with_expired_connexion_triggers_bad_request(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/authorize/",
+            data={"state": "test_expiration_date_triggered", "chosen_usager": 1},
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 @tag("id_provider")
@@ -196,36 +215,46 @@ class FISelectDemarcheTest(TestCase):
             sub="123",
             email="User@user.domain",
         )
-        self.usager2 = Usager.objects.create(
-            given_name="Fabrice",
-            family_name="MERCIER",
-            preferred_username="TROIS",
-            birthdate="1981-07-27",
-            gender="male",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="124",
-            email="User@user.domain",
-        )
+
         self.connection = Connection.objects.create(
             state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
+        )
+
+        date_further_away_minus_one_hour = datetime(
+            2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
+        )
+        self.connection = Connection.objects.create(
+            state="test_expiration_date_triggered",
+            code="test_code",
+            nonce="test_nonce",
+            usager=self.usager,
+            expiresOn=date_further_away_minus_one_hour,
+        )
+        mandat_creation_date = datetime(
+            2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
         )
         self.mandat = Mandat.objects.create(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
-            duree=6,
+            expiration_date=mandat_creation_date + timedelta(days=6),
+            creation_date=mandat_creation_date,
         )
 
         self.mandat_2 = Mandat.objects.create(
-            aidant=self.aidant_thierry, usager=self.usager, demarche="famille", duree=3
+            aidant=self.aidant_thierry,
+            usager=self.usager,
+            demarche="famille",
+            expiration_date=mandat_creation_date + timedelta(days=6),
+            creation_date=mandat_creation_date,
         )
 
         self.mandat_3 = Mandat.objects.create(
             aidant=self.aidant_thierry,
-            usager=self.usager2,
+            usager=self.usager,
             demarche="logement",
-            duree=3,
+            expiration_date=mandat_creation_date + timedelta(days=3),
+            creation_date=mandat_creation_date,
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -235,13 +264,14 @@ class FISelectDemarcheTest(TestCase):
 
     def test_FI_select_demarche_triggers_FI_select_demarche_template(self):
         self.client.force_login(self.aidant_thierry)
-
         response = self.client.get("/select_demarche/", data={"state": "test_state"})
-
         self.assertTemplateUsed(
             response, "aidants_connect_web/id_provider/fi_select_demarche.html"
         )
 
+    date_close = datetime(2019, 1, 6, 9, tzinfo=pytz_timezone("Europe/Paris"))
+
+    @freeze_time(date_close)
     def test_get_perimeters_for_one_usager_and_two_mandats(self):
         self.client.force_login(self.aidant_thierry)
 
@@ -250,10 +280,56 @@ class FISelectDemarcheTest(TestCase):
         mandats = [demarche for demarche in demarches]
         self.assertIn("famille", mandats)
         self.assertIn("transports", mandats)
+        self.assertIn("logement", mandats)
+        self.assertEqual(len(mandats), 3)
+
+    date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
+
+    @tag("this")
+    @freeze_time(date_further_away)
+    def test_expired_mandat_does_not_appear(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+        demarches = response.context["demarches"]
+
+        mandats = [demarche for demarche in demarches]
+        self.assertIn("famille", mandats)
+        self.assertIn("transports", mandats)
+        self.assertNotIn("logement", mandats)
         self.assertEqual(len(mandats), 2)
 
-    # TODO test that a POST triggers a redirect to f"{fc_callback_url}?code={
-    #  code}&state={state}"
+    @freeze_time(date_further_away)
+    def test_post_to_select_demarche_triggers_redirect(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/select_demarche/",
+            data={"state": "test_state", "chosen_demarche": "famille"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url, f"{fc_callback_url}?code=test_code&state=test_state"
+        )
+
+    @freeze_time(date_further_away)
+    def test_post_to_select_demarche_with_expired_demarche_triggers_403(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/select_demarche/",
+            data={"state": "test_state", "chosen_demarche": "logement"},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @freeze_time(date_further_away)
+    def test_post_to_select_demarche_with_expired_connexion_triggers_timeout(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/select_demarche/",
+            data={
+                "state": "test_expiration_date_triggered",
+                "chosen_demarche": "famille",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 @tag("id_provider")
@@ -281,7 +357,7 @@ class TokenTests(TestCase):
             email="User@user.domain",
         )
         self.connection.expiresOn = datetime(
-            2012, 1, 14, 3, 21, 34, tzinfo=timezone("Europe/Paris")
+            2012, 1, 14, 3, 21, 34, tzinfo=pytz_timezone("Europe/Paris")
         )
         self.connection.save()
         self.fc_request = {
@@ -296,7 +372,7 @@ class TokenTests(TestCase):
         found = resolve("/token/")
         self.assertEqual(found.func, id_provider.token)
 
-    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
+    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date)
     def test_correct_info_triggers_200(self):
@@ -404,7 +480,7 @@ class UserInfoTests(TestCase):
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
-            duree=6,
+            expiration_date=timezone.now() + timedelta(days=6),
         )
 
         self.connection = Connection.objects.create(
@@ -414,7 +490,7 @@ class UserInfoTests(TestCase):
             usager=self.usager,
             access_token="test_access_token",
             expiresOn=datetime(
-                2012, 1, 14, 3, 21, 34, 0, tzinfo=timezone("Europe/Paris")
+                2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
             aidant=self.aidant_thierry,
             mandat=self.mandat,
@@ -424,7 +500,7 @@ class UserInfoTests(TestCase):
         found = resolve("/userinfo/")
         self.assertEqual(found.func, id_provider.user_info)
 
-    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
+    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date)
     def test_well_formatted_access_token_returns_200(self):

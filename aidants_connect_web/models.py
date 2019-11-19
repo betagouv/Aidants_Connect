@@ -24,6 +24,30 @@ class Aidant(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    def get_usagers_with_current_mandat(self):
+        """
+        :return: a queryset of usagers who have a current mandat with the aidant
+        """
+        mandats_for_aidant = Mandat.objects.filter(aidant=self).exclude(
+            expiration_date__lt=timezone.now()
+        )
+        usagers = (
+            Usager.objects.filter(mandat__in=mandats_for_aidant)
+            .distinct()
+            .order_by("family_name")
+        )
+        return usagers
+
+    def get_current_demarches_for_usager(self, usager):
+        """
+        :param usager:
+        :return: list of demarche the usager and the aidant have a active mandat for
+        """
+        mandats = Mandat.objects.filter(usager=usager, aidant=self).exclude(
+            expiration_date__lt=timezone.now()
+        )
+        return mandats.values_list("demarche", flat=True)
+
 
 class Usager(models.Model):
     given_name = models.TextField(blank=False)
@@ -56,17 +80,33 @@ class Usager(models.Model):
 
 
 class Mandat(models.Model):
+    # Mandat information
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, default=0)
     usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
     demarche = models.CharField(blank=False, max_length=100)
+    # Mandat expiration date management
     creation_date = models.DateTimeField(default=timezone.now)
-    duree = models.IntegerField(default=3)
-    modified_by_access_token = models.TextField(
+    expiration_date = models.DateTimeField(default=timezone.now)
+    last_mandat_renewal_date = models.DateTimeField(default=timezone.now)
+    # Journal entry creation information
+    last_mandat_renewal_token = models.TextField(
         blank=False, default="No token provided"
     )
 
     class Meta:
         unique_together = ["aidant", "demarche", "usager"]
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expiration_date
+
+    @property
+    def duree_in_days(self):
+        duree_for_computer = self.expiration_date - self.last_mandat_renewal_date
+        # we add one day so that duration is human friendly
+        # i.e. for a human, there is one day between now and tomorrow at the same time,
+        # and 0 for a computer
+        return duree_for_computer.days + 1
 
 
 class Connection(models.Model):
@@ -90,6 +130,10 @@ class Connection(models.Model):
     complete = models.BooleanField(default=False)
     mandat = models.ForeignKey(Mandat, on_delete=models.CASCADE, blank=True, null=True)
 
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expiresOn
+
 
 class JournalManager(models.Manager):
     def connection(self, aidant: Aidant):
@@ -103,14 +147,13 @@ class JournalManager(models.Manager):
 
         initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
-
         journal_entry = self.create(
             initiator=initiator,
             usager=usager_info,
             action="create_mandat",
             demarche=mandat.demarche,
-            duree=mandat.duree,
-            access_token=mandat.modified_by_access_token,
+            duree=mandat.duree_in_days,
+            access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
         )
         return journal_entry
@@ -127,8 +170,8 @@ class JournalManager(models.Manager):
             usager=usager_info,
             action="update_mandat",
             demarche=mandat.demarche,
-            duree=mandat.duree,
-            access_token=mandat.modified_by_access_token,
+            duree=mandat.duree_in_days,
+            access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
         )
         return journal_entry

@@ -92,65 +92,63 @@ def authorize(request):
             )
 
         code = token_urlsafe(64)
-        this_connexion = Connection(
+        Connection.objects.create(
             state=parameters["state"], code=code, nonce=parameters["nonce"]
         )
-        this_connexion.save()
-
         aidant = request.user
-        mandats_for_aidant = Mandat.objects.filter(aidant=aidant)
-        usagers = (
-            Usager.objects.filter(mandat__in=mandats_for_aidant)
-            .distinct()
-            .order_by("family_name")
-        )
         return render(
             request,
             "aidants_connect_web/id_provider/authorize.html",
-            {"state": parameters["state"], "usagers": usagers, "aidant": aidant},
+            {
+                "state": parameters["state"],
+                "usagers": aidant.get_usagers_with_current_mandat(),
+                "aidant": aidant,
+            },
         )
 
     else:
-        # TODO refactor this
-        this_state = request.POST.get("state")
-        try:
-            that_connection = Connection.objects.get(state=this_state)
-            state = that_connection.state
+        state = request.POST.get("state")
 
+        try:
+            connection = Connection.objects.get(state=state)
+            if connection.is_expired:
+                log.info("Connexion has expired at authorize")
+                return HttpResponseBadRequest()
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the state:")
-            log.info(this_state)
+            log.info(state)
             logout(request)
             return HttpResponseForbidden()
         except Connection.MultipleObjectsReturned:
             log.info("This connection is not unique. State:")
-            log.info(this_state)
+            log.info(state)
             logout(request)
             return HttpResponseForbidden()
-
-        # TODO check if connection has not expired
-
-        that_connection.usager = Usager.objects.get(
-            id=request.POST.get("chosen_usager")
-        )
-        that_connection.save()
+        chosen_usager = Usager.objects.get(id=request.POST.get("chosen_usager"))
+        if chosen_usager not in request.user.get_usagers_with_current_mandat():
+            log.info("This usager does not have a valid mandat with the aidant")
+            log.info(request.user.id)
+            logout(chosen_usager.id)
+            logout(request)
+            return HttpResponseForbidden()
+        connection.usager = chosen_usager
+        connection.save()
         select_demarches_url = f"{reverse('fi_select_demarche')}?state={state}"
         return redirect(select_demarches_url)
 
 
 @login_required
 def fi_select_demarche(request):
-
     if request.method == "GET":
         state = request.GET.get("state", False)
         usager = Connection.objects.get(state=state).usager
-        all_demarches = settings.DEMARCHES
-
-        mandats = Mandat.objects.filter(usager=usager, aidant=request.user)
-        nom_demarches = set(mandats.values_list("demarche", flat=True))
+        demarches_rich_text = settings.DEMARCHES
+        aidant = request.user
+        nom_demarches = aidant.get_current_demarches_for_usager(usager)
 
         demarches = {
-            nom_demarche: all_demarches[nom_demarche] for nom_demarche in nom_demarches
+            nom_demarche: demarches_rich_text[nom_demarche]
+            for nom_demarche in nom_demarches
         }
 
         return render(
@@ -166,6 +164,9 @@ def fi_select_demarche(request):
         this_state = request.POST.get("state")
         try:
             connection = Connection.objects.get(state=this_state)
+            if connection.is_expired:
+                log.info("Connexion has expired at select demarche")
+                return HttpResponseBadRequest()
             code = connection.code
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the state:")
@@ -178,12 +179,20 @@ def fi_select_demarche(request):
             logout(request)
             return HttpResponseForbidden()
 
-        # TODO check if connection has not expired
         chosen_demarche = request.POST.get("chosen_demarche")
+        try:
+            chosen_mandat = Mandat.objects.get(
+                usager=connection.usager,
+                aidant=request.user,
+                demarche=chosen_demarche,
+                expiration_date__gt=timezone.now(),
+            )
+        except Mandat.DoesNotExist:
+            log.info("The mandat asked does not exist")
+            return HttpResponseForbidden()
+
         connection.demarche = chosen_demarche
-        connection.mandat = Mandat.objects.get(
-            usager=connection.usager, aidant=request.user, demarche=chosen_demarche
-        )
+        connection.mandat = chosen_mandat
         connection.complete = True
         connection.aidant = request.user
         connection.save()
