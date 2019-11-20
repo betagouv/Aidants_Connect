@@ -1,7 +1,14 @@
 from django.test import TestCase, tag
 from django.db.utils import IntegrityError
 from django.utils import timezone
-from aidants_connect_web.models import Connection, Aidant, Usager, Mandat, Journal
+from aidants_connect_web.models import (
+    Connection,
+    Aidant,
+    Usager,
+    Mandat,
+    Journal,
+    Organisation,
+)
 from datetime import date, datetime, timedelta
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
@@ -301,3 +308,16 @@ class JournalModelTest(TestCase):
         self.assertRaises(NotImplementedError, lambda: entry.delete())
 
         self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")
+
+
+class OrganisationModelTest(TestCase):
+    def test_create_and_retrieve_organisation(self):
+        Organisation.objects.create(
+            name="Girard S.A.R.L",
+            siret="123",
+            address="3 rue du chat, 27120 Houlbec-Cocherel",
+        )
+        self.assertEqual(Organisation.objects.count(), 1)
+        organisation = Organisation.objects.all()[0]
+        self.assertEqual(organisation.name, "Girard S.A.R.L")
+        self.assertEqual(organisation.address, "3 rue du chat, 27120 Houlbec-Cocherel")
