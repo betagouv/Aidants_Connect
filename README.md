@@ -90,7 +90,7 @@ Changer le fichier `.env.example` à la racine du projet en `.env` et ajouter vo
 - Les informations `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
 - Les valeur de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
 
-Créer un repertoire `staticfiles` à la racine du projet :
+Créer un répertoire `staticfiles` à la racine du projet :
 
 ```shell
 mkdir staticfiles
