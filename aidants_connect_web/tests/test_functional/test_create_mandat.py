@@ -7,6 +7,7 @@ from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
+
 @tag("functional", "new_mandat")
 class CreateNewMandat(StaticLiveServerTestCase):
     @classmethod

@@ -6,7 +6,6 @@ from aidants_connect_web.models import Aidant, Usager, Mandat
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 from datetime import date, timedelta
 
-
 @tag("functional")
 class ViewMandats(StaticLiveServerTestCase):
     @classmethod

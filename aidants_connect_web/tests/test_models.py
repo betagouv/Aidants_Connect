@@ -1,6 +1,11 @@
+from datetime import date, datetime, timedelta
+from freezegun import freeze_time
+from pytz import timezone as pytz_timezone
+
 from django.test import TestCase, tag
 from django.db.utils import IntegrityError
 from django.utils import timezone
+
 from aidants_connect_web.models import (
     Connection,
     Aidant,
@@ -9,9 +14,7 @@ from aidants_connect_web.models import (
     Journal,
     Organisation,
 )
-from datetime import date, datetime, timedelta
-from freezegun import freeze_time
-from pytz import timezone as pytz_timezone
+from aidants_connect_web.tests.factories import UserFactory, OrganisationFactory
 
 
 class ConnectionModelTest(TestCase):
@@ -102,8 +105,8 @@ class UsagerModelTest(TestCase):
 class MandatModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.aidant_marge = Aidant.objects.create(username="Marge")
-        cls.aidant_patricia = Aidant.objects.create(username="Patricia")
+        cls.aidant_marge = UserFactory(username="Marge")
+        cls.aidant_patricia = UserFactory(username="Patricia")
         cls.usager_homer = Usager.objects.create(
             given_name="Homer",
             family_name="Simpson",
@@ -189,6 +192,7 @@ class MandatModelTest(TestCase):
         )
 
 
+@tag("models", "aidant")
 class AidantModelTest(TestCase):
     def test_what_happens_to_password_when_not_set(self):
         aidant = Aidant.objects.create(username="Marge")
@@ -231,7 +235,7 @@ class JournalModelTest(TestCase):
             password="motdepassedethierry",
             first_name="Thierry",
             last_name="Martin",
-            organisme="Commune de Vernon",
+            organisation=OrganisationFactory(name="Commune de Vernon"),
         )
         cls.usager_ned = Usager.objects.create(
             given_name="Ned",

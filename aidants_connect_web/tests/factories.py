@@ -4,9 +4,9 @@ import factory
 
 
 class OrganisationFactory(factory.DjangoModelFactory):
-    name = "COMMUNE DE HOULBEC COCHEREL"
+    name = "COMMUNE D'HOULBEC COCHEREL"
     siret = 123
-    address = "45 avenue du Général de Gaulle, 90210 Beverly Hills"
+    address = "45 avenue du Général de Gaulle, 27120 HOULBEC COCHEREL"
 
     class Meta:
         model = Organisation
@@ -19,8 +19,6 @@ class UserFactory(factory.DjangoModelFactory):
     last_name = "Goneau"
     first_name = "Thierry"
     profession = "secrétaire"
-    organisme = "COMMUNE DE HOULBEC COCHEREL"
-    ville = "HOULBEC COCHEREL"
     organisation = factory.SubFactory(OrganisationFactory)
 
     class Meta:
