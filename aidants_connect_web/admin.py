@@ -13,7 +13,7 @@ class AidantAdmin(DjangoUserAdmin):
     # The fields to be used in displaying the Aidant model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ("email", "is_superuser", "organisme")
+    list_display = ("email", "is_superuser", "organisation")
     list_filter = ("is_superuser",)
     filter_horizontal = ("groups", "user_permissions")
     fieldsets = (
@@ -21,10 +21,7 @@ class AidantAdmin(DjangoUserAdmin):
             "Informations personnelles",
             {"fields": ("username", "first_name", "last_name", "email", "password")},
         ),
-        (
-            "Informations professionnelles",
-            {"fields": ("profession", "organisme", "ville")},
-        ),
+        ("Informations professionnelles", {"fields": ("profession", "organisation")}),
         (
             "Permissions",
             {
@@ -45,12 +42,9 @@ class AidantAdmin(DjangoUserAdmin):
             "Informations personnelles",
             {"fields": ("first_name", "last_name", "email", "password", "username")},
         ),
-        (
-            "Informations professionnelles",
-            {"fields": ("profession", "organisme", "ville")},
-        ),
+        ("Informations professionnelles", {"fields": ("profession", "organisation")}),
     )
-    search_fields = ("email", "organisme")
+    search_fields = ("email", "organisation")
     ordering = ("email",)
 
 

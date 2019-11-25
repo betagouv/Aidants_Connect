@@ -21,8 +21,6 @@ class Organisation(models.Model):
 
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
-    organisme = models.TextField(blank=False)
-    ville = models.TextField(blank=False)
     organisation = models.ForeignKey(Organisation, null=True, on_delete=models.CASCADE)
 
     class Meta:
@@ -144,7 +142,9 @@ class Connection(models.Model):
 
 class JournalManager(models.Manager):
     def connection(self, aidant: Aidant):
-        initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
+        initiator = (
+            f"{aidant.get_full_name()} - {aidant.organisation.name} - {aidant.email}"
+        )
         journal_entry = self.create(initiator=initiator, action="connect_aidant")
         return journal_entry
 
@@ -152,7 +152,9 @@ class JournalManager(models.Manager):
         aidant = mandat.aidant
         usager = mandat.usager
 
-        initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
+        initiator = (
+            f"{aidant.get_full_name()} - {aidant.organisation.name} - {aidant.email}"
+        )
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
         journal_entry = self.create(
             initiator=initiator,
@@ -169,7 +171,9 @@ class JournalManager(models.Manager):
         aidant = mandat.aidant
         usager = mandat.usager
 
-        initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
+        initiator = (
+            f"{aidant.get_full_name()} - {aidant.organisation.name} - {aidant.email}"
+        )
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
         journal_entry = self.create(
@@ -192,7 +196,9 @@ class JournalManager(models.Manager):
         mandat: Mandat,
     ):
 
-        initiator = f"{aidant.get_full_name()} - {aidant.organisme} - {aidant.email}"
+        initiator = (
+            f"{aidant.get_full_name()} - {aidant.organisation.name} - {aidant.email}"
+        )
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
         journal_entry = self.create(

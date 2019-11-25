@@ -2,7 +2,7 @@ from django import forms
 from django.forms import EmailField
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth import password_validation
-from aidants_connect_web.models import Aidant
+from aidants_connect_web.models import Aidant, Organisation
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
@@ -25,8 +25,9 @@ class AidantCreationForm(forms.ModelForm):
     last_name = forms.CharField(label="Nom de famille")
 
     profession = forms.CharField(label="Profession")
-    organisme = forms.CharField(label="Organisme")
-    ville = forms.CharField(label="ville")
+    organisation = forms.ModelChoiceField(
+        queryset=Organisation.objects.all(), empty_label="Organisation"
+    )
 
     class Meta:
         model = Aidant
@@ -35,8 +36,7 @@ class AidantCreationForm(forms.ModelForm):
             "last_name",
             "first_name",
             "profession",
-            "organisme",
-            "ville",
+            "organisation",
             "username",
         )
 
@@ -90,8 +90,7 @@ class AidantChangeForm(forms.ModelForm):
             "last_name",
             "first_name",
             "profession",
-            "organisme",
-            "ville",
+            "organisation",
             "username",
         )
         field_classes = {"email": EmailField}
