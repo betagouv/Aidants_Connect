@@ -285,7 +285,6 @@ class FISelectDemarcheTest(TestCase):
 
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
-    @tag("this")
     @freeze_time(date_further_away)
     def test_expired_mandat_does_not_appear(self):
         self.client.force_login(self.aidant_thierry)
@@ -427,7 +426,6 @@ class TokenTests(TestCase):
         response = self.client.post("/token/", fc_request)
         self.assertEqual(response.status_code, 403)
 
-    @tag("thisi")
     def test_missing_parameters_triggers_bad_request(self):
         for parameter in self.fc_request:
             bad_request = dict(self.fc_request)
