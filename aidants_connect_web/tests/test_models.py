@@ -209,6 +209,16 @@ class AidantModelTest(TestCase):
         Aidant.objects.create(username="cgireau@domain.user")
         self.assertEqual(len(Aidant.objects.all()), 2)
 
+    def test_get_aidant_organization(self):
+        orga = Organisation.objects.create(
+            name="COMMUNE DE HOULBEC COCHEREL",
+            siret=123,
+            address="45 avenue du Général de Gaulle, 90210 Beverly Hills",
+        )
+        bob = Aidant.objects.create(username="bhameau@domain.user", organisation=orga)
+
+        self.assertEqual(bob.organisation.name, "COMMUNE DE HOULBEC COCHEREL")
+
 
 @tag("journal")
 class JournalModelTest(TestCase):

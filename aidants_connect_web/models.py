@@ -23,6 +23,7 @@ class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
     organisme = models.TextField(blank=False)
     ville = models.TextField(blank=False)
+    organisation = models.ForeignKey(Organisation, null=True, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "aidant"
