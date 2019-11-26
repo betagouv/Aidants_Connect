@@ -3,9 +3,8 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
 from django.test import tag
 from selenium.webdriver.firefox.webdriver import WebDriver
-from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
-
+from aidants_connect_web.tests.factories import UserFactory
 
 
 @tag("functional", "new_mandat")
@@ -14,13 +13,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
     def setUpClass(cls):
         # FC only calls back on specific port
         cls.port = settings.FC_AS_FS_TEST_PORT
-        cls.aidant = Aidant.objects.create_user(
-            username="Thierry",
-            email="thierry@thierry.com",
-            password="motdepassedethierry",
-            first_name="Thierry",
-            last_name="Martin",
-        )
+        cls.aidant = UserFactory()
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)

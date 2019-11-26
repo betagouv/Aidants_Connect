@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
@@ -5,7 +6,7 @@ from django.utils import timezone
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant, Usager, Mandat
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
-from datetime import date, timedelta
+from aidants_connect_web.tests.factories import UserFactory
 
 import time
 
@@ -14,20 +15,15 @@ import time
 class UseNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUp(self):
-        self.aidant = Aidant.objects.create_user(
-            username="Thierry",
-            email="thierry@thierry.com",
-            password="motdepassedethierry",
-            first_name="Thierry",
-            last_name="Martin",
-        )
-        Aidant.objects.create_user(
+        self.aidant = UserFactory()
+        UserFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
             password="motdepassedejacqueline",
             first_name="Jacqueline",
             last_name="Fremont",
         )
+
         self.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -53,14 +49,14 @@ class UseNewMandat(StaticLiveServerTestCase):
         )
 
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche="argent",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche="famille",
             expiration_date=timezone.now() + timedelta(days=12),
