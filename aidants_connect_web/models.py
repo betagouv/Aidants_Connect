@@ -16,7 +16,7 @@ def default_expiration_date():
 class Organisation(models.Model):
     name = models.TextField(default="No name provided")
     siret = models.PositiveIntegerField(default=1)
-    address = models.TextField(default="No adress provided")
+    address = models.TextField(default="No address provided")
 
 
 class Aidant(AbstractUser):
