@@ -1,10 +1,20 @@
-from django.test import TestCase, tag
-from django.db.utils import IntegrityError
-from django.utils import timezone
-from aidants_connect_web.models import Connection, Aidant, Usager, Mandat, Journal
 from datetime import date, datetime, timedelta
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
+
+from django.test import TestCase, tag
+from django.db.utils import IntegrityError
+from django.utils import timezone
+
+from aidants_connect_web.models import (
+    Connection,
+    Aidant,
+    Usager,
+    Mandat,
+    Journal,
+    Organisation,
+)
+from aidants_connect_web.tests.factories import UserFactory, OrganisationFactory
 
 
 class ConnectionModelTest(TestCase):
@@ -95,8 +105,8 @@ class UsagerModelTest(TestCase):
 class MandatModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.aidant_marge = Aidant.objects.create(username="Marge")
-        cls.aidant_patricia = Aidant.objects.create(username="Patricia")
+        cls.aidant_marge = UserFactory(username="Marge")
+        cls.aidant_patricia = UserFactory(username="Patricia")
         cls.usager_homer = Usager.objects.create(
             given_name="Homer",
             family_name="Simpson",
@@ -182,6 +192,7 @@ class MandatModelTest(TestCase):
         )
 
 
+@tag("models", "aidant")
 class AidantModelTest(TestCase):
     def test_what_happens_to_password_when_not_set(self):
         aidant = Aidant.objects.create(username="Marge")
@@ -202,6 +213,16 @@ class AidantModelTest(TestCase):
         Aidant.objects.create(username="cgireau@domain.user")
         self.assertEqual(len(Aidant.objects.all()), 2)
 
+    def test_get_aidant_organization(self):
+        orga = Organisation.objects.create(
+            name="COMMUNE DE HOULBEC COCHEREL",
+            siret=123,
+            address="45 avenue du Général de Gaulle, 90210 Beverly Hills",
+        )
+        bob = Aidant.objects.create(username="bhameau@domain.user", organisation=orga)
+
+        self.assertEqual(bob.organisation.name, "COMMUNE DE HOULBEC COCHEREL")
+
 
 @tag("journal")
 class JournalModelTest(TestCase):
@@ -214,7 +235,7 @@ class JournalModelTest(TestCase):
             password="motdepassedethierry",
             first_name="Thierry",
             last_name="Martin",
-            organisme="Commune de Vernon",
+            organisation=OrganisationFactory(name="Commune de Vernon"),
         )
         cls.usager_ned = Usager.objects.create(
             given_name="Ned",
@@ -301,3 +322,16 @@ class JournalModelTest(TestCase):
         self.assertRaises(NotImplementedError, lambda: entry.delete())
 
         self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")
+
+
+class OrganisationModelTest(TestCase):
+    def test_create_and_retrieve_organisation(self):
+        Organisation.objects.create(
+            name="Girard S.A.R.L",
+            siret="123",
+            address="3 rue du chat, 27120 Houlbec-Cocherel",
+        )
+        self.assertEqual(Organisation.objects.count(), 1)
+        organisation = Organisation.objects.all()[0]
+        self.assertEqual(organisation.name, "Girard S.A.R.L")
+        self.assertEqual(organisation.address, "3 rue du chat, 27120 Houlbec-Cocherel")

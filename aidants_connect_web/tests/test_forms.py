@@ -1,10 +1,12 @@
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.forms.models import model_to_dict
 
 from aidants_connect_web.forms import AidantCreationForm, AidantChangeForm, MandatForm
 from aidants_connect_web.models import Aidant
+from aidants_connect_web.tests.factories import OrganisationFactory
 
 
+@tag("forms")
 class AidantCreationFormTest(TestCase):
     def setUp(self):
         self.data = {
@@ -14,9 +16,9 @@ class AidantCreationFormTest(TestCase):
             "username": "",
             "password": "hdryjsydjsydjsydj",
             "profession": "Mediatrice",
-            "organisme": "Bibliothèque Dumas",
-            "ville": "Vernon",
+            "organisation": "3",
         }
+        self.organisation = OrganisationFactory(id=3)
         self.existing_aidant = Aidant.objects.create(
             first_name="Armand",
             last_name="Giraud",
@@ -24,8 +26,7 @@ class AidantCreationFormTest(TestCase):
             username="agiraud@domain.user",
             password="flkqgnfdùqlgnqùflkgnùqflkngw",
             profession="Mediateur",
-            organisme="Association Aide au Numérique",
-            ville="Nîmes",
+            organisation=self.organisation,
         )
 
     def test_from_renders_item_text_input(self):
@@ -45,8 +46,7 @@ class AidantCreationFormTest(TestCase):
             "last_name",
             "first_name",
             "profession",
-            "organisme",
-            "ville",
+            "organisation",
         ]:
             field_test(field, self.data.copy())
 
@@ -66,8 +66,7 @@ class AidantCreationFormTest(TestCase):
             username="hbernart@domain.user",
             password="flkqgnfdùqlgnqùflkgnùqflkngw",
             profession="Mediateur",
-            organisme="Association Aide au Numérique",
-            ville="Nîmes",
+            organisation=self.organisation,
         )
 
         form = AidantCreationForm(data=self.data)
@@ -99,6 +98,12 @@ class AidantCreationFormTest(TestCase):
 
 class AidantChangeFormTest(TestCase):
     def setUp(self):
+        self.organisation_nîmes = OrganisationFactory(
+            name="Association Aide au Numérique"
+        )
+        self.organisation_nantes = OrganisationFactory(
+            name="Association Aide'o'Web", id=4
+        )
         Aidant.objects.create(
             first_name="Henri",
             last_name="Bernard",
@@ -106,8 +111,7 @@ class AidantChangeFormTest(TestCase):
             username="hello@domain.user",
             password="flkqgnfdùqlgnqùflkgnùqflkngw",
             profession="Mediateur",
-            organisme="Association Aide au Numérique",
-            ville="Nîmes",
+            organisation=self.organisation_nîmes,
         )
         self.aidant2 = Aidant.objects.create(
             first_name="Armand",
@@ -115,8 +119,7 @@ class AidantChangeFormTest(TestCase):
             email="abernart@domain.user",
             username="abernart@domain.user",
             profession="Mediateur",
-            organisme="Association Aide'o'Web",
-            ville="Nantes",
+            organisation=self.organisation_nantes,
         )
 
         self.aidant2.set_password("nananana")
@@ -133,8 +136,7 @@ class AidantChangeFormTest(TestCase):
             "username": "abernart@domain.user",
             "email": "goodbye@domain.user",
             "profession": "Mediateur",
-            "organisme": "Association Aide'o'Web",
-            "ville": "Nantes",
+            "organisation": "4",
         }
         form = AidantChangeForm(
             data=changed_data,
@@ -161,8 +163,7 @@ class AidantChangeFormTest(TestCase):
             "username": "abernart@domain.user",
             "email": "abernart@domain.user",
             "profession": "Mediateur",
-            "organisme": "Association Aide'o'Web",
-            "ville": "Nantes",
+            "organisation": "4",
         }
         form = AidantChangeForm(
             data=changed_data,
@@ -182,8 +183,7 @@ class AidantChangeFormTest(TestCase):
             "username": "abernart@domain.user",
             "email": "hello@domain.user",
             "profession": "Mediateur",
-            "organisme": "Association Aide'o'Web",
-            "ville": "Nantes",
+            "organisation": "4",
         }
 
         form = AidantChangeForm(

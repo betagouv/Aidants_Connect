@@ -1,23 +1,19 @@
+from datetime import date, timedelta
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
 from django.utils import timezone
 from selenium.webdriver.firefox.webdriver import WebDriver
+
 from aidants_connect_web.models import Aidant, Usager, Mandat
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
-from datetime import date, timedelta
+from aidants_connect_web.tests.factories import UserFactory
 
 
 @tag("functional")
 class ViewMandats(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.user = Aidant.objects.create_user(
-            username="Thierry",
-            email="thierry@thierry.com",
-            password="motdepassedethierry",
-            first_name="Thierry",
-            last_name="Martin",
-        )
+        cls.user = UserFactory()
         cls.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -41,19 +37,19 @@ class ViewMandats(StaticLiveServerTestCase):
             email="Aidant2@user.domain",
         )
         cls.mandat = Mandat.objects.create(
-            aidant=Aidant.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche=["social"],
             expiration_date=timezone.now() + timedelta(days=6),
         )
         cls.mandat2 = Mandat.objects.create(
-            aidant=Aidant.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="test_sub"),
             demarche=["papiers"],
             expiration_date=timezone.now() + timedelta(days=1),
         )
         cls.mandat3 = Mandat.objects.create(
-            aidant=Aidant.objects.get(username="Thierry"),
+            aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="test_sub2"),
             demarche=["famille"],
             expiration_date=timezone.now() + timedelta(days=365),

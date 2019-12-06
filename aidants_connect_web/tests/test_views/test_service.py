@@ -6,7 +6,8 @@ from django.urls import resolve
 from django.conf import settings
 
 from aidants_connect_web.views import service
-from aidants_connect_web.models import Aidant, Journal
+from aidants_connect_web.models import Journal
+from aidants_connect_web.tests.factories import UserFactory
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -26,13 +27,11 @@ class HomePageTests(TestCase):
 class LoginPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = Aidant.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
-        )
+        self.aidant = UserFactory()
 
     def test_journal_records_when_aidant_logs_in(self):
         self.assertEqual(len(Journal.objects.all()), 0)
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant)
         response = self.client.get("/dashboard/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/dashboard.html")
@@ -43,7 +42,7 @@ class LoginPageTests(TestCase):
 
     def test_login_view_redirects_to_next_if_aidant_is_authenticated(self):
         self.assertEqual(len(Journal.objects.all()), 0)
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant)
         response = self.client.get("/accounts/login/?next=/dashboard/", follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/dashboard.html")
@@ -53,9 +52,7 @@ class LoginPageTests(TestCase):
 class LogoutPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = Aidant.objects.create_user(
-            "Thierry", "thierry@thierry.com", "motdepassedethierry"
-        )
+        self.aidant = UserFactory()
 
     def test_logout_url_triggers_the_logout_view(self):
         found = resolve("/logout/")
@@ -66,7 +63,7 @@ class LogoutPageTests(TestCase):
         self.assertRedirects(response, "/accounts/login/?next=/logout/")
 
     def test_logout_url_triggers_home_page_if_logged_in(self):
-        self.client.login(username="Thierry", password="motdepassedethierry")
+        self.client.force_login(self.aidant)
         response = self.client.get("/logout/")
         self.assertRedirects(response, "/")
 
