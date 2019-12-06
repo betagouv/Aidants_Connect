@@ -29,6 +29,10 @@ class Aidant(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    @property
+    def full_string_identifier(self):
+        return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
+
     def get_usagers_with_current_mandat(self):
         """
         :return: a queryset of usagers who have a current mandat with the aidant
@@ -142,22 +146,18 @@ class Connection(models.Model):
 
 class JournalManager(models.Manager):
     def connection(self, aidant: Aidant):
-        initiator = (
-            f"{aidant.get_full_name()} - {aidant.organisation.name} - {aidant.email}"
+        journal_entry = self.create(
+            initiator=aidant.full_string_identifier, action="connect_aidant"
         )
-        journal_entry = self.create(initiator=initiator, action="connect_aidant")
         return journal_entry
 
     def mandat_creation(self, mandat: Mandat):
         aidant = mandat.aidant
         usager = mandat.usager
 
-        initiator = (
-            f"{aidant.get_full_name()} - {aidant.organisation.name} - {aidant.email}"
-        )
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
         journal_entry = self.create(
-            initiator=initiator,
+            initiator=aidant.full_string_identifier,
             usager=usager_info,
             action="create_mandat",
             demarche=mandat.demarche,
@@ -171,13 +171,10 @@ class JournalManager(models.Manager):
         aidant = mandat.aidant
         usager = mandat.usager
 
-        initiator = (
-            f"{aidant.get_full_name()} - {aidant.organisation.name} - {aidant.email}"
-        )
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
         journal_entry = self.create(
-            initiator=initiator,
+            initiator=aidant.full_string_identifier,
             usager=usager_info,
             action="update_mandat",
             demarche=mandat.demarche,
@@ -196,13 +193,10 @@ class JournalManager(models.Manager):
         mandat: Mandat,
     ):
 
-        initiator = (
-            f"{aidant.get_full_name()} - {aidant.organisation.name} - {aidant.email}"
-        )
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
         journal_entry = self.create(
-            initiator=initiator,
+            initiator=aidant.full_string_identifier,
             usager=usager_info,
             action="use_mandat",
             demarche=demarche,
