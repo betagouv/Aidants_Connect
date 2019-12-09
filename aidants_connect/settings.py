@@ -65,6 +65,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "aidants_connect_web",
     "admin_honeypot",
+    "django_otp",
+    "django_otp.plugins.otp_static",
+    "django_otp.plugins.otp_totp",
 ]
 
 MIDDLEWARE = [
@@ -79,6 +82,7 @@ MIDDLEWARE = [
     "django.contrib.sites.middleware.CurrentSiteMiddleware",
     "django_referrer_policy.middleware.ReferrerPolicyMiddleware",
     "csp.middleware.CSPMiddleware",
+    "django_otp.middleware.OTPMiddleware",
 ]
 
 ROOT_URLCONF = "aidants_connect.urls"
