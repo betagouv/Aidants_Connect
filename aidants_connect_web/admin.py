@@ -1,8 +1,21 @@
-from django.contrib import admin
 from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
-from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from aidants_connect_web.models import Aidant, Usager, Mandat, Journal, Connection
+
+from magicauth.models import MagicToken
+from django_otp.plugins.otp_static.models import StaticToken
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.admin import OTPAdminSite
+from aidants_connect_web.models import (
+    Aidant,
+    Usager,
+    Mandat,
+    Journal,
+    Connection,
+    Organisation,
+)
+
+
+admin_site = OTPAdminSite(OTPAdminSite.name)
 
 
 class AidantAdmin(DjangoUserAdmin):
@@ -48,13 +61,14 @@ class AidantAdmin(DjangoUserAdmin):
     ordering = ("email",)
 
 
-# Now register the new AidantAdmin...
-admin.site.register(Aidant, AidantAdmin)
-admin.site.register(Usager)
-admin.site.register(Mandat)
-admin.site.register(Journal)
-admin.site.register(Connection)
+# Display the following tables in the admin
+admin_site.register(Aidant, AidantAdmin)
+admin_site.register(Usager)
+admin_site.register(Mandat)
+admin_site.register(Journal)
+admin_site.register(Connection)
+admin_site.register(Organisation)
 
-# ... and, since we're not using Django's built-in permissions,
-# unregister the Group model from admin.
-admin.site.unregister(Group)
+admin_site.register(MagicToken)
+admin_site.register(StaticToken)
+admin_site.register(TOTPDevice)
