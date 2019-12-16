@@ -107,6 +107,16 @@ form {
   align-items: start;
 }
 
+.mandat__agreement .checkbox {
+  width: 100%;
+}
+
 .mandat__agreement .checkbox__group + .checkbox__group {
   margin-top: 1em;
+}
+
+@supports not (display: grid) {
+  .tile + .tile {
+    margin-top: 1em;
+  }
 }
