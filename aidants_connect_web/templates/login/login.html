@@ -27,7 +27,9 @@
               </div>
             {% endif %}
             <div class="form__group">
-              <h1>Se connecter</h1>
+                <h1>Aidants Connect est actuellement en test.</h1>
+                <p><strong>Aidants Connect est disponible dans un nombre limité de structures d'accompagnement.</strong></p>
+                <p>Si vous faites partie d'une de ces structures, vous pouvez vous connecter :</p>
               <input type="email" name="email" class="form-control {% if form.errors %}state-invalid {% endif %}"
                                id="id_email" aria-describedby="emailHelp" placeholder="Votre email" required/>
               {% for error in form.email.errors %}
@@ -36,14 +38,10 @@
             </div>
             <button type="submit" class="button">Valider</button>
           {% endif %}
-      </form>
-      <div class="text-center text-muted">
-         <p><strong>Aidants Connect est actuellement en test dans un nombre limité de structures d'accompagnement.</strong></p>
-          <p>Ce service est reservé aux aidants professionnels salariés d'une structure habilitée Aidants Connect.</p>
-          <p>Pour en savoir plus,  <a href="mailto:aidantsconnect@beta.gouv.fr?subject=[site Aidants Connect - login] Demande d'informations">contactez-nous</a>.</p>
-        <p>Vous êtes habilité Aidants Connect et vous rencontrez des difficultés pour vous connecter?</p>
+          <p>Ce service est reservé aux aidants professionnels salariés d'une structure habilitée Aidants Connect. Pour en savoir plus,  <a href="mailto:aidantsconnect@beta.gouv.fr?subject=[site Aidants Connect - login] Demande d'informations">contactez-nous</a>.</p>
+          <p>Vous êtes habilité Aidants Connect et vous rencontrez des difficultés pour vous connecter?</p>
         <a href="mailto:aidantsconnect@beta.gouv.frsubject=[site Aidants Connect - login] Demande d'aide au login">Demandez de l'aide</a>
-      </div>
+      </form>
     </div>
   </section>
   </div>
