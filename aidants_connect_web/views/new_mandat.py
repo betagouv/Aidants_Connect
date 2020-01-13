@@ -42,9 +42,10 @@ def new_mandat(request):
 
         if form.is_valid():
             data = form.cleaned_data
+
             duree = 1 if data["duree"] == "short" else 365
             connection = Connection.objects.create(
-                demarches=data["perimeter"], duree=duree
+                demarches=data["demarche"], duree=duree
             )
             request.session["connection"] = connection.pk
             return redirect("fc_authorize")
@@ -82,6 +83,7 @@ def recap(request):
     else:
         form = request.POST
         if form.get("personal_data") and form.get("brief"):
+            # créer un mandat par démarche
             for demarche in connection.demarches:
                 try:
                     Mandat.objects.update_or_create(

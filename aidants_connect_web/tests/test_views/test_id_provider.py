@@ -272,7 +272,7 @@ class FISelectDemarcheTest(TestCase):
     date_close = datetime(2019, 1, 6, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_close)
-    def test_get_perimeters_for_one_usager_and_two_mandats(self):
+    def test_get_demarches_for_one_usager_and_two_mandats(self):
         self.client.force_login(self.aidant_thierry)
 
         response = self.client.get("/select_demarche/", data={"state": "test_state"})

@@ -77,7 +77,7 @@ form {
     align-items: center;
 }
 
-.label-demarche>h3{
+.label-demarche>h3 {
     text-transform: uppercase;
 }
 
@@ -91,15 +91,9 @@ form {
     flex-direction: column;
 }
 
-#label-custom-end-date {
-    padding-bottom: 0px;
-    display: flex;
-    flex-direction: column;
-}
-#input-custom-end-date  {
-    visibility: initial;
-    margin-top: 1.7em;
-    position: relative;
+#submit_button {
+  padding: 0;
+  max-width: 250px;
 }
 
 .mandat__agreement fieldset {

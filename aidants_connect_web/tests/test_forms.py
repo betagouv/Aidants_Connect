@@ -205,27 +205,27 @@ class MandatFormTest(TestCase):
         self.assertIn("argent", form.as_p())
 
     def test_validation_for_blank_items(self):
-        form = MandatForm(data={"perimeter": ["argent"], "duree": "short"})
+        form = MandatForm(data={"demarche": ["argent"], "duree": "short"})
         self.assertTrue(form.is_valid())
 
-        form_2 = MandatForm(data={"perimeter": [], "duree": "short"})
+        form_2 = MandatForm(data={"demarche": [], "duree": "short"})
         self.assertFalse(form_2.is_valid())
-        self.assertEqual(form_2.errors["perimeter"], ["Ce champ est obligatoire."])
+        self.assertEqual(form_2.errors["demarche"], ["Ce champ est obligatoire."])
 
-        form_3 = MandatForm(data={"perimeter": ["travail"], "duree": ""})
+        form_3 = MandatForm(data={"demarche": ["travail"], "duree": ""})
         self.assertFalse(form_3.is_valid())
         self.assertEqual(form_3.errors["duree"], ["Ce champ est obligatoire."])
 
-    def test_non_existing_perimeter_triggers_error(self):
-        form = MandatForm(data={"perimeter": ["test"], "duree": "16"})
+    def test_non_existing_demarche_triggers_error(self):
+        form = MandatForm(data={"demarche": ["test"], "duree": "16"})
         self.assertFalse(form.is_valid())
         self.assertEqual(
-            form.errors["perimeter"],
+            form.errors["demarche"],
             ["Sélectionnez un choix valide. test n'en fait pas partie."],
         )
 
     def test_non_integer_duree_triggers_error(self):
-        form = MandatForm(data={"perimeter": ["argent"], "duree": "test"})
+        form = MandatForm(data={"demarche": ["argent"], "duree": "test"})
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["duree"],
