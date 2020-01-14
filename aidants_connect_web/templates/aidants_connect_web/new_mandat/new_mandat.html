@@ -32,15 +32,15 @@
       <div id="demarches" class="tiles">
         <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
         {% if form.errors %}
-        <div class="notification">
-        {{ form.errors }}
-        </div>
+          <div class="notification">
+          {{ form.errors }}
+          </div>
         {% endif %}
         {% csrf_token %}
         <div id="demarches_list" class="grid">
           {% for value, label in form.demarche.field.choices %}
             <div id="{{ value }}" class="tile">
-              <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche"/>
+              <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche" />
               <label class="label-demarche" for="button-{{ value }}">
                 <img src={{ label.icon }} alt="">
                 <h3 class="brand">{{ label.titre }}</h3>
@@ -55,7 +55,7 @@
         <div id="duree_list" class="grid">
           {% for value, label in form.duree.field.choices %}
             <div id="{{ value }}" class="tile">
-              <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree"/>
+              <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree" />
               <label class="label-duree" for="button-{{ value }}">
                 <h3>{{ label.title }}</h3>
                 <span>{{ label.description }}</span>

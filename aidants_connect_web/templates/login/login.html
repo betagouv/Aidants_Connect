@@ -1,15 +1,18 @@
 {% extends 'layouts/main.html' %}
+
 {% load static %}
+
 {% block extracss %}
 <link href="{% static 'css/login.css' %}" rel="stylesheet">
 {% endblock extracss %}
+
 {% block content %}
 <div class="page">
   <div class="main-page">
     <section class="section section-white">
-    <div class="container">
-      <form class="" method="post">
-        {% csrf_token %}
+      <div class="container">
+        <form class="" method="post">
+          {% csrf_token %}
           {% if user.is_authenticated %}
             <div class="alert alert-info text-center" role="alert">
               Vous êtes déjà connecté
@@ -31,19 +34,31 @@
                 <p><strong>Aidants Connect est disponible dans un nombre limité de structures d'accompagnement.</strong></p>
                 <p>Si vous faites partie d'une de ces structures, vous pouvez vous connecter :</p>
               <input type="email" name="email" class="form-control {% if form.errors %}state-invalid {% endif %}"
-                               id="id_email" aria-describedby="emailHelp" placeholder="Votre email" required/>
+                                id="id_email" aria-describedby="emailHelp" placeholder="Votre email" required/>
               {% for error in form.email.errors %}
                 <div class="alet alert-danger text-center">{{ error }}</div>
               {% endfor %}
             </div>
             <button type="submit" class="button">Valider</button>
           {% endif %}
-          <p>Ce service est reservé aux aidants professionnels salariés d'une structure habilitée Aidants Connect. Pour en savoir plus,  <a href="mailto:aidantsconnect@beta.gouv.fr?subject=[site Aidants Connect - login] Demande d'informations">contactez-nous</a>.</p>
-          <p>Vous êtes habilité Aidants Connect et vous rencontrez des difficultés pour vous connecter?</p>
-        <a href="mailto:aidantsconnect@beta.gouv.frsubject=[site Aidants Connect - login] Demande d'aide au login">Demandez de l'aide</a>
-      </form>
-    </div>
-  </section>
+        </form>
+        <div class="text-center text-muted">
+          <p>
+            <strong>Aidants Connect est actuellement en test dans un nombre limité de structures d'accompagnement.</strong>
+          </p>
+          <p>
+            Ce service est reservé aux aidants professionnels salariés d'une structure habilitée Aidants Connect.
+          </p>
+          <p>
+            Pour en savoir plus, <a href="mailto:aidantsconnect@beta.gouv.fr?subject=[site Aidants Connect - login] Demande d'informations">contactez-nous</a>.
+          </p>
+          <p>
+            Vous êtes habilités Aidants Connect et vous rencontrez des difficultés pour vous connecter?
+          </p>
+          <a href="mailto:aidantsconnect@beta.gouv.frsubject=[site Aidants Connect - login] Demande d'aide au login">Demandez de l'aide</a>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
 {% endblock content %}

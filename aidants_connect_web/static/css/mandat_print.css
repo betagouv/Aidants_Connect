@@ -1,0 +1,28 @@
+main {
+    margin: 20px;
+  }
+
+.container {
+    font-size: .70em;
+    border: 1px solid gray;
+    padding: 30px;
+}
+
+.column {
+    flex: 50%;
+}
+
+@media print {
+    @page {
+        size: auto; /* auto is the initial value */
+        margin: 0; /* this affects the margin in the printer settings */
+    }
+    .no-print,
+    .no-print * {
+        display: none !important;
+    }
+    .container {
+        border: 0;
+        padding: 0;
+    }
+}

@@ -1,4 +1,5 @@
 import logging
+import secrets
 from django.utils import formats
 from datetime import date
 from weasyprint import HTML
@@ -132,7 +133,8 @@ def generate_mandat_pdf(request):
 
     duree = "1 jour" if connection.duree == 1 else "1 an"
 
-    html_string = render_to_string(
+    return render(
+        request,
         "aidants_connect_web/new_mandat/pdf_mandat.html",
         {
             "usager": f"{usager.given_name} {usager.family_name}",
@@ -145,14 +147,3 @@ def generate_mandat_pdf(request):
             "duree": duree,
         },
     )
-
-    html = HTML(string=html_string)
-    html.write_pdf(target="/tmp/mandat_aidants_connect.pdf")
-
-    fs = FileSystemStorage("/tmp")
-    with fs.open("mandat_aidants_connect.pdf") as pdf:
-        response = HttpResponse(pdf, content_type="application/pdf")
-        response[
-            "Content-Disposition"
-        ] = "inline; filename='mandat_aidants_connect.pdf'"
-        return response

@@ -14,7 +14,7 @@
 </div>
 <section class="section section-grey">
   <div class="container container-small">
-    <a class="button" href="{% url 'generate_mandat_pdf'%}">🖨 Imprimer le mandat</a>
+    <a class="button" href="{% url 'generate_mandat_pdf'%}" target="_blank">🖨 Imprimer le mandat</a>
     <form method="post" class="panel">
       {% if error %}
         <div class="notification warning">{{ error }}</div>
@@ -24,7 +24,7 @@
         <p id="recap_text"><strong>{{ usager }}</strong> autorise <strong>{{ aidant }}</strong>,  <em>aidant·e numérique</em> au sein de <em>{{ aidant.organisation.name }}</em>  à réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne suivantes :</p>
         <ul>
           {% for demarche in demarches %}
-          <li>{{ demarche }}</li>
+            <li>{{ demarche }}</li>
           {% endfor %}
         </ul>
         pour une durée de : <strong>{{ duree }}</strong>

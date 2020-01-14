@@ -2,12 +2,11 @@
 
 {% load static %}
 
-{% block content %}
-
 {% block extracss %}
 <link href="{% static 'css/home.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
+{% block content %}
 <div class="hero">
   <div class="hero__container">
     <div class="row">
@@ -18,7 +17,7 @@
         </p>
         <p>Ce service sécurise et facilite le « faire pour le compte de ».</p>
       </div>
-      <img src="{% static "images/aidantsconnect-illustration.svg" %}" alt="" />
+      <img src="{% static 'images/aidantsconnect-illustration.svg' %}" alt="" />
     </div>
   </div>
 </div>
@@ -65,5 +64,4 @@
     <h2 class="text-center">Aidants Connect est un service qui utilise <img class="logo__fc" src="{% static 'images/fc_logo_v2.png'%}" /></h2>
   </div>
 </section>
-
 {% endblock content %}
