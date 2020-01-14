@@ -1,4 +1,5 @@
 # Aidants Connect
+
 [![CircleCI](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master.svg?style=svg)](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master)
 
 Aidants Connect est une application web qui propose à des aidants les fonctionnalités suivantes :
@@ -7,7 +8,8 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 - accéder à des ressources sur l'accompagnement des usagers ;
 - accéder à un suivi de ses mandats.
 
-### Pile technique
+## Pile technique
+
 - Python 3.7
 - Django 2.2
 - PostgreSQL
@@ -54,10 +56,10 @@ export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
 ```
 
 Changer le fichier `.env.example` à la racine du projet en `.env` et ajouter vos informations :
-- Les informations `FC_AS_FS` et `FC_AS_``I``` sont à récupérer via des habilitations FranceConnect
+- Les informations `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des habilitations FranceConnect
 - Les valeur de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
 
-Créer un repertoire `staticfiles` 
+Créer un repertoire `staticfiles`
 ```
 mkdir staticfiles
 ```
@@ -69,10 +71,20 @@ python manage.py migrate
 
 Créer un `superuser`
 ```
-python manage.py createsuperuser --username <insert_admin_name> 
+python manage.py createsuperuser --username <insert_admin_name>
+```
+
+Rattacher le superuser (Aidant) à une Organisation
+```
+python manage.py shell
+from aidants_connect_web.models import Aidant, Organisation
+a = Aidant.objects.get(pk=1)
+a.organisation = Organisation.objects.create(name=<insert_organisation_name>)
+exit()
 ```
 
 ### Lancer les tests
+
 Installer les éléments suivants :
 - [Firefox](https://www.mozilla.org/fr/firefox/download/thanks/)
 - [Gecko driver](https://github.com/mozilla/geckodriver/releases)
@@ -98,8 +110,11 @@ python manage.py runserver 3000
 ```
 
 ## Annexes
-### Documentation de FranceConnect FI 
-[here](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-identite)
+
+### Documentation de FranceConnect
+
+- Fournisseur d'Identité (FI): [ici](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-identite)
+- Fournisseur de Service (FS): [ici](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service)
 
 ### Ré-initialiser la base de données
 
