@@ -1,5 +1,3 @@
-import io
-import PyPDF2
 from pytz import timezone
 from datetime import datetime
 from freezegun import freeze_time
@@ -205,7 +203,7 @@ class RecapTests(TestCase):
 
 
 @tag("new_mandat")
-class GenerateMandatPDF(TestCase):
+class GenerateMandatPreview(TestCase):
     def setUp(self):
         self.aidant_thierry = factories.UserFactory()
         self.client = Client()
@@ -235,42 +233,41 @@ class GenerateMandatPDF(TestCase):
             usager=self.test_usager,
         )
 
-    def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
-        found = resolve("/generate_mandat_pdf/")
-        self.assertEqual(found.func, new_mandat.generate_mandat_pdf)
+    def test_generate_mandat_html_triggers_the_generate_mandat_preview_view(self):
+        found = resolve("/generate_mandat_preview/")
+        self.assertEqual(found.func, new_mandat.generate_mandat_preview)
 
-    def test_response_is_a_pdf_download(self):
+    def test_response_is_the_preview_page(self):
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
         session["connection"] = 1
         session.save()
-        response = self.client.get("/generate_mandat_pdf/")
+        response = self.client.get("/generate_mandat_preview/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(
-            response.get("Content-Disposition"),
-            "inline; filename='mandat_aidants_connect.pdf'",
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/new_mandat/new_mandat_preview.html"
         )
 
     @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
-    def test_pdf_contains_text(self):
+    def test_preview_contains_text(self):
         self.client.force_login(self.aidant_thierry)
 
         session = self.client.session
         session["connection"] = 1
         session.save()
 
-        response = self.client.get("/generate_mandat_pdf/")
-        content = io.BytesIO(response.content)
-        pdfReader = PyPDF2.PdfFileReader(content)
-        pageObj = pdfReader.getPage(0)
-        page = pageObj.extractText()
-        self.assertIn("mandataire", page)
-        self.assertIn("Thierry GONEAU", page)
-        self.assertIn("Fabrice MERCIER", page)
-        self.assertIn("Allocation", page)
-        self.assertIn("1 jour", page)
-        self.assertIn("HOULBEC COCHEREL", page)
-        self.assertIn("COMMUNE", page)
-        self.assertIn("secrétaire", page)
+        response = self.client.get("/generate_mandat_preview/")
+        response_content = response.content.decode("utf-8")
+        # pdfReader = PyPDF2.PdfFileReader(content)
+        # pageObj = pdfReader.getPage(0)
+        # page = pageObj.extractText()
+        self.assertIn("mandataire", response_content)
+        self.assertIn("Thierry GONEAU", response_content)
+        self.assertIn("Fabrice MERCIER", response_content)
+        self.assertIn("Allocation", response_content)
+        self.assertIn("1 jour", response_content)
+        self.assertIn("HOULBEC COCHEREL", response_content)
+        self.assertIn("COMMUNE", response_content)
+        self.assertIn("secrétaire", response_content)
         # if this fails, check if info is not on second page
-        self.assertIn("18 juillet 2020", page)
+        self.assertIn("18 juillet 2020", response_content)

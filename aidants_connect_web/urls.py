@@ -14,9 +14,9 @@ urlpatterns = [
     path("recap/", new_mandat.recap, name="recap"),
     path("logout-callback/", new_mandat.recap, name="recap"),
     path(
-        "generate_mandat_pdf/",
-        new_mandat.generate_mandat_pdf,
-        name="generate_mandat_pdf",
+        "generate_mandat_preview/",
+        new_mandat.generate_mandat_preview,
+        name="generate_mandat_preview",
     ),
     # id_provider
     path("authorize/", id_provider.authorize, name="authorize"),

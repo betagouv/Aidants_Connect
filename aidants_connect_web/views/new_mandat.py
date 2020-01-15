@@ -1,26 +1,17 @@
 import logging
-import secrets
-from django.utils import formats
 from datetime import date
-from weasyprint import HTML
+from datetime import timedelta
 
 from django.db import IntegrityError
-
-from django.http import HttpResponse
+from django.utils import formats
+from django.utils import timezone
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
-
 from django.contrib import messages
-from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
 
 from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views.service import humanize_demarche_names
-
-from datetime import timedelta
-from django.utils import timezone
-
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -124,7 +115,7 @@ def recap(request):
 
 
 @login_required
-def generate_mandat_pdf(request):
+def generate_mandat_preview(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
 
@@ -135,7 +126,7 @@ def generate_mandat_pdf(request):
 
     return render(
         request,
-        "aidants_connect_web/new_mandat/pdf_mandat.html",
+        "aidants_connect_web/new_mandat/new_mandat_preview.html",
         {
             "usager": f"{usager.given_name} {usager.family_name}",
             "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",

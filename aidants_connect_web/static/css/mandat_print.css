@@ -3,13 +3,10 @@ main {
   }
 
 .container {
-    font-size: .70em;
+    font-size: .75em;
+    line-height: 1.5em;
     border: 1px solid gray;
     padding: 30px;
-}
-
-.column {
-    flex: 50%;
 }
 
 @media print {
