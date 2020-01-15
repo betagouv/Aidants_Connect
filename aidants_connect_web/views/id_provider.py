@@ -36,7 +36,7 @@ def check_request_parameters(
 ) -> tuple:
     """
     When a request arrives, this function checks that all requested parameters are
-    present (if nos, returns (1, "missing parameter") and if the static parameters are
+    present (if not, returns (1, "missing parameter") and if the static parameters are
     correct (if not, returns (1, "forbidden parameter value")). If all is good, returns
     (0, "all is good")
     :param parameters: dict of all parameters expected in the request
