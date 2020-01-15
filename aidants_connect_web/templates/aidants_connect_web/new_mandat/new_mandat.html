@@ -6,8 +6,6 @@
 <link href="{% static 'css/new_mandat.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-
-
 {% block content %}
 <section id="engagement"class="section">
   <div class="container container-small">
@@ -40,9 +38,9 @@
         {% endif %}
         {% csrf_token %}
         <div id="demarches_list" class="grid">
-          {% for value, label in form.perimeter.field.choices %}
+          {% for value, label in form.demarche.field.choices %}
             <div id="{{ value }}" class="tile">
-              <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="perimeter"/>
+              <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche"/>
               <label class="label-demarche" for="button-{{ value }}">
                 <img src={{ label.icon }} alt="">
                 <h3 class="brand">{{ label.titre }}</h3>
@@ -51,31 +49,25 @@
             </div>
           {% endfor %}
         </div>
-        <div id="duree">
-          <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
-          <div id="duree_list" class="grid" >
-            {% for value, label in form.duree.field.choices %}
-              <div id="{{ value }}" class="tile">
-                <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree"/>
-                <label class="label-duree" for="button-{{ value }}">
-                  <h3>{{ label.title }}</h3>
-                  <span>{{ label.description }}</span>
-                </label>
-              </div>
-            {% endfor %}
-            <div id="custom-end-date" class="tile">
-              <input id="button-custom-end-date" type="radio" value="custom-end-date" name="duree" disabled/>
-              <label id="label-custom-end-date" for="button-custom-end-date">
-                <h3>Sélectionnez une date</h3><span>(disponible bientôt)</span>
-                <input id="input-custom-end-date" type="date" name="custom-end-date" disabled>
+      </div>
+      <div id="duree">
+        <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
+        <div id="duree_list" class="grid">
+          {% for value, label in form.duree.field.choices %}
+            <div id="{{ value }}" class="tile">
+              <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree"/>
+              <label class="label-duree" for="button-{{ value }}">
+                <h3>{{ label.title }}</h3>
+                <span>{{ label.description }}</span>
               </label>
             </div>
-          </div>
+          {% endfor %}
         </div>
-        <div id="france_connection" class="form__group">
-          <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
-          <input id="submit_button" type="submit" class="fc_button" value="S’identifier avec France Connect" />
-        </div>
+      </div>
+      <div id="france_connection" class="form__group">
+        <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
+        <input id="submit_button" type="image" src="{% static 'images/FCboutons-10.png'%}" alt="S’identifier avec FranceConnect" />
+      </div>
     </form>
   <div>
 </section>

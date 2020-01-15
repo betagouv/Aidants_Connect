@@ -37,7 +37,7 @@ class NewMandatTests(TestCase):
 
     def test_badly_formated_form_triggers_original_template(self):
         self.client.force_login(self.aidant_thierry)
-        data = {"perimeter": ["papiers", "logement"], "duree": "RAMDAM"}
+        data = {"demarche": ["papiers", "logement"], "duree": "RAMDAM"}
         response = self.client.post("/new_mandat/", data=data)
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
@@ -45,7 +45,7 @@ class NewMandatTests(TestCase):
 
     def test_well_formated_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
-        data = {"perimeter": ["papiers", "logement"], "duree": "short"}
+        data = {"demarche": ["papiers", "logement"], "duree": "short"}
         response = self.client.post("/new_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 
@@ -222,7 +222,7 @@ class GenerateMandatPDF(TestCase):
             email="test@test.com",
         )
         self.mandat_form = MandatForm(
-            data={"perimeter": ["papiers", "logement"], "duree": "short"}
+            data={"demarche": ["papiers", "logement"], "duree": "short"}
         )
 
         Connection.objects.create(
