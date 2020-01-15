@@ -1,12 +1,13 @@
 venv/*
-aidants_connect/tmp_email_as_file/**
 .idea/*
 **/__pycache__/**
 db.sqlite3
 geckodriver.log
 
+aidants_connect/tmp_email_as_file/**
 .env
 staticfiles
 .DS_Store
 
 */fixtures/*
+local_db.json
