@@ -83,7 +83,7 @@ def recap(request):
     else:
         form = request.POST
         if form.get("personal_data") and form.get("brief"):
-            # créer un mandat par démarche
+            # The loop below creates one Mandat object per Démarche selected in the form
             for demarche in connection.demarches:
                 try:
                     Mandat.objects.update_or_create(
