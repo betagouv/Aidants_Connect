@@ -17,6 +17,7 @@ from aidants_connect_web.models import (
 from aidants_connect_web.tests.factories import UserFactory, OrganisationFactory
 
 
+@tag("models")
 class ConnectionModelTest(TestCase):
     def test_saving_and_retrieving_connexion(self):
         first_connexion = Connection()
@@ -64,6 +65,7 @@ class ConnectionModelTest(TestCase):
         self.assertEqual(second_saved_item.usager.gender, "male")
 
 
+@tag("models")
 class UsagerModelTest(TestCase):
     def test_saving_and_retrieving_usager(self):
         first_usager = Usager()
@@ -192,6 +194,20 @@ class MandatModelTest(TestCase):
         )
 
 
+@tag("models")
+class OrganisationModelTest(TestCase):
+    def test_create_and_retrieve_organisation(self):
+        Organisation.objects.create(
+            name="Girard S.A.R.L",
+            siret="123",
+            address="3 rue du chat, 27120 Houlbec-Cocherel",
+        )
+        self.assertEqual(Organisation.objects.count(), 1)
+        organisation = Organisation.objects.all()[0]
+        self.assertEqual(organisation.name, "Girard S.A.R.L")
+        self.assertEqual(organisation.address, "3 rue du chat, 27120 Houlbec-Cocherel")
+
+
 @tag("models", "aidant")
 class AidantModelTest(TestCase):
     def test_what_happens_to_password_when_not_set(self):
@@ -219,12 +235,97 @@ class AidantModelTest(TestCase):
             siret=123,
             address="45 avenue du Général de Gaulle, 90210 Beverly Hills",
         )
-        bob = Aidant.objects.create(username="bhameau@domain.user", organisation=orga)
+        aidant = Aidant.objects.create(
+            username="bhameau@domain.user", organisation=orga
+        )
+        self.assertEqual(aidant.organisation.name, "COMMUNE DE HOULBEC COCHEREL")
 
-        self.assertEqual(bob.organisation.name, "COMMUNE DE HOULBEC COCHEREL")
+
+@tag("models", "aidant")
+class AidantModelMethodsTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_marge = UserFactory(username="Marge")
+        cls.aidant_patricia = UserFactory(username="Patricia")
+        cls.usager_homer = Usager.objects.create(
+            given_name="Homer",
+            family_name="Simpson",
+            birthdate="1902-06-30",
+            gender="male",
+            birthplace=27681,
+            birthcountry=99100,
+            email="homer@simpson.com",
+            sub="123",
+        )
+        cls.usager_ned = Usager.objects.create(
+            given_name="Ned",
+            family_name="Flanders",
+            birthdate="1902-06-30",
+            gender="male",
+            birthplace=26934,
+            birthcountry=99100,
+            email="ned@flanders.com",
+            sub="1234",
+        )
+        Mandat.objects.create(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_homer,
+            demarche="Carte grise",
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
+        Mandat.objects.create(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_ned,
+            demarche="Logement",
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
+        Mandat.objects.create(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_homer,
+            demarche="Revenus",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+
+    def test_get_usagers(self):
+        self.assertEqual(len(self.aidant_marge.get_usagers()), 2)
+        self.assertEqual(len(self.aidant_patricia.get_usagers()), 0)
+
+    def test_get_usagers_with_current_mandat(self):
+        self.assertEqual(
+            len(self.aidant_marge.get_usagers_with_current_mandat()), 1
+        )
+        self.assertEqual(
+            len(self.aidant_patricia.get_usagers_with_current_mandat()), 0
+        )
+
+    def test_get_current_mandats_for_usager(self):
+        self.assertEqual(
+            len(self.aidant_marge.get_current_mandats_for_usager(self.usager_homer)), 1
+        )
+        self.assertEqual(
+            len(self.aidant_marge.get_current_mandats_for_usager(self.usager_ned)), 0
+        )
+
+    def test_get_expired_mandats_for_usager(self):
+        self.assertEqual(
+            len(self.aidant_marge.get_expired_mandats_for_usager(self.usager_homer)), 1
+        )
+        self.assertEqual(
+            len(self.aidant_marge.get_expired_mandats_for_usager(self.usager_ned)), 1
+        )
+
+    def test_get_current_demarches_for_usager(self):
+        self.assertEqual(
+            list(self.aidant_marge.get_current_demarches_for_usager(self.usager_homer)),
+            ["Revenus"]
+        )
+        self.assertEqual(
+            list(self.aidant_marge.get_current_demarches_for_usager(self.usager_ned)),
+            []
+        )
 
 
-@tag("journal")
+@tag("models", "journal")
 class JournalModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -322,16 +423,3 @@ class JournalModelTest(TestCase):
         self.assertRaises(NotImplementedError, lambda: entry.delete())
 
         self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")
-
-
-class OrganisationModelTest(TestCase):
-    def test_create_and_retrieve_organisation(self):
-        Organisation.objects.create(
-            name="Girard S.A.R.L",
-            siret="123",
-            address="3 rue du chat, 27120 Houlbec-Cocherel",
-        )
-        self.assertEqual(Organisation.objects.count(), 1)
-        organisation = Organisation.objects.all()[0]
-        self.assertEqual(organisation.name, "Girard S.A.R.L")
-        self.assertEqual(organisation.address, "3 rue du chat, 27120 Houlbec-Cocherel")

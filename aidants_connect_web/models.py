@@ -34,19 +34,52 @@ class Aidant(AbstractUser):
     def full_string_identifier(self):
         return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
 
-    def get_usagers_with_current_mandat(self):
+    def get_usagers(self):
         """
-        :return: a queryset of usagers who have a current mandat with the aidant
+        :return: a queryset of usagers who have a mandat (both current & expired)
+        with the aidant
         """
-        mandats_for_aidant = Mandat.objects.filter(aidant=self).exclude(
-            expiration_date__lt=timezone.now()
-        )
+        mandats_for_aidant = Mandat.objects.filter(aidant=self)
         usagers = (
             Usager.objects.filter(mandat__in=mandats_for_aidant)
             .distinct()
             .order_by("family_name")
         )
         return usagers
+
+    def get_usagers_with_current_mandat(self):
+        """
+        :return: a queryset of usagers who have a current mandat with the aidant
+        """
+        current_mandats_for_aidant = Mandat.objects.filter(aidant=self).exclude(
+            expiration_date__lt=timezone.now()
+        )
+        usagers = (
+            Usager.objects.filter(mandat__in=current_mandats_for_aidant)
+            .distinct()
+            .order_by("family_name")
+        )
+        return usagers
+
+    def get_current_mandats_for_usager(self, usager):
+        """
+        :param usager:
+        :return: a queryset of the current mandats with the usagers
+        """
+        current_mandats = Mandat.objects.filter(usager=usager, aidant=self).exclude(
+            expiration_date__lt=timezone.now()
+        ).order_by("creation_date")
+        return current_mandats
+
+    def get_expired_mandats_for_usager(self, usager):
+        """
+        :param usager:
+        :return: a queryset of the expired mandats with the usagers
+        """
+        expired_mandats = Mandat.objects.filter(usager=usager, aidant=self).exclude(
+            expiration_date__gt=timezone.now()
+        ).order_by("creation_date")
+        return expired_mandats
 
     def get_current_demarches_for_usager(self, usager):
         """

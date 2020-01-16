@@ -1,14 +1,22 @@
 from django.urls import path
-from aidants_connect_web.views import service, FC_as_FS, id_provider, new_mandat
 from magicauth import views as magicauth_views
 from magicauth.urls import urlpatterns as magicauth_urls
+from aidants_connect_web.views import (
+    service,
+    usagers,
+    FC_as_FS,
+    id_provider,
+    new_mandat
+)
 
 urlpatterns = [
     # service
     path("", service.home_page, name="home_page"),
     path("accounts/login/", magicauth_views.LoginView.as_view(), name="login"),
     path("dashboard/", service.dashboard, name="dashboard"),
-    path("mandats/", service.mandats, name="mandats"),
+    # usagers
+    path("usagers/", usagers.usagers_index, name="usagers"),
+    path("usagers/<int:usager_id>/", usagers.usagers_details, name="usagers_details"),
     # new mandat
     path("new_mandat/", new_mandat.new_mandat, name="new_mandat"),
     path("new_mandat_recap/", new_mandat.new_mandat_recap, name="new_mandat_recap"),

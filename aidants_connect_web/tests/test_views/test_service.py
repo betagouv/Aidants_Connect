@@ -37,7 +37,7 @@ class LoginPageTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/dashboard.html")
         self.assertEqual(Journal.objects.count(), 1)
         self.assertEqual(Journal.objects.all()[0].action, "connect_aidant")
-        self.client.get("/mandats/")
+        self.client.get("/usagers/")
         self.assertEqual(Journal.objects.count(), 1)
 
     def test_login_view_redirects_to_next_if_aidant_is_authenticated(self):

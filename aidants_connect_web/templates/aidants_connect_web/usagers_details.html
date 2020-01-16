@@ -1,0 +1,93 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/usagers.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <a class="button float-right" id="add_mandat">Renouveler un mandat</a>
+    <h1 class="brand">
+      <a href="{% url 'usagers' %}" id="retour_usagers">Vos mandats</a>
+    </h1>
+    <h2 class="brand">&nbsp;↳ {{ usager.get_full_name }}</h2>
+    {% if messages %}
+      <div class="notification success">
+        {% for message in messages %}
+          {{ message }}
+        {% endfor %}
+      </div>
+    {% endif %}
+    <div class="tiles">
+      {% if current_mandats or expired_mandats %}
+        <h2>Mandats en cours</h2>
+        {% if current_mandats %}
+          <!-- <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)" disabled> -->
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="th-50">Périmètre de la démarche</th>
+                <th class="th-25">Date de début</th>
+                <th class="th-25">Date de fin</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for mandat in current_mandats %}
+                <tr>
+                  <td>
+                    {{ mandat.demarche }}
+                  </td>
+                  <td title="{{ mandat.creation_date }}">
+                    {{ mandat.creation_date | date:"d F Y" }}
+                  </td>
+                  <td title="{{ mandat.expiration_date }}">
+                    {{ mandat.expiration_date | date:"d F Y" }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="notification">Vous n’avez pas de mandat en cours avec cet usager.</div>
+        {% endif %}
+        <h2>Mandats expirés</h2>
+        {% if expired_mandats %}
+          <!-- <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)" disabled> -->
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="th-50">Périmètre de la démarche</th>
+                <th class="th-25">Date de début</th>
+                <th class="th-25">Date de fin</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for mandat in expired_mandats %}
+                <tr>
+                  <td>
+                    {{ mandat.demarche }}
+                  </td>
+                  <td title="{{ mandat.creation_date }}">
+                    {{ mandat.creation_date | date:"d F Y" }}
+                  </td>
+                  <td title="{{ mandat.expiration_date }}">
+                    <!-- Expiré -->
+                    {{ mandat.expiration_date | date:"d F Y" }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="notification">Vous n’avez pas de mandat expiré avec cet usager.</div>
+        {% endif %}
+      {% else %}
+        <div class="notification">Vous n’avez pas de mandat avec cet usager.</div>
+      {% endif %}
+    </div>
+  <div>
+</section>
+{% endblock content %}

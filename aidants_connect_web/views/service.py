@@ -7,8 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib.messages import get_messages
 
-from aidants_connect_web.models import Mandat
-
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -49,21 +47,6 @@ def dashboard(request):
         request,
         "aidants_connect_web/dashboard.html",
         {"aidant": aidant, "messages": messages},
-    )
-
-
-@login_required
-def mandats(request):
-    messages = get_messages(request)
-    aidant = request.user
-    mandats = Mandat.objects.all().filter(aidant=aidant).order_by("creation_date")
-
-    # TODO change the "mois" in "jours"
-    # TODO should we have human readable names for demarche ?
-    return render(
-        request,
-        "aidants_connect_web/mandats.html",
-        {"aidant": aidant, "mandats": mandats, "messages": messages},
     )
 
 
