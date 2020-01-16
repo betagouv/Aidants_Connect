@@ -30,7 +30,3 @@ a:hover {
     display: flex;
   }
 }
-
-.tile + .tile {
-  margin-left: 1em;
-}

@@ -7,6 +7,13 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib.messages import get_messages
 
+from aidants_connect_web.models import (
+    Organisation,
+    Aidant,
+    Usager,
+    Mandat
+)
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -52,3 +59,35 @@ def dashboard(request):
 
 def resources(request):
     return render(request, "aidants_connect_web/resources.html")
+
+
+def statistiques(request):
+    organisation_total = Organisation.objects.count()
+    aidant_total = Aidant.objects.count()
+    usager_total = Usager.objects.count()
+    mandat_total = Mandat.objects.count()
+
+    return render(
+        request,
+        "aidants_connect_web/statistiques.html",
+        {
+            "statistiques": {
+                "organisation_data": {
+                    "name": "Organisations",
+                    "total": organisation_total
+                },
+                "aidant_data": {
+                    "name": "Aidants",
+                    "total": aidant_total
+                },
+                "usager_data": {
+                    "name": "Usagers",
+                    "total": usager_total
+                },
+                "mandat_data": {
+                    "name": "Mandats",
+                    "total": mandat_total
+                },
+            }
+        }
+    )
