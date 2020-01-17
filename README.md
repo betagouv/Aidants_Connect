@@ -51,7 +51,7 @@ Vous pouvez dès à présent visualiser :
 
 Ajouter une base `aidants_connect` appartenant au nouvel utilisateur `aidants_connect_team` en poursuivant dans l'invite de commmande postgreSQL :
 
-```sh
+```sql
 CREATE USER aidants_connect_team;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
 ALTER USER aidants_connect_team CREATEDB;
@@ -59,50 +59,55 @@ ALTER USER aidants_connect_team CREATEDB;
 
 :tada: La base de donnée `aidants_connect` est installée. Vous pouvez la voir et quitter l'invite de commande avec :
 
-```sh
+```sql
 \list
 \q
 ```
 
 ## Installer l'application
 
-Dans votre répertoire de travail, créez et activez un environnement virtuel
-```
+Dans votre répertoire de travail, créez et activez un environnement virtuel :
+
+```shell
 virtualenv venv
 source venv/bin/activate
 ```
 
-Installer les dépendances
+Installer les dépendances :
 
-```
+```shell
 pip install -r requirements.txt
 ```
 
 Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayer :
-```
+
+```shell
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
 ```
 
 Changer le fichier `.env.example` à la racine du projet en `.env` et ajouter vos informations :
-- Les informations `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des habilitations FranceConnect
+- Les champs obligatoires sont indiqués par le préfixe `<insert_`
+- Les informations `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
 - Les valeur de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
 
-Créer un repertoire `staticfiles`
-```
+Créer un repertoire `staticfiles` à la racine du projet :
+
+```shell
 mkdir staticfiles
 ```
 
-Appliquer les migrations de la base de données
-```
+Appliquer les migrations de la base de données : 
+
+```shell
 python manage.py migrate
 ```
 
-Créer un `superuser`
-```
-python manage.py createsuperuser --username <insert_admin_name>
+Créer un `superuser` :
+
+```shell
+python manage.py createsuperuser --username <insert_admin_name> 
 ```
 
-Rattacher le superuser (Aidant) à une Organisation
 ```
 python manage.py shell
 from aidants_connect_web.models import Aidant, Organisation
@@ -113,27 +118,28 @@ exit()
 
 ### Lancer les tests
 
-Installer les éléments suivants :
-- [Firefox](https://www.mozilla.org/fr/firefox/download/thanks/)
-- [Gecko driver](https://github.com/mozilla/geckodriver/releases)
+Si vous ne les avez pas, installer les éléments suivants :
+- Navigateur Firefox en [téléchargement](https://www.mozilla.org/fr/firefox/download/thanks/)
+- [Gecko driver](https://github.com/mozilla/geckodriver/releases) avec cette commande :
+    ```shell
+    brew install geckodriver
+    ```
 
-```
-brew install geckodriver
-```
-puis lancer les commandes suivantes :
+Puis lancer les commandes suivantes pour vérifier le style du code source et exécuter les tests de l'application :
 
-```
+```shell
 flake8
 python manage.py test
 ```
 
 Les tests fonctionnels sont lancés sur `http://localhost:3000`.
-Il faut s'assurer que rien d'autre n'occupe ce port pendant les tests.
+Il faut s'assurer que rien d'autre n'occupe ce port pendant leur exécution.
 
 ## Lancer l'application
 
-Pour lancer l'application sur le port 3000 :
-```
+Pour lancer l'application sur le port `3000` :
+
+```shell
 python manage.py runserver 3000
 ```
 
@@ -146,33 +152,40 @@ python manage.py runserver 3000
 
 ### Ré-initialiser la base de données
 
-Récupérez les données
-```
+Récupérez les données :
+
+```shell
 python manage.py dumpdata --exclude auth.permission --exclude contenttypes > db.json
 ```
-Dans le shell
-```
+
+Dans le shell :
+
+```shell
 psql
 ```
-puis, dans l'invite de commande psql
-```
+
+Puis, dans l'invite de commande psql :
+
+```sql
 DROP DATABASE aidants_connect;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
 ALTER USER aidants_connect_team CREATEDB;
 \q
 ```
 
-puis dans le shell
-```
+Ensuite, de retour dans le shell :
+
+```shell
 python manage.py makemigrations
 python manage.py migrate
 ```
-Chargez les données
-```bash
+
+Chargez les données :
+
+```shell
 python manage.py loaddata db.json
 ```
 ou 
-```
+```shell
 python manage.py createsuperuser
 ```
-
