@@ -13,14 +13,14 @@ pytz==2019.1
 requests==2.22.0
 selenium==3.141.0
 sqlparse==0.3.0
-whitenoise==4.1.2
+whitenoise==5.0.1
 mock==3.0.5
 WeasyPrint==48
 PyPDF2==1.26.0
 git+git://github.com/betagouv/django-magicauth
 django-referrer-policy==1.0
 django-admin-honeypot==1.1.0
-django-csp==3.5
+django-csp==3.6
 factory-boy==2.12.0
 django-otp==0.7.4
 qrcode==6.1
