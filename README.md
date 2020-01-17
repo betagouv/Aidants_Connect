@@ -16,23 +16,51 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 
 ## Comment installer la base de données (pour Mac OSX)
 
-Installer PostgreSQL
+Utiliser votre gestionnaire de paquet préféré pour installer la base.
+L'exemple qui suit emploie le gestionnaire [Homebrew](https://brew.sh) via la commande `brew`.
+
+Dans un terminal, installer [PostgreSQL](https://www.postgresql.org) :
+
 ```sh
 brew install postgresql
+```
+
+Démarrer le service postgres :
+
+```sh
 brew services start postgresql
+```
+
+> Ceci démarre le serveur de la base de données postgres et active sa réexécution au login.
+
+Dans le cas où ce serait votre première utilisation de postgreSQL, créer une base d'essai à votre nom :
+
+```sh
 createdb `whoami`
 ```
 
-Créer la base de données
+Puis, démarrer l'invite de commande postgreSQL :
+
 ```sh
 psql
 ```
 
-Dans l'invite de commmande postgreSQL :
-```
+Vous pouvez dès à présent visualiser :
+* la liste des bases de données existantes avec cette commande postgreSQL `\list`
+* la liste des roles existants avec `\du`
+
+Ajouter une base `aidants_connect` appartenant au nouvel utilisateur `aidants_connect_team` en poursuivant dans l'invite de commmande postgreSQL :
+
+```sh
 CREATE USER aidants_connect_team;
 CREATE DATABASE aidants_connect OWNER aidants_connect_team;
 ALTER USER aidants_connect_team CREATEDB;
+```
+
+:tada: La base de donnée `aidants_connect` est installée. Vous pouvez la voir et quitter l'invite de commande avec :
+
+```sh
+\list
 \q
 ```
 
