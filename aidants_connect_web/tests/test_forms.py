@@ -221,7 +221,7 @@ class MandatFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["demarche"],
-            ["Sélectionnez un choix valide. test n'en fait pas partie."],
+            ["Sélectionnez un choix valide. test n’en fait pas partie."],
         )
 
     def test_non_integer_duree_triggers_error(self):
@@ -229,5 +229,5 @@ class MandatFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["duree"],
-            ["Sélectionnez un choix valide. test n'en fait pas partie."],
+            ["Sélectionnez un choix valide. test n’en fait pas partie."],
         )
