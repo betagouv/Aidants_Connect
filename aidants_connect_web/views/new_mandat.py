@@ -50,7 +50,7 @@ def new_mandat(request):
 
 
 @login_required
-def recap(request):
+def new_mandat_recap(request):
 
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
@@ -63,7 +63,7 @@ def recap(request):
 
         return render(
             request,
-            "aidants_connect_web/new_mandat/recap.html",
+            "aidants_connect_web/new_mandat/new_mandat_recap.html",
             {
                 "aidant": aidant,
                 "usager": usager,
@@ -103,7 +103,7 @@ def recap(request):
         else:
             return render(
                 request,
-                "aidants_connect_web/new_mandat/recap.html",
+                "aidants_connect_web/new_mandat/new_mandat_recap.html",
                 {
                     "aidant": aidant,
                     "usager": usager,
@@ -115,7 +115,7 @@ def recap(request):
 
 
 @login_required
-def generate_mandat_preview(request):
+def new_mandat_preview(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
 
