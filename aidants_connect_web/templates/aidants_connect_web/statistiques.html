@@ -3,28 +3,27 @@
 {% load static %}
 
 {% block extracss %}
-    <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 
 {% block content %}
 <section class="section">
-    <div class="container">
-        <h1 class="brand">Statistiques d'Aidants Connect</h1>
-        <div class="tiles">
-            <h2>Indicateurs de base</h2>
-            <div class="grid">
-                {% for key, value in statistiques.items %}
-                    <div class="tile text-center">
-                        <h3>{{ value.name }}</h3>
-                        <h3><b>{{ value.total }}</b></h3>
-                    </div>
-                {% endfor %}
-            </div>
+  <div class="container">
+    <h1 class="brand">Statistiques d'Aidants Connect</h1>
+    <div class="tiles">
+      {% for stat_group in statistiques %}
+        <h2>{{ stat_group.name }}</h2>
+        <div class="grid">
+          {% for stat_item in stat_group.values %}
+          <div class="tile text-center">
+            <h3>{{ stat_item.title }}</h3>
+            <h3><b>{{ stat_item.value }}</b></h3>
+          </div>
+          {% endfor %}
         </div>
-        <!-- <div class="tiles">
-            <h2>Evolution du nombre de ... dans le temps</h2>
-        </div> -->
+      {% endfor %}
     </div>
+  </div>
 </section>
 {% endblock content %}

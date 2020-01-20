@@ -66,28 +66,60 @@ def statistiques(request):
     aidant_total = Aidant.objects.count()
     usager_total = Usager.objects.count()
     mandat_total = Mandat.objects.count()
+    mandat_ongoing_total = Mandat.objects.count()
+    mandat_used_last_30_days = Mandat.objects.count()
+    usager_with_mandat_ongoing = Aidant.objects.count()
 
     return render(
         request,
         "aidants_connect_web/statistiques.html",
         {
-            "statistiques": {
-                "organisation_data": {
-                    "name": "Organisations",
-                    "total": organisation_total
+            "statistiques": [
+                {
+                    "name": "Indicateurs de base",
+                    "values": [
+                        {
+                            "title": "Organisations",
+                            "value": organisation_total
+                        },
+                        {
+                            "title": "Aidants",
+                            "value": aidant_total
+                        },
+                        {
+                            "title": "Usagers",
+                            "value": usager_total
+                        },
+                    ],
                 },
-                "aidant_data": {
-                    "name": "Aidants",
-                    "total": aidant_total
-                },
-                "usager_data": {
-                    "name": "Usagers",
-                    "total": usager_total
-                },
-                "mandat_data": {
+                {
                     "name": "Mandats",
-                    "total": mandat_total
+                    "values": [
+                        {
+                            "title": "Total",
+                            "value": mandat_total
+                        },
+                        {
+                            "title": "Actifs",
+                            "value": mandat_ongoing_total
+                        },
+                        {
+                            "title": "Utilisés récemment",
+                            "subtitle": "30 derniers jours",
+                            "value": mandat_used_last_30_days
+                        },
+                    ],
                 },
-            }
+                {
+                    "name": "Usagers",
+                    "values": [
+                        {
+                            "title": "Actifs",
+                            "subtitle": "Au moins 1 mandat actif",
+                            "value": usager_with_mandat_ongoing
+                        }
+                    ]
+                }   
+            ]
         }
     )
