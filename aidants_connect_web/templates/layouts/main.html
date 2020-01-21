@@ -78,19 +78,24 @@
     </defs>
   </svg>
 
-  {% include 'layouts/nav.html' %}
+  {% block nav %}
+    {% include 'layouts/nav.html' %}
+  {% endblock nav %}
 
-  {% block hero %}{% endblock %}
+  {% block hero %}
+  {% endblock %}
 
   <main>
-  {% block content %}{% endblock %}
+  {% block content %}
+  {% endblock %}
   </main>
 
-  {% include 'layouts/footer.html' %}
+  {% block footer %}
+    {% include 'layouts/footer.html' %}
+  {% endblock footer %}
 
   {% block extrajs %}
   {% endblock %}
-
 </body>
 
 </html>

@@ -1,0 +1,107 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+<link href="{% static 'css/mandat_print.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block nav %}
+{% endblock nav %}
+
+{% block content %}
+<section class="no-print text-center">
+  <p><i>
+    🖨 Pour imprimer, sélectionnez dans le menu de votre navigateur 'Fichier', puis 'Imprimer'.
+  </i></p>
+  </div>
+  <br>
+</section>
+
+<section class="container">
+  <div class="navbar__home text-center">
+    <img class="navbar__logo" src="{% static 'images/logo-marianne.svg' %}"
+      alt="aidantsconnect.beta.gouv.fr" /><img src="{% static 'images/aidants-connect_logo.png' %}" class="navbar__gouvfr" alt="aidantsconnect.beta.gouv.fr" />
+  </div>
+  
+  <h1>Mandat type d’un aidant réalisant des démarches administratives en ligne au bénéfice d’un usager via le service
+    « Aidants Connect »</h1>
+
+  <p>Je soussigné(e), <strong>{{ usager }}</strong> autorise <strong>{{ aidant }}</strong>, exerçant la profession de
+    <strong>{{profession}}</strong> au sein de <strong>{{ organisation }}</strong> à
+    réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, les démarches
+    administratives en ligne suivantes:</p>
+
+  <ul>
+    {% for demarche in demarches %}
+      <li><strong>{{ demarche }}</strong></li>
+    {% endfor %}
+  </ul>
+
+  <p>
+    pour une durée de <strong>{{ duree }}</strong>.
+  </p>
+
+  <p>
+    À cette fin :
+    <ul>
+      <li><strong>{{ usager }}</strong> autorise <strong>{{ aidant }}</strong> à utiliser ses données à caractère personnel.
+      </li>
+      <li><strong>{{ aidant }}</strong> a rappelé à <strong>{{ usager }}</strong> l’objet de l’intervention, la raison pour
+        laquelle ses informations sont collectées et leur utilité ; l’existence de droits
+        sur ses données (accès, rectification, suppression, etc.) et la possibilité pour le mandant de retirer à tout
+        moment son consentement.</li>
+    </ul>
+  </p>
+
+  <p>
+    Le mandataire s’engage à :
+    <ol>
+      <li>ne collecter et enregistrer que les seules informations strictement nécessaires au regard des démarches
+        susvisées ;</li>
+      <li>n’utiliser les informations concernant le mandant que pour les seules démarches susvisées. S’il a besoin de
+        les utiliser pour d’autres démarches, il doit au préalable en informer le mandant et en demander
+        l’autorisation ;</li>
+      <li>mettre à jour puis à supprimer l’ensemble des informations relatives au mandant lorsqu’elles ne sont plus
+        nécessaires à la réalisation des démarches lui incombant au titre du mandat ;</li>
+      <li>informer le mandant de toutes les actions qu’il/elle effectue à sa place ;</li>
+      <li>conserver les données à caractère personnel strictement nécessaires à ces démarches le seul temps strictement
+        nécessaire à leur réalisation.</li>
+    </ol>
+  </p>
+
+  <p>
+    Le mandataire est soumis à une obligation de confidentialité.
+    Il ne doit en aucun cas divulguer les informations du mandant à des tiers lorsque cette divulgation n’est
+    pas nécessaire à l’accomplissement des démarches dont il est responsable (ex. : il ne doit pas
+    communiquer des informations concernant le mandant à son collègue de travail). Le mandataire enregistre les
+    informations du mandant de manière sécurisée et notamment prend toutes précautions pour assurer la sécurité physique
+    et logique de ces données.
+  </p>
+
+  <p>
+    Le présent mandat est accepté et consenti pour la durée nécessaire à l’accomplissement des missions de
+    <strong>{{ aidant }}</strong>.
+    Le mandat prend fin lorsque la réalisation des démarches susvisées a été accomplie, ou à tout moment si le mandant
+    ou le mandataire décide de révoquer le mandat.
+  </p>
+
+  <p>
+    <strong>{{ aidant }}</strong> est tenu(e) d’accomplir le mandat tant qu’il en demeure chargé, et répond des dommages
+    et intérêts qui
+    pourraient résulter de son inexécution conformément à l’article 1991 du Code civil.
+  </p>
+
+  <p>
+    Fait à <strong>{{ lieu }}</strong>, le <strong>{{ date }}</strong>
+  </p>
+
+  <p class="margin-bottom-50">
+    <span>Le mandant</span>
+    <span class="margin-left-100">Le mandataire</span>
+  </p>
+</section>
+{% endblock content %}
+
+{% block footer %}
+{% endblock footer %}

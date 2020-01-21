@@ -18,19 +18,19 @@
       <fieldset>
         <legend>Choisissez l'usager que vous souhaitez FranceConnecter.</legend>
         <div id="usagers" class="grid">
-        {% for usager in usagers %}
-          <div id="usager" class="tile">
-          <input id="button-{{ usager.id }}" type="submit" value="{{ usager.id }}" name="chosen_usager"/>
-          <label id="label-usager" for="button-{{ usager.id }}">
-            <h3>{{ usager.family_name }} {{ usager.given_name }}</h3>
-          </label>
-        </div>
-        {% endfor %}
+          {% for usager in usagers %}
+            <div id="usager" class="tile">
+              <input id="button-{{ usager.id }}" type="submit" value="{{ usager.id }}" name="chosen_usager" />
+              <label id="label-usager" for="button-{{ usager.id }}">
+                <h3>{{ usager.family_name }} {{ usager.given_name }}</h3>
+              </label>
             </div>
-          {% csrf_token %}
-          <input type="hidden" name="state" value="{{state}}" />
-          </fieldset>
-      </form>
-    <div>
+          {% endfor %}
+        </div>
+        {% csrf_token %}
+        <input type="hidden" name="state" value="{{ state }}" />
+      </fieldset>
+    </form>
+  <div>
 </section>
 {% endblock content %}

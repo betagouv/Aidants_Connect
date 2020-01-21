@@ -72,6 +72,14 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   width: 170px;
 }
 
+.margin-left-100 {
+  margin-left: 100px;
+}
+
+.margin-bottom-50 {
+  margin-bottom: 50px;
+}
+
 @media (max-width: 699px) {
   form {
     padding: 0 1em;

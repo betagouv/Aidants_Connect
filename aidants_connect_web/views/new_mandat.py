@@ -1,25 +1,17 @@
 import logging
-from django.utils import formats
 from datetime import date
-from weasyprint import HTML
+from datetime import timedelta
 
 from django.db import IntegrityError
-
-from django.http import HttpResponse
+from django.utils import formats
+from django.utils import timezone
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
-
 from django.contrib import messages
-from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
 
 from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views.service import humanize_demarche_names
-
-from datetime import timedelta
-from django.utils import timezone
-
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -58,7 +50,7 @@ def new_mandat(request):
 
 
 @login_required
-def recap(request):
+def new_mandat_recap(request):
 
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
@@ -71,7 +63,7 @@ def recap(request):
 
         return render(
             request,
-            "aidants_connect_web/new_mandat/recap.html",
+            "aidants_connect_web/new_mandat/new_mandat_recap.html",
             {
                 "aidant": aidant,
                 "usager": usager,
@@ -111,7 +103,7 @@ def recap(request):
         else:
             return render(
                 request,
-                "aidants_connect_web/new_mandat/recap.html",
+                "aidants_connect_web/new_mandat/new_mandat_recap.html",
                 {
                     "aidant": aidant,
                     "usager": usager,
@@ -123,7 +115,7 @@ def recap(request):
 
 
 @login_required
-def generate_mandat_pdf(request):
+def new_mandat_preview(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
 
@@ -132,8 +124,9 @@ def generate_mandat_pdf(request):
 
     duree = "1 jour" if connection.duree == 1 else "1 an"
 
-    html_string = render_to_string(
-        "aidants_connect_web/new_mandat/pdf_mandat.html",
+    return render(
+        request,
+        "aidants_connect_web/new_mandat/new_mandat_preview.html",
         {
             "usager": f"{usager.given_name} {usager.family_name}",
             "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",
@@ -145,14 +138,3 @@ def generate_mandat_pdf(request):
             "duree": duree,
         },
     )
-
-    html = HTML(string=html_string)
-    html.write_pdf(target="/tmp/mandat_aidants_connect.pdf")
-
-    fs = FileSystemStorage("/tmp")
-    with fs.open("mandat_aidants_connect.pdf") as pdf:
-        response = HttpResponse(pdf, content_type="application/pdf")
-        response[
-            "Content-Disposition"
-        ] = "inline; filename='mandat_aidants_connect.pdf'"
-        return response

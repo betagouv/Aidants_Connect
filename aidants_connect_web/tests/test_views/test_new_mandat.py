@@ -1,5 +1,3 @@
-import io
-import PyPDF2
 from pytz import timezone
 from datetime import datetime
 from freezegun import freeze_time
@@ -51,7 +49,7 @@ class NewMandatTests(TestCase):
 
 
 @tag("new_mandat")
-class RecapTests(TestCase):
+class NewMandatRecapTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant_thierry = factories.UserFactory()
@@ -73,8 +71,8 @@ class RecapTests(TestCase):
         )
 
     def test_recap_url_triggers_the_recap_view(self):
-        found = resolve("/recap/")
-        self.assertEqual(found.func, new_mandat.recap)
+        found = resolve("/new_mandat_recap/")
+        self.assertEqual(found.func, new_mandat.new_mandat_recap)
 
     def test_recap_url_triggers_the_recap_template(self):
         self.client.force_login(self.aidant_thierry)
@@ -83,9 +81,11 @@ class RecapTests(TestCase):
         session["connection"] = self.mandat_builder.id
         session.save()
 
-        response = self.client.get("/recap/")
+        response = self.client.get("/new_mandat_recap/")
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "aidants_connect_web/new_mandat/recap.html")
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/new_mandat/new_mandat_recap.html"
+        )
 
     def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
         self.client.force_login(self.aidant_thierry)
@@ -95,7 +95,7 @@ class RecapTests(TestCase):
         session.save()
 
         response = self.client.post(
-            "/recap/", data={"personal_data": True, "brief": True}
+            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
         )
         self.assertEqual(Usager.objects.all().count(), 1)
         usager = Usager.objects.get(given_name="Fabrice")
@@ -119,7 +119,7 @@ class RecapTests(TestCase):
         session["connection"] = mandat_builder.id
         session.save()
         response = self.client.post(
-            "/recap/", data={"personal_data": True, "brief": True}
+            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
         )
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
@@ -135,7 +135,9 @@ class RecapTests(TestCase):
         session["connection"] = mandat_builder_1.id
         session.save()
         # trigger the mandat creation/update
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.post(
+            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+        )
 
         self.assertEqual(Mandat.objects.count(), 1)
         last_journal_entry = Journal.objects.last()
@@ -150,7 +152,9 @@ class RecapTests(TestCase):
         session["connection"] = mandat_builder_2.id
         session.save()
         # trigger the mandat creation/update
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.post(
+            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+        )
 
         self.assertEqual(Mandat.objects.count(), 1)
         updated_mandat = Mandat.objects.get(
@@ -174,7 +178,9 @@ class RecapTests(TestCase):
         session["connection"] = mandat_builder_1.id
         session.save()
         # trigger the mandat creation/update
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.post(
+            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+        )
         self.client.logout()
 
         # second session : Create same mandat with other aidant
@@ -187,7 +193,9 @@ class RecapTests(TestCase):
         session.save()
 
         # trigger the mandat creation/update
-        self.client.post("/recap/", data={"personal_data": True, "brief": True})
+        self.client.post(
+            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+        )
 
         self.assertEqual(Mandat.objects.count(), 2)
         first_mandat = Mandat.objects.get(
@@ -205,7 +213,7 @@ class RecapTests(TestCase):
 
 
 @tag("new_mandat")
-class GenerateMandatPDF(TestCase):
+class GenerateMandatPreview(TestCase):
     def setUp(self):
         self.aidant_thierry = factories.UserFactory()
         self.client = Client()
@@ -235,42 +243,42 @@ class GenerateMandatPDF(TestCase):
             usager=self.test_usager,
         )
 
-    def test_generate_mandat_PDF_triggers_the_generate_mandat_PDF_view(self):
-        found = resolve("/generate_mandat_pdf/")
-        self.assertEqual(found.func, new_mandat.generate_mandat_pdf)
+    def test_generate_mandat_html_triggers_the_new_mandat_preview_view(self):
+        found = resolve("/new_mandat_preview/")
+        self.assertEqual(found.func, new_mandat.new_mandat_preview)
 
-    def test_response_is_a_pdf_download(self):
+    def test_response_is_the_preview_page(self):
         self.client.force_login(self.aidant_thierry)
+
         session = self.client.session
         session["connection"] = 1
         session.save()
-        response = self.client.get("/generate_mandat_pdf/")
+
+        response = self.client.get("/new_mandat_preview/")
+
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(
-            response.get("Content-Disposition"),
-            "inline; filename='mandat_aidants_connect.pdf'",
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/new_mandat/new_mandat_preview.html"
         )
 
     @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
-    def test_pdf_contains_text(self):
+    def test_preview_contains_text(self):
         self.client.force_login(self.aidant_thierry)
 
         session = self.client.session
         session["connection"] = 1
         session.save()
 
-        response = self.client.get("/generate_mandat_pdf/")
-        content = io.BytesIO(response.content)
-        pdfReader = PyPDF2.PdfFileReader(content)
-        pageObj = pdfReader.getPage(0)
-        page = pageObj.extractText()
-        self.assertIn("mandataire", page)
-        self.assertIn("Thierry GONEAU", page)
-        self.assertIn("Fabrice MERCIER", page)
-        self.assertIn("Allocation", page)
-        self.assertIn("1 jour", page)
-        self.assertIn("HOULBEC COCHEREL", page)
-        self.assertIn("COMMUNE", page)
-        self.assertIn("secrétaire", page)
+        response = self.client.get("/new_mandat_preview/")
+        response_content = response.content.decode("utf-8")
+
+        self.assertIn("mandataire", response_content)
+        self.assertIn("Thierry GONEAU", response_content)
+        self.assertIn("Fabrice MERCIER", response_content)
+        self.assertIn("Allocation", response_content)
+        self.assertIn("1 jour", response_content)
+        self.assertIn("HOULBEC COCHEREL", response_content)
+        self.assertIn("COMMUNE", response_content)
+        self.assertIn("secrétaire", response_content)
         # if this fails, check if info is not on second page
-        self.assertIn("18 juillet 2020", page)
+        self.assertIn("18 juillet 2020", response_content)

@@ -11,12 +11,12 @@ urlpatterns = [
     path("mandats/", service.mandats, name="mandats"),
     # new mandat
     path("new_mandat/", new_mandat.new_mandat, name="new_mandat"),
-    path("recap/", new_mandat.recap, name="recap"),
-    path("logout-callback/", new_mandat.recap, name="recap"),
+    path("new_mandat_recap/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
+    path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
-        "generate_mandat_pdf/",
-        new_mandat.generate_mandat_pdf,
-        name="generate_mandat_pdf",
+        "new_mandat_preview/",
+        new_mandat.new_mandat_preview,
+        name="new_mandat_preview",
     ),
     # id_provider
     path("authorize/", id_provider.authorize, name="authorize"),
