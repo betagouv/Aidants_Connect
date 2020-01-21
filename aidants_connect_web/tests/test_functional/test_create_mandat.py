@@ -1,8 +1,10 @@
 import time
+from selenium.webdriver.firefox.webdriver import WebDriver
+
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
 from django.test import tag
-from selenium.webdriver.firefox.webdriver import WebDriver
+
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 from aidants_connect_web.tests.factories import UserFactory
 
@@ -17,7 +19,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)
-        cls.selenium.get(f"{cls.live_server_url}/mandats/")
+        cls.selenium.get(f"{cls.live_server_url}/usagers/")
 
     @classmethod
     def tearDownClass(cls):
@@ -30,14 +32,21 @@ class CreateNewMandat(StaticLiveServerTestCase):
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(welcome_aidant, "Vos mandats")
 
-        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 0)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_class_name("fake-table-row")), 0
+        )
 
         # Create new mandat
         add_usager_button = self.selenium.find_element_by_id("add_usager")
         add_usager_button.click()
+
         demarches_section = self.selenium.find_element_by_id("demarches")
         demarche_title = demarches_section.find_element_by_tag_name("h2").text
         self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
+
+        demarches_grid = self.selenium.find_element_by_id("demarches_list")
+        demarches = demarches_grid.find_elements_by_tag_name("input")
+        self.assertEqual(len(demarches), 10)
 
         demarches_section.find_element_by_id("argent").find_element_by_tag_name(
             "label"
@@ -45,10 +54,6 @@ class CreateNewMandat(StaticLiveServerTestCase):
         demarches_section.find_element_by_id("famille").find_element_by_tag_name(
             "label"
         ).click()
-
-        demarches_grid = self.selenium.find_element_by_id("demarches_list")
-        demarches = demarches_grid.find_elements_by_tag_name("input")
-        self.assertEqual(len(demarches), 10)
 
         duree_section = self.selenium.find_element_by_id("duree")
         duree_section.find_element_by_id("long").find_element_by_tag_name(
@@ -103,4 +108,17 @@ class CreateNewMandat(StaticLiveServerTestCase):
         self.selenium.find_element_by_id("view_mandats").click()
 
         # See all mandats page
-        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 3)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_class_name("fake-table-row")), 1
+        )
+
+        # Select user
+        user_link = self.selenium.find_elements_by_class_name("fake-table-row")[0] \
+            .find_element_by_tag_name("a")
+        user_link.click()
+
+        # See all mandats of usager page
+        # Should find 3 table rows: 1 header row + 2 mandat rows
+        self.assertEqual(
+            len(self.selenium.find_elements_by_tag_name("tr")), 3
+        )

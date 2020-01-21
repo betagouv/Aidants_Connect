@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from aidants_connect_web.models import Organisation
+from aidants_connect_web.models import Usager, Organisation
 import factory
 
 
@@ -23,3 +23,17 @@ class UserFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = get_user_model()
+
+
+class UsagerFactory(factory.DjangoModelFactory):
+    given_name = "Homer"
+    family_name = "Simpson"
+    birthdate = "1902-06-30"
+    gender = "male"
+    birthplace = 27681
+    birthcountry = 99100
+    email = "homer@simpson.com"
+    sub = "123"
+
+    class Meta:
+        model = Usager

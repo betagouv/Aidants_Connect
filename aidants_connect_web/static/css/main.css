@@ -75,9 +75,40 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 .margin-left-100 {
   margin-left: 100px;
 }
-
 .margin-bottom-50 {
   margin-bottom: 50px;
+}
+
+.tiles {
+  margin: 3em 0;
+}
+
+.notification {
+  margin-bottom: 3em;
+}
+
+.float-left {
+  float: left;
+}
+.float-right {
+  float: right;
+}
+
+.col-66 {
+  width: 66%;
+}
+.col-32 {
+  width: 32%;
+}
+
+.table .th-25 {
+  width: 25%;
+}
+.table .th-50 {
+  width: 50%;
+}
+.table .th-66 {
+  width: 66%;
 }
 
 @media (max-width: 699px) {

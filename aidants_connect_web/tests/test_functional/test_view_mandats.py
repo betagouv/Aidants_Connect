@@ -1,8 +1,9 @@
 from datetime import date, timedelta
+from selenium.webdriver.firefox.webdriver import WebDriver
+
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
 from django.utils import timezone
-from selenium.webdriver.firefox.webdriver import WebDriver
 
 from aidants_connect_web.models import Aidant, Usager, Mandat
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
@@ -74,8 +75,6 @@ class ViewMandats(StaticLiveServerTestCase):
         self.selenium.find_element_by_id("view_mandats").click()
 
         # Mandat List
-        self.assertEqual(len(self.selenium.find_elements_by_class_name("usager")), 2)
-        rows = self.selenium.find_elements_by_tag_name("tr")
-        # The first row is the title row
-        mandats = rows[1:]
-        self.assertEqual(len(mandats), 3)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_class_name("fake-table-row")), 2
+        )
