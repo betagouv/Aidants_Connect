@@ -11,7 +11,7 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 ## Pile technique
 
 - Python 3.7
-- Django 2.2
+- Django 3.0
 - PostgreSQL
 
 ## Comment installer la base de données (pour Mac OSX)
@@ -141,6 +141,15 @@ Pour lancer l'application sur le port `3000` :
 
 ```shell
 python manage.py runserver 3000
+```
+
+## Contribuer à l'application
+
+Il faut d'abord avoir correctement installé l'application.
+
+Installer les git hooks :
+```
+pre-commit install
 ```
 
 ## Annexes
