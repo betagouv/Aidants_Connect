@@ -51,9 +51,7 @@ class Aidant(AbstractUser):
         """
         :return: a queryset of usagers who have a current mandat with the aidant
         """
-        current_mandats_for_aidant = Mandat.objects.filter(aidant=self).exclude(
-            expiration_date__lt=timezone.now()
-        )
+        current_mandats_for_aidant = Mandat.objects.current().filter(aidant=self)
         usagers = (
             Usager.objects.filter(mandat__in=current_mandats_for_aidant)
             .distinct()
@@ -66,9 +64,8 @@ class Aidant(AbstractUser):
         :param usager:
         :return: a queryset of the current mandats with the usagers
         """
-        current_mandats = Mandat.objects.filter(usager=usager, aidant=self).exclude(
-            expiration_date__lt=timezone.now()
-        ).order_by("creation_date")
+        current_mandats = Mandat.objects.current() \
+            .filter(usager=usager, aidant=self).order_by("creation_date")
         return current_mandats
 
     def get_expired_mandats_for_usager(self, usager):
@@ -76,9 +73,8 @@ class Aidant(AbstractUser):
         :param usager:
         :return: a queryset of the expired mandats with the usagers
         """
-        expired_mandats = Mandat.objects.filter(usager=usager, aidant=self).exclude(
-            expiration_date__gt=timezone.now()
-        ).order_by("creation_date")
+        expired_mandats = Mandat.objects.expired() \
+            .filter(usager=usager, aidant=self).order_by("creation_date")
         return expired_mandats
 
     def get_current_demarches_for_usager(self, usager):
@@ -86,10 +82,13 @@ class Aidant(AbstractUser):
         :param usager:
         :return: list of demarche the usager and the aidant have a active mandat for
         """
-        mandats = Mandat.objects.filter(usager=usager, aidant=self).exclude(
-            expiration_date__lt=timezone.now()
-        )
+        mandats = Mandat.objects.current().filter(usager=usager, aidant=self)
         return mandats.values_list("demarche", flat=True)
+
+
+class UsagerManager(models.Manager):
+    def active(self):
+        return self.filter(mandat__expiration_date__lt=timezone.now())
 
 
 class Usager(models.Model):
@@ -115,11 +114,21 @@ class Usager(models.Model):
 
     creation_date = models.DateTimeField(default=timezone.now)
 
+    objects = UsagerManager()
+
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
 
     def get_full_name(self):
         return f"{self.given_name} {self.family_name}"
+
+
+class MandatManager(models.Manager):
+    def current(self):
+        return self.exclude(expiration_date__lt=timezone.now())
+
+    def expired(self):
+        return self.exclude(expiration_date__gt=timezone.now())
 
 
 class Mandat(models.Model):
@@ -135,6 +144,8 @@ class Mandat(models.Model):
     last_mandat_renewal_token = models.TextField(
         blank=False, default="No token provided"
     )
+
+    objects = MandatManager()
 
     class Meta:
         unique_together = ["aidant", "demarche", "usager"]

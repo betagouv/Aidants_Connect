@@ -1,6 +1,7 @@
 import logging
 from secrets import token_urlsafe
 
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -62,13 +63,17 @@ def resources(request):
 
 
 def statistiques(request):
+    # Indicateurs de base
     organisation_total = Organisation.objects.count()
     aidant_total = Aidant.objects.count()
     usager_total = Usager.objects.count()
+    # Mandats
     mandat_total = Mandat.objects.count()
-    mandat_ongoing_total = Mandat.objects.count()
-    mandat_used_last_30_days = Mandat.objects.count()
-    usager_with_mandat_ongoing = Aidant.objects.count()
+    mandat_current_total = Mandat.objects.current().count()
+    # mandat_used_last_30_days = Mandat.objects.count()
+    # Usagers
+    usagers_total = Usager.objects.count()
+    usager_with_mandat_current = Usager.objects.active().count()
 
     return render(
         request,
@@ -101,12 +106,12 @@ def statistiques(request):
                         },
                         {
                             "title": "Actifs",
-                            "value": mandat_ongoing_total
+                            "value": mandat_current_total
                         },
                         {
                             "title": "Utilisés récemment",
                             "subtitle": "30 derniers jours",
-                            "value": mandat_used_last_30_days
+                            "value": '~' # mandat_used_last_30_days
                         },
                     ],
                 },
@@ -114,9 +119,13 @@ def statistiques(request):
                     "name": "Usagers",
                     "values": [
                         {
+                            "title": "Total",
+                            "value": usager_total
+                        },
+                        {
                             "title": "Actifs",
                             "subtitle": "Au moins 1 mandat actif",
-                            "value": usager_with_mandat_ongoing
+                            "value": usager_with_mandat_current
                         }
                     ]
                 }   
