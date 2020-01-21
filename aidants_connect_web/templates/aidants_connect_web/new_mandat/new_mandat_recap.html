@@ -42,37 +42,22 @@
         {% csrf_token %}
     <div class="panel form__group mandat__agreement">
     En cochant les cases, {{ usager }} confirme :
-        {% for field in form %}
-        {% if field.name == "brief" %}
             <div class="checkbox__group">
-                {{ field }}
-                <label class="label-inline" for="{{ field.name }}">Autoriser les aidants habilités de <strong> {{ aidant.organisation.name }}</strong> à utiliser ses données à caractère personnel.</label>
+                <input type="checkbox" name="personal_data" required id="id_personal_data">
+                <label class="label-inline" for="id_personal_data">Avoir reçu, de la part de <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> de <strong>{{ aidant.organisation.name }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
             </div>
-        {% elif field.name == "personal_data" %}
             <div class="checkbox__group">
-            {{ field }}
-            <label class="label-inline" for="{{ field.name }}">Avoir reçu, de la part de <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> de <strong>{{ aidant.organisation.name }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
+                <input type="checkbox" name="brief" required id="id_brief">
+                <label class="label-inline" for="id_brief">Autoriser les aidants habilités de <strong> {{ aidant.organisation.name }}</strong> à utiliser ses données à caractère personnel.</label>
             </div>
-        {% endif %}
-        {% endfor %}
-
     </div>
     <h2>Validation de l'aidant</h2>
         <div class="panel form__group mandat__agreement">
             <fieldset>
-                  {% for field in form %}
-                     {% if field.name == "otp_device" %}
-                        <div class="not_checkbox_group">
-                          <label for="otp_device">Selectionnez</label>
-                          {{ field }}
-                           </div>
-                      {% elif field.name == "otp_token" %}
-                          <div class="not_checkbox_group">
-                          <label for="otp_token">Veuillez indiquer le code à 6 chiffres généré par votre téléphone</label>
-                          {{ field }}
-                           </div>
-                      {% endif %}
-                  {%  endfor %}
+                <div class="not_checkbox_group">
+                    <label for="id_otp_token">Veuillez indiquer le code à 6 chiffres généré par votre téléphone</label>
+                    <input type="text" name="otp_token" maxlength="6" minlength="6" required id="id_otp_token">
+                </div>
             </fieldset>
         <div class="form__group">
             <input type="submit" class="button" value="Enregistrer le mandat" />
