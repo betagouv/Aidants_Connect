@@ -9,11 +9,12 @@
 {% block content %}
 <div class="hero">
   <div class="container hero__container">
-    <h1>Récapitulatif</h1>
+    <h1>Récapitulatif du mandat</h1>
   </div>
 </div>
 <section class="section section-grey">
   <div class="container container-small">
+  <h2>Éléments du mandat</h2>
     <a class="button" href="{% url 'new_mandat_preview' %}" target="_blank">🖨 Imprimer le mandat</a>
     <form method="post" class="panel">
       {% if error %}
@@ -28,24 +29,58 @@
           {% endfor %}
         </ul>
         pour une durée de : <strong>{{ duree }}</strong>
-      </div>
-      <div class="form__group mandat__agreement">
-        <fieldset>
-          <legend>À cette fin :</legend>
-          <div class="checkbox__group">
-            <input type="checkbox" name="personal_data" id="id_personal_data" />
-            <label class="label-inline" for="id_personal_data">J’autorise <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> à utiliser mes données à caractère personnel.</label>
-          </div>
-          <div class="checkbox__group">
-            <input type="checkbox" name="brief" id="id_brief" />
-            <label class="label-inline" for="id_brief">Je confime que <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> m’a rappelé l’objet de l’intervention, la raison pour laquelle mes informations sont collectées et leur utilité ; les droits sur mes données (accès, rectification, suppression, etc.)</label>
-          </div>
-        </fieldset>
-      </div>
-      <div class="form__group">
-        <input type="submit" class="button" value="J’accepte" />
-      </div>
+    </div>
+
+    <h2>Validation de l'usager</h2>
+
+
+    <form method="post">
+
+        {% if form.non_field_errors %}
+            <div class="notification warning">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% csrf_token %}
+    <div class="panel form__group mandat__agreement">
+    En cochant les cases, {{ usager }} confirme :
+        {% for field in form %}
+        {% if field.name == "brief" %}
+            <div class="checkbox__group">
+                {{ field }}
+                <label class="label-inline" for="{{ field.name }}">Autoriser les aidants habilités de <strong> {{ aidant.organisation.name }}</strong> à utiliser ses données à caractère personnel.</label>
+            </div>
+        {% elif field.name == "personal_data" %}
+            <div class="checkbox__group">
+            {{ field }}
+            <label class="label-inline" for="{{ field.name }}">Avoir reçu, de la part de <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> de <strong>{{ aidant.organisation.name }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
+            </div>
+        {% endif %}
+        {% endfor %}
+
+    </div>
+    <h2>Validation de l'aidant</h2>
+        <div class="panel form__group mandat__agreement">
+            <fieldset>
+                  {% for field in form %}
+                     {% if field.name == "otp_device" %}
+                        <div class="not_checkbox_group">
+                          <label for="otp_device">Selectionnez</label>
+                          {{ field }}
+                           </div>
+                      {% elif field.name == "otp_token" %}
+                          <div class="not_checkbox_group">
+                          <label for="otp_token">Veuillez indiquer le code à 6 chiffres généré par votre téléphone</label>
+                          {{ field }}
+                           </div>
+                      {% endif %}
+                  {%  endfor %}
+            </fieldset>
+        <div class="form__group">
+            <input type="submit" class="button" value="Enregistrer le mandat" />
+        </div>
+
+        </div>
+
     </form>
-  <div>
+  </div>
 </section>
 {% endblock content %}
