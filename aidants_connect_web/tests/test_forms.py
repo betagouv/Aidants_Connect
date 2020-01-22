@@ -1,9 +1,15 @@
 from django.test import TestCase, tag
 from django.forms.models import model_to_dict
 
-from aidants_connect_web.forms import AidantCreationForm, AidantChangeForm, MandatForm
+from aidants_connect_web.forms import (
+    AidantCreationForm,
+    AidantChangeForm,
+    MandatForm,
+    RecapMandatForm,
+)
 from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import OrganisationFactory
+from aidants_connect_web.tests.factories import OrganisationFactory, UserFactory
+from django.test.client import Client
 
 
 @tag("forms")
@@ -231,3 +237,37 @@ class MandatFormTest(TestCase):
             form.errors["duree"],
             ["Sélectionnez un choix valide. test n’en fait pas partie."],
         )
+
+
+class RecapMandatFormTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.aidant_thierry = UserFactory()
+        device = self.aidant_thierry.staticdevice_set.create(id=1)
+        device.token_set.create(token="123456")
+
+    def test_form_renders_item_text_input(self):
+        self.client.force_login(self.aidant_thierry)
+        form = RecapMandatForm(aidant=self.aidant_thierry)
+        self.assertIn("autorise", form.as_p())
+
+    def test_valid_form(self):
+        self.client.force_login(self.aidant_thierry)
+        form_1 = RecapMandatForm(
+            aidant=self.aidant_thierry,
+            data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
+        )
+        self.assertTrue(form_1.is_valid())
+
+    def test_repeat_token_is_not_valid(self):
+        self.client.force_login(self.aidant_thierry)
+        form_1 = RecapMandatForm(
+            aidant=self.aidant_thierry,
+            data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
+        )
+        form_1.is_valid()
+        form_2 = RecapMandatForm(
+            aidant=self.aidant_thierry,
+            data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
+        )
+        self.assertFalse(form_2.is_valid())

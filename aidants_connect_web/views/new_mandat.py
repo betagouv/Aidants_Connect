@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 from aidants_connect_web.models import Mandat, Connection
-from aidants_connect_web.forms import MandatForm
+from aidants_connect_web.forms import MandatForm, RecapMandatForm
 from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)
@@ -60,7 +60,7 @@ def new_mandat_recap(request):
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
     if request.method == "GET":
-
+        form = RecapMandatForm(aidant)
         return render(
             request,
             "aidants_connect_web/new_mandat/new_mandat_recap.html",
@@ -69,12 +69,13 @@ def new_mandat_recap(request):
                 "usager": usager,
                 "demarches": demarches_description,
                 "duree": duree,
+                "form": form,
             },
         )
 
     else:
-        form = request.POST
-        if form.get("personal_data") and form.get("brief"):
+        form = RecapMandatForm(aidant=aidant, data=request.POST)
+        if form.is_valid():
             # The loop below creates one Mandat object per Démarche selected in the form
             for demarche in connection.demarches:
                 try:
@@ -109,7 +110,8 @@ def new_mandat_recap(request):
                     "usager": usager,
                     "demarche": demarches_description,
                     "duree": duree,
-                    "error": "Vous devez accepter les conditions du mandat.",
+                    "form": form,
+                    "error": form.errors,
                 },
             )
 

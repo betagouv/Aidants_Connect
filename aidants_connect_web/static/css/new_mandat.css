@@ -113,4 +113,7 @@ form {
   .tile + .tile {
     margin-top: 1em;
   }
+
+#id_otp_token {
+    width:6em;
 }
