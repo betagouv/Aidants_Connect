@@ -1,0 +1,38 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/usagers.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="brand">Confirmation de l'arrêt du mandat</h1>
+    <div class="tiles">
+      <form method="post" class="panel">
+        {% if error %}
+          <div class="notification warning">{{ error }}</div>
+        {% endif %}
+        {% csrf_token %}
+        <div class="form__group">
+          <p>
+            Le mandat avec l'usager <b>{{ usager }}</b>,
+            pour la démarche <b>{{ mandat.demarche }}</b>,
+            créé le <b>{{ mandat.creation_date | date:"d F Y" }}</b> et expirant le <b>{{ mandat.expiration_date | date:"d F Y" }}</b>,
+            va être <b>expiré</b>.
+          </p>
+          <p>
+            Cliquez sur le bouton "Je confirme" pour confirmer l'action.
+          </p>
+        </div>
+        <div class="form__group">
+          <input type="submit" class="button" value="Je confirme" />
+          <a href="{% url 'usagers_details' usager_id=usager.id %}" class="button-outline primary float-right">Annuler</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock content %}

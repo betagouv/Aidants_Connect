@@ -17,6 +17,11 @@ urlpatterns = [
     # usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
     path("usagers/<int:usager_id>/", usagers.usagers_details, name="usagers_details"),
+    path(
+        "usagers/<int:usager_id>/mandats/<int:mandat_id>/delete_confirm",
+        usagers.usagers_mandats_delete_confirm,
+        name="usagers_mandats_delete_confirm"
+    ),
     # new mandat
     path("creation_mandat/", new_mandat.new_mandat, name="new_mandat"),
     path(
