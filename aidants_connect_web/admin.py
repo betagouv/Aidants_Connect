@@ -74,3 +74,4 @@ admin_site.register(Organisation)
 admin_site.register(MagicToken)
 admin_site.register(StaticDevice, StaticDeviceAdmin)
 admin_site.register(TOTPDevice, TOTPDeviceAdmin)
+
