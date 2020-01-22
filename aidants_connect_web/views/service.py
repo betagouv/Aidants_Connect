@@ -1,5 +1,6 @@
 import logging
 from secrets import token_urlsafe
+from datetime import timedelta
 
 from django.utils import timezone
 from django.shortcuts import render, redirect
@@ -12,7 +13,8 @@ from aidants_connect_web.models import (
     Organisation,
     Aidant,
     Usager,
-    Mandat
+    Mandat,
+    Journal
 )
 
 
@@ -67,19 +69,31 @@ def statistiques(request):
     organisation_total = Organisation.objects.count()
     aidant_total = Aidant.objects.count()
     usager_total = Usager.objects.count()
+    # Usagers
+    usager_with_mandat_current = Usager.objects.active().count()
     # Mandats
     mandat_total = Mandat.objects.count()
     mandat_current_total = Mandat.objects.current().count()
-    # mandat_used_last_30_days = Mandat.objects.count()
-    # Usagers
-    usagers_total = Usager.objects.count()
-    usager_with_mandat_current = Usager.objects.active().count()
+    mandat_used_last_30_days = (
+        Journal.objects.filter(action='create_mandat')
+        .filter(creation_date__gt=timezone.now() - timedelta(days=30))
+        .distinct('mandat')
+        .count()
+    )
+    # Démarches
+    demarches_agg = []
+    for demarche in settings.DEMARCHES.keys():
+        demarches_agg.append({
+            "title": demarche,
+            "value": Mandat.objects.demarche(demarche).count()
+        })
+    demarches_agg.sort(key=lambda x: x["value"], reverse=True)
 
     return render(
         request,
         "aidants_connect_web/statistiques.html",
         {
-            "statistiques": [
+            "statistiques_grid": [
                 {
                     "name": "Indicateurs de base",
                     "values": [
@@ -98,6 +112,20 @@ def statistiques(request):
                     ],
                 },
                 {
+                    "name": "Usagers",
+                    "values": [
+                        {
+                            "title": "Total",
+                            "value": usager_total
+                        },
+                        {
+                            "title": "Actifs",
+                            "subtitle": "Usagers avec au moins 1 mandat actif",
+                            "value": usager_with_mandat_current
+                        }
+                    ]
+                },
+                {
                     "name": "Mandats",
                     "values": [
                         {
@@ -111,24 +139,16 @@ def statistiques(request):
                         {
                             "title": "Utilisés récemment",
                             "subtitle": "30 derniers jours",
-                            "value": '~' # mandat_used_last_30_days
-                        },
+                            "value": mandat_used_last_30_days
+                        }
                     ],
                 },
+            ],
+            "statistiques_list": [
                 {
-                    "name": "Usagers",
-                    "values": [
-                        {
-                            "title": "Total",
-                            "value": usager_total
-                        },
-                        {
-                            "title": "Actifs",
-                            "subtitle": "Au moins 1 mandat actif",
-                            "value": usager_with_mandat_current
-                        }
-                    ]
-                }   
+                    "name": "Démarches",
+                    "values": demarches_agg
+                },
             ]
         }
     )

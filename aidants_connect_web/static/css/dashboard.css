@@ -18,6 +18,14 @@ a:hover {
   background-color: #ebeff3;
 }
 
+.tile-box {
+  width: 100%;
+}
+.tile-subtitle {
+  margin: 0;
+  font-style: italic;
+}
+
 .tile {
   background-color: #ebeff3;
   display: inline-block;

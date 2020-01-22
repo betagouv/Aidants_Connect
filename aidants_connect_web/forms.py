@@ -4,10 +4,11 @@ from django.core.exceptions import ValidationError
 from django.forms import EmailField
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth import password_validation
-from aidants_connect_web.models import Aidant, Organisation
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django_otp import match_token
+
+from aidants_connect_web.models import Aidant, Organisation
 
 
 class AidantCreationForm(forms.ModelForm):

@@ -130,6 +130,9 @@ class MandatManager(models.Manager):
     def expired(self):
         return self.exclude(expiration_date__gt=timezone.now())
 
+    def demarche(self, demarche):
+        return self.filter(demarche=demarche)
+
 
 class Mandat(models.Model):
     # Mandat information
