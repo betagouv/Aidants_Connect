@@ -1,10 +1,13 @@
 from django import forms
+from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from django.forms import EmailField
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth import password_validation
 from aidants_connect_web.models import Aidant, Organisation
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from django_otp import match_token
 
 
 class AidantCreationForm(forms.ModelForm):
@@ -131,3 +134,26 @@ class MandatForm(forms.Form):
         ("long", {"title": "Mandat long", "description": "(12 mois)"}),
     ]
     duree = forms.ChoiceField(choices=DUREES, required=True, initial=3)
+
+
+class RecapMandatForm(forms.Form):
+    personal_data = forms.BooleanField(
+        label=f"J’autorise mon aidant à utiliser mes données à caractère personnel."
+    )
+    brief = forms.BooleanField(label="brief")
+    otp_token = forms.CharField(
+        max_length=6, min_length=6, validators=[RegexValidator(r"^\d{6}$")]
+    )
+
+    def __init__(self, aidant, *args, **kwargs):
+        super(RecapMandatForm, self).__init__(*args, **kwargs)
+        self.aidant = aidant
+
+    def clean_otp_token(self):
+        otp_token = self.cleaned_data["otp_token"]
+        aidant = self.aidant
+        good_token = match_token(aidant, otp_token)
+        if good_token:
+            return otp_token
+        else:
+            raise ValidationError("Ce code n'est pas valide.")
