@@ -16,6 +16,8 @@ class CreateNewMandat(StaticLiveServerTestCase):
         # FC only calls back on specific port
         cls.port = settings.FC_AS_FS_TEST_PORT
         cls.aidant = UserFactory()
+        device = cls.aidant.staticdevice_set.create(id=1)
+        device.token_set.create(token="123456")
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)
@@ -88,16 +90,19 @@ class CreateNewMandat(StaticLiveServerTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element_by_tag_name("h1").text
-        self.assertEqual(recap_title, "Récapitulatif")
+        self.assertEqual(recap_title, "Récapitulatif du mandat")
         recap_text = self.selenium.find_element_by_id("recap_text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements_by_tag_name("input")
-        id_personal_data = checkboxes[1]
+        id_personal_data = checkboxes[2]
         self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
         id_personal_data.click()
-        id_brief = checkboxes[2]
+        id_brief = checkboxes[3]
         self.assertEqual(id_brief.get_attribute("id"), "id_brief")
         id_brief.click()
+        id_otp_token = checkboxes[4]
+        self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
+        id_otp_token.send_keys("123456")
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()

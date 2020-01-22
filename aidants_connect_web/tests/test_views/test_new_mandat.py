@@ -53,7 +53,13 @@ class NewMandatRecapTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant_thierry = factories.UserFactory()
+        device = self.aidant_thierry.staticdevice_set.create(id=1)
+        device.token_set.create(token="123456")
+        device.token_set.create(token="223456")
+
         self.aidant_monique = factories.UserFactory(username="monique@monique.com")
+        device = self.aidant_monique.staticdevice_set.create(id=2)
+        device.token_set.create(token="323456")
 
         self.test_usager = Usager.objects.create(
             given_name="Fabrice",
@@ -95,7 +101,8 @@ class NewMandatRecapTests(TestCase):
         session.save()
 
         response = self.client.post(
-            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+            "/new_mandat_recap/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         self.assertEqual(Usager.objects.all().count(), 1)
         usager = Usager.objects.get(given_name="Fabrice")
@@ -119,7 +126,8 @@ class NewMandatRecapTests(TestCase):
         session["connection"] = mandat_builder.id
         session.save()
         response = self.client.post(
-            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+            "/new_mandat_recap/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
@@ -136,7 +144,8 @@ class NewMandatRecapTests(TestCase):
         session.save()
         # trigger the mandat creation/update
         self.client.post(
-            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+            "/new_mandat_recap/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
         self.assertEqual(Mandat.objects.count(), 1)
@@ -153,7 +162,8 @@ class NewMandatRecapTests(TestCase):
         session.save()
         # trigger the mandat creation/update
         self.client.post(
-            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+            "/new_mandat_recap/",
+            data={"personal_data": True, "brief": True, "otp_token": "223456"},
         )
 
         self.assertEqual(Mandat.objects.count(), 1)
@@ -179,7 +189,8 @@ class NewMandatRecapTests(TestCase):
         session.save()
         # trigger the mandat creation/update
         self.client.post(
-            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+            "/new_mandat_recap/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         self.client.logout()
 
@@ -194,7 +205,8 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the mandat creation/update
         self.client.post(
-            "/new_mandat_recap/", data={"personal_data": True, "brief": True}
+            "/new_mandat_recap/",
+            data={"personal_data": True, "brief": True, "otp_token": "323456"},
         )
 
         self.assertEqual(Mandat.objects.count(), 2)
