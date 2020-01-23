@@ -94,13 +94,13 @@ class CreateNewMandat(StaticLiveServerTestCase):
         recap_text = self.selenium.find_element_by_id("recap_text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements_by_tag_name("input")
-        id_personal_data = checkboxes[2]
+        id_personal_data = checkboxes[1]
         self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
         id_personal_data.click()
-        id_brief = checkboxes[3]
+        id_brief = checkboxes[2]
         self.assertEqual(id_brief.get_attribute("id"), "id_brief")
         id_brief.click()
-        id_otp_token = checkboxes[4]
+        id_otp_token = checkboxes[3]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys("123456")
         submit_button = checkboxes[-1]

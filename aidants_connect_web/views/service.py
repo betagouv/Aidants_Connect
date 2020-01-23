@@ -36,7 +36,10 @@ def home_page(request):
     return render(
         request,
         "aidants_connect_web/home_page.html",
-        {"random_string": random_string, "aidant": request.user},
+        {
+            "random_string": random_string,
+            "aidant": request.user
+        },
     )
 
 
@@ -53,7 +56,10 @@ def dashboard(request):
     return render(
         request,
         "aidants_connect_web/dashboard.html",
-        {"aidant": aidant, "messages": messages},
+        {
+            "aidant": aidant,
+            "messages": messages
+        },
     )
 
 

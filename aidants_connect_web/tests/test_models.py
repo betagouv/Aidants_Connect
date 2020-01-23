@@ -428,10 +428,8 @@ class JournalModelTest(TestCase):
         )
 
         entry.demarches = ["logement"]
-        entry_id = entry.id
         self.assertRaises(NotImplementedError, lambda: entry.save())
-
-        self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")
+        self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
     def test_it_is_impossible_to_delete_an_existing_entry(self):
         entry = Journal.objects.mandat_use(
@@ -441,8 +439,18 @@ class JournalModelTest(TestCase):
             access_token="fjfgjfdkldlzlsmqqxxcn",
             mandat=self.first_mandat,
         )
-        entry_id = entry.id
 
         self.assertRaises(NotImplementedError, lambda: entry.delete())
+        self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
-        self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")
+    def test_a_print_mandat_journal_entry_can_be_created(self):
+        entry = Journal.objects.mandat_papier(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            demarches=["transports", "logement"],
+            expiration_date=timezone.now() + timedelta(days=6)
+        )
+
+        self.assertEqual(len(Journal.objects.all()), 3)
+        self.assertEqual(entry.action, "print_mandat")
+        self.assertEqual(entry.hash_data["demarches_list"], "logement,transports")

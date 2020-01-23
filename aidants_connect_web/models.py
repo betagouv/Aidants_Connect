@@ -1,10 +1,11 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -213,7 +214,31 @@ class Connection(models.Model):
 class JournalManager(models.Manager):
     def connection(self, aidant: Aidant):
         journal_entry = self.create(
-            initiator=aidant.full_string_identifier, action="connect_aidant"
+            initiator=aidant.full_string_identifier,
+            action="connect_aidant"
+        )
+        return journal_entry
+
+    def mandat_papier(
+        self,
+        aidant: Aidant,
+        usager: Usager,
+        demarches: list,
+        expiration_date
+    ):
+        demarches.sort()
+        journal_entry = self.create(
+            initiator=aidant.full_string_identifier,
+            action="print_mandat",
+            hash_data={
+                "usager_sub": usager.sub,
+                "aidant_id": aidant.id,
+                "organisation_id": aidant.organisation.id,
+                "demarches_list": ",".join(demarches),
+                "creation_date": date.today().isoformat(),
+                "expiration_date": expiration_date.date().isoformat(),
+                "template_version": settings.MANDAT_TEMPLATE_VERSION
+            }
         )
         return journal_entry
 
@@ -297,6 +322,7 @@ class Journal(models.Model):
     duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
     mandat = models.IntegerField(blank=True, null=True)
+    hash_data = JSONField(blank=True, null=True)
 
     objects = JournalManager()
 
