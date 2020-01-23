@@ -1,5 +1,7 @@
 import logging
 
+from django.db import IntegrityError
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -56,7 +58,7 @@ def usagers_details(request, usager_id):
 
 
 @login_required
-def usagers_mandats_delete_confirm(request, usager_id, mandat_id):
+def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
     aidant = request.user
     usager = Usager.objects.get(pk=usager_id)
     mandat = Mandat.objects.get(pk=mandat_id)
@@ -65,7 +67,7 @@ def usagers_mandats_delete_confirm(request, usager_id, mandat_id):
 
         return render(
             request,
-            "aidants_connect_web/usagers_mandats_delete_confirm.html",
+            "aidants_connect_web/usagers_mandats_cancel_confirm.html",
             {
                 "aidant": aidant,
                 "usager": usager,
@@ -75,23 +77,30 @@ def usagers_mandats_delete_confirm(request, usager_id, mandat_id):
 
     else:
         form = request.POST
-        print(form)
+
         if form:
-            # try:
-            # mandat, journal, connection
+            try:
+                mandat.expiration_date = timezone.now()
+                mandat.save()
 
-            messages.success(request, "Le mandat a été arrêté avec succès !")
+                messages.success(request, "Le mandat a été annulé avec succès !")
 
-            return redirect('usagers_details', usager_id=usager.id)
+                return redirect('usagers_details', usager_id=usager.id)
+
+            except IntegrityError as e:
+                log.error("Error happened in Cancel Mandat")
+                log.error(e)
+                messages.error(request, f"No Usager was given : {e}")
+                return redirect("dashboard")
 
         else:
             return render(
                 request,
-                "aidants_connect_web/new_mandat/usagers_mandats_delete_confirm.html",
+                "aidants_connect_web/new_mandat/usagers_mandats_cancel_confirm.html",
                 {
                     "aidant": aidant,
                     "usager": usager,
                     "mandat": mandat,
-                    "error": "Erreur lors de l'arrêt du mandat.",
+                    "error": "Erreur lors de l'annulation du mandat.",
                 },
             )

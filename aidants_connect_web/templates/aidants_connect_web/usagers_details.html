@@ -50,7 +50,7 @@
                     {{ mandat.expiration_date | date:"d F Y" }}
                   </td>
                   <td>
-                    <a href="{% url 'usagers_mandats_delete_confirm' usager_id=usager.id mandat_id=mandat.id %}" class="button-outline warning small float-right">&nbsp;🗑️</a>
+                    <a href="{% url 'usagers_mandats_cancel_confirm' usager_id=usager.id mandat_id=mandat.id %}" class="button-outline warning small float-right">&nbsp;🗑️</a>
                   </td>
                 </tr>
               {% endfor %}
@@ -69,7 +69,7 @@
                 <span title="{{ mandat.expiration_date }}">{{ mandat.expiration_date | date:"d F Y" }}</span>
               </div>
               <div class="col-20">
-                <a href="{% url 'usagers_mandats_delete_confirm' usager_id=usager.id mandat_id=mandat.id %}" class="button-outline warning small float-right" title="Arrêter le mandat">&nbsp;🗑️</a>
+                <a href="{% url 'usagers_mandats_cancel_confirm' usager_id=usager.id mandat_id=mandat.id %}" class="button-outline warning small float-right" title="Annuler le mandat">&nbsp;🗑️</a>
               </div>
             </div>
           {% endfor %}

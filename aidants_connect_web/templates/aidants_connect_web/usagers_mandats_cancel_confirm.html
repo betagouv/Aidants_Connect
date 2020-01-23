@@ -9,7 +9,7 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <h1 class="brand">Confirmation de l'arrêt du mandat</h1>
+    <h1 class="brand">Confirmer l'annulation du mandat</h1>
     <div class="tiles">
       <form method="post" class="panel">
         {% if error %}
@@ -21,7 +21,10 @@
             Le mandat avec l'usager <b>{{ usager }}</b>,
             pour la démarche <b>{{ mandat.demarche }}</b>,
             créé le <b>{{ mandat.creation_date | date:"d F Y" }}</b> et expirant le <b>{{ mandat.expiration_date | date:"d F Y" }}</b>,
-            va être <b>expiré</b>.
+            va être <b>annulé</b>.
+          </p>
+          <p>
+            <i>Le mandat apparaîtra comme expiré dans l'espace usagers.</i>
           </p>
           <p>
             Cliquez sur le bouton "Je confirme" pour confirmer l'action.

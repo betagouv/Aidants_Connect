@@ -10,8 +10,11 @@ body {
 }
 
 .previews {
-    display: none;
+  display: none;
 }
+
+
+/* Navbar */
 
 .navbar {
   border: 0;
@@ -33,6 +36,9 @@ a.navbar__home:hover {
   color: #fff;
 }
 
+
+/* Container & main */
+
 .container.container-small {
   max-width: 40em;
 }
@@ -51,6 +57,18 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   font-weight: 700;
   margin-bottom: 0;
 }
+
+.tiles {
+  margin: 3em 0;
+}
+
+.notification {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+
+/* Footer */
 
 .footer__social {
   margin: 0;
@@ -75,6 +93,8 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 .hero .lead-text {
   line-height: 1.25em;
 }
+
+/* Utils */
 
 .margin-left-100 {
   margin-left: 100px;
@@ -149,9 +169,18 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 }
 
 
+/* Extend template.min.css */
+
+a.button-outline:hover {
+  background-color: var(--lighter-grey);
+}
+
 .small-grid {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
+
+
+/* Media */
 
 @media (max-width: 699px) {
   form {

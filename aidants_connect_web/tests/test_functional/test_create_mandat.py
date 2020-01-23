@@ -117,5 +117,6 @@ class CreateNewMandat(StaticLiveServerTestCase):
         go_to_usager_button.click()
 
         # See all mandats of usager page
-        # Should find 3 table rows: 1 header row + 2 mandat rows
-        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 3)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_class_name("fake-table-row")), 2
+        )
