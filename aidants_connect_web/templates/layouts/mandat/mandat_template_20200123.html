@@ -1,9 +1,15 @@
 {% load static %}
 
 <section class="container">
-  <div class="navbar__home text-center">
-    <img class="navbar__logo" src="{% static 'images/logo-marianne.svg' %}"
-      alt="aidantsconnect.beta.gouv.fr" /><img src="{% static 'images/aidants-connect_logo.png' %}" class="navbar__gouvfr" alt="aidantsconnect.beta.gouv.fr" />
+  <div class="navbar__home {% if not journal_print_mandat_data %}text-center{% endif %}">
+    <img class="navbar__logo" src="{% static 'images/logo-marianne.svg' %}" alt="aidantsconnect.beta.gouv.fr" />
+    <img class="navbar__gouvfr" src="{% static 'images/aidants-connect_logo.png' %}" alt="aidantsconnect.beta.gouv.fr" />
+    {% if journal_print_mandat_data %}
+      <div class="navbar__gouvfr float-right">
+        <span class="template-version">{{ journal_print_mandat_data.template_version }}</span>
+        <img class="navbar__gouvfr" src="data:image/svg+xml;base64,{{ journal_print_mandat_qrcode_svg }}" />
+      </div>
+    {% endif %}
   </div>
   
   <h1>Mandat type d’un aidant réalisant des démarches administratives en ligne au bénéfice d’un usager via le service

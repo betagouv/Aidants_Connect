@@ -93,7 +93,7 @@ class NewMandatRecapTests(TestCase):
             response, "aidants_connect_web/new_mandat/new_mandat_recap.html"
         )
 
-    def test_post_to_recap_with_correct_data_redirects_to_dashboard(self):
+    def test_post_to_recap_with_correct_data_redirects_to_success(self):
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
 
@@ -111,11 +111,12 @@ class NewMandatRecapTests(TestCase):
             "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
         )
         self.assertEqual(usager.birthplace, 95277)
-        self.assertRedirects(response, "/dashboard/")
+        self.assertRedirects(response, "/new_mandat/success/")
 
-        entries = Journal.objects.all().order_by("-creation_date")
-        self.assertEqual(entries.count(), 3)
-        self.assertEqual(entries[0].action, "create_mandat")
+        last_journal_entries = Journal.objects.all().order_by("-creation_date")
+        self.assertEqual(last_journal_entries.count(), 4)
+        self.assertEqual(last_journal_entries[0].action, "create_mandat")
+        self.assertEqual(last_journal_entries[2].action, "print_mandat")
 
     def test_post_to_recap_without_usager_creates_error(self):
         self.client.force_login(self.aidant_thierry)
@@ -133,7 +134,6 @@ class NewMandatRecapTests(TestCase):
         self.assertEqual(len(messages), 1)
 
     def test_updating_mandat_for_for_same_aidant(self):
-
         # first session : creating the mandat
         self.client.force_login(self.aidant_thierry)
         mandat_builder_1 = Connection.objects.create(
@@ -255,8 +255,12 @@ class GenerateMandatPreview(TestCase):
             usager=self.test_usager,
         )
 
-    def test_generate_mandat_html_triggers_the_new_mandat_preview_view(self):
+    def test_mandat_preview_url_triggers_the_new_mandat_preview_view(self):
         found = resolve("/new_mandat/preview/")
+        self.assertEqual(found.func, new_mandat.new_mandat_preview)
+
+    def test_mandat_preview_final_url_triggers_the_new_mandat_preview_view(self):
+        found = resolve("/new_mandat/preview/final/")
         self.assertEqual(found.func, new_mandat.new_mandat_preview)
 
     def test_response_is_the_preview_page(self):

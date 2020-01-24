@@ -448,7 +448,7 @@ class JournalModelTest(TestCase):
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarches=["transports", "logement"],
-            expiration_date=timezone.now() + timedelta(days=6)
+            expiration_date=timezone.now() + timedelta(days=6),
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)

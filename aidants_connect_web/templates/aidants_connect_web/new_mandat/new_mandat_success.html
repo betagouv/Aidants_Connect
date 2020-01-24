@@ -1,0 +1,22 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+<link href="{% static 'css/new_mandat.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="brand">Le mandat a été créé avec succès !</h1>
+    <div class="tiles">
+      <a class="button" href="{% url 'new_mandat_preview_final' %}" target="_blank">🖨 Imprimer le mandat final</a>
+      <br><br>
+      <p>
+        <a href="{% url 'usagers_details' usager_id=usager.id %}">Cliquez ici</a> pour retourner au profil de l'usager {{ usager.get_full_name }}
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock content %}

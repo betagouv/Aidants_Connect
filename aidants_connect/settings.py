@@ -282,6 +282,7 @@ REFERRER_POLICY = "strict-origin"
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_IMG_SRC = (
     "'self'",
+    "data:",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
     "https://societenumerique.gouv.fr/wp-content/uploads/2018/05/mockupkit-1.png",
 )

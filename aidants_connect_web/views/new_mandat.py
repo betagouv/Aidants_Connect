@@ -18,11 +18,7 @@ from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
 from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.views.service import humanize_demarche_names
-from aidants_connect_web.models import (
-    Mandat,
-    Connection,
-    Journal
-)
+from aidants_connect_web.models import Mandat, Connection, Journal
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -38,7 +34,10 @@ def new_mandat(request):
         return render(
             request,
             "aidants_connect_web/new_mandat/new_mandat.html",
-            {"aidant": aidant, "form": form},
+            {
+                "aidant": aidant,
+                "form": form,
+            },
         )
 
     else:
@@ -57,7 +56,10 @@ def new_mandat(request):
             return render(
                 request,
                 "aidants_connect_web/new_mandat/new_mandat.html",
-                {"aidant": aidant, "form": form},
+                {
+                    "aidant": aidant,
+                    "form": form
+                },
             )
 
 
@@ -91,17 +93,17 @@ def new_mandat_recap(request):
         if form.is_valid():
             mandat_expiration_date = timezone.now() + timedelta(days=connection.duree)
 
-            # Add a Journal 'print_mandat' action
-            Journal.objects.mandat_papier(
-                aidant=aidant,
-                usager=usager,
-                demarches=connection.demarches,
-                expiration_date=mandat_expiration_date
-            )
+            try:
+                # Add a Journal 'print_mandat' action
+                Journal.objects.mandat_papier(
+                    aidant=aidant,
+                    usager=usager,
+                    demarches=connection.demarches,
+                    expiration_date=mandat_expiration_date,
+                )
 
-            # The loop below creates one Mandat object per Démarche selected in the form
-            for demarche in connection.demarches:
-                try:
+                # The loop below creates one Mandat object per Démarche selected in the form
+                for demarche in connection.demarches:
                     Mandat.objects.update_or_create(
                         aidant=aidant,
                         usager=usager,
@@ -113,16 +115,16 @@ def new_mandat_recap(request):
                         },
                     )
 
-                except IntegrityError as e:
-                    log.error("Error happened in Recap")
-                    log.error(e)
-                    messages.error(request, f"No Usager was given : {e}")
-                    return redirect("dashboard")
+            except (AttributeError, IntegrityError) as e:
+                log.error("Error happened in Recap")
+                log.error(e)
+                messages.error(request, f"No Usager was given : {e}")
+                return redirect("dashboard")
 
-            messages.success(request, "Le mandat a été créé avec succès !")
+            # messages.success(request, "Le mandat a été créé avec succès !")
 
-            return redirect("dashboard")
-            # return redirect("new_mandat_preview")
+            # return redirect("dashboard")
+            return redirect("new_mandat_success")
 
         else:
             return render(
@@ -140,14 +142,21 @@ def new_mandat_recap(request):
 
 
 @login_required
-@activity_required
-def new_mandat_preview(request):
+def new_mandat_preview(request, final=False):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
     demarches = connection.demarches
 
     duree = "1 jour" if connection.duree == 1 else "1 an"
+
+    if final:
+        journal_print_mandat = aidant.get_journal_of_last_print_mandat()
+        journal_print_mandat_data = journal_print_mandat.hash_data
+        journal_print_mandat_qrcode_svg = journal_print_mandat.generate_qrcode("svg")
+    else:
+        journal_print_mandat_data = None
+        journal_print_mandat_qrcode_svg = None
 
     return render(
         request,
@@ -161,33 +170,25 @@ def new_mandat_preview(request):
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
-            "mandat_template_version": f"layouts/mandat/mandat_template_{settings.MANDAT_TEMPLATE_VERSION}.html",
+            "mandat_template_version":
+            f"layouts/mandat/mandat_template_{settings.MANDAT_TEMPLATE_VERSION}.html",
+            "journal_print_mandat_data": journal_print_mandat_data,
+            "journal_print_mandat_qrcode_svg": journal_print_mandat_qrcode_svg,
         },
     )
 
 
-# @login_required
-# def new_mandat_success(request):
-#     connection = Connection.objects.get(pk=request.session["connection"])
-#     aidant = request.user
-#     usager = connection.usager
-#     demarches = connection.demarches
+@login_required
+def new_mandat_success(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
+    aidant = request.user
+    usager = connection.usager
 
-#     duree = "1 jour" if connection.duree == 1 else "1 an"
-
-#     return render(
-#         request,
-#         "aidants_connect_web/new_mandat/new_mandat_preview.html",
-#         {
-#             "usager": f"{usager.given_name} {usager.family_name}",
-#             "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",
-#             "profession": aidant.profession,
-#             "organisation": aidant.organisation.name,
-#             "lieu": aidant.organisation.address,
-#             "date": formats.date_format(date.today(), "l j F Y"),
-#             "demarches":
-#                 [humanize_demarche_names(demarche) for demarche in demarches],
-#             "duree": duree,
-#             "messages": request_messages,
-#         },
-#     )
+    return render(
+        request,
+        "aidants_connect_web/new_mandat/new_mandat_success.html",
+        {
+            "aidant": aidant,
+            "usager": usager,
+        },
+    )

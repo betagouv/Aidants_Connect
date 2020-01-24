@@ -1,3 +1,4 @@
+import json
 from datetime import date, timedelta
 
 from django.db import models
@@ -6,6 +7,8 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField, JSONField
+
+from aidants_connect_web.views.service import generate_qrcode_base64
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -108,6 +111,15 @@ class Aidant(AbstractUser):
 class UsagerManager(models.Manager):
     def active(self):
         return self.filter(mandat__expiration_date__gt=timezone.now()).distinct()
+
+    def get_journal_of_last_print_mandat(self):
+        """
+        :return: the last 'print_mandat' Journal entry initiated by the aidant
+        """
+        journal_print_mandat = Journal.objects.filter(
+            action="print_mandat", hash_data__aidant_id=self.id
+        ).last()
+        return journal_print_mandat
 
 
 class Usager(models.Model):
@@ -214,31 +226,26 @@ class Connection(models.Model):
 class JournalManager(models.Manager):
     def connection(self, aidant: Aidant):
         journal_entry = self.create(
-            initiator=aidant.full_string_identifier,
-            action="connect_aidant"
+            initiator=aidant.full_string_identifier, action="connect_aidant"
         )
         return journal_entry
 
     def mandat_papier(
-        self,
-        aidant: Aidant,
-        usager: Usager,
-        demarches: list,
-        expiration_date
+        self, aidant: Aidant, usager: Usager, demarches: list, expiration_date
     ):
         demarches.sort()
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             action="print_mandat",
             hash_data={
-                "usager_sub": usager.sub,
                 "aidant_id": aidant.id,
-                "organisation_id": aidant.organisation.id,
-                "demarches_list": ",".join(demarches),
                 "creation_date": date.today().isoformat(),
+                "demarches_list": ",".join(demarches),
                 "expiration_date": expiration_date.date().isoformat(),
-                "template_version": settings.MANDAT_TEMPLATE_VERSION
-            }
+                "organisation_id": aidant.organisation.id,
+                "template_version": settings.MANDAT_TEMPLATE_VERSION,
+                "usager_sub": usager.sub,
+            },
         )
         return journal_entry
 
@@ -334,3 +341,11 @@ class Journal(models.Model):
 
     def delete(self, *args, **kwargs):
         raise NotImplementedError("Deleting is not allowed on journal entries")
+
+    def generate_qrcode(self, image_type: str):
+        print(json.dumps(self.hash_data))
+        sorted_hash_data = dict(sorted(self.hash_data.items()))
+        print(sorted_hash_data)
+        hash_data_string = ",".join(str(x) for x in list(sorted_hash_data.values()))
+        print(hash_data_string)
+        return generate_qrcode_base64("Some data here", image_type=image_type)
