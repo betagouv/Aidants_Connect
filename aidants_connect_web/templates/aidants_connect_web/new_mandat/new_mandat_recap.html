@@ -23,7 +23,7 @@
         {% endif %}
         {% csrf_token %}
         <div class="form__group">
-          <p id="recap_text"><strong>{{ usager }}</strong> autorise <strong>{{ aidant }}</strong>,  <em>aidant·e numérique</em> au sein de <em>{{ aidant.organisation.name }}</em>  à réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne suivantes :</p>
+          <p id="recap_text"><strong>{{ usager }}</strong> autorise <strong>l'aidant habilité de {{ aidant.organisation.name }}</strong> à réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne des périmètres suivants :</p>
           <ul>
             {% for demarche in demarches %}
               <li>{{ demarche }}</li>
@@ -42,7 +42,7 @@
           En cochant les cases, {{ usager }} confirme :
           <div class="checkbox__group">
             <input type="checkbox" name="personal_data" required id="id_personal_data">
-            <label class="label-inline" for="id_personal_data">Avoir reçu, de la part de <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong> de <strong>{{ aidant.organisation.name }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
+            <label class="label-inline" for="id_personal_data">Avoir reçu, de la part de <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong>, aidant habilité au sein de <strong>{{ aidant.organisation.name }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
           </div>
           <div class="checkbox__group">
             <input type="checkbox" name="brief" required id="id_brief">
