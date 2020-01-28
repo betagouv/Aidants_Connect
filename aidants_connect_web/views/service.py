@@ -9,13 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib.messages import get_messages
 
-from aidants_connect_web.models import (
-    Organisation,
-    Aidant,
-    Usager,
-    Mandat,
-    Journal
-)
+from aidants_connect_web.models import Organisation, Aidant, Usager, Mandat, Journal
 
 
 logging.basicConfig(level=logging.INFO)
@@ -70,23 +64,22 @@ def statistiques(request):
     aidant_total = Aidant.objects.count()
     usager_total = Usager.objects.count()
     # Usagers
-    usager_with_mandat_current = Usager.objects.active().count()
+    active_usager_total = Usager.objects.active().count()
     # Mandats
     mandat_total = Mandat.objects.count()
-    mandat_current_total = Mandat.objects.current().count()
+    active_mandat_total = Mandat.objects.active().count()
     mandat_used_last_30_days = (
-        Journal.objects.filter(action='create_mandat')
+        Journal.objects.filter(action="create_mandat")
         .filter(creation_date__gt=timezone.now() - timedelta(days=30))
-        .distinct('mandat')
+        .distinct("mandat")
         .count()
     )
     # Démarches
     demarches_agg = []
     for demarche in settings.DEMARCHES.keys():
-        demarches_agg.append({
-            "title": demarche,
-            "value": Mandat.objects.demarche(demarche).count()
-        })
+        demarches_agg.append(
+            {"title": demarche, "value": Mandat.objects.demarche(demarche).count()}
+        )
     demarches_agg.sort(key=lambda x: x["value"], reverse=True)
 
     return render(
@@ -97,58 +90,35 @@ def statistiques(request):
                 {
                     "name": "Indicateurs de base",
                     "values": [
-                        {
-                            "title": "Organisations",
-                            "value": organisation_total
-                        },
-                        {
-                            "title": "Aidants",
-                            "value": aidant_total
-                        },
-                        {
-                            "title": "Usagers",
-                            "value": usager_total
-                        },
+                        {"title": "Organisations", "value": organisation_total},
+                        {"title": "Aidants", "value": aidant_total},
+                        {"title": "Usagers", "value": usager_total},
                     ],
                 },
                 {
                     "name": "Usagers",
                     "values": [
-                        {
-                            "title": "Total",
-                            "value": usager_total
-                        },
+                        {"title": "Total", "value": usager_total},
                         {
                             "title": "Actifs",
                             "subtitle": "Usagers avec au moins 1 mandat actif",
-                            "value": usager_with_mandat_current
-                        }
-                    ]
+                            "value": active_usager_total,
+                        },
+                    ],
                 },
                 {
                     "name": "Mandats",
                     "values": [
-                        {
-                            "title": "Total",
-                            "value": mandat_total
-                        },
-                        {
-                            "title": "Actifs",
-                            "value": mandat_current_total
-                        },
+                        {"title": "Total", "value": mandat_total},
+                        {"title": "Actifs", "value": active_mandat_total},
                         {
                             "title": "Utilisés récemment",
                             "subtitle": "30 derniers jours",
-                            "value": mandat_used_last_30_days
-                        }
+                            "value": mandat_used_last_30_days,
+                        },
                     ],
                 },
             ],
-            "statistiques_list": [
-                {
-                    "name": "Démarches",
-                    "values": demarches_agg
-                },
-            ]
-        }
+            "statistiques_list": [{"name": "Démarches", "values": demarches_agg},],
+        },
     )

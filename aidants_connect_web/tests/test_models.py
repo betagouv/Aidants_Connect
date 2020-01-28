@@ -267,11 +267,33 @@ class AidantModelMethodsTest(TestCase):
             email="ned@flanders.com",
             sub="1234",
         )
+        cls.usager_bart = Usager.objects.create(
+            given_name="Bart",
+            family_name="Simpson",
+            birthdate="1902-06-30",
+            gender="male",
+            birthplace=26934,
+            birthcountry=99100,
+            email="bart@simpson.com",
+            sub="12345",
+        )
         Mandat.objects.create(
             aidant=cls.aidant_marge,
             usager=cls.usager_homer,
             demarche="Carte grise",
             expiration_date=timezone.now() - timedelta(days=6),
+        )
+        Mandat.objects.create(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_homer,
+            demarche="social",
+            expiration_date=timezone.now() + timedelta(days=365),
+        )
+        Mandat.objects.create(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_homer,
+            demarche="Revenus",
+            expiration_date=timezone.now() + timedelta(days=6),
         )
         Mandat.objects.create(
             aidant=cls.aidant_marge,
@@ -281,8 +303,8 @@ class AidantModelMethodsTest(TestCase):
         )
         Mandat.objects.create(
             aidant=cls.aidant_marge,
-            usager=cls.usager_homer,
-            demarche="Revenus",
+            usager=cls.usager_ned,
+            demarche="transports",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
@@ -290,20 +312,23 @@ class AidantModelMethodsTest(TestCase):
         self.assertEqual(len(self.aidant_marge.get_usagers()), 2)
         self.assertEqual(len(self.aidant_patricia.get_usagers()), 0)
 
-    def test_get_usagers_with_current_mandat(self):
-        self.assertEqual(
-            len(self.aidant_marge.get_usagers_with_current_mandat()), 1
-        )
-        self.assertEqual(
-            len(self.aidant_patricia.get_usagers_with_current_mandat()), 0
-        )
+    def test_active_usagers(self):
+        active_usagers = Usager.objects.active()
+        self.assertEqual(len(active_usagers), 2)
 
-    def test_get_current_mandats_for_usager(self):
+    def test_get_usagers_with_active_mandat(self):
+        self.assertEqual(len(self.aidant_marge.get_usagers_with_active_mandat()), 2)
+        self.assertEqual(len(self.aidant_patricia.get_usagers_with_active_mandat()), 0)
+
+    def test_get_active_mandats_for_usager(self):
         self.assertEqual(
-            len(self.aidant_marge.get_current_mandats_for_usager(self.usager_homer)), 1
+            len(self.aidant_marge.get_active_mandats_for_usager(self.usager_homer)), 2
         )
         self.assertEqual(
-            len(self.aidant_marge.get_current_mandats_for_usager(self.usager_ned)), 0
+            len(self.aidant_marge.get_active_mandats_for_usager(self.usager_ned)), 1
+        )
+        self.assertEqual(
+            len(self.aidant_marge.get_active_mandats_for_usager(self.usager_bart)), 0
         )
 
     def test_get_expired_mandats_for_usager(self):
@@ -313,15 +338,18 @@ class AidantModelMethodsTest(TestCase):
         self.assertEqual(
             len(self.aidant_marge.get_expired_mandats_for_usager(self.usager_ned)), 1
         )
-
-    def test_get_current_demarches_for_usager(self):
         self.assertEqual(
-            list(self.aidant_marge.get_current_demarches_for_usager(self.usager_homer)),
-            ["Revenus"]
+            len(self.aidant_marge.get_expired_mandats_for_usager(self.usager_bart)), 0
+        )
+
+    def test_get_active_demarches_for_usager(self):
+        self.assertEqual(
+            list(self.aidant_marge.get_active_demarches_for_usager(self.usager_homer)),
+            ["Revenus", "social"],
         )
         self.assertEqual(
-            list(self.aidant_marge.get_current_demarches_for_usager(self.usager_ned)),
-            []
+            list(self.aidant_marge.get_active_demarches_for_usager(self.usager_ned)),
+            ["transports"],
         )
 
 

@@ -101,7 +101,7 @@ def authorize(request):
             "aidants_connect_web/id_provider/authorize.html",
             {
                 "state": parameters["state"],
-                "usagers": aidant.get_usagers_with_current_mandat(),
+                "usagers": aidant.get_usagers_with_active_mandat(),
                 "aidant": aidant,
             },
         )
@@ -125,7 +125,7 @@ def authorize(request):
             logout(request)
             return HttpResponseForbidden()
         chosen_usager = Usager.objects.get(id=request.POST.get("chosen_usager"))
-        if chosen_usager not in request.user.get_usagers_with_current_mandat():
+        if chosen_usager not in request.user.get_usagers_with_active_mandat():
             log.info("This usager does not have a valid mandat with the aidant")
             log.info(request.user.id)
             logout(chosen_usager.id)
@@ -144,7 +144,7 @@ def fi_select_demarche(request):
         usager = Connection.objects.get(state=state).usager
         demarches_rich_text = settings.DEMARCHES
         aidant = request.user
-        nom_demarches = aidant.get_current_demarches_for_usager(usager)
+        nom_demarches = aidant.get_active_demarches_for_usager(usager)
 
         demarches = {
             nom_demarche: demarches_rich_text[nom_demarche]

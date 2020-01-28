@@ -1,4 +1,3 @@
-
 import logging
 
 from django.shortcuts import render
@@ -22,11 +21,7 @@ def usagers_index(request):
     return render(
         request,
         "aidants_connect_web/usagers.html",
-        {
-            "aidant": aidant,
-            "aidant_usagers": aidant_usagers,
-            "messages": messages
-        },
+        {"aidant": aidant, "aidant_usagers": aidant_usagers, "messages": messages},
     )
 
 
@@ -35,7 +30,7 @@ def usagers_details(request, usager_id):
     messages = get_messages(request)
     aidant = request.user
     usager = Usager.objects.get(pk=usager_id)
-    current_mandats = aidant.get_current_mandats_for_usager(usager_id)
+    active_mandats = aidant.get_active_mandats_for_usager(usager_id)
     expired_mandats = aidant.get_expired_mandats_for_usager(usager_id)
 
     return render(
@@ -44,8 +39,8 @@ def usagers_details(request, usager_id):
         {
             "aidant": aidant,
             "usager": usager,
-            "current_mandats": current_mandats,
+            "active_mandats": active_mandats,
             "expired_mandats": expired_mandats,
-            "messages": messages
+            "messages": messages,
         },
     )
