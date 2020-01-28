@@ -12,8 +12,8 @@
   <div class="container">
     <h1 class="brand">Statistiques d'Aidants Connect</h1>
     <div class="tiles">
-      <!-- Grid -->
-      {% for stat_group in statistiques_grid %}
+      <!-- Statistiques List -->
+      {% for stat_group in statistiques_list %}
         <h2>{{ stat_group.name }}</h2>
         <div class="grid">
           {% for stat_item in stat_group.values %}
@@ -36,15 +36,23 @@
           {% endfor %}
         </div>
       {% endfor %}
-      <!-- List -->
-      {% for stat_group in statistiques_list %}
-        <h2>{{ stat_group.name }}</h2>
-          <ul>
-            {% for stat_item in stat_group.values %}
-              <li>{{ stat_item.title }}: {{ stat_item.value }}</li>
-            {% endfor %}
-          </ul>
-      {% endfor %}
+      <!-- Statistiques démarches -->
+      <h2>Démarches</h2>
+      <div class="grid small-grid">
+        {% for stat_item in statistiques_demarches %}
+          <div class="tile-box">
+            <div class="tile text-center">
+              <h3>
+                <img class="icon-inline" src={{ stat_item.icon }} alt="">
+                {{ stat_item.title }}
+              </h3>
+              <h3>
+                <b>{{ stat_item.value }}</b>
+              </h3>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </section>

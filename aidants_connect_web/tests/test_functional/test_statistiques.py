@@ -18,4 +18,4 @@ class StatistiquesPage(StaticLiveServerTestCase):
         super().tearDownClass()
 
     def test_page_loads(self):
-        self.assertEqual(len(self.selenium.find_elements_by_class_name("tile")), 8)
+        self.assertEqual(len(self.selenium.find_elements_by_class_name("tile")), 18)

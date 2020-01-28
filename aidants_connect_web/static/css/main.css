@@ -111,6 +111,10 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   width: 66%;
 }
 
+.small-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
 @media (max-width: 699px) {
   form {
     padding: 0 1em;

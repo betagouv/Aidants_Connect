@@ -95,7 +95,7 @@ class Aidant(AbstractUser):
 
 class UsagerManager(models.Manager):
     def active(self):
-        return self.filter(mandat__expiration_date__lt=timezone.now()).distinct()
+        return self.filter(mandat__expiration_date__gt=timezone.now()).distinct()
 
 
 class Usager(models.Model):

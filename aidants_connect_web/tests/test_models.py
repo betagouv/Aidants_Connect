@@ -14,7 +14,11 @@ from aidants_connect_web.models import (
     Journal,
     Organisation,
 )
-from aidants_connect_web.tests.factories import UserFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    UserFactory,
+    UsagerFactory,
+    OrganisationFactory,
+)
 
 
 @tag("models")
@@ -247,36 +251,9 @@ class AidantModelMethodsTest(TestCase):
     def setUpTestData(cls):
         cls.aidant_marge = UserFactory(username="Marge")
         cls.aidant_patricia = UserFactory(username="Patricia")
-        cls.usager_homer = Usager.objects.create(
-            given_name="Homer",
-            family_name="Simpson",
-            birthdate="1902-06-30",
-            gender="male",
-            birthplace=27681,
-            birthcountry=99100,
-            email="homer@simpson.com",
-            sub="123",
-        )
-        cls.usager_ned = Usager.objects.create(
-            given_name="Ned",
-            family_name="Flanders",
-            birthdate="1902-06-30",
-            gender="male",
-            birthplace=26934,
-            birthcountry=99100,
-            email="ned@flanders.com",
-            sub="1234",
-        )
-        cls.usager_bart = Usager.objects.create(
-            given_name="Bart",
-            family_name="Simpson",
-            birthdate="1902-06-30",
-            gender="male",
-            birthplace=26934,
-            birthcountry=99100,
-            email="bart@simpson.com",
-            sub="12345",
-        )
+        cls.usager_homer = UsagerFactory(given_name="Homer", sub="123")
+        cls.usager_ned = UsagerFactory(given_name="Ned", sub="1234")
+        cls.usager_bart = UsagerFactory(given_name="Bart", sub="1235")
         Mandat.objects.create(
             aidant=cls.aidant_marge,
             usager=cls.usager_homer,
@@ -307,6 +284,24 @@ class AidantModelMethodsTest(TestCase):
             demarche="transports",
             expiration_date=timezone.now() + timedelta(days=6),
         )
+        Mandat.objects.create(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_ned,
+            demarche="famille",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        Mandat.objects.create(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_ned,
+            demarche="social",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        Mandat.objects.create(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_ned,
+            demarche="travail",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
 
     def test_get_usagers(self):
         self.assertEqual(len(self.aidant_marge.get_usagers()), 2)
@@ -325,7 +320,7 @@ class AidantModelMethodsTest(TestCase):
             len(self.aidant_marge.get_active_mandats_for_usager(self.usager_homer)), 2
         )
         self.assertEqual(
-            len(self.aidant_marge.get_active_mandats_for_usager(self.usager_ned)), 1
+            len(self.aidant_marge.get_active_mandats_for_usager(self.usager_ned)), 4
         )
         self.assertEqual(
             len(self.aidant_marge.get_active_mandats_for_usager(self.usager_bart)), 0
@@ -349,7 +344,7 @@ class AidantModelMethodsTest(TestCase):
         )
         self.assertEqual(
             list(self.aidant_marge.get_active_demarches_for_usager(self.usager_ned)),
-            ["transports"],
+            ["famille", "social", "transports", "travail"],
         )
 
 

@@ -75,18 +75,22 @@ def statistiques(request):
         .count()
     )
     # Démarches
-    demarches_agg = []
+    demarches_aggregation = []
     for demarche in settings.DEMARCHES.keys():
-        demarches_agg.append(
-            {"title": demarche, "value": Mandat.objects.demarche(demarche).count()}
+        demarches_aggregation.append(
+            {
+                "title": demarche,
+                "icon": settings.DEMARCHES[demarche]["icon"],
+                "value": Mandat.objects.demarche(demarche).count(),
+            }
         )
-    demarches_agg.sort(key=lambda x: x["value"], reverse=True)
+    demarches_aggregation.sort(key=lambda x: x["value"], reverse=True)
 
     return render(
         request,
         "aidants_connect_web/statistiques.html",
         {
-            "statistiques_grid": [
+            "statistiques_list": [
                 {
                     "name": "Indicateurs de base",
                     "values": [
@@ -119,6 +123,6 @@ def statistiques(request):
                     ],
                 },
             ],
-            "statistiques_list": [{"name": "Démarches", "values": demarches_agg},],
+            "statistiques_demarches": demarches_aggregation,
         },
     )

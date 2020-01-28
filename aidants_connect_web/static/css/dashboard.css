@@ -32,6 +32,11 @@ a:hover {
   width: auto;
 }
 
+.icon-inline {
+  width: 30px;
+  vertical-align: bottom;
+}
+
 @supports(display: grid) {
   .tile {
     width: 100%;
