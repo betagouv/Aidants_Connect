@@ -285,12 +285,10 @@ class GenerateMandatPreview(TestCase):
         response_content = response.content.decode("utf-8")
 
         self.assertIn("mandataire", response_content)
-        self.assertIn("Thierry GONEAU", response_content)
         self.assertIn("Fabrice MERCIER", response_content)
         self.assertIn("Allocation", response_content)
         self.assertIn("1 jour", response_content)
         self.assertIn("HOULBEC COCHEREL", response_content)
         self.assertIn("COMMUNE", response_content)
-        self.assertIn("secrétaire", response_content)
         # if this fails, check if info is not on second page
         self.assertIn("18 juillet 2020", response_content)
