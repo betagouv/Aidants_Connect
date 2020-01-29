@@ -37,24 +37,6 @@
                 </th>
               </tr>
             </thead>
-            <!-- <tbody>
-              {% for mandat in active_mandats %}
-                <tr>
-                  <td>
-                    {{ mandat.demarche }}
-                  </td>
-                  <td title="{{ mandat.creation_date }}">
-                    {{ mandat.creation_date | date:"d F Y" }}
-                  </td>
-                  <td title="{{ mandat.expiration_date }}">
-                    {{ mandat.expiration_date | date:"d F Y" }}
-                  </td>
-                  <td>
-                    <a href="{% url 'usagers_mandats_cancel_confirm' usager_id=usager.id mandat_id=mandat.id %}" class="button-outline warning small float-right">&nbsp;🗑️</a>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody> -->
           </table>
           <!-- fake table body (cannot have a working link inside a td) -->
           {% for mandat in active_mandats %}

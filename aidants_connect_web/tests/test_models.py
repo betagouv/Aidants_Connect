@@ -433,6 +433,11 @@ class JournalModelTest(TestCase):
         self.assertEqual(entry.action, "use_mandat")
         self.assertEqual(entry.demarche, "transports")
 
+    def test_log_mandat_update_complete(self):
+        entry = Journal.objects.mandat_update(mandat=self.first_mandat,)
+        self.assertEqual(len(Journal.objects.all()), 3)
+        self.assertEqual(entry.action, "update_mandat")
+
     def test_it_is_impossible_to_change_an_existing_entry(self):
         entry = Journal.objects.mandat_use(
             aidant=self.aidant_thierry,

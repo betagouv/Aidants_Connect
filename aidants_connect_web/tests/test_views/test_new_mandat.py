@@ -130,8 +130,8 @@ class NewMandatRecapTests(TestCase):
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
-        messages = list(messages.get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
+        request_messages = list(messages.get_messages(response.wsgi_request))
+        self.assertEqual(len(request_messages), 1)
 
     def test_updating_mandat_for_for_same_aidant(self):
         # first session : creating the mandat

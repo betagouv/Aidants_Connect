@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 from aidants_connect_web.tests.factories import UserFactory, UsagerFactory
-from aidants_connect_web.models import Aidant, Usager, Mandat
+from aidants_connect_web.models import Aidant, Usager, Mandat, Journal
 
 
 @tag("functional")
@@ -77,3 +77,6 @@ class CancelMandat(StaticLiveServerTestCase):
         self.assertEqual(
             len(self.selenium.find_elements_by_class_name("fake-table-row")), 1
         )
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "update_mandat")
