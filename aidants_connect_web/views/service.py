@@ -3,9 +3,9 @@ from secrets import token_urlsafe
 from datetime import timedelta
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.messages import get_messages
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.utils import timezone
@@ -49,11 +49,11 @@ def logout_page(request):
 @login_required
 def dashboard(request):
     aidant = request.user
-    messages = get_messages(request)
+    request_messages = messages.get_messages(request)
     return render(
         request,
         "aidants_connect_web/dashboard.html",
-        {"aidant": aidant, "messages": messages},
+        {"aidant": aidant, "messages": request_messages},
     )
 
 

@@ -1,6 +1,7 @@
+import factory
+
 from django.contrib.auth import get_user_model
 from aidants_connect_web.models import Usager, Organisation
-import factory
 
 
 class OrganisationFactory(factory.DjangoModelFactory):

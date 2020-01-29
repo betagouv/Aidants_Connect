@@ -38,7 +38,7 @@
               </tr>
             </thead>
             <!-- <tbody>
-              {% for mandat in current_mandats %}
+              {% for mandat in active_mandats %}
                 <tr>
                   <td>
                     {{ mandat.demarche }}
@@ -57,7 +57,7 @@
             </tbody> -->
           </table>
           <!-- fake table body (cannot have a working link inside a td) -->
-          {% for mandat in current_mandats %}
+          {% for mandat in active_mandats %}
             <div class="row fake-table-row">
               <div class="col-44">
                 {{ mandat.demarche }}
@@ -69,7 +69,7 @@
                 <span title="{{ mandat.expiration_date }}">{{ mandat.expiration_date | date:"d F Y" }}</span>
               </div>
               <div class="col-20">
-                <a href="{% url 'usagers_mandats_cancel_confirm' usager_id=usager.id mandat_id=mandat.id %}" class="button-outline warning small float-right" title="Annuler le mandat">&nbsp;🗑️</a>
+                <a href="{% url 'usagers_mandats_cancel_confirm' usager_id=usager.id mandat_id=mandat.id %}" class="button-outline warning small float-right" title="Révoquer le mandat">&nbsp;🗑️</a>
               </div>
             </div>
           {% endfor %}

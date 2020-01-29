@@ -9,7 +9,7 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <h1 class="brand">Confirmer l'annulation du mandat</h1>
+    <h1 class="brand">Confirmer la révocation du mandat</h1>
     <div class="tiles">
       <form method="post" class="panel">
         {% if error %}
@@ -21,7 +21,7 @@
             Le mandat avec l'usager <b>{{ usager }}</b>,
             pour la démarche <b>{{ mandat.demarche }}</b>,
             créé le <b>{{ mandat.creation_date | date:"d F Y" }}</b> et expirant le <b>{{ mandat.expiration_date | date:"d F Y" }}</b>,
-            va être <b>annulé</b>.
+            va être <b>révoqué</b>.
           </p>
           <p>
             <i>Le mandat apparaîtra comme expiré dans l'espace usagers.</i>
@@ -32,7 +32,7 @@
         </div>
         <div class="form__group">
           <input type="submit" class="button" value="Je confirme" />
-          <a href="{% url 'usagers_details' usager_id=usager.id %}" class="button-outline primary float-right">Annuler</a>
+          <a href="{% url 'usagers_details' usager_id=usager.id %}" class="button-outline primary float-right">Révoquer</a>
         </div>
       </form>
     </div>

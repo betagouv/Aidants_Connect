@@ -6,7 +6,7 @@ from django.test.client import Client
 from django.test import TestCase, tag
 from django.urls import resolve
 from django.conf import settings
-from django.contrib.messages import get_messages
+from django.contrib import messages
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.views import new_mandat
@@ -130,7 +130,7 @@ class NewMandatRecapTests(TestCase):
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
-        messages = list(get_messages(response.wsgi_request))
+        messages = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
     def test_updating_mandat_for_for_same_aidant(self):

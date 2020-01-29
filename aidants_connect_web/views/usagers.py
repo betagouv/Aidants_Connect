@@ -2,14 +2,11 @@ import logging
 
 from django.db import IntegrityError
 from django.utils import timezone
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from aidants_connect_web.models import (
-    Usager,
-    Mandat
-)
+from aidants_connect_web.models import Usager, Mandat
 
 
 logging.basicConfig(level=logging.INFO)
@@ -30,7 +27,7 @@ def usagers_index(request):
         {
             "aidant": aidant,
             "aidant_usagers": aidant_usagers,
-            "messages": request_messages
+            "messages": request_messages,
         },
     )
 
@@ -40,7 +37,7 @@ def usagers_index(request):
 def usagers_details(request, usager_id):
     request_messages = messages.get_messages(request)
     aidant = request.user
-    usager = Usager.objects.get(pk=usager_id)
+    usager = get_object_or_404(Usager, pk=usager_id)
     active_mandats = aidant.get_active_mandats_for_usager(usager_id)
     expired_mandats = aidant.get_expired_mandats_for_usager(usager_id)
 
@@ -52,7 +49,7 @@ def usagers_details(request, usager_id):
             "usager": usager,
             "active_mandats": active_mandats,
             "expired_mandats": expired_mandats,
-            "messages": request_messages
+            "messages": request_messages,
         },
     )
 
@@ -60,19 +57,15 @@ def usagers_details(request, usager_id):
 @login_required
 def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
     aidant = request.user
-    usager = Usager.objects.get(pk=usager_id)
-    mandat = Mandat.objects.get(pk=mandat_id)
+    usager = get_object_or_404(Usager, pk=usager_id)
+    mandat = get_object_or_404(Mandat, pk=mandat_id)
 
     if request.method == "GET":
 
         return render(
             request,
             "aidants_connect_web/usagers_mandats_cancel_confirm.html",
-            {
-                "aidant": aidant,
-                "usager": usager,
-                "mandat": mandat,
-            },
+            {"aidant": aidant, "usager": usager, "mandat": mandat},
         )
 
     else:
@@ -85,7 +78,7 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
 
                 messages.success(request, "Le mandat a été annulé avec succès !")
 
-                return redirect('usagers_details', usager_id=usager.id)
+                return redirect("usagers_details", usager_id=usager.id)
 
             except IntegrityError as e:
                 log.error("Error happened in Cancel Mandat")
