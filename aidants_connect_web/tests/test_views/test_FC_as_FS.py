@@ -159,15 +159,16 @@ class FCCallback(TestCase):
         self.assertEqual(
             connection.access_token, "b337567e-437a-4167-ba51-8f8b6772980b"
         )
-        url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'e"
-            "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRi"
-            "NDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjox"
-            "NTQ3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
-            "bmVjdC5nb3V2LmZyIiwic3ViIjoxMjMsIm5vbmNlIjoidGVzdF9ub25jZSJ9.vqQoJ3vovqC"
-            "nbXzu7_V7bgsIZH6PPLBkIzeWnSp2sqo'&state=test_state&post_logout_redirect_"
-            "uri=http://localhost:3000/logout-callback"
-        )
+        # url = (
+        #     "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'e"
+        #     "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRi"
+        #     "NDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjox"
+        #     "NTQ3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
+        #     "bmVjdC5nb3V2LmZyIiwic3ViIjoxMjMsIm5vbmNlIjoidGVzdF9ub25jZSJ9.vqQoJ3vovqC"
+        #     "nbXzu7_V7bgsIZH6PPLBkIzeWnSp2sqo'&state=test_state&post_logout_redirect_"
+        #     "uri=http://localhost:3000/logout-callback"
+        # )
+        url = "/logout-callback/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     @freeze_time(date)
@@ -232,15 +233,16 @@ class FCCallback(TestCase):
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Joséphine")
 
-        url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'ey"
-            "J0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRiND"
-            "Q4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ"
-            "3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmV"
-            "jdC5nb3V2LmZyIiwic3ViIjo0NTYsIm5vbmNlIjoidGVzdF9ub25jZSJ9.tuHulPV1IhyS7UZ"
-            "8q4QWrg8EAeF1vgpFOr-5vV-ags4'&state=test_state&post_logout_redirect_uri="
-            "http://localhost:3000/logout-callback"
-        )
+        # url = (
+        #     "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'ey"
+        #     "J0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRiND"
+        #     "Q4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ"
+        #     "3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmV"
+        #     "jdC5nb3V2LmZyIiwic3ViIjo0NTYsIm5vbmNlIjoidGVzdF9ub25jZSJ9.tuHulPV1IhyS7UZ"
+        #     "8q4QWrg8EAeF1vgpFOr-5vV-ags4'&state=test_state&post_logout_redirect_uri="
+        #     "http://localhost:3000/logout-callback"
+        # )
+        url = "/logout-callback/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
 
