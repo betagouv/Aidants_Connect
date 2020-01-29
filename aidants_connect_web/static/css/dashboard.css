@@ -18,10 +18,23 @@ a:hover {
   background-color: #ebeff3;
 }
 
+.tile-box {
+  width: 100%;
+}
+.tile-subtitle {
+  margin: 0;
+  font-style: italic;
+}
+
 .tile {
   background-color: #ebeff3;
   display: inline-block;
   width: auto;
+}
+
+.icon-inline {
+  width: 30px;
+  vertical-align: bottom;
 }
 
 @supports(display: grid) {
@@ -29,8 +42,4 @@ a:hover {
     width: 100%;
     display: flex;
   }
-}
-
-.tile + .tile {
-  margin-left: 1em;
 }

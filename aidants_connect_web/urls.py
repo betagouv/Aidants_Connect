@@ -37,6 +37,7 @@ urlpatterns = [
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # misc
     path("ressources/", service.resources, name="resources"),
+    path("stats/", service.statistiques, name="statistiques"),
 ]
 
 urlpatterns.extend(magicauth_urls)

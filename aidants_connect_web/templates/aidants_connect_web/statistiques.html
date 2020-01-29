@@ -1,0 +1,59 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="brand">Statistiques d'Aidants Connect</h1>
+    <div class="tiles">
+      <!-- Statistiques List -->
+      {% for stat_group in statistiques_list %}
+        <h2>{{ stat_group.name }}</h2>
+        <div class="grid">
+          {% for stat_item in stat_group.values %}
+          <div class="tile-box">
+            <div class="tile text-center">
+              <h3>
+                {{ stat_item.title }}{% if stat_item.subtitle %}*{% endif %}
+              </h3>
+              <h3>
+                <b>{{ stat_item.value }}</b>
+              </h3>
+            </div>
+            <p class="tile-subtitle">
+              {% if stat_item.subtitle %}
+                *{{ stat_item.subtitle }}
+              {% endif %}
+              &nbsp;
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      <!-- Statistiques démarches -->
+      <h2>Démarches</h2>
+      <div class="grid small-grid">
+        {% for stat_item in statistiques_demarches %}
+          <div class="tile-box">
+            <div class="tile text-center">
+              <h3>
+                <img class="icon-inline" src={{ stat_item.icon }} alt="">
+                {{ stat_item.title }}
+              </h3>
+              <h3>
+                <b>{{ stat_item.value }}</b>
+              </h3>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}
