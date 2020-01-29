@@ -19,6 +19,9 @@ class Organisation(models.Model):
     siret = models.PositiveIntegerField(default=1)
     address = models.TextField(default="No address provided")
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
