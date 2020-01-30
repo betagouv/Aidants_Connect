@@ -1,4 +1,7 @@
-import json
+import io
+import base64
+import qrcode
+import qrcode.image.svg
 from datetime import date, timedelta
 
 from django.db import models
@@ -8,14 +11,24 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField, JSONField
 
-from aidants_connect_web.views.service import generate_qrcode_base64
-
 CONNECTION_EXPIRATION_TIME = 10
 
 
 def default_expiration_date():
     now = timezone.now()
     return now + timedelta(minutes=CONNECTION_EXPIRATION_TIME)
+
+
+def generate_qrcode_base64(string: str, image_type: str = "png"):
+    stream = io.BytesIO()
+    if image_type == "png":
+        img = qrcode.make(string)
+        img.save(stream, "PNG")
+    elif image_type == "svg":
+        img = qrcode.make(string, image_factory=qrcode.image.svg.SvgImage)
+        img.save(stream, "SVG")
+    journal_print_mandat_qrcode = base64.b64encode(stream.getvalue())
+    return journal_print_mandat_qrcode.decode("utf-8")
 
 
 class Organisation(models.Model):
@@ -343,9 +356,6 @@ class Journal(models.Model):
         raise NotImplementedError("Deleting is not allowed on journal entries")
 
     def generate_qrcode(self, image_type: str):
-        print(json.dumps(self.hash_data))
         sorted_hash_data = dict(sorted(self.hash_data.items()))
-        print(sorted_hash_data)
         hash_data_string = ",".join(str(x) for x in list(sorted_hash_data.values()))
-        print(hash_data_string)
-        return generate_qrcode_base64("Some data here", image_type=image_type)
+        return generate_qrcode_base64(hash_data_string, image_type=image_type)

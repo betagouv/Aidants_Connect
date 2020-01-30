@@ -23,7 +23,7 @@ urlpatterns = [
     path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
         "new_mandat/preview/",
-        new_mandat.new_mandat_preview,
+        new_mandat.mandat_preview,
         {"final": False},
         name="new_mandat_preview",
     ),
@@ -32,7 +32,7 @@ urlpatterns = [
     ),
     path(
         "new_mandat/preview/final/",
-        new_mandat.new_mandat_preview,
+        new_mandat.mandat_preview,
         {"final": True},
         name="new_mandat_preview_final",
     ),

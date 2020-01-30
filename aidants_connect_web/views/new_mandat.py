@@ -34,10 +34,7 @@ def new_mandat(request):
         return render(
             request,
             "aidants_connect_web/new_mandat/new_mandat.html",
-            {
-                "aidant": aidant,
-                "form": form,
-            },
+            {"aidant": aidant, "form": form},
         )
 
     else:
@@ -56,10 +53,7 @@ def new_mandat(request):
             return render(
                 request,
                 "aidants_connect_web/new_mandat/new_mandat.html",
-                {
-                    "aidant": aidant,
-                    "form": form
-                },
+                {"aidant": aidant, "form": form},
             )
 
 
@@ -102,7 +96,7 @@ def new_mandat_recap(request):
                     expiration_date=mandat_expiration_date,
                 )
 
-                # The loop below creates one Mandat object per Démarche selected in the form
+                # The loop below creates one Mandat object per Démarche in the form
                 for demarche in connection.demarches:
                     Mandat.objects.update_or_create(
                         aidant=aidant,
@@ -121,9 +115,6 @@ def new_mandat_recap(request):
                 messages.error(request, f"No Usager was given : {e}")
                 return redirect("dashboard")
 
-            # messages.success(request, "Le mandat a été créé avec succès !")
-
-            # return redirect("dashboard")
             return redirect("new_mandat_success")
 
         else:
@@ -142,7 +133,20 @@ def new_mandat_recap(request):
 
 
 @login_required
-def new_mandat_preview(request, final=False):
+def new_mandat_success(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
+    aidant = request.user
+    usager = connection.usager
+
+    return render(
+        request,
+        "aidants_connect_web/new_mandat/new_mandat_success.html",
+        {"aidant": aidant, "usager": usager},
+    )
+
+
+@login_required
+def mandat_preview(request, final=False):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
@@ -154,13 +158,10 @@ def new_mandat_preview(request, final=False):
         journal_print_mandat = aidant.get_journal_of_last_print_mandat()
         journal_print_mandat_data = journal_print_mandat.hash_data
         journal_print_mandat_qrcode_svg = journal_print_mandat.generate_qrcode("svg")
-    else:
-        journal_print_mandat_data = None
-        journal_print_mandat_qrcode_svg = None
 
     return render(
         request,
-        "aidants_connect_web/new_mandat/new_mandat_preview.html",
+        "aidants_connect_web/mandat_preview.html",
         {
             "usager": f"{usager.given_name} {usager.family_name}",
             "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",
@@ -170,25 +171,11 @@ def new_mandat_preview(request, final=False):
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
-            "mandat_template_version":
-            f"layouts/mandat/mandat_template_{settings.MANDAT_TEMPLATE_VERSION}.html",
-            "journal_print_mandat_data": journal_print_mandat_data,
-            "journal_print_mandat_qrcode_svg": journal_print_mandat_qrcode_svg,
-        },
-    )
-
-
-@login_required
-def new_mandat_success(request):
-    connection = Connection.objects.get(pk=request.session["connection"])
-    aidant = request.user
-    usager = connection.usager
-
-    return render(
-        request,
-        "aidants_connect_web/new_mandat/new_mandat_success.html",
-        {
-            "aidant": aidant,
-            "usager": usager,
+            "mandat_template_version": "layouts/mandat/mandat_template_"
+            f"{settings.MANDAT_TEMPLATE_VERSION}.html",
+            "journal_print_mandat_data": journal_print_mandat_data if final else None,
+            "journal_print_mandat_qrcode_svg": journal_print_mandat_qrcode_svg
+            if final
+            else None,
         },
     )

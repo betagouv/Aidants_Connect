@@ -1,8 +1,4 @@
 import logging
-import io
-import base64
-import qrcode
-import qrcode.image.svg
 from secrets import token_urlsafe
 from datetime import timedelta
 
@@ -33,22 +29,6 @@ def humanize_demarche_names(name: str) -> str:
     """
     demarches = settings.DEMARCHES
     return f"{demarches[name]['titre'].upper()}: {demarches[name]['description']}"
-
-
-def generate_qrcode_base64(string: str, image_type: str = "png"):
-    # qrcode.make('thisisatest')
-    # print(qrcode.make('thisisatest'))
-    # print(qrcode.make('Some data here', image_factory=qrcode.image.svg.SvgImage))
-    # print(qrcode.make(journal_print_mandat_data))
-    stream = io.BytesIO()
-    if image_type == "png":
-        img = qrcode.make(string)  # , image_factory=qrcode.image.svg.SvgImage)
-        img.save(stream, "PNG")
-    elif image_type == "svg":
-        img = qrcode.make(string, image_factory=qrcode.image.svg.SvgImage)
-        img.save(stream, "SVG")
-    journal_print_mandat_qrcode = base64.b64encode(stream.getvalue())
-    return journal_print_mandat_qrcode.decode("utf-8")
 
 
 def home_page(request):

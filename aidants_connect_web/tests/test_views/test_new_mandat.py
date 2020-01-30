@@ -257,11 +257,11 @@ class GenerateMandatPreview(TestCase):
 
     def test_mandat_preview_url_triggers_the_new_mandat_preview_view(self):
         found = resolve("/new_mandat/preview/")
-        self.assertEqual(found.func, new_mandat.new_mandat_preview)
+        self.assertEqual(found.func, new_mandat.mandat_preview)
 
     def test_mandat_preview_final_url_triggers_the_new_mandat_preview_view(self):
         found = resolve("/new_mandat/preview/final/")
-        self.assertEqual(found.func, new_mandat.new_mandat_preview)
+        self.assertEqual(found.func, new_mandat.mandat_preview)
 
     def test_response_is_the_preview_page(self):
         self.client.force_login(self.aidant_thierry)
@@ -273,9 +273,7 @@ class GenerateMandatPreview(TestCase):
         response = self.client.get("/new_mandat/preview/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "aidants_connect_web/new_mandat/new_mandat_preview.html"
-        )
+        self.assertTemplateUsed(response, "aidants_connect_web/mandat_preview.html")
 
     @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
     def test_preview_contains_text(self):

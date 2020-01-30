@@ -23,7 +23,10 @@
         <h2>Éléments du mandat</h2>
         <div class="panel">
           <div class="form__group">
-            <p id="recap_text"><strong>{{ usager }}</strong> autorise <strong>l'aidant habilité de {{ aidant.organisation.name }}</strong> à réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne des périmètres suivants :</p>
+            <p id="recap_text">
+              <strong>{{ usager }}</strong> autorise <strong>l'aidant habilité de {{ aidant.organisation.name }}</strong> à réaliser en mon nom
+              conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne des périmètres suivants :
+            </p>
             <ul>
               {% for demarche in demarches %}
                 <li>{{ demarche }}</li>
