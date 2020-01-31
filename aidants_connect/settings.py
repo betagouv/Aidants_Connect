@@ -288,6 +288,7 @@ ADMIN_URL = os.getenv("ADMIN_URL")
 ADMINS = [(os.getenv("ADMIN_NAME"), os.getenv("ADMIN_EMAIL"))]
 
 # Cookie security
+SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False if os.getenv("SESSION_COOKIE_SECURE") == "False" else True
 CSRF_COOKIE_SECURE = False if os.getenv("CSRF_COOKIE_SECURE") == "False" else True
 
