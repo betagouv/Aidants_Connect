@@ -247,7 +247,8 @@ DEMARCHES = {
     },
 }
 
-MANDAT_TEMPLATE_VERSION = "20200123"
+MANDAT_TEMPLATE_PATH = "templates/layouts/mandat/mandat_template.html"
+MANDAT_PRINT_SALT = os.getenv("MANDAT_PRINT_SALT")
 
 # Magic Auth
 MAGICAUTH_EMAIL_FIELD = "email"

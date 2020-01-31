@@ -4,10 +4,11 @@ from pytz import timezone as pytz_timezone
 
 from django.test import TestCase, tag
 from django.db.utils import IntegrityError
-from django.conf import settings
 from django.utils import timezone
+from django.conf import settings
 from django.contrib.auth.hashers import check_password
 
+from aidants_connect_web.utilities import generate_file_sha256_hash
 from aidants_connect_web.models import (
     Connection,
     Aidant,
@@ -390,7 +391,7 @@ class JournalModelTest(TestCase):
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "connect_aidant")
         self.assertEqual(
-            entry.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
+            entry.initiator, "Thierry MARTIN - Commune de Vernon - thierry@thierry.com"
         )
 
     def test_log_mandat_creation_complete(self):
@@ -405,7 +406,7 @@ class JournalModelTest(TestCase):
 
         entry = Journal.objects.all().last()
         self.assertEqual(entry.action, "create_mandat")
-        self.assertIn("Ned Flanders", entry.usager)
+        self.assertIn("Ned FLANDERS", entry.usager)
         self.assertEqual(entry.mandat, mandat.id)
 
     def test_log_mandat_use_complete(self):
@@ -460,7 +461,8 @@ class JournalModelTest(TestCase):
         mandat_print_string = (
             f"{self.aidant_thierry.id},{date.today().isoformat()},"
             f"logement,transports,{expiration_date.date().isoformat()},"
-            f"{self.aidant_thierry.organisation.id},{settings.MANDAT_TEMPLATE_VERSION},"
+            f"{self.aidant_thierry.organisation.id},"
+            f"{generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH)},"
             f"{self.usager_ned.sub}"
         )
         self.assertTrue(check_password(mandat_print_string, entry.mandat_print_hash))

@@ -2,13 +2,7 @@ import logging
 from datetime import date, timedelta
 
 from django.db import IntegrityError
-<<<<<<< HEAD
-=======
 from django.conf import settings
-from django.utils import formats
-from django.utils import timezone
-from django.shortcuts import render, redirect
->>>>>>> 6a08181... Add new Journal entry for mandat_papier. Store template version
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -169,8 +163,6 @@ def mandat_preview(request, final=False):
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
-            "mandat_template_version": "layouts/mandat/mandat_template_"
-            f"{settings.MANDAT_TEMPLATE_VERSION}.html",
             "journal_print_mandat": journal_print_mandat if final else None,
             "journal_print_mandat_qrcode_svg": journal_print_mandat_qrcode_svg
             if final
