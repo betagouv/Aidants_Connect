@@ -164,11 +164,8 @@ def mandat_preview(request, final=False):
         request,
         "aidants_connect_web/mandat_preview.html",
         {
-            "usager": f"{usager.given_name} {usager.family_name}",
-            "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",
-            "profession": aidant.profession,
-            "organisation": aidant.organisation.name,
-            "lieu": aidant.organisation.address,
+            "usager": usager,
+            "aidant": aidant,
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,

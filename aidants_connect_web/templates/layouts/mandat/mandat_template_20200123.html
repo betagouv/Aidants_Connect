@@ -6,16 +6,16 @@
     <img class="navbar__gouvfr" src="{% static 'images/aidants-connect_logo.png' %}" alt="aidantsconnect.beta.gouv.fr" />
     {% if journal_print_mandat %}
       <div class="navbar__gouvfr float-right">
-        <img class="navbar__gouvfr" src="data:image/svg+xml;base64,{{ journal_print_mandat_qrcode_svg }}" />
+        <img class="navbar__gouvfr img-qrcode" src="data:image/svg+xml;base64,{{ journal_print_mandat_qrcode_svg }}" />
       </div>
     {% endif %}
   </div>
   
-  <h1>Mandat pour réaliser des démarches administratives en ligne au bénéfice d’un usager via le service
+  <h1 class="text-center">Mandat pour réaliser des démarches administratives en ligne au bénéfice d’un usager via le service
     « Aidants Connect »</h1>
 
   <p>
-    Je soussigné(e), <strong>{{ usager }}</strong> autorise <strong>{{ organisation }}</strong>, dont seuls les agents habilités peuvent faire à la place de, à
+    Je soussigné(e), <strong>{{ usager.get_full_name }}</strong> autorise <strong>{{ aidant.organisation }}</strong>, dont seuls les agents habilités peuvent faire à la place de, à
     réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, les démarches
     administratives en ligne suivantes, étant précisé qu’il s’agisse de démarches accessibles via FranceConnect ou non :
   </p>
@@ -33,8 +33,8 @@
   <p>
     À cette fin :
     <ul>
-      <li><strong>{{ usager }}</strong> autorise <strong>{{ organisation }}</strong> à utiliser ses données à caractère personnel.</li>
-      <li><strong>{L'aidant habilité de {{ organisation }}</strong> a rappelé à <strong>{{ usager }}</strong> l’objet de l’intervention, la raison pour
+      <li><strong>{{ usager }}</strong> autorise <strong>{{ aidant.organisation }}</strong> à utiliser ses données à caractère personnel.</li>
+      <li><strong>L'aidant habilité de {{ aidant.organisation }}</strong> a rappelé à <strong>{{ usager }}</strong> l’objet de l’intervention, la raison pour
         laquelle ses informations sont collectées et leur utilité ; l’existence de droits
         sur ses données (accès, rectification, suppression, etc.) et la possibilité pour le mandant de retirer à tout
         moment son consentement.</li>
@@ -65,19 +65,19 @@
 
   <p>
     Le présent mandat est accepté et consenti pour la durée nécessaire à l’accomplissement des missions de
-    l'aidant habilité de <strong>{{ organisation }}</strong>.
+    l'aidant habilité de <strong>{{ aidant.organisation }}</strong>.
     Le mandat prend fin lorsque la réalisation des démarches susvisées a été accomplie, ou à tout moment si le mandant
     ou le mandataire décide de révoquer le mandat.
   </p>
 
   <p>
-    L'aidant habilité de <strong>{{ organisation }}</strong> est tenu d’accomplir le mandat tant qu’il en demeure chargé, et répond des dommages
+    L'aidant habilité de <strong>{{ aidant.organisation }}</strong> est tenu d’accomplir le mandat tant qu’il en demeure chargé, et répond des dommages
     et intérêts qui
     pourraient résulter de son inexécution conformément à l’article 1991 du Code civil.
   </p>
 
   <p>
-    Fait à <strong>{{ lieu }}</strong>, le <strong>{{ date }}</strong>
+    Fait à <strong>{{ aidant.organisation.address }}</strong>, le <strong>{{ date }}</strong>
   </p>
 
   <p class="margin-bottom-50">

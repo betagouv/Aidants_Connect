@@ -38,6 +38,9 @@ class Aidant(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name.upper()}"
+
     @property
     def full_string_identifier(self):
         return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
@@ -123,6 +126,11 @@ class UsagerManager(models.Manager):
         return journal_print_mandat
 
 
+class UsagerManager(models.Manager):
+    def active(self):
+        return self.filter(mandat__expiration_date__gt=timezone.now()).distinct()
+
+
 class Usager(models.Model):
     given_name = models.TextField(blank=False)
     family_name = models.TextField(blank=False)
@@ -152,7 +160,7 @@ class Usager(models.Model):
         return f"{self.given_name} {self.family_name}"
 
     def get_full_name(self):
-        return f"{self.given_name} {self.family_name}"
+        return f"{self.given_name} {self.family_name.upper()}"
 
 
 class MandatManager(models.Manager):
@@ -234,9 +242,12 @@ class JournalManager(models.Manager):
     def mandat_print(
         self, aidant: Aidant, usager: Usager, demarches: list, expiration_date
     ):
+        usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
+            usager=usager_info,
             action="print_mandat",
+            # demarche=",".join(demarches.sort()),
             mandat_print_hash=generate_mandat_print_hash(
                 aidant, usager, demarches, expiration_date
             ),

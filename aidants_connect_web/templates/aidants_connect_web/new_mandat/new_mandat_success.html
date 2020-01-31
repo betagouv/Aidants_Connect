@@ -14,7 +14,7 @@
       <a class="button" href="{% url 'new_mandat_preview_final' %}" target="_blank">🖨 Imprimer le mandat final</a>
       <br><br>
       <p>
-        <a href="{% url 'usagers_details' usager_id=usager.id %}">Cliquez ici</a> pour retourner au profil de l'usager {{ usager.get_full_name }}
+        Pour retourner au profil de l'usager {{ usager.get_full_name }}, <a href="{% url 'usagers_details' usager_id=usager.id %}">cliquez ici</a>.
       </p>
     </div>
   </div>
