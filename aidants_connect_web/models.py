@@ -8,7 +8,7 @@ from django.contrib.postgres.fields import ArrayField
 
 from aidants_connect_web.utilities import (
     generate_mandat_print_hash,
-    generate_qrcode_base64,
+    generate_qrcode_png,
 )
 
 CONNECTION_EXPIRATION_TIME = 10
@@ -126,11 +126,6 @@ class UsagerManager(models.Manager):
         return journal_print_mandat
 
 
-class UsagerManager(models.Manager):
-    def active(self):
-        return self.filter(mandat__expiration_date__gt=timezone.now()).distinct()
-
-
 class Usager(models.Model):
     given_name = models.TextField(blank=False)
     family_name = models.TextField(blank=False)
@@ -243,11 +238,12 @@ class JournalManager(models.Manager):
         self, aidant: Aidant, usager: Usager, demarches: list, expiration_date
     ):
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
+        demarches.sort()
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             usager=usager_info,
             action="print_mandat",
-            # demarche=",".join(demarches.sort()),
+            demarche=",".join(demarches),
             mandat_print_hash=generate_mandat_print_hash(
                 aidant, usager, demarches, expiration_date
             ),
@@ -347,5 +343,5 @@ class Journal(models.Model):
     def delete(self, *args, **kwargs):
         raise NotImplementedError("Deleting is not allowed on journal entries")
 
-    def generate_mandat_qrcode(self, image_type: str):
-        return generate_qrcode_base64(self.mandat_print_hash, image_type=image_type)
+    def generate_mandat_qrcode_png(self):
+        return generate_qrcode_png(self.mandat_print_hash)

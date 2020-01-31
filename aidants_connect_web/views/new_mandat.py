@@ -2,7 +2,7 @@ import logging
 from datetime import date, timedelta
 
 from django.db import IntegrityError
-from django.conf import settings
+from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -10,7 +10,6 @@ from django.utils import timezone, formats
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
-from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.views.service import humanize_demarche_names
 from aidants_connect_web.models import Mandat, Connection, Journal
 
@@ -148,12 +147,6 @@ def mandat_preview(request, final=False):
 
     duree = "1 jour" if connection.duree == 1 else "1 an"
 
-    if final:
-        journal_print_mandat = aidant.get_journal_of_last_print_mandat()
-        journal_print_mandat_qrcode_svg = journal_print_mandat.generate_mandat_qrcode(
-            "svg"
-        )
-
     return render(
         request,
         "aidants_connect_web/mandat_preview.html",
@@ -163,9 +156,16 @@ def mandat_preview(request, final=False):
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
-            "journal_print_mandat": journal_print_mandat if final else None,
-            "journal_print_mandat_qrcode_svg": journal_print_mandat_qrcode_svg
-            if final
-            else None,
+            "final": final,
         },
     )
+
+
+@login_required
+def mandat_qrcode(request):
+    aidant = request.user
+
+    journal_print_mandat = aidant.get_journal_of_last_print_mandat()
+    journal_print_mandat_qrcode_png = journal_print_mandat.generate_mandat_qrcode_png()
+
+    return HttpResponse(journal_print_mandat_qrcode_png, "image/png")

@@ -36,6 +36,7 @@ urlpatterns = [
         {"final": True},
         name="new_mandat_preview_final",
     ),
+    path("new_mandat/qrcode/", new_mandat.mandat_qrcode, name="new_mandat_qrcode"),
     # id_provider
     path("authorize/", id_provider.authorize, name="authorize"),
     path("token/", id_provider.token, name="token"),

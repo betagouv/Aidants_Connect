@@ -1,4 +1,3 @@
-import time
 from selenium.webdriver.firefox.webdriver import WebDriver
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -67,14 +66,12 @@ class CreateNewMandat(StaticLiveServerTestCase):
         fc_button.click()
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)
-        time.sleep(2)
 
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element_by_id(
             "fi-identity-provider-example"
         )
         demonstration_hex.click()
-        time.sleep(2)
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element_by_tag_name("h3").text
@@ -86,7 +83,6 @@ class CreateNewMandat(StaticLiveServerTestCase):
         # FC - Validate the information
         submit_button = self.selenium.find_element_by_tag_name("input")
         submit_button.click()
-        time.sleep(2)
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element_by_tag_name("h1").text
@@ -106,7 +102,6 @@ class CreateNewMandat(StaticLiveServerTestCase):
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
-        time.sleep(2)
 
         # Success page
         success_title = self.selenium.find_element_by_tag_name("h1").text
@@ -115,7 +110,6 @@ class CreateNewMandat(StaticLiveServerTestCase):
             "tiles"
         ).find_elements_by_tag_name("a")[1]
         go_to_usager_button.click()
-        time.sleep(2)
 
         # See all mandats of usager page
         # Should find 3 table rows: 1 header row + 2 mandat rows

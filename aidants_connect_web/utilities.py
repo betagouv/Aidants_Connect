@@ -1,5 +1,4 @@
 import io
-import base64
 import qrcode
 import hashlib
 import qrcode.image.svg
@@ -34,20 +33,15 @@ def generate_mandat_print_hash(aidant, usager, demarches, expiration_date):
     mandat_print_string = ",".join(
         str(x) for x in list(sorted_mandat_print_data.values())
     )
-    return make_password(mandat_print_string)
+    return make_password(mandat_print_string, salt=settings.MANDAT_PRINT_SALT)
 
 
 def validate_mandat_print_hash(mandat_print_string, mandat_print_hash):
     return check_password(mandat_print_string, mandat_print_hash)
 
 
-def generate_qrcode_base64(string: str, image_type: str = "png"):
+def generate_qrcode_png(string: str):
     stream = io.BytesIO()
-    if image_type == "png":
-        img = qrcode.make(string)
-        img.save(stream, "PNG")
-    elif image_type == "svg":
-        img = qrcode.make(string, image_factory=qrcode.image.svg.SvgImage)
-        img.save(stream, "SVG")
-    journal_print_mandat_qrcode = base64.b64encode(stream.getvalue())
-    return journal_print_mandat_qrcode.decode("utf-8")
+    img = qrcode.make(string)
+    img.save(stream, "PNG")
+    return stream.getvalue()
