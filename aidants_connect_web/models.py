@@ -1,15 +1,15 @@
-import io
-import base64
-import qrcode
-import qrcode.image.svg
-from datetime import date, timedelta
+from datetime import timedelta
 
 from django.db import models
-from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
+
+from aidants_connect_web.utilities import (
+    generate_mandat_print_hash,
+    generate_qrcode_base64,
+)
 
 CONNECTION_EXPIRATION_TIME = 10
 
@@ -17,18 +17,6 @@ CONNECTION_EXPIRATION_TIME = 10
 def default_expiration_date():
     now = timezone.now()
     return now + timedelta(minutes=CONNECTION_EXPIRATION_TIME)
-
-
-def generate_qrcode_base64(string: str, image_type: str = "png"):
-    stream = io.BytesIO()
-    if image_type == "png":
-        img = qrcode.make(string)
-        img.save(stream, "PNG")
-    elif image_type == "svg":
-        img = qrcode.make(string, image_factory=qrcode.image.svg.SvgImage)
-        img.save(stream, "SVG")
-    journal_print_mandat_qrcode = base64.b64encode(stream.getvalue())
-    return journal_print_mandat_qrcode.decode("utf-8")
 
 
 class Organisation(models.Model):
@@ -130,7 +118,7 @@ class UsagerManager(models.Manager):
         :return: the last 'print_mandat' Journal entry initiated by the aidant
         """
         journal_print_mandat = Journal.objects.filter(
-            action="print_mandat", hash_data__aidant_id=self.id
+            action="print_mandat", initiator=self.full_string_identifier
         ).last()
         return journal_print_mandat
 
@@ -243,22 +231,15 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def mandat_papier(
+    def mandat_print(
         self, aidant: Aidant, usager: Usager, demarches: list, expiration_date
     ):
-        demarches.sort()
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             action="print_mandat",
-            hash_data={
-                "aidant_id": aidant.id,
-                "creation_date": date.today().isoformat(),
-                "demarches_list": ",".join(demarches),
-                "expiration_date": expiration_date.date().isoformat(),
-                "organisation_id": aidant.organisation.id,
-                "template_version": settings.MANDAT_TEMPLATE_VERSION,
-                "usager_sub": usager.sub,
-            },
+            mandat_print_hash=generate_mandat_print_hash(
+                aidant, usager, demarches, expiration_date
+            ),
         )
         return journal_entry
 
@@ -342,7 +323,7 @@ class Journal(models.Model):
     duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
     mandat = models.IntegerField(blank=True, null=True)
-    hash_data = JSONField(blank=True, null=True)
+    mandat_print_hash = models.CharField(max_length=100, blank=True, null=True)
 
     objects = JournalManager()
 
@@ -355,7 +336,5 @@ class Journal(models.Model):
     def delete(self, *args, **kwargs):
         raise NotImplementedError("Deleting is not allowed on journal entries")
 
-    def generate_qrcode(self, image_type: str):
-        sorted_hash_data = dict(sorted(self.hash_data.items()))
-        hash_data_string = ",".join(str(x) for x in list(sorted_hash_data.values()))
-        return generate_qrcode_base64(hash_data_string, image_type=image_type)
+    def generate_mandat_qrcode(self, image_type: str):
+        return generate_qrcode_base64(self.mandat_print_hash, image_type=image_type)

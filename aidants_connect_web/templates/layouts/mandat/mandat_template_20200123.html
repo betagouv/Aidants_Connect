@@ -1,12 +1,11 @@
 {% load static %}
 
 <section class="container">
-  <div class="navbar__home {% if not journal_print_mandat_data %}text-center{% endif %}">
+  <div class="navbar__home {% if not journal_print_mandat %}text-center{% endif %}">
     <img class="navbar__logo" src="{% static 'images/logo-marianne.svg' %}" alt="aidantsconnect.beta.gouv.fr" />
     <img class="navbar__gouvfr" src="{% static 'images/aidants-connect_logo.png' %}" alt="aidantsconnect.beta.gouv.fr" />
-    {% if journal_print_mandat_data %}
+    {% if journal_print_mandat %}
       <div class="navbar__gouvfr float-right">
-        <span class="template-version">{{ journal_print_mandat_data.template_version }}</span>
         <img class="navbar__gouvfr" src="data:image/svg+xml;base64,{{ journal_print_mandat_qrcode_svg }}" />
       </div>
     {% endif %}

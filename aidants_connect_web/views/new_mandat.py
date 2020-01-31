@@ -89,7 +89,7 @@ def new_mandat_recap(request):
 
             try:
                 # Add a Journal 'print_mandat' action
-                Journal.objects.mandat_papier(
+                Journal.objects.mandat_print(
                     aidant=aidant,
                     usager=usager,
                     demarches=connection.demarches,
@@ -156,8 +156,9 @@ def mandat_preview(request, final=False):
 
     if final:
         journal_print_mandat = aidant.get_journal_of_last_print_mandat()
-        journal_print_mandat_data = journal_print_mandat.hash_data
-        journal_print_mandat_qrcode_svg = journal_print_mandat.generate_qrcode("svg")
+        journal_print_mandat_qrcode_svg = journal_print_mandat.generate_mandat_qrcode(
+            "svg"
+        )
 
     return render(
         request,
@@ -173,7 +174,7 @@ def mandat_preview(request, final=False):
             "duree": duree,
             "mandat_template_version": "layouts/mandat/mandat_template_"
             f"{settings.MANDAT_TEMPLATE_VERSION}.html",
-            "journal_print_mandat_data": journal_print_mandat_data if final else None,
+            "journal_print_mandat": journal_print_mandat if final else None,
             "journal_print_mandat_qrcode_svg": journal_print_mandat_qrcode_svg
             if final
             else None,

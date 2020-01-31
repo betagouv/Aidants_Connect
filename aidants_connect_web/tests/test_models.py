@@ -4,7 +4,9 @@ from pytz import timezone as pytz_timezone
 
 from django.test import TestCase, tag
 from django.db.utils import IntegrityError
+from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.hashers import check_password
 
 from aidants_connect_web.models import (
     Connection,
@@ -444,13 +446,21 @@ class JournalModelTest(TestCase):
         self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
     def test_a_print_mandat_journal_entry_can_be_created(self):
-        entry = Journal.objects.mandat_papier(
+        demarches = ["transports", "logement"]
+        expiration_date = timezone.now() + timedelta(days=6)
+        entry = Journal.objects.mandat_print(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
-            demarches=["transports", "logement"],
-            expiration_date=timezone.now() + timedelta(days=6),
+            demarches=demarches,
+            expiration_date=expiration_date,
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "print_mandat")
-        self.assertEqual(entry.hash_data["demarches_list"], "logement,transports")
+        mandat_print_string = (
+            f"{self.aidant_thierry.id},{date.today().isoformat()},"
+            f"logement,transports,{expiration_date.date().isoformat()},"
+            f"{self.aidant_thierry.organisation.id},{settings.MANDAT_TEMPLATE_VERSION},"
+            f"{self.usager_ned.sub}"
+        )
+        self.assertTrue(check_password(mandat_print_string, entry.mandat_print_hash))

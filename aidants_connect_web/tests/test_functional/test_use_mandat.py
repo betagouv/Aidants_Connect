@@ -5,7 +5,7 @@ from django.test import tag
 from django.utils import timezone
 from selenium.webdriver.firefox.webdriver import WebDriver
 from aidants_connect_web.models import Aidant, Usager, Mandat
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
+from aidants_connect_web.tests.test_functional.test_utilities import login_aidant
 from aidants_connect_web.tests.factories import UserFactory
 
 import time

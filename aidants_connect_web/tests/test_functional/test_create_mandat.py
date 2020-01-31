@@ -5,7 +5,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
 from django.test import tag
 
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
+from aidants_connect_web.tests.test_functional.test_utilities import login_aidant
 from aidants_connect_web.tests.factories import UserFactory
 
 
@@ -111,7 +111,9 @@ class CreateNewMandat(StaticLiveServerTestCase):
         # Success page
         success_title = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(success_title, "Le mandat a été créé avec succès !")
-        go_to_usager_button = self.selenium.find_elements_by_tag_name("a")[1]
+        go_to_usager_button = self.selenium.find_element_by_class_name(
+            "tiles"
+        ).find_elements_by_tag_name("a")[1]
         go_to_usager_button.click()
         time.sleep(2)
 

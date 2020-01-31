@@ -94,6 +94,10 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   float: right;
 }
 
+.text-align-left {
+  text-align: left;
+}
+
 .col-66 {
   width: 66%;
 }
