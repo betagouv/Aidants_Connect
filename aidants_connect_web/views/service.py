@@ -8,7 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.messages import get_messages
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.urls import resolve
 
+from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Organisation, Aidant, Usager, Mandat, Journal
 
 
@@ -125,4 +127,27 @@ def statistiques(request):
             ],
             "statistiques_demarches": demarches_aggregation,
         },
+    )
+
+
+@login_required()
+def activity_check(request):
+    next_parameter = request.GET.get("next")
+    next_page = (
+        resolve(next_parameter).url_name
+        if next_parameter
+        else settings.LOGIN_REDIRECT_URL
+    )
+    aidant = request.user
+    if request.method == "POST":
+        form = OTPForm(aidant=aidant, data=request.POST)
+
+        if form.is_valid():
+            Journal.objects.activity_check(aidant)
+            return redirect(next_page)
+    else:
+        form = OTPForm(request.user)
+
+    return render(
+        request, "registration/activity_check.html", {"form": form, "aidant": aidant}
     )

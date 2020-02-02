@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 from aidants_connect.postgres_url import turn_psql_url_into_param
 
 load_dotenv(verbose=True)
@@ -177,6 +178,9 @@ STATIC_URL = "/static/"
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"
+ACTIVITY_CHECK_URL = "activity_check"
+ACTIVITY_CHECK_THRESHOLD = int(os.getenv("ACTIVITY_CHECK_THRESHOLD"))
+ACTIVITY_CHECK_DURATION = timedelta(minutes=ACTIVITY_CHECK_THRESHOLD)
 
 AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 

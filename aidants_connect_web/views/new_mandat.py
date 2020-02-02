@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.utils import timezone, formats
 
+from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
 from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.views.service import humanize_demarche_names
@@ -16,6 +17,7 @@ log = logging.getLogger()
 
 
 @login_required
+@activity_required
 def new_mandat(request):
     aidant = request.user
     form = MandatForm()

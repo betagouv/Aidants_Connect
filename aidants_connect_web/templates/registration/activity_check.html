@@ -1,0 +1,24 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/login.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <form method="post">
+      <h1>Bonjour {{ aidant.get_full_name }}</h1>
+
+      {% csrf_token %}
+        <div class="form__group">
+        <label>{{ form.otp_token.label_tag }}</label>
+        {{ form.otp_token }}
+      </div>
+      <div class="form__group">
+        <input type="submit" value="Submit">
+      </div>
+  </form>
+</section>
+{% endblock content %}
