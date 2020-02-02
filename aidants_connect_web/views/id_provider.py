@@ -202,7 +202,6 @@ def fi_select_demarche(request):
         connection.save()
 
         fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
-        logout(request)
         return redirect(f"{fc_callback_url}?code={code}&state={this_state}")
 
 
