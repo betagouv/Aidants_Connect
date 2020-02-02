@@ -118,12 +118,11 @@ class CreateNewMandat(StaticLiveServerTestCase):
         )
 
         # Select user
-        user_link = self.selenium.find_elements_by_class_name("fake-table-row")[0] \
-            .find_element_by_tag_name("a")
+        user_link = self.selenium.find_elements_by_class_name("fake-table-row")[
+            0
+        ].find_element_by_tag_name("a")
         user_link.click()
 
         # See all mandats of usager page
         # Should find 3 table rows: 1 header row + 2 mandat rows
-        self.assertEqual(
-            len(self.selenium.find_elements_by_tag_name("tr")), 3
-        )
+        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 3)
