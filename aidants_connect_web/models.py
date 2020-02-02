@@ -95,6 +95,14 @@ class Aidant(AbstractUser):
         active_mandats = Mandat.objects.active().filter(usager=usager, aidant=self)
         return active_mandats.values_list("demarche", flat=True)
 
+    def get_last_action_timestamp(self):
+        a = (
+            Journal.objects.filter(initiator=self.full_string_identifier)
+            .last()
+            .creation_date
+        )
+        return a
+
 
 class UsagerManager(models.Manager):
     def active(self):
