@@ -2,12 +2,12 @@ import logging
 from secrets import token_urlsafe
 from datetime import timedelta
 
-from django.utils import timezone
-from django.shortcuts import render, redirect
+from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.conf import settings
 from django.contrib.messages import get_messages
+from django.shortcuts import render, redirect
+from django.utils import timezone
 
 from aidants_connect_web.models import Organisation, Aidant, Usager, Mandat, Journal
 
