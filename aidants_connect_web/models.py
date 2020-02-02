@@ -269,6 +269,7 @@ class Journal(models.Model):
         ("connect_aidant", "Connexion d'un aidant"),
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),
+        ("update_mandat", "Renouvellement d'un mandat"),
     )
     # mandatory
     action = models.CharField(max_length=30, choices=ACTIONS, blank=False)
