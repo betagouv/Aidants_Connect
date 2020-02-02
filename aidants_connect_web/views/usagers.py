@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import get_messages
 
+from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import Usager
 
 
@@ -12,6 +13,7 @@ log = logging.getLogger()
 
 
 @login_required
+@activity_required
 def usagers_index(request):
     messages = get_messages(request)
     aidant = request.user
@@ -26,6 +28,7 @@ def usagers_index(request):
 
 
 @login_required
+@activity_required
 def usagers_details(request, usager_id):
     messages = get_messages(request)
     aidant = request.user

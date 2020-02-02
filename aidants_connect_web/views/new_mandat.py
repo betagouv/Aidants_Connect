@@ -50,6 +50,7 @@ def new_mandat(request):
 
 
 @login_required
+@activity_required
 def new_mandat_recap(request):
 
     connection = Connection.objects.get(pk=request.session["connection"])
@@ -117,6 +118,7 @@ def new_mandat_recap(request):
 
 
 @login_required
+@activity_required
 def new_mandat_preview(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
