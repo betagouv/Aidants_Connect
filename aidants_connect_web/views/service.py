@@ -132,12 +132,8 @@ def statistiques(request):
 
 @login_required()
 def activity_check(request):
-    next_parameter = request.GET.get("next")
-    next_page = (
-        resolve(next_parameter).url_name
-        if next_parameter
-        else settings.LOGIN_REDIRECT_URL
-    )
+    next_parameter = request.GET.get("next", settings.LOGIN_REDIRECT_URL)
+    next_page = resolve(next_parameter).url_name
     aidant = request.user
     if request.method == "POST":
         form = OTPForm(aidant=aidant, data=request.POST)
