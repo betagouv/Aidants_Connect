@@ -7,6 +7,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from aidants_connect_web.models import Usager, Mandat
+from aidants_connect_web.decorators import (
+    activity_required,
+    check_mandat_usager,
+    check_mandat_aidant,
+    check_mandat_is_not_expired,
+)
 
 
 logging.basicConfig(level=logging.INFO)
@@ -55,6 +61,9 @@ def usagers_details(request, usager_id):
 
 
 @login_required
+@check_mandat_usager
+@check_mandat_aidant
+@check_mandat_is_not_expired
 def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
     aidant = request.user
     usager = get_object_or_404(Usager, pk=usager_id)
