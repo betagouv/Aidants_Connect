@@ -143,6 +143,7 @@ class OTPForm(forms.Form):
         min_length=6,
         validators=[RegexValidator(r"^\d{6}$")],
         label="Entrez le code à 6 chiffres généré par votre téléphone",
+        widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )
 
     def __init__(self, aidant, *args, **kwargs):
