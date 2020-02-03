@@ -107,9 +107,9 @@ class AidantChangeFormTest(TestCase):
         self.organisation_nîmes = OrganisationFactory(
             name="Association Aide au Numérique"
         )
-        self.organisation_nantes = OrganisationFactory(
-            name="Association Aide'o'Web", id=4
-        )
+        self.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
+        self.nantes_id = self.organisation_nantes.id
+
         Aidant.objects.create(
             first_name="Henri",
             last_name="Bernard",
@@ -142,7 +142,7 @@ class AidantChangeFormTest(TestCase):
             "username": "abernart@domain.user",
             "email": "goodbye@domain.user",
             "profession": "Mediateur",
-            "organisation": "4",
+            "organisation": self.nantes_id,
         }
         form = AidantChangeForm(
             data=changed_data,
@@ -169,7 +169,7 @@ class AidantChangeFormTest(TestCase):
             "username": "abernart@domain.user",
             "email": "abernart@domain.user",
             "profession": "Mediateur",
-            "organisation": "4",
+            "organisation": self.nantes_id,
         }
         form = AidantChangeForm(
             data=changed_data,

@@ -1,16 +1,14 @@
 import logging
-from datetime import date
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.db import IntegrityError
-from django.utils import formats
-from django.utils import timezone
-from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.utils import timezone, formats
 
-from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
+from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)

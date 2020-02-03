@@ -6,7 +6,7 @@ from aidants_connect_web.views import (
     usagers,
     FC_as_FS,
     id_provider,
-    new_mandat
+    new_mandat,
 )
 
 urlpatterns = [
@@ -22,9 +22,7 @@ urlpatterns = [
     path("new_mandat_recap/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
-        "new_mandat_preview/",
-        new_mandat.new_mandat_preview,
-        name="new_mandat_preview",
+        "new_mandat_preview/", new_mandat.new_mandat_preview, name="new_mandat_preview"
     ),
     # id_provider
     path("authorize/", id_provider.authorize, name="authorize"),
