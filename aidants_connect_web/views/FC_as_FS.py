@@ -30,14 +30,13 @@ def fc_authorize(request):
     fc_id = settings.FC_AS_FS_ID
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
     fc_scopes = [
+        "email",
+        "gender",
+        "birthdate",
+        "birthplace",
         "given_name",
         "family_name",
-        "preferred_username",
-        "birthdate",
-        "gender",
-        "birthplace",
         "birthcountry",
-        "email",
     ]
 
     parameters = (
