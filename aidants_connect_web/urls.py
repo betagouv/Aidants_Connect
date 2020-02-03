@@ -36,6 +36,7 @@ urlpatterns = [
     # misc
     path("ressources/", service.resources, name="resources"),
     path("stats/", service.statistiques, name="statistiques"),
+    path("activity_check/", service.activity_check, name="activity_check"),
 ]
 
 urlpatterns.extend(magicauth_urls)

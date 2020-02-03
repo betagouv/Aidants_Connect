@@ -95,6 +95,14 @@ class Aidant(AbstractUser):
         active_mandats = Mandat.objects.active().filter(usager=usager, aidant=self)
         return active_mandats.values_list("demarche", flat=True)
 
+    def get_last_action_timestamp(self):
+        a = (
+            Journal.objects.filter(initiator=self.full_string_identifier)
+            .last()
+            .creation_date
+        )
+        return a
+
 
 class UsagerManager(models.Manager):
     def active(self):
@@ -209,6 +217,12 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
+    def activity_check(self, aidant: Aidant):
+        journal_entry = self.create(
+            initiator=aidant.full_string_identifier, action="activity_check_aidant"
+        )
+        return journal_entry
+
     def mandat_creation(self, mandat: Mandat):
         aidant = mandat.aidant
         usager = mandat.usager
@@ -267,6 +281,7 @@ class JournalManager(models.Manager):
 class Journal(models.Model):
     ACTIONS = (
         ("connect_aidant", "Connexion d'un aidant"),
+        ("activity_check_aidant", "Reprise de connexion d'un aidant"),
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),
         ("update_mandat", "Renouvellement d'un mandat"),

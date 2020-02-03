@@ -125,11 +125,3 @@ class UseNewMandat(StaticLiveServerTestCase):
         last_demarche.click()
         time.sleep(2)
         self.assertIn("fcp.integ01.dev-franceconnect.fr", browser.current_url)
-
-        # Check user has been logged out by
-        # checking if they are redirected to the login page
-        self.aidant_is_disconnected(browser)
-
-    def aidant_is_disconnected(self, browser):
-        browser.get(f"{self.live_server_url}/authorize/?state=35")
-        browser.find_element_by_id("id_email")

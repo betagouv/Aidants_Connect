@@ -19,6 +19,8 @@ from django.utils import timezone
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.conf import settings
+
+from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import (
     Connection,
     Mandat,
@@ -63,6 +65,7 @@ def check_request_parameters(
 
 
 @login_required
+@activity_required
 def authorize(request):
     if request.method == "GET":
         parameters = {
@@ -138,6 +141,7 @@ def authorize(request):
 
 
 @login_required
+@activity_required()
 def fi_select_demarche(request):
     if request.method == "GET":
         state = request.GET.get("state", False)
@@ -198,7 +202,6 @@ def fi_select_demarche(request):
         connection.save()
 
         fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
-        logout(request)
         return redirect(f"{fc_callback_url}?code={code}&state={this_state}")
 
 

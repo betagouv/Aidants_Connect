@@ -1,5 +1,8 @@
 import os
 
+from django.utils import timezone
+from freezegun import freeze_time
+
 from django.test.client import Client
 from django.test import TestCase, tag
 from django.urls import resolve
@@ -66,6 +69,56 @@ class LogoutPageTests(TestCase):
         self.client.force_login(self.aidant)
         response = self.client.get("/logout/")
         self.assertRedirects(response, "/")
+
+
+@tag("service", "this")
+class ActivityCheckPageTests(TestCase):
+    def setUp(self):
+        self.aidant_thierry = UserFactory()
+        device = self.aidant_thierry.staticdevice_set.create(id=1)
+        device.token_set.create(token="123456")
+
+    def test_totp_url_triggers_totp_view(self):
+        found = resolve("/activity_check/")
+        self.assertEqual(found.func, service.activity_check)
+
+    def test_totp_url_triggers_totp_template(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.get("/activity_check/")
+        self.assertTemplateUsed(response, "registration/activity_check.html")
+
+    def test_totp_page_with_resolvable_next_redirects(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/activity_check/?next=/new_mandat/", data={"otp_token": "123456"}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/new_mandat/")
+
+    def test_totp_page_with_non_resolvable_next_triggers_404(self):
+        # test with get
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.get("/activity_check/?next=http://myfishingsite.com")
+        self.assertEqual(response.status_code, 404)
+        # get with post
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/activity_check/?next=http://myfishingsite.com",
+            data={"otp_token": "123456"},
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_successful_totp_check_creates_journal_entry(self):
+        self.client.force_login(self.aidant_thierry)
+        self.assertEqual(Journal.objects.count(), 1)
+        with freeze_time(timezone.now() + settings.ACTIVITY_CHECK_DURATION):
+            response = self.client.post(
+                "/activity_check/?next=/usagers/1/?a=test", data={"otp_token": "123456"}
+            )
+            self.assertEqual(Journal.objects.count(), 2)
+            self.assertEqual(Journal.objects.last().action, "activity_check_aidant")
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, "/usagers/1/?a=test")
 
 
 @tag("service")

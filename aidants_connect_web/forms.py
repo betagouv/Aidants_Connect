@@ -137,17 +137,17 @@ class MandatForm(forms.Form):
     duree = forms.ChoiceField(choices=DUREES, required=True, initial=3)
 
 
-class RecapMandatForm(forms.Form):
-    personal_data = forms.BooleanField(
-        label=f"J’autorise mon aidant à utiliser mes données à caractère personnel."
-    )
-    brief = forms.BooleanField(label="brief")
+class OTPForm(forms.Form):
     otp_token = forms.CharField(
-        max_length=6, min_length=6, validators=[RegexValidator(r"^\d{6}$")]
+        max_length=6,
+        min_length=6,
+        validators=[RegexValidator(r"^\d{6}$")],
+        label="Entrez le code à 6 chiffres généré par votre téléphone",
+        widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )
 
     def __init__(self, aidant, *args, **kwargs):
-        super(RecapMandatForm, self).__init__(*args, **kwargs)
+        super(OTPForm, self).__init__(*args, **kwargs)
         self.aidant = aidant
 
     def clean_otp_token(self):
@@ -158,3 +158,10 @@ class RecapMandatForm(forms.Form):
             return otp_token
         else:
             raise ValidationError("Ce code n'est pas valide.")
+
+
+class RecapMandatForm(OTPForm, forms.Form):
+    personal_data = forms.BooleanField(
+        label=f"J’autorise mon aidant à utiliser mes données à caractère personnel."
+    )
+    brief = forms.BooleanField(label="brief")
