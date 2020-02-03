@@ -1,10 +1,10 @@
 import json
 from pytz import timezone as pytz_timezone
-from secrets import token_urlsafe
 from datetime import date, datetime, timedelta
 from freezegun import freeze_time
 
 from django.db.models.query import QuerySet
+from django.contrib.auth.hashers import make_password
 from django.test.client import Client
 from django.test import TestCase, override_settings, tag
 from django.urls import resolve
@@ -18,12 +18,9 @@ from aidants_connect_web.models import (
     Aidant,
     Usager,
     Mandat,
-    CONNECTION_EXPIRATION_TIME,
     Journal,
 )
 from aidants_connect_web.tests import factories
-
-fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
 @tag("id_provider")
@@ -72,10 +69,9 @@ class AuthorizeTests(TestCase):
         date_further_away_minus_one_hour = datetime(
             2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
         )
-        Connection.objects.create(
+        self.connection = Connection.objects.create(
             state="test_expiration_date_triggered",
-            code="test_code",
-            nonce="test_nonce",
+            nonce="avalidnonce456",
             usager=Usager.objects.get(sub="123"),
             expiresOn=date_further_away_minus_one_hour,
         )
@@ -92,9 +88,10 @@ class AuthorizeTests(TestCase):
 
     def test_authorize_url_triggers_the_authorize_template(self):
         self.client.force_login(self.aidant_thierry)
+
         good_data = {
-            "state": token_urlsafe(4),
-            "nonce": token_urlsafe(4),
+            "state": "avalidstate123",
+            "nonce": "avalidnonce456",
             "response_type": "code",
             "client_id": settings.FC_AS_FI_ID,
             "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
@@ -108,11 +105,14 @@ class AuthorizeTests(TestCase):
             response, "aidants_connect_web/id_provider/authorize.html"
         )
 
+        self.assertEqual(response.status_code, 200)
+
     def test_authorize_url_without_right_parameters_triggers_bad_request(self):
         self.client.force_login(self.aidant_thierry)
+
         good_data = {
-            "state": token_urlsafe(4),
-            "nonce": token_urlsafe(4),
+            "state": "avalidstate123",
+            "nonce": "avalidnonce456",
             "response_type": "code",
             "client_id": settings.FC_AS_FI_ID,
             "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
@@ -123,14 +123,36 @@ class AuthorizeTests(TestCase):
         for data, value in good_data.items():
             data_with_missing_item = good_data.copy()
             del data_with_missing_item[data]
+
             response = self.client.get("/authorize/", data=data_with_missing_item)
 
             self.assertEqual(response.status_code, 400)
 
+    def test_authorize_url_with_malformed_parameters_triggers_403(self):
+        self.client.force_login(self.aidant_thierry)
+
+        dynamic_data = {"state": "avalidstate123", "nonce": "avalidnonce456"}
+        good_static_data = {
+            "response_type": "code",
+            "client_id": settings.FC_AS_FI_ID,
+            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+            "scope": "openid profile email address phone birth",
+            "acr_values": "eidas1",
+        }
+
+        for data, value in dynamic_data.items():
+            dynamic_data_with_wrong_item = dynamic_data.copy()
+            dynamic_data_with_wrong_item[data] = "aninvalidvalue 123"
+
+            sent_data = {**dynamic_data_with_wrong_item, **good_static_data}
+            response = self.client.get("/authorize/", data=sent_data)
+
+            self.assertEqual(response.status_code, 403)
+
     def test_authorize_url_with_wrong_parameters_triggers_403(self):
         self.client.force_login(self.aidant_thierry)
 
-        dynamic_data = {"state": token_urlsafe(4), "nonce": token_urlsafe(4)}
+        dynamic_data = {"state": "avalidstate123", "nonce": "avalidnonce456"}
         good_static_data = {
             "response_type": "code",
             "client_id": settings.FC_AS_FI_ID,
@@ -142,6 +164,7 @@ class AuthorizeTests(TestCase):
         for data, value in good_static_data.items():
             static_data_with_wrong_item = good_static_data.copy()
             static_data_with_wrong_item[data] = "wrong_data"
+
             sent_data = {**dynamic_data, **static_data_with_wrong_item}
             response = self.client.get("/authorize/", data=sent_data)
 
@@ -153,8 +176,8 @@ class AuthorizeTests(TestCase):
         response = self.client.get(
             "/authorize/",
             data={
-                "state": token_urlsafe(4),
-                "nonce": "fc_call_nonce",
+                "state": "avalidstate123",
+                "nonce": "avalidnonce456",
                 "response_type": "code",
                 "client_id": settings.FC_AS_FI_ID,
                 "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
@@ -163,28 +186,33 @@ class AuthorizeTests(TestCase):
             },
         )
 
-        self.assertIsInstance(response.context["state"], str)
+        self.assertIsInstance(response.context["connection_id"], int)
         self.assertIsInstance(response.context["usagers"], QuerySet)
         self.assertEqual(len(response.context["usagers"]), 1)
         self.assertIsInstance(response.context["aidant"], Aidant)
 
     def test_sending_user_information_triggers_callback(self):
         self.client.force_login(self.aidant_thierry)
-        c = Connection.objects.create(
-            state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
+
+        connection = Connection.objects.create(
+            state="avalidstate123", nonce="avalidnonce456", usager=self.usager
         )
-        usager_id = c.usager.id
+
         response = self.client.post(
-            "/authorize/", data={"state": "test_state", "chosen_usager": usager_id}
+            "/authorize/",
+            data={
+                "connection_id": connection.id,
+                "chosen_usager": connection.usager.id,
+            },
         )
+
         saved_items = Connection.objects.all()
         self.assertEqual(saved_items.count(), 2)
         connection = saved_items[1]
-        state = connection.state
         self.assertEqual(connection.usager.sub, "123")
         self.assertNotEqual(connection.nonce, "No Nonce Provided")
 
-        url = reverse("fi_select_demarche") + "?state=" + state
+        url = reverse("fi_select_demarche") + "?connection_id=" + str(connection.id)
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
@@ -194,9 +222,17 @@ class AuthorizeTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/authorize/",
-            data={"state": "test_expiration_date_triggered", "chosen_usager": 1},
+            data={"connection_id": self.connection.id, "chosen_usager": 1},
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_post_to_authorize_with_unknown_connexion_triggers_forbidden(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/authorize/",
+            data={"connection_id": (self.connection.id + 1), "chosen_usager": 1},
+        )
+        self.assertEqual(response.status_code, 403)
 
 
 @tag("id_provider")
@@ -217,15 +253,14 @@ class FISelectDemarcheTest(TestCase):
         )
 
         self.connection = Connection.objects.create(
-            state="test_state", code="test_code", nonce="test_nonce", usager=self.usager
+            state="avalidstate123", nonce="avalidnonce456", usager=self.usager,
         )
 
         date_further_away_minus_one_hour = datetime(
             2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
         )
-        self.connection = Connection.objects.create(
+        self.connection_2 = Connection.objects.create(
             state="test_expiration_date_triggered",
-            code="test_code",
             nonce="test_nonce",
             usager=self.usager,
             expiresOn=date_further_away_minus_one_hour,
@@ -264,7 +299,9 @@ class FISelectDemarcheTest(TestCase):
 
     def test_FI_select_demarche_triggers_FI_select_demarche_template(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+        response = self.client.get(
+            "/select_demarche/", data={"connection_id": self.connection.id}
+        )
         self.assertTemplateUsed(
             response, "aidants_connect_web/id_provider/fi_select_demarche.html"
         )
@@ -274,8 +311,9 @@ class FISelectDemarcheTest(TestCase):
     @freeze_time(date_close)
     def test_get_demarches_for_one_usager_and_two_mandats(self):
         self.client.force_login(self.aidant_thierry)
-
-        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+        response = self.client.get(
+            "/select_demarche/", data={"connection_id": self.connection.id}
+        )
         demarches = response.context["demarches"]
         mandats = [demarche for demarche in demarches]
         self.assertIn("famille", mandats)
@@ -288,9 +326,10 @@ class FISelectDemarcheTest(TestCase):
     @freeze_time(date_further_away)
     def test_expired_mandat_does_not_appear(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/select_demarche/", data={"state": "test_state"})
+        response = self.client.get(
+            "/select_demarche/", data={"connection_id": self.connection.id}
+        )
         demarches = response.context["demarches"]
-
         mandats = [demarche for demarche in demarches]
         self.assertIn("famille", mandats)
         self.assertIn("transports", mandats)
@@ -302,33 +341,39 @@ class FISelectDemarcheTest(TestCase):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
-            data={"state": "test_state", "chosen_demarche": "famille"},
+            data={"connection_id": self.connection.id, "chosen_demarche": "famille"},
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response.url, f"{fc_callback_url}?code=test_code&state=test_state"
-        )
 
     @freeze_time(date_further_away)
     def test_post_to_select_demarche_with_expired_demarche_triggers_403(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
-            data={"state": "test_state", "chosen_demarche": "logement"},
+            data={"connection_id": self.connection.id, "chosen_demarche": "logement"},
         )
         self.assertEqual(response.status_code, 403)
 
     @freeze_time(date_further_away)
-    def test_post_to_select_demarche_with_expired_connexion_triggers_timeout(self):
+    def test_post_to_select_demarche_with_expired_connexion_triggers_bad_request(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/select_demarche/",
+            data={"connection_id": self.connection_2.id, "chosen_demarche": "famille"},
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @freeze_time(date_further_away)
+    def test_post_to_select_demarche_with_unknown_connexion_triggers_forbidden(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
             data={
-                "state": "test_expiration_date_triggered",
+                "connection_id": (self.connection_2.id + 1),
                 "chosen_demarche": "famille",
             },
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
 
 @tag("id_provider")
@@ -340,10 +385,12 @@ class FISelectDemarcheTest(TestCase):
 )
 class TokenTests(TestCase):
     def setUp(self):
+        self.code = "test_code"
+        self.code_hash = make_password(self.code, settings.FC_AS_FI_HASH_SALT)
         self.connection = Connection()
-        self.connection.state = "test_state"
-        self.connection.code = "test_code"
-        self.connection.nonce = "test_nonce"
+        self.connection.state = "avalidstate123"
+        self.connection.code = self.code_hash
+        self.connection.nonce = "avalidnonce456"
         self.connection.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -364,7 +411,7 @@ class TokenTests(TestCase):
             "redirect_uri": "test_url.test_url",
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
-            "code": "test_code",
+            "code": self.code,
         }
 
     def test_token_url_triggers_token_view(self):
@@ -381,19 +428,22 @@ class TokenTests(TestCase):
         response_content = response.content.decode("utf-8")
         self.assertEqual(response.status_code, 200)
         response_json = json.loads(response_content)
-        connection = Connection.objects.get(code="test_code")
+        response_json["access_token"] = make_password(
+            response_json["access_token"], settings.FC_AS_FI_HASH_SALT
+        )
+        connection = Connection.objects.get(code=self.code_hash)
         awaited_response = {
             "access_token": connection.access_token,
             "expires_in": 3600,
-            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2NsaWVud"
-            "F9pZCIsImV4cCI6MTMyNjUxMTI5NCwiaWF0IjoxMzI2NTEwNjk0LCJpc3MiOiJ"
-            "sb2NhbGhvc3QiLCJzdWIiOiJ0ZXN0X3N1YiIsIm5vbmNlIjoidGVzdF9ub25jZ"
-            "SJ9.aYSfYJK_Lml15DY7MuhrUBI1wja70WBfeyKqiUBMLlE",
+            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2NsaWVu"
+            "dF9pZCIsImV4cCI6MTMyNjUxMDk5NCwiaWF0IjoxMzI2NTEwNjk0LCJpc3MiOiJsb2NhbGhvc"
+            "3QiLCJzdWIiOiJ0ZXN0X3N1YiIsIm5vbmNlIjoiYXZhbGlkbm9uY2U0NTYifQ.vCJ2XqD6KEg"
+            "I8lgTT0f1e9PA-A5BxRhn6F5av6Y8mFk",
             "refresh_token": "5ieq7Bg173y99tT6MA",
             "token_type": "Bearer",
         }
 
-        self.assertEqual(response_json, awaited_response)
+        self.assertEqual(str(response_json), str(awaited_response))
 
     def test_wrong_grant_type_triggers_403(self):
         fc_request = dict(self.fc_request)
@@ -433,12 +483,14 @@ class TokenTests(TestCase):
             response = self.client.post("/token/", bad_request)
             self.assertEqual(response.status_code, 400)
 
-    date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
+    date_expired = date + timedelta(
+        minutes=settings.CONNECTION_EXPIRATION_TIME_MINUTES + 20
+    )
 
     @freeze_time(date_expired)
-    def test_expired_code_triggers_403(self):
+    def test_expired_code_triggers_bad_request(self):
         response = self.client.post("/token/", self.fc_request)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
 
 @tag("id_provider")
@@ -481,12 +533,16 @@ class UserInfoTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
+        self.access_token = "test_access_token"
+        self.access_token_hash = make_password(
+            self.access_token, settings.FC_AS_FI_HASH_SALT
+        )
         self.connection = Connection.objects.create(
-            state="test_state",
+            state="avalidstate123",
             code="test_code",
-            nonce="test_nonce",
+            nonce="avalidnonde456",
             usager=self.usager,
-            access_token="test_access_token",
+            access_token=self.access_token_hash,
             expiresOn=datetime(
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
@@ -504,7 +560,7 @@ class UserInfoTests(TestCase):
     def test_well_formatted_access_token_returns_200(self):
 
         response = self.client.get(
-            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
+            "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer {self.access_token}"}
         )
 
         FC_formated_info = {
@@ -528,7 +584,7 @@ class UserInfoTests(TestCase):
     def test_mandat_use_triggers_journal_entry(self):
 
         self.client.get(
-            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
+            "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer {self.access_token}"}
         )
 
         journal_entries = Journal.objects.all()
@@ -536,24 +592,26 @@ class UserInfoTests(TestCase):
         self.assertEqual(journal_entries.count(), 2)
         self.assertEqual(journal_entries[1].action, "use_mandat")
 
-    date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
+    date_expired = date + timedelta(
+        minutes=settings.CONNECTION_EXPIRATION_TIME_MINUTES + 20
+    )
 
     @freeze_time(date_expired)
-    def test_expired_access_token_returns_403(self):
+    def test_expired_access_token_returns_bad_request(self):
         response = self.client.get(
-            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer test_access_token"}
+            "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer {self.access_token}"}
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
     def test_badly_formatted_authorization_header_triggers_403(self):
         response = self.client.get(
-            "/userinfo/", **{"HTTP_AUTHORIZATION": "test_access_token"}
+            "/userinfo/", **{"HTTP_AUTHORIZATION": self.access_token}
         )
         self.assertEqual(response.status_code, 403)
 
         response = self.client.get(
-            "/userinfo/", **{"HTTP_AUTHORIZATION": "Bearer: test_access_token"}
+            "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer: {self.access_token}"}
         )
         self.assertEqual(response.status_code, 403)
 

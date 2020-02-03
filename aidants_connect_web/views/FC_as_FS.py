@@ -87,7 +87,6 @@ def fc_callback(request):
         "client_secret": fc_secret,
         "code": code,
     }
-
     headers = {"Accept": "application/json"}
 
     request_for_token = python_request.post(token_url, data=payload, headers=headers)
@@ -106,17 +105,18 @@ def fc_callback(request):
     except ExpiredSignatureError:
         log.info("403: token signature has expired.")
         return HttpResponseForbidden()
+
     if connection.nonce != decoded_token.get("nonce"):
         log.info("403: The nonce is different than the one expected.")
         return HttpResponseForbidden()
+
     if connection.expiresOn < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
+
     try:
         usager = Usager.objects.get(sub=decoded_token["sub"])
-
     except Usager.DoesNotExist:
-
         usager, error = get_user_info(fc_base, connection.access_token)
         if error:
             messages.error(request, error)

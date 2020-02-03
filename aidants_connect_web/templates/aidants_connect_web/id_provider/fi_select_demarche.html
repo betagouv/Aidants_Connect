@@ -10,11 +10,9 @@
 {% block content %}
 <section class="section section-grey">
   <div class="container">
-    <form method="post" >
+    <form method="post">
       <h2 id="welcome_aidant">Sélectionnez le type de démarche que vous allez effectuer</h2>
       <p id="instructions">En selectionnant une démarche, vous allez FranceConnecter [Nom de l'usager] (Changer d'usager)</p>
-      {% csrf_token %}
-      <input type="hidden" name="state" value="{{ state }}" />
       <div id="demarches_list" class="grid">
         {% for demarche, demarche_info in demarches.items %}
           <div id="{{ demarche }}" class="tile">
@@ -26,6 +24,8 @@
             </label>
           </div>
         {% endfor %}
+        {% csrf_token %}
+        <input type="hidden" name="connection_id" value="{{ connection_id }}" />
       </div>
     </form>
     <p>Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat a expiré.

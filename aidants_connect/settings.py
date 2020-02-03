@@ -22,12 +22,17 @@ HOST = os.environ["HOST"]
 FC_AS_FI_CALLBACK_URL = os.environ["FC_AS_FI_CALLBACK_URL"]
 FC_AS_FI_ID = os.environ["FC_AS_FI_ID"]
 FC_AS_FI_SECRET = os.environ["FC_AS_FI_SECRET"]
+FC_AS_FI_HASH_SALT = os.environ["FC_AS_FI_HASH_SALT"]
 
 # FC as FS
 FC_AS_FS_BASE_URL = os.environ["FC_AS_FS_BASE_URL"]
 FC_AS_FS_ID = os.environ["FC_AS_FS_ID"]
 FC_AS_FS_SECRET = os.environ["FC_AS_FS_SECRET"]
 FC_AS_FS_CALLBACK_URL = os.environ["FC_AS_FS_CALLBACK_URL"]
+
+CONNECTION_EXPIRATION_TIME_MINUTES = int(
+    os.environ["CONNECTION_EXPIRATION_TIME_MINUTES"]
+)
 
 if os.environ.get("FC_AS_FS_TEST_PORT"):
     FC_AS_FS_TEST_PORT = int(os.environ["FC_AS_FS_TEST_PORT"])
