@@ -6,9 +6,10 @@ from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import get_messages
+from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.urls import resolve
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Organisation, Aidant, Usager, Mandat, Journal
@@ -132,8 +133,14 @@ def statistiques(request):
 
 @login_required()
 def activity_check(request):
-    next_parameter = request.GET.get("next", settings.LOGIN_REDIRECT_URL)
-    next_page = resolve(next_parameter).url_name
+    next_page = request.GET.get("next", settings.LOGIN_REDIRECT_URL)
+
+    if not url_has_allowed_host_and_scheme(
+        next_page, allowed_hosts={request.get_host()}, require_https=True
+    ):
+        log.warning("[AidantConnect] an unsafe URL was used through the activity check")
+        return HttpResponseNotFound()
+
     aidant = request.user
     if request.method == "POST":
         form = OTPForm(aidant=aidant, data=request.POST)

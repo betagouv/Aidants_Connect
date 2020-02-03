@@ -21,5 +21,4 @@ def activity_required(view=None, redirect_field_name="next"):
         login_url=settings.ACTIVITY_CHECK_URL,
         redirect_field_name=redirect_field_name,
     )
-
     return decorator if (view is None) else decorator(view)

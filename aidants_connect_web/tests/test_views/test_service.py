@@ -71,7 +71,7 @@ class LogoutPageTests(TestCase):
         self.assertRedirects(response, "/")
 
 
-@tag("service")
+@tag("service", "this")
 class ActivityCheckPageTests(TestCase):
     def setUp(self):
         self.aidant_thierry = UserFactory()
@@ -112,13 +112,13 @@ class ActivityCheckPageTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         self.assertEqual(Journal.objects.count(), 1)
         with freeze_time(timezone.now() + settings.ACTIVITY_CHECK_DURATION):
-            self.client.post(
-                "/activity_check/?next=/new_mandat/", data={"otp_token": "123456"}
+            response = self.client.post(
+                "/activity_check/?next=/usagers/1/?a=test", data={"otp_token": "123456"}
             )
             self.assertEqual(Journal.objects.count(), 2)
             self.assertEqual(Journal.objects.last().action, "activity_check_aidant")
-            response = self.client.get("/new_mandat/")
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, "/usagers/1/?a=test")
 
 
 @tag("service")
