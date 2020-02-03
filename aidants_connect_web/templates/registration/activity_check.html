@@ -11,6 +11,9 @@
   <form method="post">
       <h1>Bonjour {{ aidant.get_full_name }}</h1>
 
+      {% if form.errors %}
+        <div class="notification">Ce code n'est pas valide</div>
+      {% endif %}
       {% csrf_token %}
         <div class="form__group">
         <label>{{ form.otp_token.label_tag }}</label>
