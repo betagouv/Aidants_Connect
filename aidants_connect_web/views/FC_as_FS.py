@@ -1,5 +1,8 @@
 import logging
 from secrets import token_urlsafe
+import jwt
+from jwt.api_jwt import ExpiredSignatureError
+import requests as python_request
 
 from django.conf import settings
 from django.contrib import messages
@@ -8,11 +11,8 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
 from django.utils import timezone
 
-import jwt
-from jwt.api_jwt import ExpiredSignatureError
-import requests as python_request
-
 from aidants_connect_web.models import Connection, Usager
+from aidants_connect_web.utilities import generate_sha256_hash
 
 
 logging.basicConfig(level=logging.INFO)
@@ -116,7 +116,10 @@ def fc_callback(request):
         return HttpResponseForbidden()
 
     try:
-        usager = Usager.objects.get(sub=decoded_token["sub"])
+        usager_sub = generate_sha256_hash(
+            decoded_token["sub"] + settings.FC_AS_FI_HASH_SALT
+        )
+        usager = Usager.objects.get(sub=usager_sub)
     except Usager.DoesNotExist:
         usager, error = get_user_info(fc_base, connection.access_token)
         if error:

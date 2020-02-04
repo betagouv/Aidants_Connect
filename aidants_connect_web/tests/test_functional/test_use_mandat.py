@@ -1,12 +1,12 @@
-from datetime import date, timedelta
+from datetime import timedelta
 import time
 
 from django.conf import settings
 from django.test import tag
 from django.utils import timezone
 
-from aidants_connect_web.models import Aidant, Mandat, Usager
-from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.models import Mandat
+from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
@@ -18,7 +18,7 @@ class UseNewMandat(FunctionalTestCase):
         self.aidant = AidantFactory()
         device = self.aidant.staticdevice_set.create(id=self.aidant.id)
         device.token_set.create(token="123456")
-        AidantFactory(
+        self.aidant2 = AidantFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
             password="motdepassedejacqueline",
@@ -26,47 +26,31 @@ class UseNewMandat(FunctionalTestCase):
             last_name="Fremont",
         )
 
-        self.usager = Usager.objects.create(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate=date(1969, 12, 25),
-            gender="female",
-            birthplace=70447,
-            birthcountry=99100,
-            sub="test_sub",
-            email="User@user.domain",
+        self.usager_josephine = UsagerFactory(
+            given_name="Joséphine", family_name="ST-PIERRE"
         )
 
-        Usager.objects.create(
-            given_name="Anne Cécile Gertrude",
-            family_name="EVALOUS",
-            preferred_username="Kasteign",
-            birthdate=date(1945, 2, 14),
-            gender="female",
-            birthplace=27448,
-            birthcountry=99100,
-            sub="test_sub_2",
-            email="akasteing@user.domain",
+        self.usager_anne = UsagerFactory(
+            given_name="Anne Cécile Gertrude", family_name="EVALOUS"
         )
 
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="thierry@thierry.com"),
-            usager=Usager.objects.get(sub="test_sub"),
+            aidant=self.aidant,
+            usager=self.usager_josephine,
             demarche="argent",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="thierry@thierry.com"),
-            usager=Usager.objects.get(sub="test_sub"),
+            aidant=self.aidant,
+            usager=self.usager_josephine,
             demarche="famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
 
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="jfremont@domain.user"),
-            usager=Usager.objects.get(sub="test_sub"),
+            aidant=self.aidant2,
+            usager=self.usager_josephine,
             demarche="logement",
             expiration_date=timezone.now() + timedelta(days=12),
         )

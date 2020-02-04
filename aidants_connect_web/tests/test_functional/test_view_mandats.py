@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 
 from django.test import tag
 from django.utils import timezone
@@ -16,33 +16,12 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 class ViewMandats(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
-
         cls.aidant = AidantFactory()
         device = cls.aidant.staticdevice_set.create(id=cls.aidant.id)
         device.token_set.create(token="123456")
 
-        cls.usager = UsagerFactory(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate=date(1969, 12, 25),
-            gender="female",
-            birthplace=70447,
-            birthcountry=99100,
-            sub="test_sub",
-            email="usager@user.domain",
-        )
-        cls.usager2 = UsagerFactory(
-            given_name="Corentin",
-            family_name="DUPUIS",
-            preferred_username="DUPUIS",
-            birthdate=date(1983, 2, 3),
-            gender="male",
-            birthplace=70447,
-            birthcountry=99100,
-            sub="test_sub2",
-            email="usager2@user.domain",
-        )
+        cls.usager = UsagerFactory(given_name="Joséphine")
+        cls.usager2 = UsagerFactory(given_name="Corentin")
         cls.mandat = MandatFactory(
             aidant=cls.aidant,
             usager=cls.usager,

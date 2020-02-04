@@ -7,6 +7,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+from aidants_connect_web.utilities import generate_sha256_hash
+
 
 class Organisation(models.Model):
     name = models.TextField(default="No name provided")
@@ -147,11 +149,9 @@ class Usager(models.Model):
         blank=False,
     )
     sub = models.TextField(blank=False, unique=True)
-
     email = models.EmailField(
         blank=False, default="noemailprovided@aidantconnect.beta.gouv.fr"
     )
-
     creation_date = models.DateTimeField(default=timezone.now)
 
     objects = UsagerQuerySet.as_manager()
@@ -161,6 +161,14 @@ class Usager(models.Model):
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            if self.sub:
+                self.sub = generate_sha256_hash(self.sub + settings.FC_AS_FI_HASH_SALT)
+            else:
+                raise AttributeError("Cannot add a user without a sub")
+        super(Usager, self).save(*args, **kwargs)
 
     @property
     def full_string_identifier(self):

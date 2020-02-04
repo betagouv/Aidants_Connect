@@ -57,7 +57,7 @@ class MandatCancelConfirmPageTests(TestCase):
             username="jacques@domain.user", email="jacques@domain.user"
         )
         self.usager_1 = UsagerFactory()
-        self.usager_2 = UsagerFactory(sub="1234")
+        self.usager_2 = UsagerFactory()
         self.mandat_1 = Mandat.objects.create(
             aidant=self.aidant_1,
             usager=self.usager_1,
