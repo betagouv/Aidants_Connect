@@ -15,7 +15,7 @@ selenium==3.141.0
 sqlparse==0.3.0
 whitenoise==5.0.1
 mock==3.0.5
-git+git://github.com/betagouv/django-magicauth
+git+git://github.com/betagouv/django-magicauth@add_totp
 django-referrer-policy==1.0
 django-admin-honeypot==1.1.0
 django-csp==3.6

@@ -255,6 +255,7 @@ MAGICAUTH_LOGIN_VIEW_TEMPLATE = "login/login.html"
 MAGICAUTH_EMAIL_SENT_VIEW_TEMPLATE = "login/email_sent.html"
 MAGICAUTH_EMAIL_HTML_TEMPLATE = "login/email_template.html"
 MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
+MAGICAUTH_ENABLE_2FA = True
 
 # Emails
 EMAIL_BACKEND = os.getenv(
@@ -299,3 +300,6 @@ CSRF_COOKIE_SECURE = False if os.getenv("CSRF_COOKIE_SECURE") == "False" else Tr
 # SSL security
 SECURE_SSL_REDIRECT = False if os.getenv("SECURE_SSL_REDIRECT") == "False" else True
 SECURE_HSTS_SECONDS = os.getenv("SECURE_HSTS_SECONDS")
+
+# django_OTP_throttling
+OTP_TOTP_THROTTLE_FACTOR = int(os.getenv("OTP_TOTP_THROTTLE_FACTOR", 1))
