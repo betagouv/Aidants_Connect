@@ -138,7 +138,9 @@ def activity_check(request):
     if not url_has_allowed_host_and_scheme(
         next_page, allowed_hosts={request.get_host()}, require_https=True
     ):
-        log.warning("[AidantConnect] an unsafe URL was used through the activity check")
+        log.warning(
+            "[Aidants Connect] an unsafe URL was used through the activity check"
+        )
         return HttpResponseNotFound()
 
     aidant = request.user
