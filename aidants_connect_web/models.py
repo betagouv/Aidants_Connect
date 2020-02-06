@@ -116,9 +116,7 @@ class Usager(models.Model):
     birthdate = models.DateField(blank=False)
     GENDER = (("female", "Femme"), ("male", "Homme"))
     gender = models.CharField(max_length=6, choices=GENDER, default="F", blank=False)
-    birthplace = models.PositiveIntegerField(
-        validators=[MinValueValidator(9999), MaxValueValidator(100000)], blank=False
-    )
+    birthplace = models.PositiveIntegerField(blank=True, null=True)
     birthcountry = models.IntegerField(
         validators=[MinValueValidator(99100), MaxValueValidator(99500)],
         default=99100,

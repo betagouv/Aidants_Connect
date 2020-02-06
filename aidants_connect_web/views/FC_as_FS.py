@@ -139,6 +139,10 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
         headers={"Authorization": f"Bearer {access_token}"},
     )
     user_info = fc_user_info.json()
+
+    if user_info.get("birthplace") == "":
+        user_info["birthplace"] = None
+
     try:
         usager = Usager.objects.create(
             given_name=user_info.get("given_name"),
