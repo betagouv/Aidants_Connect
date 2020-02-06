@@ -18,6 +18,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         cls.aidant = UserFactory()
         device = cls.aidant.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
+        device.token_set.create(token="123455")
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)
@@ -102,7 +103,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         id_brief.click()
         id_otp_token = checkboxes[4]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys("123456")
+        id_otp_token.send_keys("123455")
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()

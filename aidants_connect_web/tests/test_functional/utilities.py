@@ -4,6 +4,8 @@ from django.core import mail
 def login_aidant(self):
     login_field = self.selenium.find_element_by_id("id_email")
     login_field.send_keys("thierry@thierry.com")
+    otp_field = self.selenium.find_element_by_id("id_otp_token")
+    otp_field.send_keys("123456")
     submit_button = self.selenium.find_element_by_xpath("//button")
     submit_button.click()
     email_sent_title = self.selenium.find_element_by_tag_name("h1").text
