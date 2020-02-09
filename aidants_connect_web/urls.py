@@ -19,10 +19,22 @@ urlpatterns = [
     path("usagers/<int:usager_id>/", usagers.usagers_details, name="usagers_details"),
     # new mandat
     path("new_mandat/", new_mandat.new_mandat, name="new_mandat"),
-    path("new_mandat_recap/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
+    path("new_mandat/recap/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
-        "new_mandat_preview/", new_mandat.new_mandat_preview, name="new_mandat_preview"
+        "new_mandat/preview/",
+        new_mandat.mandat_preview,
+        {"final": False},
+        name="new_mandat_preview",
+    ),
+    path(
+        "new_mandat/success/", new_mandat.new_mandat_success, name="new_mandat_success",
+    ),
+    path(
+        "new_mandat/preview/final/",
+        new_mandat.mandat_preview,
+        {"final": True},
+        name="new_mandat_preview_final",
     ),
     # id_provider
     path("authorize/", id_provider.authorize, name="authorize"),

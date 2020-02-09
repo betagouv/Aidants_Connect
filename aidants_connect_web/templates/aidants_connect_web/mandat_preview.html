@@ -1,0 +1,31 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+<link href="{% static 'css/mandat_preview.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block nav %}
+{% endblock nav %}
+
+{% block content %}
+<section class="no-print text-center">
+  {% if messages %}
+    <div class="notification success">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    </div>
+  {% endif %}
+  <p>
+    <i>🖨 Pour imprimer, sélectionnez dans le menu de votre navigateur 'Fichier', puis 'Imprimer'.</i>
+  </p>
+  <br>
+</section>
+
+{% include 'layouts/mandat/mandat_template.html' %}
+{% endblock content %}
+
+{% block footer %}
+{% endblock footer %}
