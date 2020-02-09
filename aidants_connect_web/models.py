@@ -218,6 +218,12 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
+    def activity_check(self, aidant: Aidant):
+        journal_entry = self.create(
+            initiator=aidant.full_string_identifier, action="activity_check_aidant"
+        )
+        return journal_entry
+
     def mandat_print(
         self, aidant: Aidant, usager: Usager, demarches: list, expiration_date
     ):
@@ -227,12 +233,6 @@ class JournalManager(models.Manager):
             usager=usager.full_string_identifier,
             action="print_mandat",
             demarche=",".join(demarches),
-        )
-        return journal_entry
-
-    def activity_check(self, aidant: Aidant):
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier, action="activity_check_aidant"
         )
         return journal_entry
 

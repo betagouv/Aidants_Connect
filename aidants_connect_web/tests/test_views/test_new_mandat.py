@@ -23,12 +23,12 @@ class NewMandatTests(TestCase):
         self.aidant_thierry = factories.UserFactory()
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
-        found = resolve("/new_mandat/")
+        found = resolve("/creation_mandat/")
         self.assertEqual(found.func, new_mandat.new_mandat)
 
     def test_new_mandat_url_triggers_new_mandat_template(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/new_mandat/")
+        response = self.client.get("/creation_mandat/")
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
@@ -36,7 +36,7 @@ class NewMandatTests(TestCase):
     def test_badly_formated_form_triggers_original_template(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "RAMDAM"}
-        response = self.client.post("/new_mandat/", data=data)
+        response = self.client.post("/creation_mandat/", data=data)
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
@@ -44,7 +44,7 @@ class NewMandatTests(TestCase):
     def test_well_formated_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "short"}
-        response = self.client.post("/new_mandat/", data=data)
+        response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 
 
@@ -77,7 +77,7 @@ class NewMandatRecapTests(TestCase):
         )
 
     def test_recap_url_triggers_the_recap_view(self):
-        found = resolve("/new_mandat/recap/")
+        found = resolve("/creation_mandat/recapitulatif/")
         self.assertEqual(found.func, new_mandat.new_mandat_recap)
 
     def test_recap_url_triggers_the_recap_template(self):
@@ -87,7 +87,7 @@ class NewMandatRecapTests(TestCase):
         session["connection"] = self.mandat_builder.id
         session.save()
 
-        response = self.client.get("/new_mandat/recap/")
+        response = self.client.get("/creation_mandat/recapitulatif/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat_recap.html"
@@ -101,7 +101,7 @@ class NewMandatRecapTests(TestCase):
         session.save()
 
         response = self.client.post(
-            "/new_mandat/recap/",
+            "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         self.assertEqual(Usager.objects.all().count(), 1)
@@ -111,7 +111,7 @@ class NewMandatRecapTests(TestCase):
             "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
         )
         self.assertEqual(usager.birthplace, 95277)
-        self.assertRedirects(response, "/new_mandat/success/")
+        self.assertRedirects(response, "/creation_mandat/succes/")
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")
         self.assertEqual(last_journal_entries.count(), 4)
@@ -127,7 +127,7 @@ class NewMandatRecapTests(TestCase):
         session["connection"] = mandat_builder.id
         session.save()
         response = self.client.post(
-            "/new_mandat/recap/",
+            "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         messages = list(get_messages(response.wsgi_request))
@@ -144,7 +144,7 @@ class NewMandatRecapTests(TestCase):
         session.save()
         # trigger the mandat creation/update
         self.client.post(
-            "/new_mandat/recap/",
+            "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
@@ -162,7 +162,7 @@ class NewMandatRecapTests(TestCase):
         session.save()
         # trigger the mandat creation/update
         self.client.post(
-            "/new_mandat/recap/",
+            "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "223456"},
         )
 
@@ -189,7 +189,7 @@ class NewMandatRecapTests(TestCase):
         session.save()
         # trigger the mandat creation/update
         self.client.post(
-            "/new_mandat/recap/",
+            "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         self.client.logout()
@@ -205,7 +205,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the mandat creation/update
         self.client.post(
-            "/new_mandat/recap/",
+            "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "323456"},
         )
 
@@ -256,11 +256,11 @@ class GenerateMandatPreview(TestCase):
         )
 
     def test_mandat_preview_url_triggers_the_new_mandat_preview_view(self):
-        found = resolve("/new_mandat/preview/")
+        found = resolve("/creation_mandat/visualisation/projet/")
         self.assertEqual(found.func, new_mandat.mandat_preview)
 
     def test_mandat_preview_final_url_triggers_the_new_mandat_preview_view(self):
-        found = resolve("/new_mandat/preview/final/")
+        found = resolve("/creation_mandat/visualisation/final/")
         self.assertEqual(found.func, new_mandat.mandat_preview)
 
     def test_response_is_the_preview_page(self):
@@ -270,7 +270,7 @@ class GenerateMandatPreview(TestCase):
         session["connection"] = 1
         session.save()
 
-        response = self.client.get("/new_mandat/preview/")
+        response = self.client.get("/creation_mandat/visualisation/projet/")
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/mandat_preview.html")
@@ -283,7 +283,7 @@ class GenerateMandatPreview(TestCase):
         session["connection"] = 1
         session.save()
 
-        response = self.client.get("/new_mandat/preview/")
+        response = self.client.get("/creation_mandat/visualisation/projet/")
         response_content = response.content.decode("utf-8")
 
         self.assertIn("mandataire", response_content)

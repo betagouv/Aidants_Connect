@@ -101,10 +101,10 @@ def new_mandat_recap(request):
                         },
                     )
 
-            except (AttributeError, IntegrityError) as e:
+            except (AttributeError, IntegrityError) as error:
                 log.error("Error happened in Recap")
-                log.error(e)
-                messages.error(request, f"No Usager was given : {e}")
+                log.error(error)
+                messages.error(request, error)
                 return redirect("dashboard")
 
             return redirect("new_mandat_success")
