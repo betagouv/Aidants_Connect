@@ -160,6 +160,7 @@ class Mandat(models.Model):
     # Mandat expiration date management
     creation_date = models.DateTimeField(default=timezone.now)
     expiration_date = models.DateTimeField(default=timezone.now)
+    last_used_date = models.DateTimeField(default=timezone.now)
     last_mandat_renewal_date = models.DateTimeField(default=timezone.now)
     # Journal entry creation information
     last_mandat_renewal_token = models.TextField(
@@ -256,14 +257,9 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def mandat_use(
-        self,
-        aidant: Aidant,
-        usager: Usager,
-        demarche: str,
-        access_token: str,
-        mandat: Mandat,
-    ):
+    def mandat_use(self, mandat: Mandat):
+        aidant = mandat.aidant
+        usager = mandat.usager
 
         usager_info = f"{usager.get_full_name()} - {usager.id} - {usager.email}"
 
@@ -271,8 +267,8 @@ class JournalManager(models.Manager):
             initiator=aidant.full_string_identifier,
             usager=usager_info,
             action="use_mandat",
-            demarche=demarche,
-            access_token=access_token,
+            demarche=mandat.demarche,
+            access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
         )
         return journal_entry

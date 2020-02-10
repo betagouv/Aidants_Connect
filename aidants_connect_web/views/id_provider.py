@@ -26,7 +26,6 @@ from aidants_connect_web.models import (
     Mandat,
     Usager,
     CONNECTION_EXPIRATION_TIME,
-    Journal,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -311,11 +310,7 @@ def user_info(request):
     usager["birthcountry"] = str(birthcountry)
     usager["birthdate"] = str(birthdate)
 
-    Journal.objects.mandat_use(
-        aidant=connection.aidant,
-        usager=connection.usager,
-        demarche=connection.demarche,
-        access_token=connection.access_token,
-        mandat=connection.mandat,
-    )
+    connection.mandat.last_used_date = timezone.now()
+    connection.mandat.save(update_fields=["last_used_date"])
+
     return JsonResponse(usager, safe=False)

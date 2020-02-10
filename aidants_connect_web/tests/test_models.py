@@ -160,6 +160,23 @@ class MandatModelTest(TestCase):
         self.assertEqual(first_mandat.demarche, "Carte grise")
         self.assertEqual(second_mandat.usager.family_name, "Flanders")
 
+    def test_using_mandat(self):
+        first_mandat = Mandat.objects.create(
+            aidant=self.aidant_marge,
+            usager=self.usager_homer,
+            demarche="Carte grise",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        first_mandat.last_used_date = timezone.now()
+        first_mandat.save(update_fields=["last_used_date"])
+
+        self.assertEqual(Mandat.objects.count(), 1)
+
+        journal_entries = Journal.objects.all()
+        self.assertEqual(journal_entries.count(), 2)
+        self.assertEqual(journal_entries[0].action, "create_mandat")
+        self.assertEqual(journal_entries[1].action, "use_mandat")
+
     def test_cannot_have_two_mandat_for_user_demarche_tuple(self):
         Mandat.objects.create(
             aidant=self.aidant_marge,
@@ -372,6 +389,7 @@ class JournalModelTest(TestCase):
             sub="1234",
         )
 
+        cls.first_mandat_demarche = "Revenus"
         cls.first_mandat = Mandat.objects.create(
             aidant=cls.aidant_thierry,
             usager=cls.usager_ned,
@@ -407,42 +425,24 @@ class JournalModelTest(TestCase):
         self.assertEqual(entry.mandat, mandat.id)
 
     def test_log_mandat_use_complete(self):
-        entry = Journal.objects.mandat_use(
-            aidant=self.aidant_thierry,
-            usager=self.usager_ned,
-            demarche="transports",
-            access_token="fjfgjfdkldlzlsmqqxxcn",
-            mandat=self.first_mandat,
-        )
+        entry = Journal.objects.mandat_use(self.first_mandat)
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "use_mandat")
-        self.assertEqual(entry.demarche, "transports")
+        self.assertEqual(entry.demarche, self.first_mandat_demarche)
 
     def test_it_is_impossible_to_change_an_existing_entry(self):
-        entry = Journal.objects.mandat_use(
-            aidant=self.aidant_thierry,
-            usager=self.usager_ned,
-            demarche="transports",
-            access_token="fjfgjfdkldlzlsmqqxxcn",
-            mandat=self.first_mandat,
-        )
-
+        entry = Journal.objects.mandat_use(self.first_mandat)
         entry.demarches = ["logement"]
         entry_id = entry.id
         self.assertRaises(NotImplementedError, lambda: entry.save())
-
-        self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")
+        self.assertEqual(
+            Journal.objects.get(id=entry_id).demarche, self.first_mandat_demarche
+        )
 
     def test_it_is_impossible_to_delete_an_existing_entry(self):
-        entry = Journal.objects.mandat_use(
-            aidant=self.aidant_thierry,
-            usager=self.usager_ned,
-            demarche="transports",
-            access_token="fjfgjfdkldlzlsmqqxxcn",
-            mandat=self.first_mandat,
-        )
+        entry = Journal.objects.mandat_use(self.first_mandat)
         entry_id = entry.id
-
         self.assertRaises(NotImplementedError, lambda: entry.delete())
-
-        self.assertEqual(Journal.objects.get(id=entry_id).demarche, "transports")
+        self.assertEqual(
+            Journal.objects.get(id=entry_id).demarche, self.first_mandat_demarche
+        )
