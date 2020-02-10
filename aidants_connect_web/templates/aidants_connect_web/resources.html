@@ -1,0 +1,167 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+<link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<div class="hero" role="banner">
+  <div class="hero__container">
+    <h1>Découvrir et utiliser Aidants Connect</h1>
+    <p>Vous trouverez ici les ressources utiles pour comprendre et utiliser le service Aidants Connect.</p>
+    <div class="container container-small">
+      <div class="row">
+        <img style="max-width: 100%;" src="images/aidantsconnect.png" alt="Illustration de Aidants Connect" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section section-grey" id="videos">
+  <div class="container">
+    <h1 class="section__title">Des vidéos pour comprendre et se former</h1>
+    <p class="section__subtitle">Visionnez 4 courtes vidéos pour comprendre et utiliser avec aisance FranceConnect et Aidants Connect</p>
+    <div class="cards">
+      <div class="row">
+        <!-- CARD 1 -->
+        <div class="card">
+          <div class="card__cover">
+            <iframe width="536" height="302" src="https://www.youtube.com/embed/zbcVpxaN8zc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <div class="card__content">
+            <h2>Comment accompagner un·e usager·ère à se FranceConnecter ?</h2>
+            <div class="card__meta"><a href="https://www.youtube.com/watch?v=zbcVpxaN8zc" title="" class="target-blank">https://www.youtube.com/watch?v=zbcVpxaN8zc</a></div>
+            <p>
+              <strong>Objectif :</strong> comprendre comment accompagner un usager à la création d’une connexion FranceConnect<br />
+              <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
+            </p>
+          </div>
+        </div>
+        <!-- CARD 2 -->
+        <div class="card">
+          <div class="card__cover">
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/r_Z8-1K1OPM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <div class="card__content">
+            <h2>Aidants Connect, comment ça fonctionne ?</h2>
+            <div class="card__meta"><a href="https://www.youtube.com/watch?v=r_Z8-1K1OPM" title="" class="target-blank">https://www.youtube.com/watch?v=r_Z8-1K1OPM</a></div>
+            <p>
+              <strong>Objectif :</strong> comprendre le co-fonctionnement Aidants Connect / FranceConnect<br />
+              <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="row">
+        <div class="card">
+          <div class="card__cover">
+            <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/r_Z8-1K1OPM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> -->
+          </div>
+          <div class="card__content">
+            <h2>Les aspects juridiques relatifs au tiers de confiance</h2>
+            <div class="card__meta">Vidéo et lien à venir</div>
+            <p>
+              <strong>Objectif :</strong> comprendre les enjeux juridiques du tiers de confiance et les conditions de résiliation du mandat<br />
+              <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
+            </p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card__cover">
+            <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/zbcVpxaN8zc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> -->
+          </div>
+          <div class="card__content">
+            <h2>Comment générer un mandat et réaliser une démarche avec Aidants Connect ?</h2>
+            <div class="card__meta">Vidéo et lien à venir</div>
+            <p>
+              <strong>Objectif :</strong> apprendre comment générer un mandat avec Aidants Connect et ensuite réaliser la démarche administrative "à la place de"<br />
+              <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-gray" id="outils">
+  <div class="container">
+    <h1 class="section__title">Des outils pour accompagner</h1>
+    <p class="section__subtitle">Des guides pour vous aider à accompagner vos publics</p>
+
+    <div class="tiles">
+      <div class="panel">
+        <div class="panel__header">
+          <h2>Questionner son public</h2>
+          <small class="panel__header-extra">• 2 documents</small>
+        </div>
+        <div class="grid">
+          <div class="tile">
+            <img class="tile__icon" src="images/icons/external/text-document.svg" class="navbar__gouvfr" alt="Coeur" />
+            <h3>Vous avez une démarche administrative à réaliser</h3>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Démarche-administrative.pdf" title='Accéder au document "Aidants Connect _ Démarche-administrative.pdf"' class="target-blank">Télécharger en couleur</a></span>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Démarche-administrative _ Impression noir et blanc.pdf" title='Accéder au document "Aidants Connect _ Démarche-administrative _ Impression noir et blanc.pdf"' class="target-blank">Télécharger pour impression en noir et blanc</a></span>
+          </div>
+          <div class="tile">
+            <img class="tile__icon" src="images/icons/external/text-document.svg" alt="Arbre" />
+            <h3>Quel fournisseur d'identité choisir ?</h3>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Quel-fournisseur-identité-choisir.pdf" title='Accéder au document "Aidants Connect _ Quel-fournisseur-identité-choisir.pdf"' class="target-blank">Télécharger en couleur</a></span>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Quel-fournisseur-identité-choisir _ Impression noir et blanc.pdf" title='Accéder au document "Aidants Connect _ Quel-fournisseur-identité-choisir _ Impression noir et blanc.pdf"' class="target-blank">Télécharger pour impression en noir et blanc</a></span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel__header">
+          <h2>Expliquer FranceConnect</h2>
+          <small class="panel__header-extra">• 3 documents</small>
+        </div>
+        <div class="grid">
+          <div class="tile">
+            <img class="tile__icon" src="images/icons/external/text-document.svg" class="navbar__gouvfr" alt="Coeur" />
+            <h3>FranceConnect, <br />c'est quoi ?</h3>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Démarche-administrative.pdf" title='Accéder au document "Aidants Connect _ Démarche-administrative.pdf"' class="target-blank">Télécharger en couleur</a></span>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Démarche-administrative _ Impression noir et blanc.pdf" title='Accéder au document "Aidants Connect _ Démarche-administrative _ Impression noir et blanc.pdf"' class="target-blank">Télécharger pour impression en noir et blanc</a></span>
+          </div>
+          <div class="tile">
+            <img class="tile__icon" src="images/icons/external/text-document.svg" alt="Arbre" />
+            <h3>Se connecter avec FranceConnect</h3>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Se-connecter-à-FranceConnect.pdf" title='Accéder au document "Aidants Connect _ Se-connecter-à-FranceConnect.pdf"' class="target-blank">Télécharger en couleur</a></span>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Se-connecter-à-FranceConnect _ Impression noir et blanc.pdf" title='Accéder au document "Aidants Connect _ Se-connecter-à-FranceConnect _ Impression noir et blanc.pdf"' class="target-blank">Télécharger pour impression en noir et blanc</a></span>
+          </div>
+          <div class="tile">
+
+            <img class="tile__icon" src="images/icons/external/text-document.svg" alt="Arbre" />
+            <h3>Pour les usagers <br />qui ne peuvent pas <br />se FranceConnecter</h3>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Usagers-sans-FranceConnexion.pdf" title='Accéder au document "Aidants Connect _ Usagers-sans-FranceConnexion.pdf"' class="target-blank">Télécharger en couleur</a></span>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Usagers-sans-FranceConnexion _ Impression noir et blanc.pdf" title='Accéder au document "Aidants Connect _ Usagers-sans-FranceConnexion _ Impression noir et blanc.pdf"' class="target-blank">Télécharger pour impression en noir et blanc</a></span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel__header">
+          <h2>Expliquer Aidants Connect</h2>
+          <small class="panel__header-extra">• 2 documents</small>
+        </div>
+        <div class="grid">
+          <div class="tile">
+            <img class="tile__icon" src="images/icons/external/text-document.svg" class="navbar__gouvfr" alt="Coeur" />
+            <h3>Aidants Connect, <br />c'est quoi ?</h3>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Aidants-Connect_c_est-quoi.pdf" title='Accéder au document "Aidants Connect _ Aidants-Connect_c_est-quoi.pdf"' class="target-blank">Télécharger en couleur</a></span>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Aidants-Connect_c_est-quoi _ Impression noir et blanc.pdf" title='Accéder au document "Aidants Connect _ Aidants-Connect_c_est-quoi _ Impression noir et blanc.pdf"' class="target-blank">Télécharger pour impression en noir et blanc</a></span>
+          </div>
+          <div class="tile">
+              <img class="tile__icon" src="images/icons/external/text-document.svg" alt="Arbre" />
+              <h3>Je signe <br />un mandat</h3>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Je-signe-un-mandat.pdf" title='Accéder au document "files/Aidants Connect _ Je-signe-un-mandat.pdf"' class="target-blank">Télécharger en couleur</a></span>
+            <span>> <a class="target-blank" href="files/Aidants Connect _ Je-signe-un-mandat _ Impression noir et blanc.pdf" title='Accéder au document "files/Aidants Connect _ Je-signe-un-mandat _ Impression noir et blanc.pdf"' class="target-blank">Télécharger pour impression en noir et blanc</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}

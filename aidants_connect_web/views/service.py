@@ -58,7 +58,7 @@ def dashboard(request):
 
 
 def resources(request):
-    return render(request, "aidants_connect_web/resource_list.html")
+    return render(request, "aidants_connect_web/resources.html")
 
 
 def statistiques(request):
