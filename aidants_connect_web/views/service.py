@@ -1,6 +1,5 @@
 import logging
 from secrets import token_urlsafe
-from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import logout
@@ -8,7 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.messages import get_messages
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect
-from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from aidants_connect_web.forms import OTPForm
@@ -71,12 +69,7 @@ def statistiques(request):
     # Mandats
     mandat_total = Mandat.objects.count()
     active_mandat_total = Mandat.objects.active().count()
-    mandat_used_last_30_days = (
-        Journal.objects.filter(action="create_mandat")
-        .filter(creation_date__gt=timezone.now() - timedelta(days=30))
-        .distinct("mandat")
-        .count()
-    )
+    mandat_used_last_30_days = Mandat.objects.last_used_before_in_days(30).count()
     # Démarches
     demarches_aggregation = []
     for demarche in settings.DEMARCHES.keys():

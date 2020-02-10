@@ -148,6 +148,10 @@ class MandatManager(models.Manager):
     def expired(self):
         return self.exclude(expiration_date__gt=timezone.now())
 
+    def last_used_before_in_days(self, before_in_days: int):
+        last_used_before_date = timezone.now() - timedelta(days=before_in_days)
+        return self.exclude(last_used_date__lt=last_used_before_date)
+
     def demarche(self, demarche):
         return self.filter(demarche=demarche)
 
