@@ -137,3 +137,14 @@ class StatistiquesTests(TestCase):
     def test_stats_url_triggers_the_statistiques_template(self):
         response = self.client.get("/stats/")
         self.assertTemplateUsed(response, "aidants_connect_web/statistiques.html")
+
+
+@tag("service")
+class CguTests(TestCase):
+    def test_stats_url_triggers_the_cgu_view(self):
+        found = resolve("/cgu/")
+        self.assertEqual(found.func, service.cgu)
+
+    def test_stats_url_triggers_the_cgu_template(self):
+        response = self.client.get("/cgu/")
+        self.assertTemplateUsed(response, "aidants_connect_web/cgu.html")

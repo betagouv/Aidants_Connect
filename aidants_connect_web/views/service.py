@@ -131,6 +131,10 @@ def statistiques(request):
     )
 
 
+def cgu(request):
+    return render(request, "aidants_connect_web/cgu.html")
+
+
 @login_required()
 def activity_check(request):
     next_page = request.GET.get("next", settings.LOGIN_REDIRECT_URL)
