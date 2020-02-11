@@ -38,6 +38,8 @@ urlpatterns = [
     path("stats/", service.statistiques, name="statistiques"),
     path("cgu/", service.cgu, name="cgu"),
     path("activity_check/", service.activity_check, name="activity_check"),
+    # footer
+    path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
 ]
 
 urlpatterns.extend(magicauth_urls)

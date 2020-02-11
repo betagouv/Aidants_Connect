@@ -160,3 +160,7 @@ def activity_check(request):
     return render(
         request, "registration/activity_check.html", {"form": form, "aidant": aidant}
     )
+
+
+def mentions_legales(request):
+    return render(request, "footer/mentions_legales.html")
