@@ -10,7 +10,7 @@
 
         <li class="nav__item">
           {% if aidant.is_authenticated %}
-            <a href="{% url 'dashboard' %}" {% if request.path == '/dashboard/' %}class="active"{% endif %}>
+            <a href="{% url 'dashboard' %}" {% if request.path == '/dashboard/' or request.path|slice:':9' == '/usagers/' or request.path|slice:':12' == '/new_mandat/' %}class="active"{% endif %}>
               Espace aidant
             </a>
           </li>

@@ -9,9 +9,9 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <a class="button float-right" id="add_mandat">Renouveler un mandat</a>
+    <a id="add_mandat" class="button float-right" href="{% url 'new_mandat' %}">Créer un mandat</a>
     <h1 class="brand">
-      <a href="{% url 'usagers' %}" id="retour_usagers">Vos mandats</a>
+      <a id="retour_usagers" href="{% url 'usagers' %}">Vos mandats</a>
     </h1>
     <h2 class="brand">&nbsp;↳ {{ usager.get_full_name }}</h2>
     {% if messages %}
