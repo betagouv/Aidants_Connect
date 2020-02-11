@@ -295,3 +295,28 @@ class GetUserInfoTests(TestCase):
 
         self.assertEqual(usager, None)
         self.assertIn("The FranceConnect ID is not complete:", error)
+
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
+    def test_formated_user_without_birthplace_outputs_usager(self, mock_get):
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        mock_response.json = mock.Mock(
+            return_value={
+                "given_name": "Flo",
+                "family_name": "Durand",
+                "sub": "123",
+                "preferred_username": "Flo",
+                "birthdate": "1981-07-27",
+                "gender": "male",
+                "birthplace": "",
+                "birthcountry": "99131",
+                "email": "test@test.com",
+            }
+        )
+        mock_get.return_value = mock_response
+
+        usager, error = get_user_info("abc", "def")
+
+        self.assertEqual(usager.given_name, "Flo")
+        self.assertEqual(error, None)

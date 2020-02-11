@@ -71,6 +71,21 @@ class ConnectionModelTest(TestCase):
 
 @tag("models")
 class UsagerModelTest(TestCase):
+    def test_usager_with_null_birthplace(self):
+        first_usager = Usager()
+        first_usager.given_name = "TEST NAME"
+        first_usager.family_name = "TEST Family Name éèà"
+        first_usager.preferred_username = "I prefer being called this"
+        first_usager.birthdate = date(1902, 6, 30)
+        first_usager.gender = "female"
+        first_usager.birthplace = None
+        first_usager.birthcountry = 99100
+        first_usager.email = "user@test.user"
+        first_usager.sub = "1233"
+        first_usager.save()
+        saved_items = Usager.objects.all()
+        self.assertEqual(saved_items.count(), 1)
+
     def test_saving_and_retrieving_usager(self):
         first_usager = Usager()
         first_usager.given_name = "TEST NAME"
