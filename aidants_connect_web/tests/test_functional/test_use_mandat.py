@@ -16,6 +16,8 @@ class UseNewMandat(StaticLiveServerTestCase):
     @classmethod
     def setUp(self):
         self.aidant = UserFactory()
+        device = self.aidant.staticdevice_set.create(id=self.aidant.id)
+        device.token_set.create(token="123456")
         UserFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",

@@ -15,6 +15,9 @@ class ViewMandats(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = UserFactory()
+        device = cls.user.staticdevice_set.create(id=cls.user.id)
+        device.token_set.create(token="123456")
+
         cls.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
