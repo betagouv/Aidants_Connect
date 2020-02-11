@@ -72,6 +72,10 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   width: 170px;
 }
 
+.hero .lead-text {
+  line-height: 1.25em;
+}
+
 .margin-left-100 {
   margin-left: 100px;
 }
@@ -85,6 +89,17 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 
 .notification {
   margin-bottom: 3em;
+}
+
+.background-color-blue {
+  background-color: #0053b3;
+}
+.background-color-gray {
+  background-color: #ebeff3;
+}
+
+.text-very-small {
+  font-size: 0.5em;
 }
 
 .float-left {

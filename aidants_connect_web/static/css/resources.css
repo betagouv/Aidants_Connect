@@ -1,0 +1,40 @@
+.hero img {
+    max-width: 200px;
+}
+
+#videos .section__subtitle {
+	margin-bottom: 3em;
+}
+#outils .panel {
+	padding: 0;
+}
+#outils .panel .panel__header {
+	padding: 24px 24px 0;
+	background: #0053b3;
+}
+#outils .panel .panel__header:after {
+	margin-bottom: 0!important;
+}
+#outils .panel .panel__header h2 {
+	display: inline-block;
+	margin: 0;
+	color: white;
+}
+#outils .panel .panel__header-extra {
+	color: #c9d3df;
+}
+#outils .panel .grid {
+	padding: 24px;
+	margin: 0;
+	background-color: #ebeff3;
+	text-align: center;
+}
+#outils .panel .grid img {
+	margin-bottom: 10px;
+}
+#outils .panel .grid a {
+	/*text-align: left;*/
+}
+#outils .panel .grid a:hover {
+	background: transparent;
+}
