@@ -148,3 +148,14 @@ class CguTests(TestCase):
     def test_stats_url_triggers_the_cgu_template(self):
         response = self.client.get("/cgu/")
         self.assertTemplateUsed(response, "aidants_connect_web/cgu.html")
+
+
+@tag("service")
+class GuideUtilisationTests(TestCase):
+    def test_guide_utilisation_url_triggers_the_correct_view(self):
+        found = resolve("/guide_utilisation/")
+        self.assertEqual(found.func, service.guide_utilisation)
+
+    def test_stats_url_triggers_the_correct_template(self):
+        response = self.client.get("/guide_utilisation/")
+        self.assertTemplateUsed(response, "aidants_connect_web/guide_utilisation.html")
