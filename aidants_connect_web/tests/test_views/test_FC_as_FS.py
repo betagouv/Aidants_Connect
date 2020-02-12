@@ -8,7 +8,7 @@ from django.test import TestCase, tag
 from django.test.client import Client
 from django.conf import settings
 
-from aidants_connect_web.models import Connection, CONNECTION_EXPIRATION_TIME, Usager
+from aidants_connect_web.models import Connection, Usager
 from aidants_connect_web.views.FC_as_FS import get_user_info
 from aidants_connect_web.tests.factories import UserFactory
 
@@ -84,7 +84,9 @@ class FCCallback(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    date_expired = date + timedelta(minutes=CONNECTION_EXPIRATION_TIME + 20)
+    date_expired = date + timedelta(
+        minutes=settings.CONNECTION_EXPIRATION_TIME_MINUTES + 20
+    )
 
     @freeze_time(date_expired)
     def test_expired_connection_returns_403(self):

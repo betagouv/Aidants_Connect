@@ -1,17 +1,16 @@
 from datetime import timedelta
 
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
 
-CONNECTION_EXPIRATION_TIME = 10
-
 
 def default_expiration_date():
     now = timezone.now()
-    return now + timedelta(minutes=CONNECTION_EXPIRATION_TIME)
+    return now + timedelta(minutes=settings.CONNECTION_EXPIRATION_TIME_MINUTES)
 
 
 class Organisation(models.Model):
