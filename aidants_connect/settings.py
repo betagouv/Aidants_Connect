@@ -295,6 +295,10 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = ("'self'", "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E='")
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
+CSP_FRAME_SRC = (
+    "https://www.youtube.com/embed/zbcVpxaN8zc",
+    "https://www.youtube.com/embed/r_Z8-1K1OPM",
+)
 
 # Admin Page settings
 ADMIN_URL = os.getenv("ADMIN_URL")

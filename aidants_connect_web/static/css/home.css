@@ -15,10 +15,6 @@
   }
 }
 
-.lead-text {
-  line-height: 1.25em;
-}
-
 .panel {
   color: black;
 }
@@ -42,7 +38,7 @@
   justify-content: center;
 }
 
-.tile {
+.tile-home {
   font-size: 1.25em;
   color: black;
   max-width: 18em;
@@ -62,7 +58,7 @@
   max-width: 100;
 }
 
-.tile__icon {
+.tile__icon.large__icon {
   height: 4em;
   margin-bottom: 1em;
 }

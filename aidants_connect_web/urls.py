@@ -34,7 +34,7 @@ urlpatterns = [
     path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # misc
-    path("ressources/", service.resources, name="resources"),
+    path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("stats/", service.statistiques, name="statistiques"),
     path("cgu/", service.cgu, name="cgu"),
     path("activity_check/", service.activity_check, name="activity_check"),
