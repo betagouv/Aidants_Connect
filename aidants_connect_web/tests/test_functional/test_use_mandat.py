@@ -1,19 +1,19 @@
-import time
 from datetime import date, timedelta
-from selenium.webdriver.firefox.webdriver import WebDriver
+import time
 
 from django.conf import settings
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
 from django.utils import timezone
 
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
-from aidants_connect_web.tests.factories import UserFactory
 from aidants_connect_web.models import Aidant, Usager, Mandat
+from aidants_connect_web.tests.factories import UserFactory
+from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
+from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional", "id_provider")
-class UseNewMandat(StaticLiveServerTestCase):
+class UseNewMandat(FunctionalTestCase):
+
     @classmethod
     def setUp(self):
         self.aidant = UserFactory()
@@ -73,13 +73,6 @@ class UseNewMandat(StaticLiveServerTestCase):
         )
 
         super().setUpClass()
-        self.selenium = WebDriver()
-        self.selenium.implicitly_wait(3)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super().tearDownClass()
 
     def test_use_mandat_with_preloging(self):
         self.use_a_mandat(prelogin=True)
@@ -89,8 +82,9 @@ class UseNewMandat(StaticLiveServerTestCase):
 
     def use_a_mandat(self, prelogin: bool):
         browser = self.selenium
+
         if prelogin:
-            browser.get(f"{self.live_server_url}/dashboard/")
+            self.open_live_url("/dashboard/")
             login_aidant(self)
 
         parameters = (
@@ -103,8 +97,8 @@ class UseNewMandat(StaticLiveServerTestCase):
             f"&acr_values=eidas1"
         )
 
-        url = f"{self.live_server_url}/authorize/?{parameters}"
-        browser.get(url)
+        url = f"/authorize/?{parameters}"
+        self.open_live_url(url)
 
         if not prelogin:
             login_aidant(self)

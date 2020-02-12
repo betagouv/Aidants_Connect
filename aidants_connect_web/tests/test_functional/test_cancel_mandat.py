@@ -1,17 +1,16 @@
 from datetime import timedelta
-from selenium.webdriver.firefox.webdriver import WebDriver
 
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
 from django.utils import timezone
 
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
+from aidants_connect_web.models import Journal, Mandat
 from aidants_connect_web.tests.factories import UserFactory, UsagerFactory
-from aidants_connect_web.models import Mandat, Journal
+from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
+from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional")
-class CancelMandat(StaticLiveServerTestCase):
+class CancelMandat(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         cls.aidant_thierry = UserFactory()
@@ -46,16 +45,10 @@ class CancelMandat(StaticLiveServerTestCase):
         )
 
         super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(3)
-        cls.selenium.get(f"{cls.live_server_url}/usagers/{cls.usager_josephine.id}/")
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super().tearDownClass()
 
     def test_cancel_mandat(self):
+        self.open_live_url(f"/usagers/{self.usager_josephine.id}/")
+
         login_aidant(self)
 
         # See all mandats of usager page
