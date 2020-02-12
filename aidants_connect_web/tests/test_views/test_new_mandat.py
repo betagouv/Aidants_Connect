@@ -255,13 +255,13 @@ class GenerateMandatPreview(TestCase):
             usager=self.test_usager,
         )
 
-    def test_mandat_preview_url_triggers_the_new_mandat_preview_view(self):
+    def test_mandat_preview_projet_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/visualisation/projet/")
-        self.assertEqual(found.func, new_mandat.mandat_preview)
+        self.assertEqual(found.func, new_mandat.mandat_preview_projet)
 
-    def test_mandat_preview_final_url_triggers_the_new_mandat_preview_view(self):
+    def test_mandat_preview_final_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/visualisation/final/")
-        self.assertEqual(found.func, new_mandat.mandat_preview)
+        self.assertEqual(found.func, new_mandat.mandat_preview_final)
 
     def test_response_is_the_preview_page(self):
         self.client.force_login(self.aidant_thierry)

@@ -101,10 +101,16 @@ def new_mandat_recap(request):
                         },
                     )
 
-            except (AttributeError, IntegrityError) as error:
+            except AttributeError as error:
                 log.error("Error happened in Recap")
                 log.error(error)
-                messages.error(request, error)
+                messages.error(request, f"Error with Usager attribute : {error}")
+                return redirect("dashboard")
+
+            except IntegrityError as error:
+                log.error("Error happened in Recap")
+                log.error(error)
+                messages.error(request, f"No Usager was given : {error}")
                 return redirect("dashboard")
 
             return redirect("new_mandat_success")
@@ -140,7 +146,7 @@ def new_mandat_success(request):
 
 @login_required
 @activity_required
-def mandat_preview(request, final=False):
+def mandat_preview_projet(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
@@ -157,6 +163,29 @@ def mandat_preview(request, final=False):
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
-            "final": final,
+        },
+    )
+
+
+@login_required
+@activity_required
+def mandat_preview_final(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
+    aidant = request.user
+    usager = connection.usager
+    demarches = connection.demarches
+
+    duree = "1 jour" if connection.duree == 1 else "1 an"
+
+    return render(
+        request,
+        "aidants_connect_web/mandat_preview.html",
+        {
+            "usager": usager,
+            "aidant": aidant,
+            "date": formats.date_format(date.today(), "l j F Y"),
+            "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
+            "duree": duree,
+            "final": True,
         },
     )

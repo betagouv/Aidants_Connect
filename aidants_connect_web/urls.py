@@ -27,9 +27,8 @@ urlpatterns = [
     path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
         "creation_mandat/visualisation/projet/",
-        new_mandat.mandat_preview,
-        {"final": False},
-        name="new_mandat_preview",
+        new_mandat.mandat_preview_projet,
+        name="new_mandat_preview_projet",
     ),
     path(
         "creation_mandat/succes/",
@@ -38,8 +37,7 @@ urlpatterns = [
     ),
     path(
         "creation_mandat/visualisation/final/",
-        new_mandat.mandat_preview,
-        {"final": True},
+        new_mandat.mandat_preview_final,
         name="new_mandat_preview_final",
     ),
     # id_provider
