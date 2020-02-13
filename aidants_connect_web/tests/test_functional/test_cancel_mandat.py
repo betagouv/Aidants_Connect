@@ -1,4 +1,3 @@
-import time
 from datetime import timedelta
 from selenium.webdriver.firefox.webdriver import WebDriver
 
@@ -8,37 +7,40 @@ from django.utils import timezone
 
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 from aidants_connect_web.tests.factories import UserFactory, UsagerFactory
-from aidants_connect_web.models import Aidant, Usager, Mandat, Journal
+from aidants_connect_web.models import Mandat, Journal
 
 
 @tag("functional")
 class CancelMandat(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.aidant = UserFactory()
-        UserFactory(
+        cls.aidant_thierry = UserFactory()
+        device = cls.aidant_thierry.staticdevice_set.create(id=cls.aidant_thierry.id)
+        device.token_set.create(token="123456")
+
+        cls.aidant_jacqueline = UserFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
             password="motdepassedejacqueline",
             first_name="Jacqueline",
             last_name="Fremont",
         )
-        cls.usager = UsagerFactory(given_name="Joséphine", sub="test_sub",)
+        cls.usager_josephine = UsagerFactory(given_name="Joséphine", sub="test_sub",)
         cls.mandat_1 = Mandat.objects.create(
-            aidant=Aidant.objects.get(username="thierry@thierry.com"),
-            usager=Usager.objects.get(sub="test_sub"),
+            aidant=cls.aidant_thierry,
+            usager=cls.usager_josephine,
             demarche="argent",
             expiration_date=timezone.now() + timedelta(days=6),
         )
         cls.mandat_2 = Mandat.objects.create(
-            aidant=Aidant.objects.get(username="thierry@thierry.com"),
-            usager=Usager.objects.get(sub="test_sub"),
+            aidant=cls.aidant_thierry,
+            usager=cls.usager_josephine,
             demarche="famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
         Mandat.objects.create(
-            aidant=Aidant.objects.get(username="jfremont@domain.user"),
-            usager=Usager.objects.get(sub="test_sub"),
+            aidant=cls.aidant_jacqueline,
+            usager=cls.usager_josephine,
             demarche="logement",
             expiration_date=timezone.now() + timedelta(days=12),
         )
@@ -46,7 +48,7 @@ class CancelMandat(StaticLiveServerTestCase):
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(3)
-        cls.selenium.get(f"{cls.live_server_url}/usagers/{cls.usager.id}/")
+        cls.selenium.get(f"{cls.live_server_url}/usagers/{cls.usager_josephine.id}/")
 
     @classmethod
     def tearDownClass(cls):
@@ -57,26 +59,24 @@ class CancelMandat(StaticLiveServerTestCase):
         login_aidant(self)
 
         # See all mandats of usager page
-        self.assertEqual(
-            len(self.selenium.find_elements_by_class_name("fake-table-row")), 2
+        active_mandats_before = self.selenium.find_elements_by_class_name(
+            "fake-table-row"
         )
+        self.assertEqual(len(active_mandats_before), 2)
 
         # Click on cancel mandat button
-        cancel_mandat_button = self.selenium.find_elements_by_class_name(
-            "fake-table-row"
-        )[0].find_element_by_tag_name("a")
+        cancel_mandat_button = active_mandats_before[0].find_element_by_tag_name("a")
         cancel_mandat_button.click()
-        time.sleep(1)
 
         # Click on confirm cancellation
         submit_button = self.selenium.find_elements_by_tag_name("input")[1]
         submit_button.click()
-        time.sleep(1)
 
         # See all mandats of usager page
-        self.assertEqual(
-            len(self.selenium.find_elements_by_class_name("fake-table-row")), 1
+        active_mandats_after = self.selenium.find_elements_by_class_name(
+            "fake-table-row"
         )
+        self.assertEqual(len(active_mandats_after), 1)
 
         last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "update_mandat")
+        self.assertEqual(last_journal_entry.action, "cancel_mandat")

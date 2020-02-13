@@ -44,7 +44,7 @@ class UsagersDetailsPageTests(TestCase):
 
 
 @tag("usagers")
-class UsagersMandatsCancelConfirmPageTests(TestCase):
+class MandatCancelConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant_1 = UserFactory()
