@@ -46,8 +46,8 @@ jobs:
           name: run unit tests
           command: |
             . venv/bin/activate
-            python manage.py test
             flake8
+            python manage.py test
 
       - store_artifacts:
           path: test-reports
