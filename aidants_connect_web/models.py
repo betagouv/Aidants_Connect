@@ -10,7 +10,7 @@ from django.contrib.postgres.fields import ArrayField
 
 def default_expiration_date():
     now = timezone.now()
-    return now + timedelta(minutes=settings.CONNECTION_EXPIRATION_TIME_MINUTES)
+    return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
 
 
 class Organisation(models.Model):

@@ -84,9 +84,7 @@ class FCCallback(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    date_expired = date + timedelta(
-        minutes=settings.CONNECTION_EXPIRATION_TIME_MINUTES + 20
-    )
+    date_expired = date + timedelta(seconds=settings.FC_CONNECTION_AGE + 1200)
 
     @freeze_time(date_expired)
     def test_expired_connection_returns_403(self):

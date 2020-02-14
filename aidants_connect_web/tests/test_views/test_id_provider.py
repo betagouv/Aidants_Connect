@@ -483,9 +483,7 @@ class TokenTests(TestCase):
             response = self.client.post("/token/", bad_request)
             self.assertEqual(response.status_code, 400)
 
-    date_expired = date + timedelta(
-        minutes=settings.CONNECTION_EXPIRATION_TIME_MINUTES + 20
-    )
+    date_expired = date + timedelta(seconds=settings.FC_CONNECTION_AGE + 1200)
 
     @freeze_time(date_expired)
     def test_expired_code_triggers_bad_request(self):
@@ -592,9 +590,7 @@ class UserInfoTests(TestCase):
         self.assertEqual(journal_entries.count(), 2)
         self.assertEqual(journal_entries[1].action, "use_mandat")
 
-    date_expired = date + timedelta(
-        minutes=settings.CONNECTION_EXPIRATION_TIME_MINUTES + 20
-    )
+    date_expired = date + timedelta(seconds=settings.FC_CONNECTION_AGE + 1200)
 
     @freeze_time(date_expired)
     def test_expired_access_token_returns_bad_request(self):

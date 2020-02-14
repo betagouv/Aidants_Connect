@@ -30,9 +30,7 @@ FC_AS_FS_ID = os.environ["FC_AS_FS_ID"]
 FC_AS_FS_SECRET = os.environ["FC_AS_FS_SECRET"]
 FC_AS_FS_CALLBACK_URL = os.environ["FC_AS_FS_CALLBACK_URL"]
 
-CONNECTION_EXPIRATION_TIME_MINUTES = int(
-    os.environ["CONNECTION_EXPIRATION_TIME_MINUTES"]
-)
+FC_CONNECTION_AGE = int(os.environ["FC_CONNECTION_AGE"])
 
 if os.environ.get("FC_AS_FS_TEST_PORT"):
     FC_AS_FS_TEST_PORT = int(os.environ["FC_AS_FS_TEST_PORT"])

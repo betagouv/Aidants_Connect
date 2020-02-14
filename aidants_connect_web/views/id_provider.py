@@ -279,7 +279,7 @@ def token(request):
         "aud": settings.FC_AS_FI_ID,
         # The expiration time. in the format "seconds since epoch"
         # TODO Check if 10 minutes is not too much
-        "exp": int(time.time()) + settings.CONNECTION_EXPIRATION_TIME_MINUTES * 60,
+        "exp": int(time.time()) + settings.FC_CONNECTION_AGE,
         # The issued at time
         "iat": int(time.time()),
         # The issuer,  the URL of your Auth0 tenant
