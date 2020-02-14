@@ -304,6 +304,12 @@ CSP_FRAME_SRC = (
 ADMIN_URL = os.getenv("ADMIN_URL")
 ADMINS = [(os.getenv("ADMIN_NAME"), os.getenv("ADMIN_EMAIL"))]
 
+# Sessions
+SESSION_COOKIE_AGE = int(
+    os.getenv("SESSION_COOKIE_AGE", 86400)
+)  # default: 24 hours, in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
 # Cookie security
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False if os.getenv("SESSION_COOKIE_SECURE") == "False" else True
