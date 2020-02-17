@@ -18,11 +18,27 @@ urlpatterns = [
     path("usagers/", usagers.usagers_index, name="usagers"),
     path("usagers/<int:usager_id>/", usagers.usagers_details, name="usagers_details"),
     # new mandat
-    path("new_mandat/", new_mandat.new_mandat, name="new_mandat"),
-    path("new_mandat_recap/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
+    path("creation_mandat/", new_mandat.new_mandat, name="new_mandat"),
+    path(
+        "creation_mandat/recapitulatif/",
+        new_mandat.new_mandat_recap,
+        name="new_mandat_recap",
+    ),
     path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
-        "new_mandat_preview/", new_mandat.new_mandat_preview, name="new_mandat_preview"
+        "creation_mandat/visualisation/projet/",
+        new_mandat.mandat_preview_projet,
+        name="new_mandat_preview_projet",
+    ),
+    path(
+        "creation_mandat/succes/",
+        new_mandat.new_mandat_success,
+        name="new_mandat_success",
+    ),
+    path(
+        "creation_mandat/visualisation/final/",
+        new_mandat.mandat_preview_final,
+        name="new_mandat_preview_final",
     ),
     # id_provider
     path("authorize/", id_provider.authorize, name="authorize"),

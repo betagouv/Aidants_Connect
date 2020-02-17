@@ -12,34 +12,35 @@
       <h1>Récapitulatif du mandat</h1>
     </div>
   </div>
-  </div>
   <section class="section section-grey">
     <div class="container container-small">
-      <h2>Éléments du mandat</h2>
-      <a class="button" href="{% url 'new_mandat_preview' %}" target="_blank">🖨 Imprimer le mandat</a>
-      <form method="post" class="panel">
+      <form method="post">
         {% if error %}
           <div class="notification warning">{{ error }}</div>
         {% endif %}
         {% csrf_token %}
-        <div class="form__group">
-          <p id="recap_text"><strong>{{ usager }}</strong> autorise <strong>l'aidant habilité de {{ aidant.organisation.name }}</strong> à réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne des périmètres suivants :</p>
-          <ul>
-            {% for demarche in demarches %}
-              <li>{{ demarche }}</li>
-            {% endfor %}
-          </ul>
-          pour une durée de : <strong>{{ duree }}</strong>
+        <a class="button-outline primary small float-right" href="{% url 'new_mandat_preview_projet' %}" target="_blank">Voir le projet de mandat</a>
+        <h2>Éléments du mandat</h2>
+        <div class="panel">
+          <div class="form__group">
+            <p id="recap_text">
+              <strong>{{ usager }}</strong> autorise <strong>l'aidant habilité de {{ aidant.organisation.name }}</strong> à réaliser en mon nom
+              conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne des périmètres suivants :
+            </p>
+            <ul>
+              {% for demarche in demarches %}
+                <li>{{ demarche }}</li>
+              {% endfor %}
+            </ul>
+            <p>pour une durée de : <strong>{{ duree }}</strong></p>
+          </div>
         </div>
-      </form>
-      <h2>Validation de l'usager</h2>
-      <form method="post">
+        <h2>Validation de l'usager</h2>
         {% if form.non_field_errors %}
           <div class="notification warning">{{ form.non_field_errors }}</div>
         {% endif %}
-        {% csrf_token %}
         <div class="panel form__group mandat__agreement">
-          En cochant les cases, {{ usager }} confirme :
+          <p>En cochant les cases, {{ usager }} confirme :</p>
           <div class="checkbox__group">
             <input type="checkbox" name="personal_data" required id="id_personal_data">
             <label class="label-inline" for="id_personal_data">Avoir reçu, de la part de <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong>, aidant habilité au sein de <strong>{{ aidant.organisation.name }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
@@ -57,6 +58,7 @@
               <input type="text" name="otp_token" maxlength="6" minlength="6" required id="id_otp_token">
             </div>
           </fieldset>
+          <br>
           <div class="form__group">
             <input type="submit" class="button" value="Enregistrer le mandat" />
           </div>

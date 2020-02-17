@@ -95,34 +95,26 @@ class CreateNewMandat(StaticLiveServerTestCase):
         recap_text = self.selenium.find_element_by_id("recap_text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements_by_tag_name("input")
-        id_personal_data = checkboxes[2]
+        id_personal_data = checkboxes[1]
         self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
         id_personal_data.click()
-        id_brief = checkboxes[3]
+        id_brief = checkboxes[2]
         self.assertEqual(id_brief.get_attribute("id"), "id_brief")
         id_brief.click()
-        id_otp_token = checkboxes[4]
+        id_otp_token = checkboxes[3]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys("123455")
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
-        time.sleep(4)
 
-        # back to dashboard
-        self.assertEqual(welcome_aidant, "Vos mandats")
-        self.selenium.find_element_by_id("view_mandats").click()
-
-        # See all mandats page
-        self.assertEqual(
-            len(self.selenium.find_elements_by_class_name("fake-table-row")), 1
-        )
-
-        # Select user
-        user_link = self.selenium.find_elements_by_class_name("fake-table-row")[
-            0
-        ].find_element_by_tag_name("a")
-        user_link.click()
+        # Success page
+        success_title = self.selenium.find_element_by_tag_name("h1").text
+        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
+        go_to_usager_button = self.selenium.find_element_by_class_name(
+            "tiles"
+        ).find_elements_by_tag_name("a")[1]
+        go_to_usager_button.click()
 
         # See all mandats of usager page
         # Should find 3 table rows: 1 header row + 2 mandat rows

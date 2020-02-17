@@ -18,7 +18,7 @@ class ActivityRequiredTests(TestCase):
 
     def test_activity_required_decorated_page_loads_if_action_just_happened(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/new_mandat/")
+        response = self.client.get("/creation_mandat/")
         self.assertEqual(response.status_code, 200)
 
     def test_activity_required_decorated_page_redirects_if_action_didnt_just_happened(
@@ -27,6 +27,6 @@ class ActivityRequiredTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         with freeze_time(timezone.now() + settings.ACTIVITY_CHECK_DURATION):
             self.assertEqual(self.aidant_thierry.is_authenticated, True)
-            response = self.client.get("/new_mandat/")
+            response = self.client.get("/creation_mandat/")
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, "/activity_check/?next=/new_mandat/")
+            self.assertEqual(response.url, "/activity_check/?next=/creation_mandat/")

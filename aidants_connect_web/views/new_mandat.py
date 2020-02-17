@@ -9,8 +9,8 @@ from django.utils import timezone, formats
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
-from aidants_connect_web.models import Mandat, Connection
 from aidants_connect_web.views.service import humanize_demarche_names
+from aidants_connect_web.models import Mandat, Connection, Journal
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -52,7 +52,6 @@ def new_mandat(request):
 @login_required
 @activity_required
 def new_mandat_recap(request):
-
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
@@ -60,6 +59,7 @@ def new_mandat_recap(request):
     demarches_description = [
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
+
     if request.method == "GET":
         form = RecapMandatForm(aidant)
         return render(
@@ -77,30 +77,43 @@ def new_mandat_recap(request):
     else:
         form = RecapMandatForm(aidant=aidant, data=request.POST)
         if form.is_valid():
-            # The loop below creates one Mandat object per Démarche selected in the form
-            for demarche in connection.demarches:
-                try:
+            mandat_expiration_date = timezone.now() + timedelta(days=connection.duree)
+
+            try:
+                # Add a Journal 'print_mandat' action
+                Journal.objects.mandat_print(
+                    aidant=aidant,
+                    usager=usager,
+                    demarches=connection.demarches,
+                    expiration_date=mandat_expiration_date,
+                )
+
+                # The loop below creates one Mandat object per Démarche in the form
+                for demarche in connection.demarches:
                     Mandat.objects.update_or_create(
                         aidant=aidant,
                         usager=usager,
                         demarche=demarche,
                         defaults={
-                            "expiration_date": timezone.now()
-                            + timedelta(days=connection.duree),
+                            "expiration_date": mandat_expiration_date,
                             "last_mandat_renewal_date": timezone.now(),
                             "last_mandat_renewal_token": connection.access_token,
                         },
                     )
 
-                except IntegrityError as e:
-                    log.error("Error happened in Recap")
-                    log.error(e)
-                    messages.error(request, f"No Usager was given : {e}")
-                    return redirect("dashboard")
+            except AttributeError as error:
+                log.error("Error happened in Recap")
+                log.error(error)
+                messages.error(request, f"Error with Usager attribute : {error}")
+                return redirect("dashboard")
 
-            messages.success(request, "Le mandat a été créé avec succès !")
+            except IntegrityError as error:
+                log.error("Error happened in Recap")
+                log.error(error)
+                messages.error(request, f"No Usager was given : {error}")
+                return redirect("dashboard")
 
-            return redirect("dashboard")
+            return redirect("new_mandat_success")
 
         else:
             return render(
@@ -119,10 +132,23 @@ def new_mandat_recap(request):
 
 @login_required
 @activity_required
-def new_mandat_preview(request):
+def new_mandat_success(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
+    usager = connection.usager
 
+    return render(
+        request,
+        "aidants_connect_web/new_mandat/new_mandat_success.html",
+        {"aidant": aidant, "usager": usager},
+    )
+
+
+@login_required
+@activity_required
+def mandat_preview_projet(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
+    aidant = request.user
     usager = connection.usager
     demarches = connection.demarches
 
@@ -130,15 +156,36 @@ def new_mandat_preview(request):
 
     return render(
         request,
-        "aidants_connect_web/new_mandat/new_mandat_preview.html",
+        "aidants_connect_web/mandat_preview.html",
         {
-            "usager": f"{usager.given_name} {usager.family_name}",
-            "aidant": f"{aidant.first_name} {aidant.last_name.upper()}",
-            "profession": aidant.profession,
-            "organisation": aidant.organisation.name,
-            "lieu": aidant.organisation.address,
+            "usager": usager,
+            "aidant": aidant,
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
+        },
+    )
+
+
+@login_required
+@activity_required
+def mandat_preview_final(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
+    aidant = request.user
+    usager = connection.usager
+    demarches = connection.demarches
+
+    duree = "1 jour" if connection.duree == 1 else "1 an"
+
+    return render(
+        request,
+        "aidants_connect_web/mandat_preview.html",
+        {
+            "usager": usager,
+            "aidant": aidant,
+            "date": formats.date_format(date.today(), "l j F Y"),
+            "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
+            "duree": duree,
+            "final": True,
         },
     )
