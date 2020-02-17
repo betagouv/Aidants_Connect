@@ -284,6 +284,18 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
+    def mandat_cancel(self, mandat: Mandat):
+        journal_entry = self.create(
+            initiator=mandat.aidant.full_string_identifier,
+            usager=mandat.usager.full_string_identifier,
+            action="cancel_mandat",
+            demarche=mandat.demarche,
+            duree=mandat.duree_in_days,
+            access_token=mandat.last_mandat_renewal_date,
+            mandat=mandat.id,
+        )
+        return journal_entry
+
 
 class Journal(models.Model):
     ACTIONS = (
@@ -292,6 +304,7 @@ class Journal(models.Model):
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),
         ("update_mandat", "Renouvellement d'un mandat"),
+        ("cancel_mandat", "Révocation d'un mandat"),
     )
     # mandatory
     action = models.CharField(max_length=30, choices=ACTIONS, blank=False)

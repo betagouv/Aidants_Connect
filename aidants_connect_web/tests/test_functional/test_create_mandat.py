@@ -35,9 +35,8 @@ class CreateNewMandat(StaticLiveServerTestCase):
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(welcome_aidant, "Vos mandats")
 
-        self.assertEqual(
-            len(self.selenium.find_elements_by_class_name("fake-table-row")), 0
-        )
+        usagers_before = self.selenium.find_elements_by_class_name("fake-table-row")
+        self.assertEqual(len(usagers_before), 0)
 
         # Create new mandat
         add_usager_button = self.selenium.find_element_by_id("add_usager")
@@ -117,5 +116,7 @@ class CreateNewMandat(StaticLiveServerTestCase):
         go_to_usager_button.click()
 
         # See all mandats of usager page
-        # Should find 3 table rows: 1 header row + 2 mandat rows
-        self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 3)
+        active_mandats_after = self.selenium.find_elements_by_class_name(
+            "fake-table-row"
+        )
+        self.assertEqual(len(active_mandats_after), 2)

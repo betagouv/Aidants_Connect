@@ -26,7 +26,10 @@ def new_mandat(request):
         return render(
             request,
             "aidants_connect_web/new_mandat/new_mandat.html",
-            {"aidant": aidant, "form": form},
+            {
+                "aidant": aidant,
+                "form": form
+            },
         )
 
     else:
@@ -45,7 +48,10 @@ def new_mandat(request):
             return render(
                 request,
                 "aidants_connect_web/new_mandat/new_mandat.html",
-                {"aidant": aidant, "form": form},
+                {
+                    "aidant": aidant,
+                    "form": form
+                },
             )
 
 

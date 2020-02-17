@@ -29,19 +29,6 @@
               <th>Date de naissance</th>
             </tr>
           </thead>
-          <!-- <tbody>
-            {% regroup mandats by usager as usagers %}
-            {% for usager in usagers %}
-              <tr>
-                <td>
-                  <a href="{% url 'usagers_details' usager_id=usager.grouper.id %}">{{ usager.grouper }}</a>
-                </td>
-                <td>
-                  {{ usager.grouper.birthdate }}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody> -->
         </table>
         <!-- fake table body (cannot have a working link inside a td) -->
         {% for usager in aidant_usagers %}
