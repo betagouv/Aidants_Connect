@@ -25,18 +25,18 @@
             {% if messages %}
               <div class="text-center" role="alert">
                 {% for message in messages %}
-                  <p {% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>{{ message }}</p>
+                  <p class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</p>
                 {% endfor %}
               </div>
             {% endif %}
             <div class="form__group">
-                <h1>Aidants Connect est actuellement en expérimentation.</h1>
-                <p><strong>Ce service est pour l'instant reservé aux aidants professionnels salariés d'une des 13 structures habilitées Aidants Connect.</strong></p>
-                <p>Si vous faites partie de l'une de ces structures, vous pouvez vous connecter :</p>
-              <input type="email" name="email" class="form-control {% if form.errors %}state-invalid {% endif %}"
-                                id="id_email" aria-describedby="emailHelp" placeholder="Votre email" required/>
+              <h1>Aidants Connect est actuellement en expérimentation.</h1>
+              <p><strong>Ce service est pour l'instant reservé aux aidants professionnels salariés d'une des 13 structures habilitées Aidants Connect.</strong></p>
+              <p>Si vous faites partie de l'une de ces structures, vous pouvez vous connecter :</p>
+              <input type="email" id="id_email" class="form-control {% if form.errors %}state-invalid{% endif %}"
+                name="email" aria-describedby="emailHelp" placeholder="Votre email" required />
               {% for error in form.email.errors %}
-                <div class="alet alert-danger text-center">{{ error }}</div>
+                <div class="alert alert-danger text-center">{{ error }}</div>
               {% endfor %}
             </div>
           
@@ -44,7 +44,7 @@
               <label>{{ OTP_form.otp_token.label_tag }}</label>
               {{ OTP_form.otp_token }}
               {% for error in OTP_form.otp_token.errors %}
-                <div class="alet alert-danger text-center">{{ error }}</div>
+                <div class="alert alert-danger text-center">{{ error }}</div>
               {% endfor %}
             </div>
             <button type="submit" class="button">Valider</button>
