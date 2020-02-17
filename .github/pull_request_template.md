@@ -8,8 +8,12 @@ _Un petit résumé de l'objectif de la PR en 1 ligne_
 
 ## 🏕 Amélioration continue
 
-- _Une liste d'autres modifications pas en lien directe avec la PR_
+- _(optionnel) Une liste d'autres modifications pas en lien direct avec la PR_
 
 ## ⚠️ Informations supplémentaires
 
-_Si besoin_
+_(optionnel) Documentation, commandes à lancer, variables d'environment, etc_
+
+## 🖼️ Images
+
+_(optionnel) Une ou plusieurs captures d'écran_
