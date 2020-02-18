@@ -1,16 +1,15 @@
 import time
-from selenium.webdriver.firefox.webdriver import WebDriver
 
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.conf import settings
 from django.test import tag
 
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
 from aidants_connect_web.tests.factories import UserFactory
+from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
+from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional", "new_mandat")
-class CreateNewMandat(StaticLiveServerTestCase):
+class CreateNewMandat(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         # FC only calls back on specific port
@@ -20,9 +19,6 @@ class CreateNewMandat(StaticLiveServerTestCase):
         device.token_set.create(token="123456")
         device.token_set.create(token="123455")
         super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(10)
-        cls.selenium.get(f"{cls.live_server_url}/usagers/")
 
     @classmethod
     def tearDownClass(cls):
@@ -30,6 +26,8 @@ class CreateNewMandat(StaticLiveServerTestCase):
         super().tearDownClass()
 
     def test_create_new_mandat(self):
+        self.open_live_url("/usagers/")
+
         login_aidant(self)
 
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text

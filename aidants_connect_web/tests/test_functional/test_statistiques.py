@@ -1,21 +1,10 @@
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium.webdriver.firefox.webdriver import WebDriver
 from django.test import tag
+
+from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 
 
 @tag("functional")
-class StatistiquesPage(StaticLiveServerTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(10)
-        cls.selenium.get(f"{cls.live_server_url}/stats/")
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super().tearDownClass()
-
+class StatistiquesPage(FunctionalTestCase):
     def test_page_loads(self):
+        self.open_live_url("/stats/")
         self.assertEqual(len(self.selenium.find_elements_by_class_name("tile")), 18)

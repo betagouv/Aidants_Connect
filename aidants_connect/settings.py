@@ -319,3 +319,11 @@ SECURE_HSTS_SECONDS = os.getenv("SECURE_HSTS_SECONDS")
 
 # django_OTP_throttling
 OTP_TOTP_THROTTLE_FACTOR = int(os.getenv("OTP_TOTP_THROTTLE_FACTOR", 1))
+
+# Functional tests behaviour
+HEADLESS_FUNCTIONAL_TESTS = (
+    False if os.getenv("HEADLESS_FUNCTIONAL_TESTS") == "False" else True
+)
+BYPASS_FIRST_LIVESERVER_CONNECTION = (
+    True if os.getenv("BYPASS_FIRST_LIVESERVER_CONNECTION") == "True" else False
+)

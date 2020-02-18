@@ -137,6 +137,10 @@ python manage.py test
 Les tests fonctionnels sont lancés sur `http://localhost:3000`.
 Il faut s'assurer que rien d'autre n'occupe ce port pendant leur exécution.
 
+Par défaut, les tests d'intégration sont lancés en mode _headless_, c'est-à-dire sans ouverture de fenêtre de navigateur. Si vous souhaitez modifier ce comportement, vous pouvez modifier la valeur de la variable d'environnement `HEADLESS_FUNCTIONAL_TESTS` dans votre fichier `.env`.
+
+Dans de rares cas (comportement observé à ce jour sur une seule machine de dev), les tests d'intégration échouent car _la première connexion_ à une URL via l'API Selenium plante de manière inexpliquée. Un contournement empirique a été mis en place ; si vous rencontrez ce problème vous pouvez l'activer en passant à `True` la variable d'environnement `BYPASS_FIRST_LIVESERVER_CONNECTION` dans votre fichier `.env`.
+
 ## Lancer l'application
 
 Pour lancer l'application sur le port `3000` :
