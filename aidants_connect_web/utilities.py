@@ -1,4 +1,6 @@
+import io
 import hashlib
+import qrcode
 from pathlib import Path
 from datetime import date
 
@@ -49,3 +51,10 @@ def generate_mandat_print_hash(aidant, usager, demarches, expiration_date):
 
 def validate_mandat_print_hash(mandat_print_string, mandat_print_hash):
     return check_password(mandat_print_string, mandat_print_hash)
+
+
+def generate_qrcode_png(string: str):
+    stream = io.BytesIO()
+    img = qrcode.make(string)
+    img.save(stream, "PNG")
+    return stream.getvalue()

@@ -248,6 +248,10 @@ class GenerateMandatPreview(TestCase):
         found = resolve("/creation_mandat/visualisation/final/")
         self.assertEqual(found.func, new_mandat.mandat_preview_final)
 
+    def test_mandat_qrcode_url_triggers_the_correct_view(self):
+        found = resolve("/creation_mandat/qrcode/")
+        self.assertEqual(found.func, new_mandat.mandat_qrcode)
+
     def test_response_is_the_preview_page(self):
         self.client.force_login(self.aidant_thierry)
 

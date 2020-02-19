@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.utils import timezone, formats
+from django.http import HttpResponse
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
@@ -189,3 +190,14 @@ def mandat_preview_final(request):
             "final": True,
         },
     )
+
+
+@login_required
+@activity_required
+def mandat_qrcode(request):
+    aidant = request.user
+
+    journal_print_mandat = aidant.get_journal_of_last_print_mandat()
+    journal_print_mandat_qrcode_png = journal_print_mandat.generate_mandat_qrcode_png()
+
+    return HttpResponse(journal_print_mandat_qrcode_png, "image/png")

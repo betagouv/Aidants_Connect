@@ -7,7 +7,10 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
-from aidants_connect_web.utilities import generate_mandat_print_hash
+from aidants_connect_web.utilities import (
+    generate_mandat_print_hash,
+    generate_qrcode_png,
+)
 
 
 def default_expiration_date():
@@ -416,3 +419,6 @@ class Journal(models.Model):
 
     def delete(self, *args, **kwargs):
         raise NotImplementedError("Deleting is not allowed on journal entries")
+
+    def generate_mandat_qrcode_png(self):
+        return generate_qrcode_png(self.mandat_print_hash)
