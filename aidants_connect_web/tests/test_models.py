@@ -3,6 +3,8 @@ from datetime import date, datetime, timedelta
 from django.db.utils import IntegrityError
 from django.test import tag, TestCase
 from django.utils import timezone
+from django.conf import settings
+from django.contrib.auth.hashers import check_password
 
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
@@ -21,6 +23,7 @@ from aidants_connect_web.tests.factories import (
     UsagerFactory,
     MandatFactory,
 )
+from aidants_connect_web.utilities import generate_file_sha256_hash
 
 
 @tag("models")
@@ -473,3 +476,12 @@ class JournalModelTest(TestCase):
 
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "print_mandat")
+
+        mandat_print_string = (
+            f"{self.aidant_thierry.id},{date.today().isoformat()},"
+            f"logement,transports,{expiration_date.date().isoformat()},"
+            f"{self.aidant_thierry.organisation.id},"
+            f"{generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH)},"
+            f"{self.usager_ned.sub}"
+        )
+        self.assertTrue(check_password(mandat_print_string, entry.mandat_print_hash))

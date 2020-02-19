@@ -7,6 +7,13 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+from aidants_connect_web.utilities import generate_mandat_print_hash
+
+
+def default_expiration_date():
+    now = timezone.now()
+    return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
+
 
 class Organisation(models.Model):
     name = models.TextField(default="No name provided")
@@ -118,6 +125,15 @@ class Aidant(AbstractUser):
             )
         except AttributeError:
             return None
+
+    def get_journal_of_last_print_mandat(self):
+        """
+        :return: the last 'print_mandat' Journal entry initiated by the aidant
+        """
+        journal_print_mandat = Journal.objects.filter(
+            action="print_mandat", initiator=self.full_string_identifier
+        ).last()
+        return journal_print_mandat
 
 
 class UsagerQuerySet(models.QuerySet):
@@ -299,6 +315,9 @@ class JournalManager(models.Manager):
             usager=usager.full_string_identifier,
             action="print_mandat",
             demarche=",".join(demarches),
+            mandat_print_hash=generate_mandat_print_hash(
+                aidant, usager, demarches, expiration_date
+            ),
         )
         return journal_entry
 
@@ -368,6 +387,7 @@ class Journal(models.Model):
         ("connect_aidant", "Connexion d'un aidant"),
         ("activity_check_aidant", "Reprise de connexion d'un aidant"),
         ("franceconnect_usager", "FranceConnexion d'un usager"),
+        ("print_mandat", "Création d'un mandat papier"),
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),
         ("update_mandat", "Renouvellement d'un mandat"),
@@ -384,6 +404,7 @@ class Journal(models.Model):
     duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
     mandat = models.IntegerField(blank=True, null=True)
+    mandat_print_hash = models.CharField(max_length=100, blank=True, null=True)
 
     objects = JournalManager()
 
