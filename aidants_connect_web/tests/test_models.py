@@ -4,7 +4,6 @@ from django.db.utils import IntegrityError
 from django.test import tag, TestCase
 from django.utils import timezone
 from django.conf import settings
-from django.contrib.auth.hashers import check_password
 
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
@@ -23,7 +22,10 @@ from aidants_connect_web.tests.factories import (
     UsagerFactory,
     MandatFactory,
 )
-from aidants_connect_web.utilities import generate_file_sha256_hash
+from aidants_connect_web.utilities import (
+    generate_file_sha256_hash,
+    validate_mandat_print_hash,
+)
 
 
 @tag("models")
@@ -471,6 +473,7 @@ class JournalModelTest(TestCase):
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarches=demarches,
+            duree=6,
             expiration_date=expiration_date,
         )
 
@@ -484,4 +487,6 @@ class JournalModelTest(TestCase):
             f"{generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH)},"
             f"{self.usager_ned.sub}"
         )
-        self.assertTrue(check_password(mandat_print_string, entry.mandat_print_hash))
+        self.assertTrue(
+            validate_mandat_print_hash(mandat_print_string, entry.mandat_print_hash)
+        )

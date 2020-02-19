@@ -310,7 +310,12 @@ class JournalManager(models.Manager):
         return journal_entry
 
     def mandat_print(
-        self, aidant: Aidant, usager: Usager, demarches: list, expiration_date
+        self,
+        aidant: Aidant,
+        usager: Usager,
+        demarches: list,
+        duree: int,
+        expiration_date,
     ):
         demarches.sort()
         journal_entry = self.create(
@@ -318,6 +323,7 @@ class JournalManager(models.Manager):
             usager=usager.full_string_identifier,
             action="print_mandat",
             demarche=",".join(demarches),
+            duree=duree,
             mandat_print_hash=generate_mandat_print_hash(
                 aidant, usager, demarches, expiration_date
             ),

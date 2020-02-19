@@ -87,6 +87,7 @@ def new_mandat_recap(request):
                     aidant=aidant,
                     usager=usager,
                     demarches=connection.demarches,
+                    duree=connection.duree,
                     expiration_date=mandat_expiration_date,
                 )
 

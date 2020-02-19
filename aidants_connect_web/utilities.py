@@ -5,7 +5,12 @@ from pathlib import Path
 from datetime import date
 
 from django.conf import settings
-from django.contrib.auth.hashers import make_password, check_password
+
+
+def generate_sha256_hash(value):
+    if not type(value) == bytes:
+        value = value.encode("utf-8")
+    return hashlib.sha256(value).hexdigest()
 
 
 def generate_sha256_hash(value: bytes):
@@ -27,7 +32,7 @@ def generate_file_sha256_hash(filename):
     file_path = (base_path / filename).resolve()
     with open(file_path, "rb") as f:
         bytes = f.read()  # read entire file as bytes
-        file_readable_hash = hashlib.sha256(bytes).hexdigest()
+        file_readable_hash = generate_sha256_hash(bytes)
         return file_readable_hash
 
 
@@ -46,11 +51,14 @@ def generate_mandat_print_hash(aidant, usager, demarches, expiration_date):
     mandat_print_string = ",".join(
         str(x) for x in list(sorted_mandat_print_data.values())
     )
-    return make_password(mandat_print_string, salt=settings.MANDAT_PRINT_SALT)
+    return generate_sha256_hash(mandat_print_string + settings.MANDAT_PRINT_SALT)
 
 
 def validate_mandat_print_hash(mandat_print_string, mandat_print_hash):
-    return check_password(mandat_print_string, mandat_print_hash)
+    new_mandat_print_hash = generate_sha256_hash(
+        mandat_print_string + settings.MANDAT_PRINT_SALT
+    )
+    return new_mandat_print_hash == mandat_print_hash
 
 
 def generate_qrcode_png(string: str):
