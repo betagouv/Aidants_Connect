@@ -74,3 +74,35 @@ def check_mandat_is_not_expired(func):
         return func(request, *args, **kwargs)
 
     return actual_decorator
+
+
+def check_mandat_is_expired(func):
+    """
+    Decorator that checks that the mandat_id is already expired
+    """
+
+    def actual_decorator(request, *args, **kwargs):
+        mandat = get_object_or_404(Mandat, pk=kwargs["mandat_id"])
+        if not mandat.is_expired:
+            messages.error(request, f"Le mandat est toujours en cours")
+            return redirect("dashboard")
+        return func(request, *args, **kwargs)
+
+    return actual_decorator
+
+
+def check_mandat_is_cancelled(func):
+    """
+    Decorator that checks that the mandat_id has been cancelled
+    """
+
+    def actual_decorator(request, *args, **kwargs):
+        mandat = get_object_or_404(Mandat, pk=kwargs["mandat_id"])
+        if not mandat.has_cancel_journal_action:
+            messages.error(
+                request, f"Le mandat n'a pas été révoqué (en cours ou expiré)."
+            )
+            return redirect("dashboard")
+        return func(request, *args, **kwargs)
+
+    return actual_decorator

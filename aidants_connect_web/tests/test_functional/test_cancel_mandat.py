@@ -65,6 +65,10 @@ class CancelMandat(FunctionalTestCase):
         submit_button = self.selenium.find_elements_by_tag_name("input")[1]
         submit_button.click()
 
+        # Click on return to usager page
+        usager_button = self.selenium.find_element_by_id("usager_link")
+        usager_button.click()
+
         # See all mandats of usager page
         active_mandats_after = self.selenium.find_elements_by_class_name(
             "fake-table-row"

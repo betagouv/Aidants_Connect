@@ -62,17 +62,23 @@ class MandatCancelConfirmPageTests(TestCase):
         self.mandat_2 = Mandat.objects.create(
             aidant=self.aidant_2,
             usager=self.usager_2,
-            demarche="Revenus",
+            demarche="Logement",
             expiration_date=timezone.now() + timedelta(days=6),
         )
+        self.mandat_3 = Mandat.objects.create(
+            aidant=self.aidant_2,
+            usager=self.usager_2,
+            demarche="Social",
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
 
-    def test_usagers_mandats_cancel_url_triggers_the_correct_view(self):
+    def test_mandat_cancel_confirm_url_triggers_the_correct_view(self):
         found = resolve(
             f"/usagers/{self.usager_1.id}/mandats/{self.mandat_1.id}/cancel_confirm"
         )
         self.assertEqual(found.func, usagers.usagers_mandats_cancel_confirm)
 
-    def test_usagers_mandats_cancel_url_triggers_the_correct_template(self):
+    def test_mandat_cancel_confirm_url_triggers_the_correct_template(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
             f"/usagers/{self.usager_1.id}/mandats/{self.mandat_1.id}/cancel_confirm"
@@ -108,6 +114,89 @@ class MandatCancelConfirmPageTests(TestCase):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
             f"/usagers/{self.usager_2.id}/mandats/{self.mandat_2.id}/cancel_confirm"
+        )
+        url = "/dashboard/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    def test_mandat_expired_triggers_redirect(self):
+        self.client.force_login(self.aidant_2)
+        response = self.client.get(
+            f"/usagers/{self.usager_2.id}/mandats/{self.mandat_3.id}/cancel_confirm"
+        )
+        url = "/dashboard/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+
+@tag("usagers")
+class MandatCancelSuccessPageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.aidant_1 = UserFactory()
+        self.aidant_2 = UserFactory(
+            username="jacques@domain.user", email="jacques@domain.user"
+        )
+        self.usager_1 = UsagerFactory()
+        self.usager_2 = UsagerFactory(sub="1234")
+        self.mandat_1 = Mandat.objects.create(
+            aidant=self.aidant_1,
+            usager=self.usager_1,
+            demarche="Revenus",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        self.mandat_2 = Mandat.objects.create(
+            aidant=self.aidant_2,
+            usager=self.usager_2,
+            demarche="Logement",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        self.mandat_3 = Mandat.objects.create(
+            aidant=self.aidant_2,
+            usager=self.usager_2,
+            demarche="Social",
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
+
+    def test_mandats_cancel_success_url_triggers_the_correct_view(self):
+        found = resolve(
+            f"/usagers/{self.usager_1.id}/mandats/{self.mandat_1.id}/cancel_success"
+        )
+        self.assertEqual(found.func, usagers.usagers_mandats_cancel_success)
+
+    def test_non_existant_mandat_triggers_404(self):
+        self.client.force_login(self.aidant_1)
+        response = self.client.get(
+            f"/usagers/{self.usager_1.id}/mandats/3/cancel_success"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_non_existant_usager_triggers_404(self):
+        self.client.force_login(self.aidant_1)
+        response = self.client.get(
+            f"/usagers/{self.usager_2.id + 1}/mandats/{self.mandat_1.id}/cancel_success"
+        )
+        url = "/dashboard/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    def test_wrong_usager_mandat_triggers_redirect(self):
+        self.client.force_login(self.aidant_1)
+        response = self.client.get(
+            f"/usagers/{self.usager_1.id}/mandats/{self.mandat_2.id}/cancel_success"
+        )
+        url = "/dashboard/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    def test_wrong_aidant_mandat_triggers_redirect(self):
+        self.client.force_login(self.aidant_1)
+        response = self.client.get(
+            f"/usagers/{self.usager_2.id}/mandats/{self.mandat_2.id}/cancel_success"
+        )
+        url = "/dashboard/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    def test_mandat_not_expired_triggers_redirect(self):
+        self.client.force_login(self.aidant_2)
+        response = self.client.get(
+            f"/usagers/{self.usager_2.id}/mandats/{self.mandat_2.id}/cancel_success"
         )
         url = "/dashboard/"
         self.assertRedirects(response, url, fetch_redirect_response=False)

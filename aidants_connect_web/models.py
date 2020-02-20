@@ -177,6 +177,10 @@ class Mandat(models.Model):
         return timezone.now() > self.expiration_date
 
     @property
+    def has_cancel_journal_action(self):
+        return Journal.objects.filter(mandat=self.id, action="cancel_mandat").exists()
+
+    @property
     def duree_in_days(self):
         duree_for_computer = self.expiration_date - self.last_mandat_renewal_date
         # we add one day so that duration is human friendly

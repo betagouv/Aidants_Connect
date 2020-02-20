@@ -10,7 +10,9 @@ from aidants_connect_web.decorators import (
     activity_required,
     check_mandat_usager,
     check_mandat_aidant,
+    check_mandat_is_expired,
     check_mandat_is_not_expired,
+    check_mandat_is_cancelled,
 )
 
 
@@ -82,9 +84,11 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
 
             Journal.objects.mandat_cancel(mandat)
 
-            django_messages.success(request, "Le mandat a été révoqué avec succès !")
-
-            return redirect("usagers_details", usager_id=usager.id)
+            return redirect(
+                "usagers_mandats_cancel_success",
+                usager_id=usager.id,
+                mandat_id=mandat.id,
+            )
 
         else:
             return render(
@@ -97,3 +101,21 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
                     "error": "Erreur lors de l'annulation du mandat.",
                 },
             )
+
+
+@login_required
+@activity_required
+@check_mandat_usager
+@check_mandat_aidant
+@check_mandat_is_expired
+@check_mandat_is_cancelled
+def usagers_mandats_cancel_success(request, usager_id, mandat_id):
+    aidant = request.user
+    usager = get_object_or_404(Usager, pk=usager_id)
+    mandat = get_object_or_404(Mandat, pk=mandat_id)
+
+    return render(
+        request,
+        "aidants_connect_web/usagers_mandats_cancel_success.html",
+        {"aidant": aidant, "usager": usager, "mandat": mandat},
+    )

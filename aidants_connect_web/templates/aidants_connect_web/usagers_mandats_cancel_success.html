@@ -1,0 +1,22 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+<link href="{% static 'css/usagers.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="brand">Le mandat a été révoqué avec succès !</h1>
+    <div class="tiles">
+      <a class="button">🖨 Imprimer le justificatif de cette révocation</a>
+      <br><br>
+      <p>
+        Pour retourner sur le profil de l'usager {{ usager.get_full_name }}, <a id="usager_link" href="{% url 'usagers_details' usager_id=usager.id %}">cliquez ici</a>.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock content %}
