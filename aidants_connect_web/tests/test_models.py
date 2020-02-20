@@ -446,10 +446,10 @@ class JournalModelTest(TestCase):
             expiration_date=timezone.now() + timedelta(days=365),
         )
 
-        logs = Journal.objects.all()
-        self.assertEqual(len(logs), 3)
+        journal_entries = Journal.objects.all()
+        self.assertEqual(len(journal_entries), 3)
 
-        last_entry = logs.last()
+        last_entry = journal_entries.last()
         self.assertEqual(last_entry.action, "create_mandat")
         self.assertIn("Ned Flanders", last_entry.usager)
         self.assertEqual(last_entry.mandat, mandat.id)

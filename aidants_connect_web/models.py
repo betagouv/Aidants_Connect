@@ -42,25 +42,20 @@ class Aidant(AbstractUser):
 
     def get_usager(self, usager_id):
         """
-        :return: an usager or `None`.
+        :return: an usager or `None` if the aidant isn't allowed
+        by a mandat to access this usager.
         """
         try:
             return self.get_usagers().get(pk=usager_id)
         except Usager.DoesNotExist:
             return None
 
-    def get_active_usagers(self):
+    def get_usagers_with_active_mandat(self):
         """
         :return: a queryset of usagers who have an active mandat
         with the aidant's organisation.
         """
         return self.get_usagers().active()
-
-    def get_usagers_with_active_mandat(self):
-        """
-        :alternate name: get_active_usagers()
-        """
-        return self.get_active_usagers()
 
     def get_mandats(self):
         """
@@ -70,7 +65,8 @@ class Aidant(AbstractUser):
 
     def get_mandat(self, mandat_id):
         """
-        :return: a mandat or `None`.
+        :return: a mandat or `None` if this mandat is not
+        visible by this aidant.
         """
         try:
             return self.get_mandats().get(pk=mandat_id)
@@ -87,14 +83,16 @@ class Aidant(AbstractUser):
     def get_active_mandats_for_usager(self, usager):
         """
         :param usager:
-        :return: a queryset of the specified usager's active mandats.
+        :return: a queryset of the specified usager's active mandats
+        that are visible by this aidant.
         """
         return self.get_mandats_for_usager(usager).active()
 
     def get_expired_mandats_for_usager(self, usager):
         """
         :param usager:
-        :return: a queryset of the specified usager's expired mandats.
+        :return: a queryset of the specified usager's expired mandats
+        that are visible by this aidant.
         """
         return self.get_mandats_for_usager(usager).expired()
 
@@ -127,6 +125,11 @@ class UsagerQuerySet(models.QuerySet):
         return self.filter(mandats__expiration_date__gt=timezone.now()).distinct()
 
     def visible_by(self, aidant):
+        """
+        :param aidant:
+        :return: a new QuerySet instance only filtering in the usagers who have
+        a mandat with this aidant's organisation.
+        """
         return self.filter(mandats__aidant__organisation=aidant.organisation).distinct()
 
 

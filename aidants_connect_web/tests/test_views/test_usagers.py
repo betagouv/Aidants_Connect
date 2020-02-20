@@ -8,6 +8,7 @@ from django.utils import timezone
 from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    MandatFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import usagers
@@ -35,6 +36,7 @@ class UsagersDetailsPageTests(TestCase):
         self.client = Client()
         self.aidant = AidantFactory()
         self.usager = UsagerFactory()
+        self.mandat = MandatFactory(aidant=self.aidant, usager=self.usager)
 
     def test_usager_details_url_triggers_the_usager_details_view(self):
         found = resolve(f"/usagers/{self.usager.id}/")
@@ -84,14 +86,15 @@ class MandatCancelConfirmPageTests(TestCase):
             response, "aidants_connect_web/usagers_mandats_cancel_confirm.html"
         )
 
-    def test_non_existant_mandat_triggers_404(self):
+    def test_non_existing_mandat_triggers_redirect(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
             f"/usagers/{self.usager_1.id}/mandats/3/cancel_confirm"
         )
-        self.assertEqual(response.status_code, 404)
+        url = "/dashboard/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
 
-    def test_non_existant_usager_triggers_404(self):
+    def test_non_existing_usager_triggers_redirect(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
             f"/usagers/{self.usager_2.id + 1}/mandats/{self.mandat_1.id}/cancel_confirm"
