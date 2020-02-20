@@ -266,10 +266,13 @@ class AidantModelMethodsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.aidant_marge = AidantFactory(username="Marge")
+        cls.aidant_lisa = AidantFactory(
+            username="Lisa", organisation=cls.aidant_marge.organisation
+        )
         cls.aidant_patricia = AidantFactory(username="Patricia")
         cls.usager_homer = UsagerFactory(given_name="Homer", sub="123")
-        cls.usager_ned = UsagerFactory(given_name="Ned", sub="1234")
         cls.usager_bart = UsagerFactory(given_name="Bart", sub="1235")
+        cls.usager_ned = UsagerFactory(given_name="Ned", sub="1234")
         Mandat.objects.create(
             aidant=cls.aidant_marge,
             usager=cls.usager_homer,
@@ -321,6 +324,7 @@ class AidantModelMethodsTest(TestCase):
 
     def test_get_usagers(self):
         self.assertEqual(len(self.aidant_marge.get_usagers()), 2)
+        self.assertEqual(len(self.aidant_lisa.get_usagers()), 2)
         self.assertEqual(len(self.aidant_patricia.get_usagers()), 0)
 
     def test_active_usagers(self):
@@ -329,6 +333,7 @@ class AidantModelMethodsTest(TestCase):
 
     def test_get_usagers_with_active_mandat(self):
         self.assertEqual(len(self.aidant_marge.get_usagers_with_active_mandat()), 2)
+        self.assertEqual(len(self.aidant_lisa.get_usagers_with_active_mandat()), 2)
         self.assertEqual(len(self.aidant_patricia.get_usagers_with_active_mandat()), 0)
 
     def test_get_active_mandats_for_usager(self):
@@ -341,6 +346,15 @@ class AidantModelMethodsTest(TestCase):
         self.assertEqual(
             len(self.aidant_marge.get_active_mandats_for_usager(self.usager_bart)), 0
         )
+        self.assertEqual(
+            len(self.aidant_lisa.get_active_mandats_for_usager(self.usager_homer)), 2
+        )
+        self.assertEqual(
+            len(self.aidant_lisa.get_active_mandats_for_usager(self.usager_ned)), 4
+        )
+        self.assertEqual(
+            len(self.aidant_lisa.get_active_mandats_for_usager(self.usager_bart)), 0
+        )
 
     def test_get_expired_mandats_for_usager(self):
         self.assertEqual(
@@ -352,14 +366,31 @@ class AidantModelMethodsTest(TestCase):
         self.assertEqual(
             len(self.aidant_marge.get_expired_mandats_for_usager(self.usager_bart)), 0
         )
+        self.assertEqual(
+            len(self.aidant_lisa.get_expired_mandats_for_usager(self.usager_homer)), 1
+        )
+        self.assertEqual(
+            len(self.aidant_lisa.get_expired_mandats_for_usager(self.usager_ned)), 1
+        )
+        self.assertEqual(
+            len(self.aidant_lisa.get_expired_mandats_for_usager(self.usager_bart)), 0
+        )
 
     def test_get_active_demarches_for_usager(self):
-        self.assertEqual(
+        self.assertCountEqual(
             list(self.aidant_marge.get_active_demarches_for_usager(self.usager_homer)),
             ["Revenus", "social"],
         )
-        self.assertEqual(
+        self.assertCountEqual(
             list(self.aidant_marge.get_active_demarches_for_usager(self.usager_ned)),
+            ["famille", "social", "transports", "travail"],
+        )
+        self.assertCountEqual(
+            list(self.aidant_lisa.get_active_demarches_for_usager(self.usager_homer)),
+            ["Revenus", "social"],
+        )
+        self.assertCountEqual(
+            list(self.aidant_lisa.get_active_demarches_for_usager(self.usager_ned)),
             ["famille", "social", "transports", "travail"],
         )
 
@@ -415,12 +446,13 @@ class JournalModelTest(TestCase):
             expiration_date=timezone.now() + timedelta(days=365),
         )
 
-        self.assertEqual(len(Journal.objects.all()), 3)
+        logs = Journal.objects.all()
+        self.assertEqual(len(logs), 3)
 
-        entry = Journal.objects.all().last()
-        self.assertEqual(entry.action, "create_mandat")
-        self.assertIn("Ned Flanders", entry.usager)
-        self.assertEqual(entry.mandat, mandat.id)
+        last_entry = logs.last()
+        self.assertEqual(last_entry.action, "create_mandat")
+        self.assertIn("Ned Flanders", last_entry.usager)
+        self.assertEqual(last_entry.mandat, mandat.id)
 
     def test_log_mandat_use_complete(self):
         entry = Journal.objects.mandat_use(
