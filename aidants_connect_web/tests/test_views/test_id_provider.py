@@ -218,7 +218,7 @@ class AuthorizeTests(TestCase):
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_further_away)
-    def test_post_to_authorize_with_expired_connexion_triggers_bad_request(self):
+    def test_post_to_authorize_with_expired_connection_triggers_bad_request(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/authorize/",
@@ -226,7 +226,7 @@ class AuthorizeTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_post_to_authorize_with_unknown_connexion_triggers_forbidden(self):
+    def test_post_to_authorize_with_unknown_connection_triggers_forbidden(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/authorize/",
@@ -355,7 +355,7 @@ class FISelectDemarcheTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @freeze_time(date_further_away)
-    def test_post_to_select_demarche_with_expired_connexion_triggers_bad_request(self):
+    def test_post_to_select_demarche_with_expired_connection_triggers_bad_request(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
@@ -364,7 +364,7 @@ class FISelectDemarcheTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @freeze_time(date_further_away)
-    def test_post_to_select_demarche_with_unknown_connexion_triggers_forbidden(self):
+    def test_post_to_select_demarche_with_unknown_connection_triggers_forbidden(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",

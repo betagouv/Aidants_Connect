@@ -23,12 +23,12 @@ from aidants_connect_web.tests.factories import (
 
 @tag("models")
 class ConnectionModelTest(TestCase):
-    def test_saving_and_retrieving_connexion(self):
-        first_connexion = Connection()
-        first_connexion.state = "aZeRtY"
-        first_connexion.code = "ert"
-        first_connexion.nonce = "varg"
-        first_connexion.usager = Usager.objects.create(
+    def test_saving_and_retrieving_connection(self):
+        first_connection = Connection()
+        first_connection.state = "aZeRtY"
+        first_connection.code = "ert"
+        first_connection.nonce = "varg"
+        first_connection.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -39,11 +39,11 @@ class ConnectionModelTest(TestCase):
             sub="123",
             email="User@user.domain",
         )
-        first_connexion.save()
+        first_connection.save()
 
-        second_connexion = Connection()
-        second_connexion.state = "QsDfG"
-        second_connexion.usager = Usager.objects.create(
+        second_connection = Connection()
+        second_connection.state = "QsDfG"
+        second_connection.usager = Usager.objects.create(
             given_name="Fabrice",
             family_name="MERCIER",
             preferred_username="TROIS",
@@ -54,7 +54,7 @@ class ConnectionModelTest(TestCase):
             sub="124",
             email="User@user.domain",
         )
-        second_connexion.save()
+        second_connection.save()
 
         saved_items = Connection.objects.all()
         self.assertEqual(saved_items.count(), 2)

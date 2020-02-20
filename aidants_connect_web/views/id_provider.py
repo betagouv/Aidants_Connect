@@ -165,7 +165,7 @@ def fi_select_demarche(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("Connexion has expired at select demarche")
+                log.info("Connection has expired at select demarche")
                 return HttpResponseBadRequest()
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the connection_id:")
@@ -200,7 +200,7 @@ def fi_select_demarche(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("Connexion has expired at select demarche")
+                log.info("Connection has expired at select demarche")
                 return HttpResponseBadRequest()
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the connection_id:")
@@ -267,7 +267,7 @@ def token(request):
     try:
         connection = Connection.objects.get(code=code_hash)
         if connection.is_expired:
-            log.info("Connexion has expired at token")
+            log.info("Connection has expired at token")
             return HttpResponseBadRequest()
     except ObjectDoesNotExist:
         log.info("403: /token No connection corresponds to the code")
@@ -322,7 +322,7 @@ def user_info(request):
     try:
         connection = Connection.objects.get(access_token=auth_token_hash)
         if connection.is_expired:
-            log.info("Connexion has expired at user_info")
+            log.info("Connection has expired at user_info")
             return HttpResponseBadRequest()
     except ObjectDoesNotExist:
         log.info("403: /user_info No connection corresponds to the access_token")
