@@ -1,12 +1,14 @@
 from django.urls import path
+
 from magicauth import views as magicauth_views
 from magicauth.urls import urlpatterns as magicauth_urls
+
 from aidants_connect_web.views import (
-    service,
-    usagers,
     FC_as_FS,
     id_provider,
     new_mandat,
+    service,
+    usagers,
 )
 
 urlpatterns = [
@@ -20,7 +22,7 @@ urlpatterns = [
     path(
         "usagers/<int:usager_id>/mandats/<int:mandat_id>/cancel_confirm",
         usagers.usagers_mandats_cancel_confirm,
-        name="usagers_mandats_cancel_confirm"
+        name="usagers_mandats_cancel_confirm",
     ),
     # new mandat
     path("creation_mandat/", new_mandat.new_mandat, name="new_mandat"),

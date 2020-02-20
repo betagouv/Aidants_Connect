@@ -1,16 +1,17 @@
-import logging
 from datetime import date, timedelta
+import logging
 
-from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.utils import timezone, formats
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
-from aidants_connect_web.views.service import humanize_demarche_names
 from aidants_connect_web.models import Mandat, Connection, Journal
+from aidants_connect_web.views.service import humanize_demarche_names
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -26,10 +27,7 @@ def new_mandat(request):
         return render(
             request,
             "aidants_connect_web/new_mandat/new_mandat.html",
-            {
-                "aidant": aidant,
-                "form": form
-            },
+            {"aidant": aidant, "form": form},
         )
 
     else:
@@ -48,10 +46,7 @@ def new_mandat(request):
             return render(
                 request,
                 "aidants_connect_web/new_mandat/new_mandat.html",
-                {
-                    "aidant": aidant,
-                    "form": form
-                },
+                {"aidant": aidant, "form": form},
             )
 
 

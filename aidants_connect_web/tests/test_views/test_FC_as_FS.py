@@ -1,16 +1,18 @@
+from datetime import datetime, timedelta
 import mock
+
+from django.conf import settings
+from django.test import tag, TestCase
+from django.test.client import Client
+
+from freezegun import freeze_time
 import jwt
 from pytz import timezone
-from datetime import datetime, timedelta
-from freezegun import freeze_time
-
-from django.test import TestCase, tag
-from django.test.client import Client
-from django.conf import settings
 
 from aidants_connect_web.models import Connection, Usager
 from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.views.FC_as_FS import get_user_info
+
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 

@@ -1,16 +1,17 @@
 import os
 
+from django.conf import settings
+from django.test import tag, TestCase
+from django.test.client import Client
+from django.urls import resolve
 from django.utils import timezone
+
 from freezegun import freeze_time
 
-from django.test.client import Client
-from django.test import TestCase, tag
-from django.urls import resolve
-from django.conf import settings
-
-from aidants_connect_web.views import service
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.views import service
+
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 

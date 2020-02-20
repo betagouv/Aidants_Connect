@@ -1,32 +1,33 @@
-import jwt
 import logging
 import re
+from secrets import token_urlsafe
 import time
 
-from secrets import token_urlsafe
-from django.http import (
-    HttpResponseForbidden,
-    HttpResponse,
-    JsonResponse,
-    HttpResponseBadRequest,
-)
-from django.views.decorators.csrf import csrf_exempt
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth import logout
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.decorators import login_required
-from django.forms.models import model_to_dict
-from django.utils import timezone
-from django.urls import reverse
-from django.shortcuts import render, redirect
 from django.conf import settings
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import model_to_dict
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    JsonResponse,
+)
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+
+import jwt
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import (
     Connection,
+    Journal,
     Mandat,
     Usager,
-    Journal,
 )
 
 logging.basicConfig(level=logging.INFO)

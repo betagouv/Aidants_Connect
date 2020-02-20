@@ -1,5 +1,6 @@
-from django.test import TestCase, tag
 from django.forms.models import model_to_dict
+from django.test import tag, TestCase
+from django.test.client import Client
 
 from aidants_connect_web.forms import (
     AidantCreationForm,
@@ -9,7 +10,6 @@ from aidants_connect_web.forms import (
 )
 from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
-from django.test.client import Client
 
 
 @tag("forms")

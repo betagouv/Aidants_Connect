@@ -1,17 +1,18 @@
-from pytz import timezone
 from datetime import datetime
-from freezegun import freeze_time
 
-from django.test.client import Client
-from django.test import TestCase, tag
-from django.urls import resolve
 from django.conf import settings
 from django.contrib import messages as django_messages
+from django.test import tag, TestCase
+from django.test.client import Client
+from django.urls import resolve
+
+from freezegun import freeze_time
+from pytz import timezone
 
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.views import new_mandat
-from aidants_connect_web.models import Usager, Journal, Connection, Mandat
+from aidants_connect_web.models import Connection, Journal, Mandat, Usager
 from aidants_connect_web.tests import factories
+from aidants_connect_web.views import new_mandat
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -114,6 +115,7 @@ class NewMandatRecapTests(TestCase):
         self.assertRedirects(response, "/creation_mandat/succes/")
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")
+
         self.assertEqual(last_journal_entries.count(), 4)
         self.assertEqual(last_journal_entries[0].action, "create_mandat")
         self.assertEqual(last_journal_entries[2].action, "print_mandat")

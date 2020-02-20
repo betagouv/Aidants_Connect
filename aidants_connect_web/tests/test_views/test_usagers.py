@@ -1,16 +1,17 @@
 from datetime import timedelta
 
+from django.test import tag, TestCase
 from django.test.client import Client
-from django.test import TestCase, tag
 from django.urls import resolve
 from django.utils import timezone
 
-from aidants_connect_web.views import usagers
 from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    MandatFactory,
     UsagerFactory,
 )
+from aidants_connect_web.views import usagers
 
 
 @tag("usagers")

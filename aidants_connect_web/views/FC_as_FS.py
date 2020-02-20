@@ -1,8 +1,5 @@
 import logging
-import jwt
-import requests as python_request
 from secrets import token_urlsafe
-from jwt.api_jwt import ExpiredSignatureError
 
 from django.conf import settings
 from django.contrib import messages
@@ -11,8 +8,12 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
 from django.utils import timezone
 
+import jwt
+from jwt.api_jwt import ExpiredSignatureError
+import requests as python_request
 
 from aidants_connect_web.models import Connection, Usager
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()

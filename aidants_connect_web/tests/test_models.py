@@ -1,18 +1,19 @@
 from datetime import date, datetime, timedelta
+
+from django.db.utils import IntegrityError
+from django.test import tag, TestCase
+from django.utils import timezone
+
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
 
-from django.test import TestCase, tag
-from django.db.utils import IntegrityError
-from django.utils import timezone
-
 from aidants_connect_web.models import (
-    Connection,
     Aidant,
-    Usager,
-    Mandat,
+    Connection,
     Journal,
+    Mandat,
     Organisation,
+    Usager,
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,

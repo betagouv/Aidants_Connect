@@ -1,13 +1,11 @@
 from datetime import timedelta
 
-from django.db import models
 from django.conf import settings
-from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
-
-
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.utils import timezone
 
 
 class Organisation(models.Model):
