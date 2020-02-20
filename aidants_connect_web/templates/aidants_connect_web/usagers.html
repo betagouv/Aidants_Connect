@@ -34,7 +34,7 @@
         {% for usager in aidant_usagers %}
           <div class="row fake-table-row">
             <div class="col-66">
-              <a href="{% url 'usagers_details' usager_id=usager.id %}">{{ usager.get_full_name }}</a>
+              <a href="{% url 'usager_details' usager_id=usager.id %}">{{ usager.get_full_name }}</a>
             </div>
             <div class="col-32">
               {{ usager.birthdate | date:"d F" }}

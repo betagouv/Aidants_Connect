@@ -33,14 +33,14 @@ class UsagersDetailsPageTests(TestCase):
         self.aidant = UserFactory()
         self.usager = UsagerFactory()
 
-    def test_usagers_details_url_triggers_the_usagers_details_view(self):
+    def test_usager_details_url_triggers_the_usager_details_view(self):
         found = resolve(f"/usagers/{self.usager.id}/")
-        self.assertEqual(found.func, usagers.usagers_details)
+        self.assertEqual(found.func, usagers.usager_details)
 
-    def test_usagers_details_url_triggers_the_usagers_details_template(self):
+    def test_usager_details_url_triggers_the_usager_details_template(self):
         self.client.force_login(self.aidant)
         response = self.client.get(f"/usagers/{self.usager.id}/")
-        self.assertTemplateUsed(response, "aidants_connect_web/usagers_details.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/usager_details.html")
 
 
 @tag("usagers")

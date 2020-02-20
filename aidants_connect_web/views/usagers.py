@@ -35,7 +35,7 @@ def usagers_index(request):
 
 @login_required
 @activity_required
-def usagers_details(request, usager_id):
+def usager_details(request, usager_id):
     messages = django_messages.get_messages(request)
     aidant = request.user
     usager = get_object_or_404(Usager, pk=usager_id)
@@ -44,7 +44,7 @@ def usagers_details(request, usager_id):
 
     return render(
         request,
-        "aidants_connect_web/usagers_details.html",
+        "aidants_connect_web/usager_details.html",
         {
             "aidant": aidant,
             "usager": usager,
@@ -83,8 +83,7 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
             Journal.objects.mandat_cancel(mandat)
 
             django_messages.success(request, "Le mandat a été révoqué avec succès !")
-
-            return redirect("usagers_details", usager_id=usager.id)
+            return redirect("usager_details", usager_id=usager.id)
 
         else:
             return render(

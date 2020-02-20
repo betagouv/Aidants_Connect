@@ -16,7 +16,7 @@ urlpatterns = [
     path("dashboard/", service.dashboard, name="dashboard"),
     # usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
-    path("usagers/<int:usager_id>/", usagers.usagers_details, name="usagers_details"),
+    path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),
     path(
         "usagers/<int:usager_id>/mandats/<int:mandat_id>/cancel_confirm",
         usagers.usagers_mandats_cancel_confirm,
