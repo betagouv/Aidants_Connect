@@ -4,7 +4,7 @@ from django.test import tag
 from django.utils import timezone
 
 from aidants_connect_web.models import Journal, Mandat
-from aidants_connect_web.tests.factories import UserFactory, UsagerFactory
+from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
@@ -13,11 +13,11 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 class CancelMandat(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.aidant_thierry = UserFactory()
+        cls.aidant_thierry = AidantFactory()
         device = cls.aidant_thierry.staticdevice_set.create(id=cls.aidant_thierry.id)
         device.token_set.create(token="123456")
 
-        cls.aidant_jacqueline = UserFactory(
+        cls.aidant_jacqueline = AidantFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
             password="motdepassedejacqueline",

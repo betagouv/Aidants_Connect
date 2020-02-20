@@ -13,7 +13,7 @@ class OrganisationFactory(factory.DjangoModelFactory):
         model = Organisation
 
 
-class UserFactory(factory.DjangoModelFactory):
+class AidantFactory(factory.DjangoModelFactory):
     username = "thierry@thierry.com"
     email = "thierry@thierry.com"
     password = "motdepassedethierry"

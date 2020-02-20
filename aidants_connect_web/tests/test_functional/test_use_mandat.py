@@ -5,21 +5,20 @@ from django.conf import settings
 from django.test import tag
 from django.utils import timezone
 
-from aidants_connect_web.models import Aidant, Usager, Mandat
-from aidants_connect_web.tests.factories import UserFactory
+from aidants_connect_web.models import Aidant, Mandat, Usager
+from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional", "id_provider")
 class UseNewMandat(FunctionalTestCase):
-
     @classmethod
     def setUp(self):
-        self.aidant = UserFactory()
+        self.aidant = AidantFactory()
         device = self.aidant.staticdevice_set.create(id=self.aidant.id)
         device.token_set.create(token="123456")
-        UserFactory(
+        AidantFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
             password="motdepassedejacqueline",

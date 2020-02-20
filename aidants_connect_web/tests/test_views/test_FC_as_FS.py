@@ -9,8 +9,8 @@ from django.test.client import Client
 from django.conf import settings
 
 from aidants_connect_web.models import Connection, Usager
+from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.views.FC_as_FS import get_user_info
-from aidants_connect_web.tests.factories import UserFactory
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -37,7 +37,7 @@ class FCCallback(TestCase):
     @freeze_time(date)
     def setUp(self):
         self.client = Client()
-        self.aidant = UserFactory()
+        self.aidant = AidantFactory()
         date = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
         self.epoch_date = date.timestamp()
 

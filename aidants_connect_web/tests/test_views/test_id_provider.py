@@ -27,8 +27,8 @@ from aidants_connect_web.tests import factories
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = factories.UserFactory()
-        self.aidant_jacques = factories.UserFactory(
+        self.aidant_thierry = factories.AidantFactory()
+        self.aidant_jacques = factories.AidantFactory(
             username="jacques@domain.user", email="jacques@domain.user"
         )
         Aidant.objects.create_user(
@@ -239,7 +239,7 @@ class AuthorizeTests(TestCase):
 class FISelectDemarcheTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = factories.UserFactory()
+        self.aidant_thierry = factories.AidantFactory()
         self.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -522,7 +522,7 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
-        self.aidant_thierry = factories.UserFactory()
+        self.aidant_thierry = factories.AidantFactory()
 
         self.mandat = Mandat.objects.create(
             aidant=self.aidant_thierry,

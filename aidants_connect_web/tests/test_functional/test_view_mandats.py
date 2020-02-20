@@ -4,7 +4,9 @@ from django.test import tag
 from django.utils import timezone
 
 from aidants_connect_web.models import Aidant, Usager, Mandat
-from aidants_connect_web.tests.factories import UserFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+)
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
@@ -13,8 +15,9 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 class ViewMandats(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.user = UserFactory()
-        device = cls.user.staticdevice_set.create(id=cls.user.id)
+
+        cls.aidant = AidantFactory()
+        device = cls.aidant.staticdevice_set.create(id=cls.aidant.id)
         device.token_set.create(token="123456")
 
         cls.usager = Usager.objects.create(

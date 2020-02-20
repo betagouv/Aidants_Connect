@@ -15,9 +15,9 @@ from aidants_connect_web.models import (
     Organisation,
 )
 from aidants_connect_web.tests.factories import (
-    UserFactory,
-    UsagerFactory,
+    AidantFactory,
     OrganisationFactory,
+    UsagerFactory,
 )
 
 
@@ -126,8 +126,8 @@ class UsagerModelTest(TestCase):
 class MandatModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.aidant_marge = UserFactory(username="Marge")
-        cls.aidant_patricia = UserFactory(username="Patricia")
+        cls.aidant_marge = AidantFactory(username="Marge")
+        cls.aidant_patricia = AidantFactory(username="Patricia")
         cls.usager_homer = Usager.objects.create(
             given_name="Homer",
             family_name="Simpson",
@@ -264,8 +264,8 @@ class AidantModelTest(TestCase):
 class AidantModelMethodsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.aidant_marge = UserFactory(username="Marge")
-        cls.aidant_patricia = UserFactory(username="Patricia")
+        cls.aidant_marge = AidantFactory(username="Marge")
+        cls.aidant_patricia = AidantFactory(username="Patricia")
         cls.usager_homer = UsagerFactory(given_name="Homer", sub="123")
         cls.usager_ned = UsagerFactory(given_name="Ned", sub="1234")
         cls.usager_bart = UsagerFactory(given_name="Bart", sub="1235")

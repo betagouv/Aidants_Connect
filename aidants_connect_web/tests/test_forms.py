@@ -8,7 +8,7 @@ from aidants_connect_web.forms import (
     RecapMandatForm,
 )
 from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import OrganisationFactory, UserFactory
+from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from django.test.client import Client
 
 
@@ -242,7 +242,7 @@ class MandatFormTest(TestCase):
 class RecapMandatFormTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = UserFactory()
+        self.aidant_thierry = AidantFactory()
         device = self.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 

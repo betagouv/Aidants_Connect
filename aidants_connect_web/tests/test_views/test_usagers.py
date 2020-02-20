@@ -7,14 +7,17 @@ from django.utils import timezone
 
 from aidants_connect_web.views import usagers
 from aidants_connect_web.models import Mandat
-from aidants_connect_web.tests.factories import UserFactory, UsagerFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    UsagerFactory,
+)
 
 
 @tag("usagers")
 class UsagersIndexPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = UserFactory()
+        self.aidant = AidantFactory()
 
     def test_usagers_index_url_triggers_the_usagers_index_view(self):
         found = resolve("/usagers/")
@@ -30,7 +33,7 @@ class UsagersIndexPageTests(TestCase):
 class UsagersDetailsPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = UserFactory()
+        self.aidant = AidantFactory()
         self.usager = UsagerFactory()
 
     def test_usager_details_url_triggers_the_usager_details_view(self):
@@ -47,8 +50,8 @@ class UsagersDetailsPageTests(TestCase):
 class MandatCancelConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_1 = UserFactory()
-        self.aidant_2 = UserFactory(
+        self.aidant_1 = AidantFactory()
+        self.aidant_2 = AidantFactory(
             username="jacques@domain.user", email="jacques@domain.user"
         )
         self.usager_1 = UsagerFactory()

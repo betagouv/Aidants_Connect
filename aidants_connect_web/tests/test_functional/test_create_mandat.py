@@ -3,7 +3,7 @@ import time
 from django.conf import settings
 from django.test import tag
 
-from aidants_connect_web.tests.factories import UserFactory
+from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
@@ -14,7 +14,7 @@ class CreateNewMandat(FunctionalTestCase):
     def setUpClass(cls):
         # FC only calls back on specific port
         cls.port = settings.FC_AS_FS_TEST_PORT
-        cls.aidant = UserFactory()
+        cls.aidant = AidantFactory()
         device = cls.aidant.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
         device.token_set.create(token="123455")
