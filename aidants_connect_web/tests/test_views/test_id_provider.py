@@ -16,7 +16,6 @@ from aidants_connect_web.models import (
     Aidant,
     Connection,
     Journal,
-    Mandat,
     Usager,
 )
 from aidants_connect_web.tests.factories import (

@@ -40,7 +40,7 @@ class Aidant(AbstractUser):
         """
         mandats_for_aidant = Mandat.objects.filter(aidant=self)
         usagers = (
-            Usager.objects.filter(mandat__in=mandats_for_aidant)
+            Usager.objects.filter(mandats__in=mandats_for_aidant)
             .distinct()
             .order_by("family_name")
         )
@@ -53,7 +53,7 @@ class Aidant(AbstractUser):
         """
         active_mandats_for_aidant = Mandat.objects.active().filter(aidant=self)
         usagers = (
-            Usager.objects.filter(mandat__in=active_mandats_for_aidant)
+            Usager.objects.filter(mandats__in=active_mandats_for_aidant)
             .distinct()
             .order_by("family_name")
         )
@@ -102,7 +102,7 @@ class Aidant(AbstractUser):
 
 class UsagerManager(models.Manager):
     def active(self):
-        return self.filter(mandat__expiration_date__gt=timezone.now()).distinct()
+        return self.filter(mandats__expiration_date__gt=timezone.now()).distinct()
 
 
 class Usager(models.Model):

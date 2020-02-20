@@ -8,7 +8,6 @@ from django.utils import timezone
 from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    MandatFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import usagers
