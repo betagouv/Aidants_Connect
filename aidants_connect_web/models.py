@@ -8,9 +8,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
 
 
-def default_expiration_date():
-    now = timezone.now()
-    return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
 
 
 class Organisation(models.Model):
@@ -194,6 +191,11 @@ class Mandat(models.Model):
         return duree_for_computer.days + 1
 
 
+def default_connection_expiration_date():
+    now = timezone.now()
+    return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
+
+
 class Connection(models.Model):
     state = models.TextField()  # FS
     nonce = models.TextField(default="No Nonce Provided")  # FS
@@ -206,7 +208,7 @@ class Connection(models.Model):
     usager = models.ForeignKey(
         Usager, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
     )  # FS
-    expiresOn = models.DateTimeField(default=default_expiration_date)  # FS
+    expires_on = models.DateTimeField(default=default_connection_expiration_date)  # FS
     access_token = models.TextField(default="No token Provided")  # FS
 
     code = models.TextField()
@@ -221,7 +223,7 @@ class Connection(models.Model):
 
     @property
     def is_expired(self):
-        return timezone.now() > self.expiresOn
+        return timezone.now() > self.expires_on
 
 
 class JournalManager(models.Manager):

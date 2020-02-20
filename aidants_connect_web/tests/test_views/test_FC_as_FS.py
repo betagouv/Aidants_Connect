@@ -48,7 +48,7 @@ class FCCallback(TestCase):
             connection_type="FS",
             nonce="test_nonce",
             id=1,
-            expiresOn=date + timedelta(minutes=5),
+            expires_on=date + timedelta(minutes=5),
         )
         Connection.objects.create(
             state="test_another_state",

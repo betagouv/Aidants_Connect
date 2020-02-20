@@ -70,7 +70,7 @@ def fc_callback(request):
         log.info(state)
         return HttpResponseForbidden()
 
-    if connection.expiresOn < timezone.now():
+    if connection.expires_on < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
 
@@ -110,7 +110,7 @@ def fc_callback(request):
         log.info("403: The nonce is different than the one expected.")
         return HttpResponseForbidden()
 
-    if connection.expiresOn < timezone.now():
+    if connection.expires_on < timezone.now():
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
 

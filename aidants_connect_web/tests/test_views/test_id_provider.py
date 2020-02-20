@@ -73,7 +73,7 @@ class AuthorizeTests(TestCase):
             state="test_expiration_date_triggered",
             nonce="avalidnonce456",
             usager=Usager.objects.get(sub="123"),
-            expiresOn=date_further_away_minus_one_hour,
+            expires_on=date_further_away_minus_one_hour,
         )
 
     def test_authorize_url_triggers_the_authorize_view(self):
@@ -263,7 +263,7 @@ class FISelectDemarcheTest(TestCase):
             state="test_expiration_date_triggered",
             nonce="test_nonce",
             usager=self.usager,
-            expiresOn=date_further_away_minus_one_hour,
+            expires_on=date_further_away_minus_one_hour,
         )
         mandat_creation_date = datetime(
             2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
@@ -402,7 +402,7 @@ class TokenTests(TestCase):
             sub="test_sub",
             email="User@user.domain",
         )
-        self.connection.expiresOn = datetime(
+        self.connection.expires_on = datetime(
             2012, 1, 14, 3, 21, 34, tzinfo=pytz_timezone("Europe/Paris")
         )
         self.connection.save()
@@ -541,7 +541,7 @@ class UserInfoTests(TestCase):
             nonce="avalidnonde456",
             usager=self.usager,
             access_token=self.access_token_hash,
-            expiresOn=datetime(
+            expires_on=datetime(
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
             aidant=self.aidant_thierry,
