@@ -12,7 +12,7 @@
     <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager">Ajouter un usager</a>
     <h1 class="brand">Vos mandats</h1>
     {% if messages %}
-      <div class="notification success">
+      <div class="notification success" role="alert">
         {% for message in messages %}
           {{ message }}
         {% endfor %}
@@ -42,7 +42,7 @@
           </div>
         {% endfor %}
       {% else %}
-        <div class="notification">Vous n’avez pas d'usagers.</div>
+        <div class="notification" role="alert">Vous n’avez pas d'usagers.</div>
       {% endif %}
     </div>
   <div>

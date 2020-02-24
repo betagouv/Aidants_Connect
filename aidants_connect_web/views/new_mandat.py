@@ -126,7 +126,6 @@ def new_mandat_recap(request):
                     "demarche": demarches_description,
                     "duree": duree,
                     "form": form,
-                    "error": form.errors,
                 },
             )
 

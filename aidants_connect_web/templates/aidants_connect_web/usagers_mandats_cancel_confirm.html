@@ -13,7 +13,7 @@
     <div class="tiles">
       <form method="post" class="panel">
         {% if error %}
-          <div class="notification warning">{{ error }}</div>
+          <div class="notification error" role="alert">{{ error }}</div>
         {% endif %}
         {% csrf_token %}
         <div class="form__group">

@@ -11,10 +11,10 @@
   <div class="main-page">
     <section class="section section-white">
       <div class="container">
-        <form class="" method="post">
+        <form method="post">
           {% csrf_token %}
           {% if user.is_authenticated %}
-            <div class="alert alert-info text-center" role="alert">
+            <div class="notification text-center" role="alert">
               Vous êtes déjà connecté
             </div>
             <div class="text-center">
@@ -36,7 +36,7 @@
               <input type="email" id="id_email" class="form-control {% if form.errors %}state-invalid{% endif %}"
                 name="email" aria-describedby="emailHelp" placeholder="Votre email" required />
               {% for error in form.email.errors %}
-                <div class="alert alert-danger text-center">{{ error }}</div>
+                <div class="notification error text-center" role="alert">{{ error }}</div>
               {% endfor %}
             </div>
           
@@ -44,7 +44,7 @@
               <label>{{ OTP_form.otp_token.label_tag }}</label>
               {{ OTP_form.otp_token }}
               {% for error in OTP_form.otp_token.errors %}
-                <div class="alert alert-danger text-center">{{ error }}</div>
+                <div class="notification error text-center" role="alert">{{ error }}</div>
               {% endfor %}
             </div>
             <button type="submit" class="button">Valider</button>

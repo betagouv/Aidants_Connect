@@ -11,7 +11,7 @@
   <form method="post" action="{% url 'login' %}">
     <h1>Connexion à votre compte Aidants Connect</h1>
     {% if form.errors %}
-      <div class="notification">Votre identifiant et votre mot de passe ne correspondent pas.  Essayez de nouveau.</div>
+      <div class="notification warning">Votre identifiant et votre mot de passe ne correspondent pas. Essayez de nouveau.</div>
     {% endif %}
     {% csrf_token %}
     <div class="form__group">

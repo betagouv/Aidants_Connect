@@ -15,8 +15,8 @@
   <section class="section section-grey">
     <div class="container container-small">
       <form method="post">
-        {% if error %}
-          <div class="notification warning">{{ error }}</div>
+        {% if form.errors %}
+          <div class="notification error" role="alert">{{ form.errors }}</div>
         {% endif %}
         {% csrf_token %}
         <a class="button-outline primary small float-right" href="{% url 'new_mandat_preview_projet' %}" target="_blank">Voir le projet de mandat</a>
@@ -37,7 +37,7 @@
         </div>
         <h2>Validation de l'usager</h2>
         {% if form.non_field_errors %}
-          <div class="notification warning">{{ form.non_field_errors }}</div>
+          <div class="notification error" role="alert">{{ form.non_field_errors }}</div>
         {% endif %}
         <div class="panel form__group mandat__agreement">
           <p>En cochant les cases, {{ usager }} confirme :</p>
