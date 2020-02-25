@@ -12,29 +12,30 @@ from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
 
-from aidants_connect_web.views import id_provider
 from aidants_connect_web.models import (
-    Connection,
     Aidant,
-    Usager,
-    Mandat,
+    Connection,
     Journal,
+    Mandat,
+    Usager,
 )
-from aidants_connect_web.tests import factories
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    MandatFactory,
+    UsagerFactory,
+)
+from aidants_connect_web.views import id_provider
 
 
 @tag("id_provider")
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = factories.AidantFactory()
-        self.aidant_jacques = factories.AidantFactory(
+        self.aidant_thierry = AidantFactory()
+        self.aidant_jacques = AidantFactory(
             username="jacques@domain.user", email="jacques@domain.user"
         )
-        Aidant.objects.create_user(
-            "Jacques", "jacques@domain.user", "motdepassedejacques"
-        )
-        self.usager = Usager.objects.create(
+        self.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -46,21 +47,20 @@ class AuthorizeTests(TestCase):
             email="User@user.domain",
             id=1,
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
-        Mandat.objects.create(
+        MandatFactory(
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
-
-        Mandat.objects.create(
+        MandatFactory(
             aidant=Aidant.objects.get(username=self.aidant_jacques.username),
             usager=Usager.objects.get(sub="123"),
             demarche="Logement",
@@ -239,8 +239,8 @@ class AuthorizeTests(TestCase):
 class FISelectDemarcheTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = factories.AidantFactory()
-        self.usager = Usager.objects.create(
+        self.aidant_thierry = AidantFactory()
+        self.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -268,7 +268,7 @@ class FISelectDemarcheTest(TestCase):
         mandat_creation_date = datetime(
             2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
         )
-        self.mandat = Mandat.objects.create(
+        self.mandat = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
@@ -276,7 +276,7 @@ class FISelectDemarcheTest(TestCase):
             creation_date=mandat_creation_date,
         )
 
-        self.mandat_2 = Mandat.objects.create(
+        self.mandat_2 = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="famille",
@@ -284,7 +284,7 @@ class FISelectDemarcheTest(TestCase):
             creation_date=mandat_creation_date,
         )
 
-        self.mandat_3 = Mandat.objects.create(
+        self.mandat_3 = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="logement",
@@ -391,7 +391,7 @@ class TokenTests(TestCase):
         self.connection.state = "avalidstate123"
         self.connection.code = self.code_hash
         self.connection.nonce = "avalidnonce456"
-        self.connection.usager = Usager.objects.create(
+        self.connection.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -496,7 +496,7 @@ class UserInfoTests(TestCase):
     def setUp(self):
         self.client = Client()
 
-        self.usager = Usager.objects.create(
+        self.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -509,7 +509,7 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
-        self.usager_2 = Usager.objects.create(
+        self.usager_2 = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -522,9 +522,9 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
-        self.aidant_thierry = factories.AidantFactory()
+        self.aidant_thierry = AidantFactory()
 
-        self.mandat = Mandat.objects.create(
+        self.mandat = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
