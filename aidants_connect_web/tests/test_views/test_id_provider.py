@@ -1,40 +1,40 @@
-import json
-from pytz import timezone as pytz_timezone
 from datetime import date, datetime, timedelta
-from freezegun import freeze_time
+import json
 
-from django.db.models.query import QuerySet
-from django.contrib.auth.hashers import make_password
-from django.test.client import Client
-from django.test import TestCase, override_settings, tag
-from django.urls import resolve
-from django.utils import timezone
 from django.conf import settings
-from django.urls import reverse
+from django.contrib.auth.hashers import make_password
+from django.db.models.query import QuerySet
+from django.test import TestCase, override_settings, tag
+from django.test.client import Client
+from django.urls import resolve, reverse
+from django.utils import timezone
 
-from aidants_connect_web.views import id_provider
+from freezegun import freeze_time
+from pytz import timezone as pytz_timezone
+
 from aidants_connect_web.models import (
-    Connection,
     Aidant,
-    Usager,
-    Mandat,
+    Connection,
     Journal,
+    Usager,
 )
-from aidants_connect_web.tests import factories
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    MandatFactory,
+    UsagerFactory,
+)
+from aidants_connect_web.views import id_provider
 
 
 @tag("id_provider")
 class AuthorizeTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = factories.UserFactory()
-        self.aidant_jacques = factories.UserFactory(
+        self.aidant_thierry = AidantFactory()
+        self.aidant_jacques = AidantFactory(
             username="jacques@domain.user", email="jacques@domain.user"
         )
-        Aidant.objects.create_user(
-            "Jacques", "jacques@domain.user", "motdepassedejacques"
-        )
-        self.usager = Usager.objects.create(
+        self.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -46,21 +46,20 @@ class AuthorizeTests(TestCase):
             email="User@user.domain",
             id=1,
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
-        Mandat.objects.create(
+        MandatFactory(
             aidant=Aidant.objects.get(username="thierry@thierry.com"),
             usager=Usager.objects.get(sub="123"),
             demarche="Famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
-
-        Mandat.objects.create(
+        MandatFactory(
             aidant=Aidant.objects.get(username=self.aidant_jacques.username),
             usager=Usager.objects.get(sub="123"),
             demarche="Logement",
@@ -73,7 +72,7 @@ class AuthorizeTests(TestCase):
             state="test_expiration_date_triggered",
             nonce="avalidnonce456",
             usager=Usager.objects.get(sub="123"),
-            expiresOn=date_further_away_minus_one_hour,
+            expires_on=date_further_away_minus_one_hour,
         )
 
     def test_authorize_url_triggers_the_authorize_view(self):
@@ -218,7 +217,7 @@ class AuthorizeTests(TestCase):
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_further_away)
-    def test_post_to_authorize_with_expired_connexion_triggers_bad_request(self):
+    def test_post_to_authorize_with_expired_connection_triggers_bad_request(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/authorize/",
@@ -226,7 +225,7 @@ class AuthorizeTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_post_to_authorize_with_unknown_connexion_triggers_forbidden(self):
+    def test_post_to_authorize_with_unknown_connection_triggers_forbidden(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/authorize/",
@@ -239,8 +238,8 @@ class AuthorizeTests(TestCase):
 class FISelectDemarcheTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = factories.UserFactory()
-        self.usager = Usager.objects.create(
+        self.aidant_thierry = AidantFactory()
+        self.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -263,12 +262,12 @@ class FISelectDemarcheTest(TestCase):
             state="test_expiration_date_triggered",
             nonce="test_nonce",
             usager=self.usager,
-            expiresOn=date_further_away_minus_one_hour,
+            expires_on=date_further_away_minus_one_hour,
         )
         mandat_creation_date = datetime(
             2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
         )
-        self.mandat = Mandat.objects.create(
+        self.mandat = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
@@ -276,7 +275,7 @@ class FISelectDemarcheTest(TestCase):
             creation_date=mandat_creation_date,
         )
 
-        self.mandat_2 = Mandat.objects.create(
+        self.mandat_2 = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="famille",
@@ -284,7 +283,7 @@ class FISelectDemarcheTest(TestCase):
             creation_date=mandat_creation_date,
         )
 
-        self.mandat_3 = Mandat.objects.create(
+        self.mandat_3 = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="logement",
@@ -355,7 +354,7 @@ class FISelectDemarcheTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @freeze_time(date_further_away)
-    def test_post_to_select_demarche_with_expired_connexion_triggers_bad_request(self):
+    def test_post_to_select_demarche_with_expired_connection_triggers_bad_request(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
@@ -364,7 +363,7 @@ class FISelectDemarcheTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @freeze_time(date_further_away)
-    def test_post_to_select_demarche_with_unknown_connexion_triggers_forbidden(self):
+    def test_post_to_select_demarche_with_unknown_connection_triggers_forbidden(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
@@ -391,7 +390,7 @@ class TokenTests(TestCase):
         self.connection.state = "avalidstate123"
         self.connection.code = self.code_hash
         self.connection.nonce = "avalidnonce456"
-        self.connection.usager = Usager.objects.create(
+        self.connection.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -402,7 +401,7 @@ class TokenTests(TestCase):
             sub="test_sub",
             email="User@user.domain",
         )
-        self.connection.expiresOn = datetime(
+        self.connection.expires_on = datetime(
             2012, 1, 14, 3, 21, 34, tzinfo=pytz_timezone("Europe/Paris")
         )
         self.connection.save()
@@ -496,7 +495,7 @@ class UserInfoTests(TestCase):
     def setUp(self):
         self.client = Client()
 
-        self.usager = Usager.objects.create(
+        self.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -509,7 +508,7 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
-        self.usager_2 = Usager.objects.create(
+        self.usager_2 = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -522,9 +521,9 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
-        self.aidant_thierry = factories.UserFactory()
+        self.aidant_thierry = AidantFactory()
 
-        self.mandat = Mandat.objects.create(
+        self.mandat = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
@@ -541,7 +540,7 @@ class UserInfoTests(TestCase):
             nonce="avalidnonde456",
             usager=self.usager,
             access_token=self.access_token_hash,
-            expiresOn=datetime(
+            expires_on=datetime(
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
             aidant=self.aidant_thierry,

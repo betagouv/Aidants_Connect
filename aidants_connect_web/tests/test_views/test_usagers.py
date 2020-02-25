@@ -1,20 +1,23 @@
 from datetime import timedelta
 
+from django.test import tag, TestCase
 from django.test.client import Client
-from django.test import TestCase, tag
 from django.urls import resolve
 from django.utils import timezone
 
-from aidants_connect_web.views import usagers
 from aidants_connect_web.models import Mandat
-from aidants_connect_web.tests.factories import UserFactory, UsagerFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    UsagerFactory,
+)
+from aidants_connect_web.views import usagers
 
 
 @tag("usagers")
 class UsagersIndexPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = UserFactory()
+        self.aidant = AidantFactory()
 
     def test_usagers_index_url_triggers_the_usagers_index_view(self):
         found = resolve("/usagers/")
@@ -30,25 +33,25 @@ class UsagersIndexPageTests(TestCase):
 class UsagersDetailsPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = UserFactory()
+        self.aidant = AidantFactory()
         self.usager = UsagerFactory()
 
-    def test_usagers_details_url_triggers_the_usagers_details_view(self):
+    def test_usager_details_url_triggers_the_usager_details_view(self):
         found = resolve(f"/usagers/{self.usager.id}/")
-        self.assertEqual(found.func, usagers.usagers_details)
+        self.assertEqual(found.func, usagers.usager_details)
 
-    def test_usagers_details_url_triggers_the_usagers_details_template(self):
+    def test_usager_details_url_triggers_the_usager_details_template(self):
         self.client.force_login(self.aidant)
         response = self.client.get(f"/usagers/{self.usager.id}/")
-        self.assertTemplateUsed(response, "aidants_connect_web/usagers_details.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/usager_details.html")
 
 
 @tag("usagers")
 class MandatCancelConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_1 = UserFactory()
-        self.aidant_2 = UserFactory(
+        self.aidant_1 = AidantFactory()
+        self.aidant_2 = AidantFactory(
             username="jacques@domain.user", email="jacques@domain.user"
         )
         self.usager_1 = UsagerFactory()

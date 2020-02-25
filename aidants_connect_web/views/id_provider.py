@@ -1,32 +1,33 @@
-import jwt
 import logging
 import re
+from secrets import token_urlsafe
 import time
 
-from secrets import token_urlsafe
-from django.http import (
-    HttpResponseForbidden,
-    HttpResponse,
-    JsonResponse,
-    HttpResponseBadRequest,
-)
-from django.views.decorators.csrf import csrf_exempt
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth import logout
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.decorators import login_required
-from django.forms.models import model_to_dict
-from django.utils import timezone
-from django.urls import reverse
-from django.shortcuts import render, redirect
 from django.conf import settings
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import model_to_dict
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    JsonResponse,
+)
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+
+import jwt
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import (
     Connection,
+    Journal,
     Mandat,
     Usager,
-    Journal,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -165,7 +166,7 @@ def fi_select_demarche(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("Connexion has expired at select demarche")
+                log.info("Connection has expired at select demarche")
                 return HttpResponseBadRequest()
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the connection_id:")
@@ -200,7 +201,7 @@ def fi_select_demarche(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("Connexion has expired at select demarche")
+                log.info("Connection has expired at select demarche")
                 return HttpResponseBadRequest()
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the connection_id:")
@@ -267,7 +268,7 @@ def token(request):
     try:
         connection = Connection.objects.get(code=code_hash)
         if connection.is_expired:
-            log.info("Connexion has expired at token")
+            log.info("Connection has expired at token")
             return HttpResponseBadRequest()
     except ObjectDoesNotExist:
         log.info("403: /token No connection corresponds to the code")
@@ -322,7 +323,7 @@ def user_info(request):
     try:
         connection = Connection.objects.get(access_token=auth_token_hash)
         if connection.is_expired:
-            log.info("Connexion has expired at user_info")
+            log.info("Connection has expired at user_info")
             return HttpResponseBadRequest()
     except ObjectDoesNotExist:
         log.info("403: /user_info No connection corresponds to the access_token")

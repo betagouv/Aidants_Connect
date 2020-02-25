@@ -1,6 +1,5 @@
-import logging
-from secrets import token_urlsafe
 from datetime import timedelta
+import logging
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -10,6 +9,8 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+
+from secrets import token_urlsafe
 
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Organisation, Aidant, Usager, Mandat, Journal

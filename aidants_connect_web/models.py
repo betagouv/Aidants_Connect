@@ -1,16 +1,11 @@
 from datetime import timedelta
 
-from django.db import models
 from django.conf import settings
-from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
-
-
-def default_expiration_date():
-    now = timezone.now()
-    return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.utils import timezone
 
 
 class Organisation(models.Model):
@@ -24,7 +19,9 @@ class Organisation(models.Model):
 
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
-    organisation = models.ForeignKey(Organisation, null=True, on_delete=models.CASCADE)
+    organisation = models.ForeignKey(
+        Organisation, null=True, on_delete=models.CASCADE, related_name="aidants"
+    )
 
     class Meta:
         verbose_name = "aidant"
@@ -43,7 +40,7 @@ class Aidant(AbstractUser):
         """
         mandats_for_aidant = Mandat.objects.filter(aidant=self)
         usagers = (
-            Usager.objects.filter(mandat__in=mandats_for_aidant)
+            Usager.objects.filter(mandats__in=mandats_for_aidant)
             .distinct()
             .order_by("family_name")
         )
@@ -56,7 +53,7 @@ class Aidant(AbstractUser):
         """
         active_mandats_for_aidant = Mandat.objects.active().filter(aidant=self)
         usagers = (
-            Usager.objects.filter(mandat__in=active_mandats_for_aidant)
+            Usager.objects.filter(mandats__in=active_mandats_for_aidant)
             .distinct()
             .order_by("family_name")
         )
@@ -105,7 +102,7 @@ class Aidant(AbstractUser):
 
 class UsagerManager(models.Manager):
     def active(self):
-        return self.filter(mandat__expiration_date__gt=timezone.now()).distinct()
+        return self.filter(mandats__expiration_date__gt=timezone.now()).distinct()
 
 
 class Usager(models.Model):
@@ -131,6 +128,9 @@ class Usager(models.Model):
 
     objects = UsagerManager()
 
+    class Meta:
+        ordering = ["family_name", "given_name"]
+
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
 
@@ -155,8 +155,12 @@ class MandatManager(models.Manager):
 
 class Mandat(models.Model):
     # Mandat information
-    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, default=0)
-    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0)
+    aidant = models.ForeignKey(
+        Aidant, on_delete=models.CASCADE, default=0, related_name="mandats"
+    )
+    usager = models.ForeignKey(
+        Usager, on_delete=models.CASCADE, default=0, related_name="mandats"
+    )
     demarche = models.CharField(blank=False, max_length=100)
     # Mandat expiration date management
     creation_date = models.DateTimeField(default=timezone.now)
@@ -185,6 +189,11 @@ class Mandat(models.Model):
         return duree_for_computer.days + 1
 
 
+def default_connection_expiration_date():
+    now = timezone.now()
+    return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
+
+
 class Connection(models.Model):
     state = models.TextField()  # FS
     nonce = models.TextField(default="No Nonce Provided")  # FS
@@ -195,20 +204,24 @@ class Connection(models.Model):
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
     duree = models.IntegerField(blank=False, null=True)  # FS
     usager = models.ForeignKey(
-        Usager, on_delete=models.CASCADE, blank=True, null=True
+        Usager, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
     )  # FS
-    expiresOn = models.DateTimeField(default=default_expiration_date)  # FS
+    expires_on = models.DateTimeField(default=default_connection_expiration_date)  # FS
     access_token = models.TextField(default="No token Provided")  # FS
 
     code = models.TextField()
     demarche = models.TextField(default="No demarche provided")
-    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE, blank=True, null=True)
+    aidant = models.ForeignKey(
+        Aidant, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
+    )
     complete = models.BooleanField(default=False)
-    mandat = models.ForeignKey(Mandat, on_delete=models.CASCADE, blank=True, null=True)
+    mandat = models.ForeignKey(
+        Mandat, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
+    )
 
     @property
     def is_expired(self):
-        return timezone.now() > self.expiresOn
+        return timezone.now() > self.expires_on
 
 
 class JournalManager(models.Manager):

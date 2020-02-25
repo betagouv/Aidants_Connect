@@ -1,12 +1,14 @@
-from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from magicauth.models import MagicToken
-from django_otp.plugins.otp_static.models import StaticDevice
-from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
-from django_otp.plugins.otp_totp.models import TOTPDevice
-from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.admin import OTPAdminSite
+from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
+from django_otp.plugins.otp_static.models import StaticDevice
+from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
+from magicauth.models import MagicToken
+
+from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
 from aidants_connect_web.models import (
     Aidant,
     Usager,

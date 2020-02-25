@@ -245,7 +245,7 @@ class Migration(migrations.Migration):
                 (
                     "expiresOn",
                     models.DateTimeField(
-                        default=aidants_connect_web.models.default_expiration_date
+                        default=aidants_connect_web.models.default_connection_expiration_date
                     ),
                 ),
                 ("access_token", models.TextField(default="No token Provided")),

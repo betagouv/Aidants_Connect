@@ -1,10 +1,11 @@
+from django.conf import settings
+from django.test import tag, TestCase
 from django.utils import timezone
+
 from freezegun import freeze_time
 
-from django.test import TestCase, tag
-from django.conf import settings
+from aidants_connect_web.tests.factories import AidantFactory
 
-from aidants_connect_web.tests.factories import UserFactory
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -12,7 +13,7 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 @tag("decorators")
 class ActivityRequiredTests(TestCase):
     def setUp(self):
-        self.aidant_thierry = UserFactory()
+        self.aidant_thierry = AidantFactory()
         device = self.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 

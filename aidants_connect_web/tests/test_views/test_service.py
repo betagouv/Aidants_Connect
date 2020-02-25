@@ -1,16 +1,17 @@
 import os
 
+from django.conf import settings
+from django.test import tag, TestCase
+from django.test.client import Client
+from django.urls import resolve
 from django.utils import timezone
+
 from freezegun import freeze_time
 
-from django.test.client import Client
-from django.test import TestCase, tag
-from django.urls import resolve
-from django.conf import settings
-
-from aidants_connect_web.views import service
 from aidants_connect_web.models import Journal
-from aidants_connect_web.tests.factories import UserFactory
+from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.views import service
+
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -30,7 +31,7 @@ class HomePageTests(TestCase):
 class LoginPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = UserFactory()
+        self.aidant = AidantFactory()
 
     def test_journal_records_when_aidant_logs_in(self):
         self.assertEqual(len(Journal.objects.all()), 0)
@@ -55,7 +56,7 @@ class LoginPageTests(TestCase):
 class LogoutPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant = UserFactory()
+        self.aidant = AidantFactory()
 
     def test_logout_url_triggers_the_logout_view(self):
         found = resolve("/logout/")
@@ -74,7 +75,7 @@ class LogoutPageTests(TestCase):
 @tag("service", "this")
 class ActivityCheckPageTests(TestCase):
     def setUp(self):
-        self.aidant_thierry = UserFactory()
+        self.aidant_thierry = AidantFactory()
         device = self.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 

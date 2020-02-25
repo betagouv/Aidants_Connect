@@ -1,34 +1,35 @@
 from datetime import date, datetime, timedelta
+
+from django.db.utils import IntegrityError
+from django.test import tag, TestCase
+from django.utils import timezone
+
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
 
-from django.test import TestCase, tag
-from django.db.utils import IntegrityError
-from django.utils import timezone
-
 from aidants_connect_web.models import (
-    Connection,
     Aidant,
-    Usager,
-    Mandat,
+    Connection,
     Journal,
+    Mandat,
     Organisation,
+    Usager,
 )
 from aidants_connect_web.tests.factories import (
-    UserFactory,
-    UsagerFactory,
+    AidantFactory,
     OrganisationFactory,
+    UsagerFactory,
 )
 
 
 @tag("models")
 class ConnectionModelTest(TestCase):
-    def test_saving_and_retrieving_connexion(self):
-        first_connexion = Connection()
-        first_connexion.state = "aZeRtY"
-        first_connexion.code = "ert"
-        first_connexion.nonce = "varg"
-        first_connexion.usager = Usager.objects.create(
+    def test_saving_and_retrieving_connection(self):
+        first_connection = Connection()
+        first_connection.state = "aZeRtY"
+        first_connection.code = "ert"
+        first_connection.nonce = "varg"
+        first_connection.usager = Usager.objects.create(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -39,11 +40,11 @@ class ConnectionModelTest(TestCase):
             sub="123",
             email="User@user.domain",
         )
-        first_connexion.save()
+        first_connection.save()
 
-        second_connexion = Connection()
-        second_connexion.state = "QsDfG"
-        second_connexion.usager = Usager.objects.create(
+        second_connection = Connection()
+        second_connection.state = "QsDfG"
+        second_connection.usager = Usager.objects.create(
             given_name="Fabrice",
             family_name="MERCIER",
             preferred_username="TROIS",
@@ -54,7 +55,7 @@ class ConnectionModelTest(TestCase):
             sub="124",
             email="User@user.domain",
         )
-        second_connexion.save()
+        second_connection.save()
 
         saved_items = Connection.objects.all()
         self.assertEqual(saved_items.count(), 2)
@@ -126,8 +127,8 @@ class UsagerModelTest(TestCase):
 class MandatModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.aidant_marge = UserFactory(username="Marge")
-        cls.aidant_patricia = UserFactory(username="Patricia")
+        cls.aidant_marge = AidantFactory(username="Marge")
+        cls.aidant_patricia = AidantFactory(username="Patricia")
         cls.usager_homer = Usager.objects.create(
             given_name="Homer",
             family_name="Simpson",
@@ -264,8 +265,8 @@ class AidantModelTest(TestCase):
 class AidantModelMethodsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.aidant_marge = UserFactory(username="Marge")
-        cls.aidant_patricia = UserFactory(username="Patricia")
+        cls.aidant_marge = AidantFactory(username="Marge")
+        cls.aidant_patricia = AidantFactory(username="Patricia")
         cls.usager_homer = UsagerFactory(given_name="Homer", sub="123")
         cls.usager_ned = UsagerFactory(given_name="Ned", sub="1234")
         cls.usager_bart = UsagerFactory(given_name="Bart", sub="1235")
