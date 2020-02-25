@@ -36,73 +36,101 @@ class Aidant(AbstractUser):
     def get_usagers(self):
         """
         :return: a queryset of usagers who have a mandat (both active & expired)
-        with the aidant
+        with the aidant's organisation.
         """
-        mandats_for_aidant = Mandat.objects.filter(aidant=self)
-        usagers = (
-            Usager.objects.filter(mandats__in=mandats_for_aidant)
-            .distinct()
-            .order_by("family_name")
-        )
-        return usagers
+        return Usager.objects.visible_by(self).distinct()
+
+    def get_usager(self, usager_id):
+        """
+        :return: an usager or `None` if the aidant isn't allowed
+        by a mandat to access this usager.
+        """
+        try:
+            return self.get_usagers().get(pk=usager_id)
+        except Usager.DoesNotExist:
+            return None
 
     def get_usagers_with_active_mandat(self):
         """
-        :alternate name: get_active_usagers()
-        :return: a queryset of usagers who have a active mandat with the aidant
+        :return: a queryset of usagers who have an active mandat
+        with the aidant's organisation.
         """
-        active_mandats_for_aidant = Mandat.objects.active().filter(aidant=self)
-        usagers = (
-            Usager.objects.filter(mandats__in=active_mandats_for_aidant)
-            .distinct()
-            .order_by("family_name")
-        )
-        return usagers
+        return self.get_usagers().active()
+
+    def get_mandats(self):
+        """
+        :return: a queryset of mandats visible by this aidant.
+        """
+        return Mandat.objects.visible_by(self).distinct()
+
+    def get_mandat(self, mandat_id):
+        """
+        :return: a mandat or `None` if this mandat is not
+        visible by this aidant.
+        """
+        try:
+            return self.get_mandats().get(pk=mandat_id)
+        except Mandat.DoesNotExist:
+            return None
+
+    def get_mandats_for_usager(self, usager):
+        """
+        :param usager:
+        :return: a queryset of the specified usager's mandats.
+        """
+        return self.get_mandats().for_usager(usager)
 
     def get_active_mandats_for_usager(self, usager):
         """
         :param usager:
-        :return: a queryset of the active mandats with the usagers
+        :return: a queryset of the specified usager's active mandats
+        that are visible by this aidant.
         """
-        active_mandats = (
-            Mandat.objects.active()
-            .filter(usager=usager, aidant=self)
-            .order_by("creation_date")
-        )
-        return active_mandats
+        return self.get_mandats_for_usager(usager).active()
 
     def get_expired_mandats_for_usager(self, usager):
         """
         :param usager:
-        :return: a queryset of the expired mandats with the usagers
+        :return: a queryset of the specified usager's expired mandats
+        that are visible by this aidant.
         """
-        expired_mandats = (
-            Mandat.objects.expired()
-            .filter(usager=usager, aidant=self)
-            .order_by("creation_date")
-        )
-        return expired_mandats
+        return self.get_mandats_for_usager(usager).expired()
 
     def get_active_demarches_for_usager(self, usager):
         """
         :param usager:
-        :return: list of demarche the usager and the aidant have a active mandat for
+        :return: a list of demarches the usager has active mandats for
+        in this aidant's organisation.
         """
-        active_mandats = Mandat.objects.active().filter(usager=usager, aidant=self)
-        return active_mandats.values_list("demarche", flat=True)
+        return self.get_active_mandats_for_usager(usager).values_list(
+            "demarche", flat=True
+        )
 
     def get_last_action_timestamp(self):
-        a = (
-            Journal.objects.filter(initiator=self.full_string_identifier)
-            .last()
-            .creation_date
-        )
-        return a
+        """
+        :return: the timestamp of this aidant's last logged action or `None`.
+        """
+        try:
+            return (
+                Journal.objects.filter(initiator=self.full_string_identifier)
+                .last()
+                .creation_date
+            )
+        except AttributeError:
+            return None
 
 
-class UsagerManager(models.Manager):
+class UsagerQuerySet(models.QuerySet):
     def active(self):
         return self.filter(mandats__expiration_date__gt=timezone.now()).distinct()
+
+    def visible_by(self, aidant):
+        """
+        :param aidant:
+        :return: a new QuerySet instance only filtering in the usagers who have
+        a mandat with this aidant's organisation.
+        """
+        return self.filter(mandats__aidant__organisation=aidant.organisation).distinct()
 
 
 class Usager(models.Model):
@@ -126,7 +154,7 @@ class Usager(models.Model):
 
     creation_date = models.DateTimeField(default=timezone.now)
 
-    objects = UsagerManager()
+    objects = UsagerQuerySet.as_manager()
 
     class Meta:
         ordering = ["family_name", "given_name"]
@@ -139,18 +167,30 @@ class Usager(models.Model):
         return f"{self.get_full_name()} - {self.id} - {self.email}"
 
     def get_full_name(self):
-        return f"{self.given_name} {self.family_name}"
+        return str(self)
+
+    def get_mandat(self, mandat_id):
+        try:
+            return self.mandats.get(pk=mandat_id)
+        except Mandat.DoesNotExist:
+            return None
 
 
-class MandatManager(models.Manager):
+class MandatQuerySet(models.QuerySet):
     def active(self):
         return self.exclude(expiration_date__lt=timezone.now())
 
     def expired(self):
         return self.exclude(expiration_date__gt=timezone.now())
 
-    def demarche(self, demarche):
+    def for_usager(self, usager):
+        return self.filter(usager=usager)
+
+    def for_demarche(self, demarche):
         return self.filter(demarche=demarche)
+
+    def visible_by(self, aidant):
+        return self.filter(aidant__organisation=aidant.organisation)
 
 
 class Mandat(models.Model):
@@ -171,7 +211,7 @@ class Mandat(models.Model):
         blank=False, default="No token provided"
     )
 
-    objects = MandatManager()
+    objects = MandatQuerySet.as_manager()
 
     class Meta:
         unique_together = ["aidant", "demarche", "usager"]

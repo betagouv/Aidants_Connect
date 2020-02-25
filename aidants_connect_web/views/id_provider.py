@@ -78,6 +78,7 @@ def check_request_parameters(
 @login_required
 @activity_required
 def authorize(request):
+
     if request.method == "GET":
         parameters = {
             "state": request.GET.get("state"),
@@ -130,7 +131,7 @@ def authorize(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("Connexion has expired at authorize")
+                log.info("Connection has expired at authorize")
                 return HttpResponseBadRequest()
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the connection_id:")
@@ -138,10 +139,14 @@ def authorize(request):
             logout(request)
             return HttpResponseForbidden()
 
+        aidant = request.user
         chosen_usager = Usager.objects.get(pk=parameters["chosen_usager"])
-        if chosen_usager not in request.user.get_usagers_with_active_mandat():
-            log.info("This usager does not have a valid mandat with the aidant")
-            log.info(request.user.id)
+        if chosen_usager not in aidant.get_usagers_with_active_mandat():
+            log.info(
+                "This usager does not have a valid mandat "
+                "with the aidant's organisation"
+            )
+            log.info(aidant.id)
             logout(chosen_usager.id)
             logout(request)
             return HttpResponseForbidden()

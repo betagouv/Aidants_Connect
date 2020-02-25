@@ -85,7 +85,7 @@ def statistiques(request):
             {
                 "title": demarche,
                 "icon": settings.DEMARCHES[demarche]["icon"],
-                "value": Mandat.objects.demarche(demarche).count(),
+                "value": Mandat.objects.for_demarche(demarche).count(),
             }
         )
     demarches_aggregation.sort(key=lambda x: x["value"], reverse=True)
