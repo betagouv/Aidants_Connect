@@ -1,3 +1,4 @@
+from django.contrib.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from django_otp.admin import OTPAdminSite
@@ -22,7 +23,35 @@ from aidants_connect_web.models import (
 admin_site = OTPAdminSite(OTPAdminSite.name)
 
 
-class AidantAdmin(DjangoUserAdmin):
+class VisibleToStaff(ModelAdmin):
+    """A mixin to make a model registered in the Admin visible to staff users."""
+
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def has_view_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_add_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+
+class StaticDeviceStaffAdmin(VisibleToStaff, StaticDeviceAdmin):
+    pass
+
+
+class TOTPDeviceStaffAdmin(VisibleToStaff, TOTPDeviceAdmin):
+    pass
+
+
+class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
+
     # The forms to add and change aidant instances
     form = AidantChangeForm
     add_form = AidantCreationForm
@@ -71,8 +100,8 @@ admin_site.register(Usager)
 admin_site.register(Mandat)
 admin_site.register(Journal)
 admin_site.register(Connection)
-admin_site.register(Organisation)
+admin_site.register(Organisation, VisibleToStaff)
 
 admin_site.register(MagicToken)
-admin_site.register(StaticDevice, StaticDeviceAdmin)
-admin_site.register(TOTPDevice, TOTPDeviceAdmin)
+admin_site.register(StaticDevice, StaticDeviceStaffAdmin)
+admin_site.register(TOTPDevice, TOTPDeviceStaffAdmin)
