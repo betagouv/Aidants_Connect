@@ -38,7 +38,7 @@ def new_mandat(request):
 
             duree = 1 if data["duree"] == "short" else 365
             connection = Connection.objects.create(
-                demarches=data["demarche"], duree=duree
+                aidant=request.user, demarches=data["demarche"], duree=duree
             )
             request.session["connection"] = connection.pk
             return redirect("fc_authorize")

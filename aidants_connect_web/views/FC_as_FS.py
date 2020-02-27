@@ -11,7 +11,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
 from django.utils import timezone
 
-from aidants_connect_web.models import Connection, Usager
+from aidants_connect_web.models import Connection, Usager, Journal
 from aidants_connect_web.utilities import generate_sha256_hash
 
 
@@ -128,6 +128,12 @@ def fc_callback(request):
 
     connection.usager = usager
     connection.save()
+
+    Journal.objects.franceconnection_usager(
+        aidant=connection.aidant,
+        usager=connection.usager,
+        access_token=connection.access_token,
+    )
 
     logout_base = f"{fc_base}/logout"
     logout_id_token = f"id_token_hint={fc_id_token}"

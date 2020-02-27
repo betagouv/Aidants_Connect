@@ -390,6 +390,16 @@ class JournalModelTest(TestCase):
             entry.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
         )
 
+    def test_a_franceconnect_usager_journal_entry_can_be_created(self):
+        entry = Journal.objects.franceconnection_usager(
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
+            access_token="fjfgjfdkldlzlsmqqxxcn",
+        )
+
+        self.assertEqual(len(Journal.objects.all()), 3)
+        self.assertEqual(entry.action, "franceconnect_usager")
+
     def test_log_mandat_creation_complete(self):
         mandat = MandatFactory(
             aidant=self.aidant_thierry,

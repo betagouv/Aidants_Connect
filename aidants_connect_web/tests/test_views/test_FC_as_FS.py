@@ -1,18 +1,18 @@
 from datetime import datetime, timedelta
+from freezegun import freeze_time
+from pytz import timezone as pytz_timezone
 import mock
+import jwt
 
 from django.conf import settings
 from django.test import tag, TestCase
 from django.test.client import Client
 
-from freezegun import freeze_time
-import jwt
-from pytz import timezone
-
-from aidants_connect_web.models import Connection
+from aidants_connect_web.models import Connection, Journal
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.views.FC_as_FS import get_user_info
+
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -33,14 +33,14 @@ class FCAuthorize(TestCase):
 
 @tag("new_mandat", "FC_as_FS")
 class FCCallback(TestCase):
-    date = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
+    date = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
     epoch_date = date.timestamp()
 
     @freeze_time(date)
     def setUp(self):
         self.client = Client()
         self.aidant = AidantFactory()
-        date = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris"))
+        date = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
         self.epoch_date = date.timestamp()
 
         self.connection = Connection.objects.create(
@@ -51,6 +51,7 @@ class FCCallback(TestCase):
             nonce="test_nonce",
             id=1,
             expires_on=date + timedelta(minutes=5),
+            aidant=self.aidant,
         )
         Connection.objects.create(
             state="test_another_state",
@@ -166,6 +167,9 @@ class FCCallback(TestCase):
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "franceconnect_usager")
+
     @freeze_time(date)
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
@@ -240,6 +244,9 @@ class FCCallback(TestCase):
             "rect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "franceconnect_usager")
 
 
 @tag("new_mandat", "FC_as_FS")

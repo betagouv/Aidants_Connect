@@ -275,6 +275,17 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
+    def franceconnection_usager(
+        self, aidant: Aidant, usager: Usager, access_token: str
+    ):
+        journal_entry = self.create(
+            initiator=aidant.full_string_identifier,
+            usager=usager.full_string_identifier,
+            action="franceconnect_usager",
+            access_token=access_token,
+        )
+        return journal_entry
+
     def mandat_print(
         self, aidant: Aidant, usager: Usager, demarches: list, expiration_date
     ):
@@ -352,6 +363,7 @@ class Journal(models.Model):
     ACTIONS = (
         ("connect_aidant", "Connexion d'un aidant"),
         ("activity_check_aidant", "Reprise de connexion d'un aidant"),
+        ("franceconnect_usager", "FranceConnexion d'un usager"),
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),
         ("update_mandat", "Renouvellement d'un mandat"),
