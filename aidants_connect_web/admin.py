@@ -1,6 +1,18 @@
 from django.contrib.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
+from django_celery_beat.admin import (
+    ClockedScheduleAdmin,
+    PeriodicTaskAdmin,
+)
+from django_celery_beat.models import (
+    ClockedSchedule,
+    CrontabSchedule,
+    IntervalSchedule,
+    PeriodicTask,
+    SolarSchedule,
+)
+
 from django_otp.admin import OTPAdminSite
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.models import StaticDevice
@@ -12,11 +24,11 @@ from magicauth.models import MagicToken
 from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
 from aidants_connect_web.models import (
     Aidant,
-    Usager,
-    Mandat,
-    Journal,
     Connection,
+    Journal,
+    Mandat,
     Organisation,
+    Usager,
 )
 
 
@@ -104,5 +116,13 @@ admin_site.register(Connection)
 admin_site.register(Organisation, VisibleToStaff)
 
 admin_site.register(MagicToken)
-admin_site.register(StaticDevice, StaticDeviceStaffAdmin)
-admin_site.register(TOTPDevice, TOTPDeviceStaffAdmin)
+admin_site.register(StaticDevice, StaticDeviceAdmin)
+admin_site.register(TOTPDevice, TOTPDeviceAdmin)
+
+
+# Also register the Django Celery Beat models
+admin_site.register(PeriodicTask, PeriodicTaskAdmin)
+admin_site.register(IntervalSchedule)
+admin_site.register(CrontabSchedule)
+admin_site.register(SolarSchedule)
+admin_site.register(ClockedSchedule, ClockedScheduleAdmin)

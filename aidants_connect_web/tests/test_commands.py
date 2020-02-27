@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from io import StringIO
 
 from django.core.management import call_command
 from django.test import tag, TestCase
@@ -24,17 +23,14 @@ class DeleteExpiredConnectionsTest(TestCase):
     def test_delete_expired_connections(self):
         self.assertEqual(Connection.objects.count(), 2)
 
-        out = StringIO()
         command_name = "delete_expired_connections"
 
-        call_command(command_name, stdout=out)
+        call_command(command_name)
         remaining_connections = Connection.objects.all()
         self.assertEqual(remaining_connections.count(), 1)
         self.assertEqual(remaining_connections.first().id, self.conn_2.id)
-        self.assertIn("Successfully deleted 1 connection!", out.getvalue())
 
-        call_command(command_name, stdout=out)
+        call_command(command_name)
         remaining_connections = Connection.objects.all()
         self.assertEqual(remaining_connections.count(), 1)
         self.assertEqual(remaining_connections.first().id, self.conn_2.id)
-        self.assertIn("No connection to delete.", out.getvalue())

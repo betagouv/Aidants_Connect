@@ -1,6 +1,8 @@
 Django==3.0.4
 
+celery[redis]==4.4.0
 django-admin-honeypot==1.1.0
+django-celery-beat==2.0.0
 django-csp==3.6
 django-otp==0.8.1
 django-referrer-policy==1.0
