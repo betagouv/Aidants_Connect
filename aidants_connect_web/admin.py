@@ -51,8 +51,20 @@ class TOTPDeviceStaffAdmin(VisibleToStaff, TOTPDeviceAdmin):
 
 
 class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
 
-    # The forms to add and change aidant instances
+        # Prevent non-superusers from being able to set
+        # the `is_staff` and `is_superuser` flags.
+        if not request.user.is_superuser:
+            if "is_superuser" in form.base_fields:
+                form.base_fields["is_superuser"].disabled = True
+            if "is_staff" in form.base_fields:
+                form.base_fields["is_staff"].disabled = True
+
+        return form
+
+    # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
 
