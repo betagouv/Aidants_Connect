@@ -68,21 +68,10 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
             {"fields": ("username", "first_name", "last_name", "email", "password")},
         ),
         ("Informations professionnelles", {"fields": ("profession", "organisation")}),
-        (
-            "Permissions",
-            {
-                "fields": (
-                    "is_active",
-                    "is_staff",
-                    "is_superuser",
-                    "groups",
-                    "user_permissions",
-                )
-            },
-        ),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser",)},),
     )
-    # add_fieldsets is not a standard ModelAdmin attribute. AidantAdmin
-    # overrides get_fieldsets to use this attribute when creating an aidant.
+    # `add_fieldsets` is not a standard `ModelAdmin` attribute. `AidantAdmin`
+    # overrides `get_fieldsets` to use this attribute when creating an `Aidant`.
     add_fieldsets = (
         (
             "Informations personnelles",
