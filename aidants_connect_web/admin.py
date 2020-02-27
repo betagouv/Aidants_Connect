@@ -56,11 +56,11 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
     form = AidantChangeForm
     add_form = AidantCreationForm
 
-    # The fields to be used in displaying the Aidant model.
-    # These override the definitions on the base UserAdmin
-    # that reference specific fields on auth.User.
-    list_display = ("email", "is_superuser", "organisation")
-    list_filter = ("is_superuser",)
+    # The fields to be used in displaying the `Aidant` model.
+    # These override the definitions on the base `UserAdmin`
+    # that references specific fields on `auth.User`.
+    list_display = ("organisation", "email", "is_staff", "is_superuser")
+    list_filter = ("is_staff", "is_superuser")
     filter_horizontal = ("groups", "user_permissions")
     fieldsets = (
         (
