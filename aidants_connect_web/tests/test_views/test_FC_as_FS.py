@@ -271,6 +271,7 @@ class GetUserInfoTests(TestCase):
         usager, error = get_user_info("abc", "def")
 
         self.assertEqual(usager.given_name, "Fabrice")
+        self.assertEqual(usager.email, "test@test.com")
         self.assertEqual(error, None)
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
