@@ -153,6 +153,7 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
             birthplace=user_info.get("birthplace"),
             birthcountry=user_info.get("birthcountry"),
             sub=user_info.get("sub"),
+            email=user_info.get("email"),
         )
         return usager, None
 
