@@ -26,6 +26,7 @@ from aidants_connect_web.utilities import (
     generate_file_sha256_hash,
     validate_mandat_print_hash,
 )
+from aidants_connect_web.views.new_mandat import generate_mandat_print_hash
 
 
 @tag("models")
@@ -474,15 +475,19 @@ class JournalModelTest(TestCase):
             usager=self.usager_ned,
             demarches=demarches,
             duree=6,
-            expiration_date=expiration_date,
+            mandat_print_hash=generate_mandat_print_hash(
+                self.aidant_thierry, self.usager_ned, demarches, expiration_date
+            ),
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "print_mandat")
 
         mandat_print_string = (
-            f"{self.aidant_thierry.id},{date.today().isoformat()},"
-            f"logement,transports,{expiration_date.date().isoformat()},"
+            f"{self.aidant_thierry.id},"
+            f"{date.today().isoformat()},"
+            f"logement,transports,"
+            f"{expiration_date.date().isoformat()},"
             f"{self.aidant_thierry.organisation.id},"
             f"{generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH)},"
             f"{self.usager_ned.sub}"
