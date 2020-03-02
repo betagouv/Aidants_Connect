@@ -475,6 +475,7 @@ class JournalModelTest(TestCase):
             usager=self.usager_ned,
             demarches=demarches,
             duree=6,
+            access_token="fjfgjfdkldlzlsmqqxxcn",
             mandat_print_hash=generate_mandat_print_hash(
                 self.aidant_thierry, self.usager_ned, demarches, expiration_date
             ),
@@ -484,12 +485,12 @@ class JournalModelTest(TestCase):
         self.assertEqual(entry.action, "print_mandat")
 
         mandat_print_string = (
-            f"{self.aidant_thierry.id},"
-            f"{date.today().isoformat()},"
-            f"logement,transports,"
-            f"{expiration_date.date().isoformat()},"
-            f"{self.aidant_thierry.organisation.id},"
-            f"{generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH)},"
+            f"{self.aidant_thierry.id};"
+            f"{date.today().isoformat()};"
+            f"logement,transports;"
+            f"{expiration_date.date().isoformat()};"
+            f"{self.aidant_thierry.organisation.id};"
+            f"{generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH)};"
             f"{self.usager_ned.sub}"
         )
         self.assertTrue(

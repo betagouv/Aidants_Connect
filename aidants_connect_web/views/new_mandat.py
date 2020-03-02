@@ -36,7 +36,7 @@ def generate_mandat_print_hash(aidant, usager, demarches, expiration_date):
         "usager_sub": usager.sub,
     }
     sorted_mandat_print_data = dict(sorted(mandat_print_data.items()))
-    mandat_print_string = ",".join(
+    mandat_print_string = ";".join(
         str(x) for x in list(sorted_mandat_print_data.values())
     )
     mandat_print_string_with_salt = mandat_print_string + settings.MANDAT_PRINT_SALT
@@ -114,6 +114,7 @@ def new_mandat_recap(request):
                     usager=usager,
                     demarches=connection.demarches,
                     duree=connection.duree,
+                    access_token=connection.access_token,
                     mandat_print_hash=generate_mandat_print_hash(
                         aidant, usager, connection.demarches, mandat_expiration_date
                     ),
@@ -224,9 +225,10 @@ def mandat_preview_final(request):
 @login_required
 @activity_required
 def mandat_preview_final_qrcode(request):
+    connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
 
-    journal_print_mandat = aidant.get_journal_of_last_print_mandat()
+    journal_print_mandat = aidant.get_journal_print_mandat(connection.access_token)
     journal_print_mandat_qrcode_png = generate_qrcode_png(
         journal_print_mandat.mandat_print_hash
     )

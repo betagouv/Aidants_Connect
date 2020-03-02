@@ -124,12 +124,14 @@ class Aidant(AbstractUser):
         except AttributeError:
             return None
 
-    def get_journal_of_last_print_mandat(self):
+    def get_journal_print_mandat(self, access_token):
         """
-        :return: the last 'print_mandat' Journal entry initiated by the aidant
+        :return: the corresponding 'print_mandat' Journal entry initiated by the aidant
         """
         journal_print_mandat = Journal.objects.filter(
-            action="print_mandat", initiator=self.full_string_identifier
+            initiator=self.full_string_identifier,
+            action="print_mandat",
+            access_token=access_token,
         ).last()
         return journal_print_mandat
 
@@ -310,6 +312,7 @@ class JournalManager(models.Manager):
         usager: Usager,
         demarches: list,
         duree: int,
+        access_token: str,
         mandat_print_hash: str,
     ):
         journal_entry = self.create(
@@ -318,6 +321,7 @@ class JournalManager(models.Manager):
             action="print_mandat",
             demarche=",".join(demarches),
             duree=duree,
+            access_token=access_token,
             mandat_print_hash=mandat_print_hash,
         )
         return journal_entry
