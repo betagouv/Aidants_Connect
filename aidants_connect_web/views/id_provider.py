@@ -217,7 +217,7 @@ def fi_select_demarche(request):
         try:
             chosen_mandat = Mandat.objects.get(
                 usager=connection.usager,
-                aidant=request.user,
+                aidant__organisation=request.user.organisation,
                 demarche=parameters["chosen_demarche"],
                 expiration_date__gt=timezone.now(),
             )

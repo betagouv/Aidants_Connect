@@ -239,6 +239,10 @@ class FISelectDemarcheTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant_thierry = AidantFactory()
+        self.aidant_yasmina = AidantFactory(
+            username='yasmina@yasmina.com',
+            organisation=self.aidant_thierry.organisation
+        )
         self.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -320,6 +324,24 @@ class FISelectDemarcheTest(TestCase):
         self.assertIn("logement", mandats)
         self.assertEqual(len(mandats), 3)
 
+    @freeze_time(date_close)
+    def test_post_to_select_demarche_triggers_redirect(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/select_demarche/",
+            data={"connection_id": self.connection.id, "chosen_demarche": "famille"},
+        )
+        self.assertEqual(response.status_code, 302)
+
+    @freeze_time(date_close)
+    def test_with_another_aidant_from_the_organisation(self):
+        self.client.force_login(self.aidant_yasmina)
+        response = self.client.post(
+            "/select_demarche/",
+            data={"connection_id": self.connection.id, "chosen_demarche": "famille"},
+        )
+        self.assertEqual(response.status_code, 302)
+
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_further_away)
@@ -334,15 +356,6 @@ class FISelectDemarcheTest(TestCase):
         self.assertIn("transports", mandats)
         self.assertNotIn("logement", mandats)
         self.assertEqual(len(mandats), 2)
-
-    @freeze_time(date_further_away)
-    def test_post_to_select_demarche_triggers_redirect(self):
-        self.client.force_login(self.aidant_thierry)
-        response = self.client.post(
-            "/select_demarche/",
-            data={"connection_id": self.connection.id, "chosen_demarche": "famille"},
-        )
-        self.assertEqual(response.status_code, 302)
 
     @freeze_time(date_further_away)
     def test_post_to_select_demarche_with_expired_demarche_triggers_403(self):
