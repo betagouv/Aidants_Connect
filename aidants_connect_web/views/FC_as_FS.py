@@ -117,7 +117,7 @@ def fc_callback(request):
 
     try:
         usager_sub = generate_sha256_hash(
-            decoded_token["sub"] + settings.FC_AS_FI_HASH_SALT
+            f"{decoded_token['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
         )
         usager = Usager.objects.get(sub=usager_sub)
     except Usager.DoesNotExist:
@@ -147,6 +147,10 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
     if user_info.get("birthplace") == "":
         user_info["birthplace"] = None
 
+    usager_sub = generate_sha256_hash(
+        f"{user_info['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
+    )
+
     try:
         usager = Usager.objects.create(
             given_name=user_info.get("given_name"),
@@ -155,7 +159,7 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
             gender=user_info.get("gender"),
             birthplace=user_info.get("birthplace"),
             birthcountry=user_info.get("birthcountry"),
-            sub=user_info.get("sub"),
+            sub=usager_sub,
             email=user_info.get("email"),
         )
         return usager, None

@@ -35,7 +35,7 @@ class UsagerFactory(factory.DjangoModelFactory):
     birthplace = 27681
     birthcountry = 99100
     email = "homer@simpson.com"
-    sub = factory.Sequence(lambda n: "avalidsub{0}".format(n))
+    sub = factory.Sequence(lambda n: f"avalidsub{n}")
 
     class Meta:
         model = Usager

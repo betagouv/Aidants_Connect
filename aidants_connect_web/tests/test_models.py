@@ -102,15 +102,7 @@ class UsagerModelTest(TestCase):
         self.assertEqual(first_saved_item.given_name, "TEST NAME")
         self.assertEqual(str(first_saved_item.birthdate), "1902-06-30")
         self.assertEqual(second_saved_item.family_name, "TEST Family Name éèà")
-        self.assertTrue(first_saved_item.sub)
-        self.assertEqual(len(first_saved_item.sub), 64)
-
-    def test_usager_without_sub_should_raise_error(self):
-        first_usager = Usager()
-        first_usager.given_name = "TEST NAME"
-        first_usager.birthdate = date(1902, 6, 30)
-
-        self.assertRaises(AttributeError, lambda: first_usager.save())
+        self.assertEqual(second_usager.sub, "1234")
 
 
 @tag("models")
@@ -372,10 +364,9 @@ class JournalModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.entry1 = Journal.objects.create(action="connect_aidant", initiator="ABC")
-        cls.aidant_thierry = Aidant.objects.create_user(
+        cls.aidant_thierry = AidantFactory(
             username="Thierry",
             email="thierry@thierry.com",
-            password="motdepassedethierry",
             first_name="Thierry",
             last_name="Martin",
             organisation=OrganisationFactory(name="Commune de Vernon"),

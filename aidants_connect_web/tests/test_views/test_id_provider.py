@@ -33,10 +33,7 @@ class AuthorizeTests(TestCase):
         self.aidant_jacques = AidantFactory(
             username="jacques@domain.user", email="jacques@domain.user"
         )
-        Aidant.objects.create_user(
-            "Jacques", "jacques@domain.user", "motdepassedejacques"
-        )
-        self.usager = UsagerFactory(given_name="Joséphine")
+        self.usager = UsagerFactory(given_name="Joséphine", sub="123")
         MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
@@ -200,7 +197,7 @@ class AuthorizeTests(TestCase):
         saved_items = Connection.objects.all()
         self.assertEqual(saved_items.count(), 2)
         connection = saved_items[1]
-        self.assertEqual(connection.usager.sub, self.usager.sub)
+        self.assertEqual(connection.usager.sub, "123")
         self.assertNotEqual(connection.nonce, "No Nonce Provided")
 
         url = reverse("fi_select_demarche") + "?connection_id=" + str(connection.id)
@@ -492,19 +489,6 @@ class UserInfoTests(TestCase):
             birthplace=70447,
             birthcountry=99100,
             sub="test_sub",
-            email="User@user.domain",
-            creation_date="2019-08-05T15:49:13.972Z",
-        )
-
-        self.usager_2 = UsagerFactory(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate=date(1969, 12, 25),
-            gender="F",
-            birthplace=70447,
-            birthcountry=99100,
-            sub="test_sub2",
             email="User@user.domain",
             creation_date="2019-08-05T15:49:13.972Z",
         )

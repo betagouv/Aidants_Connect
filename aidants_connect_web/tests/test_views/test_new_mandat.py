@@ -13,7 +13,6 @@ from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Connection, Journal, Mandat, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.views import new_mandat
-from aidants_connect_web.utilities import generate_sha256_hash
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -63,11 +62,11 @@ class NewMandatRecapTests(TestCase):
         device = self.aidant_monique.staticdevice_set.create(id=2)
         device.token_set.create(token="323456")
 
-        self.test_usager_sub_fc = (
+        self.test_usager_sub = (
             "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1"
         )
         self.test_usager = UsagerFactory(
-            given_name="Fabrice", birthplace=95277, sub=self.test_usager_sub_fc,
+            given_name="Fabrice", birthplace=95277, sub=self.test_usager_sub,
         )
         self.mandat_builder = Connection.objects.create(
             demarches=["papiers", "logement"], duree=365, usager=self.test_usager
@@ -103,10 +102,6 @@ class NewMandatRecapTests(TestCase):
         )
         self.assertEqual(Usager.objects.all().count(), 1)
         usager = Usager.objects.get(given_name="Fabrice")
-        self.assertEqual(
-            usager.sub,
-            generate_sha256_hash(self.test_usager_sub_fc + settings.FC_AS_FI_HASH_SALT),
-        )
         self.assertEqual(usager.birthplace, 95277)
         self.assertRedirects(response, "/creation_mandat/succes/")
 

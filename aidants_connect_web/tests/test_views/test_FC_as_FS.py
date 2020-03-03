@@ -11,6 +11,7 @@ from pytz import timezone
 
 from aidants_connect_web.models import Connection, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
+from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.views.FC_as_FS import get_user_info
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -59,7 +60,10 @@ class FCCallback(TestCase):
         )
 
         self.usager_sub_fc = "123"
-        self.usager = UsagerFactory(given_name="Joséphine", sub=self.usager_sub_fc)
+        self.usager_sub = generate_sha256_hash(
+            f"{self.usager_sub_fc}{settings.FC_AS_FI_HASH_SALT}".encode()
+        )
+        self.usager = UsagerFactory(given_name="Joséphine", sub=self.usager_sub)
 
     def test_no_code_triggers_403(self):
         response = self.client.get("/callback/", data={"state": "test_state"})
