@@ -115,14 +115,14 @@ class MandatModelTest(TestCase):
         cls.usager_ned = UsagerFactory(family_name="Flanders")
 
     def test_saving_and_retrieving_mandat(self):
-        first_mandat = Mandat.objects.create(
+        first_mandat = MandatFactory(
             aidant=self.aidant_marge,
             usager=self.usager_homer,
             demarche="Carte grise",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
-        second_mandat = Mandat.objects.create(
+        second_mandat = MandatFactory(
             aidant=self.aidant_patricia,
             usager=self.usager_ned,
             demarche="Revenus",
@@ -141,7 +141,7 @@ class MandatModelTest(TestCase):
         self.assertEqual(second_mandat.usager.family_name, "Flanders")
 
     def test_cannot_have_two_mandat_for_user_demarche_tuple(self):
-        Mandat.objects.create(
+        MandatFactory(
             aidant=self.aidant_marge,
             usager=self.usager_homer,
             demarche="Logement",
@@ -162,7 +162,7 @@ class MandatModelTest(TestCase):
 
     @freeze_time(fake_date)
     def test_mandat_expiration_date_setting(self):
-        mandat_1 = Mandat.objects.create(
+        mandat_1 = MandatFactory(
             aidant=self.aidant_marge,
             usager=self.usager_homer,
             demarche="Carte grise",
@@ -181,7 +181,7 @@ class MandatModelTest(TestCase):
 @tag("models")
 class OrganisationModelTest(TestCase):
     def test_create_and_retrieve_organisation(self):
-        Organisation.objects.create(
+        OrganisationFactory(
             name="Girard S.A.R.L",
             siret="123",
             address="3 rue du chat, 27120 Houlbec-Cocherel",
@@ -208,20 +208,18 @@ class AidantModelTest(TestCase):
 
     def test_aidant_fills_all_the_information(self):
         self.assertEqual(len(Aidant.objects.all()), 0)
-        Aidant.objects.create(username="bhameau@domain.user")
+        AidantFactory(username="bhameau@domain.user")
         self.assertEqual(len(Aidant.objects.all()), 1)
-        Aidant.objects.create(username="cgireau@domain.user")
+        AidantFactory(username="cgireau@domain.user")
         self.assertEqual(len(Aidant.objects.all()), 2)
 
     def test_get_aidant_organization(self):
-        orga = Organisation.objects.create(
+        orga = OrganisationFactory(
             name="COMMUNE DE HOULBEC COCHEREL",
             siret=123,
             address="45 avenue du Général de Gaulle, 90210 Beverly Hills",
         )
-        aidant = Aidant.objects.create(
-            username="bhameau@domain.user", organisation=orga
-        )
+        aidant = AidantFactory(username="bhameau@domain.user", organisation=orga)
         self.assertEqual(aidant.organisation.name, "COMMUNE DE HOULBEC COCHEREL")
 
 
@@ -373,7 +371,7 @@ class JournalModelTest(TestCase):
         )
         cls.usager_ned = UsagerFactory(given_name="Ned", family_name="Flanders")
 
-        cls.first_mandat = Mandat.objects.create(
+        cls.first_mandat = MandatFactory(
             aidant=cls.aidant_thierry,
             usager=cls.usager_ned,
             demarche="Revenus",
@@ -393,7 +391,7 @@ class JournalModelTest(TestCase):
         )
 
     def test_log_mandat_creation_complete(self):
-        mandat = Mandat.objects.create(
+        mandat = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarche="logement",
@@ -440,7 +438,7 @@ class JournalModelTest(TestCase):
         )
 
         entry.demarches = ["logement"]
-        self.assertRaises(NotImplementedError, lambda: entry.save())
+        self.assertRaises(NotImplementedError, entry.save)
         self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
     def test_it_is_impossible_to_delete_an_existing_entry(self):
@@ -452,7 +450,7 @@ class JournalModelTest(TestCase):
             mandat=self.first_mandat,
         )
 
-        self.assertRaises(NotImplementedError, lambda: entry.delete())
+        self.assertRaises(NotImplementedError, entry.delete)
         self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
     def test_a_print_mandat_journal_entry_can_be_created(self):

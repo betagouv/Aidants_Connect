@@ -5,7 +5,6 @@ from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
 
-from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     MandatFactory,
@@ -58,13 +57,13 @@ class MandatCancelConfirmPageTests(TestCase):
         )
         self.usager_1 = UsagerFactory()
         self.usager_2 = UsagerFactory()
-        self.mandat_1 = Mandat.objects.create(
+        self.mandat_1 = MandatFactory(
             aidant=self.aidant_1,
             usager=self.usager_1,
             demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        self.mandat_2 = Mandat.objects.create(
+        self.mandat_2 = MandatFactory(
             aidant=self.aidant_2,
             usager=self.usager_2,
             demarche="Revenus",

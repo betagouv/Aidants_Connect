@@ -9,7 +9,7 @@ from freezegun import freeze_time
 import jwt
 from pytz import timezone
 
-from aidants_connect_web.models import Connection, Usager
+from aidants_connect_web.models import Connection
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.views.FC_as_FS import get_user_info
@@ -203,7 +203,7 @@ class FCCallback(TestCase):
 
         # creating mock_get_user_info
         mock_get_user_info.return_value = (
-            Usager.objects.create(
+            UsagerFactory(
                 given_name="Joséphine",
                 family_name="ST-PIERRE",
                 preferred_username="ST-PIERRE",

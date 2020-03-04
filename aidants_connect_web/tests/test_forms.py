@@ -25,7 +25,7 @@ class AidantCreationFormTest(TestCase):
             "organisation": "3",
         }
         self.organisation = OrganisationFactory(id=3)
-        self.existing_aidant = Aidant.objects.create(
+        self.existing_aidant = AidantFactory(
             first_name="Armand",
             last_name="Giraud",
             email="agiraud@domain.user",
@@ -65,7 +65,7 @@ class AidantCreationFormTest(TestCase):
         self.assertEqual(new_aidant.username, "hbernart@domain.user")
 
     def test_cannot_create_new_aidant_with_same_email(self):
-        Aidant.objects.create(
+        AidantFactory(
             first_name="Henri",
             last_name="Bernart",
             email="hbernart@domain.user",
@@ -110,7 +110,7 @@ class AidantChangeFormTest(TestCase):
         self.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
         self.nantes_id = self.organisation_nantes.id
 
-        Aidant.objects.create(
+        AidantFactory(
             first_name="Henri",
             last_name="Bernard",
             email="hello@domain.user",
@@ -119,7 +119,7 @@ class AidantChangeFormTest(TestCase):
             profession="Mediateur",
             organisation=self.organisation_nîmes,
         )
-        self.aidant2 = Aidant.objects.create(
+        self.aidant2 = AidantFactory(
             first_name="Armand",
             last_name="Bernard",
             email="abernart@domain.user",
