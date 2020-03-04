@@ -10,9 +10,9 @@ import jwt
 from pytz import timezone
 
 from aidants_connect_web.models import Connection, Usager
-from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
+from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.views.FC_as_FS import get_user_info
-
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -59,18 +59,11 @@ class FCCallback(TestCase):
             id=2,
         )
 
-        self.usager = Usager.objects.create(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate="1969-12-15",
-            gender="female",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="123",
-            email="User@user.domain",
-            creation_date="2019-08-05T15:49:13.972Z",
+        self.usager_sub_fc = "123"
+        self.usager_sub = generate_sha256_hash(
+            f"{self.usager_sub_fc}{settings.FC_AS_FI_HASH_SALT}".encode()
         )
+        self.usager = UsagerFactory(given_name="Joséphine", sub=self.usager_sub)
 
     def test_no_code_triggers_403(self):
         response = self.client.get("/callback/", data={"state": "test_state"})
@@ -136,9 +129,10 @@ class FCCallback(TestCase):
             "exp": self.epoch_date + 600,
             "iat": self.epoch_date - 600,
             "iss": "http://franceconnect.gouv.fr",
-            "sub": 123,
+            "sub": self.usager_sub_fc,
             "nonce": "test_nonce",
         }
+
         mock_response.json = mock.Mock(
             return_value={
                 "access_token": "b337567e-437a-4167-ba51-8f8b6772980b",
@@ -166,9 +160,9 @@ class FCCallback(TestCase):
             "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRi"
             "NDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjox"
             "NTQ3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
-            "bmVjdC5nb3V2LmZyIiwic3ViIjoxMjMsIm5vbmNlIjoidGVzdF9ub25jZSJ9.vqQoJ3vovqC"
-            "nbXzu7_V7bgsIZH6PPLBkIzeWnSp2sqo'&state=test_state&post_logout_redirect_"
-            "uri=http://localhost:3000/logout-callback"
+            "bmVjdC5nb3V2LmZyIiwic3ViIjoiMTIzIiwibm9uY2UiOiJ0ZXN0X25vbmNlIn0.QGb2uhgG"
+            "wXvKaVT8FXwOzSObtuLrBRKigd7DVJwUG5s'&state=test_state"
+            "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
@@ -191,7 +185,7 @@ class FCCallback(TestCase):
             "exp": self.epoch_date + 600,
             "iat": self.epoch_date - 600,
             "iss": "http://franceconnect.gouv.fr",
-            "sub": 456,
+            "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
             "nonce": "test_nonce",
         }
         mock_response.json = mock.Mock(
@@ -218,6 +212,7 @@ class FCCallback(TestCase):
                 birthplace="70447",
                 birthcountry="99100",
                 email="User@user.domain",
+                sub="456",
             ),
             None,
         )
@@ -238,10 +233,11 @@ class FCCallback(TestCase):
             "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'ey"
             "J0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRiND"
             "Q4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ"
-            "3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmV"
-            "jdC5nb3V2LmZyIiwic3ViIjo0NTYsIm5vbmNlIjoidGVzdF9ub25jZSJ9.tuHulPV1IhyS7UZ"
-            "8q4QWrg8EAeF1vgpFOr-5vV-ags4'&state=test_state&post_logout_redirect_uri="
-            "http://localhost:3000/logout-callback"
+            "3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmVj"
+            "dC5nb3V2LmZyIiwic3ViIjoiOWI3NTQ3ODI3MDVjNTVlYmZlMTAzNzFjOTA5ZjYyZTczYTNlM"
+            "DlmYjU2NmZjNWQyMzA0MGEyOWZhZTRlMGViYiIsIm5vbmNlIjoidGVzdF9ub25jZSJ9.J8048"
+            "J_B5MgwQkLzX28yXTDFPB4mTeoyUGW9RSW5YZ4'&state=test_state&post_logout_redi"
+            "rect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
 

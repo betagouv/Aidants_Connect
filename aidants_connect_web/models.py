@@ -147,11 +147,9 @@ class Usager(models.Model):
         blank=False,
     )
     sub = models.TextField(blank=False, unique=True)
-
     email = models.EmailField(
         blank=False, default="noemailprovided@aidantconnect.beta.gouv.fr"
     )
-
     creation_date = models.DateTimeField(default=timezone.now)
 
     objects = UsagerQuerySet.as_manager()

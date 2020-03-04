@@ -16,7 +16,6 @@ from aidants_connect_web.models import (
     Aidant,
     Connection,
     Journal,
-    Usager,
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -34,34 +33,24 @@ class AuthorizeTests(TestCase):
         self.aidant_jacques = AidantFactory(
             username="jacques@domain.user", email="jacques@domain.user"
         )
-        self.usager = UsagerFactory(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate="1969-12-15",
-            gender="female",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="123",
-            email="User@user.domain",
-            id=1,
-        )
+        self.usager = UsagerFactory(given_name="Joséphine", sub="123")
         MandatFactory(
-            aidant=Aidant.objects.get(username="thierry@thierry.com"),
-            usager=Usager.objects.get(sub="123"),
+            aidant=self.aidant_thierry,
+            usager=self.usager,
             demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
         MandatFactory(
-            aidant=Aidant.objects.get(username="thierry@thierry.com"),
-            usager=Usager.objects.get(sub="123"),
+            aidant=self.aidant_thierry,
+            usager=self.usager,
             demarche="Famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
+
         MandatFactory(
-            aidant=Aidant.objects.get(username=self.aidant_jacques.username),
-            usager=Usager.objects.get(sub="123"),
+            aidant=self.aidant_jacques,
+            usager=self.usager,
             demarche="Logement",
             expiration_date=timezone.now() + timedelta(days=12),
         )
@@ -71,7 +60,7 @@ class AuthorizeTests(TestCase):
         self.connection = Connection.objects.create(
             state="test_expiration_date_triggered",
             nonce="avalidnonce456",
-            usager=Usager.objects.get(sub="123"),
+            usager=self.usager,
             expires_on=date_further_away_minus_one_hour,
         )
 
@@ -243,17 +232,7 @@ class FISelectDemarcheTest(TestCase):
             username='yasmina@yasmina.com',
             organisation=self.aidant_thierry.organisation
         )
-        self.usager = UsagerFactory(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate="1969-12-15",
-            gender="female",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="123",
-            email="User@user.domain",
-        )
+        self.usager = UsagerFactory(given_name="Joséphine")
 
         self.connection = Connection.objects.create(
             state="avalidstate123", nonce="avalidnonce456", usager=self.usager,
@@ -399,21 +378,14 @@ class TokenTests(TestCase):
     def setUp(self):
         self.code = "test_code"
         self.code_hash = make_password(self.code, settings.FC_AS_FI_HASH_SALT)
+        self.usager = UsagerFactory(given_name="Joséphine")
+        self.usager.sub = "avalidsub789"
+        self.usager.save()
         self.connection = Connection()
         self.connection.state = "avalidstate123"
         self.connection.code = self.code_hash
         self.connection.nonce = "avalidnonce456"
-        self.connection.usager = UsagerFactory(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate="1969-12-15",
-            gender="female",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="test_sub",
-            email="User@user.domain",
-        )
+        self.connection.usager = self.usager
         self.connection.expires_on = datetime(
             2012, 1, 14, 3, 21, 34, tzinfo=pytz_timezone("Europe/Paris")
         )
@@ -449,13 +421,13 @@ class TokenTests(TestCase):
             "expires_in": 3600,
             "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2NsaWVu"
             "dF9pZCIsImV4cCI6MTMyNjUxMDk5NCwiaWF0IjoxMzI2NTEwNjk0LCJpc3MiOiJsb2NhbGhvc"
-            "3QiLCJzdWIiOiJ0ZXN0X3N1YiIsIm5vbmNlIjoiYXZhbGlkbm9uY2U0NTYifQ.vCJ2XqD6KEg"
-            "I8lgTT0f1e9PA-A5BxRhn6F5av6Y8mFk",
+            "3QiLCJzdWIiOiJhdmFsaWRzdWI3ODkiLCJub25jZSI6ImF2YWxpZG5vbmNlNDU2In0.a7nbGA"
+            "-Ib9I1HaMb5iC9s4fDP1ZbIXUJpU-YbdYFcWA",
             "refresh_token": "5ieq7Bg173y99tT6MA",
             "token_type": "Bearer",
         }
 
-        self.assertEqual(str(response_json), str(awaited_response))
+        self.assertEqual(response_json, awaited_response)
 
     def test_wrong_grant_type_triggers_403(self):
         fc_request = dict(self.fc_request)
@@ -521,19 +493,6 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
 
-        self.usager_2 = UsagerFactory(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate=date(1969, 12, 25),
-            gender="F",
-            birthplace=70447,
-            birthcountry=99100,
-            sub="test_sub2",
-            email="User@user.domain",
-            creation_date="2019-08-05T15:49:13.972Z",
-        )
-
         self.aidant_thierry = AidantFactory()
 
         self.mandat = MandatFactory(
@@ -581,7 +540,7 @@ class UserInfoTests(TestCase):
             "gender": "F",
             "birthplace": "70447",
             "birthcountry": "99100",
-            "sub": "test_sub",
+            "sub": self.connection.usager.sub,
             "email": "User@user.domain",
             "creation_date": "2019-08-05T15:49:13.972Z",
         }

@@ -19,6 +19,7 @@ from aidants_connect_web.tests.factories import (
     AidantFactory,
     OrganisationFactory,
     UsagerFactory,
+    MandatFactory,
 )
 
 
@@ -29,32 +30,12 @@ class ConnectionModelTest(TestCase):
         first_connection.state = "aZeRtY"
         first_connection.code = "ert"
         first_connection.nonce = "varg"
-        first_connection.usager = Usager.objects.create(
-            given_name="Joséphine",
-            family_name="ST-PIERRE",
-            preferred_username="ST-PIERRE",
-            birthdate="1969-12-15",
-            gender="female",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="123",
-            email="User@user.domain",
-        )
+        first_connection.usager = UsagerFactory(given_name="Joséphine")
         first_connection.save()
 
         second_connection = Connection()
         second_connection.state = "QsDfG"
-        second_connection.usager = Usager.objects.create(
-            given_name="Fabrice",
-            family_name="MERCIER",
-            preferred_username="TROIS",
-            birthdate="1981-07-27",
-            gender="male",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="124",
-            email="User@user.domain",
-        )
+        second_connection.usager = UsagerFactory(given_name="Fabrice")
         second_connection.save()
 
         saved_items = Connection.objects.all()
@@ -121,6 +102,7 @@ class UsagerModelTest(TestCase):
         self.assertEqual(first_saved_item.given_name, "TEST NAME")
         self.assertEqual(str(first_saved_item.birthdate), "1902-06-30")
         self.assertEqual(second_saved_item.family_name, "TEST Family Name éèà")
+        self.assertEqual(second_usager.sub, "1234")
 
 
 @tag("models")
@@ -129,26 +111,8 @@ class MandatModelTest(TestCase):
     def setUpTestData(cls):
         cls.aidant_marge = AidantFactory(username="Marge")
         cls.aidant_patricia = AidantFactory(username="Patricia")
-        cls.usager_homer = Usager.objects.create(
-            given_name="Homer",
-            family_name="Simpson",
-            birthdate="1902-06-30",
-            gender="male",
-            birthplace=27681,
-            birthcountry=99100,
-            email="homer@simpson.com",
-            sub="123",
-        )
-        cls.usager_ned = Usager.objects.create(
-            given_name="Ned",
-            family_name="Flanders",
-            birthdate="1902-06-30",
-            gender="male",
-            birthplace=26934,
-            birthcountry=99100,
-            email="ned@flanders.com",
-            sub="1234",
-        )
+        cls.usager_homer = UsagerFactory(given_name="Homer")
+        cls.usager_ned = UsagerFactory(family_name="Flanders")
 
     def test_saving_and_retrieving_mandat(self):
         first_mandat = Mandat.objects.create(
@@ -270,52 +234,52 @@ class AidantModelMethodsTest(TestCase):
             username="Lisa", organisation=cls.aidant_marge.organisation
         )
         cls.aidant_patricia = AidantFactory(username="Patricia")
-        cls.usager_homer = UsagerFactory(given_name="Homer", sub="123")
-        cls.usager_bart = UsagerFactory(given_name="Bart", sub="1235")
-        cls.usager_ned = UsagerFactory(given_name="Ned", sub="1234")
-        Mandat.objects.create(
+        cls.usager_homer = UsagerFactory(given_name="Homer")
+        cls.usager_ned = UsagerFactory(given_name="Ned")
+        cls.usager_bart = UsagerFactory(given_name="Bart")
+        MandatFactory(
             aidant=cls.aidant_marge,
             usager=cls.usager_homer,
             demarche="Carte grise",
             expiration_date=timezone.now() - timedelta(days=6),
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=cls.aidant_marge,
             usager=cls.usager_homer,
             demarche="social",
             expiration_date=timezone.now() + timedelta(days=365),
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=cls.aidant_marge,
             usager=cls.usager_homer,
             demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=cls.aidant_marge,
             usager=cls.usager_ned,
             demarche="Logement",
             expiration_date=timezone.now() - timedelta(days=6),
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=cls.aidant_marge,
             usager=cls.usager_ned,
             demarche="transports",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=cls.aidant_marge,
             usager=cls.usager_ned,
             demarche="famille",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=cls.aidant_marge,
             usager=cls.usager_ned,
             demarche="social",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=cls.aidant_marge,
             usager=cls.usager_ned,
             demarche="travail",
@@ -400,24 +364,14 @@ class JournalModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.entry1 = Journal.objects.create(action="connect_aidant", initiator="ABC")
-        cls.aidant_thierry = Aidant.objects.create_user(
+        cls.aidant_thierry = AidantFactory(
             username="Thierry",
             email="thierry@thierry.com",
-            password="motdepassedethierry",
             first_name="Thierry",
             last_name="Martin",
             organisation=OrganisationFactory(name="Commune de Vernon"),
         )
-        cls.usager_ned = Usager.objects.create(
-            given_name="Ned",
-            family_name="Flanders",
-            birthdate="1902-06-30",
-            gender="male",
-            birthplace=26934,
-            birthcountry=99100,
-            email="ned@flanders.com",
-            sub="1234",
-        )
+        cls.usager_ned = UsagerFactory(given_name="Ned", family_name="Flanders")
 
         cls.first_mandat = Mandat.objects.create(
             aidant=cls.aidant_thierry,

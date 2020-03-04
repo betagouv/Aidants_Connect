@@ -24,7 +24,7 @@ class CancelMandat(FunctionalTestCase):
             first_name="Jacqueline",
             last_name="Fremont",
         )
-        cls.usager_josephine = UsagerFactory(given_name="Joséphine", sub="test_sub",)
+        cls.usager_josephine = UsagerFactory(given_name="Joséphine")
         cls.mandat_1 = Mandat.objects.create(
             aidant=cls.aidant_thierry,
             usager=cls.usager_josephine,

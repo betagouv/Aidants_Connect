@@ -11,7 +11,7 @@ from pytz import timezone
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Connection, Journal, Mandat, Usager
-from aidants_connect_web.tests import factories
+from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.views import new_mandat
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -21,7 +21,7 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 class NewMandatTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = factories.AidantFactory()
+        self.aidant_thierry = AidantFactory()
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
         found = resolve("/creation_mandat/")
@@ -53,25 +53,20 @@ class NewMandatTests(TestCase):
 class NewMandatRecapTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = factories.AidantFactory()
+        self.aidant_thierry = AidantFactory()
         device = self.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
         device.token_set.create(token="223456")
 
-        self.aidant_monique = factories.AidantFactory(username="monique@monique.com")
+        self.aidant_monique = AidantFactory(username="monique@monique.com")
         device = self.aidant_monique.staticdevice_set.create(id=2)
         device.token_set.create(token="323456")
 
-        self.test_usager = Usager.objects.create(
-            given_name="Fabrice",
-            family_name="MERCIER",
-            sub="46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
-            preferred_username="TROIS",
-            birthdate="1981-07-27",
-            gender="female",
-            birthplace="95277",
-            birthcountry="99100",
-            email="test@test.com",
+        self.test_usager_sub = (
+            "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1"
+        )
+        self.test_usager = UsagerFactory(
+            given_name="Fabrice", birthplace=95277, sub=self.test_usager_sub,
         )
         self.mandat_builder = Connection.objects.create(
             demarches=["papiers", "logement"], duree=365, usager=self.test_usager
@@ -107,10 +102,6 @@ class NewMandatRecapTests(TestCase):
         )
         self.assertEqual(Usager.objects.all().count(), 1)
         usager = Usager.objects.get(given_name="Fabrice")
-        self.assertEqual(
-            usager.sub,
-            "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
-        )
         self.assertEqual(usager.birthplace, 95277)
         self.assertRedirects(response, "/creation_mandat/succes/")
 
@@ -229,19 +220,13 @@ class NewMandatRecapTests(TestCase):
 @tag("new_mandat")
 class GenerateMandatPreview(TestCase):
     def setUp(self):
-        self.aidant_thierry = factories.AidantFactory()
+        self.aidant_thierry = AidantFactory()
         self.client = Client()
 
-        self.test_usager = Usager.objects.create(
+        self.test_usager = UsagerFactory(
             given_name="Fabrice",
             family_name="MERCIER",
             sub="46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
-            preferred_username="TROIS",
-            birthdate="1981-07-27",
-            gender="female",
-            birthplace="95277",
-            birthcountry="99100",
-            email="test@test.com",
         )
         self.mandat_form = MandatForm(
             data={"demarche": ["papiers", "logement"], "duree": "short"}

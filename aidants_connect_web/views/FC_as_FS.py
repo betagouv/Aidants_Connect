@@ -1,5 +1,8 @@
 import logging
 from secrets import token_urlsafe
+import jwt
+from jwt.api_jwt import ExpiredSignatureError
+import requests as python_request
 
 from django.conf import settings
 from django.contrib import messages
@@ -8,11 +11,8 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
 from django.utils import timezone
 
-import jwt
-from jwt.api_jwt import ExpiredSignatureError
-import requests as python_request
-
 from aidants_connect_web.models import Connection, Usager
+from aidants_connect_web.utilities import generate_sha256_hash
 
 
 logging.basicConfig(level=logging.INFO)
@@ -116,7 +116,10 @@ def fc_callback(request):
         return HttpResponseForbidden()
 
     try:
-        usager = Usager.objects.get(sub=decoded_token["sub"])
+        usager_sub = generate_sha256_hash(
+            f"{decoded_token['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
+        )
+        usager = Usager.objects.get(sub=usager_sub)
     except Usager.DoesNotExist:
         usager, error = get_user_info(fc_base, connection.access_token)
         if error:
@@ -144,6 +147,10 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
     if user_info.get("birthplace") == "":
         user_info["birthplace"] = None
 
+    usager_sub = generate_sha256_hash(
+        f"{user_info['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
+    )
+
     try:
         usager = Usager.objects.create(
             given_name=user_info.get("given_name"),
@@ -152,7 +159,7 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
             gender=user_info.get("gender"),
             birthplace=user_info.get("birthplace"),
             birthcountry=user_info.get("birthcountry"),
-            sub=user_info.get("sub"),
+            sub=usager_sub,
             email=user_info.get("email"),
         )
         return usager, None
