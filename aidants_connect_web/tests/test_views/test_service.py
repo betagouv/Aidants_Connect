@@ -137,7 +137,18 @@ class StatistiquesTests(TestCase):
 
     def test_stats_url_triggers_the_statistiques_template(self):
         response = self.client.get("/stats/")
-        self.assertTemplateUsed(response, "aidants_connect_web/statistiques.html")
+        self.assertTemplateUsed(response, "footer/statistiques.html")
+
+
+@tag("service")
+class MentionsLegalesTests(TestCase):
+    def test_mentions_legales_url_triggers_the_correct_view(self):
+        found = resolve("/mentions-legales/")
+        self.assertEqual(found.func, service.mentions_legales)
+
+    def test_stats_url_triggers_the_correct_template(self):
+        response = self.client.get("/mentions-legales/")
+        self.assertTemplateUsed(response, "footer/mentions_legales.html")
 
 
 @tag("service")
@@ -148,7 +159,7 @@ class CguTests(TestCase):
 
     def test_stats_url_triggers_the_cgu_template(self):
         response = self.client.get("/cgu/")
-        self.assertTemplateUsed(response, "aidants_connect_web/cgu.html")
+        self.assertTemplateUsed(response, "footer/cgu.html")
 
 
 @tag("service")
