@@ -107,7 +107,7 @@ def new_mandat_recap(request):
             mandat_expiration_date = timezone.now() + timedelta(days=connection.duree)
 
             try:
-                # Add a Journal 'print_mandat' action
+                # Add a Journal 'create_mandat_print' action
                 connection.demarches.sort()
                 Journal.objects.mandat_print(
                     aidant=aidant,
@@ -177,7 +177,7 @@ def new_mandat_success(request):
 
 @login_required
 @activity_required
-def mandat_preview_projet(request):
+def mandat_print_projet(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
@@ -187,7 +187,7 @@ def mandat_preview_projet(request):
 
     return render(
         request,
-        "aidants_connect_web/mandat_preview.html",
+        "aidants_connect_web/mandat_print.html",
         {
             "usager": usager,
             "aidant": aidant,
@@ -200,7 +200,7 @@ def mandat_preview_projet(request):
 
 @login_required
 @activity_required
-def mandat_preview_final(request):
+def mandat_print_final(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
@@ -210,7 +210,7 @@ def mandat_preview_final(request):
 
     return render(
         request,
-        "aidants_connect_web/mandat_preview.html",
+        "aidants_connect_web/mandat_print.html",
         {
             "usager": usager,
             "aidant": aidant,
@@ -224,13 +224,15 @@ def mandat_preview_final(request):
 
 @login_required
 @activity_required
-def mandat_preview_final_qrcode(request):
+def mandat_print_final_qrcode(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
 
-    journal_print_mandat = aidant.get_journal_print_mandat(connection.access_token)
-    journal_print_mandat_qrcode_png = generate_qrcode_png(
-        journal_print_mandat.mandat_print_hash
+    journal_create_mandat_print = aidant.get_journal_create_mandat_print(
+        connection.access_token
+    )
+    journal_create_mandat_print_qrcode_png = generate_qrcode_png(
+        journal_create_mandat_print.mandat_print_hash
     )
 
-    return HttpResponse(journal_print_mandat_qrcode_png, "image/png")
+    return HttpResponse(journal_create_mandat_print_qrcode_png, "image/png")

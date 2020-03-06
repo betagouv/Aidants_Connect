@@ -467,7 +467,7 @@ class JournalModelTest(TestCase):
         self.assertRaises(NotImplementedError, entry.delete)
         self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
-    def test_a_print_mandat_journal_entry_can_be_created(self):
+    def test_a_create_mandat_print_journal_entry_can_be_created(self):
         demarches = ["transports", "logement"]
         expiration_date = timezone.now() + timedelta(days=6)
         entry = Journal.objects.mandat_print(
@@ -482,16 +482,18 @@ class JournalModelTest(TestCase):
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
-        self.assertEqual(entry.action, "print_mandat")
+        self.assertEqual(entry.action, "create_mandat_print")
 
-        mandat_print_string = (
-            f"{self.aidant_thierry.id};"
-            f"{date.today().isoformat()};"
-            f"logement,transports;"
-            f"{expiration_date.date().isoformat()};"
-            f"{self.aidant_thierry.organisation.id};"
-            f"{generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH)};"
-            f"{self.usager_ned.sub}"
+        mandat_print_string = ";".join(
+            [
+                str(self.aidant_thierry.id),
+                date.today().isoformat(),
+                "logement,transports",
+                expiration_date.date().isoformat(),
+                str(self.aidant_thierry.organisation.id),
+                generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH),
+                self.usager_ned.sub,
+            ]
         )
         self.assertTrue(
             validate_mandat_print_hash(mandat_print_string, entry.mandat_print_hash)

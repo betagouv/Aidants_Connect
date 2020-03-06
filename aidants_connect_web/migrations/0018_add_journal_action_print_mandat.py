@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0016_rename_expiresOn"),
+        ("aidants_connect_web", "0017_journal_action_add_franceconnection_usager"),
     ]
 
     operations = [
@@ -22,7 +22,8 @@ class Migration(migrations.Migration):
                 choices=[
                     ("connect_aidant", "Connexion d'un aidant"),
                     ("activity_check_aidant", "Reprise de connexion d'un aidant"),
-                    ("print_mandat", "Création d'un mandat papier"),
+                    ("franceconnect_usager", "FranceConnexion d'un usager"),
+                    ("create_mandat_print", "Création d'un mandat papier"),
                     ("create_mandat", "Création d'un mandat"),
                     ("use_mandat", "Utilisation d'un mandat"),
                     ("update_mandat", "Renouvellement d'un mandat"),

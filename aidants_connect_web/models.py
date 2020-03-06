@@ -8,11 +8,6 @@ from django.db import models
 from django.utils import timezone
 
 
-def default_expiration_date():
-    now = timezone.now()
-    return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
-
-
 class Organisation(models.Model):
     name = models.TextField(default="No name provided")
     siret = models.PositiveIntegerField(default=1)
@@ -124,16 +119,17 @@ class Aidant(AbstractUser):
         except AttributeError:
             return None
 
-    def get_journal_print_mandat(self, access_token):
+    def get_journal_create_mandat_print(self, access_token):
         """
-        :return: the corresponding 'print_mandat' Journal entry initiated by the aidant
+        :return: the corresponding 'create_mandat_print' Journal entry initiated
+        by the aidant
         """
-        journal_print_mandat = Journal.objects.filter(
+        journal_create_mandat_print = Journal.objects.filter(
             initiator=self.full_string_identifier,
-            action="print_mandat",
+            action="create_mandat_print",
             access_token=access_token,
         ).last()
-        return journal_print_mandat
+        return journal_create_mandat_print
 
 
 class UsagerQuerySet(models.QuerySet):
@@ -318,7 +314,7 @@ class JournalManager(models.Manager):
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             usager=usager.full_string_identifier,
-            action="print_mandat",
+            action="create_mandat_print",
             demarche=",".join(demarches),
             duree=duree,
             access_token=access_token,
@@ -392,7 +388,7 @@ class Journal(models.Model):
         ("connect_aidant", "Connexion d'un aidant"),
         ("activity_check_aidant", "Reprise de connexion d'un aidant"),
         ("franceconnect_usager", "FranceConnexion d'un usager"),
-        ("print_mandat", "Création d'un mandat papier"),
+        ("create_mandat_print", "Création d'un mandat papier"),
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),
         ("update_mandat", "Renouvellement d'un mandat"),

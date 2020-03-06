@@ -9,19 +9,6 @@ from django.conf import settings
 def generate_sha256_hash(value: bytes):
     """
     Generate a SHA-256 hash
-    SHA-256 is a hash function that takes bytes as input, and returns a hash
-    The length of the hash is 64 characters
-    To add a salt, concatenate the string with the salt ('string'+'salt')
-    https://docs.python.org/3/library/hashlib.html
-    :param value: can be a string or bytes
-    :return: a hash (string) of 64 characters
-    """
-    return hashlib.sha256(value).hexdigest()
-
-
-def generate_sha256_hash(value: bytes):
-    """
-    Generate a SHA-256 hash
     https://docs.python.org/3/library/hashlib.html
     SHA-256 is a hash function that takes bytes as input, and returns a hash
     The length of the hash is 64 characters

@@ -11,7 +11,7 @@
   <div class="container">
     <h1 class="brand">Le mandat a été créé avec succès !</h1>
     <div class="tiles">
-      <a class="button" href="{% url 'new_mandat_preview_final' %}" target="_blank">🖨 Imprimer le mandat final</a>
+      <a class="button" href="{% url 'new_mandat_print_final' %}" target="_blank">🖨 Imprimer le mandat final</a>
       <br><br>
       <p>
         Pour consulter le profil de l'usager {{ usager.get_full_name }}, <a href="{% url 'usager_details' usager_id=usager.id %}">cliquez ici</a>.

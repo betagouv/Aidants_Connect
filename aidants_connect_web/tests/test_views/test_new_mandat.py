@@ -107,7 +107,7 @@ class NewMandatRecapTests(TestCase):
 
         self.assertEqual(last_journal_entries.count(), 4)
         self.assertEqual(last_journal_entries[0].action, "create_mandat")
-        self.assertEqual(last_journal_entries[2].action, "print_mandat")
+        self.assertEqual(last_journal_entries[2].action, "create_mandat_print")
 
     def test_post_to_recap_without_usager_creates_error(self):
         self.client.force_login(self.aidant_thierry)
@@ -216,7 +216,7 @@ class NewMandatRecapTests(TestCase):
 
 
 @tag("new_mandat")
-class GenerateMandatPreview(TestCase):
+class GenerateMandatPrint(TestCase):
     def setUp(self):
         self.aidant_thierry = AidantFactory()
         self.client = Client()
@@ -240,19 +240,19 @@ class GenerateMandatPreview(TestCase):
             usager=self.test_usager,
         )
 
-    def test_mandat_preview_projet_url_triggers_the_correct_view(self):
+    def test_mandat_print_projet_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/visualisation/projet/")
-        self.assertEqual(found.func, new_mandat.mandat_preview_projet)
+        self.assertEqual(found.func, new_mandat.mandat_print_projet)
 
-    def test_mandat_preview_final_url_triggers_the_correct_view(self):
+    def test_mandat_print_final_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/visualisation/final/")
-        self.assertEqual(found.func, new_mandat.mandat_preview_final)
+        self.assertEqual(found.func, new_mandat.mandat_print_final)
 
     def test_mandat_qrcode_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/qrcode/")
-        self.assertEqual(found.func, new_mandat.mandat_preview_final_qrcode)
+        self.assertEqual(found.func, new_mandat.mandat_print_final_qrcode)
 
-    def test_response_is_the_preview_page(self):
+    def test_response_is_the_print_page(self):
         self.client.force_login(self.aidant_thierry)
 
         session = self.client.session
@@ -262,10 +262,10 @@ class GenerateMandatPreview(TestCase):
         response = self.client.get("/creation_mandat/visualisation/projet/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "aidants_connect_web/mandat_preview.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/mandat_print.html")
 
     @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
-    def test_preview_contains_text(self):
+    def test_mandat_print_contains_text(self):
         self.client.force_login(self.aidant_thierry)
 
         session = self.client.session
