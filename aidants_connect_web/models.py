@@ -275,14 +275,11 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def franceconnection_usager(
-        self, aidant: Aidant, usager: Usager, access_token: str
-    ):
+    def franceconnection_usager(self, aidant: Aidant, usager: Usager):
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             usager=usager.full_string_identifier,
             action="franceconnect_usager",
-            access_token=access_token,
         )
         return journal_entry
 

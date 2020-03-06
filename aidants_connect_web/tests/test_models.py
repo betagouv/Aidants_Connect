@@ -392,9 +392,7 @@ class JournalModelTest(TestCase):
 
     def test_a_franceconnect_usager_journal_entry_can_be_created(self):
         entry = Journal.objects.franceconnection_usager(
-            aidant=self.aidant_thierry,
-            usager=self.usager_ned,
-            access_token="fjfgjfdkldlzlsmqqxxcn",
+            aidant=self.aidant_thierry, usager=self.usager_ned,
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
