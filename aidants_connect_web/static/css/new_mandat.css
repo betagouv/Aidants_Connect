@@ -79,11 +79,6 @@ form {
   text-transform: uppercase;
 }
 
-#demarches,
-#duree {
-  margin-bottom: 2em;
-}
-
 .label-duree {
   display: flex;
   flex-direction: column;
