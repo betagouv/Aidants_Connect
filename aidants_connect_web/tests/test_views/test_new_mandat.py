@@ -101,8 +101,6 @@ class NewMandatRecapTests(TestCase):
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         self.assertEqual(Usager.objects.all().count(), 1)
-        usager = Usager.objects.get(given_name="Fabrice")
-        self.assertEqual(usager.birthplace, 95277)
         self.assertRedirects(response, "/creation_mandat/succes/")
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")

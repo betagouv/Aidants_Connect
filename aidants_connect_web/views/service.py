@@ -92,7 +92,7 @@ def statistiques(request):
 
     return render(
         request,
-        "aidants_connect_web/statistiques.html",
+        "footer/statistiques.html",
         {
             "statistiques_list": [
                 {
@@ -132,10 +132,6 @@ def statistiques(request):
     )
 
 
-def cgu(request):
-    return render(request, "aidants_connect_web/cgu.html")
-
-
 @login_required()
 def activity_check(request):
     next_page = request.GET.get("next", settings.LOGIN_REDIRECT_URL)
@@ -161,6 +157,10 @@ def activity_check(request):
     return render(
         request, "registration/activity_check.html", {"form": form, "aidant": aidant}
     )
+
+
+def cgu(request):
+    return render(request, "footer/cgu.html")
 
 
 def mentions_legales(request):

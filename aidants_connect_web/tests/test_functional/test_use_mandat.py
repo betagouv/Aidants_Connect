@@ -5,8 +5,11 @@ from django.conf import settings
 from django.test import tag
 from django.utils import timezone
 
-from aidants_connect_web.models import Mandat
-from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    UsagerFactory,
+    MandatFactory,
+)
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
@@ -34,21 +37,19 @@ class UseNewMandat(FunctionalTestCase):
             given_name="Anne Cécile Gertrude", family_name="EVALOUS"
         )
 
-        Mandat.objects.create(
+        MandatFactory(
             aidant=self.aidant,
             usager=self.usager_josephine,
             demarche="argent",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-
-        Mandat.objects.create(
+        MandatFactory(
             aidant=self.aidant,
             usager=self.usager_josephine,
             demarche="famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
-
-        Mandat.objects.create(
+        MandatFactory(
             aidant=self.aidant2,
             usager=self.usager_josephine,
             demarche="logement",

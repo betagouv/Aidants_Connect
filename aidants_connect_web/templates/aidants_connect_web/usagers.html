@@ -12,14 +12,14 @@
     <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager">Ajouter un usager</a>
     <h1 class="brand">Vos mandats</h1>
     {% if messages %}
-      <div class="notification success">
+      <div class="notification success" role="alert">
         {% for message in messages %}
           {{ message }}
         {% endfor %}
       </div>
     {% endif %}
     <div class="tiles">
-      <h2 class="float-left">Les usagers avec qui vous avez un mandat</h2>
+      <h2>Les usagers avec qui vous avez un mandat</h2>
       {% if usagers %}
         <!-- <input class="table__filter" type="text" name="input_val" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)"> -->
         <table class="table">
@@ -42,7 +42,7 @@
           </div>
         {% endfor %}
       {% else %}
-        <div class="notification">Vous n’avez pas d'usagers.</div>
+        <div class="notification" role="alert">Vous n’avez pas d'usagers.</div>
       {% endif %}
     </div>
   <div>

@@ -3,8 +3,12 @@ from datetime import timedelta
 from django.test import tag
 from django.utils import timezone
 
-from aidants_connect_web.models import Journal, Mandat
-from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
+from aidants_connect_web.models import Journal
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    UsagerFactory,
+    MandatFactory,
+)
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
@@ -25,19 +29,19 @@ class CancelMandat(FunctionalTestCase):
             last_name="Fremont",
         )
         cls.usager_josephine = UsagerFactory(given_name="Joséphine")
-        cls.mandat_1 = Mandat.objects.create(
+        cls.mandat_1 = MandatFactory(
             aidant=cls.aidant_thierry,
             usager=cls.usager_josephine,
             demarche="argent",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        cls.mandat_2 = Mandat.objects.create(
+        cls.mandat_2 = MandatFactory(
             aidant=cls.aidant_thierry,
             usager=cls.usager_josephine,
             demarche="famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
-        Mandat.objects.create(
+        MandatFactory(
             aidant=cls.aidant_jacqueline,
             usager=cls.usager_josephine,
             demarche="logement",

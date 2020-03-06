@@ -15,7 +15,7 @@
     </h1>
     <h2 class="brand">&nbsp;↳ {{ usager.get_full_name }}</h2>
     {% if messages %}
-      <div class="notification success">
+      <div class="notification success" role="alert">
         {% for message in messages %}
           {{ message }}
         {% endfor %}
@@ -57,7 +57,7 @@
           {% endfor %}
           <br>
         {% else %}
-          <div class="notification">Vous n’avez pas de mandat en cours avec cet usager.</div>
+          <div class="notification" role="alert">Vous n’avez pas de mandat en cours avec cet usager.</div>
         {% endif %}
         <h2>Mandats expirés</h2>
         {% if expired_mandats %}
@@ -88,10 +88,10 @@
             </tbody>
           </table>
         {% else %}
-          <div class="notification">Vous n’avez pas de mandat expiré avec cet usager.</div>
+          <div class="notification" role="alert">Vous n’avez pas de mandat expiré avec cet usager.</div>
         {% endif %}
       {% else %}
-        <div class="notification">Vous n’avez pas de mandat avec cet usager.</div>
+        <div class="notification" role="alert">Vous n’avez pas de mandat avec cet usager.</div>
       {% endif %}
     </div>
   <div>

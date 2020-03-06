@@ -11,10 +11,10 @@
 <section class="section">
   <div class="container">
     {% if messages %}
-      <div class="notification success">
-          {% for message in messages %}
-            {{ message }}
-          {% endfor %}
+      <div class="notification success" role="alert">
+        {% for message in messages %}
+          {{ message }}
+        {% endfor %}
       </div>
     {% endif %}
     <h1 class="brand">Bienvenue sur votre Espace Aidant, {{ aidant.first_name }} !</h1>

@@ -27,16 +27,11 @@
 <section id="mandat_specifications" class="section section-grey">
   <div class="container">
     <form method="post">
-      {% if notification %}
-      <div class="notification">{{ notification }}</div>
+      {% if form.errors %}
+        <div class="notification error" role="alert">{{ form.errors }}</div>
       {% endif %}
       <div id="demarches" class="tiles">
         <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
-        {% if form.errors %}
-          <div class="notification">
-          {{ form.errors }}
-          </div>
-        {% endif %}
         {% csrf_token %}
         <div id="demarches_list" class="grid">
           {% for value, label in form.demarche.field.choices %}
@@ -51,7 +46,7 @@
           {% endfor %}
         </div>
       </div>
-      <div id="duree">
+      <div id="duree" class="tiles">
         <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
         <div id="duree_list" class="grid">
           {% for value, label in form.duree.field.choices %}
@@ -65,7 +60,7 @@
           {% endfor %}
         </div>
       </div>
-      <div id="france_connection" class="form__group">
+      <div id="france_connection" class="tiles">
         <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
         <input id="submit_button" type="image" src="{% static 'images/FCboutons-10.png'%}" alt="S’identifier avec FranceConnect" />
       </div>
