@@ -158,7 +158,7 @@ Pour cela, commencez par lui adjoindre un [jeton OTP](https://fr.wikipedia.org/w
 ```shell
 python manage.py addstatictoken <insert_admin_name>
 ```
-Le jeton généré vous permet de vous connecter une seule fois à l'interface d'administration Django, disponible par défaut à l'URL `http://localhost:3000/gestion/`.
+Le jeton généré vous permet de vous connecter une seule fois à l'interface d'administration Django, disponible par défaut à l'URL `http://localhost:3000/admin/`.
 En cas de problème, pas d'inquiétude : vous pouvez répéter la procédure précédente autant que nécessaire :)
 
 Ceci fait, cliquez sur _TOTP devices_, puis sur le bouton _Ajouter TOTP device +_.
@@ -186,40 +186,53 @@ pre-commit install
 
 ### Ré-initialiser la base de données
 
-Récupérez les données :
+Si vous avez des données existantes, vous pouvez d'abord les sauvegarder :
 
 ```shell
 python manage.py dumpdata --exclude auth.permission --exclude contenttypes > db.json
 ```
 
-Dans le shell :
+Puis il vous faudra recréer la base de donnée PostgreSQL :
 
-```shell
-psql
-```
+- Dans le shell :
 
-Puis, dans l'invite de commande psql :
+    ```shell
+    psql
+    ```
 
-```sql
-DROP DATABASE aidants_connect;
-CREATE DATABASE aidants_connect OWNER aidants_connect_team;
-ALTER USER aidants_connect_team CREATEDB;
-\q
-```
+- Puis, dans l'invite de commande psql :
 
-Ensuite, de retour dans le shell :
+    ```sql
+    DROP DATABASE aidants_connect;
+    CREATE DATABASE aidants_connect OWNER aidants_connect_team;
+    ALTER USER aidants_connect_team CREATEDB;
+    \q
+    ```
+
+Ensuite, de retour dans le shell, pour lancer les migrations :
 
 ```shell
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-Chargez les données :
+Enfin, chargez les données :
 
-```shell
-python manage.py loaddata db.json
-```
-ou
-```shell
-python manage.py createsuperuser
-```
+- Soit des données sauvegardées précédement :
+
+    ```shell
+    python manage.py loaddata db.json
+    ```
+
+- Soit des données de test (création d'un superuser `admin@email.com` rattaché à une Organisation `BetaGouv`) :
+
+    ```shell
+    python manage.py loaddata admin.json
+    python manage.py loaddata usager_mandat.json
+    ```
+
+- Soit repartir de zero en recréant un superuser (plus de détails dans la séction [Installer l'application](#installer-lapplication)) :
+
+    ```shell
+    python manage.py createsuperuser
+    ```

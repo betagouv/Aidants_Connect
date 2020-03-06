@@ -9,5 +9,4 @@ aidants_connect/tmp_email_as_file/**
 staticfiles
 .DS_Store
 
-*/fixtures/*
 local_db.json

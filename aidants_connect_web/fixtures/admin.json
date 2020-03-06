@@ -1,0 +1,66 @@
+[
+    {
+        "model": "aidants_connect_web.organisation",
+        "pk": 1,
+        "fields": {
+            "name": "BetaGouv",
+            "siret": 1,
+            "address": "20 Avenue de S\u00e9gur, 75007 Paris"
+        }
+    },
+    {
+        "model": "aidants_connect_web.aidant",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$180000$7NmfuvajMfYs$UF7wkVJIKHTb5BJobzMbTAUehJUpXon7wgTdVaaEiyk=",
+            "last_login": "2020-03-03T10:19:45.725Z",
+            "is_superuser": true,
+            "username": "admin@email.com",
+            "first_name": "Admin",
+            "last_name": "",
+            "email": "admin@email.com",
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2020-03-03T09:32:39.804Z",
+            "profession": "Admin",
+            "organisation": 1,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "otp_static.staticdevice",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "name": "Backup Code",
+            "confirmed": true
+        }
+    },
+    {
+        "model": "otp_static.statictoken",
+        "pk": 2,
+        "fields": {
+            "device": 1,
+            "token": "111111"
+        }
+    },
+    {
+        "model": "otp_totp.totpdevice",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "name": "phone",
+            "confirmed": true,
+            "throttling_failure_timestamp": null,
+            "throttling_failure_count": 0,
+            "key": "1e35733e2281b4fa8596ea4a575a6e9fbbdca978",
+            "step": 30,
+            "t0": 0,
+            "digits": 6,
+            "tolerance": 1,
+            "drift": 0,
+            "last_t": -1
+        }
+    }
+]
