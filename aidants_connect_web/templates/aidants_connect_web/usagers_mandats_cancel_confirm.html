@@ -18,10 +18,10 @@
         {% csrf_token %}
         <div class="form__group">
           <p>
-            Le mandat avec l'usager <b>{{ usager }}</b>,
-            pour la démarche <b>{{ mandat.demarche }}</b>,
-            créé le <b>{{ mandat.creation_date | date:"d F Y" }}</b> et expirant le <b>{{ mandat.expiration_date | date:"d F Y" }}</b>,
-            va être <b>révoqué</b>.
+            Le mandat avec l'usager <strong>{{ usager }}</strong>,
+            pour la démarche <strong>{{ mandat.demarche }}</strong>,
+            créé le <strong>{{ mandat.creation_date | date:"d F Y" }}</strong> et expirant le <strong>{{ mandat.expiration_date | date:"d F Y" }}</strong>,
+            va être <strong>révoqué</strong>.
           </p>
           <p>
             <i>Le mandat apparaîtra comme expiré dans l'espace usagers.</i>
