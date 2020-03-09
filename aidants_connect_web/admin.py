@@ -1,3 +1,4 @@
+from django.contrib.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from django_otp.admin import OTPAdminSite
@@ -22,16 +23,56 @@ from aidants_connect_web.models import (
 admin_site = OTPAdminSite(OTPAdminSite.name)
 
 
-class AidantAdmin(DjangoUserAdmin):
-    # The forms to add and change aidant instances
+class VisibleToStaff(ModelAdmin):
+    """A mixin to make a model registered in the Admin visible to staff users."""
+
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def has_view_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_add_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+
+class StaticDeviceStaffAdmin(VisibleToStaff, StaticDeviceAdmin):
+    pass
+
+
+class TOTPDeviceStaffAdmin(VisibleToStaff, TOTPDeviceAdmin):
+    pass
+
+
+class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        # Prevent non-superusers from being able to set
+        # the `is_staff` and `is_superuser` flags.
+        if not request.user.is_superuser:
+            if "is_superuser" in form.base_fields:
+                form.base_fields["is_superuser"].disabled = True
+            if "is_staff" in form.base_fields:
+                form.base_fields["is_staff"].disabled = True
+
+        return form
+
+    # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
 
-    # The fields to be used in displaying the Aidant model.
-    # These override the definitions on the base UserAdmin
-    # that reference specific fields on auth.User.
-    list_display = ("email", "is_superuser", "organisation")
-    list_filter = ("is_superuser",)
+    # The fields to be used in displaying the `Aidant` model.
+    # These override the definitions on the base `UserAdmin`
+    # that references specific fields on `auth.User`.
+    list_display = ("organisation", "email", "is_staff", "is_superuser")
+    list_filter = ("is_staff", "is_superuser")
     filter_horizontal = ("groups", "user_permissions")
     fieldsets = (
         (
@@ -39,21 +80,10 @@ class AidantAdmin(DjangoUserAdmin):
             {"fields": ("username", "first_name", "last_name", "email", "password")},
         ),
         ("Informations professionnelles", {"fields": ("profession", "organisation")}),
-        (
-            "Permissions",
-            {
-                "fields": (
-                    "is_active",
-                    "is_staff",
-                    "is_superuser",
-                    "groups",
-                    "user_permissions",
-                )
-            },
-        ),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser",)},),
     )
-    # add_fieldsets is not a standard ModelAdmin attribute. AidantAdmin
-    # overrides get_fieldsets to use this attribute when creating an aidant.
+    # `add_fieldsets` is not a standard `ModelAdmin` attribute. `AidantAdmin`
+    # overrides `get_fieldsets` to use this attribute when creating an `Aidant`.
     add_fieldsets = (
         (
             "Informations personnelles",
@@ -71,8 +101,8 @@ admin_site.register(Usager)
 admin_site.register(Mandat)
 admin_site.register(Journal)
 admin_site.register(Connection)
-admin_site.register(Organisation)
+admin_site.register(Organisation, VisibleToStaff)
 
 admin_site.register(MagicToken)
-admin_site.register(StaticDevice, StaticDeviceAdmin)
-admin_site.register(TOTPDevice, TOTPDeviceAdmin)
+admin_site.register(StaticDevice, StaticDeviceStaffAdmin)
+admin_site.register(TOTPDevice, TOTPDeviceStaffAdmin)
