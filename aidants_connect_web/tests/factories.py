@@ -2,7 +2,12 @@ import factory
 
 from django.contrib.auth import get_user_model
 
-from aidants_connect_web.models import Mandat, Organisation, Usager
+from aidants_connect_web.models import (
+    Connection,
+    Mandat,
+    Organisation,
+    Usager,
+)
 
 
 class OrganisationFactory(factory.DjangoModelFactory):
@@ -48,3 +53,8 @@ class MandatFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Mandat
+
+
+class ConnectionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Connection

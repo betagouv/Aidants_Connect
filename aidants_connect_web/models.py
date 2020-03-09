@@ -227,6 +227,11 @@ class Mandat(models.Model):
         return duree_for_computer.days + 1
 
 
+class ConnectionQuerySet(models.QuerySet):
+    def expired(self):
+        return self.filter(expires_on__lt=timezone.now())
+
+
 def default_connection_expiration_date():
     now = timezone.now()
     return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
@@ -257,9 +262,11 @@ class Connection(models.Model):
         Mandat, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
     )
 
+    objects = ConnectionQuerySet.as_manager()
+
     @property
     def is_expired(self):
-        return timezone.now() > self.expires_on
+        return self.expires_on < timezone.now()
 
 
 class JournalManager(models.Manager):
