@@ -94,7 +94,7 @@ class UseNewMandat(FunctionalTestCase):
         )
         usagers = browser.find_elements_by_id("label-usager")
         self.assertEqual(len(usagers), 1)
-        self.assertEqual(usagers[0].text, "ST-PIERRE Joséphine")
+        self.assertEqual(usagers[0].text, "Joséphine ST-PIERRE")
         usagers[0].click()
 
         # Select Démarche

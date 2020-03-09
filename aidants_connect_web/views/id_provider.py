@@ -193,6 +193,7 @@ def fi_select_demarche(request):
             {
                 "connection_id": connection.id,
                 "aidant": request.user.get_full_name(),
+                "usager": connection.usager,
                 "demarches": demarches,
             },
         )

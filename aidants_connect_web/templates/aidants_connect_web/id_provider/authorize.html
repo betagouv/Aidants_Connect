@@ -9,27 +9,35 @@
 {% block content %}
 <div class="hero">
   <div class="hero__container">
-    <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{aidant.first_name}}</h1>
+    <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
   </div>
 </section>
 <section class="section section-grey mandat-select__section">
   <div class="container">
-    <form method="post" class="row_grid">
-      <fieldset>
-        <legend>Choisissez l'usager que vous souhaitez FranceConnecter.</legend>
-        <div id="usagers" class="grid">
-          {% for usager in usagers %}
-            <div id="usager" class="tile">
-              <input id="button-{{ usager.id }}" type="submit" value="{{ usager.id }}" name="chosen_usager" />
-              <label id="label-usager" for="button-{{ usager.id }}">
-                <h3>{{ usager.family_name }} {{ usager.given_name }}</h3>
-              </label>
-            </div>
-          {% endfor %}
+    <form method="post">
+      <h2>Choisissez l'usager que vous souhaitez FranceConnecter</h2>
+      <p id="instructions">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
+      {% if usagers %}
+        <fieldset>
+          <div id="usagers" class="grid">
+            {% for usager in usagers %}
+              <div id="usager" class="tile">
+                <input id="button-{{ usager.id }}" type="submit" value="{{ usager.id }}" name="chosen_usager" />
+                <label id="label-usager" for="button-{{ usager.id }}">
+                  <h3>{{ usager.given_name }} {{ usager.family_name }}</h3>
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+          {% csrf_token %}
+          <input type="hidden" name="connection_id" value="{{ connection_id }}" />
+        </fieldset>
+      {% else %}
+        <div class="notification" role="alert">
+          Vous n’avez pas d'usagers avec au moins un mandat en cours.<br>
+          Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'dashboard' %}">Espace Aidant</a>.
         </div>
-        {% csrf_token %}
-        <input type="hidden" name="connection_id" value="{{ connection_id }}" />
-      </fieldset>
+      {% endif %}
     </form>
   <div>
 </section>
