@@ -9,6 +9,10 @@ main {
   padding: 30px;
 }
 
+.img-qrcode {
+  height: 200%;
+}
+
 h1 {
   margin-left: 75px;
   margin-right: 75px;

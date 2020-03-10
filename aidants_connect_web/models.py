@@ -119,6 +119,18 @@ class Aidant(AbstractUser):
         except AttributeError:
             return None
 
+    def get_journal_create_mandat_print(self, access_token):
+        """
+        :return: the corresponding 'create_mandat_print' Journal entry initiated
+        by the aidant
+        """
+        journal_create_mandat_print = Journal.objects.filter(
+            initiator=self.full_string_identifier,
+            action="create_mandat_print",
+            access_token=access_token,
+        ).last()
+        return journal_create_mandat_print
+
 
 class UsagerQuerySet(models.QuerySet):
     def active(self):
@@ -291,14 +303,22 @@ class JournalManager(models.Manager):
         return journal_entry
 
     def mandat_print(
-        self, aidant: Aidant, usager: Usager, demarches: list, expiration_date
+        self,
+        aidant: Aidant,
+        usager: Usager,
+        demarches: list,
+        duree: int,
+        access_token: str,
+        mandat_print_hash: str,
     ):
-        demarches.sort()
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             usager=usager.full_string_identifier,
-            action="print_mandat",
+            action="create_mandat_print",
             demarche=",".join(demarches),
+            duree=duree,
+            access_token=access_token,
+            mandat_print_hash=mandat_print_hash,
         )
         return journal_entry
 
@@ -368,6 +388,7 @@ class Journal(models.Model):
         ("connect_aidant", "Connexion d'un aidant"),
         ("activity_check_aidant", "Reprise de connexion d'un aidant"),
         ("franceconnect_usager", "FranceConnexion d'un usager"),
+        ("create_mandat_print", "Création d'un mandat papier"),
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),
         ("update_mandat", "Renouvellement d'un mandat"),
@@ -384,6 +405,7 @@ class Journal(models.Model):
     duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
     mandat = models.IntegerField(blank=True, null=True)
+    mandat_print_hash = models.CharField(max_length=100, blank=True, null=True)
 
     objects = JournalManager()
 

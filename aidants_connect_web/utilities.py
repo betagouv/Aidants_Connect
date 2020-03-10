@@ -1,4 +1,9 @@
+import io
 import hashlib
+import qrcode
+from pathlib import Path
+
+from django.conf import settings
 
 
 def generate_sha256_hash(value: bytes):
@@ -13,3 +18,30 @@ def generate_sha256_hash(value: bytes):
     :return: a hash (string) of 64 characters
     """
     return hashlib.sha256(value).hexdigest()
+
+
+def generate_file_sha256_hash(filename):
+    """
+    Generate a SHA-256 hash of a file
+    """
+    base_path = Path(__file__).resolve().parent
+    file_path = (base_path / filename).resolve()
+    with open(file_path, "rb") as f:
+        file_bytes = f.read()  # read entire file as bytes
+        file_readable_hash = generate_sha256_hash(file_bytes)
+        return file_readable_hash
+
+
+def validate_mandat_print_hash(mandat_print_string, mandat_print_hash):
+    mandat_print_string_with_salt = mandat_print_string + settings.MANDAT_PRINT_SALT
+    new_mandat_print_hash = generate_sha256_hash(
+        mandat_print_string_with_salt.encode("utf-8")
+    )
+    return new_mandat_print_hash == mandat_print_hash
+
+
+def generate_qrcode_png(string: str):
+    stream = io.BytesIO()
+    img = qrcode.make(string)
+    img.save(stream, "PNG")
+    return stream.getvalue()

@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 from django.db.utils import IntegrityError
 from django.test import tag, TestCase
 from django.utils import timezone
+from django.conf import settings
 
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
@@ -21,6 +22,11 @@ from aidants_connect_web.tests.factories import (
     UsagerFactory,
     MandatFactory,
 )
+from aidants_connect_web.utilities import (
+    generate_file_sha256_hash,
+    validate_mandat_print_hash,
+)
+from aidants_connect_web.views.new_mandat import generate_mandat_print_hash
 
 
 @tag("models")
@@ -461,15 +467,34 @@ class JournalModelTest(TestCase):
         self.assertRaises(NotImplementedError, entry.delete)
         self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
-    def test_a_print_mandat_journal_entry_can_be_created(self):
+    def test_a_create_mandat_print_journal_entry_can_be_created(self):
         demarches = ["transports", "logement"]
         expiration_date = timezone.now() + timedelta(days=6)
         entry = Journal.objects.mandat_print(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarches=demarches,
-            expiration_date=expiration_date,
+            duree=6,
+            access_token="fjfgjfdkldlzlsmqqxxcn",
+            mandat_print_hash=generate_mandat_print_hash(
+                self.aidant_thierry, self.usager_ned, demarches, expiration_date
+            ),
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
-        self.assertEqual(entry.action, "print_mandat")
+        self.assertEqual(entry.action, "create_mandat_print")
+
+        mandat_print_string = ";".join(
+            [
+                str(self.aidant_thierry.id),
+                date.today().isoformat(),
+                "logement,transports",
+                expiration_date.date().isoformat(),
+                str(self.aidant_thierry.organisation.id),
+                generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH),
+                self.usager_ned.sub,
+            ]
+        )
+        self.assertTrue(
+            validate_mandat_print_hash(mandat_print_string, entry.mandat_print_hash)
+        )

@@ -250,6 +250,9 @@ DEMARCHES = {
     },
 }
 
+MANDAT_TEMPLATE_PATH = "templates/layouts/mandat/mandat_template.html"
+MANDAT_PRINT_SALT = os.getenv("MANDAT_PRINT_SALT", "")
+
 # Magic Auth
 MAGICAUTH_EMAIL_FIELD = "email"
 MAGICAUTH_FROM_EMAIL = os.getenv("MAGICAUTH_FROM_EMAIL")

@@ -19,7 +19,7 @@
           <div class="notification error" role="alert">{{ form.errors }}</div>
         {% endif %}
         {% csrf_token %}
-        <a class="button-outline primary small float-right" href="{% url 'new_mandat_preview_projet' %}" target="_blank">Voir le projet de mandat</a>
+        <a class="button-outline primary small float-right" href="{% url 'new_mandat_print_projet' %}" target="_blank">Voir le projet de mandat</a>
         <h2>Éléments du mandat</h2>
         <div class="panel">
           <div class="form__group">

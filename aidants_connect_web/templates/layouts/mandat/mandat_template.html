@@ -8,6 +8,10 @@
       <div class="navbar__gouvfr float-right">
         <i>Projet de mandat</i>
       </div>
+    {% else %}
+      <div class="navbar__gouvfr float-right">
+        <img class="navbar__gouvfr img-qrcode" src="{% url 'new_mandat_print_final_qrcode' %}" />
+      </div>
     {% endif %}
   </div>
   
