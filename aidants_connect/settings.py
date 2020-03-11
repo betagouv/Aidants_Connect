@@ -10,10 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-import os
-from dotenv import load_dotenv
 from datetime import timedelta
+import os
+
+from dotenv import load_dotenv
+
 from aidants_connect.postgres_url import turn_psql_url_into_param
+
 
 load_dotenv(verbose=True)
 
@@ -72,6 +75,7 @@ INSTALLED_APPS = [
     "django_otp",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -335,3 +339,14 @@ HEADLESS_FUNCTIONAL_TESTS = (
 BYPASS_FIRST_LIVESERVER_CONNECTION = (
     True if os.getenv("BYPASS_FIRST_LIVESERVER_CONNECTION") == "True" else False
 )
+
+# Celery settings
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+JSON_CONTENT_TYPE = "application/json"
+JSON_SERIALIZER = "json"
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_RESULT_SERIALIZER = JSON_SERIALIZER
+CELERY_TASK_SERIALIZER = JSON_SERIALIZER
+CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]

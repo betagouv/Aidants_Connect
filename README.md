@@ -102,7 +102,7 @@ Appliquez les migrations de la base de données :
 python manage.py migrate
 ```
 
-Créez un `superuser` :
+Créez un _superuser_ :
 
 ```shell
 python manage.py createsuperuser --username <insert_admin_name>
@@ -200,7 +200,7 @@ Puis il vous faudra recréer la base de donnée PostgreSQL :
     psql
     ```
 
-- Puis, dans l'invite de commande psql :
+- Puis, dans l'invite de commande `psql` :
 
     ```sql
     DROP DATABASE aidants_connect;
@@ -209,7 +209,7 @@ Puis il vous faudra recréer la base de donnée PostgreSQL :
     \q
     ```
 
-Ensuite, de retour dans le shell, pour lancer les migrations :
+Ensuite, de retour dans le _shell_, pour lancer les migrations :
 
 ```shell
 python manage.py makemigrations
@@ -224,15 +224,25 @@ Enfin, chargez les données :
     python manage.py loaddata db.json
     ```
 
-- Soit des données de test (création d'un superuser `admin@email.com` rattaché à une Organisation `BetaGouv`) :
+- Soit des données de test (création d'un _superuser_ `admin@email.com` rattaché à une `Organisation` `BetaGouv`) :
 
     ```shell
     python manage.py loaddata admin.json
     python manage.py loaddata usager_mandat.json
     ```
 
-- Soit repartir de zero en recréant un superuser (plus de détails dans la séction [Installer l'application](#installer-lapplication)) :
+- Soit repartir de zéro en recréant un _superuser_ (plus de détails dans la section [Installer l'application](#installer-lapplication)) :
 
     ```shell
     python manage.py createsuperuser
     ```
+
+### Purger les connexions expirées
+
+Les objets Django de type `Connection` repésentent une forme de cache pendant l'établissement de la connexion FranceConnect.
+À ce titre, ils contiennent des données personnelles et doivent donc être purgés régulièrement pour respecter nos engagements en la matière.
+Pour ce faire, il suffit d'exécuter ou de planifier la commande suivante :
+
+```shell
+python manage.py delete_expired_connections
+```
