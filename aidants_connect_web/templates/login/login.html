@@ -14,7 +14,7 @@
         <form method="post">
           {% csrf_token %}
           {% if user.is_authenticated %}
-            <div class="notification text-center" role="alert">
+            <div class="notification" role="alert">
               Vous êtes déjà connecté
             </div>
             <div class="text-center">
@@ -23,9 +23,9 @@
             </div>
           {% else %}
             {% if messages %}
-              <div class="text-center" role="alert">
+              <div>
                 {% for message in messages %}
-                  <p class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</p>
+                  <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</p>
                 {% endfor %}
               </div>
             {% endif %}
@@ -34,9 +34,9 @@
               <p><strong>Ce service est pour l'instant reservé aux aidants professionnels salariés d'une des 13 structures habilitées Aidants Connect.</strong></p>
               <p>Si vous faites partie de l'une de ces structures, vous pouvez vous connecter :</p>
               <input type="email" id="id_email" class="form-control {% if form.errors %}state-invalid{% endif %}"
-                name="email" aria-describedby="emailHelp" placeholder="Votre email" required />
+                name="email" aria-describedby="emailHelp" placeholder="Votre adresse email" required />
               {% for error in form.email.errors %}
-                <div class="notification error text-center" role="alert">{{ error }}</div>
+                <div class="notification error" role="alert">{{ error }}</div>
               {% endfor %}
             </div>
           
@@ -44,7 +44,7 @@
               <label>{{ OTP_form.otp_token.label_tag }}</label>
               {{ OTP_form.otp_token }}
               {% for error in OTP_form.otp_token.errors %}
-                <div class="notification error text-center" role="alert">{{ error }}</div>
+                <div class="notification error" role="alert">{{ error }}</div>
               {% endfor %}
             </div>
             <button type="submit" class="button">Valider</button>
