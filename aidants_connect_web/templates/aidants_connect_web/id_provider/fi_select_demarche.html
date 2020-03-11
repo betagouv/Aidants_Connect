@@ -11,8 +11,11 @@
 <section class="section section-grey">
   <div class="container">
     <form method="post">
-      <h2 id="welcome_aidant">Sélectionnez le type de démarche que vous allez effectuer</h2>
-      <p id="instructions">En selectionnant une démarche, vous allez FranceConnecter [Nom de l'usager] (Changer d'usager)</p>
+      <h2>Sélectionnez le type de démarche que vous allez effectuer à la place de {{ usager.given_name }} {{ usager.family_name }}</h2>
+      <p id="instructions">
+        En selectionnant une démarche, vous allez FranceConnecter <strong>{{ usager.given_name }} {{ usager.family_name }}</strong>.<br>
+        Si vous souhaitez changer d'usager, retournez à la page précédente.
+      </p>
       <div id="demarches_list" class="grid">
         {% for demarche, demarche_info in demarches.items %}
           <div id="{{ demarche }}" class="tile">
@@ -27,9 +30,12 @@
         {% csrf_token %}
         <input type="hidden" name="connection_id" value="{{ connection_id }}" />
       </div>
+      <br>
+      <div class="notification" role="alert">
+        Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat ait expiré.<br>
+        Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'dashboard' %}">Espace Aidant</a>.
+      </div>
     </form>
-    <p>Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat a expiré.
-    Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'dashboard' %}">Espace Aidant</a></p>
   </div>
 </section>
 {% endblock content %}
