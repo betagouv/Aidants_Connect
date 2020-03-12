@@ -151,25 +151,30 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
 
     try:
         usager = Usager.objects.get(sub=usager_sub)
+
         if usager.email != user_info.get("email"):
             usager.email = user_info.get("email")
             usager.save()
+
+            Journal.objects.change_email_usager(usager=usager)
+
         return usager, None
 
     except Usager.DoesNotExist:
-        usager = Usager.objects.create(
-            given_name=user_info.get("given_name"),
-            family_name=user_info.get("family_name"),
-            birthdate=user_info.get("birthdate"),
-            gender=user_info.get("gender"),
-            birthplace=user_info.get("birthplace"),
-            birthcountry=user_info.get("birthcountry"),
-            sub=usager_sub,
-            email=user_info.get("email"),
-        )
-        return usager, None
+        try:
+            usager = Usager.objects.create(
+                given_name=user_info.get("given_name"),
+                family_name=user_info.get("family_name"),
+                birthdate=user_info.get("birthdate"),
+                gender=user_info.get("gender"),
+                birthplace=user_info.get("birthplace"),
+                birthcountry=user_info.get("birthcountry"),
+                sub=usager_sub,
+                email=user_info.get("email"),
+            )
+            return usager, None
 
-    except IntegrityError as e:
-        log.error("Error happened in Recap")
-        log.error(e)
-        return None, f"The FranceConnect ID is not complete: {e}"
+        except IntegrityError as e:
+            log.error("Error happened in Recap")
+            log.error(e)
+            return None, f"The FranceConnect ID is not complete: {e}"

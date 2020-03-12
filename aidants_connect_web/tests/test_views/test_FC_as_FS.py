@@ -368,3 +368,6 @@ class GetUserInfoTests(TestCase):
         self.assertEqual(usager.given_name, "Joséphine")
         self.assertEqual(usager.email, "new@email.com")
         self.assertEqual(error, None)
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "change_email_usager")
