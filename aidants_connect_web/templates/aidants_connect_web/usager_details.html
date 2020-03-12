@@ -2,6 +2,8 @@
 
 {% load static %}
 
+{% block title %}Aidants Connect - {{ usager.get_full_name }}{% endblock %}
+
 {% block extracss %}
   <link href="{% static 'css/usagers.css' %}" rel="stylesheet">
 {% endblock extracss %}
