@@ -115,16 +115,10 @@ def fc_callback(request):
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
 
-    try:
-        usager_sub = generate_sha256_hash(
-            f"{decoded_token['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
-        )
-        usager = Usager.objects.get(sub=usager_sub)
-    except Usager.DoesNotExist:
-        usager, error = get_user_info(fc_base, connection.access_token)
-        if error:
-            messages.error(request, error)
-            return redirect("dashboard")
+    usager, error = get_user_info(fc_base, connection.access_token)
+    if error:
+        messages.error(request, error)
+        return redirect("dashboard")
 
     connection.usager = usager
     connection.save()
@@ -156,6 +150,13 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
     )
 
     try:
+        usager = Usager.objects.get(sub=usager_sub)
+        if usager.email != user_info.get("email"):
+            usager.email = user_info.get("email")
+            usager.save()
+        return usager, None
+
+    except Usager.DoesNotExist:
         usager = Usager.objects.create(
             given_name=user_info.get("given_name"),
             family_name=user_info.get("family_name"),

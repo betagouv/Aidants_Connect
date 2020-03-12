@@ -35,6 +35,7 @@ class AidantFactory(factory.DjangoModelFactory):
 class UsagerFactory(factory.DjangoModelFactory):
     given_name = "Homer"
     family_name = "Simpson"
+    preferred_username = "Homy"
     birthdate = "1902-06-30"
     gender = Usager.GENDER_MALE
     birthplace = "27681"
