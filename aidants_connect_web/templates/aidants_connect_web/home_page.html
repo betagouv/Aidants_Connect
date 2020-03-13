@@ -7,6 +7,13 @@
 {% endblock extracss %}
 
 {% block content %}
+{% if messages %}
+<div>
+  {% for message in messages %}
+    <div class="notification full-width {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+</div>
 <div class="hero">
   <div class="hero__container">
     <div class="row">
@@ -23,6 +30,23 @@
   </div>
 </div>
 <div class="notification full-width" role="alert">Vous êtes sur un site en construction, l’interface proposée sera amenée à changer grâce à vos <a href="https://github.com/betagouv/Aidants_Connect/issues/new">retours</a> !</div>
+<section class="section">
+  <div class="container">
+    <h2 class="text-center">Se connecter à Aidants Connect</h2>
+    <div class="row">
+      <div class="tile tile-no-hover">
+        <h3>Je suis un Aidant</h3>
+        <p>Vous êtes un <strong>aidant professionel</strong>, habilité Aidants Connect et participant à l'expérimentation en cours ? Cliquez sur le lien ci-dessous pour vous rendre sur la page de connexion.</p>
+        <p><a href="{% url 'login' %}">Page de connexion</a></p>
+      </div>
+      <div class="tile tile-no-hover">
+        <h3>Je suis un Usager</h3>
+        <p>Vous êtes un <strong>usager</strong>, et vous avez déjà été accompagné grâce à l'outil Aidants Connect ? Cliquez sur le bouton ci-dessous pour vous FranceConnecter et accéder à vos mandats en cours ou passés.</p>
+        <a href="{% url 'fc_authorize' source='usager' %}"><img type="image" src="{% static 'images/FCboutons-10.png' %}" alt="S’identifier avec FranceConnect" /></a>
+      </div>
+    </div>
+  </div>
+</section>
 <section class="section section-grey ac-service">
   <div class="container">
     <h2 class="text-center">Le service Aidants Connect</h2>
@@ -57,7 +81,7 @@
 </section>
 <section class="section">
   <div class="container">
-    <h2>Des outils à votre disposition</h2>
+    <h2 class="text-center">Des outils à votre disposition</h2>
     {% include 'aidants_connect_web/resource_list.html' %}
   </div>
 </section>

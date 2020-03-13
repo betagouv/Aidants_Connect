@@ -67,7 +67,7 @@ def new_mandat(request):
                 aidant=request.user, demarches=data["demarche"], duree=duree
             )
             request.session["connection"] = connection.pk
-            return redirect("fc_authorize")
+            return redirect("fc_authorize", source="new_mandat")
         else:
             return render(
                 request,

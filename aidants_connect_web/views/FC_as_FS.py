@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, reverse
 
 from aidants_connect_web.models import Connection, Usager, Journal
 from aidants_connect_web.utilities import generate_sha256_hash
@@ -18,7 +18,11 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-def fc_authorize(request):
+def fc_authorize(request, source):
+    if source == "usager":
+        connection = Connection.objects.create()
+        request.session["connection"] = connection.pk
+
     connection = Connection.objects.get(pk=request.session["connection"])
 
     connection.state = token_urlsafe(16)
@@ -113,10 +117,28 @@ def fc_callback(request):
         log.info("408: FC connection has expired.")
         return render(request, "408.html", status=408)
 
-    usager, error = get_user_info(connection)
-    if error:
-        messages.error(request, error)
-        return redirect("dashboard")
+    usager_sub = generate_sha256_hash(
+        f"{decoded_token['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
+    )
+
+    try:
+        usager = Usager.objects.get(sub=usager_sub)
+    except Usager.DoesNotExist:
+        # new_mandat workflow
+        if connection.aidant:
+            usager, error = get_user_info(connection)
+            if error:
+                messages.error(request, error)
+                return redirect("dashboard")
+        # espace_usager workflow
+        else:
+            messages.error(
+                request,
+                "La connexion à Aidants Connect a échoué."
+                "Vous n'êtes pas un usager ayant déjà été accompagné "
+                "sur Aidants Connect.",
+            )
+            return redirect("home_page")
 
     connection.usager = usager
     connection.save()
@@ -125,12 +147,15 @@ def fc_callback(request):
         aidant=connection.aidant, usager=connection.usager,
     )
 
-    logout_base = f"{fc_base}/logout"
-    logout_id_token = f"id_token_hint={fc_id_token}"
-    logout_state = f"state={state}"
-    logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
-    logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
-    return redirect(logout_url)
+    if connection.aidant:
+        logout_base = f"{fc_base}/logout"
+        logout_id_token = f"id_token_hint={fc_id_token}"
+        logout_state = f"state={state}"
+        logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
+        logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
+        return redirect(logout_url)
+    else:
+        return redirect(f"{reverse('espace_usager_home')}?state={state}")
 
 
 def get_user_info(connection: Connection) -> tuple:

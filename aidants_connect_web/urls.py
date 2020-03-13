@@ -9,14 +9,17 @@ from aidants_connect_web.views import (
     new_mandat,
     service,
     usagers,
+    espace_usager,
 )
 
 urlpatterns = [
     # service
     path("", service.home_page, name="home_page"),
+    # aidant: login
     path("accounts/login/", magicauth_views.LoginView.as_view(), name="login"),
+    # aidant: dashboard
     path("dashboard/", service.dashboard, name="dashboard"),
-    # usagers
+    # aidant: usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
     path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),
     path(
@@ -24,7 +27,7 @@ urlpatterns = [
         usagers.usagers_mandats_cancel_confirm,
         name="usagers_mandats_cancel_confirm",
     ),
-    # new mandat
+    # aidant: new mandat
     path("creation_mandat/", new_mandat.new_mandat, name="new_mandat"),
     path(
         "creation_mandat/recapitulatif/",
@@ -59,8 +62,10 @@ urlpatterns = [
     path("logout/", service.logout_page, name="logout"),
     path("select_demarche/", id_provider.fi_select_demarche, name="fi_select_demarche"),
     # FC_as_FS
-    path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
+    path("fc_authorize/<str:source>/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
+    # usager: mandats
+    path("espace-usager", espace_usager.espace_usager_home, name="espace_usager_home"),
     # misc
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("stats/", service.statistiques, name="statistiques"),

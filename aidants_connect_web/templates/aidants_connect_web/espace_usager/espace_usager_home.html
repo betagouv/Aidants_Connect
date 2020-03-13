@@ -1,0 +1,89 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/usagers.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="brand">Bienvenue sur votre Espace Usager, {{ usager.given_name }} !</h1>
+    <div class="tiles">
+      {% if active_mandats or expired_mandats %}
+        <h2>Mandats en cours</h2>
+        {% if active_mandats %}
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="th-40">Périmètre de la démarche</th>
+                <th class="th-20">Date de début</th>
+                <th class="th-20">Date de fin</th>
+                <th class="th-20">Structure</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for mandat in active_mandats %}
+                <tr>
+                  <td>
+                    {{ mandat.demarche }}
+                  </td>
+                  <td title="{{ mandat.creation_date }}">
+                    {{ mandat.creation_date | date:"d F Y" }}
+                  </td>
+                  <td title="{{ mandat.expiration_date }}">
+                    <!-- Expiré -->
+                    {{ mandat.expiration_date | date:"d F Y" }}
+                  </td>
+                  <td>
+                    {{ mandat.aidant.organisation }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="notification" role="alert">Vous n’avez pas de mandat en cours.</div>
+        {% endif %}
+        <h2>Mandats expirés</h2>
+        {% if expired_mandats %}
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="th-40">Périmètre de la démarche</th>
+                <th class="th-20">Date de début</th>
+                <th class="th-20">Date de fin</th>
+                <th class="th-20">Structure</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for mandat in expired_mandats %}
+                <tr>
+                  <td>
+                    {{ mandat.demarche }}
+                  </td>
+                  <td title="{{ mandat.creation_date }}">
+                    {{ mandat.creation_date | date:"d F Y" }}
+                  </td>
+                  <td title="{{ mandat.expiration_date }}">
+                    <!-- Expiré -->
+                    {{ mandat.expiration_date | date:"d F Y" }}
+                  </td>
+                  <td>
+                    {{ mandat.aidant.organisation }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="notification" role="alert">Vous n’avez pas de mandat expiré.</div>
+        {% endif %}
+      {% else %}
+        <div class="notification" role="alert">Vous n’avez pas de mandat.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock content %}
