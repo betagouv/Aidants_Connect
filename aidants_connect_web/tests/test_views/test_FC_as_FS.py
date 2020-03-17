@@ -8,7 +8,7 @@ from django.conf import settings
 from django.test import tag, TestCase
 from django.test.client import Client
 
-from aidants_connect_web.models import Connection, Journal
+from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.views.FC_as_FS import get_user_info
@@ -212,9 +212,9 @@ class FCCallback(TestCase):
                 family_name="ST-PIERRE",
                 preferred_username="ST-PIERRE",
                 birthdate="1969-12-15",
-                gender="female",
+                gender=Usager.GENDER_FEMALE,
                 birthplace="70447",
-                birthcountry="99100",
+                birthcountry=Usager.BIRTHCOUNTRY_FRANCE,
                 email="User@user.domain",
                 sub="456",
             ),
@@ -263,9 +263,9 @@ class GetUserInfoTests(TestCase):
                 "sub": "123",
                 "preferred_username": "TROIS",
                 "birthdate": "1981-07-27",
-                "gender": "female",
+                "gender": Usager.GENDER_FEMALE,
                 "birthplace": "95277",
-                "birthcountry": "99100",
+                "birthcountry": Usager.BIRTHCOUNTRY_FRANCE,
                 "email": "test@test.com",
             }
         )
@@ -288,9 +288,9 @@ class GetUserInfoTests(TestCase):
                 "sub": "123",
                 "preferred_username": "TROIS",
                 "birthdate": "1981-07-27",
-                "gender": "female",
+                "gender": Usager.GENDER_FEMALE,
                 "birthplace": "95277",
-                "birthcountry": "99100",
+                "birthcountry": Usager.BIRTHCOUNTRY_FRANCE,
                 "email": "test@test.com",
             }
         )
@@ -312,7 +312,7 @@ class GetUserInfoTests(TestCase):
                 "sub": "123",
                 "preferred_username": "Flo",
                 "birthdate": "1981-07-27",
-                "gender": "male",
+                "gender": Usager.GENDER_MALE,
                 "birthplace": "",
                 "birthcountry": "99131",
                 "email": "test@test.com",

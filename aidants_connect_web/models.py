@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -146,22 +145,27 @@ class UsagerQuerySet(models.QuerySet):
 
 
 class Usager(models.Model):
+
+    GENDER_FEMALE = "female"
+    GENDER_MALE = "male"
+    GENDER_CHOICES = (
+        (GENDER_FEMALE, "Femme"),
+        (GENDER_MALE, "Homme"),
+    )
+    BIRTHCOUNTRY_FRANCE = "99100"
+    EMAIL_NOT_PROVIDED = "noemailprovided@aidantconnect.beta.gouv.fr"
+
     given_name = models.TextField(blank=False)
     family_name = models.TextField(blank=False)
     preferred_username = models.TextField(blank=True)
     birthdate = models.DateField(blank=False)
-    GENDER = (("female", "Femme"), ("male", "Homme"))
-    gender = models.CharField(max_length=6, choices=GENDER, default="F", blank=False)
-    birthplace = models.PositiveIntegerField(blank=True, null=True)
-    birthcountry = models.IntegerField(
-        validators=[MinValueValidator(99100), MaxValueValidator(99500)],
-        default=99100,
-        blank=False,
+    gender = models.CharField(
+        max_length=6, choices=GENDER_CHOICES, default=GENDER_FEMALE,
     )
+    birthplace = models.CharField(max_length=5, blank=True, null=True)
+    birthcountry = models.CharField(max_length=5, default=BIRTHCOUNTRY_FRANCE,)
     sub = models.TextField(blank=False, unique=True)
-    email = models.EmailField(
-        blank=False, default="noemailprovided@aidantconnect.beta.gouv.fr"
-    )
+    email = models.EmailField(blank=False, default=EMAIL_NOT_PROVIDED)
     creation_date = models.DateTimeField(default=timezone.now)
 
     objects = UsagerQuerySet.as_manager()
@@ -184,6 +188,17 @@ class Usager(models.Model):
             return self.mandats.get(pk=mandat_id)
         except Mandat.DoesNotExist:
             return None
+
+    def normalize_birthplace(self):
+        if not self.birthplace:
+            return None
+
+        normalized_birthplace = self.birthplace.zfill(5)
+        if normalized_birthplace != self.birthplace:
+            self.birthplace = normalized_birthplace
+            self.save(update_fields=["birthplace"])
+
+        return self.birthplace
 
 
 class MandatQuerySet(models.QuerySet):

@@ -54,7 +54,7 @@ class ConnectionModelTest(TestCase):
         self.assertEqual(first_saved_item.nonce, "varg")
         self.assertEqual(first_saved_item.usager.given_name, "Joséphine")
         self.assertEqual(second_saved_item.state, "QsDfG")
-        self.assertEqual(second_saved_item.usager.gender, "male")
+        self.assertEqual(second_saved_item.usager.gender, Usager.GENDER_MALE)
 
 
 @tag("models")
@@ -65,9 +65,9 @@ class UsagerModelTest(TestCase):
         first_usager.family_name = "TEST Family Name éèà"
         first_usager.preferred_username = "I prefer being called this"
         first_usager.birthdate = date(1902, 6, 30)
-        first_usager.gender = "female"
+        first_usager.gender = Usager.GENDER_FEMALE
         first_usager.birthplace = None
-        first_usager.birthcountry = 99100
+        first_usager.birthcountry = Usager.BIRTHCOUNTRY_FRANCE
         first_usager.email = "user@test.user"
         first_usager.sub = "1233"
         first_usager.save()
@@ -80,9 +80,9 @@ class UsagerModelTest(TestCase):
         first_usager.family_name = "TEST Family Name éèà"
         first_usager.preferred_username = "I prefer being called this"
         first_usager.birthdate = date(1902, 6, 30)
-        first_usager.gender = "female"
-        first_usager.birthplace = 27681
-        first_usager.birthcountry = 99100
+        first_usager.gender = Usager.GENDER_FEMALE
+        first_usager.birthplace = "27681"
+        first_usager.birthcountry = Usager.BIRTHCOUNTRY_FRANCE
         first_usager.email = "user@test.user"
         first_usager.sub = "1233"
         first_usager.save()
@@ -92,9 +92,9 @@ class UsagerModelTest(TestCase):
         second_usager.family_name = "TEST Family Name éèà"
         second_usager.preferred_username = "I prefer being called this"
         second_usager.birthdate = date(1945, 10, 20)
-        second_usager.gender = "male"
-        second_usager.birthplace = 84016
-        second_usager.birthcountry = 99100
+        second_usager.gender = Usager.GENDER_MALE
+        second_usager.birthplace = "84016"
+        second_usager.birthcountry = Usager.BIRTHCOUNTRY_FRANCE
         second_usager.email = "other_user@test.user"
         second_usager.sub = "1234"
         second_usager.save()
@@ -109,6 +109,19 @@ class UsagerModelTest(TestCase):
         self.assertEqual(str(first_saved_item.birthdate), "1902-06-30")
         self.assertEqual(second_saved_item.family_name, "TEST Family Name éèà")
         self.assertEqual(second_usager.sub, "1234")
+
+    def test_normalize_birthplace(self):
+        usager = UsagerFactory(birthplace="123")
+        usager.normalize_birthplace()
+        self.assertEqual(usager.birthplace, "00123")
+
+        usager = UsagerFactory(birthplace="1234")
+        usager.normalize_birthplace()
+        self.assertEqual(usager.birthplace, "01234")
+
+        usager = UsagerFactory(birthplace="12345")
+        usager.normalize_birthplace()
+        self.assertEqual(usager.birthplace, "12345")
 
 
 @tag("models")

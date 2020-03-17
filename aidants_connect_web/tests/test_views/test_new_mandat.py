@@ -66,7 +66,7 @@ class NewMandatRecapTests(TestCase):
             "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1"
         )
         self.test_usager = UsagerFactory(
-            given_name="Fabrice", birthplace=95277, sub=self.test_usager_sub,
+            given_name="Fabrice", birthplace="95277", sub=self.test_usager_sub,
         )
         self.mandat_builder = Connection.objects.create(
             demarches=["papiers", "logement"], duree=365, usager=self.test_usager
