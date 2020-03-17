@@ -150,7 +150,6 @@ class FCCallback(TestCase):
 
         mock_post.return_value = mock_response
 
-        # creating mock_get_user_info
         mock_get_user_info.return_value = (self.usager, None)
 
         self.client.force_login(self.aidant)
@@ -158,9 +157,7 @@ class FCCallback(TestCase):
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with(
-            settings.FC_AS_FS_BASE_URL, "test_access_token"
-        )
+        mock_get_user_info.assert_called_once_with(self.connection)
 
         connection = Connection.objects.get(pk=connection_number)
 
@@ -214,7 +211,6 @@ class FCCallback(TestCase):
 
         mock_post.return_value = mock_response
 
-        # creating mock_get_user_info
         mock_get_user_info.return_value = (
             UsagerFactory(
                 given_name="Joséphine",
@@ -235,9 +231,7 @@ class FCCallback(TestCase):
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with(
-            settings.FC_AS_FS_BASE_URL, "test_access_token"
-        )
+        mock_get_user_info.assert_called_once_with(self.connection)
 
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Joséphine")
@@ -266,9 +260,13 @@ class GetUserInfoTests(TestCase):
             f"{self.usager_sub_fc}{settings.FC_AS_FI_HASH_SALT}".encode()
         )
         self.usager = UsagerFactory(given_name="Joséphine", sub=self.usager_sub)
+        self.aidant = AidantFactory()
+        self.connection = Connection.objects.create(
+            access_token="mock_access_token", aidant=self.aidant,
+        )
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
-    def test_well_formated_new_user_info_outputs_usager(self, mock_get):
+    def test_well_formatted_new_user_info_outputs_usager(self, mock_get):
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.content = "content"
@@ -287,20 +285,19 @@ class GetUserInfoTests(TestCase):
         )
         mock_get.return_value = mock_response
 
-        usager, error = get_user_info("mock_fc_base", "mock_access_token")
+        usager, error = get_user_info(self.connection)
 
         self.assertEqual(usager.given_name, "Fabrice")
         self.assertEqual(usager.email, "test@test.com")
-        self.assertEqual(error, None)
+        self.assertIsNone(error)
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
-    def test_badly_formated_new_user_info_outputs_error(self, mock_get):
+    def test_badly_formatted_new_user_info_outputs_error(self, mock_get):
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.content = "content"
         mock_response.json = mock.Mock(
-            return_value={
-                # "given_name": None,
+            return_value={  # without 'given_name'
                 "family_name": "Mercier",
                 "sub": "456",
                 "preferred_username": "TROIS",
@@ -312,18 +309,18 @@ class GetUserInfoTests(TestCase):
             }
         )
         mock_get.return_value = mock_response
-        usager, error = get_user_info("mock_fc_base", "mock_access_token")
+        usager, error = get_user_info(self.connection)
 
-        self.assertEqual(usager, None)
+        self.assertIsNone(usager)
         self.assertIn("The FranceConnect ID is not complete:", error)
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
-    def test_formated_new_user_without_birthplace_outputs_usager(self, mock_get):
+    def test_formatted_new_user_without_birthplace_outputs_usager(self, mock_get):
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.content = "content"
         mock_response.json = mock.Mock(
-            return_value={
+            return_value={  # with empty 'birthplace'
                 "given_name": "Fabrice",
                 "family_name": "Mercier",
                 "sub": "456",
@@ -337,13 +334,13 @@ class GetUserInfoTests(TestCase):
         )
         mock_get.return_value = mock_response
 
-        usager, error = get_user_info("mock_fc_base", "mock_access_token")
+        usager, error = get_user_info(self.connection)
 
         self.assertEqual(usager.given_name, "Fabrice")
-        self.assertEqual(error, None)
+        self.assertIsNone(error)
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
-    def test_formated_existing_user_with_email_change_outputs_usager(self, mock_get):
+    def test_formatted_existing_user_with_email_change_outputs_usager(self, mock_get):
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.content = "content"
@@ -362,12 +359,12 @@ class GetUserInfoTests(TestCase):
         )
         mock_get.return_value = mock_response
 
-        usager, error = get_user_info("mock_fc_base", "mock_access_token")
+        usager, error = get_user_info(self.connection)
 
         self.assertEqual(usager.id, self.usager.id)
         self.assertEqual(usager.given_name, "Joséphine")
         self.assertEqual(usager.email, "new@email.com")
-        self.assertEqual(error, None)
+        self.assertIsNone(error)
 
         last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "change_email_usager")
+        self.assertEqual(last_journal_entry.action, "update_email_usager")

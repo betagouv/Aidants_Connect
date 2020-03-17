@@ -317,9 +317,11 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def change_email_usager(self, usager: Usager):
+    def update_email_usager(self, aidant: Aidant, usager: Usager):
         journal_entry = self.create(
-            usager=usager.full_string_identifier, action="change_email_usager",
+            initiator=aidant.full_string_identifier,
+            usager=usager.full_string_identifier,
+            action="update_email_usager",
         )
         return journal_entry
 
@@ -409,7 +411,7 @@ class Journal(models.Model):
         ("connect_aidant", "Connexion d'un aidant"),
         ("activity_check_aidant", "Reprise de connexion d'un aidant"),
         ("franceconnect_usager", "FranceConnexion d'un usager"),
-        ("change_email_usager", "L'email de l'usager a été modifié"),
+        ("update_email_usager", "L'email de l'usager a été modifié"),
         ("create_mandat_print", "Création d'un mandat papier"),
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),

@@ -115,7 +115,7 @@ def fc_callback(request):
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
 
-    usager, error = get_user_info(fc_base, connection.access_token)
+    usager, error = get_user_info(connection)
     if error:
         messages.error(request, error)
         return redirect("dashboard")
@@ -135,10 +135,11 @@ def fc_callback(request):
     return redirect(logout_url)
 
 
-def get_user_info(fc_base: str, access_token: str) -> tuple:
+def get_user_info(connection: Connection) -> tuple:
+    fc_base = settings.FC_AS_FS_BASE_URL
     fc_user_info = python_request.get(
         f"{fc_base}/userinfo?schema=openid",
-        headers={"Authorization": f"Bearer {access_token}"},
+        headers={"Authorization": f"Bearer {connection.access_token}"},
     )
     user_info = fc_user_info.json()
 
@@ -156,7 +157,7 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
             usager.email = user_info.get("email")
             usager.save()
 
-            Journal.objects.change_email_usager(usager=usager)
+            Journal.objects.update_email_usager(aidant=connection.aidant, usager=usager)
 
         return usager, None
 
