@@ -2,6 +2,8 @@
 
 {% load static %}
 
+{% block title %}Aidants Connect - Sélectionnez l'usager{% endblock %}
+
 {% block extracss %}
 <link href="{% static 'css/id_provider.css' %}" rel="stylesheet">
 {% endblock extracss %}
@@ -15,7 +17,7 @@
 <section class="section section-grey mandat-select__section">
   <div class="container">
     <form method="post">
-      <h2>Choisissez l'usager que vous souhaitez FranceConnecter</h2>
+      <h2>Sélectionnez l'usager que vous souhaitez FranceConnecter</h2>
       <p id="instructions">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
       {% if usagers %}
         <fieldset>
