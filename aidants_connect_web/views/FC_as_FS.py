@@ -8,8 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden
-from django.shortcuts import redirect
-from django.utils import timezone
+from django.shortcuts import redirect, render
 
 from aidants_connect_web.models import Connection, Usager, Journal
 from aidants_connect_web.utilities import generate_sha256_hash
@@ -61,7 +60,6 @@ def fc_callback(request):
     fc_callback_uri_logout = f"{settings.FC_AS_FS_CALLBACK_URL}/logout-callback"
     fc_id = settings.FC_AS_FS_ID
     fc_secret = settings.FC_AS_FS_SECRET
-
     state = request.GET.get("state")
 
     try:
@@ -71,9 +69,9 @@ def fc_callback(request):
         log.info(state)
         return HttpResponseForbidden()
 
-    if connection.expires_on < timezone.now():
-        log.info("403: The connection has expired.")
-        return HttpResponseForbidden()
+    if connection.is_expired:
+        log.info("408: FC connection has expired.")
+        return render(request, "408.html", status=408)
 
     code = request.GET.get("code")
     if not code:
@@ -111,9 +109,9 @@ def fc_callback(request):
         log.info("403: The nonce is different than the one expected.")
         return HttpResponseForbidden()
 
-    if connection.expires_on < timezone.now():
-        log.info("403: The connection has expired.")
-        return HttpResponseForbidden()
+    if connection.is_expired:
+        log.info("408: FC connection has expired.")
+        return render(request, "408.html", status=408)
 
     usager, error = get_user_info(connection)
     if error:

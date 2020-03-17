@@ -5,7 +5,7 @@ import mock
 import jwt
 
 from django.conf import settings
-from django.test import tag, TestCase
+from django.test import override_settings, tag, TestCase
 from django.test.client import Client
 
 from aidants_connect_web.models import Connection, Journal, Usager
@@ -31,7 +31,12 @@ class FCAuthorize(TestCase):
         self.assertNotEqual(connection.state, "")
 
 
+DATE = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
+TEST_FC_CONNECTION_AGE = 300
+
+
 @tag("new_mandat", "FC_as_FS")
+@override_settings(FC_CONNECTION_AGE=TEST_FC_CONNECTION_AGE)
 class FCCallback(TestCase):
     date = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
     epoch_date = date.timestamp()
@@ -66,28 +71,31 @@ class FCCallback(TestCase):
         )
         self.usager = UsagerFactory(given_name="Joséphine", sub=self.usager_sub)
 
+    @freeze_time(date)
     def test_no_code_triggers_403(self):
         response = self.client.get("/callback/", data={"state": "test_state"})
         self.assertEqual(response.status_code, 403)
 
+    @freeze_time(date)
     def test_no_state_triggers_403(self):
         response = self.client.get("/callback/", data={"code": "test_code"})
         self.assertEqual(response.status_code, 403)
 
+    @freeze_time(date)
     def test_non_existing_state_triggers_403(self):
         response = self.client.get(
             "/callback/", data={"state": "wrong_state", "code": "test_code"}
         )
         self.assertEqual(response.status_code, 403)
 
-    date_expired = date + timedelta(seconds=settings.FC_CONNECTION_AGE + 1200)
+    date_expired = DATE + timedelta(seconds=TEST_FC_CONNECTION_AGE + 1)
 
     @freeze_time(date_expired)
-    def test_expired_connection_returns_403(self):
+    def test_expired_connection_returns_408(self):
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 408)
 
     @freeze_time(date)
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
