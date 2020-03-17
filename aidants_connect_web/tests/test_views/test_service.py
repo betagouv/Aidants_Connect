@@ -72,7 +72,7 @@ class LogoutPageTests(TestCase):
         self.assertRedirects(response, "/")
 
 
-@tag("service", "this")
+@tag("service")
 class ActivityCheckPageTests(TestCase):
     def setUp(self):
         self.aidant_thierry = AidantFactory()
