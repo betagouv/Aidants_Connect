@@ -41,7 +41,7 @@
                 <div class="notification error" role="alert">{{ error }}</div>
               {% endfor %}
             </div>
-          
+
             <div class="form-group">
               <label>{{ OTP_form.otp_token.label_tag }}</label>
               {{ OTP_form.otp_token }}
@@ -53,17 +53,25 @@
           {% endif %}
         </form>
         <div class="text-center text-muted">
+
+          <h2>Vous êtes sur la page de connexion Aidants Connect</h2>
+
+          <h3>Vous cherchez à vous connecter à un service ?</h3>
           <p>
-            Il s'agit d'un service visant à faciliter et à sécuriser juridiquement l'accompagnement d'usagers dans la réalisation de leurs démarches administratives en ligne par des aidants professionnels habilités (agents publics d'accueil, travailleurs sociaux, médiateurs numériques, etc.).
+            <a href="https://franceconnect.gouv.fr/faq" target="_blank">La Foire Aux Questions FranceConnect</a> contient des informations pour vous aider.
+          </p>
+
+          <h3>Vous êtes un aidant professionnel ?</h3>
+          <p>
+            Si vous êtes déjà habilité Aidants Connect, vous pouvez
+            <a href="mailto:aidantsconnect@beta.gouv.frsubject=[Site Aidants Connect - login] Demande d'aide au login">nous demander de l'aide</a>.
           </p>
           <p>
-            Pour en savoir plus, <a href="mailto:aidantsconnect@beta.gouv.fr?subject=[site Aidants Connect - login] Demande d'informations">contactez-nous</a>.
+            Si vous souhaitez avoir des informations sur Aidants Connect,
+            <a href="mailto:aidantsconnect@beta.gouv.fr?subject=[Site Aidants Connect - login] Demande d'informations">contactez-nous</a>.
           </p>
-          <p>
-            Vous êtes un aidant habilité Aidants Connect et vous rencontrez des difficultés pour vous connecter ?
-          </p>
-          <a href="mailto:aidantsconnect@beta.gouv.frsubject=[site Aidants Connect - login] Demande d'aide au login">Demandez de l'aide</a>
-        </div>
+
+         </div>
       </div>
     </section>
   </div>
