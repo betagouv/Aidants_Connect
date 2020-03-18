@@ -3,10 +3,28 @@
 from django.db import migrations, models
 
 
+def _normalize_birthplace(usager):
+
+    # This code is duplicated from the `normalize_birthplace` method
+    # of the `Usager` model, because such methods cannot be called
+    # during a data migration.
+    # See: https://stackoverflow.com/questions/28777338/django-migrations-runpython-not-able-to-call-model-methods  # noqa
+
+    if not usager.birthplace:
+        return None
+
+    normalized_birthplace = usager.birthplace.zfill(5)
+    if normalized_birthplace != usager.birthplace:
+        usager.birthplace = normalized_birthplace
+        usager.save(update_fields=["birthplace"])
+
+    return usager.birthplace
+
+
 def normalize_birthplace(apps, schema_editor):
     Usager = apps.get_model("aidants_connect_web", "Usager")
     for usager in Usager.objects.all():
-        usager.normalize_birthplace()
+        _normalize_birthplace(usager)
 
 
 class Migration(migrations.Migration):
