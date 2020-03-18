@@ -38,15 +38,13 @@ TEST_FC_CONNECTION_AGE = 300
 @tag("new_mandat", "FC_as_FS")
 @override_settings(FC_CONNECTION_AGE=TEST_FC_CONNECTION_AGE)
 class FCCallback(TestCase):
-    date = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
-    epoch_date = date.timestamp()
+    date = DATE
 
     @freeze_time(date)
     def setUp(self):
         self.client = Client()
         self.aidant = AidantFactory()
-        date = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
-        self.epoch_date = date.timestamp()
+        self.epoch_date = DATE.timestamp()
 
         self.connection = Connection.objects.create(
             demarches=["argent", "papiers"],
@@ -55,7 +53,7 @@ class FCCallback(TestCase):
             connection_type="FS",
             nonce="test_nonce",
             id=1,
-            expires_on=date + timedelta(minutes=5),
+            expires_on=DATE + timedelta(minutes=5),
             aidant=self.aidant,
         )
         Connection.objects.create(
