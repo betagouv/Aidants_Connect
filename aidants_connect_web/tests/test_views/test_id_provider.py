@@ -16,6 +16,7 @@ from aidants_connect_web.models import (
     Aidant,
     Connection,
     Journal,
+    Usager,
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -229,8 +230,8 @@ class FISelectDemarcheTest(TestCase):
         self.client = Client()
         self.aidant_thierry = AidantFactory()
         self.aidant_yasmina = AidantFactory(
-            username='yasmina@yasmina.com',
-            organisation=self.aidant_thierry.organisation
+            username="yasmina@yasmina.com",
+            organisation=self.aidant_thierry.organisation,
         )
         self.usager = UsagerFactory(given_name="Joséphine")
 
@@ -485,9 +486,9 @@ class UserInfoTests(TestCase):
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
             birthdate=date(1969, 12, 25),
-            gender="F",
-            birthplace=70447,
-            birthcountry=99100,
+            gender=Usager.GENDER_FEMALE,
+            birthplace="70447",
+            birthcountry=Usager.BIRTHCOUNTRY_FRANCE,
             sub="test_sub",
             email="User@user.domain",
             creation_date="2019-08-05T15:49:13.972Z",
@@ -537,9 +538,9 @@ class UserInfoTests(TestCase):
             "family_name": "ST-PIERRE",
             "preferred_username": "ST-PIERRE",
             "birthdate": "1969-12-25",
-            "gender": "F",
+            "gender": Usager.GENDER_FEMALE,
             "birthplace": "70447",
-            "birthcountry": "99100",
+            "birthcountry": Usager.BIRTHCOUNTRY_FRANCE,
             "sub": self.connection.usager.sub,
             "email": "User@user.domain",
             "creation_date": "2019-08-05T15:49:13.972Z",
