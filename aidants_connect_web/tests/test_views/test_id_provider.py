@@ -533,7 +533,7 @@ class UserInfoTests(TestCase):
             "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer {self.access_token}"}
         )
 
-        FC_formated_info = {
+        FC_formatted_info = {
             "given_name": "Joséphine",
             "family_name": "ST-PIERRE",
             "preferred_username": "ST-PIERRE",
@@ -548,7 +548,7 @@ class UserInfoTests(TestCase):
 
         content = response.json()
 
-        self.assertEqual(content, FC_formated_info)
+        self.assertEqual(content, FC_formatted_info)
 
     @freeze_time(date)
     def test_mandat_use_triggers_journal_entry(self):

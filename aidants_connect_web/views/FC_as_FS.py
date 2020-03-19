@@ -115,16 +115,10 @@ def fc_callback(request):
         log.info("403: The connection has expired.")
         return HttpResponseForbidden()
 
-    try:
-        usager_sub = generate_sha256_hash(
-            f"{decoded_token['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
-        )
-        usager = Usager.objects.get(sub=usager_sub)
-    except Usager.DoesNotExist:
-        usager, error = get_user_info(fc_base, connection.access_token)
-        if error:
-            messages.error(request, error)
-            return redirect("dashboard")
+    usager, error = get_user_info(connection)
+    if error:
+        messages.error(request, error)
+        return redirect("dashboard")
 
     connection.usager = usager
     connection.save()
@@ -141,10 +135,11 @@ def fc_callback(request):
     return redirect(logout_url)
 
 
-def get_user_info(fc_base: str, access_token: str) -> tuple:
+def get_user_info(connection: Connection) -> tuple:
+    fc_base = settings.FC_AS_FS_BASE_URL
     fc_user_info = python_request.get(
         f"{fc_base}/userinfo?schema=openid",
-        headers={"Authorization": f"Bearer {access_token}"},
+        headers={"Authorization": f"Bearer {connection.access_token}"},
     )
     user_info = fc_user_info.json()
 
@@ -156,19 +151,31 @@ def get_user_info(fc_base: str, access_token: str) -> tuple:
     )
 
     try:
-        usager = Usager.objects.create(
-            given_name=user_info.get("given_name"),
-            family_name=user_info.get("family_name"),
-            birthdate=user_info.get("birthdate"),
-            gender=user_info.get("gender"),
-            birthplace=user_info.get("birthplace"),
-            birthcountry=user_info.get("birthcountry"),
-            sub=usager_sub,
-            email=user_info.get("email"),
-        )
+        usager = Usager.objects.get(sub=usager_sub)
+
+        if usager.email != user_info.get("email"):
+            usager.email = user_info.get("email")
+            usager.save()
+
+            Journal.objects.update_email_usager(aidant=connection.aidant, usager=usager)
+
         return usager, None
 
-    except IntegrityError as e:
-        log.error("Error happened in Recap")
-        log.error(e)
-        return None, f"The FranceConnect ID is not complete: {e}"
+    except Usager.DoesNotExist:
+        try:
+            usager = Usager.objects.create(
+                given_name=user_info.get("given_name"),
+                family_name=user_info.get("family_name"),
+                birthdate=user_info.get("birthdate"),
+                gender=user_info.get("gender"),
+                birthplace=user_info.get("birthplace"),
+                birthcountry=user_info.get("birthcountry"),
+                sub=usager_sub,
+                email=user_info.get("email"),
+            )
+            return usager, None
+
+        except IntegrityError as e:
+            log.error("Error happened in Recap")
+            log.error(e)
+            return None, f"The FranceConnect ID is not complete: {e}"

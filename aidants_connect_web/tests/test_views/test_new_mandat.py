@@ -34,7 +34,7 @@ class NewMandatTests(TestCase):
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
 
-    def test_badly_formated_form_triggers_original_template(self):
+    def test_badly_formatted_form_triggers_original_template(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "RAMDAM"}
         response = self.client.post("/creation_mandat/", data=data)
@@ -42,7 +42,7 @@ class NewMandatTests(TestCase):
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
 
-    def test_well_formated_form_triggers_redirect_to_FC(self):
+    def test_well_formatted_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "short"}
         response = self.client.post("/creation_mandat/", data=data)
