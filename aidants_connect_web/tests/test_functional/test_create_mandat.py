@@ -33,7 +33,7 @@ class CreateNewMandat(FunctionalTestCase):
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(welcome_aidant, "Vos mandats")
 
-        usagers_before = self.selenium.find_elements_by_class_name("fake-table-row")
+        usagers_before = self.selenium.find_elements_by_tag_name("tr")
         self.assertEqual(len(usagers_before), 0)
 
         # Create new mandat
@@ -114,7 +114,7 @@ class CreateNewMandat(FunctionalTestCase):
         go_to_usager_button.click()
 
         # See all mandats of usager page
-        active_mandats_after = self.selenium.find_elements_by_class_name(
-            "fake-table-row"
-        )
+        active_mandats_after = self.selenium.find_elements_by_tag_name("table")[
+            0
+        ].find_elements_by_css_selector("tbody tr")
         self.assertEqual(len(active_mandats_after), 2)

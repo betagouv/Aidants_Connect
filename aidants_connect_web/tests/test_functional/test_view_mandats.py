@@ -53,5 +53,10 @@ class ViewMandats(FunctionalTestCase):
 
         # Mandat List
         self.assertEqual(
-            len(self.selenium.find_elements_by_class_name("fake-table-row")), 2
+            len(
+                self.selenium.find_element_by_tag_name(
+                    "table"
+                ).find_elements_by_css_selector("tbody tr")
+            ),
+            2,
         )
