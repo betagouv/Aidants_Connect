@@ -19,7 +19,7 @@ log = logging.getLogger()
 
 
 def fc_authorize(request, source):
-    if source == "usager":
+    if source == "espace_usager":
         connection = Connection.objects.create()
         request.session["connection"] = connection.pk
 
@@ -121,15 +121,34 @@ def fc_callback(request):
         f"{decoded_token['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
     )
 
+    user_info = get_user_info(connection.access_token)
+
     try:
         usager = Usager.objects.get(sub=usager_sub)
     except Usager.DoesNotExist:
         # new_mandat workflow
         if connection.aidant:
-            usager, error = get_user_info(connection)
-            if error:
-                messages.error(request, error)
-                return redirect("dashboard")
+            if user_info.get("birthplace") == "":
+                user_info["birthplace"] = None
+
+            try:
+                usager = Usager.objects.create(
+                    given_name=user_info.get("given_name"),
+                    family_name=user_info.get("family_name"),
+                    birthdate=user_info.get("birthdate"),
+                    gender=user_info.get("gender"),
+                    birthplace=user_info.get("birthplace"),
+                    birthcountry=user_info.get("birthcountry"),
+                    sub=usager_sub,
+                    email=user_info.get("email"),
+                )
+
+            except IntegrityError as e:
+                log.error("Error happened in Recap")
+                log.error(e)
+                messages.error(request, f"The FranceConnect ID is not complete: {e}")
+                return redirect("home_page")
+
         # espace_usager workflow
         else:
             messages.error(
@@ -140,6 +159,13 @@ def fc_callback(request):
             )
             return redirect("home_page")
 
+    # update usager email if it has changed
+    if usager.email != user_info.get("email"):
+        usager.email = user_info.get("email")
+        usager.save()
+
+        Journal.objects.update_email_usager(aidant=connection.aidant, usager=usager)
+
     connection.usager = usager
     connection.save()
 
@@ -147,6 +173,7 @@ def fc_callback(request):
         aidant=connection.aidant, usager=connection.usager,
     )
 
+    # new_mandat workflow
     if connection.aidant:
         logout_base = f"{fc_base}/logout"
         logout_id_token = f"id_token_hint={fc_id_token}"
@@ -154,51 +181,16 @@ def fc_callback(request):
         logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
         logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
         return redirect(logout_url)
+    # espace_usager workflow
     else:
         return redirect(f"{reverse('espace_usager_home')}?state={state}")
 
 
-def get_user_info(connection: Connection) -> tuple:
+def get_user_info(access_token) -> dict:
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_user_info = python_request.get(
         f"{fc_base}/userinfo?schema=openid",
-        headers={"Authorization": f"Bearer {connection.access_token}"},
+        headers={"Authorization": f"Bearer {access_token}"},
     )
-    user_info = fc_user_info.json()
-
-    if user_info.get("birthplace") == "":
-        user_info["birthplace"] = None
-
-    usager_sub = generate_sha256_hash(
-        f"{user_info['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
-    )
-
-    try:
-        usager = Usager.objects.get(sub=usager_sub)
-
-        if usager.email != user_info.get("email"):
-            usager.email = user_info.get("email")
-            usager.save()
-
-            Journal.objects.update_email_usager(aidant=connection.aidant, usager=usager)
-
-        return usager, None
-
-    except Usager.DoesNotExist:
-        try:
-            usager = Usager.objects.create(
-                given_name=user_info.get("given_name"),
-                family_name=user_info.get("family_name"),
-                birthdate=user_info.get("birthdate"),
-                gender=user_info.get("gender"),
-                birthplace=user_info.get("birthplace"),
-                birthcountry=user_info.get("birthcountry"),
-                sub=usager_sub,
-                email=user_info.get("email"),
-            )
-            return usager, None
-
-        except IntegrityError as e:
-            log.error("Error happened in Recap")
-            log.error(e)
-            return None, f"The FranceConnect ID is not complete: {e}"
+    fc_user_info_json = fc_user_info.json()
+    return fc_user_info_json

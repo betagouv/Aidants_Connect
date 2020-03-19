@@ -46,7 +46,9 @@ class NewMandatTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "short"}
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(
+            response, "/fc_authorize/new_mandat/", target_status_code=302
+        )
 
 
 @tag("new_mandat")

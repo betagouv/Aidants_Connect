@@ -7,6 +7,7 @@ import jwt
 from django.conf import settings
 from django.test import override_settings, tag, TestCase
 from django.test.client import Client
+from django.db.utils import IntegrityError
 
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
@@ -17,25 +18,32 @@ from aidants_connect_web.views.FC_as_FS import get_user_info
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
-@tag("new_mandat", "FC_as_FS")
+@tag("new_mandat", "espace_usager", "FC_as_FS")
 class FCAuthorize(TestCase):
     def setUp(self):
-        Connection.objects.create(id=1, demarches=["argent", "papiers"], duree=1)
+        self.connection = Connection.objects.create(
+            demarches=["argent", "papiers"], duree=1
+        )
+        # Connection.objects.create(id=2, duree=1)
 
-    def test_well_formatted_request_fills_connection(self):
+    def test_well_formatted_request_fills_connection_for_new_mandat(self):
         session = self.client.session
-        session["connection"] = 1
+        session["connection"] = self.connection.id
         session.save()
-        self.client.get("/fc_authorize/")
-        connection = Connection.objects.get(pk=1)
+        self.client.get("/fc_authorize/new_mandat/")
+        connection = Connection.objects.get(pk=self.connection.id)
         self.assertNotEqual(connection.state, "")
+
+    def test_well_formatted_request_creates_connection_for_espace_usager(self):
+        self.client.get("/fc_authorize/espace_usager/")
+        self.assertEqual(len(Connection.objects.all()), 2)
 
 
 DATE = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
 TEST_FC_CONNECTION_AGE = 300
 
 
-@tag("new_mandat", "FC_as_FS")
+@tag("new_mandat", "espace_usager", "FC_as_FS")
 @override_settings(FC_CONNECTION_AGE=TEST_FC_CONNECTION_AGE)
 class FCCallback(TestCase):
     date = DATE
@@ -47,27 +55,51 @@ class FCCallback(TestCase):
         self.epoch_date = DATE.timestamp()
 
         self.connection = Connection.objects.create(
+            id=1,
             demarches=["argent", "papiers"],
             duree=1,
             state="test_state",
             connection_type="FS",
             nonce="test_nonce",
-            id=1,
-            expires_on=DATE + timedelta(minutes=5),
+            expires_on=date + timedelta(minutes=5),
             aidant=self.aidant,
         )
         Connection.objects.create(
+            id=2,
             state="test_another_state",
             connection_type="FS",
             nonce="test_another_nonce",
-            id=2,
+            expires_on=date + timedelta(minutes=5),
         )
 
         self.usager_sub_fc = "123"
         self.usager_sub = generate_sha256_hash(
             f"{self.usager_sub_fc}{settings.FC_AS_FI_HASH_SALT}".encode()
         )
-        self.usager = UsagerFactory(given_name="Joséphine", sub=self.usager_sub)
+        self.usager_dict = {
+            "given_name": "Fabrice",
+            "family_name": "Mercier",
+            "preferred_username": "TROIS",
+            "birthdate": "1981-07-27",
+            "gender": Usager.GENDER_MALE,
+            "birthplace": "95277",
+            "birthcountry": Usager.BIRTHCOUNTRY_FRANCE,
+            "email": "test@test.com",
+            "sub": self.usager_sub,
+        }
+        self.usager = UsagerFactory(**self.usager_dict)
+
+        self.new_usager_dict = {
+            "given_name": "Joséphine",
+            "family_name": "ST-PIERRE",
+            "preferred_username": "ST-PIERRE",
+            "birthdate": "1969-12-15",
+            "gender": Usager.GENDER_FEMALE,
+            "birthplace": "70447",
+            "birthcountry": Usager.BIRTHCOUNTRY_FRANCE,
+            "email": "User@user.domain",
+            "sub": "456",
+        }
 
     @freeze_time(date)
     def test_no_code_triggers_403(self):
@@ -122,7 +154,7 @@ class FCCallback(TestCase):
     @freeze_time(date)
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
-    def test_request_existing_user_redirects_to_recap(
+    def test_request_existing_user_redirects_to_new_mandat_recap(
         self, mock_get_user_info, mock_post
     ):
         connection_number = 1
@@ -156,16 +188,17 @@ class FCCallback(TestCase):
 
         mock_post.return_value = mock_response
 
-        mock_get_user_info.return_value = (self.usager, None)
+        mock_get_user_info.return_value = self.usager_dict
 
         self.client.force_login(self.aidant)
 
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with(self.connection)
+        mock_get_user_info.assert_called_once_with("test_access_token")
 
         connection = Connection.objects.get(pk=connection_number)
+        self.assertEqual(connection.usager.given_name, "Fabrice")
 
         self.assertEqual(connection.access_token, "test_access_token")
         url = (
@@ -185,7 +218,74 @@ class FCCallback(TestCase):
     @freeze_time(date)
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
-    def test_request_new_user_redirects_to_recap(self, mock_get_user_info, mock_post):
+    def test_request_existing_user_with_new_email_redirects_to_new_mandat_recap(
+        self, mock_get_user_info, mock_post
+    ):
+        connection_number = 1
+
+        session = self.client.session
+        session["connection"] = connection_number
+        session.save()
+
+        # Creating mock_post
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        id_token = {
+            "aud": settings.FC_AS_FS_ID,
+            "exp": self.epoch_date + 600,
+            "iat": self.epoch_date - 600,
+            "iss": "http://franceconnect.gouv.fr",
+            "sub": self.usager_sub_fc,
+            "nonce": "test_nonce",
+        }
+        mock_response.json = mock.Mock(
+            return_value={
+                "access_token": "test_access_token",
+                "token_type": "Bearer",
+                "expires_in": 60,
+                "id_token": jwt.encode(
+                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+                ),
+            }
+        )
+
+        mock_post.return_value = mock_response
+
+        self.usager_dict["email"] = "new@email.com"
+        mock_get_user_info.return_value = self.usager_dict
+
+        self.client.force_login(self.aidant)
+
+        response = self.client.get(
+            "/callback/", data={"state": "test_state", "code": "test_code"}
+        )
+        mock_get_user_info.assert_called_once_with("test_access_token")
+
+        connection = Connection.objects.get(pk=connection_number)
+        self.assertEqual(connection.usager.given_name, "Fabrice")
+        self.assertEqual(connection.usager.email, "new@email.com")
+
+        url = (
+            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'e"
+            "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRi"
+            "NDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjox"
+            "NTQ3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
+            "bmVjdC5nb3V2LmZyIiwic3ViIjoiMTIzIiwibm9uY2UiOiJ0ZXN0X25vbmNlIn0.QGb2uhgG"
+            "wXvKaVT8FXwOzSObtuLrBRKigd7DVJwUG5s'&state=test_state"
+            "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
+        )
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "franceconnect_usager")
+
+    @freeze_time(date)
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
+    def test_request_new_user_redirects_to_new_mandat_recap(
+        self, mock_get_user_info, mock_post
+    ):
         connection_number = 1
 
         session = self.client.session
@@ -217,27 +317,14 @@ class FCCallback(TestCase):
 
         mock_post.return_value = mock_response
 
-        mock_get_user_info.return_value = (
-            UsagerFactory(
-                given_name="Joséphine",
-                family_name="ST-PIERRE",
-                preferred_username="ST-PIERRE",
-                birthdate="1969-12-15",
-                gender=Usager.GENDER_FEMALE,
-                birthplace="70447",
-                birthcountry=Usager.BIRTHCOUNTRY_FRANCE,
-                email="User@user.domain",
-                sub="456",
-            ),
-            None,
-        )
+        mock_get_user_info.return_value = self.new_usager_dict
 
         self.client.force_login(self.aidant)
 
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with(self.connection)
+        mock_get_user_info.assert_called_once_with("test_access_token")
 
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Joséphine")
@@ -256,6 +343,275 @@ class FCCallback(TestCase):
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "franceconnect_usager")
+
+    @freeze_time(date)
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
+    def test_request_new_user_without_birthplace_redirects_to_new_mandat_recap(
+        self, mock_get_user_info, mock_post
+    ):
+        connection_number = 1
+
+        session = self.client.session
+        session["connection"] = connection_number
+        session.save()
+
+        # Creating mock_post
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        id_token = {
+            "aud": settings.FC_AS_FS_ID,
+            "exp": self.epoch_date + 600,
+            "iat": self.epoch_date - 600,
+            "iss": "http://franceconnect.gouv.fr",
+            "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
+            "nonce": "test_nonce",
+        }
+        mock_response.json = mock.Mock(
+            return_value={
+                "access_token": "test_access_token",
+                "token_type": "Bearer",
+                "expires_in": 60,
+                "id_token": jwt.encode(
+                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+                ),
+            }
+        )
+
+        mock_post.return_value = mock_response
+
+        self.new_usager_dict["birthplace"] = ""
+        mock_get_user_info.return_value = self.new_usager_dict
+
+        self.client.force_login(self.aidant)
+
+        response = self.client.get(
+            "/callback/", data={"state": "test_state", "code": "test_code"}
+        )
+        mock_get_user_info.assert_called_once_with("test_access_token")
+
+        connection = Connection.objects.get(pk=connection_number)
+        self.assertEqual(connection.usager.given_name, "Joséphine")
+        self.assertEqual(connection.usager.birthplace, None)
+
+        url = (
+            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'ey"
+            "J0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRiND"
+            "Q4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ"
+            "3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmVj"
+            "dC5nb3V2LmZyIiwic3ViIjoiOWI3NTQ3ODI3MDVjNTVlYmZlMTAzNzFjOTA5ZjYyZTczYTNlM"
+            "DlmYjU2NmZjNWQyMzA0MGEyOWZhZTRlMGViYiIsIm5vbmNlIjoidGVzdF9ub25jZSJ9.J8048"
+            "J_B5MgwQkLzX28yXTDFPB4mTeoyUGW9RSW5YZ4'&state=test_state&post_logout_redi"
+            "rect_uri=http://localhost:3000/logout-callback"
+        )
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "franceconnect_usager")
+
+    @freeze_time(date)
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
+    def test_request_new_user_badly_formatted_outputs_error(
+        self, mock_get_user_info, mock_post
+    ):
+        connection_number = 1
+
+        session = self.client.session
+        session["connection"] = connection_number
+        session.save()
+
+        # Creating mock_post
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        id_token = {
+            "aud": settings.FC_AS_FS_ID,
+            "exp": self.epoch_date + 600,
+            "iat": self.epoch_date - 600,
+            "iss": "http://franceconnect.gouv.fr",
+            "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
+            "nonce": "test_nonce",
+        }
+        mock_response.json = mock.Mock(
+            return_value={
+                "access_token": "test_access_token",
+                "token_type": "Bearer",
+                "expires_in": 60,
+                "id_token": jwt.encode(
+                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+                ),
+            }
+        )
+
+        mock_post.return_value = mock_response
+
+        del self.new_usager_dict["given_name"]
+        mock_get_user_info.return_value = self.new_usager_dict
+
+        self.client.force_login(self.aidant)
+
+        self.client.get("/callback/", data={"state": "test_state", "code": "test_code"})
+        mock_get_user_info.assert_called_once_with("test_access_token")
+
+        self.assertRaises(IntegrityError)
+
+    @freeze_time(date)
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
+    def test_request_existing_user_redirects_to_espace_usager(
+        self, mock_get_user_info, mock_post
+    ):
+        connection_number = 2
+
+        session = self.client.session
+        session["connection"] = connection_number
+        session.save()
+
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        id_token = {
+            "aud": settings.FC_AS_FS_ID,
+            "exp": self.epoch_date + 600,
+            "iat": self.epoch_date - 600,
+            "iss": "http://franceconnect.gouv.fr",
+            "sub": self.usager_sub_fc,
+            "nonce": "test_another_nonce",
+        }
+
+        mock_response.json = mock.Mock(
+            return_value={
+                "access_token": "test_access_token",
+                "token_type": "Bearer",
+                "expires_in": 60,
+                "id_token": jwt.encode(
+                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+                ),
+            }
+        )
+
+        mock_post.return_value = mock_response
+
+        mock_get_user_info.return_value = self.usager_dict
+
+        response = self.client.get(
+            "/callback/", data={"state": "test_another_state", "code": "test_code"}
+        )
+        mock_get_user_info.assert_called_once_with("test_access_token")
+
+        url = "/espace-usager?state=test_another_state"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        connection = Connection.objects.get(pk=connection_number)
+        self.assertEqual(connection.access_token, "test_access_token")
+        self.assertEqual(connection.usager.given_name, "Fabrice")
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "franceconnect_usager")
+
+    @freeze_time(date)
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
+    def test_request_existing_user_with_new_email_redirects_to_espace_usager(
+        self, mock_get_user_info, mock_post
+    ):
+        connection_number = 2
+
+        session = self.client.session
+        session["connection"] = connection_number
+        session.save()
+
+        # Creating mock_post
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        id_token = {
+            "aud": settings.FC_AS_FS_ID,
+            "exp": self.epoch_date + 600,
+            "iat": self.epoch_date - 600,
+            "iss": "http://franceconnect.gouv.fr",
+            "sub": self.usager_sub_fc,
+            "nonce": "test_another_nonce",
+        }
+        mock_response.json = mock.Mock(
+            return_value={
+                "access_token": "test_access_token",
+                "token_type": "Bearer",
+                "expires_in": 60,
+                "id_token": jwt.encode(
+                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+                ),
+            }
+        )
+
+        mock_post.return_value = mock_response
+
+        self.usager_dict["email"] = "new@email.com"
+        mock_get_user_info.return_value = self.usager_dict
+
+        response = self.client.get(
+            "/callback/", data={"state": "test_another_state", "code": "test_code"}
+        )
+        mock_get_user_info.assert_called_once_with("test_access_token")
+
+        url = "/espace-usager?state=test_another_state"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        connection = Connection.objects.get(pk=connection_number)
+        self.assertEqual(connection.usager.given_name, "Fabrice")
+        self.assertEqual(connection.usager.email, "new@email.com")
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "franceconnect_usager")
+
+    @freeze_time(date)
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
+    def test_request_new_user_redirects_to_home_page(
+        self, mock_get_user_info, mock_post
+    ):
+        connection_number = 2
+
+        session = self.client.session
+        session["connection"] = connection_number
+        session.save()
+
+        # Creating mock_post
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        id_token = {
+            "aud": settings.FC_AS_FS_ID,
+            "exp": self.epoch_date + 600,
+            "iat": self.epoch_date - 600,
+            "iss": "http://franceconnect.gouv.fr",
+            "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
+            "nonce": "test_another_nonce",
+        }
+        mock_response.json = mock.Mock(
+            return_value={
+                "access_token": "test_access_token",
+                "token_type": "Bearer",
+                "expires_in": 60,
+                "id_token": jwt.encode(
+                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+                ),
+            }
+        )
+
+        mock_post.return_value = mock_response
+
+        mock_get_user_info.return_value = self.new_usager_dict
+
+        response = self.client.get(
+            "/callback/", data={"state": "test_another_state", "code": "test_code"}
+        )
+        mock_get_user_info.assert_called_once_with("test_access_token")
+
+        url = "/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
 
 
 @tag("new_mandat", "FC_as_FS")
@@ -280,97 +636,18 @@ class GetUserInfoTests(TestCase):
             return_value={
                 "given_name": "Fabrice",
                 "family_name": "Mercier",
-                "sub": "456",
-                "preferred_username": "TROIS",
-                "birthdate": "1981-07-27",
-                "gender": Usager.GENDER_FEMALE,
-                "birthplace": "95277",
-                "birthcountry": Usager.BIRTHCOUNTRY_FRANCE,
-                "email": "test@test.com",
-            }
-        )
-        mock_get.return_value = mock_response
-
-        usager, error = get_user_info(self.connection)
-
-        self.assertEqual(usager.given_name, "Fabrice")
-        self.assertEqual(usager.email, "test@test.com")
-        self.assertIsNone(error)
-
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
-    def test_badly_formatted_new_user_info_outputs_error(self, mock_get):
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
-        mock_response.json = mock.Mock(
-            return_value={  # without 'given_name'
-                "family_name": "Mercier",
-                "sub": "456",
-                "preferred_username": "TROIS",
-                "birthdate": "1981-07-27",
-                "gender": Usager.GENDER_FEMALE,
-                "birthplace": "95277",
-                "birthcountry": Usager.BIRTHCOUNTRY_FRANCE,
-                "email": "test@test.com",
-            }
-        )
-        mock_get.return_value = mock_response
-        usager, error = get_user_info(self.connection)
-
-        self.assertIsNone(usager)
-        self.assertIn("The FranceConnect ID is not complete:", error)
-
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
-    def test_formatted_new_user_without_birthplace_outputs_usager(self, mock_get):
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
-        mock_response.json = mock.Mock(
-            return_value={  # with empty 'birthplace'
-                "given_name": "Fabrice",
-                "family_name": "Mercier",
-                "sub": "456",
+                "sub": "123",
                 "preferred_username": "TROIS",
                 "birthdate": "1981-07-27",
                 "gender": Usager.GENDER_MALE,
-                "birthplace": "",
-                "birthcountry": "99100",
+                "birthplace": "95277",
+                "birthcountry": Usager.BIRTHCOUNTRY_FRANCE,
                 "email": "test@test.com",
             }
         )
         mock_get.return_value = mock_response
 
-        usager, error = get_user_info(self.connection)
+        user_info = get_user_info(self.connection.access_token)
 
-        self.assertEqual(usager.given_name, "Fabrice")
-        self.assertIsNone(error)
-
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
-    def test_formatted_existing_user_with_email_change_outputs_usager(self, mock_get):
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
-        mock_response.json = mock.Mock(
-            return_value={
-                "given_name": self.usager.given_name,
-                "family_name": self.usager.family_name,
-                "sub": self.usager_sub_fc,
-                "preferred_username": self.usager.preferred_username,
-                "birthdate": self.usager.birthdate,
-                "gender": self.usager.gender,
-                "birthplace": self.usager.birthplace,
-                "birthcountry": self.usager.birthcountry,
-                "email": "new@email.com",
-            }
-        )
-        mock_get.return_value = mock_response
-
-        usager, error = get_user_info(self.connection)
-
-        self.assertEqual(usager.id, self.usager.id)
-        self.assertEqual(usager.given_name, "Joséphine")
-        self.assertEqual(usager.email, "new@email.com")
-        self.assertIsNone(error)
-
-        last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "update_email_usager")
+        self.assertEqual(user_info["given_name"], "Fabrice")
+        self.assertEqual(user_info["email"], "test@test.com")
