@@ -7,7 +7,7 @@ from aidants_connect_web.models import Connection
 from aidants_connect_web.views.FC_as_FS import fc_user_logout_url
 
 
-def espace_usager_home(request):
+def espace_usager_mandats(request):
     try:
         connection = Connection.objects.get(pk=request.session["connection"])
     except Connection.DoesNotExist:
@@ -25,7 +25,7 @@ def espace_usager_home(request):
 
     return render(
         request,
-        "aidants_connect_web/espace_usager/espace_usager_home.html",
+        "aidants_connect_web/espace_usager/espace_usager_mandats.html",
         {
             "usager": connection.usager,
             "active_mandats": active_mandats,
@@ -34,7 +34,7 @@ def espace_usager_home(request):
     )
 
 
-def usager_logout(request):
+def espace_usager_logout(request):
     try:
         connection = Connection.objects.get(pk=request.session["connection"])
     except Connection.DoesNotExist:
@@ -49,6 +49,6 @@ def usager_logout(request):
     logout_url = fc_user_logout_url(
         id_token_hint=request.session["id_token_hint"],
         state=connection.state,
-        callback_uri_logout=f"{settings.FC_AS_FS_CALLBACK_URL}",
+        callback_uri_logout=f"{settings.FC_AS_FS_CALLBACK_URL}/logout",
     )
     return redirect(logout_url)

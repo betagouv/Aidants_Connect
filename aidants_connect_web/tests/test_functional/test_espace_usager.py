@@ -3,7 +3,7 @@ from datetime import timedelta
 from selenium.webdriver.common.keys import Keys
 
 from django.conf import settings
-from django.test import tag
+from django.test import tag, override_settings
 from django.utils import timezone
 
 from aidants_connect_web.tests.factories import (
@@ -15,12 +15,19 @@ from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 
 
+TEST_FC_AS_FS_TEST_PORT = 4242
+
+
 @tag("functional", "espace_usager")
+@override_settings(
+    FC_AS_FS_CALLBACK_URL="http://localhost:4242",
+    FC_AS_FS_TEST_PORT=TEST_FC_AS_FS_TEST_PORT,
+)
 class ViewEspaceUsager(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         # FC only calls back on specific port
-        cls.port = settings.FC_AS_FS_TEST_PORT
+        cls.port = TEST_FC_AS_FS_TEST_PORT
         cls.aidant = AidantFactory()
         cls.usager_sub_fc = (
             "b6048e95bb134ec5b1d1e1fa69f287172e91722b9354d637a1bcf2ebb0fd2ef5v1"
@@ -92,6 +99,15 @@ class ViewEspaceUsager(FunctionalTestCase):
         espace_usager_title = self.selenium.find_element_by_tag_name("h1").text
         self.assertIn("Bienvenue sur votre Espace Usager", espace_usager_title)
         self.assertEqual(len(self.selenium.find_elements_by_tag_name("tr")), 2)
+
+        # logout
+        logout_button = self.selenium.find_elements_by_css_selector("nav ul li")[1]
+        logout_button.click()
+        time.sleep(2)
+
+        # home
+        welcome_home = self.selenium.find_elements_by_tag_name("h1")[0].text
+        self.assertEqual(welcome_home, "Bienvenue sur Aidants Connect")
 
     def test_new_usager_can_not_access_espace_usager(self):
         self.open_live_url("/")

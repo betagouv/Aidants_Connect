@@ -7,9 +7,8 @@
     </a>
     <nav role="navigation">
       <ul class="nav__links">
-
-        <li class="nav__item">
-          {% if aidant.is_authenticated %}
+        {% if aidant.is_authenticated %}
+          <li class="nav__item">
             <a href="{% url 'dashboard' %}" {% if '/dashboard' in request.path or '/usagers' in request.path or '/creation_mandat' in request.path %}class="active"{% endif %}>
               Espace aidant
             </a>
@@ -17,21 +16,20 @@
           <li class="nav__item">
             <a href="{% url 'logout' %}">Se déconnecter</a>
           </li>
+        {% else %}
+          {% if '/espace-usager' in request.path %}
+            <li class="nav__item">
+              <a href="#" class="active">Espace Usager</a>
+            </li>
+            <li class="nav__item">
+              <a href="{% url 'espace_usager_logout' %}">Se déconnecter</a>
+            </li>
           {% else %}
-            {% if '/espace-usager' in request.path %}
-              <li class="nav__item">
-                <a href="#" class="active">Espace Usager</a>
-              </li>
-              <li class="nav__item">
-                <a href="{% url 'usager_logout' %}">Se déconnecter</a>
-              </li>
-            {% else %}
-              <li class="nav__item">
-                <a href="{% url 'login' %}">Se connecter</a>
-              </li>
-            {% endif %}
+            <li class="nav__item">
+              <a href="{% url 'login' %}">Se connecter</a>
+            </li>
           {% endif %}
-        </li>
+        {% endif %}
       </ul>
     </nav>
   </div>

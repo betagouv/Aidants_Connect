@@ -115,7 +115,7 @@ def fc_callback(request):
     try:
         usager = Usager.objects.get(sub=usager_sub)
     except Usager.DoesNotExist:
-        # new_mandat workflow
+        # new_mandat workflow: create usager
         if connection.aidant:
             if user_info.get("birthplace") == "":
                 user_info["birthplace"] = None
@@ -131,14 +131,13 @@ def fc_callback(request):
                     sub=usager_sub,
                     email=user_info.get("email"),
                 )
-
             except IntegrityError as e:
                 log.error("Error happened in Recap")
                 log.error(e)
                 messages.error(request, f"The FranceConnect ID is not complete: {e}")
                 return redirect("home_page")
 
-        # espace_usager workflow
+        # espace_usager workflow: redirect to home page
         else:
             messages.error(
                 request,
@@ -172,7 +171,7 @@ def fc_callback(request):
         return redirect(logout_url)
     # espace_usager workflow
     else:
-        return redirect("espace_usager_home")
+        return redirect("espace_usager_mandats")
 
 
 def get_token(code: str) -> dict:

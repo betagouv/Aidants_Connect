@@ -61,7 +61,7 @@ class FCCallback(TestCase):
             state="test_state",
             connection_type="FS",
             nonce="test_nonce",
-            expires_on=date + timedelta(minutes=5),
+            expires_on=DATE + timedelta(minutes=5),
             aidant=self.aidant,
         )
         Connection.objects.create(
@@ -69,7 +69,7 @@ class FCCallback(TestCase):
             state="test_another_state",
             connection_type="FS",
             nonce="test_another_nonce",
-            expires_on=date + timedelta(minutes=5),
+            expires_on=DATE + timedelta(minutes=5),
         )
 
         self.usager_sub_fc = "123"

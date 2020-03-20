@@ -15,8 +15,10 @@ from aidants_connect_web.views import (
 urlpatterns = [
     # service
     path("", service.home_page, name="home_page"),
+    path("logout/", service.home_page, name="home_page_from_logout"),
     # aidant: login
     path("accounts/login/", magicauth_views.LoginView.as_view(), name="login"),
+    path("accounts/logout/", service.logout_page, name="logout"),
     # aidant: dashboard
     path("dashboard/", service.dashboard, name="dashboard"),
     # aidant: usagers
@@ -34,7 +36,11 @@ urlpatterns = [
         new_mandat.new_mandat_recap,
         name="new_mandat_recap",
     ),
-    path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
+    path(
+        "logout-callback/",
+        new_mandat.new_mandat_recap,
+        name="new_mandat_recap_from_logout",
+    ),
     path(
         "creation_mandat/visualisation/projet/",
         new_mandat.mandat_print_projet,
@@ -59,14 +65,21 @@ urlpatterns = [
     path("authorize/", id_provider.authorize, name="authorize"),
     path("token/", id_provider.token, name="token"),
     path("userinfo/", id_provider.user_info, name="user_info"),
-    path("logout/", service.logout_page, name="logout"),
     path("select_demarche/", id_provider.fi_select_demarche, name="fi_select_demarche"),
     # FC_as_FS
     path("fc_authorize/<str:source>/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # usager: mandats
-    path("espace-usager", espace_usager.espace_usager_home, name="espace_usager_home"),
-    path("usager_logout/", espace_usager.usager_logout, name="usager_logout"),
+    path(
+        "espace-usager",
+        espace_usager.espace_usager_mandats,
+        name="espace_usager_mandats",
+    ),
+    path(
+        "espace-usager/logout/",
+        espace_usager.espace_usager_logout,
+        name="espace_usager_logout",
+    ),
     # misc
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("stats/", service.statistiques, name="statistiques"),
