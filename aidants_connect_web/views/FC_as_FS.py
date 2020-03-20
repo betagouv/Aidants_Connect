@@ -117,6 +117,8 @@ def fc_callback(request):
         log.info("408: FC connection has expired.")
         return render(request, "408.html", status=408)
 
+    print(decoded_token["sub"])
+
     usager_sub = generate_sha256_hash(
         f"{decoded_token['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
     )
