@@ -11,8 +11,10 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager">Ajouter un usager</a>
-    <h1 class="brand">Vos mandats</h1>
+    <div class="row">
+      <h1 class="brand">Vos mandats</h1>
+      <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager">Ajouter un usager</a>
+    </div>
     {% if messages %}
       <div class="notification success" role="alert">
         {% for message in messages %}
@@ -31,18 +33,15 @@
               <th>Date de naissance</th>
             </tr>
           </thead>
+          <tbody>
+            {% for usager in usagers %}
+              <tr>
+                <td><a href="{% url 'usager_details' usager_id=usager.id %}">{{ usager.get_full_name }}</a></td>
+                <td>{{ usager.birthdate | date:"d F" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
         </table>
-        <!-- fake table body (cannot have a working link inside a td) -->
-        {% for usager in usagers %}
-          <div class="row fake-table-row">
-            <div class="col-66">
-              <a href="{% url 'usager_details' usager_id=usager.id %}">{{ usager.get_full_name }}</a>
-            </div>
-            <div class="col-32">
-              {{ usager.birthdate | date:"d F" }}
-            </div>
-          </div>
-        {% endfor %}
       {% else %}
         <div class="notification" role="alert">Vous n’avez pas d'usagers.</div>
       {% endif %}

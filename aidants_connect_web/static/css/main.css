@@ -85,6 +85,7 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   line-height: 1.25em;
 }
 
+
 /* Utils */
 
 .margin-left-100 {
@@ -92,6 +93,10 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 }
 .margin-bottom-50 {
   margin-bottom: 50px;
+}
+
+.padding-0 {
+  padding: 0 !important;
 }
 
 .tiles {
@@ -121,27 +126,8 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   float: right;
 }
 
-.col-66 {
-  width: 66%;
-}
-.col-50 {
-  width: 50%;
-}
-.col-44 {
-  width: 44%;
-}
-.col-40 {
-  width: 40%;
-}
-.col-32 {
-  width: 32%;
-}
-.col-25 {
-  width: 25%;
-}
-.col-20 {
-  width: 20%;
-}
+
+/* Table */
 
 .table .th-66 {
   width: 66%;
@@ -160,7 +146,11 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 }
 
 
-/* Extend template.min.css */
+/* Override/Extend template.min.css */
+
+.button {
+  margin: 0 !important;
+}
 
 a.button-outline:hover {
   background-color: var(--lighter-grey);

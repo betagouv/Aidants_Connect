@@ -56,9 +56,9 @@ class CancelMandat(FunctionalTestCase):
         login_aidant(self)
 
         # See all mandats of usager page
-        active_mandats_before = self.selenium.find_elements_by_class_name(
-            "fake-table-row"
-        )
+        active_mandats_before = self.selenium.find_elements_by_tag_name("table")[
+            0
+        ].find_elements_by_css_selector("tbody tr")
         self.assertEqual(len(active_mandats_before), 2)
 
         # Click on cancel mandat button
@@ -70,10 +70,14 @@ class CancelMandat(FunctionalTestCase):
         submit_button.click()
 
         # See all mandats of usager page
-        active_mandats_after = self.selenium.find_elements_by_class_name(
-            "fake-table-row"
-        )
+        active_mandats_after = self.selenium.find_elements_by_tag_name("table")[
+            0
+        ].find_elements_by_css_selector("tbody tr")
         self.assertEqual(len(active_mandats_after), 1)
+        expired_mandats_after = self.selenium.find_elements_by_tag_name("table")[
+            1
+        ].find_elements_by_css_selector("tbody tr")
+        self.assertEqual(len(expired_mandats_after), 1)
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "cancel_mandat")
