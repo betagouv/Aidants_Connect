@@ -128,34 +128,30 @@ class FCCallback(TestCase):
         self.assertEqual(response.status_code, 408)
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
-    def test_wrong_nonce_when_decoding_returns_403(self, mock_post):
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
+    def test_wrong_nonce_when_decoding_returns_403(self, mock_get_token):
         id_token = {"aud": settings.FC_AS_FS_ID, "nonce": "wrong_nonce"}
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
+        mock_get_token.return_value = mock_get_token_response
 
-        mock_post.return_value = mock_response
         response = self.client.get(
             "/callback/", data={"state": "test_another_state", "code": "test_code"}
         )
+        print("response", response)
         self.assertEqual(response.status_code, 403)
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
     def test_request_existing_user_redirects_to_new_mandat_recap(
-        self, mock_get_user_info, mock_post
+        self, mock_get_user_info, mock_get_token,
     ):
         connection_number = 1
 
@@ -163,9 +159,6 @@ class FCCallback(TestCase):
         session["connection"] = connection_number
         session.save()
 
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
         id_token = {
             "aud": settings.FC_AS_FS_ID,
             "exp": self.epoch_date + 600,
@@ -174,19 +167,15 @@ class FCCallback(TestCase):
             "sub": self.usager_sub_fc,
             "nonce": "test_nonce",
         }
-
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
-
-        mock_post.return_value = mock_response
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
+        mock_get_token.return_value = mock_get_token_response
 
         mock_get_user_info.return_value = self.usager_dict
 
@@ -195,19 +184,20 @@ class FCCallback(TestCase):
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with("test_access_token")
+        mock_get_token.assert_called_once_with(code="test_code")
+        mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Fabrice")
-
         self.assertEqual(connection.access_token, "test_access_token")
+
         url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'e"
+            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=e"
             "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRi"
             "NDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjox"
             "NTQ3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
             "bmVjdC5nb3V2LmZyIiwic3ViIjoiMTIzIiwibm9uY2UiOiJ0ZXN0X25vbmNlIn0.QGb2uhgG"
-            "wXvKaVT8FXwOzSObtuLrBRKigd7DVJwUG5s'&state=test_state"
+            "wXvKaVT8FXwOzSObtuLrBRKigd7DVJwUG5s&state=test_state"
             "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -216,10 +206,10 @@ class FCCallback(TestCase):
         self.assertEqual(last_journal_entry.action, "franceconnect_usager")
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
     def test_request_existing_user_with_new_email_redirects_to_new_mandat_recap(
-        self, mock_get_user_info, mock_post
+        self, mock_get_user_info, mock_get_token
     ):
         connection_number = 1
 
@@ -227,10 +217,6 @@ class FCCallback(TestCase):
         session["connection"] = connection_number
         session.save()
 
-        # Creating mock_post
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
         id_token = {
             "aud": settings.FC_AS_FS_ID,
             "exp": self.epoch_date + 600,
@@ -239,18 +225,16 @@ class FCCallback(TestCase):
             "sub": self.usager_sub_fc,
             "nonce": "test_nonce",
         }
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
 
-        mock_post.return_value = mock_response
+        mock_get_token.return_value = mock_get_token_response
 
         self.usager_dict["email"] = "new@email.com"
         mock_get_user_info.return_value = self.usager_dict
@@ -260,19 +244,19 @@ class FCCallback(TestCase):
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with("test_access_token")
+        mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Fabrice")
         self.assertEqual(connection.usager.email, "new@email.com")
 
         url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'e"
+            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=e"
             "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRi"
             "NDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjox"
             "NTQ3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
             "bmVjdC5nb3V2LmZyIiwic3ViIjoiMTIzIiwibm9uY2UiOiJ0ZXN0X25vbmNlIn0.QGb2uhgG"
-            "wXvKaVT8FXwOzSObtuLrBRKigd7DVJwUG5s'&state=test_state"
+            "wXvKaVT8FXwOzSObtuLrBRKigd7DVJwUG5s&state=test_state"
             "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -281,10 +265,10 @@ class FCCallback(TestCase):
         self.assertEqual(last_journal_entry.action, "franceconnect_usager")
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
     def test_request_new_user_redirects_to_new_mandat_recap(
-        self, mock_get_user_info, mock_post
+        self, mock_get_user_info, mock_get_token
     ):
         connection_number = 1
 
@@ -292,10 +276,6 @@ class FCCallback(TestCase):
         session["connection"] = connection_number
         session.save()
 
-        # Creating mock_post
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
         id_token = {
             "aud": settings.FC_AS_FS_ID,
             "exp": self.epoch_date + 600,
@@ -304,18 +284,16 @@ class FCCallback(TestCase):
             "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
             "nonce": "test_nonce",
         }
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
 
-        mock_post.return_value = mock_response
+        mock_get_token.return_value = mock_get_token_response
 
         mock_get_user_info.return_value = self.new_usager_dict
 
@@ -324,19 +302,19 @@ class FCCallback(TestCase):
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with("test_access_token")
+        mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Joséphine")
 
         url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'ey"
+            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=ey"
             "J0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRiND"
             "Q4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ"
             "3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmVj"
             "dC5nb3V2LmZyIiwic3ViIjoiOWI3NTQ3ODI3MDVjNTVlYmZlMTAzNzFjOTA5ZjYyZTczYTNlM"
             "DlmYjU2NmZjNWQyMzA0MGEyOWZhZTRlMGViYiIsIm5vbmNlIjoidGVzdF9ub25jZSJ9.J8048"
-            "J_B5MgwQkLzX28yXTDFPB4mTeoyUGW9RSW5YZ4'&state=test_state&post_logout_redi"
+            "J_B5MgwQkLzX28yXTDFPB4mTeoyUGW9RSW5YZ4&state=test_state&post_logout_redi"
             "rect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -345,10 +323,10 @@ class FCCallback(TestCase):
         self.assertEqual(last_journal_entry.action, "franceconnect_usager")
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
     def test_request_new_user_without_birthplace_redirects_to_new_mandat_recap(
-        self, mock_get_user_info, mock_post
+        self, mock_get_user_info, mock_get_token
     ):
         connection_number = 1
 
@@ -356,10 +334,6 @@ class FCCallback(TestCase):
         session["connection"] = connection_number
         session.save()
 
-        # Creating mock_post
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
         id_token = {
             "aud": settings.FC_AS_FS_ID,
             "exp": self.epoch_date + 600,
@@ -368,18 +342,16 @@ class FCCallback(TestCase):
             "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
             "nonce": "test_nonce",
         }
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
 
-        mock_post.return_value = mock_response
+        mock_get_token.return_value = mock_get_token_response
 
         self.new_usager_dict["birthplace"] = ""
         mock_get_user_info.return_value = self.new_usager_dict
@@ -389,20 +361,20 @@ class FCCallback(TestCase):
         response = self.client.get(
             "/callback/", data={"state": "test_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with("test_access_token")
+        mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Joséphine")
         self.assertEqual(connection.usager.birthplace, None)
 
         url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=b'ey"
+            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=ey"
             "J0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRiND"
             "Q4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ"
             "3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmVj"
             "dC5nb3V2LmZyIiwic3ViIjoiOWI3NTQ3ODI3MDVjNTVlYmZlMTAzNzFjOTA5ZjYyZTczYTNlM"
             "DlmYjU2NmZjNWQyMzA0MGEyOWZhZTRlMGViYiIsIm5vbmNlIjoidGVzdF9ub25jZSJ9.J8048"
-            "J_B5MgwQkLzX28yXTDFPB4mTeoyUGW9RSW5YZ4'&state=test_state&post_logout_redi"
+            "J_B5MgwQkLzX28yXTDFPB4mTeoyUGW9RSW5YZ4&state=test_state&post_logout_redi"
             "rect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -411,10 +383,10 @@ class FCCallback(TestCase):
         self.assertEqual(last_journal_entry.action, "franceconnect_usager")
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
     def test_request_new_user_badly_formatted_outputs_error(
-        self, mock_get_user_info, mock_post
+        self, mock_get_user_info, mock_get_token
     ):
         connection_number = 1
 
@@ -422,10 +394,6 @@ class FCCallback(TestCase):
         session["connection"] = connection_number
         session.save()
 
-        # Creating mock_post
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
         id_token = {
             "aud": settings.FC_AS_FS_ID,
             "exp": self.epoch_date + 600,
@@ -434,18 +402,16 @@ class FCCallback(TestCase):
             "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
             "nonce": "test_nonce",
         }
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
 
-        mock_post.return_value = mock_response
+        mock_get_token.return_value = mock_get_token_response
 
         del self.new_usager_dict["given_name"]
         mock_get_user_info.return_value = self.new_usager_dict
@@ -453,15 +419,15 @@ class FCCallback(TestCase):
         self.client.force_login(self.aidant)
 
         self.client.get("/callback/", data={"state": "test_state", "code": "test_code"})
-        mock_get_user_info.assert_called_once_with("test_access_token")
+        mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
         self.assertRaises(IntegrityError)
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
     def test_request_existing_user_redirects_to_espace_usager(
-        self, mock_get_user_info, mock_post
+        self, mock_get_user_info, mock_get_token
     ):
         connection_number = 2
 
@@ -481,27 +447,25 @@ class FCCallback(TestCase):
             "nonce": "test_another_nonce",
         }
 
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
 
-        mock_post.return_value = mock_response
+        mock_get_token.return_value = mock_get_token_response
 
         mock_get_user_info.return_value = self.usager_dict
 
         response = self.client.get(
             "/callback/", data={"state": "test_another_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with("test_access_token")
+        mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
-        url = "/espace-usager?state=test_another_state"
+        url = "/espace-usager"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
         connection = Connection.objects.get(pk=connection_number)
@@ -512,10 +476,10 @@ class FCCallback(TestCase):
         self.assertEqual(last_journal_entry.action, "franceconnect_usager")
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
     def test_request_existing_user_with_new_email_redirects_to_espace_usager(
-        self, mock_get_user_info, mock_post
+        self, mock_get_user_info, mock_get_token
     ):
         connection_number = 2
 
@@ -523,10 +487,6 @@ class FCCallback(TestCase):
         session["connection"] = connection_number
         session.save()
 
-        # Creating mock_post
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
         id_token = {
             "aud": settings.FC_AS_FS_ID,
             "exp": self.epoch_date + 600,
@@ -535,18 +495,16 @@ class FCCallback(TestCase):
             "sub": self.usager_sub_fc,
             "nonce": "test_another_nonce",
         }
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
 
-        mock_post.return_value = mock_response
+        mock_get_token.return_value = mock_get_token_response
 
         self.usager_dict["email"] = "new@email.com"
         mock_get_user_info.return_value = self.usager_dict
@@ -554,9 +512,9 @@ class FCCallback(TestCase):
         response = self.client.get(
             "/callback/", data={"state": "test_another_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with("test_access_token")
+        mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
-        url = "/espace-usager?state=test_another_state"
+        url = "/espace-usager"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
         connection = Connection.objects.get(pk=connection_number)
@@ -567,10 +525,10 @@ class FCCallback(TestCase):
         self.assertEqual(last_journal_entry.action, "franceconnect_usager")
 
     @freeze_time(date)
-    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
+    @mock.patch("aidants_connect_web.views.FC_as_FS.get_token")
     @mock.patch("aidants_connect_web.views.FC_as_FS.get_user_info")
     def test_request_new_user_redirects_to_home_page(
-        self, mock_get_user_info, mock_post
+        self, mock_get_user_info, mock_get_token
     ):
         connection_number = 2
 
@@ -578,10 +536,6 @@ class FCCallback(TestCase):
         session["connection"] = connection_number
         session.save()
 
-        # Creating mock_post
-        mock_response = mock.Mock()
-        mock_response.status_code = 200
-        mock_response.content = "content"
         id_token = {
             "aud": settings.FC_AS_FS_ID,
             "exp": self.epoch_date + 600,
@@ -590,25 +544,23 @@ class FCCallback(TestCase):
             "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
             "nonce": "test_another_nonce",
         }
-        mock_response.json = mock.Mock(
-            return_value={
-                "access_token": "test_access_token",
-                "token_type": "Bearer",
-                "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
-            }
-        )
+        mock_get_token_response = {
+            "access_token": "test_access_token",
+            "token_type": "Bearer",
+            "expires_in": 60,
+            "id_token": jwt.encode(
+                id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+            ).decode("utf-8"),
+        }
 
-        mock_post.return_value = mock_response
+        mock_get_token.return_value = mock_get_token_response
 
         mock_get_user_info.return_value = self.new_usager_dict
 
         response = self.client.get(
             "/callback/", data={"state": "test_another_state", "code": "test_code"}
         )
-        mock_get_user_info.assert_called_once_with("test_access_token")
+        mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
         url = "/"
         self.assertRedirects(response, url, fetch_redirect_response=False)

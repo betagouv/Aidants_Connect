@@ -66,6 +66,7 @@ urlpatterns = [
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # usager: mandats
     path("espace-usager", espace_usager.espace_usager_home, name="espace_usager_home"),
+    path("usager_logout/", espace_usager.usager_logout, name="usager_logout"),
     # misc
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("stats/", service.statistiques, name="statistiques"),

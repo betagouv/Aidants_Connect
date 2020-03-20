@@ -22,11 +22,14 @@
               <li class="nav__item">
                 <a href="#" class="active">Espace Usager</a>
               </li>
+              <li class="nav__item">
+                <a href="{% url 'usager_logout' %}">Se déconnecter</a>
+              </li>
+            {% else %}
+              <li class="nav__item">
+                <a href="{% url 'login' %}">Se connecter</a>
+              </li>
             {% endif %}
-          <li class="nav__item">
-            <a href="{% url 'login' %}">
-              Se connecter
-            </a>
           {% endif %}
         </li>
       </ul>

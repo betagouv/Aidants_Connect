@@ -1,14 +1,15 @@
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils import timezone
 
 from aidants_connect_web.models import Connection
+from aidants_connect_web.views.FC_as_FS import fc_user_logout_url
 
 
 def espace_usager_home(request):
-    state = request.GET.get("state")
     try:
-        connection = Connection.objects.get(state=state)
+        connection = Connection.objects.get(pk=request.session["connection"])
     except Connection.DoesNotExist:
         # return HttpResponseForbidden()
         messages.error(request, "Erreur lors de l'accès à l'Espace Usager.")
@@ -31,3 +32,23 @@ def espace_usager_home(request):
             "expired_mandats": expired_mandats,
         },
     )
+
+
+def usager_logout(request):
+    try:
+        connection = Connection.objects.get(pk=request.session["connection"])
+    except Connection.DoesNotExist:
+        # return HttpResponseForbidden()
+        messages.error(request, "Erreur lors de l'accès à l'Espace Usager.")
+        return redirect("home_page")
+
+    connection.expires_on = timezone.now()
+    connection.save()
+
+    messages.success(request, "Votre déconnexion a été effectuée avec succès.")
+    logout_url = fc_user_logout_url(
+        id_token_hint=request.session["id_token_hint"],
+        state=connection.state,
+        callback_uri_logout=f"{settings.FC_AS_FS_CALLBACK_URL}",
+    )
+    return redirect(logout_url)

@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import redirect, render
 
 from aidants_connect_web.models import Connection, Usager, Journal
 from aidants_connect_web.utilities import generate_sha256_hash
@@ -59,44 +59,33 @@ def fc_authorize(request, source):
 
 
 def fc_callback(request):
-    fc_base = settings.FC_AS_FS_BASE_URL
-    fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
-    fc_callback_uri_logout = f"{settings.FC_AS_FS_CALLBACK_URL}/logout-callback"
-    fc_id = settings.FC_AS_FS_ID
-    fc_secret = settings.FC_AS_FS_SECRET
-    state = request.GET.get("state")
+    parameters = {
+        "state": request.GET.get("state"),
+        "code": request.GET.get("code"),
+    }
 
     try:
-        connection = Connection.objects.get(state=state)
+        connection = Connection.objects.get(state=parameters["state"])
     except Connection.DoesNotExist:
         log.info("FC as FS - This state does not seem to exist")
-        log.info(state)
+        log.info(parameters["state"])
         return HttpResponseForbidden()
 
     if connection.is_expired:
         log.info("408: FC connection has expired.")
         return render(request, "408.html", status=408)
 
-    code = request.GET.get("code")
-    if not code:
+    if not parameters["code"]:
         log.info("403: No code has been provided.")
         return HttpResponseForbidden()
 
-    token_url = f"{fc_base}/token"
-    payload = {
-        "grant_type": "authorization_code",
-        "redirect_uri": fc_callback_uri,
-        "client_id": fc_id,
-        "client_secret": fc_secret,
-        "code": code,
-    }
-    headers = {"Accept": "application/json"}
+    token = get_token(code=parameters["code"])
 
-    request_for_token = python_request.post(token_url, data=payload, headers=headers)
-    content = request_for_token.json()
-    connection.access_token = content.get("access_token")
+    connection.access_token = token.get("access_token")
     connection.save()
-    fc_id_token = content.get("id_token")
+
+    fc_id_token = token.get("id_token")
+    request.session["id_token_hint"] = fc_id_token
 
     try:
         decoded_token = jwt.decode(
@@ -117,13 +106,11 @@ def fc_callback(request):
         log.info("408: FC connection has expired.")
         return render(request, "408.html", status=408)
 
-    print(decoded_token["sub"])
-
     usager_sub = generate_sha256_hash(
         f"{decoded_token['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
     )
 
-    user_info = get_user_info(connection.access_token)
+    user_info = get_user_info(access_token=connection.access_token)
 
     try:
         usager = Usager.objects.get(sub=usager_sub)
@@ -177,22 +164,46 @@ def fc_callback(request):
 
     # new_mandat workflow
     if connection.aidant:
-        logout_base = f"{fc_base}/logout"
-        logout_id_token = f"id_token_hint={fc_id_token}"
-        logout_state = f"state={state}"
-        logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
-        logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
+        logout_url = fc_user_logout_url(
+            id_token_hint=request.session["id_token_hint"],
+            state=connection.state,
+            callback_uri_logout=f"{settings.FC_AS_FS_CALLBACK_URL}/logout-callback",
+        )
         return redirect(logout_url)
     # espace_usager workflow
     else:
-        return redirect(f"{reverse('espace_usager_home')}?state={state}")
+        return redirect("espace_usager_home")
 
 
-def get_user_info(access_token) -> dict:
-    fc_base = settings.FC_AS_FS_BASE_URL
-    fc_user_info = python_request.get(
-        f"{fc_base}/userinfo?schema=openid",
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
-    fc_user_info_json = fc_user_info.json()
+def get_token(code: str) -> dict:
+    token_url = f"{settings.FC_AS_FS_BASE_URL}/token"
+    payload = {
+        "grant_type": "authorization_code",
+        "redirect_uri": f"{settings.FC_AS_FS_CALLBACK_URL}/callback",
+        "client_id": settings.FC_AS_FS_ID,
+        "client_secret": settings.FC_AS_FS_SECRET,
+        "code": code,
+    }
+    headers = {"Accept": "application/json"}
+
+    request_token = python_request.post(token_url, data=payload, headers=headers)
+    fc_token_json = request_token.json()
+    return fc_token_json
+
+
+def get_user_info(access_token: str) -> dict:
+    user_info_url = f"{settings.FC_AS_FS_BASE_URL}/userinfo?schema=openid"
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    request_user_info = python_request.get(user_info_url, headers=headers)
+    fc_user_info_json = request_user_info.json()
     return fc_user_info_json
+
+
+def fc_user_logout_url(id_token_hint: str, state: str, callback_uri_logout: str) -> str:
+    logout_base = f"{settings.FC_AS_FS_BASE_URL}/logout"
+    logout_id_token = f"id_token_hint={id_token_hint}"
+    logout_state = f"state={state}"
+    logout_redirect = f"post_logout_redirect_uri={callback_uri_logout}"
+    logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
+    return logout_url
