@@ -207,13 +207,15 @@ class AuthorizeTests(TestCase):
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_further_away)
-    def test_post_to_authorize_with_expired_connection_triggers_bad_request(self):
+    def test_post_to_authorize_with_expired_connection_triggers_connection_timeout(
+        self,
+    ):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/authorize/",
             data={"connection_id": self.connection.id, "chosen_usager": 1},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 408)
 
     def test_post_to_authorize_with_unknown_connection_triggers_forbidden(self):
         self.client.force_login(self.aidant_thierry)
@@ -347,13 +349,13 @@ class FISelectDemarcheTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @freeze_time(date_further_away)
-    def test_post_to_select_demarche_with_expired_connection_triggers_bad_request(self):
+    def test_post_to_select_demarche_with_expired_connection_triggers_timeout(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
             "/select_demarche/",
             data={"connection_id": self.connection_2.id, "chosen_demarche": "famille"},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 408)
 
     @freeze_time(date_further_away)
     def test_post_to_select_demarche_with_unknown_connection_triggers_forbidden(self):
@@ -375,6 +377,7 @@ class FISelectDemarcheTest(TestCase):
     FC_AS_FI_CALLBACK_URL="test_url.test_url",
     HOST="localhost",
 )
+@override_settings(FC_CONNECTION_AGE=300)
 class TokenTests(TestCase):
     def setUp(self):
         self.code = "test_code"
@@ -471,9 +474,9 @@ class TokenTests(TestCase):
     date_expired = date + timedelta(seconds=settings.FC_CONNECTION_AGE + 1200)
 
     @freeze_time(date_expired)
-    def test_expired_code_triggers_bad_request(self):
+    def test_expired_connection_triggers_timeout(self):
         response = self.client.post("/token/", self.fc_request)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 408)
 
 
 @tag("id_provider")
@@ -565,12 +568,12 @@ class UserInfoTests(TestCase):
     date_expired = date + timedelta(seconds=settings.FC_CONNECTION_AGE + 1200)
 
     @freeze_time(date_expired)
-    def test_expired_access_token_returns_bad_request(self):
+    def test_expired_connection_returns_timeout(self):
         response = self.client.get(
             "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer {self.access_token}"}
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 408)
 
     def test_badly_formatted_authorization_header_triggers_403(self):
         response = self.client.get(

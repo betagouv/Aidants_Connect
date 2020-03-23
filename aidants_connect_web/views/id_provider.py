@@ -131,8 +131,8 @@ def authorize(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("Connection has expired at authorize")
-                return HttpResponseBadRequest()
+                log.info("connection has expired at authorize")
+                return render(request, "408.html", status=408)
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the connection_id:")
             log.info(parameters["connection_id"])
@@ -171,8 +171,8 @@ def fi_select_demarche(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("Connection has expired at select demarche")
-                return HttpResponseBadRequest()
+                log.info("connection has expired at select_demarche")
+                return render(request, "408.html", status=408)
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the connection_id:")
             log.info(parameters["connection_id"])
@@ -207,8 +207,8 @@ def fi_select_demarche(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("Connection has expired at select demarche")
-                return HttpResponseBadRequest()
+                log.info("connection has expired at select_demarche")
+                return render(request, "408.html", status=408)
         except ObjectDoesNotExist:
             log.info("No connection corresponds to the connection_id:")
             log.info(parameters["connection_id"])
@@ -274,8 +274,8 @@ def token(request):
     try:
         connection = Connection.objects.get(code=code_hash)
         if connection.is_expired:
-            log.info("Connection has expired at token")
-            return HttpResponseBadRequest()
+            log.info("connection has expired at token")
+            return render(request, "408.html", status=408)
     except ObjectDoesNotExist:
         log.info("403: /token No connection corresponds to the code")
         log.info(parameters["code"])
@@ -329,8 +329,8 @@ def user_info(request):
     try:
         connection = Connection.objects.get(access_token=auth_token_hash)
         if connection.is_expired:
-            log.info("Connection has expired at user_info")
-            return HttpResponseBadRequest()
+            log.info("connection has expired at user_info")
+            return render(request, "408.html", status=408)
     except ObjectDoesNotExist:
         log.info("403: /user_info No connection corresponds to the access_token")
         log.info(auth_token)

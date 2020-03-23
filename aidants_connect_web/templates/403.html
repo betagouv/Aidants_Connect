@@ -1,0 +1,18 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Aidants Connect - Accès refusé (403){% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1>🤔 Vous n'avez pas la permission d'accéder à cette page</h1>
+    <h2>👩🏽‍💻 Code 403 : Accès refusé</h2>
+    <p>Vous pouvez nous envoyer un mail à support@aidantsconnect.beta.gouv.fr avec: </p>
+    <ul>
+      <li>Type d'erreur : 403</li>
+      <li>La date, l'heure et votre fuseau horaire</li>
+      <li>L'URL de cette page</li>
+      <li>Ce que vous faisiez juste avant que cette erreur s'affiche</li>
+    </ul>
+    <p>ou cliquer sur <a href="mailto:support@aidantsconnect.beta.gouv.fr?&subject=Erreur%20403&body=Bonjour,%20%0D%0A%0D%0AJ'ai%20vu%20une%20erreur%20sur%20Aidants%20Connect.%20%0D%0A%0D%0AVoici les informations sur l'erreur%20(À%20compléter)%20%0D%0A%0D%0A-%20La%20date,%20l'heure%20et%20fuseau%20horaire%20:%0D%0A%0D%0A-%20L'URL%20de%20cette%20page%20:%0D%0A%0D%0A-%20Ce%20que%20vous%20faisiez%20juste%20avant%20que%20cette%20erreur%20s'affiche%20:">ce lien</a> pour avoir un email pré-rempli</p>
+  </div>
+</section>
+{% endblock content %}
