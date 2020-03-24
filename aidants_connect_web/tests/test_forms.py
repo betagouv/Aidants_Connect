@@ -109,7 +109,6 @@ class AidantChangeFormTest(TestCase):
         )
         self.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
         self.nantes_id = self.organisation_nantes.id
-
         AidantFactory(
             first_name="Henri",
             last_name="Bernard",
@@ -127,7 +126,6 @@ class AidantChangeFormTest(TestCase):
             profession="Mediateur",
             organisation=self.organisation_nantes,
         )
-
         self.aidant2.set_password("nananana")
 
     def test_change_email_propagates_to_username(self):

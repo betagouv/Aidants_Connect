@@ -236,11 +236,9 @@ class FISelectDemarcheTest(TestCase):
             organisation=self.aidant_thierry.organisation,
         )
         self.usager = UsagerFactory(given_name="Joséphine")
-
         self.connection = Connection.objects.create(
             state="avalidstate123", nonce="avalidnonce456", usager=self.usager,
         )
-
         date_further_away_minus_one_hour = datetime(
             2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
         )
@@ -260,7 +258,6 @@ class FISelectDemarcheTest(TestCase):
             expiration_date=mandat_creation_date + timedelta(days=6),
             creation_date=mandat_creation_date,
         )
-
         self.mandat_2 = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
@@ -268,7 +265,6 @@ class FISelectDemarcheTest(TestCase):
             expiration_date=mandat_creation_date + timedelta(days=6),
             creation_date=mandat_creation_date,
         )
-
         self.mandat_3 = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
@@ -483,7 +479,6 @@ class TokenTests(TestCase):
 class UserInfoTests(TestCase):
     def setUp(self):
         self.client = Client()
-
         self.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
@@ -496,16 +491,13 @@ class UserInfoTests(TestCase):
             email="User@user.domain",
             creation_date="2019-08-05T15:49:13.972Z",
         )
-
         self.aidant_thierry = AidantFactory()
-
         self.mandat = MandatFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-
         self.access_token = "test_access_token"
         self.access_token_hash = make_password(
             self.access_token, settings.FC_AS_FI_HASH_SALT

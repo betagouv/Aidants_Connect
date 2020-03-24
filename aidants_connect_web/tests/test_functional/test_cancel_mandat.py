@@ -20,7 +20,6 @@ class CancelMandat(FunctionalTestCase):
         cls.aidant_thierry = AidantFactory()
         device = cls.aidant_thierry.staticdevice_set.create(id=cls.aidant_thierry.id)
         device.token_set.create(token="123456")
-
         cls.aidant_jacqueline = AidantFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
@@ -47,7 +46,6 @@ class CancelMandat(FunctionalTestCase):
             demarche="logement",
             expiration_date=timezone.now() + timedelta(days=12),
         )
-
         super().setUpClass()
 
     def test_cancel_mandat(self):
