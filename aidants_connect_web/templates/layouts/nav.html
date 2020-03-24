@@ -19,7 +19,7 @@
           </li>
           {% else %}
           <li class="nav__item">
-            <a href="{% url 'login' %}">
+            <a href="{% url 'login' %}"  {% if '/accounts/login' in request.path %}class="active"{% endif %}>
               Se connecter
             </a>
           {% endif %}
