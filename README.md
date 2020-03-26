@@ -156,7 +156,7 @@ Pour pouvoir vous connecter à votre instance locale, il faut apparier à votre 
 Pour cela, commencez par lui adjoindre un [jeton OTP](https://fr.wikipedia.org/wiki/Mot_de_passe_%C3%A0_usage_unique) [statique](https://django-otp-official.readthedocs.io/en/stable/overview.html#module-django_otp.plugins.otp_static) :
 
 ```shell
-python manage.py addstatictoken <insert_admin_name>
+python manage.py addstatictoken <insert_admin_name> -t <insert_6_numbers>
 ```
 Le jeton généré vous permet de vous connecter une seule fois à l'interface d'administration Django, disponible par défaut à l'URL `http://localhost:3000/admin/`.
 En cas de problème, pas d'inquiétude : vous pouvez répéter la procédure précédente autant que nécessaire :)
@@ -212,7 +212,6 @@ Puis il vous faudra recréer la base de donnée PostgreSQL :
 Ensuite, de retour dans le _shell_, pour lancer les migrations :
 
 ```shell
-python manage.py makemigrations
 python manage.py migrate
 ```
 
@@ -224,7 +223,10 @@ Enfin, chargez les données :
     python manage.py loaddata db.json
     ```
 
-- Soit des données de test (création d'un _superuser_ `admin@email.com` rattaché à une `Organisation` `BetaGouv`) :
+- Soit des données de test qui créent aussi un _superuser_ rattaché à une `Organisation` `BetaGouv`:
+    * identifiant : `admin@email.com`;
+    * mot de passe : `admin`;
+    * Static OTP : `111111`.
 
     ```shell
     python manage.py loaddata admin.json
@@ -236,7 +238,7 @@ Enfin, chargez les données :
     ```shell
     python manage.py createsuperuser
     ```
-
+  
 ### Purger les connexions expirées
 
 Les objets Django de type `Connection` repésentent une forme de cache pendant l'établissement de la connexion FranceConnect.
