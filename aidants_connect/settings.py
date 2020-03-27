@@ -356,3 +356,6 @@ CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
 ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
     os.getenv("ETAT_URGENCE_2020_LAST_DAY"), "%d/%m/%Y %H:%M:%S %z"
 )
+
+# Staff Organisation name
+STAFF_ORGANISATION_NAME = "BetaGouv"
