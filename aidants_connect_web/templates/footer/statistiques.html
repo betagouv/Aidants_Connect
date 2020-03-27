@@ -15,33 +15,88 @@
     <h1 class="brand">Statistiques d'Aidants Connect</h1>
     <div class="tiles">
       <!-- Statistiques List -->
-      {% for stat_group in statistiques_list %}
-        <h2>{{ stat_group.name }}</h2>
+    <h2>Déploiement</h2>
         <div class="grid">
-          {% for stat_item in stat_group.values %}
           <div class="tile-box">
             <div class="tile text-center">
+              <h3>Structures</h3>
               <h3>
-                {{ stat_item.title }}{% if stat_item.subtitle %}*{% endif %}
-              </h3>
-              <h3>
-                <strong>{{ stat_item.value }}</strong>
+                <strong>{{ organisations_count }}</strong>
               </h3>
             </div>
+          </div>
+          <div class="tile-box">
+            <div class="tile text-center">
+              <h3>Aidants</h3>
+              <h3>
+                <strong>{{ aidants_count }}</strong>
+              </h3>
+            </div>
+          </div>
+       </div>
+    <h2>Mandats</h2>
+        <div class="grid">
+          <div class="tile-box">
+            <div class="tile text-center">
+              <h3>Mandats créés</h3>
+              <h3><strong>
+                {{ mandats_count }}
+                </strong></h3>
+            </div>
             <p class="tile-subtitle">
-              {% if stat_item.subtitle %}
-                *{{ stat_item.subtitle }}
-              {% endif %}
-              &nbsp;
+              depuis le 18/03/2020
             </p>
           </div>
-          {% endfor %}
+          <div class="tile-box">
+            <div class="tile text-center">
+              <h3>Mandats actifs</h3>
+              <h3><strong>{{ mandats_active_count }}</strong></h3>
+            </div>
+          </div>
         </div>
-      {% endfor %}
-      <!-- Statistiques démarches -->
-      <h2>Démarches</h2>
-      <div class="grid small-grid">
-        {% for stat_item in statistiques_demarches %}
+    <h2>Usagers</h2>
+        <div class="grid">
+          <div class="tile-box">
+            <div class="tile text-center">
+              <h3>Usagers</h3>
+              <h3><strong>{{ usagers_with_mandat_count }}</strong></h3>
+            </div>
+          </div>
+          <div class="tile-box">
+            <div class="tile text-center">
+              <h3>Usagers actif</h3>
+              <h3><strong>{{ usagers_with_mandat_active_count }}</strong></h3>
+            </div>
+          </div>
+        </div>
+    <h2>Démarches France Connect accompagnées</h2>
+      <div class="grid grid">
+        <div class="tile-box">
+            <div class="tile text-center">
+              <h3>Depuis le lancement</h3>
+              <h3><strong>
+                  Usagers accompagnés : {{ usagers_helped_count }}
+                  <br>
+                  Connexions effectuées : {{ authorisation_use_count }}
+                  <br>
+              </strong></h3>
+            </div>
+          </div>
+        <div class="tile-box">
+            <div class="tile text-center">
+              <h3>30 derniers jours</h3>
+              <h3><strong>
+                  Usagers accompagnés : {{ usagers_helped_recent_count }}
+                  <br>
+                  Connexions effectuées : {{ authorisation_use_recent_count }}
+                  <br>
+              </strong></h3>
+            </div>
+          </div>
+      </div>
+      <h4>Par type de démarche</h4>
+    <div class="grid small-grid">
+        {% for stat_item in demarches_count %}
           <div class="tile-box">
             <div class="tile text-center">
               <h3>
