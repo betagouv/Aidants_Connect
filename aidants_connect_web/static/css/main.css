@@ -160,6 +160,10 @@ a.button-outline:hover {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
+.form__group + .form__group {
+  margin-top: var(--space-s);
+}
+
 
 /* Media */
 

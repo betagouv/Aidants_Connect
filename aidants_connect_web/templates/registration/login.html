@@ -2,10 +2,6 @@
 
 {% load static %}
 
-{% block extracss %}
-  <link href="{% static 'css/login.css' %}" rel="stylesheet">
-{% endblock extracss %}
-
 {% block content %}
 <section class="section">
   <form method="post" action="{% url 'login' %}">
