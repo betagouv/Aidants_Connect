@@ -20,11 +20,6 @@ class CreateNewMandat(FunctionalTestCase):
         device.token_set.create(token="123455")
         super().setUpClass()
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super().tearDownClass()
-
     def test_create_new_mandat(self):
         self.open_live_url("/usagers/")
 

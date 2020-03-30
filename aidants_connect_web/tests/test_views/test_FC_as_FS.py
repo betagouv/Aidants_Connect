@@ -45,7 +45,6 @@ class FCCallback(TestCase):
         self.client = Client()
         self.aidant = AidantFactory()
         self.epoch_date = DATE.timestamp()
-
         self.connection = Connection.objects.create(
             demarches=["argent", "papiers"],
             duree=1,
@@ -62,7 +61,6 @@ class FCCallback(TestCase):
             nonce="test_another_nonce",
             id=2,
         )
-
         self.usager_sub_fc = "123"
         self.usager_sub = generate_sha256_hash(
             f"{self.usager_sub_fc}{settings.FC_AS_FI_HASH_SALT}".encode()
