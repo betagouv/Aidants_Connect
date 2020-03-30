@@ -2,6 +2,10 @@
 
 {% load static %}
 
+{% block extracss %}
+<link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
 {% block title %}Aidants Connect - Connexion{% endblock %}
 
 {% block content %}
@@ -49,17 +53,26 @@
             </div>
           {% endif %}
         </form>
-
         <br />
         <br />
-        <div class="text-center text-muted">
-
+      </div>
+    </section>
+    <section class="section section-grey">
+        <div class="container container-small">
           <h2>Vous êtes sur la page de connexion Aidants Connect</h2>
+          <h3>Vous cherchez de l'aide ?</h3>
+          <div id="solidarite_numerique">
+            <div id="logo_solidarite_numerique">
+              <img src="https://solidarite-numerique.fr/images/logo/phoneheart.svg" />
+            </div>
+            <div id="text_solidarite_numerique">
+              <p>Solidarité Numérique est le centre d’aide pour les démarches en ligne essentielles.</p>
+              <p>le service est joignable par téléphone, du lundi au vendredi, de 9h à 18h.</p>
+              <p><span id="tel_solidarite_numerique"><a href="tel:0170772372" title="Numéro de téléphone Solidarité numérique">01 70 772 372</a></span> (appel non surtaxé);</p>
+              <p>Vous pouvez aussi consulter <a href="https://solidarite-numerique.fr">solidarite-numerique.fr</a> où vous trouverez des explications sur de nombreuses démarches pendant le confinement.</p>
+            </div>
+          </div>
 
-          <h3>Vous cherchez à vous connecter à un service ?</h3>
-          <p>
-            <a href="https://franceconnect.gouv.fr/faq" target="_blank">La Foire Aux Questions FranceConnect</a> contient des informations pour vous aider.
-          </p>
 
           <h3>Vous êtes un aidant professionnel ?</h3>
           <p>
@@ -70,10 +83,8 @@
             Si vous souhaitez avoir des informations sur Aidants Connect,
             <a href="mailto:aidantsconnect@beta.gouv.fr?subject=[Site Aidants Connect - login] Demande d'informations">contactez-nous</a>.
           </p>
-
-         </div>
-      </div>
-    </section>
+        </div>
+     </section>
   </div>
 </div>
 {% endblock content %}

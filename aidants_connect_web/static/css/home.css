@@ -78,3 +78,29 @@
 .fc-desc h2 {
   margin-bottom: 0;
 }
+
+#solidarite_numerique {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+#text_solidarite_numerique {
+  padding-left: 3em;
+  font-size: 3em;
+}
+
+#text_solidarite_numerique {
+  font-size: 1.2em;
+  line-height: 1.5em;
+}
+
+#tel_solidarite_numerique {
+  color: #213a64;
+  background-color: #ffc107;
+  font-weight: bold;
+  padding: 0.5em;
+  margin: 0.5em 0em;
+}
+#tel_solidarite_numerique a {
+  text-decoration: none;
+}
