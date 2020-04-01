@@ -1,4 +1,4 @@
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from django_celery_beat.admin import (
@@ -24,6 +24,8 @@ from magicauth.models import MagicToken
 from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
 from aidants_connect_web.models import (
     Aidant,
+    Attestation,
+    Autorisation,
     Connection,
     Journal,
     Mandat,
@@ -35,7 +37,7 @@ from aidants_connect_web.models import (
 admin_site = OTPAdminSite(OTPAdminSite.name)
 
 
-class VisibleToStaff(ModelAdmin):
+class VisibleToStaff():
     """A mixin to make a model registered in the Admin visible to staff users."""
 
     def has_module_permission(self, request):
@@ -59,6 +61,10 @@ class StaticDeviceStaffAdmin(VisibleToStaff, StaticDeviceAdmin):
 
 
 class TOTPDeviceStaffAdmin(VisibleToStaff, TOTPDeviceAdmin):
+    pass
+
+
+class OrganisationAdmin(VisibleToStaff, ModelAdmin):
     pass
 
 
@@ -113,18 +119,38 @@ class UsagerAdmin(ModelAdmin):
     search_fields = ("given_name", "family_name", "email")
 
 
-class MandatAdmin(ModelAdmin):
-    list_display = (
-        "id",
-        "usager",
-        "aidant",
-        "demarche",
-        "creation_date",
-        "expiration_date",
-        "is_remote_mandat",
-    )
-    list_filter = ("demarche",)
-    search_fields = ("usager", "aidant", "demarche")
+class AutorisationInline(VisibleToStaff, TabularInline):
+    model = Autorisation
+    fields = ["demarche", "creation_date", "expiration_date"]
+    readonly_fields = fields
+    extra = 0
+    max_num = 0
+
+
+class AttestationInline(VisibleToStaff, TabularInline):
+    model = Attestation
+    fields = ["type", "data", "document", "creation_date"]
+    readonly_fields = fields
+    extra = 0
+    max_num = 0
+
+
+class MandatAdmin(VisibleToStaff, ModelAdmin):
+    list_display = ["id", "usager", "organisation",
+                    "creation_date", "expiration_date",
+                    "admin_is_active", "is_remote_mandat"]
+    list_filter = ["organisation"]
+    search_fields = ["usager", "organisation"]
+    readonly_fields = ["usager", "organisation"]
+
+    inlines = [
+        AutorisationInline,
+        AttestationInline,
+    ]
+
+
+class ConnectionAdmin(ModelAdmin):
+    list_display = ("id", "usager", "aidant", "complete")
 
 
 class JournalAdmin(ModelAdmin):
@@ -134,17 +160,13 @@ class JournalAdmin(ModelAdmin):
     ordering = ("-creation_date",)
 
 
-class ConnectionAdmin(ModelAdmin):
-    list_display = ("id", "usager", "aidant", "complete")
-
-
 # Display the following tables in the admin
+admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
 admin_site.register(Usager, UsagerAdmin)
 admin_site.register(Mandat, MandatAdmin)
 admin_site.register(Journal, JournalAdmin)
 admin_site.register(Connection, ConnectionAdmin)
-admin_site.register(Organisation, VisibleToStaff)
 
 admin_site.register(MagicToken)
 admin_site.register(StaticDevice, StaticDeviceAdmin)

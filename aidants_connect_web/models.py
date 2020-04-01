@@ -2,9 +2,10 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 
 class Organisation(models.Model):
@@ -22,15 +23,26 @@ class Aidant(AbstractUser):
         Organisation, null=True, on_delete=models.CASCADE, related_name="aidants"
     )
 
-    class Meta:
-        verbose_name = "aidant"
-
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
     @property
     def full_string_identifier(self):
         return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
+
+    def may_perform(self, demarche, usager):
+        """
+        :param demarche:
+        :param for_usager:
+        :return: `True` if this aidant may perform the specified `demarche`
+        for the specified `usager`, `False` otherwise.`
+        """
+        return Autorisation.objects.filter(
+            demarche=demarche,
+            expiration_date__gt=timezone.now(),
+            mandat__organisation=self.organisation,
+            mandat__usager=usager,
+        ).exists()
 
     def get_usagers(self):
         """
@@ -132,6 +144,7 @@ class Aidant(AbstractUser):
 
 
 class UsagerQuerySet(models.QuerySet):
+
     def active(self):
         return self.filter(mandats__expiration_date__gt=timezone.now()).distinct()
 
@@ -202,60 +215,147 @@ class Usager(models.Model):
 
 
 class MandatQuerySet(models.QuerySet):
-    def active(self):
-        return self.exclude(expiration_date__lt=timezone.now())
-
-    def expired(self):
-        return self.exclude(expiration_date__gt=timezone.now())
 
     def for_usager(self, usager):
         return self.filter(usager=usager)
 
-    def for_demarche(self, demarche):
-        return self.filter(demarche=demarche)
-
     def visible_by(self, aidant):
-        return self.filter(aidant__organisation=aidant.organisation)
+        return self.filter(organisation=aidant.organisation)
 
 
 class Mandat(models.Model):
-    # Mandat information
-    aidant = models.ForeignKey(
-        Aidant, on_delete=models.CASCADE, default=0, related_name="mandats"
-    )
     usager = models.ForeignKey(
-        Usager, on_delete=models.CASCADE, default=0, related_name="mandats"
+        Usager, on_delete=models.CASCADE, related_name="mandats"
     )
-    demarche = models.CharField(blank=False, max_length=100)
-    # Mandat expiration date management
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, related_name="mandats"
+    )
+
     creation_date = models.DateTimeField(default=timezone.now)
-    expiration_date = models.DateTimeField(default=timezone.now)
-    last_mandat_renewal_date = models.DateTimeField(default=timezone.now)
-    # Journal entry creation information
-    last_mandat_renewal_token = models.TextField(
-        blank=False, default="No token provided"
-    )
+    expiration_date = models.DateTimeField()
+
     is_remote_mandat = models.BooleanField(default=False)
 
     objects = MandatQuerySet.as_manager()
 
-    class Meta:
-        unique_together = ["aidant", "demarche", "usager"]
+    def __str__(self):
+        return f"{self.usager} <-> {self.demarche} (#{self.id})"
+
+    @cached_property
+    def is_active(self):
+        # A `mandat` is considered `active` if it contains
+        # at least one active `autorisation`.
+        return self.autorisations.active().exists()
+
+    def admin_is_active(self):
+        return self.is_active
+    admin_is_active.boolean = True
+    admin_is_active.short_description = "active"
+
+
+class AutorisationQuerySet(models.QuerySet):
+
+    def active(self):
+        return self.filter(
+            mandat__expiration_date__gt=timezone.now(),
+            revocation_date__isnull=True,
+        )
+
+    def expired(self):
+        return self.exclude(
+            mandat__expiration_date__gt=timezone.now()
+        )
+
+    def revoked(self):
+        return self.exclude(
+            revocation_date__isnull=True
+        )
+
+
+class Autorisation(models.Model):
+
+    DEMARCHE_CHOICES = [
+        (name, attributes["titre"]) for name, attributes in settings.DEMARCHES.items()
+    ]
+
+    mandat = models.ForeignKey(
+        Mandat, on_delete=models.CASCADE, related_name="autorisations"
+    )
+    demarche = models.CharField(max_length=16, choices=DEMARCHE_CHOICES)
+
+    last_usage_date = models.DateTimeField(blank=True, null=True)
+    revocation_date = models.DateTimeField(blank=True, null=True)
+
+    objects = AutorisationQuerySet.as_manager()
 
     def __str__(self):
-        return f"Mandat #{self.id} : {self.usager} <-> {self.aidant} ({self.demarche})"
+        return f"{self.usager} <-> {self.demarche} (#{self.id})"
+
+    @property
+    def usager(self):
+        return self.mandat.usager
+
+    @cached_property
+    def creation_date(self):
+        # The creation date of an `autorisation` is the creation date
+        # of the `mandat` in which it was declared.
+        return self.mandat.creation_date
+
+    @cached_property
+    def expiration_date(self):
+        # The expiration date of an `autorisation` is the expiration date
+        # of the `mandat` in which it which it was declared.
+        return self.mandat.expiration_date
 
     @property
     def is_expired(self):
         return timezone.now() > self.expiration_date
 
     @property
-    def duree_in_days(self):
-        duree_for_computer = self.expiration_date - self.last_mandat_renewal_date
-        # we add one day so that duration is human friendly
+    def is_revoked(self):
+        return self.revocation_date is not None
+
+    @property
+    def is_active(self):
+        return not(self.is_expired or self.is_revoked)
+
+    @property
+    def duration_for_humans(self):
+        duration_for_computers = self.expiration_date - self.creation_date
+        # We add one day so that duration is human-friendly.
         # i.e. for a human, there is one day between now and tomorrow at the same time,
         # and 0 for a computer
-        return duree_for_computer.days + 1
+        return duration_for_computers.days + 1
+
+    def use(self):
+        self.last_usage_date = timezone.now()
+        self.save()
+
+    def revoke(self):
+        self.revocation_date = timezone.now()
+        self.save()
+
+
+class Attestation(models.Model):
+
+    TYPE_CREATION = "creation"
+    TYPE_REVOCATION = "revocation"
+    TYPE_CHOICES = (
+        (TYPE_CREATION, "Création"),
+        (TYPE_REVOCATION, "Révocation"),
+    )
+
+    mandat = models.ForeignKey(
+        Mandat, on_delete=models.CASCADE, related_name="attestations"
+    )
+
+    creation_date = models.DateTimeField(default=timezone.now)
+    type = models.CharField(max_length=16, choices=TYPE_CHOICES, default=TYPE_CREATION)
+    data = JSONField(blank=True, null=True)
+    document = models.FileField(blank=True, null=True)
+
+    def __str__(self):
+        return "#%d" % self.id
 
 
 class ConnectionQuerySet(models.QuerySet):
@@ -277,15 +377,15 @@ class MandatDureeKeywords(models.TextChoices):
         "LONG",
         "pour une durée de 1 an",
     )
-    EUS_03_20 = (
-        "EUS_03_20",
+    EUS_COVID_19 = (
+        "EUS_COVID_19",
         "jusqu’à la fin de l’état d’urgence sanitaire ",
     )
 
 
 class Connection(models.Model):
     state = models.TextField()  # FS
-    nonce = models.TextField(default="No Nonce Provided")  # FS
+    nonce = models.TextField(default="No nonce provided")  # FS
     CONNECTION_TYPE = (("FS", "FC as FS"), ("FI", "FC as FI"))  # FS
     connection_type = models.CharField(
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
@@ -298,7 +398,7 @@ class Connection(models.Model):
         Usager, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
     )  # FS
     expires_on = models.DateTimeField(default=default_connection_expiration_date)  # FS
-    access_token = models.TextField(default="No token Provided")  # FS
+    access_token = models.TextField(default="No token provided")  # FS
 
     code = models.TextField()
     demarche = models.TextField(default="No demarche provided")
