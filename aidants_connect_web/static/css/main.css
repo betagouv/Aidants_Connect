@@ -36,6 +36,15 @@ a.navbar__home:hover {
   color: #fff;
 }
 
+.nav__item a {
+  padding: .5em 2em;
+}
+
+.nav__item a.button-filled  {
+  background-color: #0053b3;
+  color: white;
+}
+
 
 /* Container & main */
 
