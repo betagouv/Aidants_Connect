@@ -36,6 +36,15 @@ a.navbar__home:hover {
   color: #fff;
 }
 
+.nav__item a {
+  padding: .5em 2em;
+}
+
+.nav__item a.button-filled  {
+  background-color: #0053b3;
+  color: white;
+}
+
 
 /* Container & main */
 
@@ -54,10 +63,13 @@ h1, h2, h3, h4, h5, h6 {
 
 h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   font-family: "Evolventa";
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 0;
 }
 
+.hero__container {
+  padding: 5em 2em 5em 2em;
+}
 
 /* Footer */
 

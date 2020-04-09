@@ -66,6 +66,8 @@ urlpatterns = [
     path("stats/", service.statistiques, name="statistiques"),
     path("cgu/", service.cgu, name="cgu"),
     path("activity_check/", service.activity_check, name="activity_check"),
+    path("ressources/", service.ressources, name="ressources"),
+    path("a-propos/", service.about, name="about"),
     # footer
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
 ]
