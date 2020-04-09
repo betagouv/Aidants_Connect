@@ -10,8 +10,6 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from secrets import token_urlsafe
-
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Organisation, Aidant, Usager, Mandat, Journal
 
@@ -33,12 +31,7 @@ def humanize_demarche_names(name: str) -> str:
 
 
 def home_page(request):
-    random_string = token_urlsafe(10)
-    return render(
-        request,
-        "aidants_connect_web/home_page.html",
-        {"random_string": random_string, "aidant": request.user},
-    )
+    return render(request, "aidants_connect_web/home_page.html",)
 
 
 @login_required
