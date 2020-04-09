@@ -158,3 +158,11 @@ def cgu(request):
 
 def mentions_legales(request):
     return render(request, "footer/mentions_legales.html")
+
+
+def ressources(request):
+    return render(request, "aidants_connect_web/ressource_page.html")
+
+
+def about(request):
+    return render(request, "aidants_connect_web/about_page.html")

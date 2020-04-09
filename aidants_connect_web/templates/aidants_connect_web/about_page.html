@@ -1,0 +1,43 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block extracss %}
+<link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+
+<section class="section ac-service">
+  <div class="container">
+    <h1>Le service Aidants Connect</h1>
+    <div class="row">
+      <div class="tile tile-home text-center">
+        <img class="tile__icon large__icon" src="{% static 'images/key.svg' %}" alt="Icon clé" />
+        <h3>Aidants Connect sécurise juridiquement les aidants</h3>
+        <p>qui accompagnent ces usagers sur les enjeux de confidentialité et de sécurité des données</p>
+      </div>
+      <div class="tile tile-home text-center">
+        <img class="tile__icon large__icon" src="{% static 'images/help.svg' %}" alt="Icon deux personnes" />
+        <h3>Aidants Connect garantit un accompagnement humain</h3>
+        <p>pour toutes les personnes qui, pour diverses raisons, ne peuvent pas faire leurs démarches en ligne</p>
+      </div>
+      <div class="tile tile-home text-center">
+        <img class="tile__icon large__icon" src="{% static 'images/people.svg' %}" alt="Icon groupe de personnes" />
+        <h3>Aidants Connect s’adresse à une diversité d’aidants professionnels</h3>
+        <p>Travailleurs sociaux, agents publics d’accueil, médiateurs numériques...</p>
+      </div>
+      <div class="tile tile-home text-center">
+        <img class="tile__icon large__icon" src="{% static 'images/build.svg' %}" alt="Icon outil" />
+        <h3>Aidants Connect a été co-construit avec des aidants</h3>
+        <p>Des ateliers utilisateurs ont eu lieu dans une dizaine de territoires</p>
+      </div>
+      <div class="tile tile-home text-center">
+        <img class="tile__icon large__icon" src="{% static 'images/cycle.svg' %}" alt="Icon cycle" />
+        <h3>Aidants Connect est évolutif</h3>
+        <p>Le service s’adapte aux réalités du terrain et aux besoins des aidants</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}
