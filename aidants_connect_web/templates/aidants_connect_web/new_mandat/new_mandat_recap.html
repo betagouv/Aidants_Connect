@@ -34,7 +34,7 @@
                 <li>{{ demarche }}</li>
               {% endfor %}
             </ul>
-            <p>pour une durée de : <strong>{{ duree }}</strong></p>
+            <p><strong>{{ duree }}</strong></p>
           </div>
         </div>
         <h2>Validation de l'usager</h2>
@@ -42,14 +42,14 @@
           <div class="notification error" role="alert">{{ form.non_field_errors }}</div>
         {% endif %}
         <div class="panel form__group mandat__agreement">
-          <p>En cochant les cases, {{ usager }} confirme :</p>
+          <p>En cochant les cases, {{ aidant }} confirme :</p>
           <div class="checkbox__group">
             <input type="checkbox" id="id_personal_data" name="personal_data" required />
-            <label class="label-inline" for="id_personal_data">Avoir reçu, de la part de <strong>{{ aidant.first_name }} {{ aidant.last_name }}</strong>, aidant habilité au sein de <strong>{{ aidant.organisation.name }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
+            <label class="label-inline" for="id_personal_data">Avoir communiqué à <strong>{{ usager }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
           </div>
           <div class="checkbox__group">
             <input type="checkbox" id="id_brief" name="brief" required />
-            <label class="label-inline" for="id_brief">Autoriser les aidants habilités de <strong> {{ aidant.organisation.name }}</strong> à utiliser ses données à caractère personnel.</label>
+            <label class="label-inline" for="id_brief">Avoir obtenu et conservé un consentement écrit (capture d'écran, SMS ...) de la part de <strong> {{ usager }}</strong> pour conclure le mandat Aidant Connect et utiliser ses données à caractère personnel.</label>
           </div>
         </div>
         <h2>Validation de l'aidant</h2>
