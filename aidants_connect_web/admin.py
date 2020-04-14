@@ -121,6 +121,7 @@ class MandatAdmin(ModelAdmin):
         "demarche",
         "creation_date",
         "expiration_date",
+        "is_remote_mandat",
     )
     list_filter = ("demarche",)
     search_fields = ("usager", "aidant", "demarche")

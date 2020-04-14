@@ -235,7 +235,7 @@ class Mandat(models.Model):
     last_mandat_renewal_token = models.TextField(
         blank=False, default="No token provided"
     )
-    is_remote_mandat = models.BooleanField(default=False, blank=False, null=False)
+    is_remote_mandat = models.BooleanField(default=False)
 
     objects = MandatQuerySet.as_manager()
 
@@ -352,6 +352,10 @@ class JournalManager(models.Manager):
             duree=duree,
             access_token=access_token,
             mandat_print_hash=mandat_print_hash,
+            # COVID-19
+            is_remote_mandat=True,
+            additional_information="Mandat conclu à distance "
+            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
         return journal_entry
 
@@ -367,7 +371,12 @@ class JournalManager(models.Manager):
             duree=mandat.duree_in_days,
             access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
+            # COVID-19
+            is_remote_mandat=True,
+            additional_information="Mandat conclu à distance "
+            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
+
         return journal_entry
 
     def mandat_update(self, mandat: Mandat):
@@ -382,7 +391,12 @@ class JournalManager(models.Manager):
             duree=mandat.duree_in_days,
             access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
+            # COVID-19
+            is_remote_mandat=True,
+            additional_information="Mandat conclu à distance "
+            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
+
         return journal_entry
 
     def mandat_use(
@@ -440,6 +454,8 @@ class Journal(models.Model):
     access_token = models.TextField(blank=True, null=True)
     mandat = models.IntegerField(blank=True, null=True)
     mandat_print_hash = models.CharField(max_length=100, blank=True, null=True)
+    additional_information = models.TextField(blank=True, null=True)
+    is_remote_mandat = models.BooleanField(default=False)
 
     objects = JournalManager()
 
