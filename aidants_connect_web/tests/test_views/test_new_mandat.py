@@ -2,7 +2,8 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages as django_messages
-from django.test import tag, TestCase
+from django.db.models import Q
+from django.test import tag, TestCase, override_settings
 from django.test.client import Client
 from django.urls import resolve
 
@@ -44,9 +45,89 @@ class NewMandatTests(TestCase):
 
     def test_well_formatted_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
-        data = {"demarche": ["papiers", "logement"], "duree": "short"}
+        data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+
+
+ETAT_URGENCE_2020_LAST_DAY = datetime.strptime("23/05/2020 +0100", "%d/%m/%Y %z")
+
+
+@tag("new_mandat", "confinement")
+@override_settings(ETAT_URGENCE_2020_LAST_DAY=ETAT_URGENCE_2020_LAST_DAY)
+@freeze_time(datetime(2020, 5, 20, tzinfo=timezone("Europe/Paris")))
+class ConfinementNewMandatRecapTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.aidant_thierry = AidantFactory()
+        device = self.aidant_thierry.staticdevice_set.create(id=1)
+        device.token_set.create(token="123456")
+
+        self.test_usager = UsagerFactory(
+            given_name="Fabrice", birthplace="95277", sub="test_sub",
+        )
+        self.mandat_builder = Connection.objects.create(
+            demarches=["papiers", "logement"],
+            duree_keyword="EUS_03_20",
+            usager=self.test_usager,
+        )
+
+    def test_confinement_formatted_form_triggers_redirect_to_FC(self):
+        self.client.force_login(self.aidant_thierry)
+        data = {"demarche": ["papiers", "logement"], "duree": "EUS_03_20"}
+        response = self.client.post("/creation_mandat/", data=data)
+        connection_id = Connection.objects.last().id
+        self.assertEqual(self.client.session["connection"], connection_id)
+        self.assertEqual(
+            Connection.objects.get(id=connection_id).duree_keyword, "EUS_03_20"
+        )
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+
+    def test_confinement_post_to_recap_with_correct_data_redirects_to_success(self):
+        self.client.force_login(self.aidant_thierry)
+        session = self.client.session
+
+        session["connection"] = self.mandat_builder.id
+        session.save()
+
+        response = self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
+        )
+
+        self.assertRedirects(response, "/creation_mandat/succes/")
+
+    def test_confinement_entries_create_remote_mandat_and_journal_entries(self):
+        self.client.force_login(self.aidant_thierry)
+        session = self.client.session
+
+        session["connection"] = self.mandat_builder.id
+        session.save()
+
+        self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
+        )
+
+        # test journal entries
+        journal_entries = Journal.objects.filter(
+            Q(action="create_mandat") | Q(action="create_mandat_print")
+        )
+
+        status_journal_entry = list(
+            journal_entries.values_list("is_remote_mandat", flat=True)
+        )
+        self.assertEqual(status_journal_entry.count(True), 3)
+
+        mandat_journal_entry = journal_entries.last()
+        self.assertEqual(mandat_journal_entry.duree, 3)
+
+        # test mandats
+        mandats = Mandat.objects.all()
+        status_mandats = list(mandats.values_list("is_remote_mandat", flat=True))
+        self.assertEqual(status_mandats.count(True), 2)
+        mandat_2 = Mandat.objects.last()
+        self.assertEqual(mandat_2.expiration_date, ETAT_URGENCE_2020_LAST_DAY)
 
 
 @tag("new_mandat")

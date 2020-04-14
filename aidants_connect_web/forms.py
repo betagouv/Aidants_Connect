@@ -132,11 +132,11 @@ class MandatForm(forms.Form):
         choices=DEMARCHES, required=True, widget=forms.CheckboxSelectMultiple
     )
     DUREES = [
-        ("short", {"title": "Mandat court", "description": "(expire demain)"}),
+        ("SHORT", {"title": "Mandat court", "description": "(expire demain)"}),
         # This is disabled pending the end of the lockdown
-        # ("long", {"title": "Mandat long", "description": "(12 mois)"}),
+        # ("LONG", {"title": "Mandat long", "description": "(12 mois)"}),
         (
-            "confinement",
+            "EUS_03_20",
             {
                 "title": "Mandat confinement",
                 "description": "(expire à la fin de l'état d'urgence sanitaire)",

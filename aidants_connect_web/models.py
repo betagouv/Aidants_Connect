@@ -268,6 +268,22 @@ def default_connection_expiration_date():
     return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
 
 
+class MandatDureeKeywords(models.TextChoices):
+    SHORT = (
+        "SHORT",
+        "pour une durée de 1 jour",
+    )
+    LONG = (
+        "LONG",
+        "pour une durée de 1 an",
+    )
+    EUS_03_20 = (
+        "EUS_03_20",
+        "jusqu’à la fin de l’état d’urgence sanitaire "
+        "déclaré par l’article 4 de la loi du 23 mars 2020.",
+    )
+
+
 class Connection(models.Model):
     state = models.TextField()  # FS
     nonce = models.TextField(default="No Nonce Provided")  # FS
@@ -276,7 +292,9 @@ class Connection(models.Model):
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
     )
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
-    duree = models.IntegerField(blank=False, null=True)  # FS
+    duree_keyword = models.CharField(
+        max_length=16, choices=MandatDureeKeywords.choices, null=True
+    )
     usager = models.ForeignKey(
         Usager, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
     )  # FS
