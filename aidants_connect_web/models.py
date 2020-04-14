@@ -235,6 +235,7 @@ class Mandat(models.Model):
     last_mandat_renewal_token = models.TextField(
         blank=False, default="No token provided"
     )
+    is_remote_mandat = models.BooleanField(default=False, blank=False, null=False)
 
     objects = MandatQuerySet.as_manager()
 
