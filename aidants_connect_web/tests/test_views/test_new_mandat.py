@@ -148,7 +148,9 @@ class NewMandatRecapTests(TestCase):
             given_name="Fabrice", birthplace="95277", sub=self.test_usager_sub,
         )
         self.mandat_builder = Connection.objects.create(
-            demarches=["papiers", "logement"], duree=365, usager=self.test_usager
+            demarches=["papiers", "logement"],
+            duree_keyword="LONG",
+            usager=self.test_usager,
         )
 
     def test_recap_url_triggers_the_recap_view(self):
@@ -191,7 +193,7 @@ class NewMandatRecapTests(TestCase):
     def test_post_to_recap_without_usager_creates_error(self):
         self.client.force_login(self.aidant_thierry)
         mandat_builder = Connection.objects.create(
-            demarches=["papiers", "logement"], duree=1
+            demarches=["papiers", "logement"], duree_keyword="SHORT"
         )
         session = self.client.session
         session["connection"] = mandat_builder.id
@@ -207,7 +209,7 @@ class NewMandatRecapTests(TestCase):
         # first session : creating the mandat
         self.client.force_login(self.aidant_thierry)
         mandat_builder_1 = Connection.objects.create(
-            usager=self.test_usager, demarches=["papiers"], duree=3
+            usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
         )
         session = self.client.session
         session["connection"] = mandat_builder_1.id
@@ -224,7 +226,7 @@ class NewMandatRecapTests(TestCase):
 
         # second session : updating the mandat
         mandat_builder_2 = Connection.objects.create(
-            usager=self.test_usager, demarches=["papiers"], duree=6
+            usager=self.test_usager, demarches=["papiers"], duree_keyword="LONG"
         )
 
         session = self.client.session
@@ -240,7 +242,7 @@ class NewMandatRecapTests(TestCase):
         updated_mandat = Mandat.objects.get(
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
         )
-        self.assertEqual(updated_mandat.duree_in_days, 6)
+        self.assertEqual(updated_mandat.duree_in_days, 365)
         self.assertTrue(
             updated_mandat.creation_date < updated_mandat.last_mandat_renewal_date
         )
@@ -252,7 +254,7 @@ class NewMandatRecapTests(TestCase):
         # first session : creating the mandat
         self.client.force_login(self.aidant_thierry)
         mandat_builder_1 = Connection.objects.create(
-            usager=self.test_usager, demarches=["papiers"], duree=1
+            usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
         )
         session = self.client.session
         session["connection"] = mandat_builder_1.id
@@ -267,7 +269,7 @@ class NewMandatRecapTests(TestCase):
         # second session : Create same mandat with other aidant
         self.client.force_login(self.aidant_monique)
         mandat_builder_2 = Connection.objects.create(
-            demarches=["papiers"], duree=6, usager=self.test_usager
+            demarches=["papiers"], duree_keyword="LONG", usager=self.test_usager
         )
         session = self.client.session
         session["connection"] = mandat_builder_2.id
@@ -288,7 +290,7 @@ class NewMandatRecapTests(TestCase):
         second_mandat = Mandat.objects.get(
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_monique
         )
-        self.assertEqual(second_mandat.duree_in_days, 6)
+        self.assertEqual(second_mandat.duree_in_days, 365)
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "create_mandat")
@@ -315,7 +317,7 @@ class GenerateMandatPrint(TestCase):
             connection_type="FS",
             nonce="test_another_nonce",
             demarches=["papiers", "logement"],
-            duree=1,
+            duree_keyword="SHORT",
             usager=self.test_usager,
         )
 

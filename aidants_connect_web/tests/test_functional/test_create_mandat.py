@@ -51,7 +51,7 @@ class CreateNewMandat(FunctionalTestCase):
         ).click()
 
         duree_section = self.selenium.find_element_by_id("duree")
-        duree_section.find_element_by_id("long").find_element_by_tag_name(
+        duree_section.find_element_by_id("SHORT").find_element_by_tag_name(
             "label"
         ).click()
 
