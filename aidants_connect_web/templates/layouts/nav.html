@@ -17,7 +17,7 @@
             <a href="{% url 'logout' %}">Se déconnecter</a>
           </li>
         {% else %}
-          {% if '/espace-usager' in request.path %}
+          {% if '/espace_usager' in request.path %}
             <li class="nav__item">
               <a href="#" class="active">Espace Usager</a>
             </li>

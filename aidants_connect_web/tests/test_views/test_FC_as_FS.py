@@ -465,7 +465,7 @@ class FCCallback(TestCase):
         )
         mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
-        url = "/espace-usager"
+        url = "/espace_usager"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
         connection = Connection.objects.get(pk=connection_number)
@@ -514,7 +514,7 @@ class FCCallback(TestCase):
         )
         mock_get_user_info.assert_called_once_with(access_token="test_access_token")
 
-        url = "/espace-usager"
+        url = "/espace_usager"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
         connection = Connection.objects.get(pk=connection_number)

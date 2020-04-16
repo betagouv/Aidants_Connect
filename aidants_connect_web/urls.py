@@ -71,12 +71,12 @@ urlpatterns = [
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # usager: mandats
     path(
-        "espace-usager",
+        "espace_usager",
         espace_usager.espace_usager_mandats,
         name="espace_usager_mandats",
     ),
     path(
-        "espace-usager/logout/",
+        "espace_usager/logout/",
         espace_usager.espace_usager_logout,
         name="espace_usager_logout",
     ),

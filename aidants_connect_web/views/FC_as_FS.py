@@ -19,6 +19,15 @@ log = logging.getLogger()
 
 
 def fc_authorize(request, source):
+    """
+    FranceConnect acts as a 'Fournisseur de Service'
+    We wish to authenticate the user with FranceConnect. This view helps build
+    the request we will send to FranceConnect.
+    This view is called in the New Mandat & Espace Usager workflows.
+    In the case of the Espace Usager, there is no connection (session) created
+    yet so we need to create it.
+    :param source: 2 possible values, 'new_mandat' or 'espace_usager'
+    """
     if source == "espace_usager":
         connection = Connection.objects.create()
         request.session["connection"] = connection.pk
@@ -59,6 +68,12 @@ def fc_authorize(request, source):
 
 
 def fc_callback(request):
+    """
+    FranceConnect acts as a 'Fournisseur de Service'
+    After the authentication workflow in FranceConnect, the user is redirected
+    to this callback url. We receive the OIDC 'state' and 'code' which will
+    help us query the user's info.
+    """
     parameters = {
         "state": request.GET.get("state"),
         "code": request.GET.get("code"),
@@ -175,6 +190,10 @@ def fc_callback(request):
 
 
 def get_token(code: str) -> dict:
+    """
+    Send the OIDC 'code' to FranceConnect
+    And receive the 'token' in exchange
+    """
     token_url = f"{settings.FC_AS_FS_BASE_URL}/token"
     payload = {
         "grant_type": "authorization_code",
@@ -191,6 +210,10 @@ def get_token(code: str) -> dict:
 
 
 def get_user_info(access_token: str) -> dict:
+    """
+    Send the OIDC 'access token' to FranceConnect
+    And receive the 'user info' object in exchange
+    """
     user_info_url = f"{settings.FC_AS_FS_BASE_URL}/userinfo?schema=openid"
     headers = {"Authorization": f"Bearer {access_token}"}
 
@@ -200,6 +223,10 @@ def get_user_info(access_token: str) -> dict:
 
 
 def fc_user_logout_url(id_token_hint: str, state: str, callback_uri_logout: str) -> str:
+    """
+    Send a logout request to FranceConnect to logout
+    the user (with the corresponding 'state')
+    """
     logout_base = f"{settings.FC_AS_FS_BASE_URL}/logout"
     logout_id_token = f"id_token_hint={id_token_hint}"
     logout_state = f"state={state}"

@@ -311,7 +311,9 @@ class JournalManager(models.Manager):
 
     def franceconnection_usager(self, aidant: Aidant, usager: Usager):
         journal_entry = self.create(
-            initiator=aidant.full_string_identifier if aidant else "",
+            initiator=aidant.full_string_identifier
+            if aidant
+            else usager.full_string_identifier,
             usager=usager.full_string_identifier,
             action="franceconnect_usager",
         )
@@ -319,7 +321,9 @@ class JournalManager(models.Manager):
 
     def update_email_usager(self, aidant: Aidant, usager: Usager):
         journal_entry = self.create(
-            initiator=aidant.full_string_identifier if aidant else "",
+            initiator=aidant.full_string_identifier
+            if aidant
+            else usager.full_string_identifier,
             usager=usager.full_string_identifier,
             action="update_email_usager",
         )
