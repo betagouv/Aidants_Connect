@@ -94,6 +94,7 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
         ("Informations professionnelles", {"fields": ("profession", "organisation")}),
         ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser",)},),
     )
+
     # `add_fieldsets` is not a standard `ModelAdmin` attribute. `AidantAdmin`
     # overrides `get_fieldsets` to use this attribute when creating an `Aidant`.
     add_fieldsets = (
@@ -107,12 +108,41 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
     ordering = ("email",)
 
 
+class UsagerAdmin(ModelAdmin):
+    list_display = ("__str__", "email", "creation_date")
+    search_fields = ("given_name", "family_name", "email")
+
+
+class MandatAdmin(ModelAdmin):
+    list_display = (
+        "id",
+        "usager",
+        "aidant",
+        "demarche",
+        "creation_date",
+        "expiration_date",
+    )
+    list_filter = ("demarche",)
+    search_fields = ("usager", "aidant", "demarche")
+
+
+class JournalAdmin(ModelAdmin):
+    list_display = ("id", "action", "initiator", "creation_date")
+    list_filter = ("action",)
+    search_fields = ("action", "initiator")
+    ordering = ("-creation_date",)
+
+
+class ConnectionAdmin(ModelAdmin):
+    list_display = ("id", "usager", "aidant", "complete")
+
+
 # Display the following tables in the admin
 admin_site.register(Aidant, AidantAdmin)
-admin_site.register(Usager)
-admin_site.register(Mandat)
-admin_site.register(Journal)
-admin_site.register(Connection)
+admin_site.register(Usager, UsagerAdmin)
+admin_site.register(Mandat, MandatAdmin)
+admin_site.register(Journal, JournalAdmin)
+admin_site.register(Connection, ConnectionAdmin)
 admin_site.register(Organisation, VisibleToStaff)
 
 admin_site.register(MagicToken)
