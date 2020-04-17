@@ -241,6 +241,9 @@ class Mandat(models.Model):
     class Meta:
         unique_together = ["aidant", "demarche", "usager"]
 
+    def __str__(self):
+        return f"Mandat #{self.id} : {self.usager} <-> {self.aidant} ({self.demarche})"
+
     @property
     def is_expired(self):
         return timezone.now() > self.expiration_date
@@ -290,6 +293,12 @@ class Connection(models.Model):
     )
 
     objects = ConnectionQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "connexion"
+
+    def __str__(self):
+        return f"Connexion #{self.id} - {self.usager}"
 
     @property
     def is_expired(self):
@@ -432,6 +441,13 @@ class Journal(models.Model):
     mandat_print_hash = models.CharField(max_length=100, blank=True, null=True)
 
     objects = JournalManager()
+
+    class Meta:
+        verbose_name = "entrée de journal"
+        verbose_name_plural = "entrées de journal"
+
+    def __str__(self):
+        return f"Entrée #{self.id} : {self.action} - {self.initiator}"
 
     def save(self, *args, **kwargs):
         if self.id:
