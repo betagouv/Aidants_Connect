@@ -35,7 +35,7 @@ def usager_details(request, usager_id):
 
     usager = aidant.get_usager(usager_id)
     if not usager:
-        django_messages.error(request, f"Cet usager est introuvable ou inaccessible.")
+        django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("dashboard")
 
     active_mandats = aidant.get_active_mandats_for_usager(usager_id)

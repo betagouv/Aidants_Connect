@@ -51,7 +51,7 @@ class UsagersDetailsPageTests(TestCase):
         response = self.client.get(f"/usagers/{self.usager.id}/")
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            f"<title>Aidants Connect - Homer Simpson</title>", response_content
+            "<title>Aidants Connect - Homer Simpson</title>", response_content
         )
 
 
