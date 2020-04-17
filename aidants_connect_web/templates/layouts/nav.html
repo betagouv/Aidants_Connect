@@ -9,20 +9,7 @@
       <ul class="nav__links">
       {% if request.user.is_authenticated %}
         <li class="nav__item">
-          {% if aidant.is_authenticated %}
-            <a href="{% url 'dashboard' %}" {% if '/dashboard' in request.path or '/usagers' in request.path or '/creation_mandat' in request.path %}class="active"{% endif %}>
-              Espace aidant
-            </a>
-          </li>
-          <li class="nav__item">
-            <a href="{% url 'logout' %}">Se déconnecter</a>
-          </li>
-          {% else %}
-          <li class="nav__item">
-            <a href="{% url 'login' %}"  {% if '/accounts/login' in request.path %}class="active"{% endif %}>
-              Se connecter
-            </a>
-          {% endif %}
+          <a class="button-outline secondary" href="{% url 'dashboard' %}">Espace Aidant</a>
         </li>
         <li class="nav__item">
           <a class="button-outline secondary" href="{% url 'ressources' %}">Ressources (accès libre)</a>
