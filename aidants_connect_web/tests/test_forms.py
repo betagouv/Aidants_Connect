@@ -209,10 +209,10 @@ class MandatFormTest(TestCase):
         self.assertIn("argent", form.as_p())
 
     def test_validation_for_blank_items(self):
-        form = MandatForm(data={"demarche": ["argent"], "duree": "short"})
+        form = MandatForm(data={"demarche": ["argent"], "duree": "SHORT"})
         self.assertTrue(form.is_valid())
 
-        form_2 = MandatForm(data={"demarche": [], "duree": "short"})
+        form_2 = MandatForm(data={"demarche": [], "duree": "SHORT"})
         self.assertFalse(form_2.is_valid())
         self.assertEqual(form_2.errors["demarche"], ["Ce champ est obligatoire."])
 

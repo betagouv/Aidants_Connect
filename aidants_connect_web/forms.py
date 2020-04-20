@@ -132,8 +132,16 @@ class MandatForm(forms.Form):
         choices=DEMARCHES, required=True, widget=forms.CheckboxSelectMultiple
     )
     DUREES = [
-        ("short", {"title": "Mandat court", "description": "(1 jour)"}),
-        ("long", {"title": "Mandat long", "description": "(12 mois)"}),
+        ("SHORT", {"title": "Mandat court", "description": "(expire demain)"}),
+        # This is disabled pending the end of the lockdown
+        # ("LONG", {"title": "Mandat long", "description": "(12 mois)"}),
+        (
+            "EUS_03_20",
+            {
+                "title": "Mandat confinement",
+                "description": "(expire à la fin de l'état d'urgence sanitaire)",
+            },
+        ),
     ]
     duree = forms.ChoiceField(choices=DUREES, required=True, initial=3)
 

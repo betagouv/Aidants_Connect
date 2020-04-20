@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import os
 
 from dotenv import load_dotenv
@@ -351,3 +351,8 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_RESULT_SERIALIZER = JSON_SERIALIZER
 CELERY_TASK_SERIALIZER = JSON_SERIALIZER
 CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
+
+# COVID-19 changes
+ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
+    os.getenv("ETAT_URGENCE_2020_LAST_DAY"), "%d/%m/%Y %H:%M:%S %z"
+)

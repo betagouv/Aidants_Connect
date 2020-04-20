@@ -15,8 +15,7 @@
     {% endif %}
   </div>
   
-  <h1 class="text-center">Mandat pour réaliser des démarches administratives en ligne au bénéfice d’un usager via le service
-    « Aidants Connect »</h1>
+  <h1 class="text-center">Mandat pour réaliser des démarches administratives en ligne au bénéfice d’un usager via le service « Aidants Connect » pendant l’état d’urgence sanitaire déclaré par l’article 4 de la loi du 23 mars 2020.</h1>
 
   <p>
     Je soussigné(e), <strong>{{ usager.get_full_name }}</strong> autorise <strong>{{ aidant.organisation }}</strong>, dont seuls les agents habilités peuvent faire à la place de, à
@@ -31,13 +30,13 @@
   </ul>
 
   <p>
-    pour une durée de <strong>{{ duree }}</strong>.
+    <strong>{{ duree }}</strong>
   </p>
 
   <p>
     À cette fin :
     <ul>
-      <li><strong>{{ usager }}</strong> autorise <strong>{{ aidant.organisation }}</strong> à utiliser ses données à caractère personnel.</li>
+      <li><strong>{{ usager }}</strong> autorise <strong>{{ aidant.organisation }}</strong> à utiliser ses données à caractère personnel pour la seule exécution de ce mandat.</li>
       <li><strong>L'aidant habilité de {{ aidant.organisation }}</strong> a rappelé à <strong>{{ usager }}</strong> l’objet de l’intervention, la raison pour
         laquelle ses informations sont collectées et leur utilité ; l’existence de droits
         sur ses données (accès, rectification, suppression, etc.) et la possibilité pour le mandant de retirer à tout
@@ -49,11 +48,11 @@
     Le mandataire s’engage à :
     <ol>
       <li>ne collecter et conserver que les informations strictement nécessaires aux démarches listées,</li>
-      <li>n’utiliser les informations fournies que pour les démarches listées. Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et demander l’autorisation,</li>
-      <li>ne collecter et conserver que les informations strictement nécessaires aux périmètres de démarches listés,</li>
-      <li>n’utiliser les informations fournies que pour la réalisation de ces démarches. Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et demander l’autorisation,</li>
-      <li>cmettre à jour puis à supprimer l’ensemble des informations relatives à l’usager lorsqu’elles ne sont plus nécessaires à la réalisation des démarches,</li>
-      <li>respecter la confidentialité des informations fournies,</li>
+      <li>n’utiliser les informations fournies que pour les démarches listées. Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et obtenir son autorisation ;</li>
+      <li>ne collecter et conserver que les informations strictement nécessaires aux périmètres de démarches listés ;</li>
+      <li>n’utiliser les informations fournies que pour la réalisation de ces démarches. Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et obtenir son autorisation ;</li>
+      <li>mettre à jour puis à supprimer l’ensemble des informations relatives à l’usager lorsqu’elles ne sont plus nécessaires à la réalisation des démarches ;</li>
+      <li>respecter la confidentialité des informations fournies ;</li>
       <li>prendre toutes les précautions pour assurer la sécurité des données personnelles transmises.</li>
     </ol>
   </p>
@@ -77,7 +76,7 @@
   <p>
     L'aidant habilité de <strong>{{ aidant.organisation }}</strong> est tenu d’accomplir le mandat tant qu’il en demeure chargé, et répond des dommages
     et intérêts qui
-    pourraient résulter de son inexécution conformément à l’article 1991 du Code civil.
+    pourraient résulter de son inexécution conformément aux articles 1991 et suivants du Code civil.
   </p>
 
   <p>

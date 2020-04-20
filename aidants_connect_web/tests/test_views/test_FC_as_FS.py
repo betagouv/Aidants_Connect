@@ -20,7 +20,9 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 @tag("new_mandat", "FC_as_FS")
 class FCAuthorize(TestCase):
     def setUp(self):
-        Connection.objects.create(id=1, demarches=["argent", "papiers"], duree=1)
+        Connection.objects.create(
+            id=1, demarches=["argent", "papiers"], duree_keyword="SHORT"
+        )
 
     def test_well_formatted_request_fills_connection(self):
         session = self.client.session
@@ -47,7 +49,7 @@ class FCCallback(TestCase):
         self.epoch_date = DATE.timestamp()
         self.connection = Connection.objects.create(
             demarches=["argent", "papiers"],
-            duree=1,
+            duree_keyword="SHORT",
             state="test_state",
             connection_type="FS",
             nonce="test_nonce",

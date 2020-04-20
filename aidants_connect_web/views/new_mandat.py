@@ -58,13 +58,12 @@ def new_mandat(request):
 
     else:
         form = MandatForm(request.POST)
-
         if form.is_valid():
             data = form.cleaned_data
-
-            duree = 1 if data["duree"] == "short" else 365
             connection = Connection.objects.create(
-                aidant=request.user, demarches=data["demarche"], duree=duree
+                aidant=request.user,
+                demarches=data["demarche"],
+                duree_keyword=data["duree"],
             )
             request.session["connection"] = connection.pk
             return redirect("fc_authorize")
@@ -82,7 +81,9 @@ def new_mandat_recap(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
-    duree = "1 jour" if connection.duree == 1 else "1 an"
+    # Django magic :
+    # https://docs.djangoproject.com/en/3.0/ref/models/instances/#django.db.models.Model.get_FOO_display
+    duree = connection.get_duree_keyword_display()
     demarches_description = [
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
@@ -104,8 +105,19 @@ def new_mandat_recap(request):
     else:
         form = RecapMandatForm(aidant=aidant, data=request.POST)
         if form.is_valid():
-            mandat_expiration_date = timezone.now() + timedelta(days=connection.duree)
-
+            expiration_date = {
+                "SHORT": timezone.now() + timedelta(days=1),
+                "LONG": timezone.now() + timedelta(days=365),
+                "EUS_03_20": settings.ETAT_URGENCE_2020_LAST_DAY,
+            }
+            mandat_expiration_date = expiration_date.get(connection.duree_keyword)
+            days_before_expiration_date = {
+                "SHORT": 1,
+                "LONG": 365,
+                "EUS_03_20": 1
+                + (settings.ETAT_URGENCE_2020_LAST_DAY - timezone.now()).days,
+            }
+            mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
             try:
                 # Add a Journal 'create_mandat_print' action
                 connection.demarches.sort()
@@ -113,7 +125,7 @@ def new_mandat_recap(request):
                     aidant=aidant,
                     usager=usager,
                     demarches=connection.demarches,
-                    duree=connection.duree,
+                    duree=mandat_duree,
                     access_token=connection.access_token,
                     mandat_print_hash=generate_mandat_print_hash(
                         aidant, usager, connection.demarches, mandat_expiration_date
@@ -130,6 +142,7 @@ def new_mandat_recap(request):
                             "expiration_date": mandat_expiration_date,
                             "last_mandat_renewal_date": timezone.now(),
                             "last_mandat_renewal_token": connection.access_token,
+                            "is_remote_mandat": True,
                         },
                     )
 
@@ -183,7 +196,9 @@ def mandat_print_projet(request):
     usager = connection.usager
     demarches = connection.demarches
 
-    duree = "1 jour" if connection.duree == 1 else "1 an"
+    # Django magic :
+    # https://docs.djangoproject.com/en/3.0/ref/models/instances/#django.db.models.Model.get_FOO_display
+    duree = connection.get_duree_keyword_display()
 
     return render(
         request,
@@ -205,8 +220,9 @@ def mandat_print_final(request):
     aidant = request.user
     usager = connection.usager
     demarches = connection.demarches
-
-    duree = "1 jour" if connection.duree == 1 else "1 an"
+    # Django magic :
+    # https://docs.djangoproject.com/en/3.0/ref/models/instances/#django.db.models.Model.get_FOO_display
+    duree = connection.get_duree_keyword_display()
 
     return render(
         request,

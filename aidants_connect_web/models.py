@@ -235,6 +235,7 @@ class Mandat(models.Model):
     last_mandat_renewal_token = models.TextField(
         blank=False, default="No token provided"
     )
+    is_remote_mandat = models.BooleanField(default=False)
 
     objects = MandatQuerySet.as_manager()
 
@@ -267,6 +268,22 @@ def default_connection_expiration_date():
     return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
 
 
+class MandatDureeKeywords(models.TextChoices):
+    SHORT = (
+        "SHORT",
+        "pour une durée de 1 jour",
+    )
+    LONG = (
+        "LONG",
+        "pour une durée de 1 an",
+    )
+    EUS_03_20 = (
+        "EUS_03_20",
+        "jusqu’à la fin de l’état d’urgence sanitaire "
+        "déclaré par l’article 4 de la loi du 23 mars 2020.",
+    )
+
+
 class Connection(models.Model):
     state = models.TextField()  # FS
     nonce = models.TextField(default="No Nonce Provided")  # FS
@@ -275,7 +292,9 @@ class Connection(models.Model):
         max_length=2, choices=CONNECTION_TYPE, default="FI", blank=False
     )
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
-    duree = models.IntegerField(blank=False, null=True)  # FS
+    duree_keyword = models.CharField(
+        max_length=16, choices=MandatDureeKeywords.choices, null=True
+    )
     usager = models.ForeignKey(
         Usager, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
     )  # FS
@@ -351,6 +370,10 @@ class JournalManager(models.Manager):
             duree=duree,
             access_token=access_token,
             mandat_print_hash=mandat_print_hash,
+            # COVID-19
+            is_remote_mandat=True,
+            additional_information="Mandat conclu à distance "
+            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
         return journal_entry
 
@@ -366,7 +389,12 @@ class JournalManager(models.Manager):
             duree=mandat.duree_in_days,
             access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
+            # COVID-19
+            is_remote_mandat=True,
+            additional_information="Mandat conclu à distance "
+            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
+
         return journal_entry
 
     def mandat_update(self, mandat: Mandat):
@@ -381,7 +409,12 @@ class JournalManager(models.Manager):
             duree=mandat.duree_in_days,
             access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
+            # COVID-19
+            is_remote_mandat=True,
+            additional_information="Mandat conclu à distance "
+            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
+
         return journal_entry
 
     def mandat_use(
@@ -439,6 +472,8 @@ class Journal(models.Model):
     access_token = models.TextField(blank=True, null=True)
     mandat = models.IntegerField(blank=True, null=True)
     mandat_print_hash = models.CharField(max_length=100, blank=True, null=True)
+    additional_information = models.TextField(blank=True, null=True)
+    is_remote_mandat = models.BooleanField(default=False)
 
     objects = JournalManager()
 
