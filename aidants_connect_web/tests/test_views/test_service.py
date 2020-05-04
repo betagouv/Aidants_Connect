@@ -324,3 +324,14 @@ class GuideUtilisationTests(TestCase):
     def test_stats_url_triggers_the_correct_template(self):
         response = self.client.get("/guide_utilisation/")
         self.assertTemplateUsed(response, "aidants_connect_web/guide_utilisation.html")
+
+
+@tag("service")
+class FAQTests(TestCase):
+    def test_faq_url_triggers_the_correct_view(self):
+        found = resolve("/faq/")
+        self.assertEqual(found.func, service.faq)
+
+    def test_faq_url_triggers_the_correct_template(self):
+        response = self.client.get("/faq/")
+        self.assertTemplateUsed(response, "footer/faq.html")

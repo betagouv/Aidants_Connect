@@ -15,6 +15,7 @@ urlpatterns = [
     # service
     path("", service.home_page, name="home_page"),
     path("accounts/login/", magicauth_views.LoginView.as_view(), name="login"),
+    path("activity_check/", service.activity_check, name="activity_check"),
     path("dashboard/", service.dashboard, name="dashboard"),
     # usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
@@ -63,12 +64,12 @@ urlpatterns = [
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # misc
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
-    path("stats/", service.statistiques, name="statistiques"),
-    path("cgu/", service.cgu, name="cgu"),
-    path("activity_check/", service.activity_check, name="activity_check"),
     path("ressources/", service.ressources, name="ressources"),
     path("a-propos/", service.about, name="about"),
     # footer
+    path("stats/", service.statistiques, name="statistiques"),
+    path("cgu/", service.cgu, name="cgu"),
+    path("faq/", service.faq, name="faq"),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
 ]
 
