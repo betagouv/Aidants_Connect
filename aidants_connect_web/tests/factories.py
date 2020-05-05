@@ -1,6 +1,7 @@
 import factory
-
+from datetime import timedelta
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
 
 from aidants_connect_web.models import (
     Connection,
@@ -50,6 +51,10 @@ class MandatFactory(factory.DjangoModelFactory):
     aidant = factory.SubFactory(AidantFactory)
     usager = factory.SubFactory(UsagerFactory)
     demarche = "justice"
+    expiration_date = factory.LazyAttribute(lambda f: now() + timedelta(days=7))
+    last_mandat_renewal_date = factory.LazyAttribute(
+        lambda f: now() - timedelta(days=1)
+    )
 
     class Meta:
         model = Mandat

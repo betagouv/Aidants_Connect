@@ -5,13 +5,14 @@ from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.db.models import ExpressionWrapper, DateTimeField, F
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from aidants_connect_web.forms import OTPForm
-from aidants_connect_web.models import Organisation, Aidant, Usager, Mandat, Journal
+from aidants_connect_web.models import Organisation, Aidant, Usager, Journal
 
 
 logging.basicConfig(level=logging.INFO)
@@ -56,71 +57,83 @@ def guide_utilisation(request):
 
 
 def statistiques(request):
-    # Indicateurs de base
-    organisation_total = Organisation.objects.count()
-    aidant_total = Aidant.objects.count()
-    usager_total = Usager.objects.count()
-    # Usagers
-    active_usager_total = Usager.objects.active().count()
+    last_30_days = timezone.now() - timedelta(days=30)
+
+    def get_usager_ids(query_set) -> list:
+        return [query_set_item.usager_id for query_set_item in query_set]
+
+    organisations_count = Organisation.objects.exclude(
+        name=settings.STAFF_ORGANISATION_NAME
+    ).count()
+    aidants_count = Aidant.objects.exclude(is_staff=True).count()
+
     # Mandats
-    mandat_total = Mandat.objects.count()
-    active_mandat_total = Mandat.objects.active().count()
-    mandat_used_last_30_days = (
-        Journal.objects.filter(action="create_mandat")
-        .filter(creation_date__gt=timezone.now() - timedelta(days=30))
-        .distinct("mandat")
-        .count()
+    # # Mandats prep
+    add_expiration_date_to_mandat = F("creation_date") + timedelta(days=1) * F("duree")
+
+    mandats = (
+        Journal.stats_objects.filter(action="create_mandat_print")
+        .not_staff()
+        .annotate(
+            expiration_date=ExpressionWrapper(
+                add_expiration_date_to_mandat, DateTimeField()
+            )
+        )
     )
-    # Démarches
-    demarches_aggregation = []
+    mandats_active = mandats.filter(expiration_date__gte=timezone.now())
+
+    # # Mandat results
+    mandats_count = mandats.count()
+    mandats_active_count = mandats_active.count()
+    usagers_with_mandat_count = Usager.objects.filter(
+        pk__in=get_usager_ids(mandats)
+    ).count()
+    usagers_with_mandat_active_count = Usager.objects.filter(
+        pk__in=get_usager_ids(mandats_active)
+    ).count()
+
+    # Autorisations
+    # # Autorisation prep
+    autorisation_use = Journal.stats_objects.filter(action="use_mandat").not_staff()
+    autorisation_use_recent = autorisation_use.filter(creation_date__gte=last_30_days)
+
+    # # Authorisation results
+
+    autorisation_use_count = autorisation_use.count()
+    autorisation_use_recent_count = autorisation_use_recent.count()
+    usagers_helped_count = Usager.objects.filter(
+        pk__in=get_usager_ids(autorisation_use)
+    ).count()
+    usagers_helped_recent_count = Usager.objects.filter(
+        pk__in=get_usager_ids(autorisation_use_recent)
+    ).count()
+
+    # # Démarches
+    demarches_count = []
     for demarche in settings.DEMARCHES.keys():
-        demarches_aggregation.append(
+        demarches_count.append(
             {
                 "title": demarche,
                 "icon": settings.DEMARCHES[demarche]["icon"],
-                "value": Mandat.objects.for_demarche(demarche).count(),
+                "value": autorisation_use.filter(demarche=demarche).count(),
             }
         )
-    demarches_aggregation.sort(key=lambda x: x["value"], reverse=True)
-
+    demarches_count.sort(key=lambda x: x["value"], reverse=True)
     return render(
         request,
         "footer/statistiques.html",
         {
-            "statistiques_list": [
-                {
-                    "name": "Indicateurs de base",
-                    "values": [
-                        {"title": "Organisations", "value": organisation_total},
-                        {"title": "Aidants", "value": aidant_total},
-                        {"title": "Usagers", "value": usager_total},
-                    ],
-                },
-                {
-                    "name": "Usagers",
-                    "values": [
-                        {"title": "Total", "value": usager_total},
-                        {
-                            "title": "Actifs",
-                            "subtitle": "Usagers avec au moins 1 mandat actif",
-                            "value": active_usager_total,
-                        },
-                    ],
-                },
-                {
-                    "name": "Mandats",
-                    "values": [
-                        {"title": "Total", "value": mandat_total},
-                        {"title": "Actifs", "value": active_mandat_total},
-                        {
-                            "title": "Utilisés récemment",
-                            "subtitle": "30 derniers jours",
-                            "value": mandat_used_last_30_days,
-                        },
-                    ],
-                },
-            ],
-            "statistiques_demarches": demarches_aggregation,
+            "organisations_count": organisations_count,
+            "aidants_count": aidants_count,
+            "mandats_count": mandats_count,
+            "mandats_active_count": mandats_active_count,
+            "usagers_with_mandat_count": usagers_with_mandat_count,
+            "usagers_with_mandat_active_count": usagers_with_mandat_active_count,
+            "authorisation_use_count": autorisation_use_count,
+            "authorisation_use_recent_count": autorisation_use_recent_count,
+            "usagers_helped_count": usagers_helped_count,
+            "usagers_helped_recent_count": usagers_helped_recent_count,
+            "demarches_count": demarches_count,
         },
     )
 

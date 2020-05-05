@@ -448,6 +448,11 @@ class JournalManager(models.Manager):
         return journal_entry
 
 
+class JournalQuerySet(models.QuerySet):
+    def not_staff(self):
+        return self.exclude(initiator__icontains=settings.STAFF_ORGANISATION_NAME)
+
+
 class Journal(models.Model):
     ACTIONS = (
         ("connect_aidant", "Connexion d'un aidant"),
@@ -476,6 +481,7 @@ class Journal(models.Model):
     is_remote_mandat = models.BooleanField(default=False)
 
     objects = JournalManager()
+    stats_objects = JournalQuerySet.as_manager()
 
     class Meta:
         verbose_name = "entrée de journal"
@@ -492,3 +498,10 @@ class Journal(models.Model):
 
     def delete(self, *args, **kwargs):
         raise NotImplementedError("Deleting is not allowed on journal entries")
+
+    @property
+    def usager_id(self):
+        try:
+            return int(self.usager.split(" - ")[1])
+        except (IndexError, ValueError):
+            return None
