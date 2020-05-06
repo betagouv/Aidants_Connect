@@ -179,3 +179,7 @@ def ressources(request):
 
 def about(request):
     return render(request, "aidants_connect_web/about_page.html")
+
+
+def faq(request):
+    return render(request, "footer/faq.html")

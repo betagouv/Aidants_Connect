@@ -54,11 +54,8 @@ a.navbar__home:hover {
 
 main {
   flex-grow: 1;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: "Source Sans Pro";
-  font-weight: 400;
+  font-size: 1.3em;
+  line-height: 1.5em;
 }
 
 h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
@@ -71,6 +68,9 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   padding: 5em 2em 5em 2em;
 }
 
+.section__subtitle {
+  margin-bottom: 4em;
+}
 /* Footer */
 
 .footer__social {
