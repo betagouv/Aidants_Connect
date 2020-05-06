@@ -21,6 +21,11 @@ a:hover {
 .tile-box {
   width: 100%;
 }
+
+#statistics h3 {
+  font-size: 1.2em;
+}
+
 .tile-subtitle {
   margin: 0;
   font-style: italic;
