@@ -279,8 +279,7 @@ class MandatDureeKeywords(models.TextChoices):
     )
     EUS_03_20 = (
         "EUS_03_20",
-        "jusqu’à la fin de l’état d’urgence sanitaire "
-        "déclaré par l’article 4 de la loi du 23 mars 2020.",
+        "jusqu’à la fin de l’état d’urgence sanitaire ",
     )
 
 
