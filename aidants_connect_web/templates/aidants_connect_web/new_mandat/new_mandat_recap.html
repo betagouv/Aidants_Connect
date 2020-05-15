@@ -26,8 +26,8 @@
         <div class="panel">
           <div class="form__group">
             <p id="recap_text">
-              <strong>{{ usager }}</strong> autorise <strong>l'aidant habilité de {{ aidant.organisation.name }}</strong> à réaliser en mon nom
-              conformément aux dispositions des articles 1984 et suivants du Code civil, la ou les démarches administratives en ligne des périmètres suivants :
+              <strong>{{ usager }}</strong> autorise <strong>{{ aidant.organisation }}</strong> à réaliser à sa place
+              les démarches administratives suivantes :
             </p>
             <ul>
               {% for demarche in demarches %}
@@ -42,7 +42,7 @@
           <div class="notification error" role="alert">{{ form.non_field_errors }}</div>
         {% endif %}
         <div class="panel form__group mandat__agreement">
-          <p>En cochant les cases, {{ aidant }} confirme :</p>
+          <p>En cochant les cases, <strong>{{ aidant }}</strong> confirme :</p>
           <div class="checkbox__group">
             <input type="checkbox" id="id_personal_data" name="personal_data" required />
             <label class="label-inline" for="id_personal_data">Avoir communiqué à <strong>{{ usager }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
