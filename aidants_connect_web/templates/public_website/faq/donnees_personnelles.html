@@ -1,0 +1,109 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - FAQ{% endblock %}
+
+{% block extracss %}
+<link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section section-white">
+  <div class="container container-small">
+    <h1 class="section__title">Foire aux questions</h1>
+    <p class="section__subtitle">Vous trouverez ici les réponses aux questions les plus fréquemment posées à nos équipes.</p>
+  </div>
+  <div class="dashboard" id="faq-content">
+    <aside class="side-menu" role="navigation">
+      <ul>
+        <li><a href={% url "faq_generale" %}>Le service Aidants Connect</a></li>
+        <li><a href={% url "faq_mandat" %}>Le mandat</a></li>
+        <li><a class="active" href={% url "faq_donnees_personnelles" %}>Les données personnelles</a></li>
+      </ul>
+    </aside>
+    <div class="main">
+      <div class="panel">
+        <h2 id="questions-RGPD">Questions sur la protection des données personnelles</h2>
+        <h3 id="utilisation-session-aidant">
+          Qui est responsable si une autre personne que l’aidant·e réalise des démarches sur l’ordinateur de l’aidant·e alors que celui-ci n’est pas sécurisé ?
+        </h3>
+        <p>
+          La responsabilité des structures et des aidant·es pourra être recherchée. Il appartient aux aidant·es et aux structures habilitées de sécuriser les postes informatiques et les outils utilisés dans le cadre des mandats (par des dispositifs techniques et/ou par des mesures organisationnelles). Il est fortement conseillé d’utiliser les outils de travail adaptés au fait que l’aidant·e va recevoir ou visualiser des informations personnelles sur l’usager.
+        </p>
+        <p>
+          Les aidant·es doivent se prémunir des risques liés à l’utilisation frauduleuse de leur matériel informatique. Il s’agit donc d’avoir un ordinateur en mesure d’être protégé par un mot de passe, un gestionnaire de mots de passe, un antivirus, un verrouillage automatique, etc… (voir les recommandations de la CNIL
+          <a href="https://www.cnil.fr/fr/professionnels-du-secteur-social-comment-mieux-proteger-les-donnees-de-vos-usagers" target="_blank" rel="noopener">
+            https://www.cnil.fr/fr/professionnels-du-secteur-social-comment-mieux-proteger-les-donnees-de-vos-usagers
+          </a>
+          )
+        </p>
+        <p>
+        Les aidant·es et les structures habilitées doivent signaler tout vol ou perte de moyens d’identification au service Aidants Connect (téléphone portable, ordinateur, autres…).
+        </p>
+        <p>
+
+        Aidants Connect supprimera rapidement le compte de l’aidant·e pour éviter que celui-ci ne soit frauduleusement utilisé par d’autres personnes.
+        </p>
+
+        <h3 id="documents-récupérés-par-un-tiers-">
+          Quelle est la responsabilité de l’aidant·e si des documents, contenant des données personnelles, conservés par la structure, sont récupérés par un tiers ?
+        </h3>
+        <p>
+          La responsabilité de l’aidant·e pourrait être engagée si l’aidant·e a scanné un document contenant des données personnelles d’un·e usager·ère et que ce fichier est volé ou détruit. Il appartient à l’aidant·e de respecter les procédures internes de sa structure, qui auront été établies avec son ou sa Délégué·e à la protection des données.
+        </p>
+        <p>
+        Dès lors, si des données personnelles ont été volées, détruites ou perdues, il faut respecter les procédures internes de votre structure pour toute perte ou vol de données personnelles.
+        </p>
+        <p>
+        S’il s’agit de vos identifiants et/ou téléphone portable, vous devez informer Aidants Connect afin que nous puissions procéder à la suppression de votre compte.
+        </p>
+        <h3 id="conservation-des-données">
+          Conservation des données et des documents officiels : quelle est la réglementation en vigueur ? Et le RGPD ?
+        </h3>
+        <p>
+          La réglementation en vigueur est le règlement général sur la protection des données du 27 avril 2016 et à la loi n°78-17 du 6 janvier 1978 relative à l’informatique, aux fichiers et aux libertés (dite «&nbsp;loi informatique et libertés&nbsp;»).
+        </p>
+        <p>
+        Sur Aidants Connect, la collecte et le traitement des données à caractère personnel, effectués à partir du site, sont conformes au règlement général sur la protection des données du 27 avril 2016 et à la loi informatique et libertés.&nbsp;Les informations concernant ces traitements sont disponibles sur
+          <a href="https://aidantsconnect.beta.gouv.fr/cgu/" target="_blank" rel="noopener">
+            https://aidantsconnect.beta.gouv.fr/cgu/
+          </a>
+        </p>
+        <h3 id="garder-les-codes">
+          Quels risques prenons-nous&nbsp;en gardant les codes ? En consultant une messagerie à la place de ? Si l’aidant·e doit consulter les mails pour le compte de l’usager, quelle est la limite de confidentialité&nbsp;?
+        </h3>
+        <p>
+          Cela revient à la question de la conservation et la visualisation des données personnelles.
+        </p>
+        <p>
+        À ce sujet, la CNIL donne le conseil suivant aux aidant·es professionnel·les :
+        </p>
+        <blockquote>
+          <p>
+            «&nbsp;Pour chacun·e des usager·ères que vous accompagnez, utilisez bien un compte de messagerie dédié aux
+            démarches administratives. Si l’usager·ère n’a pas d’adresse électronique, proposez-lui de lui en créer une
+            mais toujours dans le cadre de votre mandat. En fonction des besoins liés à son suivi, il est possible de
+            rediriger tout ou partie des courriers électroniques de l’usager·ère vers votre compte de messagerie
+            professionnelle. Dans ce cas, précisez-le explicitement dans le mandat et n’oubliez pas de supprimer ces
+            courriers électroniques (e-mails) dès la fin de l’accompagnement social.&nbsp;»
+          </p>
+          <p>
+          Source :
+              <a href="https://www.cnil.fr/fr/professionnels-du-secteur-social-comment-mieux-proteger-les-donnees-de-vos-usagers" target="_blank" rel="noopener">
+                https://www.cnil.fr/fr/professionnels-du-secteur-social-comment-mieux-proteger-les-donnees-de-vos-usagers
+              </a>
+              .
+            </p>
+        </blockquote>
+        <h3 id="valeur-juridique-mandat">
+          Quelle est la valeur juridique d’une décharge / d’un mandat signé par la personne et autorisant l’aidant·e à faire la démarche ?
+        </h3>
+        <p>
+          Qu’il soit donné à l’oral ou à l’écrit, un mandat est un contrat entre des personnes et/ou des structures. On peut donner mandat pour faire en son nom l’intégralité des démarches qui nous incombent et cela pour la durée que l’on souhaite.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}
