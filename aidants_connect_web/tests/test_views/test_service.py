@@ -330,8 +330,8 @@ class GuideUtilisationTests(TestCase):
 class FAQTests(TestCase):
     def test_faq_url_triggers_the_correct_view(self):
         found = resolve("/faq/")
-        self.assertEqual(found.func, service.faq)
+        self.assertEqual(found.func, service.faq_generale)
 
     def test_faq_url_triggers_the_correct_template(self):
         response = self.client.get("/faq/")
-        self.assertTemplateUsed(response, "footer/faq.html")
+        self.assertTemplateUsed(response, "public_website/faq/generale.html")
