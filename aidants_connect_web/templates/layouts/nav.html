@@ -12,7 +12,7 @@
           <a class="button-outline secondary" href="{% url 'dashboard' %}">Espace Aidant</a>
         </li>
         <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'ressources' %}">Ressources (accès libre)</a>
+          <a class="button-outline secondary" href="{% url 'ressources' %}">Ressources</a>
         </li>
         <li class="nav__item">
           <a class="button-outline secondary" href="{% url 'logout' %}">Se déconnecter</a>
@@ -22,10 +22,13 @@
             <a class="button-outline secondary" href="{% url 'about' %}">A propos</a>
         </li>
         <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'ressources' %}">Ressources (accès libre)</a>
+          <a class="button-outline secondary" href="{% url 'ressources' %}">Ressources</a>
         </li>
         <li class="nav__item">
-          <a class="button-outline primary button-filled" href="{% url 'login' %}" >Connexion à l'espace aidant</a>
+          <a class="button-outline secondary" href="{% url 'faq_generale' %}">FAQ</a>
+        </li>
+        <li class="nav__item">
+          <a class="button-outline primary button-filled" href="{% url 'login' %}" >Se connecter</a>
         </li>
       {% endif %}
       </ul>
