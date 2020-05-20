@@ -1,0 +1,89 @@
+{% load static %}
+
+<section class="container">
+  <div class="navbar__home">
+    <img class="navbar__logo" src="{% static 'images/logo-marianne.svg' %}" alt="aidantsconnect.beta.gouv.fr" />
+    <img class="navbar__gouvfr" src="{% static 'images/aidants-connect_logo.png' %}" alt="aidantsconnect.beta.gouv.fr" />
+    {% if not final %}
+      <div class="navbar__gouvfr float-right">
+        <i>Projet de mandat</i>
+      </div>
+    {% else %}
+      <div class="navbar__gouvfr float-right">
+        <img class="navbar__gouvfr img-qrcode" src="{% url 'new_mandat_print_final_qrcode' %}" />
+      </div>
+    {% endif %}
+  </div>
+  
+  <h1 class="text-center">Mandat pour réaliser des démarches administratives en ligne au bénéfice d’un usager via le service « Aidants Connect » pendant l’état d’urgence sanitaire déclaré par l’article 4 de la loi du 23 mars 2020.</h1>
+
+  <p>
+    Je soussigné(e), <strong>{{ usager.get_full_name }}</strong> autorise <strong>{{ aidant.organisation }}</strong>, dont seuls les agents habilités peuvent faire à la place de, à
+    réaliser en mon nom conformément aux dispositions des articles 1984 et suivants du Code civil, les démarches
+    administratives en ligne suivantes, étant précisé qu’il s’agisse de démarches accessibles via FranceConnect ou non :
+  </p>
+
+  <ul>
+    {% for demarche in demarches %}
+      <li><strong>{{ demarche }}</strong></li>
+    {% endfor %}
+  </ul>
+
+  <p>
+    <strong>{{ duree }}</strong>
+  </p>
+
+  <p>
+    À cette fin :
+    <ul>
+      <li><strong>{{ usager }}</strong> autorise <strong>{{ aidant.organisation }}</strong> à utiliser ses données à caractère personnel pour la seule exécution de ce mandat.</li>
+      <li><strong>L'aidant habilité de {{ aidant.organisation }}</strong> a rappelé à <strong>{{ usager }}</strong> l’objet de l’intervention, la raison pour
+        laquelle ses informations sont collectées et leur utilité ; l’existence de droits
+        sur ses données (accès, rectification, suppression, etc.) et la possibilité pour le mandant de retirer à tout
+        moment son consentement.</li>
+    </ul>
+  </p>
+
+  <p>
+    Le mandataire s’engage à :
+    <ol>
+      <li>ne collecter et conserver que les informations strictement nécessaires aux démarches listées,</li>
+      <li>n’utiliser les informations fournies que pour les démarches listées. Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et obtenir son autorisation ;</li>
+      <li>ne collecter et conserver que les informations strictement nécessaires aux périmètres de démarches listés ;</li>
+      <li>n’utiliser les informations fournies que pour la réalisation de ces démarches. Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et obtenir son autorisation ;</li>
+      <li>mettre à jour puis à supprimer l’ensemble des informations relatives à l’usager lorsqu’elles ne sont plus nécessaires à la réalisation des démarches ;</li>
+      <li>respecter la confidentialité des informations fournies ;</li>
+      <li>prendre toutes les précautions pour assurer la sécurité des données personnelles transmises.</li>
+    </ol>
+  </p>
+
+  <p>
+    L’acceptation du mandat par le mandataire est réputée acquise par la réalisation effective des missions détaillées dans le présent mandat.
+    Le mandataire est soumis à une obligation de confidentialité.
+    Il ne doit en aucun cas divulguer les informations du mandant à des tiers lorsque cette divulgation n’est
+    pas nécessaire à l’accomplissement des démarches dont il est responsable. Le mandataire enregistre les
+    informations du mandant de manière sécurisée et notamment prend toutes précautions pour assurer la sécurité physique
+    et logique de ces données.
+  </p>
+
+  <p>
+    Le présent mandat est accepté et consenti pour la durée nécessaire à l’accomplissement des missions de
+    l'aidant habilité de <strong>{{ aidant.organisation }}</strong>.
+    Le mandat prend fin lorsque la réalisation des démarches susvisées a été accomplie, ou à tout moment si le mandant
+    ou le mandataire décide de révoquer le mandat.
+  </p>
+
+  <p>
+    L'aidant habilité de <strong>{{ aidant.organisation }}</strong> est tenu d’accomplir le mandat tant qu’il en demeure chargé, et répond des dommages
+    et intérêts qui
+    pourraient résulter de son inexécution conformément aux articles 1991 et suivants du Code civil.
+  </p>
+
+  <p>
+    Fait à <strong>{{ aidant.organisation.address }}</strong>, le <strong>{{ date }}</strong>
+  </p>
+
+  <p class="margin-bottom-50">
+    <span>Le mandant</span>
+  </p>
+</section>
