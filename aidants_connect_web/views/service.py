@@ -32,7 +32,7 @@ def humanize_demarche_names(name: str) -> str:
 
 
 def home_page(request):
-    return render(request, "aidants_connect_web/home_page.html",)
+    return render(request, "public_website/home_page.html",)
 
 
 @login_required
@@ -53,7 +53,7 @@ def dashboard(request):
 
 
 def guide_utilisation(request):
-    return render(request, "aidants_connect_web/guide_utilisation.html")
+    return render(request, "public_website/guide_utilisation.html")
 
 
 def statistiques(request):
@@ -121,7 +121,7 @@ def statistiques(request):
     demarches_count.sort(key=lambda x: x["value"], reverse=True)
     return render(
         request,
-        "footer/statistiques.html",
+        "public_website/statistiques.html",
         {
             "organisations_count": organisations_count,
             "aidants_count": aidants_count,
@@ -161,24 +161,24 @@ def activity_check(request):
         form = OTPForm(request.user)
 
     return render(
-        request, "registration/activity_check.html", {"form": form, "aidant": aidant}
+        request, "login/activity_check.html", {"form": form, "aidant": aidant}
     )
 
 
 def cgu(request):
-    return render(request, "footer/cgu.html")
+    return render(request, "public_website/cgu.html")
 
 
 def mentions_legales(request):
-    return render(request, "footer/mentions_legales.html")
+    return render(request, "public_website/mentions_legales.html")
 
 
 def ressources(request):
-    return render(request, "aidants_connect_web/ressource_page.html")
+    return render(request, "public_website/ressource_page.html")
 
 
 def about(request):
-    return render(request, "aidants_connect_web/about_page.html")
+    return render(request, "public_website/about_page.html")
 
 
 def faq_generale(request):

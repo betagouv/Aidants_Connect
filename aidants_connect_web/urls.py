@@ -13,7 +13,6 @@ from aidants_connect_web.views import (
 
 urlpatterns = [
     # service
-    path("", service.home_page, name="home_page"),
     path("accounts/login/", magicauth_views.LoginView.as_view(), name="login"),
     path("activity_check/", service.activity_check, name="activity_check"),
     path("dashboard/", service.dashboard, name="dashboard"),
@@ -62,11 +61,15 @@ urlpatterns = [
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
-    # misc
+    # public_website
+    path("", service.home_page, name="home_page"),
+    path("stats/", service.statistiques, name="statistiques"),
+    path("cgu/", service.cgu, name="cgu"),
+    path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("ressources/", service.ressources, name="ressources"),
     path("a-propos/", service.about, name="about"),
-    # FAQ
+    # # FAQ
     path("faq/", service.faq_generale, name="faq_generale"),
     path("faq/mandat/", service.faq_mandat, name="faq_mandat"),
     path(
@@ -74,10 +77,6 @@ urlpatterns = [
         service.faq_donnees_personnelles,
         name="faq_donnees_personnelles",
     ),
-    # footer
-    path("stats/", service.statistiques, name="statistiques"),
-    path("cgu/", service.cgu, name="cgu"),
-    path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
 ]
 
 urlpatterns.extend(magicauth_urls)
