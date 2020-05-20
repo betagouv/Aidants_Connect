@@ -181,5 +181,13 @@ def about(request):
     return render(request, "aidants_connect_web/about_page.html")
 
 
-def faq(request):
-    return render(request, "footer/faq.html")
+def faq_generale(request):
+    return render(request, "public_website/faq/generale.html")
+
+
+def faq_mandat(request):
+    return render(request, "public_website/faq/mandat.html")
+
+
+def faq_donnees_personnelles(request):
+    return render(request, "public_website/faq/donnees_personnelles.html")

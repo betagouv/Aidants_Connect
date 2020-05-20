@@ -13,27 +13,36 @@
   <div class="container container-small">
     <h1 class="section__title">Foire aux questions</h1>
     <p class="section__subtitle">Vous trouverez ici les réponses aux questions les plus fréquemment posées à nos équipes.</p>
-    <div class="panel">
-      <h3 id="Aidants-Connect-qu’est-ce-que-c’est">Aidants Connect qu’est-ce que c’est?</h3>
-      <p>Aidants Connect permet à des aidant·es professionnel·les de réaliser des démarches administratives à la place d’un·e usager·ère et ce, <strong>de façon sécurisée.</strong></p>
-      <p>Toutes les informations sur le fonctionnement du service sont documentées dans <a href="../aidants_connect_web/guide_utilisation.html">notre guide d'utilisation</a></p>
-      <h3 id="contacter-l’équipe">Comment contacter l’équipe Aidants Connect ?</h3>
-      <p>
-        Vous pouvez nous envoyer un mail à l'adresse :
-        <a href="mailto:contact@aidantsconnect.beta.gouv.fr?subject=[Site Aidants Connect - FAQ] Demande d'informations" target="_blank" rel="noopener">
-          contact@aidantsconnect.beta.gouv.fr
-        </a>
-      </p>
-
-      <h3 id="A-qui-s’adresse-AC-">A qui s’adresse Aidants Connect ?</h3>
-      <p>
-        Aidants Connect s’adresse à des structures qui emploient des aidant·es professionnel·les qui accompagnent régulièrement
-        des usager·ères dans la réalisation de leurs démarches en ligne.
-        Il peut s’agir de travailleur·euses sociaux·ales, agents publics d’accueil, médiateur·ices numériques, etc.
-        Le service est aujourd’hui expérimenté par un nombre limité de structures.
-      </p>
-
-      <h3 id="aidant·es-habilités">Qui sont les aidant·es habilités à utiliser Aidants Connect ?</h3>
+  </div>
+  <div class="dashboard" id="faq-content">
+    <aside class="side-menu" role="navigation">
+      <ul>
+        <li><a class="active" href={% url "faq_generale" %}>Le service Aidants Connect</a></li>
+        <li><a href={% url "faq_mandat" %}>Le mandat</a></li>
+        <li><a href={% url "faq_donnees_personnelles" %}>Les données personnelles</a></li>
+      </ul>
+    </aside>
+    <div class="main">
+      <div class="panel">
+        <h2 id="questions-generales">Questions générales</h2>
+        <h3 id="Aidants-Connect-qu’est-ce-que-c’est">Aidants Connect qu’est-ce que c’est?</h3>
+        <p>Aidants Connect permet à des aidant·es professionnel·les de réaliser des démarches administratives à la place d’un·e usager·ère et ce, <strong>de façon sécurisée.</strong></p>
+        <p>Toutes les informations sur le fonctionnement du service sont documentées dans <a href="../../aidants_connect_web/guide_utilisation.html">notre guide d'utilisation</a></p>
+        <h3 id="contacter-l’équipe">Comment contacter l’équipe Aidants Connect ?</h3>
+        <p>
+          Vous pouvez nous envoyer un mail à l'adresse :
+          <a href="mailto:contact@aidantsconnect.beta.gouv.fr?subject=[Site Aidants Connect - FAQ] Demande d'informations" target="_blank" rel="noopener">
+            contact@aidantsconnect.beta.gouv.fr
+          </a>
+        </p>
+          <h3 id="A-qui-s’adresse-AC">A qui s’adresse Aidants Connect ?</h3>
+        <p>
+          Aidants Connect s’adresse à des structures qui emploient des aidant·es professionnel·les qui accompagnent régulièrement
+          des usager·ères dans la réalisation de leurs démarches en ligne.
+          Il peut s’agir de travailleur·euses sociaux·ales, agents publics d’accueil, médiateur·ices numériques, etc.
+          Le service est aujourd’hui expérimenté par un nombre limité de structures.
+        </p>
+        <h3 id="aidant·es-habilités">Qui sont les aidant·es habilité·es à utiliser Aidants Connect ?</h3>
       <p>
         Les aidant·es habilité·es sont des aidant·es salarié·es d’une structure habilitée Aidants Connect.
         Ils et elles accompagnent des usager·ères dans la réalisation de leurs démarches administratives en ligne.</p>
@@ -111,7 +120,7 @@
 
       <h3 id="plusieurs-langues">Le mandat Aidants Connect existe-t-il dans plusieurs langues ?</h3>
       <p>À ce jour, le mandat existe en français uniquement.</p>
-
+    </div>
     </div>
   </div>
 </section>
