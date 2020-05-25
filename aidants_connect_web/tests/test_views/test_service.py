@@ -29,7 +29,7 @@ class HomePageTests(TestCase):
 
     def test_root_url_triggers_the_homepage_template(self):
         response = self.client.get("/")
-        self.assertTemplateUsed(response, "aidants_connect_web/home_page.html")
+        self.assertTemplateUsed(response, "public_website/home_page.html")
 
 
 @tag("service")
@@ -91,7 +91,7 @@ class ActivityCheckPageTests(TestCase):
     def test_totp_url_triggers_totp_template(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.get("/activity_check/")
-        self.assertTemplateUsed(response, "registration/activity_check.html")
+        self.assertTemplateUsed(response, "login/activity_check.html")
 
     def test_totp_page_with_resolvable_next_redirects(self):
         self.client.force_login(self.aidant_thierry)
@@ -260,7 +260,7 @@ class StatistiquesTests(TestCase):
 
     def test_stats_url_triggers_the_statistiques_template(self):
         response = self.client.get("/stats/")
-        self.assertTemplateUsed(response, "footer/statistiques.html")
+        self.assertTemplateUsed(response, "public_website/statistiques.html")
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
         # Mandat should be non-staff_organisation and active
@@ -301,7 +301,7 @@ class MentionsLegalesTests(TestCase):
 
     def test_stats_url_triggers_the_correct_template(self):
         response = self.client.get("/mentions-legales/")
-        self.assertTemplateUsed(response, "footer/mentions_legales.html")
+        self.assertTemplateUsed(response, "public_website/mentions_legales.html")
 
 
 @tag("service")
@@ -312,7 +312,7 @@ class CguTests(TestCase):
 
     def test_stats_url_triggers_the_cgu_template(self):
         response = self.client.get("/cgu/")
-        self.assertTemplateUsed(response, "footer/cgu.html")
+        self.assertTemplateUsed(response, "public_website/cgu.html")
 
 
 @tag("service")
@@ -323,7 +323,7 @@ class GuideUtilisationTests(TestCase):
 
     def test_stats_url_triggers_the_correct_template(self):
         response = self.client.get("/guide_utilisation/")
-        self.assertTemplateUsed(response, "aidants_connect_web/guide_utilisation.html")
+        self.assertTemplateUsed(response, "public_website/guide_utilisation.html")
 
 
 @tag("service")
