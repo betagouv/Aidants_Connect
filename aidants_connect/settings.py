@@ -309,8 +309,9 @@ CSP_SCRIPT_SRC = ("'self'", "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
-    "https://www.youtube.com/embed/zbcVpxaN8zc",
-    "https://www.youtube.com/embed/r_Z8-1K1OPM",
+    "https://www.youtube.com/embed/hATrqHG4zYQ",
+    "https://www.youtube.com/embed/WTHj_kQXnzs",
+    "https://www.youtube.com/embed/ihsm-36I-fE",
 )
 
 # Admin Page settings
