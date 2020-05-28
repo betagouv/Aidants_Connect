@@ -6,15 +6,15 @@ from django.utils import timezone
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    AutorisationFactory,
     UsagerFactory,
-    MandatFactory,
 )
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional")
-class CancelMandat(FunctionalTestCase):
+class CancelAutorisationTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         cls.aidant_thierry = AidantFactory()
@@ -28,19 +28,19 @@ class CancelMandat(FunctionalTestCase):
             last_name="Fremont",
         )
         cls.usager_josephine = UsagerFactory(given_name="Joséphine")
-        cls.mandat_1 = MandatFactory(
+        cls.autorisation_1 = AutorisationFactory(
             aidant=cls.aidant_thierry,
             usager=cls.usager_josephine,
             demarche="argent",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        cls.mandat_2 = MandatFactory(
+        cls.autorisation_2 = AutorisationFactory(
             aidant=cls.aidant_thierry,
             usager=cls.usager_josephine,
             demarche="famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
-        MandatFactory(
+        AutorisationFactory(
             aidant=cls.aidant_jacqueline,
             usager=cls.usager_josephine,
             demarche="logement",
@@ -78,4 +78,4 @@ class CancelMandat(FunctionalTestCase):
         self.assertEqual(len(expired_mandats_after), 1)
 
         last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "cancel_mandat")
+        self.assertEqual(last_journal_entry.action, "cancel_autorisation")
