@@ -413,7 +413,6 @@ class JournalManager(models.Manager):
             is_remote_mandat=is_remote_mandat,
             access_token=access_token,
             attestation_hash=attestation_hash,
-
             # COVID-19
             additional_information=(
                 Journal.MENTION_URGENCE_2020
