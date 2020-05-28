@@ -144,6 +144,7 @@ def new_mandat_recap(request):
                     is_remote=True,
                     duree_keyword=connection.duree_keyword,
                 )
+
                 # This loop creates one `autorisation` object per `démarche` in the form
                 for demarche in connection.demarches:
                     Autorisation.objects.update_or_create(

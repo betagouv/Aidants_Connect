@@ -325,11 +325,8 @@ class Connection(models.Model):
     )
     mandat_is_remote = models.BooleanField(default=False)
     usager = models.ForeignKey(
-        Usager,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="connections",
+        Usager, blank=True, null=True,
+        on_delete=models.CASCADE, related_name="connections"
     )  # FS
     expires_on = models.DateTimeField(default=default_connection_expiration_date)  # FS
     access_token = models.TextField(default="No token provided")  # FS
@@ -337,19 +334,13 @@ class Connection(models.Model):
     code = models.TextField()
     demarche = models.TextField(default="No demarche provided")
     aidant = models.ForeignKey(
-        Aidant,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="connections",
+        Aidant, blank=True, null=True,
+        on_delete=models.CASCADE, related_name="connections"
     )
     complete = models.BooleanField(default=False)
     autorisation = models.ForeignKey(
-        Autorisation,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="connections",
+        Autorisation, blank=True, null=True,
+        on_delete=models.CASCADE, related_name="connections"
     )
 
     objects = ConnectionQuerySet.as_manager()

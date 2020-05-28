@@ -98,7 +98,9 @@ def statistiques(request):
     autorisation_use = Journal.stats_objects.not_staff().filter(
         action="use_autorisation"
     )
-    autorisation_use_recent = autorisation_use.filter(creation_date__gte=last_30_days)
+    autorisation_use_recent = autorisation_use.filter(
+        creation_date__gte=last_30_days
+    )
 
     # # Autorisation results
     autorisation_use_count = autorisation_use.count()
