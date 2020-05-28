@@ -11,7 +11,7 @@ from freezegun import freeze_time
 from pytz import timezone
 
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.models import Connection, Journal, Mandat, Usager
+from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.views import new_mandat
 
@@ -74,7 +74,7 @@ class ConfinementNewMandatRecapTests(TestCase):
         self.test_usager = UsagerFactory(
             given_name="Fabrice", birthplace="95277", sub="test_sub",
         )
-        self.mandat_builder = Connection.objects.create(
+        self.autorisation_builder = Connection.objects.create(
             demarches=["papiers", "logement"],
             duree_keyword="EUS_03_20",
             mandat_is_remote=True,
@@ -117,7 +117,7 @@ class ConfinementNewMandatRecapTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
 
-        session["connection"] = self.mandat_builder.id
+        session["connection"] = self.autorisation_builder.id
         session.save()
 
         response = self.client.post(
@@ -127,11 +127,11 @@ class ConfinementNewMandatRecapTests(TestCase):
 
         self.assertRedirects(response, "/creation_mandat/succes/")
 
-    def test_confinement_entries_create_remote_mandat_and_journal_entries(self):
+    def test_confinement_entries_create_remote_autorisation_and_journal_entries(self):
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
 
-        session["connection"] = self.mandat_builder.id
+        session["connection"] = self.autorisation_builder.id
         session.save()
 
         self.client.post(
@@ -141,7 +141,7 @@ class ConfinementNewMandatRecapTests(TestCase):
 
         # test journal entries
         journal_entries = Journal.objects.filter(
-            Q(action="create_mandat") | Q(action="create_attestation")
+            Q(action="create_autorisation") | Q(action="create_attestation")
         )
 
         status_journal_entry = list(
@@ -149,20 +149,15 @@ class ConfinementNewMandatRecapTests(TestCase):
         )
         self.assertEqual(status_journal_entry.count(True), 3)
 
-        mandat_journal_entry = journal_entries.last()
-        self.assertEqual(mandat_journal_entry.duree, 3)
-        self.assertEqual(
-            mandat_journal_entry.additional_information,
-            "Mandat conclu à distance "
-            "pendant l'état d'urgence sanitaire (23 mars 2020)",
-        )
+        autorisation_journal_entry = journal_entries.last()
+        self.assertEqual(autorisation_journal_entry.duree, 3)
 
-        # test mandats
-        mandats = Mandat.objects.all()
-        status_mandats = list(mandats.values_list("is_remote_mandat", flat=True))
-        self.assertEqual(status_mandats.count(True), 2)
-        mandat_2 = Mandat.objects.last()
-        self.assertEqual(mandat_2.expiration_date, ETAT_URGENCE_2020_LAST_DAY)
+        # test autorisations
+        autorisations = Autorisation.objects.all()
+        status_autorisations = list(autorisations.values_list("is_remote", flat=True))
+        self.assertEqual(status_autorisations.count(True), 2)
+        autorisation_2 = Autorisation.objects.last()
+        self.assertEqual(autorisation_2.expiration_date, ETAT_URGENCE_2020_LAST_DAY)
 
 
 @tag("new_mandat")
@@ -182,7 +177,7 @@ class NewMandatRecapTests(TestCase):
         self.test_usager = UsagerFactory(
             given_name="Fabrice", birthplace="95277", sub=self.test_usager_sub,
         )
-        self.mandat_builder = Connection.objects.create(
+        self.autorisation_builder = Connection.objects.create(
             demarches=["papiers", "logement"],
             duree_keyword="LONG",
             usager=self.test_usager,
@@ -196,7 +191,7 @@ class NewMandatRecapTests(TestCase):
         self.client.force_login(self.aidant_thierry)
 
         session = self.client.session
-        session["connection"] = self.mandat_builder.id
+        session["connection"] = self.autorisation_builder.id
         session.save()
 
         response = self.client.get("/creation_mandat/recapitulatif/")
@@ -209,7 +204,7 @@ class NewMandatRecapTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
 
-        session["connection"] = self.mandat_builder.id
+        session["connection"] = self.autorisation_builder.id
         session.save()
 
         response = self.client.post(
@@ -222,16 +217,16 @@ class NewMandatRecapTests(TestCase):
         last_journal_entries = Journal.objects.all().order_by("-creation_date")
 
         self.assertEqual(last_journal_entries.count(), 4)
-        self.assertEqual(last_journal_entries[0].action, "create_mandat")
+        self.assertEqual(last_journal_entries[0].action, "create_autorisation")
         self.assertEqual(last_journal_entries[2].action, "create_attestation")
 
     def test_post_to_recap_without_usager_creates_error(self):
         self.client.force_login(self.aidant_thierry)
-        mandat_builder = Connection.objects.create(
+        autorisation_builder = Connection.objects.create(
             demarches=["papiers", "logement"], duree_keyword="SHORT"
         )
         session = self.client.session
-        session["connection"] = mandat_builder.id
+        session["connection"] = autorisation_builder.id
         session.save()
         response = self.client.post(
             "/creation_mandat/recapitulatif/",
@@ -240,99 +235,99 @@ class NewMandatRecapTests(TestCase):
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
-    def test_updating_mandat_for_same_aidant(self):
-        # first session : creating the mandat
+    def test_updating_autorisation_for_for_same_aidant(self):
+        # first session : creating the autorisation
         self.client.force_login(self.aidant_thierry)
-        mandat_builder_1 = Connection.objects.create(
+        autorisation_builder_1 = Connection.objects.create(
             usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
         )
         session = self.client.session
-        session["connection"] = mandat_builder_1.id
+        session["connection"] = autorisation_builder_1.id
         session.save()
-        # trigger the mandat creation/update
+        # trigger the autorisation creation/update
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
-        self.assertEqual(Mandat.objects.count(), 1)
+        self.assertEqual(Autorisation.objects.count(), 1)
         last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "create_mandat")
+        self.assertEqual(last_journal_entry.action, "create_autorisation")
 
-        # second session : updating the mandat
-        mandat_builder_2 = Connection.objects.create(
+        # second session : updating the autorisation
+        autorisation_builder_2 = Connection.objects.create(
             usager=self.test_usager, demarches=["papiers"], duree_keyword="LONG"
         )
 
         session = self.client.session
-        session["connection"] = mandat_builder_2.id
+        session["connection"] = autorisation_builder_2.id
         session.save()
-        # trigger the mandat creation/update
+        # trigger the autorisation creation/update
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "223456"},
         )
 
-        self.assertEqual(Mandat.objects.count(), 1)
-        updated_mandat = Mandat.objects.get(
+        self.assertEqual(Autorisation.objects.count(), 1)
+        updated_autorisation = Autorisation.objects.get(
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
         )
-        self.assertEqual(updated_mandat.duree_in_days, 365)
+        self.assertEqual(updated_autorisation.duree_in_days, 365)
         self.assertTrue(
-            updated_mandat.creation_date < updated_mandat.last_mandat_renewal_date
+            updated_autorisation.creation_date < updated_autorisation.last_renewal_date
         )
 
         last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "update_mandat")
+        self.assertEqual(last_journal_entry.action, "update_autorisation")
 
-    def test_not_updating_mandat_for_different_aidant(self):
-        # first session : creating the mandat
+    def test_not_updating_autorisation_for_different_aidant(self):
+        # first session : creating the autorisation
         self.client.force_login(self.aidant_thierry)
-        mandat_builder_1 = Connection.objects.create(
+        autorisation_builder_1 = Connection.objects.create(
             usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
         )
         session = self.client.session
-        session["connection"] = mandat_builder_1.id
+        session["connection"] = autorisation_builder_1.id
         session.save()
-        # trigger the mandat creation/update
+        # trigger the autorisation creation/update
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         self.client.logout()
 
-        # second session : Create same mandat with other aidant
+        # second session : Create same autorisation with other aidant
         self.client.force_login(self.aidant_monique)
-        mandat_builder_2 = Connection.objects.create(
+        autorisation_builder_2 = Connection.objects.create(
             demarches=["papiers"], duree_keyword="LONG", usager=self.test_usager
         )
         session = self.client.session
-        session["connection"] = mandat_builder_2.id
+        session["connection"] = autorisation_builder_2.id
         session.save()
 
-        # trigger the mandat creation/update
+        # trigger the autorisation creation/update
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "323456"},
         )
 
-        self.assertEqual(Mandat.objects.count(), 2)
-        first_mandat = Mandat.objects.get(
+        self.assertEqual(Autorisation.objects.count(), 2)
+        first_autorisation = Autorisation.objects.get(
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
         )
-        self.assertEqual(first_mandat.duree_in_days, 1)
+        self.assertEqual(first_autorisation.duree_in_days, 1)
 
-        second_mandat = Mandat.objects.get(
+        second_autorisation = Autorisation.objects.get(
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_monique
         )
-        self.assertEqual(second_mandat.duree_in_days, 365)
+        self.assertEqual(second_autorisation.duree_in_days, 365)
 
         last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "create_mandat")
+        self.assertEqual(last_journal_entry.action, "create_autorisation")
 
 
 @tag("new_mandat")
-class GenerateMandatPrint(TestCase):
+class GenerateAttestationTests(TestCase):
     def setUp(self):
         self.aidant_thierry = AidantFactory()
         self.client = Client()
@@ -342,7 +337,7 @@ class GenerateMandatPrint(TestCase):
             family_name="MERCIER",
             sub="46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
         )
-        self.mandat_form = MandatForm(
+        self.autorisation_form = MandatForm(
             data={"demarche": ["papiers", "logement"], "duree": "short"}
         )
 
@@ -364,7 +359,7 @@ class GenerateMandatPrint(TestCase):
         found = resolve("/creation_mandat/visualisation/final/")
         self.assertEqual(found.func, new_mandat.attestation_final)
 
-    def test_mandat_qrcode_url_triggers_the_correct_view(self):
+    def test_autorisation_qrcode_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/qrcode/")
         self.assertEqual(found.func, new_mandat.attestation_qrcode)
 

@@ -38,8 +38,8 @@ def usager_details(request, usager_id):
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("dashboard")
 
-    active_mandats = aidant.get_active_mandats_for_usager(usager_id)
-    expired_mandats = aidant.get_expired_mandats_for_usager(usager_id)
+    active_autorisations = aidant.get_active_autorisations_for_usager(usager_id)
+    expired_autorisations = aidant.get_expired_autorisations_for_usager(usager_id)
 
     return render(
         request,
@@ -47,8 +47,8 @@ def usager_details(request, usager_id):
         {
             "aidant": aidant,
             "usager": usager,
-            "active_mandats": active_mandats,
-            "expired_mandats": expired_mandats,
+            "active_mandats": active_autorisations,
+            "expired_mandats": expired_autorisations,
             "messages": messages,
         },
     )
@@ -64,23 +64,23 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("dashboard")
 
-    mandat = usager.get_mandat(mandat_id)
-    if not mandat:
+    autorisation = usager.get_autorisation(mandat_id)
+    if not autorisation:
         django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
         return redirect("dashboard")
 
     if request.method == "POST":
 
-        if mandat.is_expired:
+        if autorisation.is_expired:
             django_messages.error(request, "Le mandat est déjà expiré")
             return redirect("dashboard")
 
         form = request.POST
         if form:
-            mandat.expiration_date = timezone.now()
-            mandat.save(update_fields=["expiration_date"])
+            autorisation.expiration_date = timezone.now()
+            autorisation.save(update_fields=["expiration_date"])
 
-            Journal.objects.mandat_cancel(mandat)
+            Journal.objects.autorisation_cancel(autorisation)
 
             django_messages.success(request, "Le mandat a été révoqué avec succès !")
             return redirect("usager_details", usager_id=usager.id)
@@ -92,7 +92,7 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
                 {
                     "aidant": aidant,
                     "usager": usager,
-                    "mandat": mandat,
+                    "mandat": autorisation,
                     "error": "Erreur lors de l'annulation du mandat.",
                 },
             )
@@ -100,5 +100,5 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
     return render(
         request,
         "aidants_connect_web/usagers_mandats_cancel_confirm.html",
-        {"aidant": aidant, "usager": usager, "mandat": mandat},
+        {"aidant": aidant, "usager": usager, "mandat": autorisation},
     )

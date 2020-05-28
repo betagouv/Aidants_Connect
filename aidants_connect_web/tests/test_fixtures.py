@@ -1,9 +1,9 @@
 from django.test import tag, TestCase
-from aidants_connect_web.models import Aidant, Usager, Mandat
+from aidants_connect_web.models import Aidant, Autorisation, Usager
 
 
 @tag("fixtures")
-class FixturesTest(TestCase):
+class FixturesTests(TestCase):
     fixtures = [
         "aidants_connect_web/fixtures/admin.json",
         "aidants_connect_web/fixtures/usager_mandat.json",
@@ -12,4 +12,4 @@ class FixturesTest(TestCase):
     def test_fixtures_loads_successfully(self):
         self.assertEqual(Aidant.objects.count(), 1)
         self.assertEqual(Usager.objects.count(), 1)
-        self.assertEqual(Mandat.objects.count(), 2)
+        self.assertEqual(Autorisation.objects.count(), 2)
