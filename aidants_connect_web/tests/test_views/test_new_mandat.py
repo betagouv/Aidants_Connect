@@ -142,7 +142,6 @@ class ConfinementNewMandatRecapTests(TestCase):
         # test journal entries
         journal_entries = Journal.objects.filter(
             Q(action="create_autorisation") | Q(action="create_attestation")
->>>>>>> Rename `mandat_print` to `attestation`
         )
 
         status_journal_entry = list(
