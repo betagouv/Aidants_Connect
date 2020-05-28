@@ -153,8 +153,8 @@ class ConfinementNewMandatRecapTests(TestCase):
         self.assertEqual(autorisation_journal_entry.duree, 3)
         self.assertEqual(
             autorisation_journal_entry.additional_information,
-            "Mandat conclu à distance "
-            "pendant l'état d'urgence sanitaire (23 mars 2020)",
+            "Mandat conclu à distance pendant l'état d'urgence sanitaire "
+            "(23 mars 2020)",
         )
 
         # test autorisations

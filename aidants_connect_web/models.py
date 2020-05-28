@@ -407,7 +407,6 @@ class JournalManager(models.Manager):
             duree=autorisation.duree_in_days,
             access_token=autorisation.last_renewal_date,
             autorisation=autorisation.id,
-
             # COVID-19
             is_remote_mandat=autorisation.is_remote,
             additional_information=(
@@ -429,7 +428,6 @@ class JournalManager(models.Manager):
             duree=autorisation.duree_in_days,
             access_token=autorisation.last_renewal_date,
             autorisation=autorisation.id,
-
             # COVID-19
             is_remote_mandat=autorisation.is_remote,
             additional_information=(
