@@ -32,12 +32,12 @@ def generate_file_sha256_hash(filename):
         return file_readable_hash
 
 
-def validate_mandat_print_hash(mandat_print_string, mandat_print_hash):
-    mandat_print_string_with_salt = mandat_print_string + settings.MANDAT_PRINT_SALT
-    new_mandat_print_hash = generate_sha256_hash(
-        mandat_print_string_with_salt.encode("utf-8")
+def validate_attestation_hash(attestation_string, attestation_hash):
+    attestation_string_with_salt = attestation_string + settings.ATTESTATION_SALT
+    new_attestation_hash = generate_sha256_hash(
+        attestation_string_with_salt.encode("utf-8")
     )
-    return new_mandat_print_hash == mandat_print_hash
+    return new_attestation_hash == attestation_hash
 
 
 def generate_qrcode_png(string: str):

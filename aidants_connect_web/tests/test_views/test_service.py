@@ -140,7 +140,7 @@ class StatistiquesTests(TestCase):
         mandat_justice = MandatFactory()
 
         Journal.objects.create(
-            action="create_mandat_print",
+            action="create_attestation",
             initiator=mandat_justice.aidant.full_string_identifier,
             usager=mandat_justice.usager.full_string_identifier,
             demarche=mandat_justice.demarche,
@@ -182,11 +182,11 @@ class StatistiquesTests(TestCase):
             username="test@user.domain", organisation=staff_organisation
         )
 
-        # an aidant staff_organisation has a mandat_print
+        # an aidant staff_organisation has an attestation
         # with an usager also helped by another aidant
         mandat_justice_homer_beta = MandatFactory(aidant=aidant_staff_organisation)
         Journal.objects.create(
-            action="create_mandat_print",
+            action="create_attestation",
             initiator=aidant_staff_organisation.full_string_identifier,
             usager=mandat_justice.usager.full_string_identifier,
             demarche=mandat_justice.demarche,
@@ -208,7 +208,7 @@ class StatistiquesTests(TestCase):
             aidant=aidant_staff_organisation, usager=usager_laurent,
         )
         Journal.objects.create(
-            action="create_mandat_print",
+            action="create_attestation",
             initiator=aidant_staff_organisation.full_string_identifier,
             usager=usager_laurent.full_string_identifier,
             demarche=mandat_justice.demarche,
@@ -231,7 +231,7 @@ class StatistiquesTests(TestCase):
             creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
         )
         Journal.objects.create(
-            action="create_mandat_print",
+            action="create_attestation",
             initiator=mandat_justice.aidant.full_string_identifier,
             usager=usager_jacqueline.full_string_identifier,
             demarche=mandat_justice.demarche,

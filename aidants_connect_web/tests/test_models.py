@@ -24,9 +24,9 @@ from aidants_connect_web.tests.factories import (
 )
 from aidants_connect_web.utilities import (
     generate_file_sha256_hash,
-    validate_mandat_print_hash,
+    validate_attestation_hash,
 )
-from aidants_connect_web.views.new_mandat import generate_mandat_print_hash
+from aidants_connect_web.views.new_mandat import generate_attestation_hash
 
 
 @tag("models")
@@ -480,24 +480,24 @@ class JournalModelTest(TestCase):
         self.assertRaises(NotImplementedError, entry.delete)
         self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
-    def test_a_create_mandat_print_journal_entry_can_be_created(self):
+    def test_a_create_attestation_journal_entry_can_be_created(self):
         demarches = ["transports", "logement"]
         expiration_date = timezone.now() + timedelta(days=6)
-        entry = Journal.objects.mandat_print(
+        entry = Journal.objects.attestation(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarches=demarches,
             duree=6,
             access_token="fjfgjfdkldlzlsmqqxxcn",
-            mandat_print_hash=generate_mandat_print_hash(
+            attestation_hash=generate_attestation_hash(
                 self.aidant_thierry, self.usager_ned, demarches, expiration_date
             ),
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
-        self.assertEqual(entry.action, "create_mandat_print")
+        self.assertEqual(entry.action, "create_attestation")
 
-        mandat_print_string = ";".join(
+        attestation_string = ";".join(
             [
                 str(self.aidant_thierry.id),
                 date.today().isoformat(),
@@ -509,5 +509,5 @@ class JournalModelTest(TestCase):
             ]
         )
         self.assertTrue(
-            validate_mandat_print_hash(mandat_print_string, entry.mandat_print_hash)
+            validate_attestation_hash(attestation_string, entry.attestation_hash)
         )
