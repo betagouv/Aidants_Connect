@@ -24,9 +24,9 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-def generate_mandat_print_hash(aidant, usager, demarches, expiration_date):
+def generate_attestation_hash(aidant, usager, demarches, expiration_date):
     demarches.sort()
-    mandat_print_data = {
+    attestation_data = {
         "aidant_id": aidant.id,
         "creation_date": date.today().isoformat(),
         "demarches_list": ",".join(demarches),
@@ -35,12 +35,12 @@ def generate_mandat_print_hash(aidant, usager, demarches, expiration_date):
         "template_hash": generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH),
         "usager_sub": usager.sub,
     }
-    sorted_mandat_print_data = dict(sorted(mandat_print_data.items()))
-    mandat_print_string = ";".join(
-        str(x) for x in list(sorted_mandat_print_data.values())
+    sorted_attestation_data = dict(sorted(attestation_data.items()))
+    attestation_string = ";".join(
+        str(x) for x in list(sorted_attestation_data.values())
     )
-    mandat_print_string_with_salt = mandat_print_string + settings.MANDAT_PRINT_SALT
-    return generate_sha256_hash(mandat_print_string_with_salt.encode("utf-8"))
+    attestation_string_with_salt = attestation_string + settings.ATTESTATION_SALT
+    return generate_sha256_hash(attestation_string_with_salt.encode("utf-8"))
 
 
 @login_required
@@ -119,15 +119,15 @@ def new_mandat_recap(request):
             }
             mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
             try:
-                # Add a Journal 'create_mandat_print' action
+                # Add a Journal 'create_attestation' action
                 connection.demarches.sort()
-                Journal.objects.mandat_print(
+                Journal.objects.attestation(
                     aidant=aidant,
                     usager=usager,
                     demarches=connection.demarches,
                     duree=mandat_duree,
                     access_token=connection.access_token,
-                    mandat_print_hash=generate_mandat_print_hash(
+                    attestation_hash=generate_attestation_hash(
                         aidant, usager, connection.demarches, mandat_expiration_date
                     ),
                 )
@@ -190,7 +190,7 @@ def new_mandat_success(request):
 
 @login_required
 @activity_required
-def mandat_print_projet(request):
+def attestation_projet(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
@@ -202,7 +202,7 @@ def mandat_print_projet(request):
 
     return render(
         request,
-        "aidants_connect_web/mandat_print.html",
+        "aidants_connect_web/attestation.html",
         {
             "usager": usager,
             "aidant": aidant,
@@ -215,18 +215,19 @@ def mandat_print_projet(request):
 
 @login_required
 @activity_required
-def mandat_print_final(request):
+def attestation_final(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
     demarches = connection.demarches
+
     # Django magic :
     # https://docs.djangoproject.com/en/3.0/ref/models/instances/#django.db.models.Model.get_FOO_display
     duree = connection.get_duree_keyword_display()
 
     return render(
         request,
-        "aidants_connect_web/mandat_print.html",
+        "aidants_connect_web/attestation.html",
         {
             "usager": usager,
             "aidant": aidant,
@@ -240,15 +241,15 @@ def mandat_print_final(request):
 
 @login_required
 @activity_required
-def mandat_print_final_qrcode(request):
+def attestation_qrcode(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
 
-    journal_create_mandat_print = aidant.get_journal_create_mandat_print(
+    journal_create_attestation = aidant.get_journal_create_attestation(
         connection.access_token
     )
-    journal_create_mandat_print_qrcode_png = generate_qrcode_png(
-        journal_create_mandat_print.mandat_print_hash
+    journal_create_attestation_qrcode_png = generate_qrcode_png(
+        journal_create_attestation.attestation_hash
     )
 
-    return HttpResponse(journal_create_mandat_print_qrcode_png, "image/png")
+    return HttpResponse(journal_create_attestation_qrcode_png, "image/png")
