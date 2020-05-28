@@ -72,7 +72,7 @@ def statistiques(request):
     add_expiration_date_to_mandat = F("creation_date") + timedelta(days=1) * F("duree")
 
     mandats = (
-        Journal.stats_objects.filter(action="create_mandat_print")
+        Journal.stats_objects.filter(action="create_attestation")
         .not_staff()
         .annotate(
             expiration_date=ExpressionWrapper(
