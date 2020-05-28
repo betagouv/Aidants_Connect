@@ -34,74 +34,74 @@ class Aidant(AbstractUser):
 
     def get_usagers(self):
         """
-        :return: a queryset of usagers who have a mandat (both active & expired)
-        with the aidant's organisation.
+        :return: a queryset of usagers who have at least one autorisation
+        (active or expired) with the aidant's organisation.
         """
         return Usager.objects.visible_by(self).distinct()
 
     def get_usager(self, usager_id):
         """
         :return: an usager or `None` if the aidant isn't allowed
-        by a mandat to access this usager.
+        by an autorisation to access this usager.
         """
         try:
             return self.get_usagers().get(pk=usager_id)
         except Usager.DoesNotExist:
             return None
 
-    def get_usagers_with_active_mandat(self):
+    def get_usagers_with_active_autorisation(self):
         """
-        :return: a queryset of usagers who have an active mandat
+        :return: a queryset of usagers who have an active autorisation
         with the aidant's organisation.
         """
         return self.get_usagers().active()
 
-    def get_mandats(self):
+    def get_autorisations(self):
         """
-        :return: a queryset of mandats visible by this aidant.
+        :return: a queryset of autorisations visible by this aidant.
         """
-        return Mandat.objects.visible_by(self).distinct()
+        return Autorisation.objects.visible_by(self).distinct()
 
-    def get_mandat(self, mandat_id):
+    def get_autorisation(self, autorisation_id):
         """
-        :return: a mandat or `None` if this mandat is not
+        :return: an autorisation or `None` if this autorisation is not
         visible by this aidant.
         """
         try:
-            return self.get_mandats().get(pk=mandat_id)
-        except Mandat.DoesNotExist:
+            return self.get_autorisations().get(pk=autorisation_id)
+        except Autorisation.DoesNotExist:
             return None
 
-    def get_mandats_for_usager(self, usager):
+    def get_autorisations_for_usager(self, usager):
         """
         :param usager:
-        :return: a queryset of the specified usager's mandats.
+        :return: a queryset of the specified usager's autorisations.
         """
-        return self.get_mandats().for_usager(usager)
+        return self.get_autorisations().for_usager(usager)
 
-    def get_active_mandats_for_usager(self, usager):
+    def get_active_autorisations_for_usager(self, usager):
         """
         :param usager:
-        :return: a queryset of the specified usager's active mandats
+        :return: a queryset of the specified usager's active autorisations
         that are visible by this aidant.
         """
-        return self.get_mandats_for_usager(usager).active()
+        return self.get_autorisations_for_usager(usager).active()
 
-    def get_expired_mandats_for_usager(self, usager):
+    def get_expired_autorisations_for_usager(self, usager):
         """
         :param usager:
-        :return: a queryset of the specified usager's expired mandats
+        :return: a queryset of the specified usager's expired autorisations
         that are visible by this aidant.
         """
-        return self.get_mandats_for_usager(usager).expired()
+        return self.get_autorisations_for_usager(usager).expired()
 
     def get_active_demarches_for_usager(self, usager):
         """
         :param usager:
-        :return: a list of demarches the usager has active mandats for
+        :return: a list of demarches the usager has active autorisations for
         in this aidant's organisation.
         """
-        return self.get_active_mandats_for_usager(usager).values_list(
+        return self.get_active_autorisations_for_usager(usager).values_list(
             "demarche", flat=True
         )
 
@@ -132,16 +132,21 @@ class Aidant(AbstractUser):
 
 
 class UsagerQuerySet(models.QuerySet):
+
     def active(self):
-        return self.filter(mandats__expiration_date__gt=timezone.now()).distinct()
+        return self.filter(
+            autorisations__expiration_date__gt=timezone.now()
+        ).distinct()
 
     def visible_by(self, aidant):
         """
         :param aidant:
         :return: a new QuerySet instance only filtering in the usagers who have
-        a mandat with this aidant's organisation.
+        an autorisation with this aidant's organisation.
         """
-        return self.filter(mandats__aidant__organisation=aidant.organisation).distinct()
+        return self.filter(
+            autorisations__aidant__organisation=aidant.organisation
+        ).distinct()
 
 
 class Usager(models.Model):
@@ -183,10 +188,10 @@ class Usager(models.Model):
     def get_full_name(self):
         return str(self)
 
-    def get_mandat(self, mandat_id):
+    def get_autorisation(self, autorisation_id):
         try:
-            return self.mandats.get(pk=mandat_id)
-        except Mandat.DoesNotExist:
+            return self.autorisations.get(pk=autorisation_id)
+        except Autorisation.DoesNotExist:
             return None
 
     def normalize_birthplace(self):
@@ -201,7 +206,7 @@ class Usager(models.Model):
         return self.birthplace
 
 
-class MandatQuerySet(models.QuerySet):
+class AutorisationQuerySet(models.QuerySet):
     def active(self):
         return self.exclude(expiration_date__lt=timezone.now())
 
@@ -218,32 +223,38 @@ class MandatQuerySet(models.QuerySet):
         return self.filter(aidant__organisation=aidant.organisation)
 
 
-class Mandat(models.Model):
-    # Mandat information
+class Autorisation(models.Model):
+
+    # Autorisation information
     aidant = models.ForeignKey(
-        Aidant, on_delete=models.CASCADE, default=0, related_name="mandats"
+        Aidant, on_delete=models.CASCADE, default=0, related_name="autorisations"
     )
     usager = models.ForeignKey(
-        Usager, on_delete=models.CASCADE, default=0, related_name="mandats"
+        Usager, on_delete=models.CASCADE, default=0, related_name="autorisations"
     )
     demarche = models.CharField(blank=False, max_length=100)
-    # Mandat expiration date management
+
+    # Autorisation expiration date management
     creation_date = models.DateTimeField(default=timezone.now)
     expiration_date = models.DateTimeField(default=timezone.now)
-    last_mandat_renewal_date = models.DateTimeField(default=timezone.now)
+    last_renewal_date = models.DateTimeField(default=timezone.now)
+
     # Journal entry creation information
-    last_mandat_renewal_token = models.TextField(
+    last_renewal_token = models.TextField(
         blank=False, default="No token provided"
     )
-    is_remote_mandat = models.BooleanField(default=False)
+    is_remote = models.BooleanField(default=False)
 
-    objects = MandatQuerySet.as_manager()
+    objects = AutorisationQuerySet.as_manager()
 
     class Meta:
         unique_together = ["aidant", "demarche", "usager"]
 
     def __str__(self):
-        return f"Mandat #{self.id} : {self.usager} <-> {self.aidant} ({self.demarche})"
+        return (
+            f"Autorisation #{self.id} : "
+            f"{self.usager} <-> {self.aidant} ({self.demarche})"
+        )
 
     @property
     def is_expired(self):
@@ -251,7 +262,7 @@ class Mandat(models.Model):
 
     @property
     def duree_in_days(self):
-        duree_for_computer = self.expiration_date - self.last_mandat_renewal_date
+        duree_for_computer = self.expiration_date - self.last_renewal_date
         # we add one day so that duration is human friendly
         # i.e. for a human, there is one day between now and tomorrow at the same time,
         # and 0 for a computer
@@ -268,7 +279,7 @@ def default_connection_expiration_date():
     return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
 
 
-class MandatDureeKeywords(models.TextChoices):
+class AutorisationDureeKeywords(models.TextChoices):
     SHORT = (
         "SHORT",
         "pour une durée de 1 jour",
@@ -292,22 +303,25 @@ class Connection(models.Model):
     )
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
     duree_keyword = models.CharField(
-        max_length=16, choices=MandatDureeKeywords.choices, null=True
+        max_length=16, choices=AutorisationDureeKeywords.choices, null=True
     )
     usager = models.ForeignKey(
-        Usager, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
+        Usager, blank=True, null=True,
+        on_delete=models.CASCADE, related_name="connections"
     )  # FS
     expires_on = models.DateTimeField(default=default_connection_expiration_date)  # FS
-    access_token = models.TextField(default="No token Provided")  # FS
+    access_token = models.TextField(default="No token provided")  # FS
 
     code = models.TextField()
     demarche = models.TextField(default="No demarche provided")
     aidant = models.ForeignKey(
-        Aidant, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
+        Aidant, blank=True, null=True,
+        on_delete=models.CASCADE, related_name="connections"
     )
     complete = models.BooleanField(default=False)
-    mandat = models.ForeignKey(
-        Mandat, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
+    autorisation = models.ForeignKey(
+        Autorisation, blank=True, null=True,
+        on_delete=models.CASCADE, related_name="connections"
     )
 
     objects = ConnectionQuerySet.as_manager()
@@ -376,18 +390,18 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def mandat_creation(self, mandat: Mandat):
-        aidant = mandat.aidant
-        usager = mandat.usager
+    def autorisation_creation(self, autorisation: Autorisation):
+        aidant = autorisation.aidant
+        usager = autorisation.usager
 
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             usager=usager.full_string_identifier,
-            action="create_mandat",
-            demarche=mandat.demarche,
-            duree=mandat.duree_in_days,
-            access_token=mandat.last_mandat_renewal_date,
-            mandat=mandat.id,
+            action="create_autorisation",
+            demarche=autorisation.demarche,
+            duree=autorisation.duree_in_days,
+            access_token=autorisation.last_renewal_date,
+            autorisation=autorisation.id,
             # COVID-19
             is_remote_mandat=True,
             additional_information="Mandat conclu à distance "
@@ -396,18 +410,18 @@ class JournalManager(models.Manager):
 
         return journal_entry
 
-    def mandat_update(self, mandat: Mandat):
-        aidant = mandat.aidant
-        usager = mandat.usager
+    def autorisation_update(self, autorisation: Autorisation):
+        aidant = autorisation.aidant
+        usager = autorisation.usager
 
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             usager=usager.full_string_identifier,
-            action="update_mandat",
-            demarche=mandat.demarche,
-            duree=mandat.duree_in_days,
-            access_token=mandat.last_mandat_renewal_date,
-            mandat=mandat.id,
+            action="update_autorisation",
+            demarche=autorisation.demarche,
+            duree=autorisation.duree_in_days,
+            access_token=autorisation.last_renewal_date,
+            autorisation=autorisation.id,
             # COVID-19
             is_remote_mandat=True,
             additional_information="Mandat conclu à distance "
@@ -416,33 +430,33 @@ class JournalManager(models.Manager):
 
         return journal_entry
 
-    def mandat_use(
+    def autorisation_use(
         self,
         aidant: Aidant,
         usager: Usager,
         demarche: str,
         access_token: str,
-        mandat: Mandat,
+        autorisation: Autorisation,
     ):
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             usager=usager.full_string_identifier,
-            action="use_mandat",
+            action="use_autorisation",
             demarche=demarche,
             access_token=access_token,
-            mandat=mandat.id,
+            autorisation=autorisation.id,
         )
         return journal_entry
 
-    def mandat_cancel(self, mandat: Mandat):
+    def autorisation_cancel(self, autorisation: Autorisation):
         journal_entry = self.create(
-            initiator=mandat.aidant.full_string_identifier,
-            usager=mandat.usager.full_string_identifier,
-            action="cancel_mandat",
-            demarche=mandat.demarche,
-            duree=mandat.duree_in_days,
-            access_token=mandat.last_mandat_renewal_date,
-            mandat=mandat.id,
+            initiator=autorisation.aidant.full_string_identifier,
+            usager=autorisation.usager.full_string_identifier,
+            action="cancel_autorisation",
+            demarche=autorisation.demarche,
+            duree=autorisation.duree_in_days,
+            access_token=autorisation.last_renewal_date,
+            autorisation=autorisation.id,
         )
         return journal_entry
 
@@ -459,10 +473,10 @@ class Journal(models.Model):
         ("franceconnect_usager", "FranceConnexion d'un usager"),
         ("update_email_usager", "L'email de l'usager a été modifié"),
         ("create_attestation", "Création d'une attestation"),
-        ("create_mandat", "Création d'un mandat"),
-        ("use_mandat", "Utilisation d'un mandat"),
-        ("update_mandat", "Renouvellement d'un mandat"),
-        ("cancel_mandat", "Révocation d'un mandat"),
+        ("create_autorisation", "Création d'une autorisation"),
+        ("use_autorisation", "Utilisation d'une autorisation"),
+        ("update_autorisation", "Renouvellement d'une autorisation"),
+        ("cancel_autorisation", "Révocation d'une autorisation"),
     )
     # mandatory
     action = models.CharField(max_length=30, choices=ACTIONS, blank=False)
@@ -474,7 +488,7 @@ class Journal(models.Model):
     usager = models.TextField(blank=True, null=True)
     duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
-    mandat = models.IntegerField(blank=True, null=True)
+    autorisation = models.IntegerField(blank=True, null=True)
     attestation_hash = models.CharField(max_length=100, blank=True, null=True)
     additional_information = models.TextField(blank=True, null=True)
     is_remote_mandat = models.BooleanField(default=False)

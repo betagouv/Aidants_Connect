@@ -13,7 +13,7 @@ from aidants_connect_web.tests.factories import AidantFactory, OrganisationFacto
 
 
 @tag("forms")
-class AidantCreationFormTest(TestCase):
+class AidantCreationFormTests(TestCase):
     def setUp(self):
         self.data = {
             "first_name": "Heliette",
@@ -102,9 +102,9 @@ class AidantCreationFormTest(TestCase):
         self.assertFalse(form.is_valid())
 
 
-class AidantChangeFormTest(TestCase):
+class AidantChangeFormTests(TestCase):
     def setUp(self):
-        self.organisation_nîmes = OrganisationFactory(
+        self.organisation_nantes = OrganisationFactory(
             name="Association Aide au Numérique"
         )
         self.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
@@ -116,7 +116,7 @@ class AidantChangeFormTest(TestCase):
             username="hello@domain.user",
             password="flkqgnfdùqlgnqùflkgnùqflkngw",
             profession="Mediateur",
-            organisation=self.organisation_nîmes,
+            organisation=self.organisation_nantes,
         )
         self.aidant2 = AidantFactory(
             first_name="Armand",
@@ -203,7 +203,7 @@ class AidantChangeFormTest(TestCase):
         self.assertEqual(form.errors["email"], ["This email is already taken"])
 
 
-class MandatFormTest(TestCase):
+class MandatFormTests(TestCase):
     def test_form_renders_item_text_input(self):
         form = MandatForm()
         self.assertIn("argent", form.as_p())
@@ -237,7 +237,7 @@ class MandatFormTest(TestCase):
         )
 
 
-class RecapMandatFormTest(TestCase):
+class RecapMandatFormTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant_thierry = AidantFactory()

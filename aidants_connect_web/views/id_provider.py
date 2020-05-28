@@ -24,9 +24,9 @@ import jwt
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import (
+    Autorisation,
     Connection,
     Journal,
-    Mandat,
     Usager,
 )
 
@@ -117,7 +117,7 @@ def authorize(request):
             "aidants_connect_web/id_provider/authorize.html",
             {
                 "connection_id": connection.id,
-                "usagers": aidant.get_usagers_with_active_mandat(),
+                "usagers": aidant.get_usagers_with_active_autorisation(),
                 "aidant": aidant,
             },
         )
@@ -141,9 +141,9 @@ def authorize(request):
 
         aidant = request.user
         chosen_usager = Usager.objects.get(pk=parameters["chosen_usager"])
-        if chosen_usager not in aidant.get_usagers_with_active_mandat():
+        if chosen_usager not in aidant.get_usagers_with_active_autorisation():
             log.info(
-                "This usager does not have a valid mandat "
+                "This usager does not have a valid autorisation "
                 "with the aidant's organisation"
             )
             log.info(aidant.id)
@@ -171,10 +171,10 @@ def fi_select_demarche(request):
         try:
             connection = Connection.objects.get(pk=parameters["connection_id"])
             if connection.is_expired:
-                log.info("connection has expired at select_demarche")
+                log.info("Connection has expired at select_demarche")
                 return render(request, "408.html", status=408)
         except ObjectDoesNotExist:
-            log.info("No connection corresponds to the connection_id:")
+            log.info("No connection matches the connection_id:")
             log.info(parameters["connection_id"])
             logout(request)
             return HttpResponseForbidden()
@@ -216,20 +216,20 @@ def fi_select_demarche(request):
             return HttpResponseForbidden()
 
         try:
-            chosen_mandat = Mandat.objects.get(
+            chosen_autorisation = Autorisation.objects.get(
                 usager=connection.usager,
                 aidant__organisation=request.user.organisation,
                 demarche=parameters["chosen_demarche"],
                 expiration_date__gt=timezone.now(),
             )
-        except Mandat.DoesNotExist:
-            log.info("The mandat asked does not exist")
+        except Autorisation.DoesNotExist:
+            log.info("The autorisation asked does not exist")
             return HttpResponseForbidden()
 
         code = token_urlsafe(64)
         connection.code = make_password(code, settings.FC_AS_FI_HASH_SALT)
         connection.demarche = parameters["chosen_demarche"]
-        connection.mandat = chosen_mandat
+        connection.autorisation = chosen_autorisation
         connection.complete = True
         connection.aidant = request.user
         connection.save()
@@ -345,12 +345,12 @@ def user_info(request):
     usager["birthcountry"] = str(birthcountry)
     usager["birthdate"] = str(birthdate)
 
-    Journal.objects.mandat_use(
+    Journal.objects.autorisation_use(
         aidant=connection.aidant,
         usager=connection.usager,
         demarche=connection.demarche,
         access_token=connection.access_token,
-        mandat=connection.mandat,
+        autorisation=connection.autorisation,
     )
 
     return JsonResponse(usager, safe=False)
