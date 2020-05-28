@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from aidants_connect_web.forms import OTPForm
-from aidants_connect_web.models import Organisation, Aidant, Usager, Journal
+from aidants_connect_web.models import Aidant, Journal, Organisation, Usager
 
 
 logging.basicConfig(level=logging.INFO)
@@ -67,8 +67,8 @@ def statistiques(request):
     ).count()
     aidants_count = Aidant.objects.exclude(is_staff=True).count()
 
-    # Mandats
-    # # Mandats prep
+    # mandats
+    # # mandats prep
     add_expiration_date_to_mandat = F("creation_date") + timedelta(days=1) * F("duree")
 
     mandats = (
@@ -82,9 +82,10 @@ def statistiques(request):
     )
     mandats_active = mandats.filter(expiration_date__gte=timezone.now())
 
-    # # Mandat results
-    mandats_count = mandats.count()
-    mandats_active_count = mandats_active.count()
+    # # autorisation results
+    autorisations_count = mandats.count()
+    autorisations_active_count = mandats_active.count()
+
     usagers_with_mandat_count = Usager.objects.filter(
         pk__in=get_usager_ids(mandats)
     ).count()
@@ -94,13 +95,17 @@ def statistiques(request):
 
     # Autorisations
     # # Autorisation prep
-    autorisation_use = Journal.stats_objects.filter(action="use_mandat").not_staff()
-    autorisation_use_recent = autorisation_use.filter(creation_date__gte=last_30_days)
+    autorisation_use = Journal.stats_objects.not_staff().filter(
+        action="use_autorisation"
+    )
+    autorisation_use_recent = autorisation_use.filter(
+        creation_date__gte=last_30_days
+    )
 
-    # # Authorisation results
-
+    # # Autorisation results
     autorisation_use_count = autorisation_use.count()
     autorisation_use_recent_count = autorisation_use_recent.count()
+
     usagers_helped_count = Usager.objects.filter(
         pk__in=get_usager_ids(autorisation_use)
     ).count()
@@ -118,19 +123,21 @@ def statistiques(request):
                 "value": autorisation_use.filter(demarche=demarche).count(),
             }
         )
+
     demarches_count.sort(key=lambda x: x["value"], reverse=True)
+
     return render(
         request,
         "public_website/statistiques.html",
         {
             "organisations_count": organisations_count,
             "aidants_count": aidants_count,
-            "mandats_count": mandats_count,
-            "mandats_active_count": mandats_active_count,
+            "mandats_count": autorisations_count,
+            "mandats_active_count": autorisations_active_count,
             "usagers_with_mandat_count": usagers_with_mandat_count,
             "usagers_with_mandat_active_count": usagers_with_mandat_active_count,
-            "authorisation_use_count": autorisation_use_count,
-            "authorisation_use_recent_count": autorisation_use_recent_count,
+            "autorisation_use_count": autorisation_use_count,
+            "autorisation_use_recent_count": autorisation_use_recent_count,
             "usagers_helped_count": usagers_helped_count,
             "usagers_helped_recent_count": usagers_helped_recent_count,
             "demarches_count": demarches_count,

@@ -11,7 +11,7 @@ from django.conf import settings
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
-from aidants_connect_web.models import Mandat, Connection, Journal
+from aidants_connect_web.models import Autorisation, Connection, Journal
 from aidants_connect_web.views.service import humanize_demarche_names
 from aidants_connect_web.utilities import (
     generate_file_sha256_hash,
@@ -136,16 +136,16 @@ def new_mandat_recap(request):
                     ),
                 )
 
-                # The loop below creates one Mandat object per Démarche in the form
+                # This loop creates one `autorisation` object per `démarche` in the form
                 for demarche in connection.demarches:
-                    Mandat.objects.update_or_create(
+                    Autorisation.objects.update_or_create(
                         aidant=aidant,
                         usager=usager,
                         demarche=demarche,
                         defaults={
                             "expiration_date": mandat_expiration_date,
-                            "last_mandat_renewal_date": timezone.now(),
-                            "last_mandat_renewal_token": connection.access_token,
+                            "last_renewal_date": timezone.now(),
+                            "last_renewal_token": connection.access_token,
                             "is_remote_mandat": connection.mandat_is_remote,
                         },
                     )

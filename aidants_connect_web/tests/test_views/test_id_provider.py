@@ -20,7 +20,7 @@ from aidants_connect_web.models import (
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    MandatFactory,
+    AutorisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import id_provider
@@ -35,21 +35,21 @@ class AuthorizeTests(TestCase):
             username="jacques@domain.user", email="jacques@domain.user"
         )
         self.usager = UsagerFactory(given_name="Joséphine", sub="123")
-        MandatFactory(
+        AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
-        MandatFactory(
+        AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="Famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
 
-        MandatFactory(
+        AutorisationFactory(
             aidant=self.aidant_jacques,
             usager=self.usager,
             demarche="Logement",
@@ -227,7 +227,7 @@ class AuthorizeTests(TestCase):
 
 
 @tag("id_provider")
-class FISelectDemarcheTest(TestCase):
+class FISelectDemarcheTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant_thierry = AidantFactory()
@@ -248,29 +248,29 @@ class FISelectDemarcheTest(TestCase):
             usager=self.usager,
             expires_on=date_further_away_minus_one_hour,
         )
-        mandat_creation_date = datetime(
+        autorisation_creation_date = datetime(
             2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
         )
-        self.mandat = MandatFactory(
+        self.autorisation = AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
-            expiration_date=mandat_creation_date + timedelta(days=6),
-            creation_date=mandat_creation_date,
+            expiration_date=autorisation_creation_date + timedelta(days=6),
+            creation_date=autorisation_creation_date,
         )
-        self.mandat_2 = MandatFactory(
+        self.autorisation_2 = AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="famille",
-            expiration_date=mandat_creation_date + timedelta(days=6),
-            creation_date=mandat_creation_date,
+            expiration_date=autorisation_creation_date + timedelta(days=6),
+            creation_date=autorisation_creation_date,
         )
-        self.mandat_3 = MandatFactory(
+        self.autorisation_3 = AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="logement",
-            expiration_date=mandat_creation_date + timedelta(days=3),
-            creation_date=mandat_creation_date,
+            expiration_date=autorisation_creation_date + timedelta(days=3),
+            creation_date=autorisation_creation_date,
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -290,17 +290,17 @@ class FISelectDemarcheTest(TestCase):
     date_close = datetime(2019, 1, 6, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_close)
-    def test_get_demarches_for_one_usager_and_two_mandats(self):
+    def test_get_demarches_for_one_usager_and_two_autorisations(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.get(
             "/select_demarche/", data={"connection_id": self.connection.id}
         )
         demarches = response.context["demarches"]
-        mandats = [demarche for demarche in demarches]
-        self.assertIn("famille", mandats)
-        self.assertIn("transports", mandats)
-        self.assertIn("logement", mandats)
-        self.assertEqual(len(mandats), 3)
+        autorisations = [demarche for demarche in demarches]
+        self.assertIn("famille", autorisations)
+        self.assertIn("transports", autorisations)
+        self.assertIn("logement", autorisations)
+        self.assertEqual(len(autorisations), 3)
 
     @freeze_time(date_close)
     def test_post_to_select_demarche_triggers_redirect(self):
@@ -323,17 +323,17 @@ class FISelectDemarcheTest(TestCase):
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date_further_away)
-    def test_expired_mandat_does_not_appear(self):
+    def test_expired_autorisation_does_not_appear(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.get(
             "/select_demarche/", data={"connection_id": self.connection.id}
         )
         demarches = response.context["demarches"]
-        mandats = [demarche for demarche in demarches]
-        self.assertIn("famille", mandats)
-        self.assertIn("transports", mandats)
-        self.assertNotIn("logement", mandats)
-        self.assertEqual(len(mandats), 2)
+        autorisations = [demarche for demarche in demarches]
+        self.assertIn("famille", autorisations)
+        self.assertIn("transports", autorisations)
+        self.assertNotIn("logement", autorisations)
+        self.assertEqual(len(autorisations), 2)
 
     @freeze_time(date_further_away)
     def test_post_to_select_demarche_with_expired_demarche_triggers_403(self):
@@ -492,7 +492,7 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
         self.aidant_thierry = AidantFactory()
-        self.mandat = MandatFactory(
+        self.autorisation = AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
             demarche="transports",
@@ -512,7 +512,7 @@ class UserInfoTests(TestCase):
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
             aidant=self.aidant_thierry,
-            mandat=self.mandat,
+            autorisation=self.autorisation,
         )
 
     def test_token_url_triggers_token_view(self):
@@ -546,7 +546,7 @@ class UserInfoTests(TestCase):
         self.assertEqual(content, FC_formatted_info)
 
     @freeze_time(date)
-    def test_mandat_use_triggers_journal_entry(self):
+    def test_autorisation_use_triggers_journal_entry(self):
 
         self.client.get(
             "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer {self.access_token}"}
@@ -555,7 +555,7 @@ class UserInfoTests(TestCase):
         journal_entries = Journal.objects.all()
 
         self.assertEqual(journal_entries.count(), 2)
-        self.assertEqual(journal_entries[1].action, "use_mandat")
+        self.assertEqual(journal_entries[1].action, "use_autorisation")
 
     date_expired = date + timedelta(seconds=settings.FC_CONNECTION_AGE + 1200)
 

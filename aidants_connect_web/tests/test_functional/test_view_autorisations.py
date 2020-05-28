@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    MandatFactory,
+    AutorisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
@@ -13,7 +13,7 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional")
-class ViewMandats(FunctionalTestCase):
+class ViewAutorisationsTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         cls.aidant = AidantFactory()
@@ -22,19 +22,19 @@ class ViewMandats(FunctionalTestCase):
 
         cls.usager = UsagerFactory(given_name="Joséphine")
         cls.usager2 = UsagerFactory(given_name="Corentin")
-        cls.mandat = MandatFactory(
+        cls.autorisation = AutorisationFactory(
             aidant=cls.aidant,
             usager=cls.usager,
             demarche=["social"],
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        cls.mandat2 = MandatFactory(
+        cls.autorisation2 = AutorisationFactory(
             aidant=cls.aidant,
             usager=cls.usager,
             demarche=["papiers"],
             expiration_date=timezone.now() + timedelta(days=1),
         )
-        cls.mandat3 = MandatFactory(
+        cls.autorisation3 = AutorisationFactory(
             aidant=cls.aidant,
             usager=cls.usager2,
             demarche=["famille"],
@@ -42,7 +42,7 @@ class ViewMandats(FunctionalTestCase):
         )
         super().setUpClass()
 
-    def test_grouped_mandats(self):
+    def test_grouped_autorisations(self):
         self.open_live_url("/dashboard/")
 
         # Login
@@ -51,7 +51,7 @@ class ViewMandats(FunctionalTestCase):
         # Dashboard
         self.selenium.find_element_by_id("view_mandats").click()
 
-        # Mandat List
+        # autorisation List
         self.assertEqual(
             len(
                 self.selenium.find_element_by_tag_name(

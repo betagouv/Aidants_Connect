@@ -4,7 +4,7 @@ from aidants_connect_web.utilities import generate_sha256_hash
 
 
 @tag("utilities")
-class UtilitiesTest(TestCase):
+class UtilitiesTests(TestCase):
     def test_generate_sha256_hash(self):
         hash_123 = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
         hash_123salt = (
