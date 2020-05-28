@@ -118,17 +118,17 @@ class Aidant(AbstractUser):
         except AttributeError:
             return None
 
-    def get_journal_create_mandat_print(self, access_token):
+    def get_journal_create_attestation(self, access_token):
         """
-        :return: the corresponding 'create_mandat_print' Journal entry initiated
+        :return: the corresponding 'create_attestation' Journal entry initiated
         by the aidant
         """
-        journal_create_mandat_print = Journal.objects.filter(
+        journal_create_attestation = Journal.objects.filter(
             initiator=self.full_string_identifier,
-            action="create_mandat_print",
+            action="create_attestation",
             access_token=access_token,
         ).last()
-        return journal_create_mandat_print
+        return journal_create_attestation
 
 
 class UsagerQuerySet(models.QuerySet):
@@ -352,23 +352,23 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def mandat_print(
+    def attestation(
         self,
         aidant: Aidant,
         usager: Usager,
         demarches: list,
         duree: int,
         access_token: str,
-        mandat_print_hash: str,
+        attestation_hash: str,
     ):
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
             usager=usager.full_string_identifier,
-            action="create_mandat_print",
+            action="create_attestation",
             demarche=",".join(demarches),
             duree=duree,
             access_token=access_token,
-            mandat_print_hash=mandat_print_hash,
+            attestation_hash=attestation_hash,
             # COVID-19
             is_remote_mandat=True,
             additional_information="Mandat conclu à distance "
@@ -458,7 +458,7 @@ class Journal(models.Model):
         ("activity_check_aidant", "Reprise de connexion d'un aidant"),
         ("franceconnect_usager", "FranceConnexion d'un usager"),
         ("update_email_usager", "L'email de l'usager a été modifié"),
-        ("create_mandat_print", "Création d'un mandat papier"),
+        ("create_attestation", "Création d'une attestation"),
         ("create_mandat", "Création d'un mandat"),
         ("use_mandat", "Utilisation d'un mandat"),
         ("update_mandat", "Renouvellement d'un mandat"),
@@ -475,7 +475,7 @@ class Journal(models.Model):
     duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
     mandat = models.IntegerField(blank=True, null=True)
-    mandat_print_hash = models.CharField(max_length=100, blank=True, null=True)
+    attestation_hash = models.CharField(max_length=100, blank=True, null=True)
     additional_information = models.TextField(blank=True, null=True)
     is_remote_mandat = models.BooleanField(default=False)
 
