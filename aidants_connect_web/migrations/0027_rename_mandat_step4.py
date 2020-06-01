@@ -7,13 +7,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aidants_connect_web', '0026_rename_mandat_step3'),
+        ("aidants_connect_web", "0026_rename_mandat_step3"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='connection',
-            name='autorisation',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='usagers', to='aidants_connect_web.Autorisation'),
+            model_name="connection",
+            name="autorisation",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="usagers",
+                to="aidants_connect_web.Autorisation",
+            ),
         ),
     ]
