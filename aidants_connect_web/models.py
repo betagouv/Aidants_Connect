@@ -203,6 +203,41 @@ class Usager(models.Model):
         return self.birthplace
 
 
+class AutorisationDureeKeywords(models.TextChoices):
+    SHORT = (
+        "SHORT",
+        "pour une durée de 1 jour",
+    )
+    LONG = (
+        "LONG",
+        "pour une durée de 1 an",
+    )
+    EUS_03_20 = (
+        "EUS_03_20",
+        "jusqu’à la fin de l’état d’urgence sanitaire ",
+    )
+
+
+def get_staff_organisation_name_id() -> int:
+    try:
+        return Organisation.objects.get(name=settings.STAFF_ORGANISATION_NAME).pk
+    except Organisation.DoesNotExist:
+        return 1
+
+
+class Mandat(models.Model):
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, default=get_staff_organisation_name_id,
+    )
+    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0,)
+    creation_date = models.DateTimeField(default=timezone.now)
+    expiration_date = models.DateTimeField(default=timezone.now)
+    duree_keyword = models.CharField(
+        max_length=16, choices=AutorisationDureeKeywords.choices, null=True
+    )
+    is_remote = models.BooleanField(default=False)
+
+
 class AutorisationQuerySet(models.QuerySet):
     def active(self):
         return self.exclude(expiration_date__lt=timezone.now())
@@ -227,9 +262,12 @@ class Autorisation(models.Model):
         Aidant, on_delete=models.CASCADE, default=0, related_name="autorisations"
     )
     usager = models.ForeignKey(
-        Usager, on_delete=models.CASCADE, default=0, related_name="autorisations"
+        Usager, on_delete=models.CASCADE, default=0, related_name="autorisations",
     )
     demarche = models.CharField(blank=False, max_length=100)
+    mandat = models.ForeignKey(
+        Mandat, on_delete=models.CASCADE, null=True, related_name="autorisations"
+    )
 
     # Autorisation expiration date management
     creation_date = models.DateTimeField(default=timezone.now)
@@ -272,21 +310,6 @@ class ConnectionQuerySet(models.QuerySet):
 def default_connection_expiration_date():
     now = timezone.now()
     return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
-
-
-class AutorisationDureeKeywords(models.TextChoices):
-    SHORT = (
-        "SHORT",
-        "pour une durée de 1 jour",
-    )
-    LONG = (
-        "LONG",
-        "pour une durée de 1 an",
-    )
-    EUS_03_20 = (
-        "EUS_03_20",
-        "jusqu’à la fin de l’état d’urgence sanitaire ",
-    )
 
 
 class Connection(models.Model):
