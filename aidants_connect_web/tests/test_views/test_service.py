@@ -96,8 +96,7 @@ class ActivityCheckPageTests(TestCase):
     def test_totp_page_with_resolvable_next_redirects(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
-            "/activity_check/?next=/creation_mandat/",
-            data={"otp_token": "123456"},
+            "/activity_check/?next=/creation_mandat/", data={"otp_token": "123456"},
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/creation_mandat/")
