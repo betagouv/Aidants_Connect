@@ -9,13 +9,13 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aidants_connect_web', '0023_rename_mandat_print'),
+        ("aidants_connect_web", "0023_rename_mandat_print"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='connection',
-            name='mandat',
+            model_name="connection",
+            name="mandat",
             field=models.IntegerField(blank=True, null=True),
         ),
     ]
