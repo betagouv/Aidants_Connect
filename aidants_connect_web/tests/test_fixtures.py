@@ -6,7 +6,7 @@ from aidants_connect_web.models import Aidant, Autorisation, Usager
 class FixturesTests(TestCase):
     fixtures = [
         "aidants_connect_web/fixtures/admin.json",
-        "aidants_connect_web/fixtures/usager_mandat.json",
+        "aidants_connect_web/fixtures/usager_autorisation.json",
     ]
 
     def test_fixtures_loads_successfully(self):
