@@ -294,6 +294,7 @@ class Connection(models.Model):
     duree_keyword = models.CharField(
         max_length=16, choices=MandatDureeKeywords.choices, null=True
     )
+    mandat_is_remote = models.BooleanField(default=False)
     usager = models.ForeignKey(
         Usager, on_delete=models.CASCADE, blank=True, null=True, related_name="usagers"
     )  # FS
