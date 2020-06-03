@@ -129,6 +129,7 @@ def new_mandat_recap(request):
                     usager=usager,
                     demarches=connection.demarches,
                     duree=mandat_duree,
+                    is_remote_mandat=connection.mandat_is_remote,
                     access_token=connection.access_token,
                     mandat_print_hash=generate_mandat_print_hash(
                         aidant, usager, connection.demarches, mandat_expiration_date

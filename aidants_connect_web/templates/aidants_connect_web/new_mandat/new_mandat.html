@@ -67,7 +67,10 @@
       </div>
       <div id="duree" class="tiles">
         <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
-        <div class="notification warning" role="alert">La signature du mandat se fait-elle à distance ? Si oui, cochez cette case&nbsp;&nbsp;<input type="checkbox" id="id_is_remote" name="is_remote" /></div>
+        <div class="notification warning" role="alert">
+          <span>La signature du mandat se fait-elle à distance ? Si oui, cochez cette case</span>
+          <span>{{ form.is_remote }}</span>
+        </div>
         <div id="duree_list" class="grid">
           {% for value, label in form.duree.field.choices %}
             <div id="{{ value }}" class="tile">

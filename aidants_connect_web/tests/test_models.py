@@ -488,6 +488,7 @@ class JournalModelTest(TestCase):
             usager=self.usager_ned,
             demarches=demarches,
             duree=6,
+            is_remote_mandat=False,
             access_token="fjfgjfdkldlzlsmqqxxcn",
             mandat_print_hash=generate_mandat_print_hash(
                 self.aidant_thierry, self.usager_ned, demarches, expiration_date

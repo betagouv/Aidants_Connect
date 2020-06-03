@@ -359,6 +359,7 @@ class JournalManager(models.Manager):
         usager: Usager,
         demarches: list,
         duree: int,
+        is_remote_mandat: bool,
         access_token: str,
         mandat_print_hash: str,
     ):
@@ -368,12 +369,9 @@ class JournalManager(models.Manager):
             action="create_mandat_print",
             demarche=",".join(demarches),
             duree=duree,
+            is_remote_mandat=is_remote_mandat,
             access_token=access_token,
             mandat_print_hash=mandat_print_hash,
-            # COVID-19
-            is_remote_mandat=True,
-            additional_information="Mandat conclu à distance "
-            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
         return journal_entry
 
@@ -387,14 +385,10 @@ class JournalManager(models.Manager):
             action="create_mandat",
             demarche=mandat.demarche,
             duree=mandat.duree_in_days,
+            is_remote_mandat=mandat.is_remote_mandat,
             access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
-            # COVID-19
-            is_remote_mandat=True,
-            additional_information="Mandat conclu à distance "
-            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
-
         return journal_entry
 
     def mandat_update(self, mandat: Mandat):
@@ -407,14 +401,10 @@ class JournalManager(models.Manager):
             action="update_mandat",
             demarche=mandat.demarche,
             duree=mandat.duree_in_days,
+            is_remote_mandat=mandat.is_remote_mandat,
             access_token=mandat.last_mandat_renewal_date,
             mandat=mandat.id,
-            # COVID-19
-            is_remote_mandat=True,
-            additional_information="Mandat conclu à distance "
-            "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )
-
         return journal_entry
 
     def mandat_use(
@@ -494,6 +484,12 @@ class Journal(models.Model):
         if self.id:
             raise NotImplementedError("Editing is not allowed on journal entries")
         else:
+            # COVID-19
+            if self.is_remote_mandat:
+                self.additional_information = (
+                    "Mandat conclu à distance pendant "
+                    "l'état d'urgence sanitaire (23 mars 2020)"
+                )
             super(Journal, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):

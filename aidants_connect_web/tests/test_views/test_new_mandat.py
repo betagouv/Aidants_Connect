@@ -43,6 +43,14 @@ class NewMandatTests(TestCase):
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
 
+    def test_badly_formatted_form_remote_triggers_original_template(self):
+        self.client.force_login(self.aidant_thierry)
+        data = {"demarche": ["papiers", "logement"], "duree": "LONG", "is_remote": True}
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/new_mandat/new_mandat.html"
+        )
+
     def test_well_formatted_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
@@ -69,19 +77,41 @@ class ConfinementNewMandatRecapTests(TestCase):
         self.mandat_builder = Connection.objects.create(
             demarches=["papiers", "logement"],
             duree_keyword="EUS_03_20",
+            mandat_is_remote=True,
             usager=self.test_usager,
         )
 
     def test_confinement_formatted_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
-        data = {"demarche": ["papiers", "logement"], "duree": "EUS_03_20"}
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(
+            "/creation_mandat/",
+            data={
+                "demarche": ["papiers", "logement"],
+                "duree": "EUS_03_20",
+                "is_remote": True,
+            },
+        )
         connection_id = Connection.objects.last().id
         self.assertEqual(self.client.session["connection"], connection_id)
         self.assertEqual(
             Connection.objects.get(id=connection_id).duree_keyword, "EUS_03_20"
         )
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+
+    def test_confinement_badly_formatted_form_remote_triggers_original_template(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/creation_mandat/",
+            data={
+                "demarche": ["papiers", "logement"],
+                "duree": "EUS_03_20",
+                "is_remote": False,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/new_mandat/new_mandat.html"
+        )
 
     def test_confinement_post_to_recap_with_correct_data_redirects_to_success(self):
         self.client.force_login(self.aidant_thierry)
@@ -121,6 +151,11 @@ class ConfinementNewMandatRecapTests(TestCase):
 
         mandat_journal_entry = journal_entries.last()
         self.assertEqual(mandat_journal_entry.duree, 3)
+        self.assertEqual(
+            mandat_journal_entry.additional_information,
+            "Mandat conclu à distance "
+            "pendant l'état d'urgence sanitaire (23 mars 2020)",
+        )
 
         # test mandats
         mandats = Mandat.objects.all()
@@ -205,7 +240,7 @@ class NewMandatRecapTests(TestCase):
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
-    def test_updating_mandat_for_for_same_aidant(self):
+    def test_updating_mandat_for_same_aidant(self):
         # first session : creating the mandat
         self.client.force_login(self.aidant_thierry)
         mandat_builder_1 = Connection.objects.create(
