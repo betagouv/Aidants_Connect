@@ -48,7 +48,18 @@
               <label class="label-demarche" for="button-{{ value }}">
                 <img src="{{ label.icon }}" alt="Icon {{ label.titre }}" />
                 <h3 class="brand">{{ label.titre }}</h3>
-                <p>{{ label.description }}</p>
+                <p>
+                  {{ label.description }}
+                  {% if label.service_exemples %}
+                    <br />
+                    <small title="exemples de services publics">
+                      <i>Exemples :</i>
+                      {% for service in label.service_exemples %}
+                        <span class="label label-small">{{ service }}</span>
+                      {% endfor %}
+                    </small>
+                  {% endif %}
+                </p>
               </label>
             </div>
           {% endfor %}
