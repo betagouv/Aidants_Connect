@@ -153,7 +153,6 @@ def new_mandat_recap(request):
                         demarche=demarche,
                         mandat=mandat,
                         expiration_date=mandat_expiration_date,
-                        last_renewal_date=timezone.now(),
                         last_renewal_token=connection.access_token,
                         is_remote=True,
                     )

@@ -205,7 +205,7 @@ class NewMandatRecapTests(TestCase):
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
-    def test_updating_autorisation_for_same_aidant(self):
+    def test_updating_autorisation_for_same_organisation(self):
         # first session : creating the autorisation
         self.client.force_login(self.aidant_thierry)
         mandat_builder_1 = Connection.objects.create(
@@ -246,9 +246,6 @@ class NewMandatRecapTests(TestCase):
         old_autorisation = last_usager_aidant_papiers_autorisations[1]
         self.assertTrue(old_autorisation.is_revoked)
         self.assertEqual(new_autorisation.duree_in_days, 365)
-        # self.assertTrue(
-        #     new_autorisation.creation_date < new_autorisation.last_renewal_date
-        # )
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "create_autorisation")

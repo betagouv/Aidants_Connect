@@ -53,7 +53,6 @@ class AutorisationFactory(factory.DjangoModelFactory):
     usager = factory.SubFactory(UsagerFactory)
     demarche = "justice"
     expiration_date = factory.LazyAttribute(lambda f: now() + timedelta(days=7))
-    last_renewal_date = factory.LazyAttribute(lambda f: now() - timedelta(days=1))
 
     class Meta:
         model = Autorisation
