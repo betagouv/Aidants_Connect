@@ -140,9 +140,11 @@ class MandatModelTests(TestCase):
             duree_keyword="SHORT",
             expiration_date=timezone.now() + timedelta(days=1),
         )
-        self.autorisation_1 = AutorisationFactory(
-            aidant=self.aidant_1, usager=self.usager_1, mandat=self.mandat_1
+
+        AutorisationFactory(
+            mandat=self.mandat_1, demarche="justice",
         )
+
         self.usager_2 = UsagerFactory()
         self.mandat_2 = Mandat.objects.create(
             organisation=self.organisation_1,
@@ -151,18 +153,11 @@ class MandatModelTests(TestCase):
             duree_keyword="SHORT",
             expiration_date=timezone.now() + timedelta(days=1),
         )
-
-        self.autorisation_2 = AutorisationFactory(
-            aidant=self.aidant_1,
-            usager=self.usager_1,
-            mandat=self.mandat_2,
-            demarche="argent",
+        AutorisationFactory(
+            mandat=self.mandat_2, demarche="argent",
         )
-        self.autorisation_3 = AutorisationFactory(
-            aidant=self.aidant_1,
-            usager=self.usager_1,
-            mandat=self.mandat_2,
-            demarche="transport",
+        AutorisationFactory(
+            mandat=self.mandat_2, demarche="transport",
         )
 
     def test_saving_and_retrieving_mandats(self):
@@ -184,19 +179,24 @@ class AutorisationModelTests(TestCase):
         cls.usager_homer = UsagerFactory(given_name="Homer")
         cls.usager_ned = UsagerFactory(family_name="Flanders")
 
-    def test_saving_and_retrieving_autorisation(self):
-        first_autorisation = AutorisationFactory(
-            aidant=self.aidant_marge,
-            usager=self.usager_homer,
-            demarche="Carte grise",
+        cls.mandat_marge_homer_6 = MandatFactory(
+            organisation=cls.aidant_marge.organisation,
+            usager=cls.usager_homer,
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        cls.mandat_patricia_ned_6 = MandatFactory(
+            organisation=cls.aidant_patricia.organisation,
+            usager=cls.usager_ned,
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
+    def test_saving_and_retrieving_autorisation(self):
+        first_autorisation = AutorisationFactory(
+            mandat=self.mandat_marge_homer_6, demarche="Carte grise",
+        )
+
         second_autorisation = AutorisationFactory(
-            aidant=self.aidant_patricia,
-            usager=self.usager_ned,
-            demarche="Revenus",
-            expiration_date=timezone.now() + timedelta(days=6),
+            mandat=self.mandat_patricia_ned_6, demarche="Revenus",
         )
 
         self.assertEqual(Autorisation.objects.count(), 2)
@@ -206,7 +206,7 @@ class AutorisationModelTests(TestCase):
         self.assertEqual(journal_entries[0].action, "create_autorisation")
         self.assertEqual(journal_entries[1].action, "create_autorisation")
 
-        self.assertEqual(first_autorisation.aidant.username, "Marge")
+        self.assertEqual(first_autorisation.organisation, self.organisation_1)
         self.assertEqual(first_autorisation.demarche, "Carte grise")
         self.assertEqual(second_autorisation.usager.family_name, "Flanders")
 
@@ -214,18 +214,18 @@ class AutorisationModelTests(TestCase):
 
     @freeze_time(fake_date)
     def test_autorisation_expiration_date_setting(self):
-        autorisation_1 = AutorisationFactory(
-            aidant=self.aidant_marge,
+        mandat = MandatFactory(
+            organisation=self.aidant_marge.organisation,
             usager=self.usager_homer,
-            demarche="Carte grise",
             expiration_date=timezone.now() + timedelta(days=3),
         )
+        autorisation = AutorisationFactory(mandat=mandat, demarche="Carte grise",)
         self.assertEqual(
-            autorisation_1.creation_date,
+            autorisation.creation_date,
             datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris")),
         )
         self.assertEqual(
-            autorisation_1.expiration_date,
+            autorisation.expiration_date,
             datetime(2019, 1, 17, tzinfo=pytz_timezone("Europe/Paris")),
         )
 
@@ -287,93 +287,63 @@ class AidantModelMethodsTests(TestCase):
         cls.usager_homer = UsagerFactory(given_name="Homer")
         cls.usager_ned = UsagerFactory(given_name="Ned")
         cls.usager_bart = UsagerFactory(given_name="Bart")
+
         cls.mandat_marge_homer_1 = MandatFactory(
             organisation=cls.aidant_marge.organisation,
             usager=cls.usager_homer,
             expiration_date=timezone.now() - timedelta(days=6),
         )
+        AutorisationFactory(
+            mandat=cls.mandat_marge_homer_1, demarche="Carte grise",
+        )
+
         cls.mandat_marge_homer_2 = MandatFactory(
             organisation=cls.aidant_marge.organisation,
             usager=cls.usager_homer,
             expiration_date=timezone.now() + timedelta(days=6),
         )
+        AutorisationFactory(
+            mandat=cls.mandat_marge_homer_2, demarche="Revenus",
+        )
+
         cls.mandat_marge_homer_3 = MandatFactory(
             organisation=cls.aidant_marge.organisation,
             usager=cls.usager_homer,
             expiration_date=timezone.now() + timedelta(days=365),
         )
+        AutorisationFactory(
+            mandat=cls.mandat_marge_homer_3, demarche="social",
+        )
+
         cls.mandat_marge_ned_1 = MandatFactory(
             organisation=cls.aidant_marge.organisation,
             usager=cls.usager_ned,
             expiration_date=timezone.now() - timedelta(days=6),
         )
+        AutorisationFactory(
+            mandat=cls.mandat_marge_ned_1, demarche="Logement",
+        )
+
         cls.mandat_marge_ned_2 = MandatFactory(
             organisation=cls.aidant_marge.organisation,
             usager=cls.usager_ned,
             expiration_date=timezone.now() + timedelta(days=6),
         )
         AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_homer,
-            demarche="Carte grise",
-            mandat=cls.mandat_marge_homer_1,
-            expiration_date=timezone.now() - timedelta(days=6),
+            mandat=cls.mandat_marge_ned_2, demarche="transports",
         )
         AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_homer,
-            demarche="Revenus",
-            mandat=cls.mandat_marge_homer_2,
-            expiration_date=timezone.now() + timedelta(days=6),
+            mandat=cls.mandat_marge_ned_2, demarche="famille",
         )
         AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_homer,
-            demarche="social",
-            mandat=cls.mandat_marge_homer_3,
-            expiration_date=timezone.now() + timedelta(days=365),
+            mandat=cls.mandat_marge_ned_2, demarche="social",
         )
         AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_ned,
-            demarche="Logement",
-            mandat=cls.mandat_marge_ned_1,
-            expiration_date=timezone.now() - timedelta(days=6),
+            mandat=cls.mandat_marge_ned_2, demarche="travail",
         )
         AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_ned,
-            demarche="transports",
-            mandat=cls.mandat_marge_ned_2,
-            expiration_date=timezone.now() + timedelta(days=6),
-        )
-        AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_ned,
-            demarche="famille",
-            mandat=cls.mandat_marge_ned_2,
-            expiration_date=timezone.now() + timedelta(days=6),
-        )
-        AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_ned,
-            demarche="social",
-            mandat=cls.mandat_marge_ned_2,
-            expiration_date=timezone.now() + timedelta(days=6),
-        )
-        AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_ned,
-            demarche="travail",
-            mandat=cls.mandat_marge_ned_2,
-            expiration_date=timezone.now() + timedelta(days=6),
-        )
-        AutorisationFactory(
-            aidant=cls.aidant_marge,
-            usager=cls.usager_ned,
             demarche="papiers",
             mandat=cls.mandat_marge_ned_2,
-            expiration_date=timezone.now() + timedelta(days=6),
             revocation_date=timezone.now(),
         )
 
@@ -506,11 +476,19 @@ class JournalModelTests(TestCase):
         )
         cls.usager_ned = UsagerFactory(given_name="Ned", family_name="Flanders")
 
-        cls.first_autorisation = AutorisationFactory(
-            aidant=cls.aidant_thierry,
+        cls.first_mandat = MandatFactory(
+            organisation=cls.aidant_thierry.organisation,
             usager=cls.usager_ned,
-            demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
+        )
+        cls.first_autorisation = AutorisationFactory(
+            mandat=cls.first_mandat, demarche="Revenus",
+        )
+
+        cls.mandat_thierry_ned_365 = MandatFactory(
+            organisation=cls.aidant_thierry.organisation,
+            usager=cls.usager_ned,
+            expiration_date=timezone.now() + timedelta(days=365),
         )
 
     def test_a_journal_entry_can_be_created(self):
@@ -534,11 +512,9 @@ class JournalModelTests(TestCase):
         self.assertEqual(entry.action, "franceconnect_usager")
 
     def test_log_autorisation_creation_complete(self):
+
         autorisation = AutorisationFactory(
-            aidant=self.aidant_thierry,
-            usager=self.usager_ned,
-            demarche="logement",
-            expiration_date=timezone.now() + timedelta(days=365),
+            mandat=self.mandat_thierry_ned_365, demarche="logement",
         )
 
         journal_entries = Journal.objects.all()

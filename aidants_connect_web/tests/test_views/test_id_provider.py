@@ -20,8 +20,8 @@ from aidants_connect_web.models import (
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    MandatFactory,
     AutorisationFactory,
+    MandatFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import id_provider
@@ -36,25 +36,39 @@ class AuthorizeTests(TestCase):
             username="jacques@domain.user", email="jacques@domain.user"
         )
         self.usager = UsagerFactory(given_name="Joséphine", sub="123")
-        AutorisationFactory(
-            aidant=self.aidant_thierry,
+
+        mandat_1 = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
             usager=self.usager,
-            demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
         AutorisationFactory(
-            aidant=self.aidant_thierry,
+            mandat=mandat_1,
+            demarche="Revenus",
+            revocation_date=timezone.now() - timedelta(days=1),
+        )
+
+        mandat_2 = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
             usager=self.usager,
-            demarche="Famille",
             expiration_date=timezone.now() + timedelta(days=12),
         )
 
         AutorisationFactory(
-            aidant=self.aidant_jacques,
+            mandat=mandat_2, demarche="Famille",
+        )
+        AutorisationFactory(
+            mandat=mandat_2, demarche="Revenus",
+        )
+
+        mandat_3 = MandatFactory(
+            organisation=self.aidant_jacques.organisation,
             usager=self.usager,
-            demarche="Logement",
             expiration_date=timezone.now() + timedelta(days=12),
+        )
+        AutorisationFactory(
+            mandat=mandat_3, demarche="Logement",
         )
         date_further_away_minus_one_hour = datetime(
             2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
@@ -249,42 +263,31 @@ class FISelectDemarcheTests(TestCase):
             usager=self.usager,
             expires_on=date_further_away_minus_one_hour,
         )
-        autorisation_creation_date = datetime(
+        mandat_creation_date = datetime(
             2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
         )
+
         self.mandat_thierry_usager_1 = MandatFactory(
             organisation=self.aidant_thierry.organisation,
             usager=self.usager,
-            expiration_date=autorisation_creation_date + timedelta(days=6),
+            expiration_date=mandat_creation_date + timedelta(days=6),
+            creation_date=mandat_creation_date,
         )
+        AutorisationFactory(
+            mandat=self.mandat_thierry_usager_1, demarche="transports",
+        )
+        AutorisationFactory(
+            mandat=self.mandat_thierry_usager_1, demarche="famille",
+        )
+
         self.mandat_thierry_usager_2 = MandatFactory(
             organisation=self.aidant_thierry.organisation,
             usager=self.usager,
-            expiration_date=autorisation_creation_date + timedelta(days=3),
+            expiration_date=mandat_creation_date + timedelta(days=3),
+            creation_date=mandat_creation_date,
         )
-        self.autorisation = AutorisationFactory(
-            aidant=self.aidant_thierry,
-            usager=self.usager,
-            mandat=self.mandat_thierry_usager_1,
-            demarche="transports",
-            expiration_date=autorisation_creation_date + timedelta(days=6),
-            creation_date=autorisation_creation_date,
-        )
-        self.autorisation_2 = AutorisationFactory(
-            aidant=self.aidant_thierry,
-            usager=self.usager,
-            mandat=self.mandat_thierry_usager_1,
-            demarche="famille",
-            expiration_date=autorisation_creation_date + timedelta(days=6),
-            creation_date=autorisation_creation_date,
-        )
-        self.autorisation_3 = AutorisationFactory(
-            aidant=self.aidant_thierry,
-            usager=self.usager,
-            mandat=self.mandat_thierry_usager_2,
-            demarche="logement",
-            expiration_date=autorisation_creation_date + timedelta(days=3),
-            creation_date=autorisation_creation_date,
+        AutorisationFactory(
+            mandat=self.mandat_thierry_usager_2, demarche="logement",
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -506,12 +509,15 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
         )
         self.aidant_thierry = AidantFactory()
-        self.autorisation = AutorisationFactory(
-            aidant=self.aidant_thierry,
+        self.mandat_thierry_usager = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
             usager=self.usager,
-            demarche="transports",
             expiration_date=timezone.now() + timedelta(days=6),
         )
+        self.autorisation = AutorisationFactory(
+            mandat=self.mandat_thierry_usager, demarche="transports",
+        )
+
         self.access_token = "test_access_token"
         self.access_token_hash = make_password(
             self.access_token, settings.FC_AS_FI_HASH_SALT
