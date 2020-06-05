@@ -12,7 +12,11 @@ from pytz import timezone
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
-from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
+from aidants_connect_web.tests.factories import (
+    OrganisationFactory,
+    AidantFactory,
+    UsagerFactory,
+)
 from aidants_connect_web.views import new_mandat
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -74,7 +78,7 @@ class ConfinementNewMandatRecapTests(TestCase):
         self.test_usager = UsagerFactory(
             given_name="Fabrice", birthplace="95277", sub="test_sub",
         )
-        self.autorisation_builder = Connection.objects.create(
+        self.mandat_builder = Connection.objects.create(
             demarches=["papiers", "logement"],
             duree_keyword="EUS_03_20",
             mandat_is_remote=True,
@@ -117,7 +121,7 @@ class ConfinementNewMandatRecapTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
 
-        session["connection"] = self.autorisation_builder.id
+        session["connection"] = self.mandat_builder.id
         session.save()
 
         response = self.client.post(
@@ -131,7 +135,7 @@ class ConfinementNewMandatRecapTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
 
-        session["connection"] = self.autorisation_builder.id
+        session["connection"] = self.mandat_builder.id
         session.save()
 
         self.client.post(
@@ -164,20 +168,31 @@ class ConfinementNewMandatRecapTests(TestCase):
 class NewMandatRecapTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_thierry = AidantFactory()
+        self.organisation = OrganisationFactory()
+        self.aidant_thierry = AidantFactory(organisation=self.organisation)
         device = self.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
         device.token_set.create(token="223456")
-        self.aidant_monique = AidantFactory(username="monique@monique.com")
+        self.aidant_monique = AidantFactory(
+            first_name="Monique",
+            username="monique@monique.com",
+            organisation=self.organisation,
+        )
         device = self.aidant_monique.staticdevice_set.create(id=2)
         device.token_set.create(token="323456")
+        self.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
+        self.aidant_marge = AidantFactory(
+            first_name="Marge", username="Marge", organisation=self.organisation_nantes
+        )
+        device = self.aidant_marge.staticdevice_set.create(id=3)
+        device.token_set.create(token="423456")
         self.test_usager_sub = (
             "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1"
         )
         self.test_usager = UsagerFactory(
             given_name="Fabrice", birthplace="95277", sub=self.test_usager_sub,
         )
-        self.autorisation_builder = Connection.objects.create(
+        self.mandat_builder = Connection.objects.create(
             demarches=["papiers", "logement"],
             duree_keyword="LONG",
             usager=self.test_usager,
@@ -191,7 +206,7 @@ class NewMandatRecapTests(TestCase):
         self.client.force_login(self.aidant_thierry)
 
         session = self.client.session
-        session["connection"] = self.autorisation_builder.id
+        session["connection"] = self.mandat_builder.id
         session.save()
 
         response = self.client.get("/creation_mandat/recapitulatif/")
@@ -204,7 +219,7 @@ class NewMandatRecapTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
 
-        session["connection"] = self.autorisation_builder.id
+        session["connection"] = self.mandat_builder.id
         session.save()
 
         response = self.client.post(
@@ -222,11 +237,11 @@ class NewMandatRecapTests(TestCase):
 
     def test_post_to_recap_without_usager_creates_error(self):
         self.client.force_login(self.aidant_thierry)
-        autorisation_builder = Connection.objects.create(
+        mandat_builder = Connection.objects.create(
             demarches=["papiers", "logement"], duree_keyword="SHORT"
         )
         session = self.client.session
-        session["connection"] = autorisation_builder.id
+        session["connection"] = mandat_builder.id
         session.save()
         response = self.client.post(
             "/creation_mandat/recapitulatif/",
@@ -244,7 +259,7 @@ class NewMandatRecapTests(TestCase):
         session = self.client.session
         session["connection"] = mandat_builder_1.id
         session.save()
-        # trigger the mandat creation/update
+        # trigger the mandat creation
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
@@ -256,40 +271,48 @@ class NewMandatRecapTests(TestCase):
 
         # second session : 'updating' the autorisation
         mandat_builder_2 = Connection.objects.create(
-            usager=self.test_usager, demarches=["papiers"], duree_keyword="LONG"
+            usager=self.test_usager,
+            demarches=["papiers", "logement"],
+            duree_keyword="LONG",
         )
 
         session = self.client.session
         session["connection"] = mandat_builder_2.id
         session.save()
-        # trigger the autorisation creation/update
+        # trigger the mandat creation
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "223456"},
         )
 
-        self.assertEqual(Autorisation.objects.count(), 2)
+        self.assertEqual(Autorisation.objects.count(), 3)
+
         last_usager_aidant_papiers_autorisations = Autorisation.objects.filter(
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
         ).order_by("-creation_date")
-        new_autorisation = last_usager_aidant_papiers_autorisations[0]
-        old_autorisation = last_usager_aidant_papiers_autorisations[1]
-        self.assertTrue(old_autorisation.is_revoked)
-        self.assertEqual(new_autorisation.duree_in_days, 365)
+        new_papiers_autorisation = last_usager_aidant_papiers_autorisations[0]
+        old_papiers_autorisation = last_usager_aidant_papiers_autorisations[1]
+        self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
+        self.assertTrue(old_papiers_autorisation.is_revoked)
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "create_autorisation")
 
-    def test_not_updating_autorisation_for_different_aidant(self):
+        self.assertEqual(
+            len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
+            2,
+        )
+
+    def test_updating_autorisation_for_different_aidant_of_same_organisation(self):
         # first session : creating the autorisation
         self.client.force_login(self.aidant_thierry)
-        autorisation_builder_1 = Connection.objects.create(
+        mandat_builder_1 = Connection.objects.create(
             usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
         )
         session = self.client.session
-        session["connection"] = autorisation_builder_1.id
+        session["connection"] = mandat_builder_1.id
         session.save()
-        # trigger the autorisation creation/update
+        # trigger the autorisation creation
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
@@ -298,32 +321,92 @@ class NewMandatRecapTests(TestCase):
 
         # second session : Create same autorisation with other aidant
         self.client.force_login(self.aidant_monique)
-        autorisation_builder_2 = Connection.objects.create(
-            demarches=["papiers"], duree_keyword="LONG", usager=self.test_usager
+        mandat_builder_2 = Connection.objects.create(
+            usager=self.test_usager,
+            demarches=["papiers", "logement"],
+            duree_keyword="LONG",
         )
         session = self.client.session
-        session["connection"] = autorisation_builder_2.id
+        session["connection"] = mandat_builder_2.id
         session.save()
 
-        # trigger the autorisation creation/update
+        # trigger the autorisation creation
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "323456"},
         )
 
-        self.assertEqual(Autorisation.objects.count(), 2)
-        first_autorisation = Autorisation.objects.get(
-            demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
-        )
-        self.assertEqual(first_autorisation.duree_in_days, 1)
+        self.assertEqual(Autorisation.objects.count(), 3)
 
-        second_autorisation = Autorisation.objects.get(
-            demarche="papiers", usager=self.test_usager, aidant=self.aidant_monique
-        )
-        self.assertEqual(second_autorisation.duree_in_days, 365)
+        last_usager_papiers_autorisations = Autorisation.objects.filter(
+            demarche="papiers", usager=self.test_usager
+        ).order_by("-creation_date")
+        new_papiers_autorisation = last_usager_papiers_autorisations[0]
+        old_papiers_autorisation = last_usager_papiers_autorisations[1]
+        self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
+        self.assertTrue(old_papiers_autorisation.is_revoked)
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "create_autorisation")
+
+        self.assertEqual(
+            len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
+            2,
+        )
+
+    def test_updating_autorisation_for_different_aidant_of_different_organisation(self):
+        # first session : creating the autorisation
+        self.client.force_login(self.aidant_thierry)
+        mandat_builder_1 = Connection.objects.create(
+            usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
+        )
+        session = self.client.session
+        session["connection"] = mandat_builder_1.id
+        session.save()
+        # trigger the autorisation creation
+        self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
+        )
+        self.client.logout()
+
+        # second session : Create same autorisation with other aidant
+        self.client.force_login(self.aidant_marge)
+        mandat_builder_2 = Connection.objects.create(
+            usager=self.test_usager,
+            demarches=["papiers", "logement"],
+            duree_keyword="LONG",
+        )
+        session = self.client.session
+        session["connection"] = mandat_builder_2.id
+        session.save()
+
+        # trigger the autorisation creation
+        self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "423456"},
+        )
+
+        self.assertEqual(Autorisation.objects.count(), 3)
+
+        last_usager_papiers_autorisations = Autorisation.objects.filter(
+            demarche="papiers", usager=self.test_usager
+        ).order_by("-creation_date")
+        new_papiers_autorisation = last_usager_papiers_autorisations[0]
+        old_papiers_autorisation = last_usager_papiers_autorisations[1]
+        self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
+        self.assertFalse(old_papiers_autorisation.is_revoked)
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "create_autorisation")
+
+        self.assertEqual(
+            len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
+            1,
+        )
+        self.assertEqual(
+            len(self.aidant_marge.get_active_demarches_for_usager(self.test_usager)), 2
+        )
 
 
 @tag("new_mandat")
