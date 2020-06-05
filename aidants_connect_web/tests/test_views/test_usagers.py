@@ -8,6 +8,7 @@ from django.utils import timezone
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
+    MandatFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import usagers
@@ -35,7 +36,10 @@ class UsagersDetailsPageTests(TestCase):
         self.client = Client()
         self.aidant = AidantFactory()
         self.usager = UsagerFactory()
-        self.autorisation = AutorisationFactory(aidant=self.aidant, usager=self.usager)
+        self.mandat = MandatFactory(
+            organisation=self.aidant.organisation, usager=self.usager
+        )
+        AutorisationFactory(mandat=self.mandat)
 
     def test_usager_details_url_triggers_the_usager_details_view(self):
         found = resolve(f"/usagers/{self.usager.id}/")
@@ -65,18 +69,20 @@ class autorisationCancelConfirmPageTests(TestCase):
         )
         self.usager_1 = UsagerFactory()
         self.usager_2 = UsagerFactory()
-        self.autorisation_1 = AutorisationFactory(
-            aidant=self.aidant_1,
+
+        mandat_1 = MandatFactory(
+            organisation=self.aidant_1.organisation,
             usager=self.usager_1,
-            demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        self.autorisation_2 = AutorisationFactory(
-            aidant=self.aidant_2,
+        self.autorisation_1 = AutorisationFactory(mandat=mandat_1, demarche="Revenus",)
+
+        mandat_2 = MandatFactory(
+            organisation=self.aidant_2.organisation,
             usager=self.usager_2,
-            demarche="Revenus",
             expiration_date=timezone.now() + timedelta(days=6),
         )
+        self.autorisation_2 = AutorisationFactory(mandat=mandat_2, demarche="Revenus",)
 
     def test_usagers_autorisations_cancel_url_triggers_the_correct_view(self):
         found = resolve(
