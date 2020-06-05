@@ -269,11 +269,11 @@ class NewMandatRecapTests(TestCase):
         )
 
         self.assertEqual(Autorisation.objects.count(), 2)
-        all_usager_aidant_papiers_autorisations = Autorisation.objects.filter(
+        last_usager_aidant_papiers_autorisations = Autorisation.objects.filter(
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
-        )
-        old_autorisation = all_usager_aidant_papiers_autorisations.first()
-        new_autorisation = all_usager_aidant_papiers_autorisations.last()
+        ).order_by("-creation_date")
+        new_autorisation = last_usager_aidant_papiers_autorisations[0]
+        old_autorisation = last_usager_aidant_papiers_autorisations[1]
         self.assertTrue(old_autorisation.is_revoked)
         self.assertEqual(new_autorisation.duree_in_days, 365)
         # self.assertTrue(
