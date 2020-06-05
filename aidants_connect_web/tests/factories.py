@@ -48,16 +48,6 @@ class UsagerFactory(factory.DjangoModelFactory):
         model = Usager
 
 
-class AutorisationFactory(factory.DjangoModelFactory):
-    aidant = factory.SubFactory(AidantFactory)
-    usager = factory.SubFactory(UsagerFactory)
-    demarche = "justice"
-    expiration_date = factory.LazyAttribute(lambda f: now() + timedelta(days=7))
-
-    class Meta:
-        model = Autorisation
-
-
 class ConnectionFactory(factory.DjangoModelFactory):
     class Meta:
         model = Connection
@@ -72,3 +62,57 @@ class MandatFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Mandat
+
+
+# Bad data to replace redundant data in autorisation
+
+
+class RandoOrganisationFactory(factory.DjangoModelFactory):
+    name = "Rando Org"
+    siret = 123
+    address = "45 avenue du Général de Gaulle, 27120 HOULBEC COCHEREL"
+
+    class Meta:
+        model = Organisation
+
+
+class RandoAidantFactory(factory.DjangoModelFactory):
+    username = "rando@rando.com"
+    email = "rando@rando.com"
+    password = "motdepassederando"
+    last_name = "Rando"
+    first_name = "Rando"
+    profession = "Rando"
+    organisation = factory.SubFactory(RandoOrganisationFactory)
+
+    class Meta:
+        model = get_user_model()
+        django_get_or_create = ("username",)
+
+
+class RandoUsagerFactory(factory.DjangoModelFactory):
+    given_name = "Rando"
+    family_name = "Rando"
+    birthdate = "1952-06-30"
+    gender = Usager.GENDER_FEMALE
+    birthplace = "29681"
+    birthcountry = Usager.BIRTHCOUNTRY_FRANCE
+    email = "Rando"
+    sub = factory.Sequence(lambda n: f"avalidsub{n}")
+
+    class Meta:
+        model = Usager
+        django_get_or_create = ("sub",)
+
+
+class AutorisationFactory(factory.DjangoModelFactory):
+    demarche = "justice"
+    mandat = factory.SubFactory(MandatFactory)
+    revocation_date = None
+    # redundant data
+    aidant = factory.SubFactory(RandoAidantFactory)
+    usager = factory.SubFactory(RandoUsagerFactory)
+    expiration_date = factory.LazyAttribute(lambda f: now() - timedelta(days=1))
+
+    class Meta:
+        model = Autorisation
