@@ -119,6 +119,11 @@ def new_mandat_recap(request):
             }
             mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
             try:
+                # Revoke existing active autorisations
+                Autorisation.objects.filter(aidant=aidant, usager=usager).filter(
+                    expiration_date__gt=timezone.now()
+                ).update(revocation_date=timezone.now())
+
                 # Add a Journal 'create_attestation' action
                 connection.demarches.sort()
                 Journal.objects.attestation(
@@ -142,17 +147,15 @@ def new_mandat_recap(request):
                 )
                 # This loop creates one `autorisation` object per `démarche` in the form
                 for demarche in connection.demarches:
-                    Autorisation.objects.update_or_create(
+                    Autorisation.objects.create(
                         aidant=aidant,
                         usager=usager,
                         demarche=demarche,
-                        defaults={
-                            "mandat": mandat,
-                            "expiration_date": mandat_expiration_date,
-                            "last_renewal_date": timezone.now(),
-                            "last_renewal_token": connection.access_token,
-                            "is_remote": True,
-                        },
+                        mandat=mandat,
+                        expiration_date=mandat_expiration_date,
+                        last_renewal_date=timezone.now(),
+                        last_renewal_token=connection.access_token,
+                        is_remote=True,
                     )
 
             except AttributeError as error:

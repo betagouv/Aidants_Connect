@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 
@@ -240,10 +241,15 @@ class Mandat(models.Model):
 
 class AutorisationQuerySet(models.QuerySet):
     def active(self):
-        return self.exclude(expiration_date__lt=timezone.now())
+        return self.exclude(expiration_date__lt=timezone.now()).filter(
+            revocation_date__isnull=True
+        )
 
     def expired(self):
-        return self.exclude(expiration_date__gt=timezone.now())
+        return self.filter(
+            Q(expiration_date__lt=timezone.now())
+            | (Q(expiration_date__gt=timezone.now()) & Q(revocation_date__isnull=False))
+        )
 
     def for_usager(self, usager):
         return self.filter(usager=usager)
@@ -273,15 +279,13 @@ class Autorisation(models.Model):
     creation_date = models.DateTimeField(default=timezone.now)
     expiration_date = models.DateTimeField(default=timezone.now)
     last_renewal_date = models.DateTimeField(default=timezone.now)
+    revocation_date = models.DateTimeField(blank=True, null=True)
 
     # Journal entry creation information
     last_renewal_token = models.TextField(blank=False, default="No token provided")
     is_remote = models.BooleanField(default=False)
 
     objects = AutorisationQuerySet.as_manager()
-
-    class Meta:
-        unique_together = ["aidant", "demarche", "usager"]
 
     def __str__(self):
         return (
@@ -290,7 +294,11 @@ class Autorisation(models.Model):
         )
 
     @property
-    def is_expired(self):
+    def is_revoked(self) -> bool:
+        return True if self.revocation_date else False
+
+    @property
+    def is_expired(self) -> bool:
         return timezone.now() > self.expiration_date
 
     @property

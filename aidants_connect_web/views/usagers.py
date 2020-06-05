@@ -71,6 +71,10 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
 
     if request.method == "POST":
 
+        if autorisation.is_revoked:
+            django_messages.error(request, "Le mandat a été révoqué")
+            return redirect("dashboard")
+
         if autorisation.is_expired:
             django_messages.error(request, "Le mandat est déjà expiré")
             return redirect("dashboard")
