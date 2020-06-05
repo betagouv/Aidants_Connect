@@ -149,7 +149,9 @@ def new_mandat_recap(request):
                 for demarche in connection.demarches:
                     # Revoke existing demarche autorisations
                     Autorisation.objects.filter(
-                        aidant=aidant, usager=usager, demarche=demarche
+                        aidant__organisation=aidant.organisation,
+                        usager=usager,
+                        demarche=demarche,
                     ).update(revocation_date=timezone.now())
 
                     Autorisation.objects.create(
