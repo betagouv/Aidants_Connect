@@ -240,16 +240,16 @@ class NewMandatRecapTests(TestCase):
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
-    def test_updating_autorisation_for_for_same_aidant(self):
+    def test_updating_autorisation_for_same_aidant(self):
         # first session : creating the autorisation
         self.client.force_login(self.aidant_thierry)
-        autorisation_builder_1 = Connection.objects.create(
+        mandat_builder_1 = Connection.objects.create(
             usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
         )
         session = self.client.session
-        session["connection"] = autorisation_builder_1.id
+        session["connection"] = mandat_builder_1.id
         session.save()
-        # trigger the autorisation creation/update
+        # trigger the mandat creation/update
         self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
@@ -259,13 +259,13 @@ class NewMandatRecapTests(TestCase):
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "create_autorisation")
 
-        # second session : updating the autorisation
-        autorisation_builder_2 = Connection.objects.create(
+        # second session : 'updating' the autorisation
+        mandat_builder_2 = Connection.objects.create(
             usager=self.test_usager, demarches=["papiers"], duree_keyword="LONG"
         )
 
         session = self.client.session
-        session["connection"] = autorisation_builder_2.id
+        session["connection"] = mandat_builder_2.id
         session.save()
         # trigger the autorisation creation/update
         self.client.post(
@@ -273,17 +273,20 @@ class NewMandatRecapTests(TestCase):
             data={"personal_data": True, "brief": True, "otp_token": "223456"},
         )
 
-        self.assertEqual(Autorisation.objects.count(), 1)
-        updated_autorisation = Autorisation.objects.get(
+        self.assertEqual(Autorisation.objects.count(), 2)
+        all_usager_aidant_papiers_autorisations = Autorisation.objects.filter(
             demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
         )
-        self.assertEqual(updated_autorisation.duree_in_days, 365)
-        self.assertTrue(
-            updated_autorisation.creation_date < updated_autorisation.last_renewal_date
-        )
+        old_autorisation = all_usager_aidant_papiers_autorisations.first()
+        new_autorisation = all_usager_aidant_papiers_autorisations.last()
+        self.assertTrue(old_autorisation.is_revoked)
+        self.assertEqual(new_autorisation.duree_in_days, 365)
+        # self.assertTrue(
+        #     new_autorisation.creation_date < new_autorisation.last_renewal_date
+        # )
 
         last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "update_autorisation")
+        self.assertEqual(last_journal_entry.action, "create_autorisation")
 
     def test_not_updating_autorisation_for_different_aidant(self):
         # first session : creating the autorisation

@@ -159,24 +159,6 @@ class AutorisationModelTests(TestCase):
         self.assertEqual(first_autorisation.demarche, "Carte grise")
         self.assertEqual(second_autorisation.usager.family_name, "Flanders")
 
-    def test_cannot_have_two_autorisations_for_user_demarche_tuple(self):
-        AutorisationFactory(
-            aidant=self.aidant_marge,
-            usager=self.usager_homer,
-            demarche="Logement",
-            expiration_date=timezone.now() + timedelta(days=3),
-        )
-        self.assertEqual(Autorisation.objects.count(), 1)
-
-        self.assertRaises(
-            IntegrityError,
-            Autorisation.objects.create,
-            aidant=self.aidant_marge,
-            usager=self.usager_homer,
-            demarche="Logement",
-            expiration_date=timezone.now() + timedelta(days=6),
-        )
-
     fake_date = datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(fake_date)
