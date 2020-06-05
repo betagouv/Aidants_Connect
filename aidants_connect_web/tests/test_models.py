@@ -246,7 +246,6 @@ class AutorisationModelTests(TestCase):
             organisation=cls.aidant_patricia.organisation,
             usager=cls.usager_ned,
             expiration_date=timezone.now() + timedelta(days=6),
-        )
 
     def test_saving_and_retrieving_autorisation(self):
         first_autorisation = AutorisationFactory(
