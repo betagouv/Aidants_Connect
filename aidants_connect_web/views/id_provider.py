@@ -17,14 +17,12 @@ from django.http import (
 )
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 import jwt
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import (
-    Autorisation,
     Connection,
     Journal,
     Usager,
@@ -180,6 +178,7 @@ def fi_select_demarche(request):
             return HttpResponseForbidden()
 
         aidant = request.user
+
         usager_demarches = aidant.get_active_demarches_for_usager(connection.usager)
 
         demarches = {
@@ -215,23 +214,20 @@ def fi_select_demarche(request):
             logout(request)
             return HttpResponseForbidden()
 
-        try:
-            chosen_autorisation = Autorisation.objects.get(
-                usager=connection.usager,
-                aidant__organisation=request.user.organisation,
-                demarche=parameters["chosen_demarche"],
-                expiration_date__gt=timezone.now(),
-            )
-        except Autorisation.DoesNotExist:
+        aidant = request.user
+        autorisation = aidant.get_valid_autorisation(
+            parameters["chosen_demarche"], connection.usager
+        )
+        if not autorisation:
             log.info("The autorisation asked does not exist")
             return HttpResponseForbidden()
 
         code = token_urlsafe(64)
         connection.code = make_password(code, settings.FC_AS_FI_HASH_SALT)
         connection.demarche = parameters["chosen_demarche"]
-        connection.autorisation = chosen_autorisation
+        connection.autorisation = autorisation
         connection.complete = True
-        connection.aidant = request.user
+        connection.aidant = aidant
         connection.save()
 
         return redirect(

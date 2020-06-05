@@ -462,6 +462,42 @@ class AidantModelMethodsTests(TestCase):
             ["famille", "social", "transports", "travail"],
         )
 
+    def test_get_valid_autorisation_method(self):
+        # A valid mandat with one revoked autorisation
+        usager_charles = UsagerFactory(given_name="Charles", sub="Charles")
+        active_mandat = MandatFactory(
+            organisation=self.aidant_marge.organisation, usager=usager_charles,
+        )
+        valid_autorisation = AutorisationFactory(
+            mandat=active_mandat, demarche="papiers", revocation_date=None,
+        )
+        AutorisationFactory(
+            mandat=active_mandat,
+            demarche="transport",
+            revocation_date=timezone.now() - timedelta(days=1),
+        )
+        self.assertEqual(
+            self.aidant_marge.get_valid_autorisation("papiers", usager_charles),
+            valid_autorisation,
+        )
+        self.assertEqual(
+            self.aidant_marge.get_valid_autorisation("transport", usager_charles), None
+        )
+
+        # An expired Mandat
+        expired_mandat = MandatFactory(
+            organisation=self.aidant_marge.organisation,
+            usager=usager_charles,
+            expiration_date=timezone.now() - timedelta(days=1),
+        )
+        AutorisationFactory(
+            mandat=expired_mandat, demarche="social", revocation_date=None,
+        )
+
+        self.assertEqual(
+            self.aidant_marge.get_valid_autorisation("social", usager_charles), None
+        )
+
 
 @tag("models", "journal")
 class JournalModelTests(TestCase):

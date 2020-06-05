@@ -136,7 +136,7 @@ class EnvironmentVariablesTests(TestCase):
         self.assertEqual(secret_key, "Everything is awesome")
 
 
-@tag("service", "coucou")
+@tag("service")
 class StatistiquesTests(TestCase):
     def setUp(self):
         mairie_de_houlbec = OrganisationFactory()
