@@ -81,8 +81,8 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
 
         form = request.POST
         if form:
-            autorisation.expiration_date = timezone.now()
-            autorisation.save(update_fields=["expiration_date"])
+            autorisation.revocation_date = timezone.now()
+            autorisation.save(update_fields=["revocation_date"])
 
             Journal.objects.autorisation_cancel(autorisation)
 

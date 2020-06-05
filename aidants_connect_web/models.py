@@ -241,6 +241,10 @@ class Mandat(models.Model):
     )
     is_remote = models.BooleanField(default=False)
 
+    @property
+    def is_expired(self) -> bool:
+        return timezone.now() > self.expiration_date
+
 
 class AutorisationQuerySet(models.QuerySet):
     def active(self):
@@ -284,7 +288,6 @@ class Autorisation(models.Model):
     # Autorisation expiration date management
     creation_date = models.DateTimeField(default=timezone.now)
     expiration_date = models.DateTimeField(default=timezone.now)
-    last_renewal_date = models.DateTimeField(default=timezone.now)
     revocation_date = models.DateTimeField(blank=True, null=True)
 
     # Journal entry creation information
@@ -305,11 +308,11 @@ class Autorisation(models.Model):
 
     @property
     def is_expired(self) -> bool:
-        return timezone.now() > self.expiration_date
+        return self.mandat.is_expired
 
     @property
     def duree_in_days(self):
-        duree_for_computer = self.expiration_date - self.last_renewal_date
+        duree_for_computer = self.expiration_date - self.creation_date
         # we add one day so that duration is human friendly
         # i.e. for a human, there is one day between now and tomorrow at the same time,
         # and 0 for a computer
@@ -445,7 +448,6 @@ class JournalManager(models.Manager):
             action="create_autorisation",
             demarche=autorisation.demarche,
             duree=autorisation.duree_in_days,
-            access_token=autorisation.last_renewal_date,
             autorisation=autorisation.id,
             # COVID-19
             is_remote_mandat=autorisation.is_remote,
@@ -466,7 +468,6 @@ class JournalManager(models.Manager):
             action="update_autorisation",
             demarche=autorisation.demarche,
             duree=autorisation.duree_in_days,
-            access_token=autorisation.last_renewal_date,
             autorisation=autorisation.id,
             # COVID-19
             is_remote_mandat=autorisation.is_remote,
@@ -502,7 +503,6 @@ class JournalManager(models.Manager):
             action="cancel_autorisation",
             demarche=autorisation.demarche,
             duree=autorisation.duree_in_days,
-            access_token=autorisation.last_renewal_date,
             autorisation=autorisation.id,
         )
         return journal_entry

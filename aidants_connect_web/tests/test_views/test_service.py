@@ -145,7 +145,6 @@ class StatistiquesTests(TestCase):
             usager=autorisation_justice.usager.full_string_identifier,
             demarche=autorisation_justice.demarche,
             duree=autorisation_justice.duree_in_days,
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice.id,
         )
         Journal.objects.create(
@@ -154,7 +153,6 @@ class StatistiquesTests(TestCase):
             usager=autorisation_justice.usager.full_string_identifier,
             demarche=autorisation_justice.demarche,
             duree=autorisation_justice.duree_in_days,
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice.id,
         )
         Journal.objects.create(
@@ -162,7 +160,6 @@ class StatistiquesTests(TestCase):
             usager=autorisation_justice.usager.full_string_identifier,
             action="use_autorisation",
             demarche="justice",
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice.id,
         )
         Journal.objects.create(
@@ -170,7 +167,6 @@ class StatistiquesTests(TestCase):
             usager=autorisation_justice.usager.full_string_identifier,
             action="use_autorisation",
             demarche="justice",
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice.id,
         )
 
@@ -193,7 +189,6 @@ class StatistiquesTests(TestCase):
             usager=autorisation_justice.usager.full_string_identifier,
             demarche=autorisation_justice.demarche,
             duree=autorisation_justice.duree_in_days,
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice.id,
         )
         Journal.objects.create(
@@ -201,7 +196,6 @@ class StatistiquesTests(TestCase):
             usager=autorisation_justice_homer_beta.usager.full_string_identifier,
             action="use_autorisation",
             demarche="justice",
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice_homer_beta.id,
         )
         # An aidant staff_organisation has an exclusive autorisation with a user
@@ -215,7 +209,6 @@ class StatistiquesTests(TestCase):
             usager=usager_laurent.full_string_identifier,
             demarche=autorisation_justice.demarche,
             duree=autorisation_justice.duree_in_days,
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice.id,
         )
         Journal.objects.create(
@@ -223,7 +216,6 @@ class StatistiquesTests(TestCase):
             initiator=aidant_staff_organisation.full_string_identifier,
             usager=usager_laurent.full_string_identifier,
             demarche="justice",
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice_laurent.id,
         )
 
@@ -239,7 +231,6 @@ class StatistiquesTests(TestCase):
             demarche=autorisation_justice.demarche,
             duree=1,
             creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice.id,
         )
 
@@ -249,7 +240,6 @@ class StatistiquesTests(TestCase):
             usager=usager_jacqueline.full_string_identifier,
             demarche=autorisation_justice.demarche,
             duree=1,
-            access_token=autorisation_justice.last_renewal_date,
             autorisation=autorisation_justice.id,
         )
         Journal.objects.filter(usager=usager_jacqueline.full_string_identifier).update(

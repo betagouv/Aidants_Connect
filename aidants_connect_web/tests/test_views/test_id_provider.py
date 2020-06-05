@@ -20,6 +20,7 @@ from aidants_connect_web.models import (
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    MandatFactory,
     AutorisationFactory,
     UsagerFactory,
 )
@@ -251,9 +252,20 @@ class FISelectDemarcheTests(TestCase):
         autorisation_creation_date = datetime(
             2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
         )
+        self.mandat_thierry_usager_1 = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+            expiration_date=autorisation_creation_date + timedelta(days=6),
+        )
+        self.mandat_thierry_usager_2 = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+            expiration_date=autorisation_creation_date + timedelta(days=3),
+        )
         self.autorisation = AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
+            mandat=self.mandat_thierry_usager_1,
             demarche="transports",
             expiration_date=autorisation_creation_date + timedelta(days=6),
             creation_date=autorisation_creation_date,
@@ -261,6 +273,7 @@ class FISelectDemarcheTests(TestCase):
         self.autorisation_2 = AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
+            mandat=self.mandat_thierry_usager_1,
             demarche="famille",
             expiration_date=autorisation_creation_date + timedelta(days=6),
             creation_date=autorisation_creation_date,
@@ -268,6 +281,7 @@ class FISelectDemarcheTests(TestCase):
         self.autorisation_3 = AutorisationFactory(
             aidant=self.aidant_thierry,
             usager=self.usager,
+            mandat=self.mandat_thierry_usager_2,
             demarche="logement",
             expiration_date=autorisation_creation_date + timedelta(days=3),
             creation_date=autorisation_creation_date,
