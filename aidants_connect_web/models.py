@@ -152,7 +152,7 @@ class Aidant(AbstractUser):
 
 class UsagerQuerySet(models.QuerySet):
     def active(self):
-        return self.filter(autorisations__expiration_date__gt=timezone.now()).distinct()
+        return self.filter(mandats__expiration_date__gt=timezone.now()).distinct()
 
     def visible_by(self, aidant):
         """
@@ -160,9 +160,7 @@ class UsagerQuerySet(models.QuerySet):
         :return: a new QuerySet instance only filtering in the usagers who have
         an autorisation with this aidant's organisation.
         """
-        return self.filter(
-            autorisations__aidant__organisation=aidant.organisation
-        ).distinct()
+        return self.filter(mandats__organisation=aidant.organisation).distinct()
 
 
 class Usager(models.Model):
@@ -248,7 +246,9 @@ class Mandat(models.Model):
     organisation = models.ForeignKey(
         Organisation, on_delete=models.CASCADE, default=get_staff_organisation_name_id,
     )
-    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0,)
+    usager = models.ForeignKey(
+        Usager, on_delete=models.CASCADE, default=0, related_name="mandats"
+    )
     creation_date = models.DateTimeField(default=timezone.now)
     expiration_date = models.DateTimeField(default=timezone.now)
     duree_keyword = models.CharField(
@@ -286,13 +286,13 @@ class AutorisationQuerySet(models.QuerySet):
         )
 
     def for_usager(self, usager):
-        return self.filter(usager=usager)
+        return self.filter(mandat__usager=usager)
 
     def for_demarche(self, demarche):
         return self.filter(demarche=demarche)
 
     def visible_by(self, aidant):
-        return self.filter(aidant__organisation=aidant.organisation)
+        return self.filter(mandat__organisation=aidant.organisation)
 
 
 class Autorisation(models.Model):
