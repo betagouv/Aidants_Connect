@@ -33,6 +33,24 @@ class Aidant(AbstractUser):
     def full_string_identifier(self):
         return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
 
+    def get_valid_autorisation(self, demarche, usager):
+        """
+        :param demarche:
+        :param usager:
+        :return: Autorisation object if this aidant may perform the specified `demarche`
+        for the specified `usager`, `None` otherwise.`
+        """
+        try:
+            return (
+                Autorisation.objects.active()
+                .for_demarche(demarche)
+                .for_usager(usager)
+                .visible_by(self)
+                .get()
+            )
+        except Autorisation.DoesNotExist:
+            return None
+
     def get_usagers(self):
         """
         :return: a queryset of usagers who have at least one autorisation
