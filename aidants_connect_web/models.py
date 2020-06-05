@@ -244,14 +244,17 @@ class Mandat(models.Model):
 
 class AutorisationQuerySet(models.QuerySet):
     def active(self):
-        return self.exclude(expiration_date__lt=timezone.now()).filter(
+        return self.exclude(mandat__expiration_date__lt=timezone.now()).filter(
             revocation_date__isnull=True
         )
 
     def expired(self):
         return self.filter(
-            Q(expiration_date__lt=timezone.now())
-            | (Q(expiration_date__gt=timezone.now()) & Q(revocation_date__isnull=False))
+            Q(mandat__expiration_date__lt=timezone.now())
+            | (
+                Q(mandat__expiration_date__gt=timezone.now())
+                & Q(revocation_date__isnull=False)
+            )
         )
 
     def for_usager(self, usager):
