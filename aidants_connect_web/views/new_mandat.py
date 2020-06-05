@@ -119,11 +119,6 @@ def new_mandat_recap(request):
             }
             mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
             try:
-                # Revoke existing active autorisations
-                Autorisation.objects.filter(aidant=aidant, usager=usager).filter(
-                    expiration_date__gt=timezone.now()
-                ).update(revocation_date=timezone.now())
-
                 # Add a Journal 'create_attestation' action
                 connection.demarches.sort()
                 Journal.objects.attestation(
@@ -147,6 +142,11 @@ def new_mandat_recap(request):
                 )
                 # This loop creates one `autorisation` object per `démarche` in the form
                 for demarche in connection.demarches:
+                    # Revoke existing demarche autorisations
+                    Autorisation.objects.filter(
+                        aidant=aidant, usager=usager, demarche=demarche
+                    ).update(revocation_date=timezone.now())
+
                     Autorisation.objects.create(
                         aidant=aidant,
                         usager=usager,
