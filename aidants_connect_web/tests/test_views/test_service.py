@@ -13,6 +13,8 @@ from aidants_connect_web.models import Journal, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
+    MandatFactory,
+    OrganisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import service
@@ -137,40 +139,32 @@ class EnvironmentVariablesTests(TestCase):
 @tag("service")
 class StatistiquesTests(TestCase):
     def setUp(self):
-        autorisation_justice = AutorisationFactory()
-
-        Journal.objects.create(
-            action="create_attestation",
-            initiator=autorisation_justice.aidant.full_string_identifier,
-            usager=autorisation_justice.usager.full_string_identifier,
-            demarche=autorisation_justice.demarche,
-            duree=autorisation_justice.duree_in_days,
-            autorisation=autorisation_justice.id,
+        mairie_de_houlbec = OrganisationFactory()
+        aidant_thierry = AidantFactory()
+        usager_homer = UsagerFactory()
+        mandat_houlbec_homer = MandatFactory(
+            organisation=mairie_de_houlbec, usager=usager_homer
         )
-        Journal.objects.create(
-            action="create_autorisation",
-            initiator=autorisation_justice.aidant.full_string_identifier,
-            usager=autorisation_justice.usager.full_string_identifier,
-            demarche=autorisation_justice.demarche,
-            duree=autorisation_justice.duree_in_days,
-            autorisation=autorisation_justice.id,
-        )
-        Journal.objects.create(
-            initiator=autorisation_justice.aidant.full_string_identifier,
-            usager=autorisation_justice.usager.full_string_identifier,
-            action="use_autorisation",
-            demarche="justice",
-            autorisation=autorisation_justice.id,
-        )
-        Journal.objects.create(
-            initiator=autorisation_justice.aidant.full_string_identifier,
-            usager=autorisation_justice.usager.full_string_identifier,
-            action="use_autorisation",
-            demarche="justice",
-            autorisation=autorisation_justice.id,
+        autorisation_justice_houlbec_homer = AutorisationFactory(
+            mandat=mandat_houlbec_homer
         )
 
-        # An Aidants Betagouv in in our mist !
+        Journal.objects.create(
+            initiator=aidant_thierry.full_string_identifier,
+            usager=usager_homer.full_string_identifier,
+            action="use_autorisation",
+            demarche="justice",
+            autorisation=autorisation_justice_houlbec_homer.id,
+        )
+        Journal.objects.create(
+            initiator=aidant_thierry.full_string_identifier,
+            usager=usager_homer.full_string_identifier,
+            action="use_autorisation",
+            demarche="justice",
+            autorisation=autorisation_justice_houlbec_homer.id,
+        )
+
+        # An Aidant from Stafforg is among us !
         staff_organisation = Organisation.objects.create(
             name=settings.STAFF_ORGANISATION_NAME
         )
@@ -180,67 +174,62 @@ class StatistiquesTests(TestCase):
 
         # an aidant staff_organisation has an attestation
         # with an usager also helped by another aidant
-        autorisation_justice_homer_beta = AutorisationFactory(
-            aidant=aidant_staff_organisation
+
+        mandat_stafforg_homer = MandatFactory(
+            organisation=staff_organisation, usager=usager_homer
         )
-        Journal.objects.create(
-            action="create_attestation",
-            initiator=aidant_staff_organisation.full_string_identifier,
-            usager=autorisation_justice.usager.full_string_identifier,
-            demarche=autorisation_justice.demarche,
-            duree=autorisation_justice.duree_in_days,
-            autorisation=autorisation_justice.id,
+        autorisation_justice_stafforg_homer = AutorisationFactory(
+            mandat=mandat_stafforg_homer
         )
+
         Journal.objects.create(
             initiator=aidant_staff_organisation.full_string_identifier,
-            usager=autorisation_justice_homer_beta.usager.full_string_identifier,
+            usager=usager_homer.full_string_identifier,
             action="use_autorisation",
             demarche="justice",
-            autorisation=autorisation_justice_homer_beta.id,
+            autorisation=autorisation_justice_stafforg_homer.id,
         )
         # An aidant staff_organisation has an exclusive autorisation with a user
-        usager_laurent = UsagerFactory(given_name="Laurent",)
-        autorisation_justice_laurent = AutorisationFactory(
-            aidant=aidant_staff_organisation, usager=usager_laurent,
+        usager_laurent = UsagerFactory(given_name="Laurent", sub="sub for laurent")
+
+        mandat_stafforg_laurent = MandatFactory(
+            organisation=staff_organisation, usager=usager_homer
         )
-        Journal.objects.create(
-            action="create_attestation",
-            initiator=aidant_staff_organisation.full_string_identifier,
-            usager=usager_laurent.full_string_identifier,
-            demarche=autorisation_justice.demarche,
-            duree=autorisation_justice.duree_in_days,
-            autorisation=autorisation_justice.id,
+        autorisation_justice_stafforg_laurent = AutorisationFactory(
+            mandat=mandat_stafforg_laurent,
         )
+
         Journal.objects.create(
             action="use_autorisation",
             initiator=aidant_staff_organisation.full_string_identifier,
             usager=usager_laurent.full_string_identifier,
             demarche="justice",
-            autorisation=autorisation_justice_laurent.id,
+            autorisation=autorisation_justice_stafforg_laurent.id,
         )
 
         # jacqueline has an expired autorisation and no active autorisations
         usager_jacqueline = UsagerFactory(
             given_name="Jacqueline",
             creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
+            sub="new_sub_for_jacqueline",
         )
-        Journal.objects.create(
-            action="create_attestation",
-            initiator=autorisation_justice.aidant.full_string_identifier,
-            usager=usager_jacqueline.full_string_identifier,
-            demarche=autorisation_justice.demarche,
-            duree=1,
-            creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
-            autorisation=autorisation_justice.id,
+        mandat_houlbec_jacqueline = MandatFactory(
+            organisation=mairie_de_houlbec,
+            usager=usager_jacqueline,
+            expiration_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
+        )
+
+        autorisation_justice_houlbec_jacqueline = AutorisationFactory(
+            mandat=mandat_houlbec_jacqueline,
         )
 
         Journal.objects.create(
             action="use_autorisation",
-            initiator=autorisation_justice.aidant.full_string_identifier,
+            initiator=aidant_thierry.full_string_identifier,
             usager=usager_jacqueline.full_string_identifier,
-            demarche=autorisation_justice.demarche,
+            demarche=autorisation_justice_houlbec_jacqueline.demarche,
             duree=1,
-            autorisation=autorisation_justice.id,
+            autorisation=autorisation_justice_houlbec_jacqueline.id,
         )
         Journal.objects.filter(usager=usager_jacqueline.full_string_identifier).update(
             creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc)
