@@ -5,14 +5,13 @@ from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import ExpressionWrapper, DateTimeField, F
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from aidants_connect_web.forms import OTPForm
-from aidants_connect_web.models import Aidant, Journal, Organisation, Usager
+from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation, Usager
 
 
 logging.basicConfig(level=logging.INFO)
@@ -58,34 +57,24 @@ def guide_utilisation(request):
 
 def statistiques(request):
     last_30_days = timezone.now() - timedelta(days=30)
+    stafforg = settings.STAFF_ORGANISATION_NAME
 
     def get_usager_ids(query_set) -> list:
         return [query_set_item.usager_id for query_set_item in query_set]
 
-    organisations_count = Organisation.objects.exclude(
-        name=settings.STAFF_ORGANISATION_NAME
-    ).count()
+    organisations_count = Organisation.objects.exclude(name=stafforg).count()
     aidants_count = Aidant.objects.exclude(is_staff=True).count()
 
     # mandats
     # # mandats prep
-    add_expiration_date_to_mandat = F("creation_date") + timedelta(days=1) * F("duree")
+    mandats = Mandat.objects.exclude(organisation__name=stafforg)
+    mandats_active = mandats.active()
 
-    mandats = (
-        Journal.stats_objects.filter(action="create_attestation")
-        .not_staff()
-        .annotate(
-            expiration_date=ExpressionWrapper(
-                add_expiration_date_to_mandat, DateTimeField()
-            )
-        )
-    )
-    mandats_active = mandats.filter(expiration_date__gte=timezone.now())
+    # # mandat results
+    mandat_count = mandats.count()
+    mandat_active_count = mandats_active.count()
 
-    # # autorisation results
-    autorisations_count = mandats.count()
-    autorisations_active_count = mandats_active.count()
-
+    # Usagers
     usagers_with_mandat_count = Usager.objects.filter(
         pk__in=get_usager_ids(mandats)
     ).count()
@@ -130,8 +119,8 @@ def statistiques(request):
         {
             "organisations_count": organisations_count,
             "aidants_count": aidants_count,
-            "mandats_count": autorisations_count,
-            "mandats_active_count": autorisations_active_count,
+            "mandats_count": mandat_count,
+            "mandats_active_count": mandat_active_count,
             "usagers_with_mandat_count": usagers_with_mandat_count,
             "usagers_with_mandat_active_count": usagers_with_mandat_active_count,
             "autorisation_use_count": autorisation_use_count,

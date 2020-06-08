@@ -242,6 +242,15 @@ def get_staff_organisation_name_id() -> int:
         return 1
 
 
+class MandatQuerySet(models.QuerySet):
+    def active(self):
+        return (
+            self.exclude(expiration_date__lt=timezone.now())
+            .filter(autorisations__revocation_date__isnull=True)
+            .distinct()
+        )
+
+
 class Mandat(models.Model):
     organisation = models.ForeignKey(
         Organisation, on_delete=models.PROTECT, related_name="mandats",
@@ -256,6 +265,8 @@ class Mandat(models.Model):
         max_length=16, choices=AutorisationDureeKeywords.choices, null=True
     )
     is_remote = models.BooleanField(default=False)
+
+    objects = MandatQuerySet.as_manager()
 
     @property
     def is_expired(self) -> bool:
