@@ -202,9 +202,17 @@ class Usager(models.Model):
     def get_full_name(self):
         return str(self)
 
-    def get_autorisation(self, autorisation_id):
+    def get_mandat(self, mandat_id):
         try:
-            return self.autorisations.get(pk=autorisation_id)
+            return self.mandats.get(pk=mandat_id)
+        except Mandat.DoesNotExist:
+            return None
+
+    def get_autorisation(self, mandat_id, autorisation_id):
+        try:
+            return self.get_mandat(mandat_id).autorisations.get(pk=autorisation_id)
+        except AttributeError:
+            return None
         except Autorisation.DoesNotExist:
             return None
 
