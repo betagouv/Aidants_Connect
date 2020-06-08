@@ -88,10 +88,10 @@ class CancelAutorisationTests(FunctionalTestCase):
             0
         ].find_elements_by_css_selector("tbody tr")
         self.assertEqual(len(active_autorisations_after), 1)
-        expired_autorisations_after = self.selenium.find_elements_by_tag_name("table")[
+        inactive_autorisations_after = self.selenium.find_elements_by_tag_name("table")[
             1
         ].find_elements_by_css_selector("tbody tr")
-        self.assertEqual(len(expired_autorisations_after), 1)
+        self.assertEqual(len(inactive_autorisations_after), 1)
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "cancel_autorisation")
