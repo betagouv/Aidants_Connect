@@ -22,7 +22,7 @@
       </div>
     {% endif %}
     <div class="tiles">
-      {% if active_mandats or expired_mandats %}
+      {% if active_mandats or inactive_mandats %}
         <h2>Mandats en cours</h2>
         {% if active_mandats %}
           <!-- <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)" disabled> -->
@@ -55,7 +55,7 @@
         {% endif %}
         <br />
         <h2>Mandats expirés</h2>
-        {% if expired_mandats %}
+        {% if inactive_mandats %}
           <!-- <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)" disabled> -->
           <table class="table">
             <thead>
@@ -66,7 +66,7 @@
               </tr>
             </thead>
             <tbody>
-              {% for mandat in expired_mandats %}
+              {% for mandat in inactive_mandats %}
                 <tr>
                   <td>{{ mandat.demarche }}</td>
                   <td title="{{ mandat.creation_date }}">{{ mandat.creation_date | date:"d F Y" }}</td>

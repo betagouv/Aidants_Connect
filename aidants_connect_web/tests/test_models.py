@@ -368,6 +368,14 @@ class AidantModelMethodsTests(TestCase):
             mandat=cls.mandat_marge_ned_2,
             expiration_date=timezone.now() + timedelta(days=6),
         )
+        AutorisationFactory(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_ned,
+            demarche="papiers",
+            mandat=cls.mandat_marge_ned_2,
+            expiration_date=timezone.now() + timedelta(days=6),
+            revocation_date=timezone.now(),
+        )
 
     def test_get_usagers(self):
         self.assertEqual(len(self.aidant_marge.get_usagers()), 2)
@@ -421,10 +429,10 @@ class AidantModelMethodsTests(TestCase):
             0,
         )
 
-    def test_get_expired_autorisations_for_usager(self):
+    def test_get_inactive_autorisations_for_usager(self):
         self.assertEqual(
             len(
-                self.aidant_marge.get_expired_autorisations_for_usager(
+                self.aidant_marge.get_inactive_autorisations_for_usager(
                     self.usager_homer
                 )
             ),
@@ -432,29 +440,35 @@ class AidantModelMethodsTests(TestCase):
         )
         self.assertEqual(
             len(
-                self.aidant_marge.get_expired_autorisations_for_usager(self.usager_ned)
+                self.aidant_marge.get_inactive_autorisations_for_usager(self.usager_ned)
             ),
-            1,
+            2,
         )
         self.assertEqual(
             len(
-                self.aidant_marge.get_expired_autorisations_for_usager(self.usager_bart)
+                self.aidant_marge.get_inactive_autorisations_for_usager(
+                    self.usager_bart
+                )
             ),
             0,
         )
         self.assertEqual(
             len(
-                self.aidant_lisa.get_expired_autorisations_for_usager(self.usager_homer)
+                self.aidant_lisa.get_inactive_autorisations_for_usager(
+                    self.usager_homer
+                )
             ),
             1,
         )
         self.assertEqual(
-            len(self.aidant_lisa.get_expired_autorisations_for_usager(self.usager_ned)),
-            1,
+            len(
+                self.aidant_lisa.get_inactive_autorisations_for_usager(self.usager_ned)
+            ),
+            2,
         )
         self.assertEqual(
             len(
-                self.aidant_lisa.get_expired_autorisations_for_usager(self.usager_bart)
+                self.aidant_lisa.get_inactive_autorisations_for_usager(self.usager_bart)
             ),
             0,
         )

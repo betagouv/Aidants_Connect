@@ -39,7 +39,7 @@ def usager_details(request, usager_id):
         return redirect("dashboard")
 
     active_autorisations = aidant.get_active_autorisations_for_usager(usager_id)
-    expired_autorisations = aidant.get_expired_autorisations_for_usager(usager_id)
+    inactive_autorisations = aidant.get_inactive_autorisations_for_usager(usager_id)
 
     return render(
         request,
@@ -48,7 +48,7 @@ def usager_details(request, usager_id):
             "aidant": aidant,
             "usager": usager,
             "active_mandats": active_autorisations,
-            "expired_mandats": expired_autorisations,
+            "inactive_mandats": inactive_autorisations,
             "messages": messages,
         },
     )

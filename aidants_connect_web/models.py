@@ -88,13 +88,13 @@ class Aidant(AbstractUser):
         """
         return self.get_autorisations_for_usager(usager).active()
 
-    def get_expired_autorisations_for_usager(self, usager):
+    def get_inactive_autorisations_for_usager(self, usager):
         """
         :param usager:
-        :return: a queryset of the specified usager's expired autorisations
-        that are visible by this aidant.
+        :return: a queryset of the specified usager's inactive (expired or revoked)
+        autorisations that are visible by this aidant.
         """
-        return self.get_autorisations_for_usager(usager).expired()
+        return self.get_autorisations_for_usager(usager).inactive()
 
     def get_active_demarches_for_usager(self, usager):
         """
@@ -249,13 +249,22 @@ class AutorisationQuerySet(models.QuerySet):
             revocation_date__isnull=True
         )
 
-    def expired(self):
+    def inactive(self):
         return self.filter(
             Q(mandat__expiration_date__lt=timezone.now())
             | (
                 Q(mandat__expiration_date__gt=timezone.now())
                 & Q(revocation_date__isnull=False)
             )
+        )
+
+    def expired(self):
+        return self.filter(mandat__expiration_date__lt=timezone.now())
+
+    def revoked(self):
+        return self.filter(
+            Q(mandat__expiration_date__gt=timezone.now())
+            & Q(revocation_date__isnull=False)
         )
 
     def for_usager(self, usager):
