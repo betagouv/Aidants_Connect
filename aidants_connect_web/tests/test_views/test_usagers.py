@@ -60,7 +60,7 @@ class UsagersDetailsPageTests(TestCase):
 
 
 @tag("usagers")
-class autorisationCancelConfirmPageTests(TestCase):
+class AutorisationCancelConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.aidant_1 = AidantFactory()
@@ -75,34 +75,70 @@ class autorisationCancelConfirmPageTests(TestCase):
             usager=self.usager_1,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        self.autorisation_1 = AutorisationFactory(mandat=mandat_1, demarche="Revenus",)
+        self.autorisation_1_1 = AutorisationFactory(mandat=mandat_1, demarche="Revenus")
+        self.autorisation_1_2 = AutorisationFactory(
+            mandat=mandat_1, demarche="Papiers", revocation_date=timezone.now()
+        )
 
         mandat_2 = MandatFactory(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
+        self.autorisation_2_1 = AutorisationFactory(
+            mandat=mandat_2, demarche="Logement"
+        )
+
+        mandat_3 = MandatFactory(
             organisation=self.aidant_2.organisation,
             usager=self.usager_2,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        self.autorisation_2 = AutorisationFactory(mandat=mandat_2, demarche="Revenus",)
+        self.autorisation_3_1 = AutorisationFactory(mandat=mandat_3, demarche="Revenus")
 
     def test_usagers_autorisations_cancel_url_triggers_the_correct_view(self):
         found = resolve(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1.id}/cancel_confirm"  # noqa
+            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
+            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"  # noqa
         )
-        self.assertEqual(found.func, usagers.usagers_mandats_cancel_confirm)
+        self.assertEqual(
+            found.func, usagers.usagers_mandats_autorisations_cancel_confirm
+        )
 
     def test_usagers_autorisations_cancel_url_triggers_the_correct_template(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1.id}/cancel_confirm"  # noqa
+            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
+            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
         )
         self.assertTemplateUsed(
-            response, "aidants_connect_web/usagers_mandats_cancel_confirm.html"
+            response,
+            "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
         )
 
     def test_non_existing_autorisation_triggers_redirect(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/3/cancel_confirm"
+            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
+            f"/autorisations/{self.autorisation_3_1.id + 1}/cancel_confirm"
+        )
+        url = "/dashboard/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    def test_expired_autorisation_triggers_redirect(self):
+        self.client.force_login(self.aidant_1)
+        response = self.client.get(
+            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_2_1.mandat.id}"
+            f"/autorisations/{self.autorisation_2_1.id}/cancel_confirm"
+        )
+        url = "/dashboard/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    def test_revoked_autorisation_triggers_redirect(self):
+        self.client.force_login(self.aidant_1)
+        response = self.client.get(
+            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
+            f"/autorisations/{self.autorisation_1_2.id}/cancel_confirm"
         )
         url = "/dashboard/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -110,7 +146,8 @@ class autorisationCancelConfirmPageTests(TestCase):
     def test_non_existing_usager_triggers_redirect(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
-            f"/usagers/{self.usager_2.id + 1}/mandats/{self.autorisation_1.id}/cancel_confirm"  # noqa
+            f"/usagers/{self.usager_2.id + 1}/mandats/{self.autorisation_1_1.mandat.id}"
+            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
         )
         url = "/dashboard/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -118,7 +155,8 @@ class autorisationCancelConfirmPageTests(TestCase):
     def test_wrong_usager_autorisation_triggers_redirect(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_2.id}/cancel_confirm"  # noqa
+            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_3_1.mandat.id}"
+            f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
         )
         url = "/dashboard/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -126,7 +164,8 @@ class autorisationCancelConfirmPageTests(TestCase):
     def test_wrong_aidant_autorisation_triggers_redirect(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
-            f"/usagers/{self.usager_2.id}/mandats/{self.autorisation_2.id}/cancel_confirm"  # noqa
+            f"/usagers/{self.usager_2.id}/mandats/{self.autorisation_3_1.mandat.id}"
+            f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
         )
         url = "/dashboard/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
