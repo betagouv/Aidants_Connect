@@ -34,3 +34,13 @@ class DeleteExpiredConnectionsTests(TestCase):
         remaining_connections = Connection.objects.all()
         self.assertEqual(remaining_connections.count(), 1)
         self.assertEqual(remaining_connections.first().id, self.conn_2.id)
+
+
+@tag("commands")
+class MigrateMandatsTests(TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_migrate_mandats(self):
+        pass
