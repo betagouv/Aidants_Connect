@@ -169,6 +169,64 @@ class MandatModelTests(TestCase):
     def test_mandat_can_have_two_autorisations(self):
         self.assertEqual(len(self.mandat_2.autorisations.all()), 2)
 
+    def test_active_queryset_method_exclude_fully_revoked_mandats(self):
+        fully_revoked_mandat = Mandat.objects.create(
+            organisation=self.organisation_1,
+            usager=self.usager_2,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        AutorisationFactory(
+            mandat=fully_revoked_mandat,
+            demarche="papiers",
+            revocation_date=timezone.now() - timedelta(minutes=1),
+        )
+        AutorisationFactory(
+            mandat=fully_revoked_mandat,
+            demarche="loisirs",
+            revocation_date=timezone.now() - timedelta(minutes=1),
+        )
+        active_mandats = Mandat.objects.active().count()
+
+        self.assertEqual(active_mandats, 2)
+
+    def test_active_queryset_method_include_partially_revoked_mandat(self):
+        partially_revoked_mandat = Mandat.objects.create(
+            organisation=self.organisation_1,
+            usager=self.usager_2,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        AutorisationFactory(
+            mandat=partially_revoked_mandat,
+            demarche="papiers",
+            revocation_date=timezone.now() - timedelta(minutes=1),
+        )
+        AutorisationFactory(
+            mandat=partially_revoked_mandat, demarche="loisirs",
+        )
+        active_mandats = Mandat.objects.active().count()
+
+        self.assertEqual(active_mandats, 3)
+
+    def test_active_queryset_method_excludes_expired_mandat(self):
+        expired_mandat = Mandat.objects.create(
+            organisation=self.organisation_1,
+            usager=self.usager_2,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() - timedelta(days=1),
+        )
+        AutorisationFactory(
+            mandat=expired_mandat, demarche="papiers",
+        )
+
+        active_mandats = Mandat.objects.active().count()
+
+        self.assertEqual(active_mandats, 2)
+
 
 @tag("models")
 class AutorisationModelTests(TestCase):
