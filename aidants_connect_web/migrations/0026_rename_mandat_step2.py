@@ -9,7 +9,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0024_rename_mandat_step1_prepare_fk"),
+        ("aidants_connect_web", "0025_rename_mandat_step1_prepare_fk"),
     ]
 
     operations = [

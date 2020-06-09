@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0027_rename_mandat_step4"),
+        ("aidants_connect_web", "0028_rename_mandat_step4"),
     ]
 
     operations = [

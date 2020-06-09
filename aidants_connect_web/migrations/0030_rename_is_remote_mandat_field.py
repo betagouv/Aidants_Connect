@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0028_fix_related_names"),
+        ("aidants_connect_web", "0029_fix_related_names"),
     ]
 
     operations = [

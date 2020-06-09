@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [

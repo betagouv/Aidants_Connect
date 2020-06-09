@@ -9,7 +9,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0023_rename_mandat_print"),
+        ("aidants_connect_web", "0024_rename_mandat_print"),
     ]
 
     operations = [
