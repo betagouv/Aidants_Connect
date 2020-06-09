@@ -145,7 +145,7 @@ class MandatModelTests(TestCase):
             mandat=self.mandat_1, demarche="justice",
         )
 
-        self.usager_2 = UsagerFactory()
+        self.usager_2 = UsagerFactory(sub="anothersub")
         self.mandat_2 = Mandat.objects.create(
             organisation=self.organisation_1,
             usager=self.usager_2,
