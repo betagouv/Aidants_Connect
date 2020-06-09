@@ -163,7 +163,7 @@ def new_mandat_recap(request):
                         )
 
                     # Create new demarche autorisation
-                    Autorisation.objects.create(
+                    autorisation = Autorisation.objects.create(
                         aidant=aidant,
                         usager=usager,
                         demarche=demarche,
@@ -172,6 +172,7 @@ def new_mandat_recap(request):
                         last_renewal_token=connection.access_token,
                         is_remote=True,
                     )
+                    Journal.objects.autorisation_creation(autorisation, aidant)
 
             except AttributeError as error:
                 log.error("Error happened in Recap")
