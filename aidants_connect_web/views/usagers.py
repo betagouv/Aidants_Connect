@@ -84,7 +84,7 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
             autorisation.revocation_date = timezone.now()
             autorisation.save(update_fields=["revocation_date"])
 
-            Journal.objects.autorisation_cancel(autorisation)
+            Journal.objects.autorisation_cancel(autorisation, aidant)
 
             django_messages.success(request, "Le mandat a été révoqué avec succès !")
             return redirect("usager_details", usager_id=usager.id)
