@@ -14,5 +14,3 @@ def on_login(sender, user, request, **kwargs):
 def on_autorisation_change(sender, instance, created, **kwargs):
     if created:
         Journal.objects.autorisation_creation(instance)
-    else:
-        Journal.objects.autorisation_update(instance)
