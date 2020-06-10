@@ -197,11 +197,6 @@ class NewMandatRecapTests(TestCase):
         self.test_usager = UsagerFactory(
             given_name="Fabrice", birthplace="95277", sub=self.test_usager_sub,
         )
-        self.mandat_builder = Connection.objects.create(
-            demarches=["papiers", "logement"],
-            duree_keyword="LONG",
-            usager=self.test_usager,
-        )
 
     def test_recap_url_triggers_the_recap_view(self):
         found = resolve("/creation_mandat/recapitulatif/")
@@ -209,9 +204,13 @@ class NewMandatRecapTests(TestCase):
 
     def test_recap_url_triggers_the_recap_template(self):
         self.client.force_login(self.aidant_thierry)
-
+        mandat_builder = Connection.objects.create(
+            demarches=["papiers", "logement"],
+            duree_keyword="LONG",
+            usager=self.test_usager,
+        )
         session = self.client.session
-        session["connection"] = self.mandat_builder.id
+        session["connection"] = mandat_builder.id
         session.save()
 
         response = self.client.get("/creation_mandat/recapitulatif/")
@@ -222,9 +221,13 @@ class NewMandatRecapTests(TestCase):
 
     def test_post_to_recap_with_correct_data_redirects_to_success(self):
         self.client.force_login(self.aidant_thierry)
+        mandat_builder = Connection.objects.create(
+            demarches=["papiers", "logement"],
+            duree_keyword="LONG",
+            usager=self.test_usager,
+        )
         session = self.client.session
-
-        session["connection"] = self.mandat_builder.id
+        session["connection"] = mandat_builder.id
         session.save()
 
         response = self.client.post(
@@ -248,10 +251,12 @@ class NewMandatRecapTests(TestCase):
         session = self.client.session
         session["connection"] = mandat_builder.id
         session.save()
+
         response = self.client.post(
             "/creation_mandat/recapitulatif/",
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
+
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
@@ -264,6 +269,7 @@ class NewMandatRecapTests(TestCase):
         session = self.client.session
         session["connection"] = mandat_builder_1.id
         session.save()
+
         # trigger the mandat creation
         self.client.post(
             "/creation_mandat/recapitulatif/",
@@ -280,10 +286,10 @@ class NewMandatRecapTests(TestCase):
             demarches=["papiers", "logement"],
             duree_keyword="LONG",
         )
-
         session = self.client.session
         session["connection"] = mandat_builder_2.id
         session.save()
+
         # trigger the mandat creation
         self.client.post(
             "/creation_mandat/recapitulatif/",
@@ -292,11 +298,13 @@ class NewMandatRecapTests(TestCase):
 
         self.assertEqual(Autorisation.objects.count(), 3)
 
-        last_usager_aidant_papiers_autorisations = Autorisation.objects.filter(
-            demarche="papiers", usager=self.test_usager, aidant=self.aidant_thierry
+        last_usager_organisation_papiers_autorisations = Autorisation.objects.filter(
+            demarche="papiers",
+            mandat__usager=self.test_usager,
+            mandat__organisation=self.aidant_thierry.organisation,
         ).order_by("-creation_date")
-        new_papiers_autorisation = last_usager_aidant_papiers_autorisations[0]
-        old_papiers_autorisation = last_usager_aidant_papiers_autorisations[1]
+        new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
+        old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]
         self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
         self.assertTrue(old_papiers_autorisation.is_revoked)
 
@@ -317,6 +325,7 @@ class NewMandatRecapTests(TestCase):
         session = self.client.session
         session["connection"] = mandat_builder_1.id
         session.save()
+
         # trigger the autorisation creation
         self.client.post(
             "/creation_mandat/recapitulatif/",
@@ -344,7 +353,7 @@ class NewMandatRecapTests(TestCase):
         self.assertEqual(Autorisation.objects.count(), 3)
 
         last_usager_papiers_autorisations = Autorisation.objects.filter(
-            demarche="papiers", usager=self.test_usager
+            demarche="papiers", mandat__usager=self.test_usager
         ).order_by("-creation_date")
         new_papiers_autorisation = last_usager_papiers_autorisations[0]
         old_papiers_autorisation = last_usager_papiers_autorisations[1]
@@ -395,7 +404,7 @@ class NewMandatRecapTests(TestCase):
         self.assertEqual(Autorisation.objects.count(), 3)
 
         last_usager_papiers_autorisations = Autorisation.objects.filter(
-            demarche="papiers", usager=self.test_usager
+            demarche="papiers", mandat__usager=self.test_usager
         ).order_by("-creation_date")
         new_papiers_autorisation = last_usager_papiers_autorisations[0]
         old_papiers_autorisation = last_usager_papiers_autorisations[1]

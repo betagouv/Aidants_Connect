@@ -467,7 +467,7 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def autorisation_update(self, autorisation: Autorisation):
+    def autorisation_update(self, autorisation: Autorisation, aidant: Aidant):
         aidant = autorisation.aidant
         usager = autorisation.usager
 
@@ -505,7 +505,7 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def autorisation_cancel(self, autorisation: Autorisation):
+    def autorisation_cancel(self, autorisation: Autorisation, aidant: Aidant):
         journal_entry = self.create(
             initiator=autorisation.aidant.full_string_identifier,
             usager=autorisation.usager.full_string_identifier,

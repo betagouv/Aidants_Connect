@@ -513,14 +513,14 @@ class JournalModelTests(TestCase):
 
     def test_log_autorisation_update_complete(self):
         entry = Journal.objects.autorisation_update(
-            autorisation=self.first_autorisation
+            autorisation=self.first_autorisation, aidant=self.aidant_thierry
         )
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "update_autorisation")
 
     def test_log_autorisation_cancel_complete(self):
         entry = Journal.objects.autorisation_cancel(
-            autorisation=self.first_autorisation
+            autorisation=self.first_autorisation, aidant=self.aidant_thierry
         )
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "cancel_autorisation")
