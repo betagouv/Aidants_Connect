@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -6,9 +6,10 @@ from django.db.models import Q
 from django.test import tag, TestCase, override_settings
 from django.test.client import Client
 from django.urls import resolve
+from django.utils import timezone
 
 from freezegun import freeze_time
-from pytz import timezone
+from pytz import timezone as pytz_timezone
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
@@ -67,7 +68,7 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime("23/05/2020 +0100", "%d/%m/%Y %z"
 
 @tag("new_mandat", "confinement")
 @override_settings(ETAT_URGENCE_2020_LAST_DAY=ETAT_URGENCE_2020_LAST_DAY)
-@freeze_time(datetime(2020, 5, 20, tzinfo=timezone("Europe/Paris")))
+@freeze_time(datetime(2020, 5, 20, tzinfo=pytz_timezone("Europe/Paris")))
 class ConfinementNewMandatRecapTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -236,7 +237,11 @@ class NewMandatRecapTests(TestCase):
 
         self.assertEqual(last_journal_entries.count(), 4)
         self.assertEqual(last_journal_entries[0].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[0].demarche, "papiers")
+        self.assertEqual(last_journal_entries[1].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[1].demarche, "logement")
         self.assertEqual(last_journal_entries[2].action, "create_attestation")
+        self.assertEqual(last_journal_entries[2].demarche, "logement,papiers")
 
     def test_post_to_recap_without_usager_creates_error(self):
         self.client.force_login(self.aidant_thierry)
@@ -303,8 +308,163 @@ class NewMandatRecapTests(TestCase):
         self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
         self.assertTrue(old_papiers_autorisation.is_revoked)
 
+        last_journal_entries = Journal.objects.all().order_by("-creation_date")
+        self.assertEqual(last_journal_entries[0].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[0].demarche, "papiers")
+        self.assertEqual(last_journal_entries[1].action, "cancel_autorisation")
+        self.assertEqual(last_journal_entries[2].action, "update_autorisation")
+        self.assertEqual(last_journal_entries[3].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[3].demarche, "logement")
+
+        self.assertEqual(
+            len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
+            2,
+        )
+
+    def test_updating_expired_autorisation_for_same_organisation(self):
+        # first session : creating the autorisation
+        self.client.force_login(self.aidant_thierry)
+        mandat_builder_1 = Connection.objects.create(
+            usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
+        )
+        session = self.client.session
+        session["connection"] = mandat_builder_1.id
+        session.save()
+
+        # trigger the mandat creation
+        self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
+        )
+
+        self.assertEqual(Autorisation.objects.count(), 1)
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "create_autorisation")
+
+        with freeze_time(timezone.now() + +timedelta(days=6)):
+            # second session : 'updating' the autorisation
+            self.client.force_login(self.aidant_thierry)
+            mandat_builder_2 = Connection.objects.create(
+                usager=self.test_usager,
+                demarches=["papiers", "logement"],
+                duree_keyword="LONG",
+            )
+            session = self.client.session
+            session["connection"] = mandat_builder_2.id
+            session.save()
+
+            # trigger the mandat creation
+            self.client.post(
+                "/creation_mandat/recapitulatif/",
+                data={"personal_data": True, "brief": True, "otp_token": "223456"},
+            )
+
+            self.assertEqual(Autorisation.objects.count(), 3)
+
+            last_usager_organisation_papiers_autorisations = Autorisation.objects.filter(  # noqa
+                demarche="papiers",
+                mandat__usager=self.test_usager,
+                mandat__organisation=self.aidant_thierry.organisation,
+            ).order_by(
+                "-creation_date"
+            )
+            new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
+            old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]
+            self.assertEqual(new_papiers_autorisation.duree_in_days, 366)  # TODO: 365
+            self.assertTrue(old_papiers_autorisation.is_expired)
+            self.assertFalse(old_papiers_autorisation.is_revoked)
+
+            last_journal_entries = Journal.objects.all().order_by("-id")
+            self.assertEqual(last_journal_entries[0].action, "create_autorisation")
+            self.assertEqual(last_journal_entries[0].demarche, "papiers")
+            self.assertEqual(last_journal_entries[1].action, "create_autorisation")
+            self.assertEqual(last_journal_entries[1].demarche, "logement")
+            self.assertEqual(last_journal_entries[2].action, "create_attestation")
+            self.assertEqual(last_journal_entries[2].demarche, "logement,papiers")
+            self.assertNotIn(
+                "cancel_autorisation",
+                [journal_entry.action for journal_entry in last_journal_entries],
+            )
+
+            self.assertEqual(
+                len(
+                    self.aidant_thierry.get_active_demarches_for_usager(
+                        self.test_usager
+                    )
+                ),
+                2,
+            )
+
+    def test_updating_revoked_autorisation_for_same_organisation(self):
+        # first session : creating the autorisation
+        self.client.force_login(self.aidant_thierry)
+        mandat_builder_1 = Connection.objects.create(
+            usager=self.test_usager, demarches=["papiers"], duree_keyword="SHORT"
+        )
+        session = self.client.session
+        session["connection"] = mandat_builder_1.id
+        session.save()
+
+        # trigger the mandat creation
+        self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
+        )
+
+        self.assertEqual(Autorisation.objects.count(), 1)
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "create_autorisation")
+
+        # revoke
+        self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
+        )
+
+        last_autorisation = Autorisation.objects.last()
+        last_autorisation.revocation_date = timezone.now()
+        last_autorisation.save(update_fields=["revocation_date"])
+
+        Journal.objects.autorisation_update(last_autorisation, self.aidant_thierry)
+        Journal.objects.autorisation_cancel(last_autorisation, self.aidant_thierry)
+
+        # second session : 'updating' the autorisation
+        self.client.force_login(self.aidant_thierry)
+        mandat_builder_2 = Connection.objects.create(
+            usager=self.test_usager,
+            demarches=["papiers", "logement"],
+            duree_keyword="LONG",
+        )
+        session = self.client.session
+        session["connection"] = mandat_builder_2.id
+        session.save()
+
+        # trigger the mandat creation
+        self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "223456"},
+        )
+
+        self.assertEqual(Autorisation.objects.count(), 3)
+
+        last_usager_organisation_papiers_autorisations = Autorisation.objects.filter(
+            demarche="papiers",
+            mandat__usager=self.test_usager,
+            mandat__organisation=self.aidant_thierry.organisation,
+        ).order_by("-creation_date")
+        new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
+        old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]
+        self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
+        self.assertFalse(old_papiers_autorisation.is_expired)
+        self.assertTrue(old_papiers_autorisation.is_revoked)
+
+        last_journal_entries = Journal.objects.all().order_by("-id")
+        self.assertEqual(last_journal_entries[0].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[0].demarche, "papiers")
+        self.assertEqual(last_journal_entries[1].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[1].demarche, "logement")
+        self.assertEqual(last_journal_entries[2].action, "create_attestation")
+        self.assertEqual(last_journal_entries[2].demarche, "logement,papiers")
 
         self.assertEqual(
             len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
@@ -355,8 +515,13 @@ class NewMandatRecapTests(TestCase):
         self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
         self.assertTrue(old_papiers_autorisation.is_revoked)
 
-        last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "create_autorisation")
+        last_journal_entries = Journal.objects.all().order_by("-creation_date")
+        self.assertEqual(last_journal_entries[0].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[0].demarche, "papiers")
+        self.assertEqual(last_journal_entries[1].action, "cancel_autorisation")
+        self.assertEqual(last_journal_entries[2].action, "update_autorisation")
+        self.assertEqual(last_journal_entries[3].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[3].demarche, "logement")
 
         self.assertEqual(
             len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
@@ -406,8 +571,15 @@ class NewMandatRecapTests(TestCase):
         self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
         self.assertFalse(old_papiers_autorisation.is_revoked)
 
-        last_journal_entry = Journal.objects.last()
-        self.assertEqual(last_journal_entry.action, "create_autorisation")
+        last_journal_entries = Journal.objects.all().order_by("-creation_date")
+        self.assertEqual(last_journal_entries[0].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[0].demarche, "papiers")
+        self.assertEqual(last_journal_entries[1].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[1].demarche, "logement")
+        self.assertNotIn(
+            "cancel_autorisation",
+            [journal_entry.action for journal_entry in last_journal_entries],
+        )
 
         self.assertEqual(
             len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
@@ -467,7 +639,9 @@ class GenerateAttestationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
 
-    @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=timezone("Europe/Paris")))
+    @freeze_time(
+        datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
+    )
     def test_attestation_contains_text(self):
         self.client.force_login(self.aidant_thierry)
 
