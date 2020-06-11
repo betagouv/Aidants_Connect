@@ -76,7 +76,7 @@ def usagers_mandats_autorisations_cancel_confirm(
         django_messages.error(request, "L'autorisation a été révoquée")
         return redirect("dashboard")
     if autorisation.is_expired:
-        django_messages.error(request, "L'autorisation est déjà expirée")
+        django_messages.error(request, "L'autorisation a déjà expiré")
         return redirect("dashboard")
 
     if request.method == "POST":
@@ -88,13 +88,15 @@ def usagers_mandats_autorisations_cancel_confirm(
 
             Journal.objects.autorisation_cancel(autorisation, aidant)
 
-            django_messages.success(request, "Le mandat a été révoquée avec succès !")
+            django_messages.success(
+                request, "L'autorisation a été révoquée avec succès !"
+            )
             return redirect("usager_details", usager_id=usager.id)
 
         else:
             return render(
                 request,
-                "aidants_connect_web/new_mandat/usagers_mandats_autorisations_cancel_confirm.html",  # noqa
+                "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
                 {
                     "aidant": aidant,
                     "usager": usager,

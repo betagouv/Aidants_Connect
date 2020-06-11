@@ -211,9 +211,7 @@ class Usager(models.Model):
     def get_autorisation(self, mandat_id, autorisation_id):
         try:
             return self.get_mandat(mandat_id).autorisations.get(pk=autorisation_id)
-        except AttributeError:
-            return None
-        except Autorisation.DoesNotExist:
+        except (AttributeError, Autorisation.DoesNotExist):
             return None
 
     def normalize_birthplace(self):
