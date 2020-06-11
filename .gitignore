@@ -2,7 +2,6 @@ venv/*
 .idea/*
 **/__pycache__/**
 db.sqlite3
-geckodriver.log
 
 aidants_connect/tmp_email_as_file/**
 .env
@@ -11,3 +10,11 @@ staticfiles
 
 local_db.json
 local_scripts
+
+# Unit test / coverage reports
+geckodriver.log
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover

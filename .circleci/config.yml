@@ -47,7 +47,8 @@ jobs:
           command: |
             . venv/bin/activate
             flake8
-            python manage.py test
+            coverage run manage.py test
+            coverage report
 
       - store_artifacts:
           path: test-reports
