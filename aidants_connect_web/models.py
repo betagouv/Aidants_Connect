@@ -487,24 +487,6 @@ class JournalManager(models.Manager):
 
         return journal_entry
 
-    def autorisation_update(self, autorisation: Autorisation, aidant: Aidant):
-        usager = autorisation.usager
-
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
-            action="update_autorisation",
-            demarche=autorisation.demarche,
-            duree=autorisation.duree_in_days,
-            autorisation=autorisation.id,
-            # COVID-19
-            is_remote_mandat=True,
-            additional_information="Mandat conclu à distance "
-            "pendant l'état d'urgence sanitaire (23 mars 2020)",
-        )
-
-        return journal_entry
-
     def autorisation_use(
         self,
         aidant: Aidant,
@@ -549,7 +531,6 @@ class Journal(models.Model):
         ("create_attestation", "Création d'une attestation"),
         ("create_autorisation", "Création d'une autorisation"),
         ("use_autorisation", "Utilisation d'une autorisation"),
-        ("update_autorisation", "Renouvellement d'une autorisation"),
         ("cancel_autorisation", "Révocation d'une autorisation"),
     )
     # mandatory
