@@ -116,6 +116,26 @@ class AutorisationCancelConfirmPageTests(TestCase):
             "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
         )
 
+        response_incorrect_confirm_form = self.client.post(
+            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
+            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm",
+            data={},
+        )
+        self.assertTemplateUsed(
+            response_incorrect_confirm_form,
+            "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
+        )
+
+        response_correct_confirm_form = self.client.post(
+            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
+            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm",
+            data={"csrfmiddlewaretoken": "coucou"},
+        )
+        url = f"/usagers/{self.usager_1.id}/"
+        self.assertRedirects(
+            response_correct_confirm_form, url, fetch_redirect_response=False
+        )
+
     def test_non_existing_autorisation_triggers_redirect(self):
         self.client.force_login(self.aidant_1)
         response = self.client.get(
