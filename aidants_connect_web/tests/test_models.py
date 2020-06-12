@@ -341,6 +341,7 @@ class AidantModelMethodsTests(TestCase):
         AutorisationFactory(
             mandat=cls.mandat_marge_ned_2, demarche="travail",
         )
+
         AutorisationFactory(
             demarche="papiers",
             mandat=cls.mandat_marge_ned_2,
