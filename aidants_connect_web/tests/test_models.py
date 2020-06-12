@@ -234,8 +234,8 @@ class AutorisationModelTests(TestCase):
     def setUpTestData(cls):
         cls.aidant_marge = AidantFactory(username="Marge")
         cls.aidant_patricia = AidantFactory(username="Patricia")
-        cls.usager_homer = UsagerFactory(given_name="Homer")
-        cls.usager_ned = UsagerFactory(family_name="Flanders")
+        cls.usager_homer = UsagerFactory()
+        cls.usager_ned = UsagerFactory(family_name="Flanders", sub="nedflanders")
 
         cls.mandat_marge_homer_6 = MandatFactory(
             organisation=cls.aidant_marge.organisation,
@@ -252,21 +252,17 @@ class AutorisationModelTests(TestCase):
         first_autorisation = AutorisationFactory(
             mandat=self.mandat_marge_homer_6, demarche="Carte grise",
         )
-
         second_autorisation = AutorisationFactory(
             mandat=self.mandat_patricia_ned_6, demarche="Revenus",
         )
-
         self.assertEqual(Autorisation.objects.count(), 2)
 
-        journal_entries = Journal.objects.all()
-        self.assertEqual(journal_entries.count(), 2)
-        self.assertEqual(journal_entries[0].action, "create_autorisation")
-        self.assertEqual(journal_entries[1].action, "create_autorisation")
-
-        self.assertEqual(first_autorisation.organisation, self.organisation_1)
+        self.assertEqual(
+            first_autorisation.mandat.organisation,
+            self.mandat_marge_homer_6.organisation,
+        )
         self.assertEqual(first_autorisation.demarche, "Carte grise")
-        self.assertEqual(second_autorisation.usager.family_name, "Flanders")
+        self.assertEqual(second_autorisation.mandat.usager.family_name, "Flanders")
 
     fake_date = datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris"))
 
@@ -283,7 +279,7 @@ class AutorisationModelTests(TestCase):
             datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris")),
         )
         self.assertEqual(
-            autorisation.expiration_date,
+            autorisation.mandat.expiration_date,
             datetime(2019, 1, 17, tzinfo=pytz_timezone("Europe/Paris")),
         )
 
@@ -579,6 +575,9 @@ class JournalModelTests(TestCase):
         cls.first_autorisation = AutorisationFactory(
             mandat=cls.first_mandat, demarche="Revenus",
         )
+        Journal.objects.autorisation_creation(
+            cls.first_autorisation, aidant=cls.aidant_thierry
+        )
 
         cls.mandat_thierry_ned_365 = MandatFactory(
             organisation=cls.aidant_thierry.organisation,
@@ -611,6 +610,7 @@ class JournalModelTests(TestCase):
         autorisation = AutorisationFactory(
             mandat=self.mandat_thierry_ned_365, demarche="logement",
         )
+        Journal.objects.autorisation_creation(autorisation, self.aidant_thierry)
 
         journal_entries = Journal.objects.all()
         self.assertEqual(len(journal_entries), 3)

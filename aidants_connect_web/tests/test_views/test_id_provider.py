@@ -574,8 +574,8 @@ class UserInfoTests(TestCase):
 
         journal_entries = Journal.objects.all()
 
-        self.assertEqual(journal_entries.count(), 2)
-        self.assertEqual(journal_entries[1].action, "use_autorisation")
+        self.assertEqual(journal_entries.count(), 1)
+        self.assertEqual(journal_entries.first().action, "use_autorisation")
 
     date_expired = date + timedelta(seconds=settings.FC_CONNECTION_AGE + 1200)
 
