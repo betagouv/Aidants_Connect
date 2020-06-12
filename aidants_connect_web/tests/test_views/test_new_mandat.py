@@ -282,9 +282,8 @@ class NewMandatRecapTests(TestCase):
         self.assertEqual(last_journal_entries[0].action, "create_autorisation")
         self.assertEqual(last_journal_entries[0].demarche, "papiers")
         self.assertEqual(last_journal_entries[1].action, "cancel_autorisation")
-        self.assertEqual(last_journal_entries[2].action, "update_autorisation")
-        self.assertEqual(last_journal_entries[3].action, "create_autorisation")
-        self.assertEqual(last_journal_entries[3].demarche, "logement")
+        self.assertEqual(last_journal_entries[2].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[2].demarche, "logement")
 
         self.assertEqual(
             len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
@@ -395,7 +394,6 @@ class NewMandatRecapTests(TestCase):
         last_autorisation.revocation_date = timezone.now()
         last_autorisation.save(update_fields=["revocation_date"])
 
-        Journal.objects.autorisation_update(last_autorisation, self.aidant_thierry)
         Journal.objects.autorisation_cancel(last_autorisation, self.aidant_thierry)
 
         # second session : 'updating' the autorisation
@@ -489,9 +487,8 @@ class NewMandatRecapTests(TestCase):
         self.assertEqual(last_journal_entries[0].action, "create_autorisation")
         self.assertEqual(last_journal_entries[0].demarche, "papiers")
         self.assertEqual(last_journal_entries[1].action, "cancel_autorisation")
-        self.assertEqual(last_journal_entries[2].action, "update_autorisation")
-        self.assertEqual(last_journal_entries[3].action, "create_autorisation")
-        self.assertEqual(last_journal_entries[3].demarche, "logement")
+        self.assertEqual(last_journal_entries[2].action, "create_autorisation")
+        self.assertEqual(last_journal_entries[2].demarche, "logement")
 
         self.assertEqual(
             len(self.aidant_thierry.get_active_demarches_for_usager(self.test_usager)),
