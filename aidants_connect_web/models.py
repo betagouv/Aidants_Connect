@@ -347,7 +347,7 @@ class Autorisation(models.Model):
 
     @property
     def duree_in_days(self):
-        duree_for_computer = self.expiration_date - self.creation_date
+        duree_for_computer = self.mandat.expiration_date - self.creation_date
         # we add one day so that duration is human friendly
         # i.e. for a human, there is one day between now and tomorrow at the same time,
         # and 0 for a computer
@@ -469,9 +469,8 @@ class JournalManager(models.Manager):
         )
         return journal_entry
 
-    def autorisation_creation(self, autorisation: Autorisation):
-        aidant = autorisation.aidant
-        usager = autorisation.usager
+    def autorisation_creation(self, autorisation: Autorisation, aidant: Aidant):
+        usager = autorisation.mandat.usager
 
         journal_entry = self.create(
             initiator=aidant.full_string_identifier,
@@ -489,7 +488,6 @@ class JournalManager(models.Manager):
         return journal_entry
 
     def autorisation_update(self, autorisation: Autorisation, aidant: Aidant):
-        aidant = autorisation.aidant
         usager = autorisation.usager
 
         journal_entry = self.create(
@@ -527,8 +525,8 @@ class JournalManager(models.Manager):
 
     def autorisation_cancel(self, autorisation: Autorisation, aidant: Aidant):
         journal_entry = self.create(
-            initiator=autorisation.aidant.full_string_identifier,
-            usager=autorisation.usager.full_string_identifier,
+            initiator=aidant.full_string_identifier,
+            usager=autorisation.mandat.usager.full_string_identifier,
             action="cancel_autorisation",
             demarche=autorisation.demarche,
             duree=autorisation.duree_in_days,
