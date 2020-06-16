@@ -279,6 +279,11 @@ MAGICAUTH_EMAIL_HTML_TEMPLATE = "login/email_template.html"
 MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
 MAGICAUTH_ENABLE_2FA = True
 
+# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py#L54  # noqa
+MAGICAUTH_TOKEN_DURATION_SECONDS = int(
+    os.getenv("MAGICAUTH_TOKEN_DURATION_SECONDS", 5 * 60)
+)
+
 # TOTP
 OTP_TOTP_ISSUER = os.getenv("OTP_TOTP_ISSUER", "Aidants Connect")
 
