@@ -10,3 +10,4 @@ staticfiles
 .DS_Store
 
 local_db.json
+local_scripts
