@@ -58,12 +58,14 @@ def new_mandat(request):
 
     else:
         form = MandatForm(request.POST)
+
         if form.is_valid():
             data = form.cleaned_data
             connection = Connection.objects.create(
                 aidant=request.user,
                 demarches=data["demarche"],
                 duree_keyword=data["duree"],
+                mandat_is_remote=data["is_remote"],
             )
             request.session["connection"] = connection.pk
             return redirect("fc_authorize")
@@ -104,6 +106,7 @@ def new_mandat_recap(request):
 
     else:
         form = RecapMandatForm(aidant=aidant, data=request.POST)
+
         if form.is_valid():
             expiration_date = {
                 "SHORT": timezone.now() + timedelta(days=1),
@@ -126,6 +129,7 @@ def new_mandat_recap(request):
                     usager=usager,
                     demarches=connection.demarches,
                     duree=mandat_duree,
+                    is_remote_mandat=connection.mandat_is_remote,
                     access_token=connection.access_token,
                     mandat_print_hash=generate_mandat_print_hash(
                         aidant, usager, connection.demarches, mandat_expiration_date
@@ -142,7 +146,7 @@ def new_mandat_recap(request):
                             "expiration_date": mandat_expiration_date,
                             "last_mandat_renewal_date": timezone.now(),
                             "last_mandat_renewal_token": connection.access_token,
-                            "is_remote_mandat": True,
+                            "is_remote_mandat": connection.mandat_is_remote,
                         },
                     )
 

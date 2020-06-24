@@ -320,7 +320,11 @@ CSP_IMG_SRC = (
     "https://societenumerique.gouv.fr/wp-content/uploads/2018/05/mockupkit-1.png",
     "https://solidarite-numerique.fr/images/logo/phoneheart.svg",
 )
-CSP_SCRIPT_SRC = ("'self'", "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E='")
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E='",  # main.html
+    "'sha256-KmV6UDCSIgj53bsOoy8uwsFoQNpcFRhqLgcL8kgXIXg='",  # new_mandat.html
+)
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
