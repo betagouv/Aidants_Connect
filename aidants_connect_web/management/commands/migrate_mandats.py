@@ -89,7 +89,9 @@ class Command(BaseCommand):
     def _compute_duree_keyword(self, autorisation):
 
         ETAT_URGENCE_2020_LAST_DAYS = (
-            datetime.strptime("23/05/2020 23:59:59 +0100", "%d/%m/%Y %H:%M:%S %z"),  # the first one
+            datetime.strptime(
+                "23/05/2020 23:59:59 +0100", "%d/%m/%Y %H:%M:%S %z"
+            ),  # the first one
             settings.ETAT_URGENCE_2020_LAST_DAY,
         )
         if autorisation.expiration_date in ETAT_URGENCE_2020_LAST_DAYS:
@@ -112,10 +114,8 @@ class Command(BaseCommand):
 
         # First, we convert all "create_mandat_print" journal entries
         # to the new "create_attestation" wording.
-        Journal.objects.filter(
-            action='create_mandat_print'
-        ).update(
-            action='create_attestation'
+        Journal.objects.filter(action="create_mandat_print").update(
+            action="create_attestation"
         )
 
         # Also, for some reason(?), it appears that a wrong date was applied
@@ -123,14 +123,12 @@ class Command(BaseCommand):
         # emergency (which is, as Björk will tell you, where I want to be.)
         Autorisation.objects.filter(
             expiration_date=settings.ETAT_URGENCE_2020_LAST_DAY - timedelta(days=1)
-        ).update(
-            expiration_date=settings.ETAT_URGENCE_2020_LAST_DAY
-        )
+        ).update(expiration_date=settings.ETAT_URGENCE_2020_LAST_DAY)
 
         created_autorisations = []
 
         # We can now loop through all our `usagers`...
-        for usager in Usager.objects.order_by('creation_date'):
+        for usager in Usager.objects.order_by("creation_date"):
 
             # Option: skip if this is not the specified `usager`.
             if options["usager_id"]:
@@ -152,9 +150,10 @@ class Command(BaseCommand):
             orga_ids = set([auto.aidant.organisation.id for auto in autos])
             num_orgas = len(orga_ids)
 
-            self.stdout.write("    -> %d Autorisation(s), with %d Organisation(s)" % (
-                num_autos, num_orgas
-            ))
+            self.stdout.write(
+                "    -> %d Autorisation(s), with %d Organisation(s)"
+                % (num_autos, num_orgas)
+            )
 
             # Then, for each `usager`, we loop through all the `organisations`
             # they have signed a `mandat` with...
@@ -165,13 +164,16 @@ class Command(BaseCommand):
                 orga = Organisation.objects.get(pk=orga_id)
                 orga_name = orga.name
 
-                orga_autos = autos.filter(aidant__organisation__pk=orga_id).order_by('creation_date')
+                orga_autos = autos.filter(aidant__organisation__pk=orga_id).order_by(
+                    "creation_date"
+                )
                 num_orga_autos = orga_autos.count()
                 num_linked_orga_autos = 0
 
-                self.stdout.write("      -> Creating Mandat(s) with Organisation \"%s\" (#%d)..." % (
-                    orga_name, orga_id
-                ))
+                self.stdout.write(
+                    '      -> Creating Mandat(s) with Organisation "%s" (#%d)...'
+                    % (orga_name, orga_id)
+                )
 
                 # We need to go on as long as all the `autorisations` are not
                 # properly linked to a `mandat`.
@@ -198,14 +200,13 @@ class Command(BaseCommand):
                         creation_date=first_unlinked_auto.creation_date,
                         expiration_date=first_unlinked_auto.expiration_date,
                         is_remote=first_unlinked_auto.is_remote,
-                        duree_keyword=self._compute_duree_keyword(
-                            first_unlinked_auto
-                        )
+                        duree_keyword=self._compute_duree_keyword(first_unlinked_auto),
                     )
 
-                    self.stdout.write("        -> Created Mandat #%d (%s)" % (
-                        new_mandat.id, new_mandat.duree_keyword
-                    ))
+                    self.stdout.write(
+                        "        -> Created Mandat #%d (%s)"
+                        % (new_mandat.id, new_mandat.duree_keyword)
+                    )
 
                     # We link to this new `mandat` all the `autorisations` that were created
                     # at "roughly the same time" (within one hour) as the current one.
@@ -219,11 +220,18 @@ class Command(BaseCommand):
                         current_auto.mandat = new_mandat
                         current_auto.save()
 
-                        self.stdout.write("          -> Linked Autorisation #%d (%s)" % (
-                            current_auto.id, current_auto.demarche
-                        ))
-                        self.stdout.write("             from: %s" % current_auto.creation_date.strftime('%c'))
-                        self.stdout.write("               to: %s" % current_auto.expiration_date.strftime('%c'))
+                        self.stdout.write(
+                            "          -> Linked Autorisation #%d (%s)"
+                            % (current_auto.id, current_auto.demarche)
+                        )
+                        self.stdout.write(
+                            "             from: %s"
+                            % current_auto.creation_date.strftime("%c")
+                        )
+                        self.stdout.write(
+                            "               to: %s"
+                            % current_auto.expiration_date.strftime("%c")
+                        )
                         num_linked_orga_autos += 1
 
                         try:

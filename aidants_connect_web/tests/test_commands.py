@@ -48,7 +48,6 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
 @freeze_time("2020-06-30 10:30:00")
 @override_settings(ETAT_URGENCE_2020_LAST_DAY=ETAT_URGENCE_2020_LAST_DAY)
 class MigrateMandatsTests(TestCase):
-
     def setUp(self):
 
         self.orga1 = OrganisationFactory()
@@ -56,10 +55,30 @@ class MigrateMandatsTests(TestCase):
         self.orga3 = OrganisationFactory()
         self.orga4 = OrganisationFactory()
 
-        self.aidant1 = AidantFactory(organisation=self.orga1, email="a1@o1.com", username="a1@o1.com", password="toto")  # noqa
-        self.aidant2 = AidantFactory(organisation=self.orga2, email="a2@o2.com", username="a2@o2.com", password="toto")  # noqa
-        self.aidant3 = AidantFactory(organisation=self.orga3, email="a3@o3.com", username="a3@o3.com", password="toto")  # noqa
-        self.aidant4 = AidantFactory(organisation=self.orga4, email="a4@o4.com", username="a4@o4.com", password="toto")  # noqa
+        self.aidant1 = AidantFactory(
+            organisation=self.orga1,
+            email="a1@o1.com",
+            username="a1@o1.com",
+            password="toto",
+        )  # noqa
+        self.aidant2 = AidantFactory(
+            organisation=self.orga2,
+            email="a2@o2.com",
+            username="a2@o2.com",
+            password="toto",
+        )  # noqa
+        self.aidant3 = AidantFactory(
+            organisation=self.orga3,
+            email="a3@o3.com",
+            username="a3@o3.com",
+            password="toto",
+        )  # noqa
+        self.aidant4 = AidantFactory(
+            organisation=self.orga4,
+            email="a4@o4.com",
+            username="a4@o4.com",
+            password="toto",
+        )  # noqa
 
         self.usager1 = UsagerFactory()
         self.usager2 = UsagerFactory()
@@ -67,7 +86,7 @@ class MigrateMandatsTests(TestCase):
         self.usager4 = UsagerFactory()
 
         # `usager1`: 3 `autorisations` for one day, before lockdown
-        for demarche in ['papiers', 'famille', 'social']:
+        for demarche in ["papiers", "famille", "social"]:
             LegacyAutorisationFactory(
                 usager=self.usager1,
                 aidant=self.aidant1,
@@ -78,7 +97,7 @@ class MigrateMandatsTests(TestCase):
             )
 
         # `usager2`: 2 `autorisations` for one day, during lockdown
-        for demarche in ['travail', 'logement']:
+        for demarche in ["travail", "logement"]:
             LegacyAutorisationFactory(
                 usager=self.usager2,
                 aidant=self.aidant2,
@@ -89,7 +108,7 @@ class MigrateMandatsTests(TestCase):
             )
 
         # `usager3`: 2 `autorisations` until the end of lockdown
-        for demarche in ['transports', 'argent']:
+        for demarche in ["transports", "argent"]:
             LegacyAutorisationFactory(
                 usager=self.usager3,
                 aidant=self.aidant3,
@@ -100,7 +119,7 @@ class MigrateMandatsTests(TestCase):
             )
 
         # `usager4`: 3 `autorisations` for one year, after lockdown
-        for demarche in ['justice', 'etranger', 'loisirs']:
+        for demarche in ["justice", "etranger", "loisirs"]:
             LegacyAutorisationFactory(
                 usager=self.usager4,
                 aidant=self.aidant4,
@@ -116,7 +135,7 @@ class MigrateMandatsTests(TestCase):
 
         call_command("migrate_mandats")
 
-        mandats = Mandat.objects.order_by('organisation_id')
+        mandats = Mandat.objects.order_by("organisation_id")
 
         self.assertEqual(mandats.count(), 4)
         self.assertEqual(
@@ -129,20 +148,23 @@ class MigrateMandatsTests(TestCase):
         )
         self.assertEqual(
             [mandat.duree_keyword for mandat in mandats],
-            ['SHORT', 'SHORT', 'EUS_03_20', 'LONG'],
+            ["SHORT", "SHORT", "EUS_03_20", "LONG"],
         )
         self.assertEqual(
             [mandat.creation_date.strftime("%d/%m/%Y") for mandat in mandats],
-            ['05/02/2020', '15/04/2020', '15/04/2020', '25/05/2020'],
+            ["05/02/2020", "15/04/2020", "15/04/2020", "25/05/2020"],
         )
         self.assertEqual(
-            [[auto.id for auto in mandat.autorisations.order_by('pk')] for mandat in mandats],  # noqa
             [
-                [auto.id for auto in self.usager1.autorisations.order_by('pk')],
-                [auto.id for auto in self.usager2.autorisations.order_by('pk')],
-                [auto.id for auto in self.usager3.autorisations.order_by('pk')],
-                [auto.id for auto in self.usager4.autorisations.order_by('pk')],
-            ]
+                [auto.id for auto in mandat.autorisations.order_by("pk")]
+                for mandat in mandats
+            ],  # noqa
+            [
+                [auto.id for auto in self.usager1.autorisations.order_by("pk")],
+                [auto.id for auto in self.usager2.autorisations.order_by("pk")],
+                [auto.id for auto in self.usager3.autorisations.order_by("pk")],
+                [auto.id for auto in self.usager4.autorisations.order_by("pk")],
+            ],
         )
 
 

@@ -259,12 +259,12 @@ class MandatQuerySet(models.QuerySet):
 
 class Mandat(models.Model):
     organisation = models.ForeignKey(
-        Organisation, on_delete=models.PROTECT, related_name="mandats",
-        default=get_staff_organisation_name_id
+        Organisation,
+        on_delete=models.PROTECT,
+        related_name="mandats",
+        default=get_staff_organisation_name_id,
     )
-    usager = models.ForeignKey(
-        Usager, on_delete=models.PROTECT, related_name="mandats"
-    )
+    usager = models.ForeignKey(Usager, on_delete=models.PROTECT, related_name="mandats")
     creation_date = models.DateTimeField(default=timezone.now)
     expiration_date = models.DateTimeField(default=timezone.now)
     duree_keyword = models.CharField(

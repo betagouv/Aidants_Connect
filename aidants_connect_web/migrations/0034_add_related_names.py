@@ -8,18 +8,27 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aidants_connect_web', '0033_add_new_mandat_model'),
+        ("aidants_connect_web", "0033_add_new_mandat_model"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mandat',
-            name='organisation',
-            field=models.ForeignKey(default=aidants_connect_web.models.get_staff_organisation_name_id, on_delete=django.db.models.deletion.PROTECT, related_name='mandats', to='aidants_connect_web.Organisation'),
+            model_name="mandat",
+            name="organisation",
+            field=models.ForeignKey(
+                default=aidants_connect_web.models.get_staff_organisation_name_id,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="mandats",
+                to="aidants_connect_web.Organisation",
+            ),
         ),
         migrations.AlterField(
-            model_name='mandat',
-            name='usager',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='mandats', to='aidants_connect_web.Usager'),
+            model_name="mandat",
+            name="usager",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="mandats",
+                to="aidants_connect_web.Usager",
+            ),
         ),
     ]
