@@ -230,7 +230,7 @@ Enfin, chargez les données :
 
     ```shell
     python manage.py loaddata admin.json
-    python manage.py loaddata usager_mandat.json
+    python manage.py loaddata usager_autorisation.json
     ```
 
 - Soit repartir de zéro en recréant un _superuser_ (plus de détails dans la section [Installer l'application](#installer-lapplication)) :

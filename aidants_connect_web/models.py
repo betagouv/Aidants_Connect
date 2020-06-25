@@ -132,11 +132,8 @@ class Aidant(AbstractUser):
 
 
 class UsagerQuerySet(models.QuerySet):
-
     def active(self):
-        return self.filter(
-            autorisations__expiration_date__gt=timezone.now()
-        ).distinct()
+        return self.filter(autorisations__expiration_date__gt=timezone.now()).distinct()
 
     def visible_by(self, aidant):
         """
@@ -206,6 +203,41 @@ class Usager(models.Model):
         return self.birthplace
 
 
+class AutorisationDureeKeywords(models.TextChoices):
+    SHORT = (
+        "SHORT",
+        "pour une durée de 1 jour",
+    )
+    LONG = (
+        "LONG",
+        "pour une durée de 1 an",
+    )
+    EUS_03_20 = (
+        "EUS_03_20",
+        "jusqu’à la fin de l’état d’urgence sanitaire ",
+    )
+
+
+def get_staff_organisation_name_id() -> int:
+    try:
+        return Organisation.objects.get(name=settings.STAFF_ORGANISATION_NAME).pk
+    except Organisation.DoesNotExist:
+        return 1
+
+
+class Mandat(models.Model):
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, default=get_staff_organisation_name_id,
+    )
+    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0,)
+    creation_date = models.DateTimeField(default=timezone.now)
+    expiration_date = models.DateTimeField(default=timezone.now)
+    duree_keyword = models.CharField(
+        max_length=16, choices=AutorisationDureeKeywords.choices, null=True
+    )
+    is_remote = models.BooleanField(default=False)
+
+
 class AutorisationQuerySet(models.QuerySet):
     def active(self):
         return self.exclude(expiration_date__lt=timezone.now())
@@ -230,9 +262,12 @@ class Autorisation(models.Model):
         Aidant, on_delete=models.CASCADE, default=0, related_name="autorisations"
     )
     usager = models.ForeignKey(
-        Usager, on_delete=models.CASCADE, default=0, related_name="autorisations"
+        Usager, on_delete=models.CASCADE, default=0, related_name="autorisations",
     )
     demarche = models.CharField(blank=False, max_length=100)
+    mandat = models.ForeignKey(
+        Mandat, on_delete=models.CASCADE, null=True, related_name="autorisations"
+    )
 
     # Autorisation expiration date management
     creation_date = models.DateTimeField(default=timezone.now)
@@ -240,9 +275,7 @@ class Autorisation(models.Model):
     last_renewal_date = models.DateTimeField(default=timezone.now)
 
     # Journal entry creation information
-    last_renewal_token = models.TextField(
-        blank=False, default="No token provided"
-    )
+    last_renewal_token = models.TextField(blank=False, default="No token provided")
     is_remote = models.BooleanField(default=False)
 
     objects = AutorisationQuerySet.as_manager()
@@ -279,21 +312,6 @@ def default_connection_expiration_date():
     return now + timedelta(seconds=settings.FC_CONNECTION_AGE)
 
 
-class AutorisationDureeKeywords(models.TextChoices):
-    SHORT = (
-        "SHORT",
-        "pour une durée de 1 jour",
-    )
-    LONG = (
-        "LONG",
-        "pour une durée de 1 an",
-    )
-    EUS_03_20 = (
-        "EUS_03_20",
-        "jusqu’à la fin de l’état d’urgence sanitaire ",
-    )
-
-
 class Connection(models.Model):
     state = models.TextField()  # FS
     nonce = models.TextField(default="No Nonce Provided")  # FS
@@ -307,8 +325,11 @@ class Connection(models.Model):
     )
     mandat_is_remote = models.BooleanField(default=False)
     usager = models.ForeignKey(
-        Usager, blank=True, null=True,
-        on_delete=models.CASCADE, related_name="connections"
+        Usager,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="connections",
     )  # FS
     expires_on = models.DateTimeField(default=default_connection_expiration_date)  # FS
     access_token = models.TextField(default="No token provided")  # FS
@@ -316,13 +337,19 @@ class Connection(models.Model):
     code = models.TextField()
     demarche = models.TextField(default="No demarche provided")
     aidant = models.ForeignKey(
-        Aidant, blank=True, null=True,
-        on_delete=models.CASCADE, related_name="connections"
+        Aidant,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="connections",
     )
     complete = models.BooleanField(default=False)
     autorisation = models.ForeignKey(
-        Autorisation, blank=True, null=True,
-        on_delete=models.CASCADE, related_name="connections"
+        Autorisation,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="connections",
     )
 
     objects = ConnectionQuerySet.as_manager()
@@ -407,7 +434,6 @@ class JournalManager(models.Manager):
             duree=autorisation.duree_in_days,
             access_token=autorisation.last_renewal_date,
             autorisation=autorisation.id,
-
             # COVID-19
             is_remote_mandat=autorisation.is_remote,
             additional_information=(
@@ -429,7 +455,6 @@ class JournalManager(models.Manager):
             duree=autorisation.duree_in_days,
             access_token=autorisation.last_renewal_date,
             autorisation=autorisation.id,
-
             # COVID-19
             is_remote_mandat=autorisation.is_remote,
             additional_information=(

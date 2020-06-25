@@ -13,6 +13,7 @@ from aidants_connect_web.models import (
     Autorisation,
     Connection,
     Journal,
+    Mandat,
     Organisation,
     Usager,
 )
@@ -122,6 +123,55 @@ class UsagerModelTests(TestCase):
         usager = UsagerFactory(birthplace="12345")
         usager.normalize_birthplace()
         self.assertEqual(usager.birthplace, "12345")
+
+
+@tag("models")
+class MandatModelTests(TestCase):
+    def setUp(self):
+        self.organisation_1 = OrganisationFactory()
+        self.aidant_1 = AidantFactory(username="aidants1@organisation1.com")
+
+        self.usager_1 = UsagerFactory()
+        self.mandat_1 = Mandat.objects.create(
+            organisation=self.organisation_1,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        self.autorisation_1 = AutorisationFactory(
+            aidant=self.aidant_1, usager=self.usager_1, mandat=self.mandat_1
+        )
+        self.usager_2 = UsagerFactory()
+        self.mandat_2 = Mandat.objects.create(
+            organisation=self.organisation_1,
+            usager=self.usager_2,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.autorisation_2 = AutorisationFactory(
+            aidant=self.aidant_1,
+            usager=self.usager_1,
+            mandat=self.mandat_2,
+            demarche="argent",
+        )
+        self.autorisation_3 = AutorisationFactory(
+            aidant=self.aidant_1,
+            usager=self.usager_1,
+            mandat=self.mandat_2,
+            demarche="transport",
+        )
+
+    def test_saving_and_retrieving_mandats(self):
+        self.assertEqual(Mandat.objects.count(), 2)
+
+    def test_mandat_can_have_one_autorisation(self):
+        self.assertEqual(len(self.mandat_1.autorisations.all()), 1)
+
+    def test_mandat_can_have_two_autorisations(self):
+        self.assertEqual(len(self.mandat_2.autorisations.all()), 2)
 
 
 @tag("models")

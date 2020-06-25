@@ -6,6 +6,7 @@ from django.utils.timezone import now
 from aidants_connect_web.models import (
     Autorisation,
     Connection,
+    Mandat,
     Organisation,
     Usager,
 )
@@ -61,3 +62,14 @@ class AutorisationFactory(factory.DjangoModelFactory):
 class ConnectionFactory(factory.DjangoModelFactory):
     class Meta:
         model = Connection
+
+
+class MandatFactory(factory.DjangoModelFactory):
+    organisation = factory.SubFactory(OrganisationFactory)
+    usager = factory.SubFactory(UsagerFactory)
+    creation_date = factory.LazyAttribute(lambda f: now())
+    duree_keyword = "SHORT"
+    expiration_date = factory.LazyAttribute(lambda f: now() + timedelta(days=1))
+
+    class Meta:
+        model = Mandat
