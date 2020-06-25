@@ -9,7 +9,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0031_allow_indexes_with_autorisation"),
+        ("aidants_connect_web", "0032_allow_indexes_with_autorisation"),
     ]
 
     operations = [
