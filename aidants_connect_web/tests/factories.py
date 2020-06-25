@@ -48,11 +48,6 @@ class UsagerFactory(factory.DjangoModelFactory):
         model = Usager
 
 
-class ConnectionFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Connection
-
-
 class MandatFactory(factory.DjangoModelFactory):
     organisation = factory.SubFactory(OrganisationFactory)
     usager = factory.SubFactory(UsagerFactory)
@@ -62,6 +57,11 @@ class MandatFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Mandat
+
+
+class ConnectionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Connection
 
 
 # Bad data to replace redundant data in autorisation
@@ -113,6 +113,15 @@ class AutorisationFactory(factory.DjangoModelFactory):
     aidant = factory.SubFactory(RandoAidantFactory)
     usager = factory.SubFactory(RandoUsagerFactory)
     expiration_date = factory.LazyAttribute(lambda f: now() - timedelta(days=1))
+
+    class Meta:
+        model = Autorisation
+
+
+class LegacyAutorisationFactory(AutorisationFactory):
+
+    # Used to test the migration script that actually *creates* mandats ^^
+    mandat = None
 
     class Meta:
         model = Autorisation

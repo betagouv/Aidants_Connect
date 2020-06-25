@@ -158,9 +158,6 @@ def new_mandat_recap(request):
                         similar_active_autorisation.save(
                             update_fields=["revocation_date"]
                         )
-                        Journal.objects.autorisation_update(
-                            similar_active_autorisation, aidant
-                        )
                         Journal.objects.autorisation_cancel(
                             similar_active_autorisation, aidant
                         )

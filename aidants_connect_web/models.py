@@ -472,7 +472,7 @@ class JournalManager(models.Manager):
             access_token=access_token,
             attestation_hash=attestation_hash,
             # COVID-19
-            is_remote_mandat=True,
+            is_remote_mandat=is_remote_mandat,
             additional_information="Mandat conclu à distance "
             "pendant l'état d'urgence sanitaire (23 mars 2020)",
         )

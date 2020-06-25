@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.db.models import Q
-from django.test import tag, TestCase, override_settings
+from django.test import override_settings, tag, TestCase
 from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
@@ -14,11 +14,12 @@ from pytz import timezone as pytz_timezone
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
 from aidants_connect_web.tests.factories import (
-    OrganisationFactory,
     AidantFactory,
+    OrganisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import new_mandat
+
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 

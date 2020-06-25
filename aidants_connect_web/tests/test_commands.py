@@ -14,8 +14,8 @@ from aidants_connect_web.models import (
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    AutorisationFactory,
     ConnectionFactory,
+    LegacyAutorisationFactory,
     OrganisationFactory,
     UsagerFactory,
 )
@@ -68,11 +68,10 @@ class MigrateMandatsTests(TestCase):
 
         # `usager1`: 3 `autorisations` for one day, before lockdown
         for demarche in ['papiers', 'famille', 'social']:
-            AutorisationFactory(
+            LegacyAutorisationFactory(
                 usager=self.usager1,
                 aidant=self.aidant1,
                 creation_date=DATE_5_FEVRIER_2020,
-                last_renewal_date=DATE_5_FEVRIER_2020,
                 expiration_date=DATE_6_FEVRIER_2020,
                 is_remote=False,
                 demarche=demarche,
@@ -80,11 +79,10 @@ class MigrateMandatsTests(TestCase):
 
         # `usager2`: 2 `autorisations` for one day, during lockdown
         for demarche in ['travail', 'logement']:
-            AutorisationFactory(
+            LegacyAutorisationFactory(
                 usager=self.usager2,
                 aidant=self.aidant2,
                 creation_date=DATE_15_AVRIL_2020,
-                last_renewal_date=DATE_15_AVRIL_2020,
                 expiration_date=DATE_16_AVRIL_2020,
                 is_remote=True,
                 demarche=demarche,
@@ -92,11 +90,10 @@ class MigrateMandatsTests(TestCase):
 
         # `usager3`: 2 `autorisations` until the end of lockdown
         for demarche in ['transports', 'argent']:
-            AutorisationFactory(
+            LegacyAutorisationFactory(
                 usager=self.usager3,
                 aidant=self.aidant3,
                 creation_date=DATE_15_AVRIL_2020,
-                last_renewal_date=DATE_15_AVRIL_2020,
                 expiration_date=ETAT_URGENCE_2020_LAST_DAY,
                 is_remote=True,
                 demarche=demarche,
@@ -104,11 +101,10 @@ class MigrateMandatsTests(TestCase):
 
         # `usager4`: 3 `autorisations` for one year, after lockdown
         for demarche in ['justice', 'etranger', 'loisirs']:
-            AutorisationFactory(
+            LegacyAutorisationFactory(
                 usager=self.usager4,
                 aidant=self.aidant4,
                 creation_date=DATE_25_MAI_2020,
-                last_renewal_date=DATE_25_MAI_2020,
                 expiration_date=DATE_25_MAI_2021,
                 is_remote=False,
                 demarche=demarche,
