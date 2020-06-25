@@ -16,7 +16,7 @@
         }
     },
     {
-        "model": "aidants_connect_web.mandat",
+        "model": "aidants_connect_web.autorisation",
         "pk": 1,
         "fields": {
             "aidant": 1,
@@ -24,12 +24,12 @@
             "demarche": "social",
             "creation_date": "2020-03-03T10:58:06.623Z",
             "expiration_date": "2021-03-03T10:58:06.615Z",
-            "last_mandat_renewal_date": "2020-03-03T10:58:06.619Z",
-            "last_mandat_renewal_token": "d0bdfd80-bc17-4fdb-8114-ec40216e38c3"
+            "last_renewal_date": "2020-03-03T10:58:06.619Z",
+            "last_renewal_token": "d0bdfd80-bc17-4fdb-8114-ec40216e38c3"
         }
     },
     {
-        "model": "aidants_connect_web.mandat",
+        "model": "aidants_connect_web.autorisation",
         "pk": 2,
         "fields": {
             "aidant": 1,
@@ -37,8 +37,8 @@
             "demarche": "travail",
             "creation_date": "2020-03-03T10:58:06.630Z",
             "expiration_date": "2021-03-03T10:58:06.615Z",
-            "last_mandat_renewal_date": "2020-03-03T10:58:06.628Z",
-            "last_mandat_renewal_token": "d0bdfd80-bc17-4fdb-8114-ec40216e38c3"
+            "last_renewal_date": "2020-03-03T10:58:06.628Z",
+            "last_renewal_token": "d0bdfd80-bc17-4fdb-8114-ec40216e38c3"
         }
     },
     {
@@ -52,49 +52,49 @@
             "usager": null,
             "duree": null,
             "access_token": null,
-            "mandat": null
+            "autorisation": null
         }
     },
     {
         "model": "aidants_connect_web.journal",
         "pk": 2,
         "fields": {
-            "action": "print_mandat",
+            "action": "print_autorisation",
             "initiator": "Admin - BetaGouv - admin@email.com",
             "creation_date": "2020-03-03T10:58:06.618Z",
             "demarche": "social,travail",
             "usager": "Angela Claire Louise DUBOIS - 1 - wossewodda-3728@yopmail.com",
             "duree": null,
             "access_token": null,
-            "mandat": null
+            "autorisation": null
         }
     },
     {
         "model": "aidants_connect_web.journal",
         "pk": 3,
         "fields": {
-            "action": "create_mandat",
+            "action": "create_autorisation",
             "initiator": "Admin - BetaGouv - admin@email.com",
             "creation_date": "2020-03-03T10:58:06.625Z",
             "demarche": "social",
             "usager": "Angela Claire Louise DUBOIS - 1 - wossewodda-3728@yopmail.com",
             "duree": 365,
             "access_token": "2020-03-03 10:58:06.619923+00:00",
-            "mandat": 1
+            "autorisation": 1
         }
     },
     {
         "model": "aidants_connect_web.journal",
         "pk": 4,
         "fields": {
-            "action": "create_mandat",
+            "action": "create_autorisation",
             "initiator": "Admin - BetaGouv - admin@email.com",
             "creation_date": "2020-03-03T10:58:06.632Z",
             "demarche": "travail",
             "usager": "Angela Claire Louise DUBOIS - 1 - wossewodda-3728@yopmail.com",
             "duree": 365,
             "access_token": "2020-03-03 10:58:06.628293+00:00",
-            "mandat": 2
+            "autorisation": 2
         }
     }
 ]

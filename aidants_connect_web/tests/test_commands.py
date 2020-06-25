@@ -10,7 +10,7 @@ from aidants_connect_web.tests.factories import ConnectionFactory
 
 
 @tag("commands")
-class DeleteExpiredConnectionsTest(TestCase):
+class DeleteExpiredConnectionsTests(TestCase):
     def setUp(self):
         self.conn_1 = ConnectionFactory(
             expires_on=datetime(2020, 1, 1, 6, 0, 0, tzinfo=timezone.utc)

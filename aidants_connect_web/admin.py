@@ -24,9 +24,9 @@ from magicauth.models import MagicToken
 from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
 from aidants_connect_web.models import (
     Aidant,
+    Autorisation,
     Connection,
     Journal,
-    Mandat,
     Organisation,
     Usager,
 )
@@ -113,7 +113,7 @@ class UsagerAdmin(ModelAdmin):
     search_fields = ("given_name", "family_name", "email")
 
 
-class MandatAdmin(ModelAdmin):
+class AutorisationAdmin(ModelAdmin):
     list_display = (
         "id",
         "usager",
@@ -121,7 +121,7 @@ class MandatAdmin(ModelAdmin):
         "demarche",
         "creation_date",
         "expiration_date",
-        "is_remote_mandat",
+        "is_remote",
     )
     list_filter = ("demarche",)
     search_fields = ("usager", "aidant", "demarche")
@@ -141,7 +141,7 @@ class ConnectionAdmin(ModelAdmin):
 # Display the following tables in the admin
 admin_site.register(Aidant, AidantAdmin)
 admin_site.register(Usager, UsagerAdmin)
-admin_site.register(Mandat, MandatAdmin)
+admin_site.register(Autorisation, AutorisationAdmin)
 admin_site.register(Journal, JournalAdmin)
 admin_site.register(Connection, ConnectionAdmin)
 admin_site.register(Organisation, VisibleToStaff)
