@@ -2,10 +2,6 @@ h1 {
   font-size: 1.5em;
 }
 
-.hero__container {
-  min-height: 10em;
-}
-
 form {
   max-width: 40em;
 }

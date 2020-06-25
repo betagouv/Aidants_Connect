@@ -17,110 +17,126 @@
   <div class="dashboard" id="faq-content">
     <aside class="side-menu" role="navigation">
       <ul>
-        <li><a class="active" href={% url "faq_generale" %}>Le service Aidants Connect</a></li>
-        <li><a href={% url "faq_mandat" %}>Le mandat</a></li>
-        <li><a href={% url "faq_donnees_personnelles" %}>Les données personnelles</a></li>
+        <li><a class="active" href="{% url 'faq_generale' %}">Le service Aidants Connect</a></li>
+        <li><a href="{% url 'faq_mandat' %}">Le mandat</a></li>
+        <li><a href="{% url 'faq_donnees_personnelles' %}">Les données personnelles</a></li>
       </ul>
     </aside>
     <div class="main">
       <div class="panel">
         <h2 id="questions-generales">Questions générales</h2>
-        <h3 id="Aidants-Connect-qu’est-ce-que-c’est">Aidants Connect qu’est-ce que c’est?</h3>
-        <p>Aidants Connect permet à des aidant·es professionnel·les de réaliser des démarches administratives à la place d’un·e usager·ère et ce, <strong>de façon sécurisée.</strong></p>
-        <p>Toutes les informations sur le fonctionnement du service sont documentées dans <a href={% url "guide_utilisation" %}>notre guide d'utilisation</a></p>
+
+        <h3 id="Aidants-Connect-qu’est-ce-que-c’est">Aidants Connect qu’est-ce que c’est ?</h3>
+        <p>
+          Aidants Connect permet à des aidant·es professionnel·les de réaliser des démarches administratives
+          à la place d’un·e usager·ère et ce, <strong>de façon sécurisée.</strong>
+        </p>
+        <p>
+          Toutes les informations sur le fonctionnement du service sont documentées
+          dans <a href="{% url 'guide_utilisation' %}">notre guide d’utilisation</a>
+        </p>
+
         <h3 id="contacter-l’équipe">Comment contacter l’équipe Aidants Connect ?</h3>
         <p>
-          Vous pouvez nous envoyer un mail à l'adresse :
+          Vous pouvez nous envoyer un mail à l’adresse :
           <a href="mailto:contact@aidantsconnect.beta.gouv.fr?subject=[Site Aidants Connect - FAQ] Demande d'informations" target="_blank" rel="noopener">
             contact@aidantsconnect.beta.gouv.fr
           </a>
         </p>
-          <h3 id="A-qui-s’adresse-AC">A qui s’adresse Aidants Connect ?</h3>
+
+        <h3 id="A-qui-s’adresse-AC">A qui s’adresse Aidants Connect ?</h3>
         <p>
           Aidants Connect s’adresse à des structures qui emploient des aidant·es professionnel·les qui accompagnent régulièrement
           des usager·ères dans la réalisation de leurs démarches en ligne.
           Il peut s’agir de travailleur·euses sociaux·ales, agents publics d’accueil, médiateur·ices numériques, etc.
           Le service est aujourd’hui expérimenté par un nombre limité de structures.
         </p>
+
         <h3 id="aidant·es-habilités">Qui sont les aidant·es habilité·es à utiliser Aidants Connect ?</h3>
-      <p>
-        Les aidant·es habilité·es sont des aidant·es salarié·es d’une structure habilitée Aidants Connect.
-        Ils et elles accompagnent des usager·ères dans la réalisation de leurs démarches administratives en ligne.</p>
+        <p>
+          Les aidant·es habilité·es sont des aidant·es salarié·es d’une structure habilitée Aidants Connect.
+          Ils et elles accompagnent des usager·ères dans la réalisation de leurs démarches administratives en ligne.
+        </p>
 
-      <h3 id="AC-ouvert-a-tous-les-aidant·es-">Quand est-ce que Aidants Connect sera disponible pour tou·tes les aidant·es ?</h3>
-      <p>Aidants Connect est pour le moment en phase de test avec 13 structures.
-        Si le service démontre un impact positif sur la sécurisation de la relation entre aidant·e et usager·ère, il pourra
-        être ouvert à un plus grand nombre de structures et à une autre typologie d’aidant·es.</p>
+        <h3 id="AC-ouvert-a-tous-les-aidant·es-">Quand est-ce que Aidants Connect sera disponible pour tou·tes les aidant·es ?</h3>
+        <p>
+          Aidants Connect est pour le moment en phase de test avec 13 structures.
+          Si le service démontre un impact positif sur la sécurisation de la relation entre aidant·e et usager·ère, il pourra
+          être ouvert à un plus grand nombre de structures et à une autre typologie d’aidant·es.
+        </p>
 
-      <h3 id="structures-testeuses-">Quelles sont les structures expérimentatrices ?</h3>
-      <p>Voici la liste des structures expérimentatrices :</p>
-      <ul>
-        <li>Faitout Connecté&nbsp;(Communauté de communes Champagne-Picarde – Hauts-de-France)&nbsp;- structure labellisée France Services ;</li>
-        <li>L’Association des Centres Sociaux de Douai (Hauts-de-France)&nbsp;;</li>
-        <li>L’association de médiation numérique Net Solidaire (Charente-Maritime)&nbsp;;</li>
-        <li>La mairie de Préguillac (Charente-Maritime)&nbsp;;</li>
-        <li>La mairie de Rioux (Charente-Maritime)&nbsp;;</li>
-        <li>La Fabrique citoyenne de Floirac (Gironde)&nbsp;;</li>
-        <li>La Maison des Solidarités de Castanet-Tolosan (Communauté d’agglomération du SICOVAL – Haute-Garonne)&nbsp;;</li>
-        <li>La médiathèque Simone de Beauvoir (Valence Romans Agglomération – Drôme)&nbsp;;</li>
-        <li>Le tiers-lieu «&nbsp;La Palette&nbsp;» (Creuse) - structure labellisée France Services &nbsp;;</li>
-        <li>Le dispositif mobile «&nbsp;Fourgon Connecté&nbsp;» (Pyrénées-Atlantiques)&nbsp;;</li>
-        <li>Le CCAS d’Anglet (Pyrénées-Atlantiques)&nbsp;;</li>
-        <li>Le PIMMS de Blois (Centre-Val-de-Loire) - structure labellisée France Services &nbsp;;</li>
-        <li>Un service d’action sociale du département d’Eure-et-Loir (Centre-Val-de-Loire).</li>
+        <h3 id="structures-testeuses-">Quelles sont les structures expérimentatrices ?</h3>
+        <p>Voici la liste des structures expérimentatrices :</p>
+        <ul>
+          <li>Faitout Connecté&nbsp;(Communauté de communes Champagne-Picarde – Hauts-de-France)&nbsp;- structure labellisée France Services ;</li>
+          <li>L’Association des Centres Sociaux de Douai (Hauts-de-France)&nbsp;;</li>
+          <li>L’association de médiation numérique Net Solidaire (Charente-Maritime)&nbsp;;</li>
+          <li>La mairie de Préguillac (Charente-Maritime)&nbsp;;</li>
+          <li>La mairie de Rioux (Charente-Maritime)&nbsp;;</li>
+          <li>La Fabrique citoyenne de Floirac (Gironde)&nbsp;;</li>
+          <li>La Maison des Solidarités de Castanet-Tolosan (Communauté d’agglomération du SICOVAL – Haute-Garonne)&nbsp;;</li>
+          <li>La médiathèque Simone de Beauvoir (Valence Romans Agglomération – Drôme)&nbsp;;</li>
+          <li>Le tiers-lieu «&nbsp;La Palette&nbsp;» (Creuse) - structure labellisée France Services &nbsp;;</li>
+          <li>Le dispositif mobile «&nbsp;Fourgon Connecté&nbsp;» (Pyrénées-Atlantiques)&nbsp;;</li>
+          <li>Le CCAS d’Anglet (Pyrénées-Atlantiques)&nbsp;;</li>
+          <li>Le PIMMS de Blois (Centre-Val-de-Loire) - structure labellisée France Services &nbsp;;</li>
+          <li>Un service d’action sociale du département d’Eure-et-Loir (Centre-Val-de-Loire).</li>
         </ul>
 
-      <h3 id="combien-coûte-AC">Combien coûte Aidants Connect ?</h3>
-      <p>
-        Aidants Connect est un service public numérique gratuit pour les structures habilitées.
-        Ce service est mis à disposition et opéré par l’ANCT (Agence Nationale de la Cohésion des Territoires) et soutenu
-        par la DINUM (Direction Interministérielle du Numérique).</p>
+        <h3 id="combien-coûte-AC">Combien coûte Aidants Connect ?</h3>
+        <p>
+          Aidants Connect est un service public numérique gratuit pour les structures habilitées.
+          Ce service est mis à disposition et opéré par l’ANCT (Agence Nationale de la Cohésion des Territoires) et soutenu
+          par la DINUM (Direction Interministérielle du Numérique).
+        </p>
 
-      <h3 id="plusieurs-comptes-AC-pour-une-structure-">Est-ce possible d’avoir plusieurs comptes Aidants Connect pour une même structure ?</h3>
-      <p>
-        Oui, une structure peut avoir plusieurs aidant·es professionnel·les habilité·es : chaque aidant·e possède un compte nominatif.
-        Tou·tes les aidant·es habilité·es sont sensibilisé·es à la protection des données personnelles des usager·ères.</p>
+        <h3 id="plusieurs-comptes-AC-pour-une-structure-">Est-ce possible d’avoir plusieurs comptes Aidants Connect pour une même structure ?</h3>
+        <p>
+          Oui, une structure peut avoir plusieurs aidant·es professionnel·les habilité·es : chaque aidant·e possède un compte nominatif.
+          Tou·tes les aidant·es habilité·es sont sensibilisé·es à la protection des données personnelles des usager·ères.
+        </p>
 
-      <h3 id="agir-sur-tous-les-mandats-de-la-structure-">Est-ce que tou·tes les aidant·es habilité·es peuvent consulter/agir sur tous les mandats de la structure ?</h3>
-      <p>
-        Les mandats étant signés entre la structure et l’usager·ère, tou·tes les aidant·es habilité·es de la structure peuvent aider
-        l’usager·ère sur les périmètres et la durée couverts par le mandat.
-      </p>
-      <h3 id="login-site-administratif">Est-il nécessaire pour l’usager·ère d'avoir un identifiant/mot de passe sur un site administratif ?</h3>
-      <p>
-        Oui. Pour conclure un mandat Aidants Connect, l’usager·ère doit pouvoir se connecter à l’un des services suivants :
-      </p>
-      <ul>
-        <li><a href="http://impots.gouv.fr" target="_blank" rel="noopener">impots.gouv.fr</a>,</li>
-        <li><a href="http://ameli.fr" target="_blank" rel="noopener">ameli.fr</a>,</li>
-        <li><a href="http://msa.fr" target="_blank" rel="noopener">msa.fr</a></li>
-        <li><a href="https://lidentitenumerique.laposte.fr" target="_blank" rel="noopener">l’Identité Numérique La Poste</a>,</li>
-        <li><a href="https://www.mobileconnectetmoi.fr" target="_blank" rel="noopener">MobileConnect et moi</a>,</li>
+        <h3 id="agir-sur-tous-les-mandats-de-la-structure-">Est-ce que tou·tes les aidant·es habilité·es peuvent consulter/agir sur tous les mandats de la structure ?</h3>
+        <p>
+          Les mandats étant signés entre la structure et l’usager·ère, tou·tes les aidant·es habilité·es de la structure peuvent aider
+          l’usager·ère sur les périmètres et la durée couverts par le mandat.
+        </p>
+      
+        <h3 id="login-site-administratif">Est-il nécessaire pour l’usager·ère d’avoir un identifiant/mot de passe sur un site administratif ?</h3>
+        <p>
+          Oui. Pour conclure un mandat Aidants Connect, l’usager·ère doit pouvoir se connecter à l’un des services suivants :
+        </p>
+        <ul>
+          <li><a href="http://impots.gouv.fr" target="_blank" rel="noopener">impots.gouv.fr</a>,</li>
+          <li><a href="http://ameli.fr" target="_blank" rel="noopener">ameli.fr</a>,</li>
+          <li><a href="http://msa.fr" target="_blank" rel="noopener">msa.fr</a></li>
+          <li><a href="https://lidentitenumerique.laposte.fr" target="_blank" rel="noopener">l’Identité Numérique La Poste</a>,</li>
+          <li><a href="https://www.mobileconnectetmoi.fr" target="_blank" rel="noopener">MobileConnect et moi</a>,</li>
         </ul>
-      <p>
-        Pour plus d’informations sur comment créer des comptes sur ces services
-        <a href="https://aidantsconnect.beta.gouv.fr/static/images/ressources/Aidants%20Connect%20_%20Quel-fournisseur-identit%C3%A9-choisir.pdf" target="_blank" rel="noopener">
-          cliquez ici
-        </a>
-      </p>
-      <p>
-        Une fois le mandat conclu, les aidant·es habilité·es de la structure pourront se connecter au nom de l’usager·ère pour
-        faire les démarches sur lesquelles il ou elle a demandé de l’aide.</p>
+        <p>
+          Pour plus d’informations sur comment créer des comptes sur ces services
+          <a href="https://aidantsconnect.beta.gouv.fr/static/images/ressources/Aidants%20Connect%20_%20Quel-fournisseur-identit%C3%A9-choisir.pdf" target="_blank" rel="noopener">
+            cliquez ici
+          </a>
+        </p>
+        <p>
+          Une fois le mandat conclu, les aidant·es habilité·es de la structure pourront se connecter au nom de l’usager·ère pour
+          faire les démarches sur lesquelles il ou elle a demandé de l’aide.
+        </p>
 
-      <h3 id="monteee-en-competences-usager">Comment faire monter en compétences l’usager·ère sur les outils numériques ?</h3>
-      <p>
-        Aidants Connect est un service qui permet d’accompagner des usager·ères qui ne sont pas en capacité de faire seul des démarches.
-        <br>
-        Nous mettons à disposition des aidant·es
-        <a href="https://aidantsconnect.beta.gouv.fr/ressources/" target="_blank" rel="noopener">
-          des ressources
-        </a>
-        qui permettent d’accompagner des publics plus avertis sur le numérique et nous espérons offrir de plus en plus de
-        ressources dans ce sens.</p>
+        <h3 id="monteee-en-competences-usager">Comment faire monter en compétences l’usager·ère sur les outils numériques ?</h3>
+        <p>
+          Aidants Connect est un service qui permet d’accompagner des usager·ères qui ne sont pas en capacité de faire seul des démarches.
+          <br>
+          Nous mettons à disposition des aidant·es
+          <a href="https://aidantsconnect.beta.gouv.fr/ressources/" target="_blank" rel="noopener">des ressources</a>
+          qui permettent d’accompagner des publics plus avertis sur le numérique et nous espérons offrir de plus en plus de
+          ressources dans ce sens.
+        </p>
 
-      <h3 id="plusieurs-langues">Le mandat Aidants Connect existe-t-il dans plusieurs langues ?</h3>
-      <p>À ce jour, le mandat existe en français uniquement.</p>
-    </div>
+        <h3 id="plusieurs-langues">Le mandat Aidants Connect existe-t-il dans plusieurs langues ?</h3>
+        <p>À ce jour, le mandat existe en français uniquement.</p>
+      </div>
     </div>
   </div>
 </section>

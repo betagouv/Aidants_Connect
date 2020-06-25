@@ -13,6 +13,10 @@ body {
   display: none;
 }
 
+.ac-color-red {
+  color: #FF3954;
+}
+
 
 /* Navbar */
 
@@ -52,25 +56,11 @@ a.navbar__home:hover {
   max-width: 40em;
 }
 
-main {
-  flex-grow: 1;
-  font-size: 1.3em;
-  line-height: 1.5em;
-}
-
-h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
-  font-family: "Evolventa";
-  font-weight: 800;
-  margin-bottom: 0;
-}
-
-.hero__container {
-  padding: 5em 2em 5em 2em;
-}
-
 .section__subtitle {
   margin-bottom: 4em;
 }
+
+
 /* Footer */
 
 .footer__social {
@@ -106,6 +96,12 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 .margin-bottom-50 {
   margin-bottom: 50px;
 }
+.margin-top-10 {
+  margin-top: 10px;
+}
+.margin-top-0 {
+  margin-top: 0;
+}
 
 .padding-0 {
   padding: 0 !important;
@@ -129,6 +125,10 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 
 .text-very-small {
   font-size: 0.5em;
+}
+
+.font-weight-normal {
+  font-weight: normal;
 }
 
 .float-left {
@@ -160,6 +160,11 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 
 /* Override/Extend template.min.css */
 
+.hero__container {
+  min-height: 10em;
+  /* padding: 5em 2em 5em 2em; */
+}
+
 .button {
   margin: 0 !important;
 }
@@ -190,9 +195,5 @@ a.button-outline:hover {
 
   input.button:active {
     width: 100%;
-  }
-
-  .hero__container {
-    min-height: 10em;
   }
 }

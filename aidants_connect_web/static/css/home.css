@@ -1,20 +1,15 @@
-.hero-img {
-  width: 60%;
-  margin: 1em;
-  max-height: 50em;
-  max-width: 50em;
+.hero__container .hero-img {
+  max-height: 5em;
+}
+
+.row div.min-width-35 {
+  min-width: 35%;
 }
 
 @media (max-width: 749px) {
   .section {
     padding: 2em 0;
   }
-}
-
-.section-color {
-  background-image: none;
-  background-color: #b4e1fa;
-  color: black;
 }
 
 .ac-service .row {
@@ -44,7 +39,6 @@
 
 .tile__icon.large__icon {
   height: 4em;
-  margin-bottom: 1em;
 }
 
 .issues {
