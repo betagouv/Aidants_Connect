@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0034_remove_autorisation_last_renewal_date"),
+        ("aidants_connect_web", "0036_remove_autorisation_last_renewal_date"),
     ]
 
     operations = [
