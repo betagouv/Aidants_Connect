@@ -158,6 +158,13 @@ a.navbar__home:hover {
 }
 
 
+/* Images */
+
+img.logo-height-5em {
+  max-height: 5em;
+}
+
+
 /* Override/Extend template.min.css */
 
 .hero__container {
