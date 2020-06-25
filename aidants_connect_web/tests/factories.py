@@ -6,7 +6,6 @@ from django.utils.timezone import now
 from aidants_connect_web.models import (
     Autorisation,
     Connection,
-    Mandat,
     Organisation,
     Usager,
 )

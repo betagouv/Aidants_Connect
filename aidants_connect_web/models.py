@@ -227,9 +227,12 @@ def get_staff_organisation_name_id() -> int:
 
 class Mandat(models.Model):
     organisation = models.ForeignKey(
-        Organisation, on_delete=models.CASCADE, default=get_staff_organisation_name_id,
+        Organisation, on_delete=models.PROTECT, related_name="mandats",
+        default=get_staff_organisation_name_id
     )
-    usager = models.ForeignKey(Usager, on_delete=models.CASCADE, default=0,)
+    usager = models.ForeignKey(
+        Usager, on_delete=models.PROTECT, related_name="mandats"
+    )
     creation_date = models.DateTimeField(default=timezone.now)
     expiration_date = models.DateTimeField(default=timezone.now)
     duree_keyword = models.CharField(
@@ -413,7 +416,6 @@ class JournalManager(models.Manager):
             is_remote_mandat=is_remote_mandat,
             access_token=access_token,
             attestation_hash=attestation_hash,
-
             # COVID-19
             additional_information=(
                 Journal.MENTION_URGENCE_2020
