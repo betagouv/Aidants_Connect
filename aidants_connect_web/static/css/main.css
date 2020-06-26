@@ -61,6 +61,16 @@ a.navbar__home:hover {
 }
 
 
+/* Row */
+
+.row div.min-width-35 {
+  min-width: 35%;
+}
+.row div.min-width-15 {
+  min-width: 15%;
+}
+
+
 /* Footer */
 
 .footer__social {
