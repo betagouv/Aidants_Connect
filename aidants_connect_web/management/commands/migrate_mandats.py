@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db.models import F
 
 from aidants_connect_web.models import (
     Autorisation,
@@ -18,6 +19,72 @@ from aidants_connect_web.models import (
 class Command(BaseCommand):
 
     help = "Migrate the current mandats to the new data model"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "-uid", "--usager_id", action="store", type=int,
+            help="Migrate only the data for the specified `usager`",
+        )
+
+    def _create_intermediate_autorisations(self, usager):
+
+        created_autorisations = []
+
+        # We consider autorisations that may have been renewed.
+        renewed_autorisations = usager.autorisations.filter(
+            creation_date__lt=F("last_renewal_date")
+        ).order_by(
+            "creation_date"
+        )
+
+        if renewed_autorisations:
+            self.stdout.write("")
+
+        for auto in renewed_autorisations:
+
+            # We look for journal entries that indicate an autorisation renewal.
+            renewal_entries = Journal.objects.filter(
+                action="update_mandat",
+                autorisation=auto.id,  # yeah, this is an `IntegerField`, not a `ForeignKey`!
+                creation_date__gt=auto.creation_date + timedelta(hours=1)
+            ).order_by(
+                "creation_date"
+            )
+
+            current_auto = auto
+
+            for entry in renewal_entries:
+
+                renewal_date = entry.creation_date
+
+                # The autorisation was renewed then. Under our new paradigm,
+                # we have to revoke it and create a new one.
+                current_auto.revocation_date = renewal_date
+                current_auto.save()
+
+                new_auto = Autorisation.objects.create(
+                    aidant=current_auto.aidant,
+                    usager=current_auto.usager,
+                    demarche=current_auto.demarche,
+                    creation_date=renewal_date,
+                    expiration_date=current_auto.expiration_date,
+                    revocation_date=None,
+                    last_renewal_date=renewal_date,
+                    is_remote=current_auto.is_remote,
+                )
+
+                created_autorisations.append(new_auto)
+                self.stdout.write(
+                    "    /!\\ Autorisation #%d was renewed on %s, new intermediate one: #%d" % (
+                    auto.id, renewal_date.strftime("%c"), new_auto.id
+                ))
+
+                current_auto = new_auto
+
+        if created_autorisations:
+            self.stdout.write("")
+
+        return created_autorisations
 
     def _compute_duree_keyword(self, autorisation):
 
@@ -60,12 +127,25 @@ class Command(BaseCommand):
             expiration_date=settings.ETAT_URGENCE_2020_LAST_DAY
         )
 
+        created_autorisations = []
+
         # We can now loop through all our `usagers`...
         for usager in Usager.objects.order_by('creation_date'):
 
+            # Option: skip if this is not the specified `usager`.
+            if options["usager_id"]:
+                if usager.id != options["usager_id"]:
+                    continue
+
             self.stdout.write("\n  Processing Usager #%d" % usager.id)
 
-            autos = usager.autorisations.order_by('creation_date')
+            # First, we check if we need to create new intermediate
+            # autorisations to account for legacy mandat renewals.
+            created_autorisations.extend(
+                self._create_intermediate_autorisations(usager)
+            )
+
+            autos = usager.autorisations.order_by("creation_date")
 
             num_autos = autos.count()
 
@@ -157,6 +237,13 @@ class Command(BaseCommand):
         unlinked_autos = Autorisation.objects.filter(mandat__isnull=True)
         num_unlinked_autos = unlinked_autos.count()
         if num_unlinked_autos > 0:
-            self.stdout.write("WARNING: %d Autorisations remain unlinked to any Mandat!" % num_unlinked_autos)
+            self.stdout.write(
+                "\nWARNING: %d Autorisations remain unlinked to any Mandat!"
+                % num_unlinked_autos
+            )
         else:
-            self.stdout.write("All done! :)")
+            self.stdout.write("All done!")
+            if created_autorisations:
+                self.stdout.write("%d intermediate autorisations were created in the process." % len(
+                    created_autorisations
+                ))

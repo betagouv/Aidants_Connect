@@ -424,7 +424,6 @@ class JournalManager(models.Manager):
             action="create_attestation",
             demarche=",".join(demarches),
             duree=duree,
-            is_remote_mandat=is_remote_mandat,
             access_token=access_token,
             attestation_hash=attestation_hash,
             # COVID-19
