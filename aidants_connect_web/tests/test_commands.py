@@ -1,3 +1,5 @@
+from unittest import skip
+
 from datetime import datetime, timedelta, timezone
 
 from django.core.management import call_command
@@ -42,7 +44,7 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
 )
 
 
-@tag("commands", "migration")
+@skip("This test can only be executed at version 1.0.0-pre.")
 @freeze_time("2020-06-30 10:30:00")
 @override_settings(ETAT_URGENCE_2020_LAST_DAY=ETAT_URGENCE_2020_LAST_DAY)
 class MigrateMandatsTests(TestCase):
