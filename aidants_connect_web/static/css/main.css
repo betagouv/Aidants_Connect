@@ -61,6 +61,16 @@ a.navbar__home:hover {
 }
 
 
+/* Row */
+
+.row div.min-width-35 {
+  min-width: 35%;
+}
+.row div.min-width-15 {
+  min-width: 15%;
+}
+
+
 /* Footer */
 
 .footer__social {
@@ -90,6 +100,11 @@ a.navbar__home:hover {
 
 /* Utils */
 
+a.no-decoration {
+  color: inherit;
+  text-decoration: inherit;
+}
+
 .margin-left-100 {
   margin-left: 100px;
 }
@@ -106,9 +121,16 @@ a.navbar__home:hover {
 .padding-0 {
   padding: 0 !important;
 }
+.padding-top-0 {
+  padding-top: 0 !important;
+}
 
 .tiles {
   margin: 3em 0;
+}
+
+.tile__icon.large__icon {
+  height: 4em;
 }
 
 .notification {
@@ -195,12 +217,16 @@ a.button-outline:hover {
 
 /* Media */
 
-@media (max-width: 699px) {
+@media (max-width: 768px) {
   form {
     padding: 0 1em;
   }
 
   input.button:active {
     width: 100%;
+  }
+
+  .section {
+    padding: 2em 0;
   }
 }
