@@ -2,12 +2,12 @@
 
 {% load static %}
 
-{% block title %}Aidants Connect - Confirmer la révocation du mandat{% endblock %}
+{% block title %}Aidants Connect - Confirmer la révocation de l'autorisation{% endblock %}
 
 {% block content %}
 <section class="section">
   <div class="container">
-    <h1 class="brand">Confirmer la révocation du mandat</h1>
+    <h1 class="brand">Confirmer la révocation de l'autorisation</h1>
     <div class="tiles">
       <form method="post" class="panel">
         {% if error %}
@@ -16,13 +16,13 @@
         {% csrf_token %}
         <div class="form__group">
           <p>
-            Le mandat avec l'usager <strong>{{ usager }}</strong>,
-            pour la démarche <strong>{{ mandat.demarche }}</strong>,
-            créé le <strong>{{ mandat.creation_date | date:"d F Y" }}</strong> et expirant le <strong>{{ mandat.expiration_date | date:"d F Y" }}</strong>,
-            va être <strong>révoqué</strong>.
+            L'autorisation avec l'usager <strong>{{ usager }}</strong>,
+            pour la démarche <strong>{{ autorisation.demarche }}</strong>,
+            créé le <strong>{{ autorisation.creation_date | date:"d F Y" }}</strong> et expirant le <strong>{{ autorisation.expiration_date | date:"d F Y" }}</strong>,
+            va être <strong>révoquée</strong>.
           </p>
           <p>
-            <i>Le mandat apparaîtra comme expiré dans l'espace usagers.</i>
+            <i>L'autorisation apparaîtra comme expirée dans l'espace usagers.</i>
           </p>
           <p>
             Cliquez sur le bouton "Je confirme" pour confirmer l'action.

@@ -5,10 +5,12 @@ from django.conf import settings
 from django.test import tag
 from django.utils import timezone
 
+from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    UsagerFactory,
+    AutorisationFactory,
     MandatFactory,
+    UsagerFactory,
 )
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
@@ -26,12 +28,12 @@ FC_URL_PARAMETERS = (
 
 
 @tag("functional", "id_provider")
-class UseNewMandat(FunctionalTestCase):
+class UseAutorisationTests(FunctionalTestCase):
     def setUp(self):
-        self.aidant = AidantFactory()
-        device = self.aidant.staticdevice_set.create(id=self.aidant.id)
+        self.aidant_1 = AidantFactory()
+        device = self.aidant_1.staticdevice_set.create(id=self.aidant_1.id)
         device.token_set.create(token="123456")
-        self.aidant2 = AidantFactory(
+        self.aidant_2 = AidantFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
             password="motdepassedejacqueline",
@@ -44,26 +46,36 @@ class UseNewMandat(FunctionalTestCase):
         self.usager_anne = UsagerFactory(
             given_name="Anne Cécile Gertrude", family_name="EVALOUS"
         )
-        MandatFactory(
-            aidant=self.aidant,
+
+        mandat_aidant_1_jo_6 = MandatFactory(
+            organisation=self.aidant_1.organisation,
             usager=self.usager_josephine,
-            demarche="argent",
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        MandatFactory(
-            aidant=self.aidant,
-            usager=self.usager_josephine,
-            demarche="famille",
-            expiration_date=timezone.now() + timedelta(days=12),
+        AutorisationFactory(
+            mandat=mandat_aidant_1_jo_6, demarche="argent",
         )
-        MandatFactory(
-            aidant=self.aidant2,
+
+        mandat_aidant_1_jo_12 = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
             usager=self.usager_josephine,
-            demarche="logement",
             expiration_date=timezone.now() + timedelta(days=12),
         )
 
-    def test_use_mandat_with_preloging(self):
+        AutorisationFactory(
+            mandat=mandat_aidant_1_jo_12, demarche="famille",
+        )
+
+        mandat_aidant_2_jo_12 = Mandat.objects.create(
+            organisation=self.aidant_2.organisation,
+            usager=self.usager_josephine,
+            expiration_date=timezone.now() + timedelta(days=12),
+        )
+        AutorisationFactory(
+            mandat=mandat_aidant_2_jo_12, demarche="logement",
+        )
+
+    def test_use_autorisation_with_preloging(self):
         # prelogin
         self.open_live_url("/dashboard/")
         login_aidant(self)
@@ -71,17 +83,17 @@ class UseNewMandat(FunctionalTestCase):
         url = f"/authorize/?{FC_URL_PARAMETERS}"
         self.open_live_url(url)
 
-        self.use_a_mandat()
+        self.use_a_autorisation()
 
-    def test_use_mandat_without_preloging(self):
+    def test_use_autorisation_without_preloging(self):
         url = f"/authorize/?{FC_URL_PARAMETERS}"
         self.open_live_url(url)
 
         login_aidant(self)
 
-        self.use_a_mandat()
+        self.use_a_autorisation()
 
-    def use_a_mandat(self):
+    def use_a_autorisation(self):
         # Select usager
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(

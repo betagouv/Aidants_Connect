@@ -20,9 +20,9 @@ urlpatterns = [
     path("usagers/", usagers.usagers_index, name="usagers"),
     path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),
     path(
-        "usagers/<int:usager_id>/mandats/<int:mandat_id>/cancel_confirm",
-        usagers.usagers_mandats_cancel_confirm,
-        name="usagers_mandats_cancel_confirm",
+        "usagers/<int:usager_id>/mandats/<int:mandat_id>/autorisations/<int:autorisation_id>/cancel_confirm",  # noqa
+        usagers.usagers_mandats_autorisations_cancel_confirm,
+        name="usagers_mandats_autorisations_cancel_confirm",
     ),
     # new mandat
     path("creation_mandat/", new_mandat.new_mandat, name="new_mandat"),
@@ -34,8 +34,8 @@ urlpatterns = [
     path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
         "creation_mandat/visualisation/projet/",
-        new_mandat.mandat_print_projet,
-        name="new_mandat_print_projet",
+        new_mandat.attestation_projet,
+        name="new_attestation_projet",
     ),
     path(
         "creation_mandat/succes/",
@@ -44,13 +44,13 @@ urlpatterns = [
     ),
     path(
         "creation_mandat/visualisation/final/",
-        new_mandat.mandat_print_final,
-        name="new_mandat_print_final",
+        new_mandat.attestation_final,
+        name="new_attestation_final",
     ),
     path(
         "creation_mandat/qrcode/",
-        new_mandat.mandat_print_final_qrcode,
-        name="new_mandat_print_final_qrcode",
+        new_mandat.attestation_qrcode,
+        name="new_attestation_qrcode",
     ),
     # id_provider
     path("authorize/", id_provider.authorize, name="authorize"),

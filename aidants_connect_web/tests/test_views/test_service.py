@@ -12,7 +12,9 @@ from freezegun import freeze_time
 from aidants_connect_web.models import Journal, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    AutorisationFactory,
     MandatFactory,
+    OrganisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import service
@@ -96,7 +98,7 @@ class ActivityCheckPageTests(TestCase):
     def test_totp_page_with_resolvable_next_redirects(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
-            "/activity_check/?next=/creation_mandat/", data={"otp_token": "123456"}
+            "/activity_check/?next=/creation_mandat/", data={"otp_token": "123456"},
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/creation_mandat/")
@@ -128,7 +130,7 @@ class ActivityCheckPageTests(TestCase):
 
 
 @tag("service")
-class EnvironmentVariableTest(TestCase):
+class EnvironmentVariablesTests(TestCase):
     def test_environment_variables_are_accessible(self):
         secret_key = os.getenv("TEST")
         self.assertEqual(secret_key, "Everything is awesome")
@@ -137,44 +139,32 @@ class EnvironmentVariableTest(TestCase):
 @tag("service")
 class StatistiquesTests(TestCase):
     def setUp(self):
-        mandat_justice = MandatFactory()
-
-        Journal.objects.create(
-            action="create_mandat_print",
-            initiator=mandat_justice.aidant.full_string_identifier,
-            usager=mandat_justice.usager.full_string_identifier,
-            demarche=mandat_justice.demarche,
-            duree=mandat_justice.duree_in_days,
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice.id,
+        mairie_de_houlbec = OrganisationFactory()
+        aidant_thierry = AidantFactory()
+        usager_homer = UsagerFactory()
+        mandat_houlbec_homer = MandatFactory(
+            organisation=mairie_de_houlbec, usager=usager_homer
         )
-        Journal.objects.create(
-            action="create_mandat",
-            initiator=mandat_justice.aidant.full_string_identifier,
-            usager=mandat_justice.usager.full_string_identifier,
-            demarche=mandat_justice.demarche,
-            duree=mandat_justice.duree_in_days,
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice.id,
-        )
-        Journal.objects.create(
-            initiator=mandat_justice.aidant.full_string_identifier,
-            usager=mandat_justice.usager.full_string_identifier,
-            action="use_mandat",
-            demarche="justice",
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice.id,
-        )
-        Journal.objects.create(
-            initiator=mandat_justice.aidant.full_string_identifier,
-            usager=mandat_justice.usager.full_string_identifier,
-            action="use_mandat",
-            demarche="justice",
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice.id,
+        autorisation_justice_houlbec_homer = AutorisationFactory(
+            mandat=mandat_houlbec_homer
         )
 
-        # An Aidants Betagouv in in our mist !
+        Journal.objects.create(
+            initiator=aidant_thierry.full_string_identifier,
+            usager=usager_homer.full_string_identifier,
+            action="use_autorisation",
+            demarche="justice",
+            autorisation=autorisation_justice_houlbec_homer.id,
+        )
+        Journal.objects.create(
+            initiator=aidant_thierry.full_string_identifier,
+            usager=usager_homer.full_string_identifier,
+            action="use_autorisation",
+            demarche="justice",
+            autorisation=autorisation_justice_houlbec_homer.id,
+        )
+
+        # An Aidant from Stafforg is among us !
         staff_organisation = Organisation.objects.create(
             name=settings.STAFF_ORGANISATION_NAME
         )
@@ -182,73 +172,64 @@ class StatistiquesTests(TestCase):
             username="test@user.domain", organisation=staff_organisation
         )
 
-        # an aidant staff_organisation has a mandat_print
+        # an aidant staff_organisation has an attestation
         # with an usager also helped by another aidant
-        mandat_justice_homer_beta = MandatFactory(aidant=aidant_staff_organisation)
-        Journal.objects.create(
-            action="create_mandat_print",
-            initiator=aidant_staff_organisation.full_string_identifier,
-            usager=mandat_justice.usager.full_string_identifier,
-            demarche=mandat_justice.demarche,
-            duree=mandat_justice.duree_in_days,
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice.id,
+
+        mandat_stafforg_homer = MandatFactory(
+            organisation=staff_organisation, usager=usager_homer
         )
-        Journal.objects.create(
-            initiator=aidant_staff_organisation.full_string_identifier,
-            usager=mandat_justice_homer_beta.usager.full_string_identifier,
-            action="use_mandat",
-            demarche="justice",
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice_homer_beta.id,
-        )
-        # An aidant staff_organisation has an exclusive mandat with a user
-        usager_laurent = UsagerFactory(given_name="Laurent",)
-        mandat_justice_laurent = MandatFactory(
-            aidant=aidant_staff_organisation, usager=usager_laurent,
-        )
-        Journal.objects.create(
-            action="create_mandat_print",
-            initiator=aidant_staff_organisation.full_string_identifier,
-            usager=usager_laurent.full_string_identifier,
-            demarche=mandat_justice.demarche,
-            duree=mandat_justice.duree_in_days,
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice.id,
-        )
-        Journal.objects.create(
-            action="use_mandat",
-            initiator=aidant_staff_organisation.full_string_identifier,
-            usager=usager_laurent.full_string_identifier,
-            demarche="justice",
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice_laurent.id,
+        autorisation_justice_stafforg_homer = AutorisationFactory(
+            mandat=mandat_stafforg_homer
         )
 
-        # jacqueline has an expired mandat and no active mandats
+        Journal.objects.create(
+            initiator=aidant_staff_organisation.full_string_identifier,
+            usager=usager_homer.full_string_identifier,
+            action="use_autorisation",
+            demarche="justice",
+            autorisation=autorisation_justice_stafforg_homer.id,
+        )
+        # An aidant staff_organisation has an exclusive autorisation with a user
+        usager_laurent = UsagerFactory(given_name="Laurent", sub="sub for laurent")
+
+        mandat_stafforg_laurent = MandatFactory(
+            organisation=staff_organisation, usager=usager_homer
+        )
+        autorisation_justice_stafforg_laurent = AutorisationFactory(
+            mandat=mandat_stafforg_laurent,
+        )
+
+        Journal.objects.create(
+            action="use_autorisation",
+            initiator=aidant_staff_organisation.full_string_identifier,
+            usager=usager_laurent.full_string_identifier,
+            demarche="justice",
+            autorisation=autorisation_justice_stafforg_laurent.id,
+        )
+
+        # jacqueline has an expired autorisation and no active autorisations
         usager_jacqueline = UsagerFactory(
             given_name="Jacqueline",
             creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
+            sub="new_sub_for_jacqueline",
         )
-        Journal.objects.create(
-            action="create_mandat_print",
-            initiator=mandat_justice.aidant.full_string_identifier,
-            usager=usager_jacqueline.full_string_identifier,
-            demarche=mandat_justice.demarche,
-            duree=1,
-            creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice.id,
+        mandat_houlbec_jacqueline = MandatFactory(
+            organisation=mairie_de_houlbec,
+            usager=usager_jacqueline,
+            expiration_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
+        )
+
+        autorisation_justice_houlbec_jacqueline = AutorisationFactory(
+            mandat=mandat_houlbec_jacqueline,
         )
 
         Journal.objects.create(
-            action="use_mandat",
-            initiator=mandat_justice.aidant.full_string_identifier,
+            action="use_autorisation",
+            initiator=aidant_thierry.full_string_identifier,
             usager=usager_jacqueline.full_string_identifier,
-            demarche=mandat_justice.demarche,
+            demarche=autorisation_justice_houlbec_jacqueline.demarche,
             duree=1,
-            access_token=mandat_justice.last_mandat_renewal_date,
-            mandat=mandat_justice.id,
+            autorisation=autorisation_justice_houlbec_jacqueline.id,
         )
         Journal.objects.filter(usager=usager_jacqueline.full_string_identifier).update(
             creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc)
@@ -263,7 +244,7 @@ class StatistiquesTests(TestCase):
         self.assertTemplateUsed(response, "public_website/statistiques.html")
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
-        # Mandat should be non-staff_organisation and active
+        # mandats should be non-staff_organisation and active
         response = self.client.get("/stats/")
         self.assertEqual(response.context["mandats_count"], 2)
         self.assertEqual(response.context["mandats_active_count"], 1)
@@ -275,10 +256,10 @@ class StatistiquesTests(TestCase):
         self.assertEqual(response.context["usagers_with_mandat_count"], 2)
         self.assertEqual(response.context["usagers_with_mandat_active_count"], 1)
 
-    def test_old_authorisations_use_are_not_counted_as_recent(self):
+    def test_old_autorisation_use_are_not_counted_as_recent(self):
         response = self.client.get("/stats/")
-        self.assertEqual(response.context["authorisation_use_count"], 3)
-        self.assertEqual(response.context["authorisation_use_recent_count"], 2)
+        self.assertEqual(response.context["autorisation_use_count"], 3)
+        self.assertEqual(response.context["autorisation_use_recent_count"], 2)
 
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,

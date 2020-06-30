@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -267,7 +268,7 @@ DEMARCHES = {
 MANDAT_TEMPLATE_PATH = (
     "templates/aidants_connect_web/mandat_templates/20200511_mandat.html"
 )
-MANDAT_PRINT_SALT = os.getenv("MANDAT_PRINT_SALT", "")
+ATTESTATION_SALT = os.getenv("ATTESTATION_SALT", "")
 
 # Magic Auth
 MAGICAUTH_EMAIL_FIELD = "email"

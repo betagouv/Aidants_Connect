@@ -9,7 +9,7 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional", "new_mandat")
-class CreateNewMandat(FunctionalTestCase):
+class CreateNewMandatTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         # FC only calls back on specific port

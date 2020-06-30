@@ -9,7 +9,7 @@
   <div class="container">
     <div class="row">
       <h1 class="brand">
-        <a id="retour_usagers" href="{% url 'usagers' %}">Vos mandats</a>
+        <a id="retour_usagers" href="{% url 'usagers' %}">Vos usagers</a>
       </h1>
       <a id="add_mandat" class="button float-right" href="{% url 'new_mandat' %}">Créer un mandat</a>
     </div>
@@ -22,9 +22,9 @@
       </div>
     {% endif %}
     <div class="tiles">
-      {% if active_mandats or expired_mandats %}
-        <h2>Mandats en cours</h2>
-        {% if active_mandats %}
+      {% if active_autorisations or inactive_autorisations %}
+        <h2>Autorisations en cours</h2>
+        {% if active_autorisations %}
           <!-- <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)" disabled> -->
           <table class="table">
             <thead>
@@ -38,24 +38,24 @@
               </tr>
             </thead>
             <tbody>
-              {% for mandat in active_mandats %}
+              {% for autorisation in active_autorisations %}
               <tr>
-                <td>{{ mandat.demarche }}</td>
-                <td title="{{ mandat.creation_date }}">{{ mandat.creation_date | date:"d F Y" }}</td>
-                <td title="{{ mandat.expiration_date }}">{{ mandat.expiration_date | date:"d F Y" }}</td>
+                <td>{{ autorisation.demarche }}</td>
+                <td title="{{ autorisation.creation_date }}">{{ autorisation.creation_date | date:"d F Y" }}</td>
+                <td title="{{ autorisation.expiration_date }}">{{ autorisation.expiration_date | date:"d F Y" }}</td>
                 <td>
-                  <a href="{% url 'usagers_mandats_cancel_confirm' usager_id=usager.id mandat_id=mandat.id %}" class="button-outline warning small float-right" title="Révoquer le mandat">&nbsp;🗑️</a>
+                  <a href="{% url 'usagers_mandats_autorisations_cancel_confirm' usager_id=usager.id mandat_id=autorisation.mandat.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right" title="Révoquer le mandat">&nbsp;🗑️</a>
                 </td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         {% else %}
-          <div class="notification" role="alert">Vous n’avez pas de mandat en cours avec cet usager.</div>
+          <div class="notification" role="alert">Vous n’avez pas d'autorisation en cours avec cet usager.</div>
         {% endif %}
         <br />
-        <h2>Mandats expirés</h2>
-        {% if expired_mandats %}
+        <h2>Autorisations expirés</h2>
+        {% if inactive_autorisations %}
           <!-- <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)" disabled> -->
           <table class="table">
             <thead>
@@ -66,17 +66,17 @@
               </tr>
             </thead>
             <tbody>
-              {% for mandat in expired_mandats %}
+              {% for autorisation in inactive_autorisations %}
                 <tr>
-                  <td>{{ mandat.demarche }}</td>
-                  <td title="{{ mandat.creation_date }}">{{ mandat.creation_date | date:"d F Y" }}</td>
-                  <td title="{{ mandat.expiration_date }}">{{ mandat.expiration_date | date:"d F Y" }}</td>
+                  <td>{{ autorisation.demarche }}</td>
+                  <td title="{{ autorisation.creation_date }}">{{ autorisation.creation_date | date:"d F Y" }}</td>
+                  <td title="{{ autorisation.expiration_date }}">{{ autorisation.expiration_date | date:"d F Y" }}</td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
         {% else %}
-          <div class="notification" role="alert">Vous n’avez pas de mandat expiré avec cet usager.</div>
+          <div class="notification" role="alert">Vous n’avez pas d'autorisation expirée avec cet usager.</div>
         {% endif %}
       {% else %}
         <div class="notification" role="alert">Vous n’avez pas de mandat avec cet usager.</div>

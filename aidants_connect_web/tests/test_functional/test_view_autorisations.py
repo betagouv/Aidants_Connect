@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    AutorisationFactory,
     MandatFactory,
     UsagerFactory,
 )
@@ -13,36 +14,47 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional")
-class ViewMandats(FunctionalTestCase):
+class ViewAutorisationsTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         cls.aidant = AidantFactory()
         device = cls.aidant.staticdevice_set.create(id=cls.aidant.id)
         device.token_set.create(token="123456")
 
-        cls.usager = UsagerFactory(given_name="Joséphine")
-        cls.usager2 = UsagerFactory(given_name="Corentin")
-        cls.mandat = MandatFactory(
-            aidant=cls.aidant,
-            usager=cls.usager,
-            demarche=["social"],
+        cls.usager_josephine = UsagerFactory(given_name="Joséphine")
+        cls.usager_corentin = UsagerFactory(given_name="Corentin")
+
+        cls.mandat_aidant_josephine_6 = MandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_josephine,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        cls.mandat2 = MandatFactory(
-            aidant=cls.aidant,
-            usager=cls.usager,
-            demarche=["papiers"],
+        AutorisationFactory(
+            mandat=cls.mandat_aidant_josephine_6, demarche="social",
+        )
+
+        cls.mandat_aidant_josephine_1 = MandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_josephine,
             expiration_date=timezone.now() + timedelta(days=1),
         )
-        cls.mandat3 = MandatFactory(
-            aidant=cls.aidant,
-            usager=cls.usager2,
-            demarche=["famille"],
+
+        AutorisationFactory(
+            mandat=cls.mandat_aidant_josephine_1, demarche="papiers",
+        )
+
+        cls.mandat_aidant_corentin_365 = MandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_corentin,
             expiration_date=timezone.now() + timedelta(days=365),
         )
+        AutorisationFactory(
+            mandat=cls.mandat_aidant_corentin_365, demarche="famille",
+        )
+
         super().setUpClass()
 
-    def test_grouped_mandats(self):
+    def test_grouped_autorisations(self):
         self.open_live_url("/dashboard/")
 
         # Login
@@ -51,7 +63,7 @@ class ViewMandats(FunctionalTestCase):
         # Dashboard
         self.selenium.find_element_by_id("view_mandats").click()
 
-        # Mandat List
+        # autorisation List
         self.assertEqual(
             len(
                 self.selenium.find_element_by_tag_name(

@@ -38,8 +38,8 @@ def usager_details(request, usager_id):
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("dashboard")
 
-    active_mandats = aidant.get_active_mandats_for_usager(usager_id)
-    expired_mandats = aidant.get_expired_mandats_for_usager(usager_id)
+    active_autorisations = aidant.get_active_autorisations_for_usager(usager_id)
+    inactive_autorisations = aidant.get_inactive_autorisations_for_usager(usager_id)
 
     return render(
         request,
@@ -47,8 +47,8 @@ def usager_details(request, usager_id):
         {
             "aidant": aidant,
             "usager": usager,
-            "active_mandats": active_mandats,
-            "expired_mandats": expired_mandats,
+            "active_autorisations": active_autorisations,
+            "inactive_autorisations": inactive_autorisations,
             "messages": messages,
         },
     )
@@ -56,7 +56,9 @@ def usager_details(request, usager_id):
 
 @login_required
 @activity_required
-def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
+def usagers_mandats_autorisations_cancel_confirm(
+    request, usager_id, mandat_id, autorisation_id
+):
     aidant = request.user
 
     usager = aidant.get_usager(usager_id)
@@ -64,41 +66,47 @@ def usagers_mandats_cancel_confirm(request, usager_id, mandat_id):
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("dashboard")
 
-    mandat = usager.get_mandat(mandat_id)
-    if not mandat:
-        django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+    autorisation = usager.get_autorisation(mandat_id, autorisation_id)
+    if not autorisation:
+        django_messages.error(
+            request, "Cette autorisation est introuvable ou inaccessible."
+        )
+        return redirect("dashboard")
+    if autorisation.is_revoked:
+        django_messages.error(request, "L'autorisation a été révoquée")
+        return redirect("dashboard")
+    if autorisation.is_expired:
+        django_messages.error(request, "L'autorisation a déjà expiré")
         return redirect("dashboard")
 
     if request.method == "POST":
-
-        if mandat.is_expired:
-            django_messages.error(request, "Le mandat est déjà expiré")
-            return redirect("dashboard")
-
         form = request.POST
+
         if form:
-            mandat.expiration_date = timezone.now()
-            mandat.save(update_fields=["expiration_date"])
+            autorisation.revocation_date = timezone.now()
+            autorisation.save(update_fields=["revocation_date"])
 
-            Journal.objects.mandat_cancel(mandat)
+            Journal.objects.autorisation_cancel(autorisation, aidant)
 
-            django_messages.success(request, "Le mandat a été révoqué avec succès !")
+            django_messages.success(
+                request, "L'autorisation a été révoquée avec succès !"
+            )
             return redirect("usager_details", usager_id=usager.id)
 
         else:
             return render(
                 request,
-                "aidants_connect_web/new_mandat/usagers_mandats_cancel_confirm.html",
+                "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
                 {
                     "aidant": aidant,
                     "usager": usager,
-                    "mandat": mandat,
-                    "error": "Erreur lors de l'annulation du mandat.",
+                    "autorisation": autorisation,
+                    "error": "Erreur lors de l'annulation de l'autorisation.",
                 },
             )
 
     return render(
         request,
-        "aidants_connect_web/usagers_mandats_cancel_confirm.html",
-        {"aidant": aidant, "usager": usager, "mandat": mandat},
+        "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
+        {"aidant": aidant, "usager": usager, "autorisation": autorisation},
     )
