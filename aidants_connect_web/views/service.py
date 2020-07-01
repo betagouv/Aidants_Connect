@@ -1,6 +1,5 @@
 from datetime import timedelta
 import logging
-from mailjet_rest import Client
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -19,19 +18,6 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-def mailjet_add_contact_to_newsletter():
-    mailjet = Client(
-        auth=(settings.MJ_APIKEY_PUBLIC, settings.MJ_APIKEY_PRIVATE), version="v3"
-    )
-    user_email = "betagouv@yopmail.com"
-
-    data_contact = {"Action": "addnoforce", "Email": user_email}
-    result_contactslist = mailjet.contactslist_managecontact.create(
-        id=settings.MJ_NEWSLETTER_ID, data=data_contact
-    )
-    print(result_contactslist)
-
-
 def humanize_demarche_names(name: str) -> str:
     """
     >>> humanize_demarche_names('argent')
@@ -45,7 +31,10 @@ def humanize_demarche_names(name: str) -> str:
 
 
 def home_page(request):
-    # mailjet_add_contact_to_newsletter()
+    if request.GET.get("infolettre", ""):
+        django_messages.success(
+            request, "Votre inscription à l'infolettre a bien été prise en compte."
+        )
     return render(request, "public_website/home_page.html")
 
 

@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 import logging
 
-from django.contrib import messages
+from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.shortcuts import render, redirect
@@ -174,13 +174,13 @@ def new_mandat_recap(request):
             except AttributeError as error:
                 log.error("Error happened in Recap")
                 log.error(error)
-                messages.error(request, f"Error with Usager attribute : {error}")
+                django_messages.error(request, f"Error with Usager attribute : {error}")
                 return redirect("dashboard")
 
             except IntegrityError as error:
                 log.error("Error happened in Recap")
                 log.error(error)
-                messages.error(request, f"No Usager was given : {error}")
+                django_messages.error(request, f"No Usager was given : {error}")
                 return redirect("dashboard")
 
             return redirect("new_mandat_success")
