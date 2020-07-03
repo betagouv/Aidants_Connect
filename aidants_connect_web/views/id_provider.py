@@ -341,7 +341,7 @@ def user_info(request):
     usager["birthcountry"] = str(birthcountry)
     usager["birthdate"] = str(birthdate)
 
-    Journal.objects.autorisation_use(
+    Journal.log_autorisation_use(
         aidant=connection.aidant,
         usager=connection.usager,
         demarche=connection.demarche,

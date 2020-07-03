@@ -425,7 +425,7 @@ class NewMandatRecapTests(TestCase):
         last_autorisation.revocation_date = timezone.now()
         last_autorisation.save(update_fields=["revocation_date"])
 
-        Journal.objects.autorisation_cancel(last_autorisation, self.aidant_thierry)
+        Journal.log_autorisation_cancel(last_autorisation, self.aidant_thierry)
 
         # second session : 'updating' the autorisation
         self.client.force_login(self.aidant_thierry)

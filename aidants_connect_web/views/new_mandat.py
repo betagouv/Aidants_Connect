@@ -108,24 +108,24 @@ def new_mandat_recap(request):
         form = RecapMandatForm(aidant=aidant, data=request.POST)
 
         if form.is_valid():
-            timezone_now = timezone.now()
+            now = timezone.now()
             expiration_date = {
-                "SHORT": timezone_now + timedelta(days=1),
-                "LONG": timezone_now + timedelta(days=365),
+                "SHORT": now + timedelta(days=1),
+                "LONG": now + timedelta(days=365),
                 "EUS_03_20": settings.ETAT_URGENCE_2020_LAST_DAY,
             }
             mandat_expiration_date = expiration_date.get(connection.duree_keyword)
             days_before_expiration_date = {
                 "SHORT": 1,
                 "LONG": 365,
-                "EUS_03_20": 1
-                + (settings.ETAT_URGENCE_2020_LAST_DAY - timezone_now).days,
+                "EUS_03_20": 1 + (settings.ETAT_URGENCE_2020_LAST_DAY - now).days,
             }
             mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
+
             try:
                 # Add a Journal 'create_attestation' action
                 connection.demarches.sort()
-                Journal.objects.attestation(
+                Journal.log_attestation_creation(
                     aidant=aidant,
                     usager=usager,
                     demarches=connection.demarches,
@@ -141,10 +141,11 @@ def new_mandat_recap(request):
                 mandat = Mandat.objects.create(
                     organisation=aidant.organisation,
                     usager=usager,
-                    expiration_date=mandat_expiration_date,
-                    is_remote=True,
                     duree_keyword=connection.duree_keyword,
+                    expiration_date=mandat_expiration_date,
+                    is_remote=connection.mandat_is_remote,
                 )
+
                 # This loop creates one `autorisation` object per `démarche` in the form
                 for demarche in connection.demarches:
                     # Revoke existing demarche autorisation(s)
@@ -154,25 +155,21 @@ def new_mandat_recap(request):
                         demarche=demarche,
                     )
                     for similar_active_autorisation in similar_active_autorisations:
-                        similar_active_autorisation.revocation_date = timezone_now
+                        similar_active_autorisation.revocation_date = now
                         similar_active_autorisation.save(
                             update_fields=["revocation_date"]
                         )
-                        Journal.objects.autorisation_cancel(
+                        Journal.log_autorisation_cancel(
                             similar_active_autorisation, aidant
                         )
 
                     # Create new demarche autorisation
                     autorisation = Autorisation.objects.create(
-                        aidant=aidant,
-                        usager=usager,
-                        demarche=demarche,
                         mandat=mandat,
-                        expiration_date=mandat_expiration_date,
+                        demarche=demarche,
                         last_renewal_token=connection.access_token,
-                        is_remote=True,
                     )
-                    Journal.objects.autorisation_creation(autorisation, aidant)
+                    Journal.log_autorisation_creation(autorisation, aidant)
 
             except AttributeError as error:
                 log.error("Error happened in Recap")
