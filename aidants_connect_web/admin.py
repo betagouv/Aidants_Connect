@@ -1,4 +1,4 @@
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from django_celery_beat.admin import (
@@ -21,12 +21,16 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from magicauth.models import MagicToken
 
+from nested_admin import NestedModelAdmin, NestedTabularInline
+from tabbed_admin import TabbedModelAdmin
+
 from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
     Connection,
     Journal,
+    Mandat,
     Organisation,
     Usager,
 )
@@ -35,7 +39,7 @@ from aidants_connect_web.models import (
 admin_site = OTPAdminSite(OTPAdminSite.name)
 
 
-class VisibleToStaff(ModelAdmin):
+class VisibleToStaff:
     """A mixin to make a model registered in the Admin visible to staff users."""
 
     def has_module_permission(self, request):
@@ -60,6 +64,10 @@ class StaticDeviceStaffAdmin(VisibleToStaff, StaticDeviceAdmin):
 
 class TOTPDeviceStaffAdmin(VisibleToStaff, TOTPDeviceAdmin):
     pass
+
+
+class OrganisationAdmin(VisibleToStaff, ModelAdmin):
+    list_display = ("name", "address", "admin_num_aidants", "admin_num_mandats")
 
 
 class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
@@ -108,23 +116,76 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
     ordering = ("email",)
 
 
-class UsagerAdmin(ModelAdmin):
+class UsagerAutorisationInline(VisibleToStaff, NestedTabularInline):
+    model = Autorisation
+    fields = ["demarche", "revocation_date"]
+    readonly_fields = fields
+    extra = 0
+    max_num = 0
+
+
+class UsagerMandatInline(VisibleToStaff, NestedTabularInline):
+    model = Mandat
+    fields = ["organisation", "creation_date", "expiration_date"]
+    readonly_fields = fields
+    extra = 0
+    max_num = 0
+    inlines = [UsagerAutorisationInline]
+
+
+class UsagerAdmin(NestedModelAdmin, TabbedModelAdmin):
     list_display = ("__str__", "email", "creation_date")
     search_fields = ("given_name", "family_name", "email")
 
+    tab_infos = ((None, {"fields": ("given_name", "family_name", "email")}),)
 
-class AutorisationAdmin(ModelAdmin):
-    list_display = (
+    tab_mandats = (UsagerMandatInline,)
+
+    tabs = [
+        ("Informations", tab_infos),
+        ("Mandats", tab_mandats),
+    ]
+
+
+class MandatAutorisationInline(VisibleToStaff, TabularInline):
+    model = Autorisation
+    fields = ["demarche", "revocation_date"]
+    readonly_fields = fields
+    extra = 0
+    max_num = 0
+
+
+class MandatAdmin(VisibleToStaff, ModelAdmin):
+    list_display = [
         "id",
         "usager",
-        "aidant",
-        "demarche",
+        "organisation",
         "creation_date",
         "expiration_date",
+        "admin_is_active",
         "is_remote",
-    )
-    list_filter = ("demarche",)
-    search_fields = ("usager", "aidant", "demarche")
+    ]
+    list_filter = ["organisation"]
+    search_fields = ["usager", "organisation"]
+
+    fields = [
+        "usager",
+        "organisation",
+        "duree_keyword",
+        "creation_date",
+        "expiration_date",
+        "admin_is_active",
+        "is_remote",
+    ]
+    readonly_fields = fields
+
+    inlines = [
+        MandatAutorisationInline,
+    ]
+
+
+class ConnectionAdmin(ModelAdmin):
+    list_display = ("id", "usager", "aidant", "complete")
 
 
 class JournalAdmin(ModelAdmin):
@@ -134,17 +195,13 @@ class JournalAdmin(ModelAdmin):
     ordering = ("-creation_date",)
 
 
-class ConnectionAdmin(ModelAdmin):
-    list_display = ("id", "usager", "aidant", "complete")
-
-
 # Display the following tables in the admin
+admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
 admin_site.register(Usager, UsagerAdmin)
-admin_site.register(Autorisation, AutorisationAdmin)
+admin_site.register(Mandat, MandatAdmin)
 admin_site.register(Journal, JournalAdmin)
 admin_site.register(Connection, ConnectionAdmin)
-admin_site.register(Organisation, VisibleToStaff)
 
 admin_site.register(MagicToken)
 admin_site.register(StaticDevice, StaticDeviceAdmin)

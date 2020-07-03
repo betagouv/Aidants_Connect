@@ -17,6 +17,24 @@ class Organisation(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    @cached_property
+    def num_aidants(self):
+        return self.aidants.count()
+
+    def admin_num_aidants(self):
+        return self.num_aidants
+
+    admin_num_aidants.short_description = "Nombre d'aidants"
+
+    @cached_property
+    def num_mandats(self):
+        return self.mandats.count()
+
+    def admin_num_mandats(self):
+        return self.num_mandats
+
+    admin_num_mandats.short_description = "Nombre de mandats"
+
 
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
@@ -282,14 +300,30 @@ class Mandat(models.Model):
 
     objects = MandatQuerySet.as_manager()
 
+    def __str__(self):
+        return f"#{self.id}"
+
     @property
     def is_expired(self) -> bool:
         return timezone.now() > self.expiration_date
 
+    @cached_property
+    def is_active(self):
+        # A `mandat` is considered `active` if it contains
+        # at least one active `autorisation`.
+        return self.autorisations.active().exists()
+
+    def admin_is_active(self):
+        return self.is_active
+    admin_is_active.boolean = True
+    admin_is_active.short_description = "is active"
+
 
 class AutorisationQuerySet(models.QuerySet):
     def active(self):
-        return self.exclude(mandat__expiration_date__lt=timezone.now()).filter(
+        return self.exclude(
+            mandat__expiration_date__lt=timezone.now()
+        ).filter(
             revocation_date__isnull=True
         )
 
