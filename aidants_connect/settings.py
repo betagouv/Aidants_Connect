@@ -389,3 +389,7 @@ STAFF_ORGANISATION_NAME = "BetaGouv"
 # Tabbed Admin
 TABBED_ADMIN_USE_JQUERY_UI = True
 
+# Shell Plus
+SHELL_PLUS_IMPORTS = [
+    "from datetime import datetime, timedelta",
+]
