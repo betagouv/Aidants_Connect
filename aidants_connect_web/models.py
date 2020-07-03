@@ -577,6 +577,7 @@ class Journal(models.Model):
             duree=duree,
             access_token=access_token,
             attestation_hash=attestation_hash,
+
             # COVID-19
             is_remote_mandat=is_remote_mandat,
             additional_information=(cls.INFO_REMOTE_MANDAT if is_remote_mandat else ""),
@@ -594,6 +595,7 @@ class Journal(models.Model):
             demarche=autorisation.demarche,
             duree=autorisation.duration_for_humans,
             autorisation=autorisation.id,
+
             # COVID-19
             is_remote_mandat=mandat.is_remote,
             additional_information=(cls.INFO_REMOTE_MANDAT if mandat.is_remote else ""),
