@@ -16,14 +16,21 @@
         }
     },
     {
+        "model": "aidants_connect_web.mandat",
+        "pk": 1,
+        "fields": {
+            "organisation": 1,
+            "usager": 1,
+            "creation_date": "2020-03-03T10:58:06.623Z",
+            "expiration_date": "2021-03-03T10:58:06.615Z"
+        }
+    },
+    {
         "model": "aidants_connect_web.autorisation",
         "pk": 1,
         "fields": {
-            "aidant": 1,
-            "usager": 1,
+            "mandat": 1,
             "demarche": "social",
-            "creation_date": "2020-03-03T10:58:06.623Z",
-            "expiration_date": "2021-03-03T10:58:06.615Z",
             "last_renewal_token": "d0bdfd80-bc17-4fdb-8114-ec40216e38c3"
         }
     },
@@ -31,11 +38,8 @@
         "model": "aidants_connect_web.autorisation",
         "pk": 2,
         "fields": {
-            "aidant": 1,
-            "usager": 1,
+            "mandat": 1,
             "demarche": "travail",
-            "creation_date": "2020-03-03T10:58:06.630Z",
-            "expiration_date": "2021-03-03T10:58:06.615Z",
             "last_renewal_token": "d0bdfd80-bc17-4fdb-8114-ec40216e38c3"
         }
     },
