@@ -315,14 +315,15 @@ class Mandat(models.Model):
 
     def admin_is_active(self):
         return self.is_active
-
     admin_is_active.boolean = True
     admin_is_active.short_description = "is active"
 
 
 class AutorisationQuerySet(models.QuerySet):
     def active(self):
-        return self.exclude(mandat__expiration_date__lt=timezone.now()).filter(
+        return self.exclude(
+            mandat__expiration_date__lt=timezone.now()
+        ).filter(
             revocation_date__isnull=True
         )
 
