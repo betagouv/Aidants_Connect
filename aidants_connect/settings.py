@@ -320,9 +320,6 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_IMG_SRC = (
     "'self'",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
-    "https://societenumerique.gouv.fr/wp-content/uploads/2018/05/mockupkit-1.png",
-    "https://solidarite-numerique.fr/images/illus/illu_home.svg",
-    "https://solidarite-numerique.fr/images/logo/phoneheart.svg",
 )
 CSP_SCRIPT_SRC = (
     "'self'",

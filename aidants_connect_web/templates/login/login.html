@@ -9,15 +9,15 @@
 {% block title %}Aidants Connect - Connexion{% endblock %}
 
 {% block content %}
-<div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
 <div class="hero">
   <div class="hero__container">
     <img class="logo-height-5em" src="{% static 'images/aidants-connect_logo.png' %}" alt="Logo Aidants Connect" />
-    <h1 class="brand">Page de connexion</h1>
-    <p>Vous êtes un aidant professionnel et faites partie d'une structure habilitée Aidants Connect ?</p>
+    <h1 class="brand">Connectez-vous</h1>
+    <p>Vous êtes un·e aidant·e professionnel·le et faites partie d'une structure habilitée Aidants Connect ?</p>
   </div>
 </div>
-<section class="section padding-top-0">
+<div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
+<section class="section">
   <div class="container">
     <form method="post">
       {% csrf_token %}
@@ -38,7 +38,7 @@
           </div>
         {% endif %}
         <div class="form__group">
-          <label for="id_email">Votre adresse e-mail :</label>
+          <label for="id_email">Votre adresse email :</label>
           <input type="email" id="id_email" class="form-control {% if form.errors %}state-invalid{% endif %}"
             name="email" aria-describedby="emailHelp" placeholder="votre@email.fr" required />
           {% for error in form.email.errors %}
@@ -47,7 +47,7 @@
         </div>
         <div class="form__group">
           <label for="id_otp_token">{{ OTP_form.otp_token.label_tag }}</label>
-          {{ OTP_form.otp_token }}
+          <div class="max-width-50">{{ OTP_form.otp_token }}</div>
           {% for error in OTP_form.otp_token.errors %}
             <div class="notification error" role="alert">{{ error }}</div>
           {% endfor %}
@@ -62,30 +62,27 @@
 <section class="section section-grey">
   <div class="container">
     <h3>Vous cherchez de l'aide ?</h3>
-    <div class="row text-center">
-      <div class="min-width-15">
-        <img src="https://solidarite-numerique.fr/images/logo/phoneheart.svg" />
-        <p id="tel_solidarite_numerique"><a class="no-decoration" href="tel:0170772372" title="Numéro de téléphone Solidarité numérique">01 70 772 372</a></p>
-        <span>(appel non surtaxé)</span>
-        </p>
+    <div class="row">
+      <div class="min-width-35 text-center">
+        <img src="{% static 'images/solidarite-numerique-illu_home.svg' %}" alt="Illustration Solidarité Numérique">
       </div>
       <div>
         <h5>
           <a href="https://solidarite-numerique.fr">Solidarité Numérique</a> est le centre d’aide pour les démarches en ligne essentielles.
           <small class="font-weight-normal margin-top-10">Le service est joignable par téléphone, du lundi au vendredi, de 9h à 18h.</small>
         </h5>
-        <p>Vous pouvez aussi consulter <a href="https://solidarite-numerique.fr">solidarite-numerique.fr</a> où vous trouverez des explications sur de nombreuses démarches pendant le confinement.</p>
-      </div>
-      <div class="min-width-15">
-        <img class="logo-height-5em" src="https://solidarite-numerique.fr/images/illus/illu_home.svg" />
+        <p class="text-center">
+          <img class="vertical-align-middle" src="{% static 'images/solidarite-numerique-phoneheart.svg' %}" alt="Logo Solidarité Numérique">
+          <span id="tel_solidarite_numerique"><a class="no-decoration" href="tel:0170772372" title="Numéro de téléphone Solidarité numérique">01 70 772 372</a></span>
+          <span><small>(appel non surtaxé)</small></span>
+        </p>
+        <p>
+          Vous pouvez aussi consulter <a href="https://solidarite-numerique.fr">solidarite-numerique.fr</a>
+          où vous trouverez des explications sur de nombreuses démarches.
+        </p>
       </div>
     </div>
   </div>
 </section>
-<section class="section section-color">
-  <div class="container">
-    <h3>En savoir plus sur le service Aidants Connect ?</h3>
-    <a class="button-outline-primary" href="{% url 'home_page' %}">Accueil</a>
-  </div>
-</section>
+{% include 'public_website/section_link_faq_partial.html' %}
 {% endblock content %}

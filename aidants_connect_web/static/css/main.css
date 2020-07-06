@@ -61,16 +61,6 @@ a.navbar__home:hover {
 }
 
 
-/* Row */
-
-.row div.min-width-35 {
-  min-width: 35%;
-}
-.row div.min-width-15 {
-  min-width: 15%;
-}
-
-
 /* Footer */
 
 .footer__social {
@@ -111,6 +101,9 @@ a.no-decoration {
 .margin-bottom-50 {
   margin-bottom: 50px;
 }
+.margin-bottom-0 {
+  margin-bottom: 0;
+}
 .margin-top-10 {
   margin-top: 10px;
 }
@@ -133,16 +126,14 @@ a.no-decoration {
   height: 4em;
 }
 
-.notification {
-  margin-top: 1em;
-  margin-bottom: 1em;
-}
-
 .background-color-blue {
   background-color: #0053b3;
 }
 .background-color-gray {
   background-color: #ebeff3;
+}
+.background-color-white {
+  background-color: white;
 }
 
 .text-very-small {
@@ -160,6 +151,16 @@ a.no-decoration {
   float: right;
 }
 
+.vertical-align-middle {
+  vertical-align: middle;
+}
+
+.min-width-35 {
+  min-width: 35%;
+}
+.max-width-50 {
+  max-width: 50%;
+}
 
 /* Table */
 
@@ -188,6 +189,15 @@ img.logo-height-5em {
 
 
 /* Override/Extend template.min.css */
+
+h4, h5, h6 {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.section {
+  padding: 4em 0;
+}
 
 .hero__container {
   min-height: 10em;

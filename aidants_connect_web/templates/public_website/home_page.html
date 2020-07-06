@@ -28,7 +28,7 @@
         </h3>
         <h3>
           Vous accompagnez régulièrement des personnes en difficulté avec le numérique dans la réalisation de démarches en ligne ?<br />
-          <small class="font-weight-normal margin-top-10">➡️ Aidants Connect est fait pour vous !</small>
+          <small class="font-weight-normal margin-top-10">→ Aidants Connect est fait pour vous !</small>
         </h3>
         <a class="button primary" href="{% url 'guide_utilisation' %}">Découvrir Aidants Connect</a>
       </div>
@@ -55,17 +55,7 @@
     </div>
   </div>
 </section>
-<section class="section section-color">
-  <div class="container">
-    <h3>Vous avez une question ?</h3>
-    <p>
-      Quelles sont les personnes qui peuvent bénéficier d’Aidants Connect ?
-      Quelles sont les conditions pour acquérir le statut "Aidants Professionel" ?
-      Combien coûte Aidants Connect ? etc.
-    </p>
-    <a class="button-outline-primary" href="{% url 'faq_generale' %}">Consultez notre FAQ</a>
-  </div>
-</section>
+{% include 'public_website/section_link_faq_partial.html' %}
 <section class="section section-grey">
   <div class="container">
     <div class="row">
