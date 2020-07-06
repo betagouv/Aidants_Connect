@@ -22,7 +22,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "-uid", "--usager_id", action="store", type=int,
+            "-uid",
+            "--usager_id",
+            action="store",
+            type=int,
             help="Migrate only the data for the specified `usager`",
         )
 
@@ -33,9 +36,7 @@ class Command(BaseCommand):
         # We consider autorisations that may have been renewed.
         renewed_autorisations = usager.autorisations.filter(
             creation_date__lt=F("last_renewal_date")
-        ).order_by(
-            "creation_date"
-        )
+        ).order_by("creation_date")
 
         if renewed_autorisations:
             self.stdout.write("")
@@ -46,10 +47,8 @@ class Command(BaseCommand):
             renewal_entries = Journal.objects.filter(
                 action="update_mandat",
                 autorisation=auto.id,  # yeah, this is an `IntegerField`, not a `ForeignKey`!
-                creation_date__gt=auto.creation_date + timedelta(hours=1)
-            ).order_by(
-                "creation_date"
-            )
+                creation_date__gt=auto.creation_date + timedelta(hours=1),
+            ).order_by("creation_date")
 
             current_auto = auto
 
@@ -75,9 +74,9 @@ class Command(BaseCommand):
 
                 created_autorisations.append(new_auto)
                 self.stdout.write(
-                    "    /!\\ Autorisation #%d was renewed on %s, new intermediate one: #%d" % (
-                    auto.id, renewal_date.strftime("%c"), new_auto.id
-                ))
+                    "    /!\\ Autorisation #%d was renewed on %s, new intermediate one: #%d"
+                    % (auto.id, renewal_date.strftime("%c"), new_auto.id)
+                )
 
                 current_auto = new_auto
 
@@ -252,6 +251,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write("All done!")
             if created_autorisations:
-                self.stdout.write("%d intermediate autorisations were created in the process." % len(
-                    created_autorisations
-                ))
+                self.stdout.write(
+                    "%d intermediate autorisations were created in the process."
+                    % len(created_autorisations)
+                )
