@@ -6,20 +6,21 @@
 
 {% block content %}
 <section class="section">
-  <form method="post">
-    <h1>Bonjour {{ aidant.get_full_name }}</h1>
-    <h2>Votre session a expiré</h2>
-    {% if form.errors %}
-      <div class="notification warning">Ce code n'est pas valide</div>
-    {% endif %}
-    {% csrf_token %}
-    <div class="form__group">
-      <label for="id_otp_token">{{ form.otp_token.label_tag }}</label>
-      {{ form.otp_token }}
-    </div>
-    <div class="form__group">
-      <button type="submit" class="button">Valider</button>
-    </div>
-  </form>
+  <div class="container">
+    <h1 class="section__title">Bonjour {{ aidant.get_full_name }}, votre session a expiré</h1>
+    <form method="post" class="panel">
+      {% if form.errors %}
+        <div class="notification warning">Ce code n'est pas valide</div>
+      {% endif %}
+      {% csrf_token %}
+      <div class="form__group">
+        <label for="id_otp_token">{{ form.otp_token.label_tag }}</label>
+        <div class="max-width-50">{{ form.otp_token }}</div>
+      </div>
+      <div class="form__group">
+        <button type="submit" class="button">Valider</button>
+      </div>
+    </form>
+  </div>
 </section>
 {% endblock content %}

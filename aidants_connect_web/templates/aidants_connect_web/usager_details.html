@@ -13,7 +13,7 @@
       </h1>
       <a id="add_mandat" class="button float-right" href="{% url 'new_mandat' %}">Créer un mandat</a>
     </div>
-    <h2 class="brand">&nbsp;↳ {{ usager.get_full_name }}</h2>
+    <h2>&nbsp;↳ {{ usager.get_full_name }}</h2>
     {% if messages %}
       <div class="notification success" role="alert">
         {% for message in messages %}
