@@ -163,9 +163,9 @@ class ConfinementNewMandatRecapTests(TestCase):
         remote_statuses = [auto.mandat.is_remote for auto in autorisations]
         self.assertEqual(remote_statuses, [True, True])
         expiration_dates = [auto.mandat.expiration_date for auto in autorisations]
-        self.assertEqual(expiration_dates, [
-            ETAT_URGENCE_2020_LAST_DAY, ETAT_URGENCE_2020_LAST_DAY
-        ])
+        self.assertEqual(
+            expiration_dates, [ETAT_URGENCE_2020_LAST_DAY, ETAT_URGENCE_2020_LAST_DAY]
+        )
 
 
 @tag("new_mandat")

@@ -155,9 +155,7 @@ def get_user_info(connection: Connection) -> tuple:
             usager.email = user_info.get("email")
             usager.save()
 
-            Journal.log_update_email_usager(
-                aidant=connection.aidant, usager=usager
-            )
+            Journal.log_update_email_usager(aidant=connection.aidant, usager=usager)
 
         return usager, None
 
