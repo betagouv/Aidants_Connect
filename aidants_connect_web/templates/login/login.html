@@ -9,78 +9,80 @@
 {% block title %}Aidants Connect - Connexion{% endblock %}
 
 {% block content %}
-<div class="page">
-  <div class="main-page">
-    <section class="section section-white">
-      <div class="container">
-        <form method="post">
-          {% csrf_token %}
-          {% if user.is_authenticated %}
-            <div class="notification" role="alert">
-              Vous êtes déjà connecté
-            </div>
-            <div class="text-center">
-              <a href="{% url LOGGED_IN_REDIRECT_URL_NAME %}" class="btn btn-success">Accédez à l'accueil</a>
-              <a href="{% url LOGOUT_URL_NAME %}" class="btn btn-warning">Déconnectez-vous</a>
-            </div>
-          {% else %}
-            {% if messages %}
-              <div>
-                {% for message in messages %}
-                  <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-                {% endfor %}
-              </div>
-            {% endif %}
-            <div class="form__group">
-              <h1>Aidants Connect est actuellement en expérimentation.</h1>
-              <p><strong>Ce service est pour l'instant reservé aux aidants professionnels salariés d'une des 13 structures habilitées Aidants Connect.</strong></p>
-              <label for="id_email">Si vous faites partie de l'une de ces structures, vous pouvez vous connecter :</label>
-              <input type="email" id="id_email" class="form-control {% if form.errors %}state-invalid{% endif %}"
-                name="email" aria-describedby="emailHelp" placeholder="Votre adresse email" required />
-              {% for error in form.email.errors %}
-                <div class="notification error" role="alert">{{ error }}</div>
-              {% endfor %}
-            </div>
-            <div class="form__group">
-              <label for="id_otp_token">{{ OTP_form.otp_token.label_tag }}</label>
-              {{ OTP_form.otp_token }}
-              {% for error in OTP_form.otp_token.errors %}
-                <div class="notification error" role="alert">{{ error }}</div>
-              {% endfor %}
-            </div>
-            <div class="form__group">
-              <button type="submit" class="button">Valider</button>
-            </div>
-          {% endif %}
-        </form>
-        <br />
-        <br />
-      </div>
-    </section>
-    <section class="section section-grey">
-        <div class="container container-small">
-          <h2>Vous êtes sur la page de connexion Aidants Connect</h2>
-          <h3>Vous cherchez de l'aide ?</h3>
-          <div id="solidarite_numerique">
-            <div id="logo_solidarite_numerique">
-              <img src="https://solidarite-numerique.fr/images/logo/phoneheart.svg" />
-            </div>
-            <div id="text_solidarite_numerique">
-              <p>Solidarité Numérique est le centre d’aide pour les démarches en ligne essentielles.</p>
-              <p>le service est joignable par téléphone, du lundi au vendredi, de 9h à 18h.</p>
-              <p><span id="tel_solidarite_numerique"><a href="tel:0170772372" title="Numéro de téléphone Solidarité numérique">01 70 772 372</a></span> (appel non surtaxé);</p>
-              <p>Vous pouvez aussi consulter <a href="https://solidarite-numerique.fr">solidarite-numerique.fr</a> où vous trouverez des explications sur de nombreuses démarches pendant le confinement.</p>
-            </div>
-          </div>
-
-
-          <h3>Vous êtes un aidant professionnel ?</h3>
-          <p>
-            Si vous souhaitez avoir des informations sur Aidants Connect,
-            <a href="mailto:support.aidants@aidantsconnect.beta.gouv.fr?subject=[Site Aidants Connect - login] Demande d'informations">contactez-nous</a>.
-          </p>
-        </div>
-     </section>
+<div class="hero">
+  <div class="hero__container">
+    <img class="logo-height-5em" src="{% static 'images/aidants-connect_logo.png' %}" alt="Logo Aidants Connect" />
+    <h1>Connectez-vous</h1>
+    <p>Vous êtes un·e aidant·e professionnel·le et faites partie d'une structure habilitée Aidants Connect ?</p>
   </div>
 </div>
+<div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
+<section class="section">
+  <div class="container">
+    <form method="post">
+      {% csrf_token %}
+      {% if user.is_authenticated %}
+        <div class="notification" role="alert">
+          Vous êtes déjà connecté
+        </div>
+        <div class="text-center">
+          <a href="{% url LOGGED_IN_REDIRECT_URL_NAME %}" class="btn btn-success">Accédez à l'accueil</a>
+          <a href="{% url LOGOUT_URL_NAME %}" class="btn btn-warning">Déconnectez-vous</a>
+        </div>
+      {% else %}
+        {% if messages %}
+          <div>
+            {% for message in messages %}
+              <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="form__group">
+          <label for="id_email">Votre adresse email :</label>
+          <input type="email" id="id_email" class="form-control {% if form.errors %}state-invalid{% endif %}"
+            name="email" aria-describedby="emailHelp" placeholder="votre@email.fr" required />
+          {% for error in form.email.errors %}
+            <div class="notification error" role="alert">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form__group">
+          <label for="id_otp_token">{{ OTP_form.otp_token.label_tag }}</label>
+          <div class="max-width-50">{{ OTP_form.otp_token }}</div>
+          {% for error in OTP_form.otp_token.errors %}
+            <div class="notification error" role="alert">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form__group">
+          <button type="submit" class="button">Valider</button>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+</section>
+<section class="section section-grey">
+  <div class="container">
+    <h3>Vous cherchez de l'aide ?</h3>
+    <div class="row">
+      <div class="min-width-35 text-center">
+        <img src="{% static 'images/solidarite-numerique-illu_home.svg' %}" alt="Illustration Solidarité Numérique">
+      </div>
+      <div>
+        <h5>
+          <a href="https://solidarite-numerique.fr">Solidarité Numérique</a> est le centre d’aide pour les démarches en ligne essentielles.
+          <small class="font-weight-normal margin-top-10">Le service est joignable par téléphone, du lundi au vendredi, de 9h à 18h.</small>
+        </h5>
+        <p class="text-center">
+          <img class="vertical-align-middle" src="{% static 'images/solidarite-numerique-phoneheart.svg' %}" alt="Logo Solidarité Numérique">
+          <span id="tel_solidarite_numerique"><a class="no-decoration" href="tel:0170772372" title="Numéro de téléphone Solidarité numérique">01 70 772 372</a></span>
+          <span><small>(appel non surtaxé)</small></span>
+        </p>
+        <p>
+          Vous pouvez aussi consulter <a href="https://solidarite-numerique.fr">solidarite-numerique.fr</a>
+          où vous trouverez des explications sur de nombreuses démarches.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% include 'public_website/section_link_faq_partial.html' %}
 {% endblock content %}

@@ -177,6 +177,7 @@ class MandatAdmin(VisibleToStaff, ModelAdmin):
         "admin_is_active",
         "is_remote",
     ]
+
     readonly_fields = fields
 
     inlines = [

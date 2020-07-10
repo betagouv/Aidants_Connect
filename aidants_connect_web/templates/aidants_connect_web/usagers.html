@@ -5,14 +5,14 @@
 {% block title %}Aidants Connect - Usagers{% endblock %}
 
 {% block extracss %}
-  <link href="{% static 'css/usagers.css' %}" rel="stylesheet">
+<link href="{% static 'css/usagers.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
 <section class="section">
   <div class="container">
     <div class="row">
-      <h1 class="brand">Vos mandats</h1>
+      <h1 class="margin-bottom-0">Vos mandats</h1>
       <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager">Ajouter un usager</a>
     </div>
     {% if messages %}

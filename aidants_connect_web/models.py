@@ -315,14 +315,15 @@ class Mandat(models.Model):
 
     def admin_is_active(self):
         return self.is_active
-
     admin_is_active.boolean = True
     admin_is_active.short_description = "is active"
 
 
 class AutorisationQuerySet(models.QuerySet):
     def active(self):
-        return self.exclude(mandat__expiration_date__lt=timezone.now()).filter(
+        return self.exclude(
+            mandat__expiration_date__lt=timezone.now()
+        ).filter(
             revocation_date__isnull=True
         )
 
@@ -577,6 +578,7 @@ class Journal(models.Model):
             duree=duree,
             access_token=access_token,
             attestation_hash=attestation_hash,
+
             # COVID-19
             is_remote_mandat=is_remote_mandat,
             additional_information=(cls.INFO_REMOTE_MANDAT if is_remote_mandat else ""),
@@ -594,6 +596,7 @@ class Journal(models.Model):
             demarche=autorisation.demarche,
             duree=autorisation.duration_for_humans,
             autorisation=autorisation.id,
+
             # COVID-19
             is_remote_mandat=mandat.is_remote,
             additional_information=(cls.INFO_REMOTE_MANDAT if mandat.is_remote else ""),

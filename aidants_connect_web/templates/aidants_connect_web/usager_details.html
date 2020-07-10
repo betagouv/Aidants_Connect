@@ -8,12 +8,12 @@
 <section class="section">
   <div class="container">
     <div class="row">
-      <h1 class="brand">
+      <h1 class="margin-bottom-0">
         <a id="retour_usagers" href="{% url 'usagers' %}">Vos usagers</a>
       </h1>
       <a id="add_mandat" class="button float-right" href="{% url 'new_mandat' %}">Créer un mandat</a>
     </div>
-    <h2 class="brand">&nbsp;↳ {{ usager.get_full_name }}</h2>
+    <h2>&nbsp;↳ {{ usager.get_full_name }}</h2>
     {% if messages %}
       <div class="notification success" role="alert">
         {% for message in messages %}

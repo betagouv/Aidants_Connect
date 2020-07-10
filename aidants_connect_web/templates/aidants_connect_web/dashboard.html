@@ -8,7 +8,6 @@
 <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-
 {% block content %}
 <section class="section">
   <div class="container">
@@ -19,13 +18,13 @@
         {% endfor %}
       </div>
     {% endif %}
-    <h1 class="brand">Bienvenue sur votre Espace Aidant, {{ aidant.first_name }} !</h1>
+    <h1 class="section__title">Bienvenue sur votre Espace Aidant, {{ aidant.first_name }} !</h1>
     <div class="tiles">
       <h2>Vos services</h2>
       <div class="grid">
         <a href="{% url 'usagers' %}" class="tile" id="view_mandats">
           <div class="top-icon text-center">📂</div>
-          <h3>Voir mes mandats </h3>
+          <h3>Voir mes mandats</h3>
         </a>
         <a href="{% url 'new_mandat' %}" class="tile" id="add_usager">
           <div class="top-icon text-center">✨</div>

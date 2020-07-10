@@ -9,27 +9,26 @@
 {% endblock extracss %}
 
 {% block content %}
-<section id="engagement"class="section">
+<section id="engagement" class="section">
   <div class="container container-small">
-    <div class="information">
-      <h1 class="brand">Créer ou renouveler un mandat</h1>
-      <h2>Mentions à lire à l'usager</h2>
-      <p>Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :
-    <ul>
-      <li>effectuer à votre place les démarches listées dans le mandat, à partir des informations que vous leur avez données ;</li>
-      <li>collecter et conserver seulement les informations nécessaires aux démarches listées dans le mandat ou à celles qui s’y rattachent ;</li>
-      <li>utiliser et communiquer seulement les informations nécessaires aux démarches listées dans le mandat ou à celles qui s’y rattachent ;</li>
-      <li>Vous informer et demander votre autorisation avant d’effectuer d’autres démarches que celles listées dans le mandat ;</li>
-      <li>mettre à jour et supprimer l’ensemble de vos informations personnelles lorsqu’elles ne sont plus utiles ;</li>
-      <li>s’interdire de rendre publiques vos informations personnelles ;</li>
-      <li>prendre toutes les précautions pour assurer la sécurité de vos informations personnelles.</li>
-    </ul>
-  </p>
-  <p>
-    A partir du moment où un aidant habilité par <strong>{{ aidant.organisation }}</strong> réalise à votre place une des démarches listées dans le mandat,
-    il accepte de le faire dans les conditions décrites dans le mandat.
-  </p>
-    </div>
+    <h1 class="section__title">Créer ou renouveler un mandat</h1>
+    <h2>Mentions à lire à l'usager</h2>
+    <p>
+      Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :
+      <ul>
+        <li>effectuer à votre place les démarches listées dans le mandat, à partir des informations que vous leur avez données ;</li>
+        <li>collecter et conserver seulement les informations nécessaires aux démarches listées dans le mandat ou à celles qui s’y rattachent ;</li>
+        <li>utiliser et communiquer seulement les informations nécessaires aux démarches listées dans le mandat ou à celles qui s’y rattachent ;</li>
+        <li>Vous informer et demander votre autorisation avant d’effectuer d’autres démarches que celles listées dans le mandat ;</li>
+        <li>mettre à jour et supprimer l’ensemble de vos informations personnelles lorsqu’elles ne sont plus utiles ;</li>
+        <li>s’interdire de rendre publiques vos informations personnelles ;</li>
+        <li>prendre toutes les précautions pour assurer la sécurité de vos informations personnelles.</li>
+      </ul>
+    </p>
+    <p>
+      A partir du moment où un aidant habilité par <strong>{{ aidant.organisation }}</strong> réalise à votre place une des démarches listées dans le mandat,
+      il accepte de le faire dans les conditions décrites dans le mandat.
+    </p>
   </div>
 </section>
 <section id="mandat_specifications" class="section section-grey">
@@ -47,7 +46,7 @@
               <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche" />
               <label class="label-demarche" for="button-{{ value }}">
                 <img src="{{ label.icon }}" alt="Icon {{ label.titre }}" />
-                <h3 class="brand">{{ label.titre }}</h3>
+                <h3>{{ label.titre }}</h3>
                 <p>
                   {{ label.description }}
                   {% if label.service_exemples %}
