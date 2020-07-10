@@ -84,7 +84,7 @@ def statistiques(request):
 
     # Autorisations
     # # Autorisation prep
-    autorisation_use = Journal.stats_objects.not_staff().filter(
+    autorisation_use = Journal.objects.excluding_staff().filter(
         action="use_autorisation"
     )
     autorisation_use_recent = autorisation_use.filter(creation_date__gte=last_30_days)
@@ -149,7 +149,7 @@ def activity_check(request):
         form = OTPForm(aidant=aidant, data=request.POST)
 
         if form.is_valid():
-            Journal.objects.activity_check(aidant)
+            Journal.log_activity_check(aidant)
             return redirect(next_page)
     else:
         form = OTPForm(request.user)

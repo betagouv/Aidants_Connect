@@ -6,4 +6,4 @@ from aidants_connect_web.models import Journal
 
 @receiver(user_logged_in)
 def on_login(sender, user, request, **kwargs):
-    Journal.objects.connection(user)
+    Journal.log_connection(user)

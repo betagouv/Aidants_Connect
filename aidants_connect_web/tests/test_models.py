@@ -575,7 +575,7 @@ class JournalModelTests(TestCase):
         cls.first_autorisation = AutorisationFactory(
             mandat=cls.first_mandat, demarche="Revenus",
         )
-        Journal.objects.autorisation_creation(
+        Journal.log_autorisation_creation(
             cls.first_autorisation, aidant=cls.aidant_thierry
         )
 
@@ -590,7 +590,7 @@ class JournalModelTests(TestCase):
         self.assertEqual(len(Journal.objects.all()), 2)
 
     def test_logging_of_aidant_conection(self):
-        entry = Journal.objects.connection(aidant=self.aidant_thierry)
+        entry = Journal.log_connection(aidant=self.aidant_thierry)
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "connect_aidant")
         self.assertEqual(
@@ -598,7 +598,7 @@ class JournalModelTests(TestCase):
         )
 
     def test_a_franceconnect_usager_journal_entry_can_be_created(self):
-        entry = Journal.objects.franceconnection_usager(
+        entry = Journal.log_franceconnection_usager(
             aidant=self.aidant_thierry, usager=self.usager_ned,
         )
 
@@ -610,7 +610,7 @@ class JournalModelTests(TestCase):
         autorisation = AutorisationFactory(
             mandat=self.mandat_thierry_ned_365, demarche="logement",
         )
-        Journal.objects.autorisation_creation(autorisation, self.aidant_thierry)
+        Journal.log_autorisation_creation(autorisation, self.aidant_thierry)
 
         journal_entries = Journal.objects.all()
         self.assertEqual(len(journal_entries), 3)
@@ -621,7 +621,7 @@ class JournalModelTests(TestCase):
         self.assertEqual(last_entry.autorisation, autorisation.id)
 
     def test_log_autorisation_use_complete(self):
-        entry = Journal.objects.autorisation_use(
+        entry = Journal.log_autorisation_use(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarche="transports",
@@ -633,14 +633,14 @@ class JournalModelTests(TestCase):
         self.assertEqual(entry.demarche, "transports")
 
     def test_log_autorisation_cancel_complete(self):
-        entry = Journal.objects.autorisation_cancel(
+        entry = Journal.log_autorisation_cancel(
             autorisation=self.first_autorisation, aidant=self.aidant_thierry
         )
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "cancel_autorisation")
 
     def test_it_is_impossible_to_change_an_existing_entry(self):
-        entry = Journal.objects.autorisation_use(
+        entry = Journal.log_autorisation_use(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarche="transports",
@@ -653,7 +653,7 @@ class JournalModelTests(TestCase):
         self.assertEqual(Journal.objects.get(id=entry.id).demarche, "transports")
 
     def test_it_is_impossible_to_delete_an_existing_entry(self):
-        entry = Journal.objects.autorisation_use(
+        entry = Journal.log_autorisation_use(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarche="transports",
@@ -667,7 +667,7 @@ class JournalModelTests(TestCase):
     def test_a_create_attestation_journal_entry_can_be_created(self):
         demarches = ["transports", "logement"]
         expiration_date = timezone.now() + timedelta(days=6)
-        entry = Journal.objects.attestation(
+        entry = Journal.log_attestation_creation(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
             demarches=demarches,

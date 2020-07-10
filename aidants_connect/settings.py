@@ -64,6 +64,8 @@ ALLOWED_HOSTS = [os.environ["HOST"]]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
+    "nested_admin",
+    "tabbed_admin",
     "magicauth",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -323,6 +325,7 @@ CSP_IMG_SRC = (
 )
 CSP_SCRIPT_SRC = (
     "'self'",
+    "'sha256-FUfFEwUd+ObSebyGDfkxyV7KwtyvBBwsE/VxIOfPD68='",  # tabbed_admin
     "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E='",  # main.html
     "'sha256-KmV6UDCSIgj53bsOoy8uwsFoQNpcFRhqLgcL8kgXIXg='",  # new_mandat.html
 )
@@ -382,3 +385,11 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
 
 # Staff Organisation name
 STAFF_ORGANISATION_NAME = "BetaGouv"
+
+# Tabbed Admin
+TABBED_ADMIN_USE_JQUERY_UI = True
+
+# Shell Plus
+SHELL_PLUS_IMPORTS = [
+    "from datetime import datetime, timedelta",
+]

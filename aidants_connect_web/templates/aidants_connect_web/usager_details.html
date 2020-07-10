@@ -23,7 +23,7 @@
     {% endif %}
     <div class="tiles">
       {% if active_autorisations or inactive_autorisations %}
-        <h2>Autorisations en cours</h2>
+        <h2>Mandats en cours</h2>
         {% if active_autorisations %}
           <!-- <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)" disabled> -->
           <table class="table">
@@ -54,7 +54,7 @@
           <div class="notification" role="alert">Vous n’avez pas d'autorisation en cours avec cet usager.</div>
         {% endif %}
         <br />
-        <h2>Autorisations expirés</h2>
+        <h2>Mandats expirés</h2>
         {% if inactive_autorisations %}
           <!-- <input class="table__filter" type="text" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)" disabled> -->
           <table class="table">
@@ -76,7 +76,7 @@
             </tbody>
           </table>
         {% else %}
-          <div class="notification" role="alert">Vous n’avez pas d'autorisation expirée avec cet usager.</div>
+          <div class="notification" role="alert">Vous n’avez pas de mandat expiré avec cet usager.</div>
         {% endif %}
       {% else %}
         <div class="notification" role="alert">Vous n’avez pas de mandat avec cet usager.</div>

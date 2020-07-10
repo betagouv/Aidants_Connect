@@ -77,7 +77,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button.click()
 
         # FC - Validate the information
-        submit_button = self.selenium.find_element_by_tag_name("input")
+        submit_button = self.selenium.find_element_by_tag_name("button")
         submit_button.click()
         time.sleep(2)
 

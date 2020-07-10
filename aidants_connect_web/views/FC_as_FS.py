@@ -121,7 +121,7 @@ def fc_callback(request):
     connection.usager = usager
     connection.save()
 
-    Journal.objects.franceconnection_usager(
+    Journal.log_franceconnection_usager(
         aidant=connection.aidant, usager=connection.usager,
     )
 
@@ -155,7 +155,7 @@ def get_user_info(connection: Connection) -> tuple:
             usager.email = user_info.get("email")
             usager.save()
 
-            Journal.objects.update_email_usager(aidant=connection.aidant, usager=usager)
+            Journal.log_update_email_usager(aidant=connection.aidant, usager=usager)
 
         return usager, None
 

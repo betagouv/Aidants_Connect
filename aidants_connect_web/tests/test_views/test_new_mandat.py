@@ -160,10 +160,12 @@ class ConfinementNewMandatRecapTests(TestCase):
 
         # test autorisations
         autorisations = Autorisation.objects.all()
-        status_autorisations = list(autorisations.values_list("is_remote", flat=True))
-        self.assertEqual(status_autorisations.count(True), 2)
-        autorisation_2 = Autorisation.objects.last()
-        self.assertEqual(autorisation_2.expiration_date, ETAT_URGENCE_2020_LAST_DAY)
+        remote_statuses = [auto.mandat.is_remote for auto in autorisations]
+        self.assertEqual(remote_statuses, [True, True])
+        expiration_dates = [auto.mandat.expiration_date for auto in autorisations]
+        self.assertEqual(
+            expiration_dates, [ETAT_URGENCE_2020_LAST_DAY, ETAT_URGENCE_2020_LAST_DAY]
+        )
 
 
 @tag("new_mandat")
@@ -303,10 +305,10 @@ class NewMandatRecapTests(TestCase):
             demarche="papiers",
             mandat__usager=self.test_usager,
             mandat__organisation=self.aidant_thierry.organisation,
-        ).order_by("-creation_date")
+        ).order_by("-mandat__creation_date")
         new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
         old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]
-        self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
+        self.assertEqual(new_papiers_autorisation.duration_for_humans, 365)
         self.assertTrue(old_papiers_autorisation.is_revoked)
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")
@@ -366,11 +368,11 @@ class NewMandatRecapTests(TestCase):
                 mandat__usager=self.test_usager,
                 mandat__organisation=self.aidant_thierry.organisation,
             ).order_by(
-                "-creation_date"
+                "-mandat__creation_date"
             )
             new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
             old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]
-            self.assertEqual(new_papiers_autorisation.duree_in_days, 366)  # TODO: 365
+            self.assertEqual(new_papiers_autorisation.duration_for_humans, 366)  # noqa
             self.assertTrue(old_papiers_autorisation.is_expired)
             self.assertFalse(old_papiers_autorisation.is_revoked)
 
@@ -395,6 +397,7 @@ class NewMandatRecapTests(TestCase):
                 2,
             )
 
+    @override_settings(OTP_STATIC_THROTTLE_FACTOR=0)  # to prevent throttling
     def test_updating_revoked_autorisation_for_same_organisation(self):
         # first session : creating the autorisation
         self.client.force_login(self.aidant_thierry)
@@ -425,7 +428,7 @@ class NewMandatRecapTests(TestCase):
         last_autorisation.revocation_date = timezone.now()
         last_autorisation.save(update_fields=["revocation_date"])
 
-        Journal.objects.autorisation_cancel(last_autorisation, self.aidant_thierry)
+        Journal.log_autorisation_cancel(last_autorisation, self.aidant_thierry)
 
         # second session : 'updating' the autorisation
         self.client.force_login(self.aidant_thierry)
@@ -450,10 +453,10 @@ class NewMandatRecapTests(TestCase):
             demarche="papiers",
             mandat__usager=self.test_usager,
             mandat__organisation=self.aidant_thierry.organisation,
-        ).order_by("-creation_date")
+        ).order_by("-mandat__creation_date")
         new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
         old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]
-        self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
+        self.assertEqual(new_papiers_autorisation.duration_for_humans, 365)
         self.assertFalse(old_papiers_autorisation.is_expired)
         self.assertTrue(old_papiers_autorisation.is_revoked)
 
@@ -508,10 +511,10 @@ class NewMandatRecapTests(TestCase):
 
         last_usager_papiers_autorisations = Autorisation.objects.filter(
             demarche="papiers", mandat__usager=self.test_usager
-        ).order_by("-creation_date")
+        ).order_by("-mandat__creation_date")
         new_papiers_autorisation = last_usager_papiers_autorisations[0]
         old_papiers_autorisation = last_usager_papiers_autorisations[1]
-        self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
+        self.assertEqual(new_papiers_autorisation.duration_for_humans, 365)
         self.assertTrue(old_papiers_autorisation.is_revoked)
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")
@@ -563,10 +566,10 @@ class NewMandatRecapTests(TestCase):
 
         last_usager_papiers_autorisations = Autorisation.objects.filter(
             demarche="papiers", mandat__usager=self.test_usager
-        ).order_by("-creation_date")
+        ).order_by("-mandat__creation_date")
         new_papiers_autorisation = last_usager_papiers_autorisations[0]
         old_papiers_autorisation = last_usager_papiers_autorisations[1]
-        self.assertEqual(new_papiers_autorisation.duree_in_days, 365)
+        self.assertEqual(new_papiers_autorisation.duration_for_humans, 365)
         self.assertFalse(old_papiers_autorisation.is_revoked)
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")

@@ -6,15 +6,34 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 
 class Organisation(models.Model):
-    name = models.TextField(default="No name provided")
-    siret = models.PositiveIntegerField(default=1)
-    address = models.TextField(default="No address provided")
+    name = models.TextField("Nom", default="No name provided")
+    siret = models.PositiveIntegerField("N° SIRET", default=1)
+    address = models.TextField("Adresse", default="No address provided")
 
     def __str__(self):
         return f"{self.name}"
+
+    @cached_property
+    def num_aidants(self):
+        return self.aidants.count()
+
+    def admin_num_aidants(self):
+        return self.num_aidants
+
+    admin_num_aidants.short_description = "Nombre d'aidants"
+
+    @cached_property
+    def num_mandats(self):
+        return self.mandats.count()
+
+    def admin_num_mandats(self):
+        return self.num_mandats
+
+    admin_num_mandats.short_description = "Nombre de mandats"
 
 
 class Aidant(AbstractUser):
@@ -174,18 +193,25 @@ class Usager(models.Model):
     BIRTHCOUNTRY_FRANCE = "99100"
     EMAIL_NOT_PROVIDED = "noemailprovided@aidantconnect.beta.gouv.fr"
 
-    given_name = models.TextField(blank=False)
-    family_name = models.TextField(blank=False)
-    preferred_username = models.TextField(blank=True)
-    birthdate = models.DateField(blank=False)
+    given_name = models.CharField("Prénom", max_length=255, blank=False)
+    family_name = models.CharField("Nom", max_length=255, blank=False)
+    preferred_username = models.CharField(max_length=255, blank=True)
+
     gender = models.CharField(
-        max_length=6, choices=GENDER_CHOICES, default=GENDER_FEMALE,
+        "Genre", max_length=6, choices=GENDER_CHOICES, default=GENDER_FEMALE,
     )
-    birthplace = models.CharField(max_length=5, blank=True, null=True)
-    birthcountry = models.CharField(max_length=5, default=BIRTHCOUNTRY_FRANCE,)
+
+    birthdate = models.DateField("Date de naissance", blank=False)
+    birthplace = models.CharField(
+        "Lieu de naissance", max_length=5, blank=True, null=True
+    )
+    birthcountry = models.CharField(
+        "Pays de naissance", max_length=5, default=BIRTHCOUNTRY_FRANCE,
+    )
+
     sub = models.TextField(blank=False, unique=True)
     email = models.EmailField(blank=False, default=EMAIL_NOT_PROVIDED)
-    creation_date = models.DateTimeField(default=timezone.now)
+    creation_date = models.DateTimeField("Date de création", default=timezone.now)
 
     objects = UsagerQuerySet.as_manager()
 
@@ -265,18 +291,33 @@ class Mandat(models.Model):
         default=get_staff_organisation_name_id,
     )
     usager = models.ForeignKey(Usager, on_delete=models.PROTECT, related_name="mandats")
-    creation_date = models.DateTimeField(default=timezone.now)
-    expiration_date = models.DateTimeField(default=timezone.now)
+    creation_date = models.DateTimeField("Date de création", default=timezone.now)
+    expiration_date = models.DateTimeField("Date d'expiration", default=timezone.now)
     duree_keyword = models.CharField(
-        max_length=16, choices=AutorisationDureeKeywords.choices, null=True
+        "Durée", max_length=16, choices=AutorisationDureeKeywords.choices, null=True
     )
-    is_remote = models.BooleanField(default=False)
+    is_remote = models.BooleanField("Signé à distance ?", default=False)
 
     objects = MandatQuerySet.as_manager()
+
+    def __str__(self):
+        return f"#{self.id}"
 
     @property
     def is_expired(self) -> bool:
         return timezone.now() > self.expiration_date
+
+    @cached_property
+    def is_active(self):
+        # A `mandat` is considered `active` if it contains
+        # at least one active `autorisation`.
+        return self.autorisations.active().exists()
+
+    def admin_is_active(self):
+        return self.is_active
+
+    admin_is_active.boolean = True
+    admin_is_active.short_description = "is active"
 
 
 class AutorisationQuerySet(models.QuerySet):
@@ -315,50 +356,51 @@ class AutorisationQuerySet(models.QuerySet):
 
 class Autorisation(models.Model):
 
+    DEMARCHE_CHOICES = [
+        (name, attributes["titre"]) for name, attributes in settings.DEMARCHES.items()
+    ]
+
     # Autorisation information
-    aidant = models.ForeignKey(
-        Aidant, on_delete=models.CASCADE, default=0, related_name="autorisations"
-    )
-    usager = models.ForeignKey(
-        Usager, on_delete=models.CASCADE, default=0, related_name="autorisations",
-    )
-    demarche = models.CharField(blank=False, max_length=100)
     mandat = models.ForeignKey(
-        Mandat, on_delete=models.CASCADE, null=True, related_name="autorisations"
+        Mandat, on_delete=models.CASCADE, related_name="autorisations", null=True
     )
+    demarche = models.CharField(max_length=16, choices=DEMARCHE_CHOICES)
 
     # Autorisation expiration date management
-    creation_date = models.DateTimeField(default=timezone.now)
-    expiration_date = models.DateTimeField(default=timezone.now)
-    revocation_date = models.DateTimeField(blank=True, null=True)
+    revocation_date = models.DateTimeField("Date de révocation", blank=True, null=True)
 
     # Journal entry creation information
     last_renewal_token = models.TextField(blank=False, default="No token provided")
-    is_remote = models.BooleanField(default=False)
 
     objects = AutorisationQuerySet.as_manager()
 
     def __str__(self):
-        return (
-            f"Autorisation #{self.id} : "
-            f"{self.usager} <-> {self.aidant} ({self.demarche})"
-        )
+        return f"#{self.id}"
+
+    @cached_property
+    def creation_date(self):
+        return self.mandat.creation_date
+
+    @cached_property
+    def expiration_date(self):
+        return self.mandat.expiration_date
+
+    @cached_property
+    def is_expired(self) -> bool:
+        return self.mandat.is_expired
 
     @property
     def is_revoked(self) -> bool:
         return True if self.revocation_date else False
 
     @property
-    def is_expired(self) -> bool:
-        return self.mandat.is_expired
+    def duration_for_humans(self) -> int:
+        duration_for_computer = self.expiration_date - self.creation_date
 
-    @property
-    def duree_in_days(self):
-        duree_for_computer = self.mandat.expiration_date - self.creation_date
-        # we add one day so that duration is human friendly
+        # We add one day so that duration is human-friendly.
         # i.e. for a human, there is one day between now and tomorrow at the same time,
-        # and 0 for a computer
-        return duree_for_computer.days + 1
+        # and 0 for a computer.
+        return duration_for_computer.days + 1
 
 
 class ConnectionQuerySet(models.QuerySet):
@@ -424,109 +466,8 @@ class Connection(models.Model):
         return self.expires_on < timezone.now()
 
 
-class JournalManager(models.Manager):
-    def connection(self, aidant: Aidant):
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier, action="connect_aidant"
-        )
-        return journal_entry
-
-    def activity_check(self, aidant: Aidant):
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier, action="activity_check_aidant"
-        )
-        return journal_entry
-
-    def franceconnection_usager(self, aidant: Aidant, usager: Usager):
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
-            action="franceconnect_usager",
-        )
-        return journal_entry
-
-    def update_email_usager(self, aidant: Aidant, usager: Usager):
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
-            action="update_email_usager",
-        )
-        return journal_entry
-
-    def attestation(
-        self,
-        aidant: Aidant,
-        usager: Usager,
-        demarches: list,
-        duree: int,
-        is_remote_mandat: bool,
-        access_token: str,
-        attestation_hash: str,
-    ):
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
-            action="create_attestation",
-            demarche=",".join(demarches),
-            duree=duree,
-            access_token=access_token,
-            attestation_hash=attestation_hash,
-            # COVID-19
-            is_remote_mandat=is_remote_mandat,
-            additional_information="Mandat conclu à distance "
-            "pendant l'état d'urgence sanitaire (23 mars 2020)",
-        )
-        return journal_entry
-
-    def autorisation_creation(self, autorisation: Autorisation, aidant: Aidant):
-        usager = autorisation.mandat.usager
-
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
-            action="create_autorisation",
-            demarche=autorisation.demarche,
-            duree=autorisation.duree_in_days,
-            autorisation=autorisation.id,
-            # COVID-19
-            is_remote_mandat=True,
-            additional_information="Mandat conclu à distance "
-            "pendant l'état d'urgence sanitaire (23 mars 2020)",
-        )
-        return journal_entry
-
-    def autorisation_use(
-        self,
-        aidant: Aidant,
-        usager: Usager,
-        demarche: str,
-        access_token: str,
-        autorisation: Autorisation,
-    ):
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
-            action="use_autorisation",
-            demarche=demarche,
-            access_token=access_token,
-            autorisation=autorisation.id,
-        )
-        return journal_entry
-
-    def autorisation_cancel(self, autorisation: Autorisation, aidant: Aidant):
-        journal_entry = self.create(
-            initiator=aidant.full_string_identifier,
-            usager=autorisation.mandat.usager.full_string_identifier,
-            action="cancel_autorisation",
-            demarche=autorisation.demarche,
-            duree=autorisation.duree_in_days,
-            autorisation=autorisation.id,
-        )
-        return journal_entry
-
-
 class JournalQuerySet(models.QuerySet):
-    def not_staff(self):
+    def excluding_staff(self):
         return self.exclude(initiator__icontains=settings.STAFF_ORGANISATION_NAME)
 
 
@@ -541,11 +482,16 @@ class Journal(models.Model):
         ("use_autorisation", "Utilisation d'une autorisation"),
         ("cancel_autorisation", "Révocation d'une autorisation"),
     )
+
+    INFO_REMOTE_MANDAT = "Mandat conclu à distance pendant l'état d'urgence sanitaire (23 mars 2020)"  # noqa
+
     # mandatory
     action = models.CharField(max_length=30, choices=ACTIONS, blank=False)
     initiator = models.TextField(blank=False)
+
     # automatic
     creation_date = models.DateTimeField(auto_now_add=True)
+
     # action dependant
     demarche = models.CharField(max_length=100, blank=True, null=True)
     usager = models.TextField(blank=True, null=True)
@@ -556,8 +502,7 @@ class Journal(models.Model):
     additional_information = models.TextField(blank=True, null=True)
     is_remote_mandat = models.BooleanField(default=False)
 
-    objects = JournalManager()
-    stats_objects = JournalQuerySet.as_manager()
+    objects = JournalQuerySet.as_manager()
 
     class Meta:
         verbose_name = "entrée de journal"
@@ -572,10 +517,7 @@ class Journal(models.Model):
         else:
             # COVID-19
             if self.is_remote_mandat:
-                self.additional_information = (
-                    "Mandat conclu à distance pendant "
-                    "l'état d'urgence sanitaire (23 mars 2020)"
-                )
+                self.additional_information = self.INFO_REMOTE_MANDAT
             super(Journal, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -587,3 +529,101 @@ class Journal(models.Model):
             return int(self.usager.split(" - ")[1])
         except (IndexError, ValueError):
             return None
+
+    @classmethod
+    def log_connection(cls, aidant: Aidant):
+        return cls.objects.create(
+            initiator=aidant.full_string_identifier, action="connect_aidant"
+        )
+
+    @classmethod
+    def log_activity_check(cls, aidant: Aidant):
+        return cls.objects.create(
+            initiator=aidant.full_string_identifier, action="activity_check_aidant"
+        )
+
+    @classmethod
+    def log_franceconnection_usager(cls, aidant: Aidant, usager: Usager):
+        return cls.objects.create(
+            initiator=aidant.full_string_identifier,
+            usager=usager.full_string_identifier,
+            action="franceconnect_usager",
+        )
+
+    @classmethod
+    def log_update_email_usager(cls, aidant: Aidant, usager: Usager):
+        return cls.objects.create(
+            initiator=aidant.full_string_identifier,
+            usager=usager.full_string_identifier,
+            action="update_email_usager",
+        )
+
+    @classmethod
+    def log_attestation_creation(
+        cls,
+        aidant: Aidant,
+        usager: Usager,
+        demarches: list,
+        duree: int,
+        is_remote_mandat: bool,
+        access_token: str,
+        attestation_hash: str,
+    ):
+        return cls.objects.create(
+            initiator=aidant.full_string_identifier,
+            usager=usager.full_string_identifier,
+            action="create_attestation",
+            demarche=",".join(demarches),
+            duree=duree,
+            access_token=access_token,
+            attestation_hash=attestation_hash,
+            # COVID-19
+            is_remote_mandat=is_remote_mandat,
+            additional_information=(cls.INFO_REMOTE_MANDAT if is_remote_mandat else ""),
+        )
+
+    @classmethod
+    def log_autorisation_creation(cls, autorisation: Autorisation, aidant: Aidant):
+        mandat = autorisation.mandat
+        usager = mandat.usager
+
+        return cls.objects.create(
+            initiator=aidant.full_string_identifier,
+            usager=usager.full_string_identifier,
+            action="create_autorisation",
+            demarche=autorisation.demarche,
+            duree=autorisation.duration_for_humans,
+            autorisation=autorisation.id,
+            # COVID-19
+            is_remote_mandat=mandat.is_remote,
+            additional_information=(cls.INFO_REMOTE_MANDAT if mandat.is_remote else ""),
+        )
+
+    @classmethod
+    def log_autorisation_use(
+        cls,
+        aidant: Aidant,
+        usager: Usager,
+        demarche: str,
+        access_token: str,
+        autorisation: Autorisation,
+    ):
+        return cls.objects.create(
+            initiator=aidant.full_string_identifier,
+            usager=usager.full_string_identifier,
+            action="use_autorisation",
+            demarche=demarche,
+            access_token=access_token,
+            autorisation=autorisation.id,
+        )
+
+    @classmethod
+    def log_autorisation_cancel(cls, autorisation: Autorisation, aidant: Aidant):
+        return cls.objects.create(
+            initiator=aidant.full_string_identifier,
+            usager=autorisation.mandat.usager.full_string_identifier,
+            action="cancel_autorisation",
+            demarche=autorisation.demarche,
+            duree=autorisation.duration_for_humans,
+            autorisation=autorisation.id,
+        )
