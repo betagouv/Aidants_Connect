@@ -5,7 +5,7 @@ from jwt.api_jwt import ExpiredSignatureError
 import requests as python_request
 
 from django.conf import settings
-from django.contrib import messages
+from django.contrib import messages as django_messages
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
@@ -115,7 +115,7 @@ def fc_callback(request):
 
     usager, error = get_user_info(connection)
     if error:
-        messages.error(request, error)
+        django_messages.error(request, error)
         return redirect("dashboard")
 
     connection.usager = usager

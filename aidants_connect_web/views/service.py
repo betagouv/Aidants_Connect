@@ -31,7 +31,11 @@ def humanize_demarche_names(name: str) -> str:
 
 
 def home_page(request):
-    return render(request, "public_website/home_page.html",)
+    if request.GET.get("infolettre", ""):
+        django_messages.success(
+            request, "Votre inscription à l'infolettre a bien été prise en compte."
+        )
+    return render(request, "public_website/home_page.html")
 
 
 @login_required
