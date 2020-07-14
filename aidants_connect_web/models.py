@@ -221,12 +221,12 @@ class Usager(models.Model):
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
 
+    def get_full_name(self):
+        return str(self)
+
     @property
     def full_string_identifier(self):
         return f"{self.get_full_name()} - {self.id} - {self.email}"
-
-    def get_full_name(self):
-        return str(self)
 
     def get_mandat(self, mandat_id):
         try:
@@ -513,7 +513,10 @@ class Journal(models.Model):
         return f"Entrée #{self.id} : {self.action} - {self.initiator}"
 
     def save(self, *args, **kwargs):
-        if self.id:
+
+        # Editing a journal entry is only allowed during database anonymization.
+        anonymize = kwargs.pop("anonymize", False)
+        if self.id and not anonymize:
             raise NotImplementedError("Editing is not allowed on journal entries")
         else:
             # COVID-19

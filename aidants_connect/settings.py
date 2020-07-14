@@ -59,6 +59,8 @@ else:
 
 ALLOWED_HOSTS = [os.environ["HOST"]]
 
+IS_PRODUCTION = "aidantsconnect.beta.gouv.fr" in ALLOWED_HOSTS
+
 
 # Application definition
 
