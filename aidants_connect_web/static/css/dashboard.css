@@ -1,3 +1,12 @@
+.grid a, .grid a:visited {
+  text-decoration: none;
+  color: black;
+}
+.grid a:hover {
+  background-color: #0053b3;
+  color: white;
+}
+
 .label a {
   color:black;
   background-color: #ebeff3;
@@ -7,16 +16,12 @@
   width: 100%;
 }
 
-#statistics h3 {
-  font-size: 1.2em;
-}
-
 .tile-subtitle {
   margin: 0;
   font-style: italic;
 }
 
-.tile {
+.tile-grey {
   background-color: #ebeff3;
   display: inline-block;
   width: auto;

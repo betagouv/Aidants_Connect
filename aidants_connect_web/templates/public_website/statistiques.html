@@ -14,98 +14,104 @@
   <div class="container">
     <h1 class="section__title">Statistiques d'Aidants Connect</h1>
     <div class="tiles">
-      <!-- Statistiques List -->
-    <h2>Déploiement</h2>
-        <div class="grid">
-          <div class="tile-box">
-            <div class="tile text-center">
-              <h3>Structures</h3>
-              <h3>
-                <strong>{{ organisations_count }}</strong>
-              </h3>
-            </div>
-          </div>
-          <div class="tile-box">
-            <div class="tile text-center">
-              <h3>Aidants</h3>
-              <h3>
-                <strong>{{ aidants_count }}</strong>
-              </h3>
-            </div>
-          </div>
-       </div>
-    <h2>Mandats</h2>
-        <div class="grid">
-          <div class="tile-box">
-            <div class="tile text-center">
-              <h3>Mandats créés</h3>
-              <h3><strong>
-                {{ mandats_count }}
-                </strong></h3>
-            </div>
-            <p class="tile-subtitle">
-              depuis le 18/03/2020
-            </p>
-          </div>
-          <div class="tile-box">
-            <div class="tile text-center">
-              <h3>Mandats actifs</h3>
-              <h3><strong>{{ active_mandats_count }}</strong></h3>
-            </div>
-          </div>
-        </div>
-    <h2>Usagers</h2>
-        <div class="grid">
-          <div class="tile-box">
-            <div class="tile text-center">
-              <h3>Usagers</h3>
-              <h3><strong>{{ usagers_with_mandat_count }}</strong></h3>
-            </div>
-          </div>
-          <div class="tile-box">
-            <div class="tile text-center">
-              <h3>Usagers actif</h3>
-              <h3><strong>{{ usagers_with_active_mandat_count }}</strong></h3>
-            </div>
-          </div>
-        </div>
-    <h2>Démarches France Connect accompagnées</h2>
-      <div class="grid grid">
+
+      <h2>Déploiement</h2>
+      <div class="grid">
         <div class="tile-box">
-            <div class="tile text-center">
-              <h3>Depuis le lancement</h3>
-              <h3><strong>
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Structures</h3>
+            <h3><strong>{{ organisations_count }}</strong></h3>
+          </div>
+        </div>
+        <div class="tile-box">
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Aidants</h3>
+            <h3><strong>{{ aidants_count }}</strong></h3>
+          </div>
+        </div>
+      </div>
+
+      <br>
+
+      <h2>Mandats</h2>
+      <div class="grid">
+        <div class="tile-box">
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Mandats créés</h3>
+            <h3><strong>{{ mandats_count }}</strong></h3>
+          </div>
+          <p class="tile-subtitle">
+            depuis le 18/03/2020
+          </p>
+        </div>
+        <div class="tile-box">
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Mandats actifs</h3>
+            <h3><strong>{{ active_mandats_count }}</strong></h3>
+          </div>
+        </div>
+      </div>
+
+      <br>
+
+      <h2>Usagers</h2>
+      <div class="grid">
+        <div class="tile-box">
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Usagers</h3>
+            <h3><strong>{{ usagers_with_mandat_count }}</strong></h3>
+          </div>
+        </div>
+        <div class="tile-box">
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Usagers actif</h3>
+            <h3><strong>{{ usagers_with_active_mandat_count }}</strong></h3>
+          </div>
+        </div>
+      </div>
+
+      <br>
+
+      <h2>Démarches France Connect accompagnées</h2>
+      <div class="grid">
+        <div class="tile-box">
+            <div class="tile tile-grey text-center">
+              <h3 class="font-weight-normal">Depuis le lancement</h3>
+              <h3>
+                <strong>
                   Usagers accompagnés : {{ usagers_helped_count }}
                   <br>
                   Connexions effectuées : {{ autorisation_use_count }}
                   <br>
-              </strong></h3>
+                </strong>
+              </h3>
             </div>
           </div>
         <div class="tile-box">
-            <div class="tile text-center">
-              <h3>30 derniers jours</h3>
-              <h3><strong>
-                  Usagers accompagnés : {{ usagers_helped_recent_count }}
-                  <br>
-                  Connexions effectuées : {{ autorisation_use_recent_count }}
-                  <br>
-              </strong></h3>
-            </div>
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">30 derniers jours</h3>
+            <h3>
+              <strong>
+                Usagers accompagnés : {{ usagers_helped_recent_count }}
+                <br>
+                Connexions effectuées : {{ autorisation_use_recent_count }}
+                <br>
+              </strong>
+            </h3>
           </div>
+        </div>
       </div>
+      
       <h4>Par type de démarche</h4>
-    <div class="grid small-grid">
+      <div class="grid small-grid">
         {% for stat_item in demarches_count %}
           <div class="tile-box">
-            <div class="tile text-center">
-              <h3>
+            <div class="tile tile-grey text-center">
+              <h3 class="font-weight-normal">
                 <img class="icon-inline" src="{{ stat_item.icon }}" alt="Icon {{ stat_item.title }}" />
                 {{ stat_item.title }}
               </h3>
-              <h3>
-                <strong>{{ stat_item.value }}</strong>
-              </h3>
+              <h3><strong>{{ stat_item.value }}</strong></h3>
             </div>
           </div>
         {% endfor %}
