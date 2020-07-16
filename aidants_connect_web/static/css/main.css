@@ -57,38 +57,6 @@ body {
 }
 
 
-/* Navbar */
-
-.navbar {
-  border: 0;
-}
-
-.navbar__container {
-  overflow-x: scroll;
-}
-
-a.navbar__home:hover {
-  background-color: #ebeff3;
-}
-
-.nav__item a:hover {
-  color: #000;
-}
-
-.nav__item a.active:hover {
-  color: #fff;
-}
-
-.nav__item a {
-  padding: .5em 2em;
-}
-
-.nav__item a.button-filled  {
-  background-color: #0053b3;
-  color: white;
-}
-
-
 /* Container & main */
 
 .container.container-small {
@@ -186,6 +154,9 @@ a.no-decoration {
 
 .font-weight-normal {
   font-weight: normal;
+}
+.font-weight-bold {
+  font-weight: bold;
 }
 
 .float-left {
