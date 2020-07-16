@@ -68,6 +68,7 @@ class TOTPDeviceStaffAdmin(VisibleToStaff, TOTPDeviceAdmin):
 
 class OrganisationAdmin(VisibleToStaff, ModelAdmin):
     list_display = ("name", "address", "admin_num_aidants", "admin_num_mandats")
+    search_fields = ("name",)
 
 
 class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
@@ -91,8 +92,11 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
     # The fields to be used in displaying the `Aidant` model.
     # These override the definitions on the base `UserAdmin`
     # that references specific fields on `auth.User`.
-    list_display = ("organisation", "email", "is_staff", "is_superuser")
+    list_display = ("__str__", "email", "organisation", "is_staff", "is_superuser")
     list_filter = ("is_staff", "is_superuser")
+    search_fields = ("first_name", "last_name", "email", "organisation__name")
+    ordering = ("email",)
+
     filter_horizontal = ("groups", "user_permissions")
     fieldsets = (
         (
@@ -100,7 +104,7 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
             {"fields": ("username", "first_name", "last_name", "email", "password")},
         ),
         ("Informations professionnelles", {"fields": ("profession", "organisation")}),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser",)},),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser")}),
     )
 
     # `add_fieldsets` is not a standard `ModelAdmin` attribute. `AidantAdmin`
@@ -112,13 +116,11 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
         ),
         ("Informations professionnelles", {"fields": ("profession", "organisation")}),
     )
-    search_fields = ("email", "organisation")
-    ordering = ("email",)
 
 
 class UsagerAutorisationInline(VisibleToStaff, NestedTabularInline):
     model = Autorisation
-    fields = ["demarche", "revocation_date"]
+    fields = ("demarche", "revocation_date")
     readonly_fields = fields
     extra = 0
     max_num = 0
@@ -126,37 +128,34 @@ class UsagerAutorisationInline(VisibleToStaff, NestedTabularInline):
 
 class UsagerMandatInline(VisibleToStaff, NestedTabularInline):
     model = Mandat
-    fields = ["organisation", "creation_date", "expiration_date"]
+    fields = ("organisation", "creation_date", "expiration_date")
     readonly_fields = fields
     extra = 0
     max_num = 0
-    inlines = [UsagerAutorisationInline]
+    inlines = (UsagerAutorisationInline,)
 
 
 class UsagerAdmin(NestedModelAdmin, TabbedModelAdmin):
     list_display = ("__str__", "email", "creation_date")
     search_fields = ("given_name", "family_name", "email")
 
-    tab_infos = ((None, {"fields": ("given_name", "family_name", "email")}),)
+    tab_infos = (None, {"fields": ("given_name", "family_name", "email")})
 
-    tab_mandats = (UsagerMandatInline,)
+    tab_mandats = UsagerMandatInline
 
-    tabs = [
-        ("Informations", tab_infos),
-        ("Mandats", tab_mandats),
-    ]
+    tabs = [("Informations", tab_infos), ("Mandats", tab_mandats)]
 
 
 class MandatAutorisationInline(VisibleToStaff, TabularInline):
     model = Autorisation
-    fields = ["demarche", "revocation_date"]
+    fields = ("demarche", "revocation_date")
     readonly_fields = fields
     extra = 0
     max_num = 0
 
 
 class MandatAdmin(VisibleToStaff, ModelAdmin):
-    list_display = [
+    list_display = (
         "id",
         "usager",
         "organisation",
@@ -164,11 +163,11 @@ class MandatAdmin(VisibleToStaff, ModelAdmin):
         "expiration_date",
         "admin_is_active",
         "is_remote",
-    ]
-    list_filter = ["organisation"]
-    search_fields = ["usager", "organisation"]
+    )
+    list_filter = ("organisation",)
+    search_fields = ("usager__given_name", "usager__family_name", "organisation__name")
 
-    fields = [
+    fields = (
         "usager",
         "organisation",
         "duree_keyword",
@@ -176,13 +175,11 @@ class MandatAdmin(VisibleToStaff, ModelAdmin):
         "expiration_date",
         "admin_is_active",
         "is_remote",
-    ]
+    )
 
     readonly_fields = fields
 
-    inlines = [
-        MandatAutorisationInline,
-    ]
+    inlines = (MandatAutorisationInline,)
 
 
 class ConnectionAdmin(ModelAdmin):
