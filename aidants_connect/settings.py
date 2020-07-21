@@ -57,7 +57,10 @@ if os.getenv("DEBUG") == "True":
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = [os.environ["HOST"]]
+
+# We support a comma-separated list of allowed hosts.
+ENV_SEPARATOR = ","
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(ENV_SEPARATOR)
 
 
 # Application definition
