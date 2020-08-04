@@ -142,7 +142,7 @@ a.no-decoration {
   background-color: #0053b3;
 }
 .background-color-gray {
-  background-color: #ebeff3;
+  background-color: var(--theme-background-grey);
 }
 .background-color-white {
   background-color: white;

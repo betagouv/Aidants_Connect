@@ -9,6 +9,7 @@
 {% block title %}Aidants Connect - Connexion{% endblock %}
 
 {% block content %}
+<div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
 <div class="hero">
   <div class="hero__container">
     <img class="logo-height-5em" src="{% static 'images/aidants-connect_logo.png' %}" alt="Logo Aidants Connect" />
@@ -16,8 +17,7 @@
     <p>Vous êtes un·e aidant·e professionnel·le et faites partie d'une structure habilitée Aidants Connect ?</p>
   </div>
 </div>
-<div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
-<section class="section">
+<section class="section section-grey">
   <div class="container">
     <form method="post">
       {% csrf_token %}
@@ -57,11 +57,11 @@
     </form>
   </div>
 </section>
-<section class="section section-grey">
+<section class="section">
   <div class="container">
     <h3>Vous cherchez de l'aide ?</h3>
     <div class="row">
-      <div class="min-width-35 text-center">
+      <div class="min-width-35 background-color-gray text-center">
         <img src="{% static 'images/solidarite-numerique-illu_home.svg' %}" alt="Illustration Solidarité Numérique">
       </div>
       <div>
