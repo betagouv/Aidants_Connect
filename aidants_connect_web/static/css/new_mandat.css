@@ -20,7 +20,7 @@ form {
 }
 
 .tile label {
-  padding: 12px 30px;
+  padding: 12px;
   width: 100%;
   height: 100%;
   display: flex;
@@ -45,8 +45,7 @@ form {
   z-index: 2;
   position: absolute;
   right: 20px;
-  top: 35px;
-  transform: translateY(-50%);
+  top: 20px;
   cursor: pointer;
   transition: all 100ms ease-in;
 }

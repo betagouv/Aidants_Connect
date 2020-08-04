@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages as django_messages
-from django.db.models import Q
+
+# from django.db.models import Q
 from django.test import override_settings, tag, TestCase
 from django.test.client import Client
 from django.urls import resolve
@@ -49,17 +50,22 @@ class NewMandatTests(TestCase):
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
 
-    def test_badly_formatted_form_remote_triggers_original_template(self):
-        self.client.force_login(self.aidant_thierry)
-        data = {"demarche": ["papiers", "logement"], "duree": "LONG", "is_remote": True}
-        response = self.client.post("/creation_mandat/", data=data)
-        self.assertTemplateUsed(
-            response, "aidants_connect_web/new_mandat/new_mandat.html"
-        )
-
     def test_well_formatted_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        data = {
+            "demarche": ["papiers", "logement"],
+            "duree": "SHORT",
+            "is_remote": True,
+        }
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        data = {"demarche": ["papiers", "logement"], "duree": "LONG", "is_remote": True}
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 
@@ -67,105 +73,105 @@ class NewMandatTests(TestCase):
 ETAT_URGENCE_2020_LAST_DAY = datetime.strptime("23/05/2020 +0100", "%d/%m/%Y %z")
 
 
-@tag("new_mandat", "confinement")
-@override_settings(ETAT_URGENCE_2020_LAST_DAY=ETAT_URGENCE_2020_LAST_DAY)
-@freeze_time(datetime(2020, 5, 20, tzinfo=pytz_timezone("Europe/Paris")))
-class ConfinementNewMandatRecapTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant_thierry = AidantFactory()
-        device = self.aidant_thierry.staticdevice_set.create(id=1)
-        device.token_set.create(token="123456")
+# @tag("new_mandat", "confinement")
+# @override_settings(ETAT_URGENCE_2020_LAST_DAY=ETAT_URGENCE_2020_LAST_DAY)
+# @freeze_time(datetime(2020, 5, 20, tzinfo=pytz_timezone("Europe/Paris")))
+# class ConfinementNewMandatRecapTests(TestCase):
+#     def setUp(self):
+#         self.client = Client()
+#         self.aidant_thierry = AidantFactory()
+#         device = self.aidant_thierry.staticdevice_set.create(id=1)
+#         device.token_set.create(token="123456")
 
-        self.test_usager = UsagerFactory(
-            given_name="Fabrice", birthplace="95277", sub="test_sub",
-        )
-        self.mandat_builder = Connection.objects.create(
-            demarches=["papiers", "logement"],
-            duree_keyword="EUS_03_20",
-            mandat_is_remote=True,
-            usager=self.test_usager,
-        )
+#         self.test_usager = UsagerFactory(
+#             given_name="Fabrice", birthplace="95277", sub="test_sub",
+#         )
+#         self.mandat_builder = Connection.objects.create(
+#             demarches=["papiers", "logement"],
+#             duree_keyword="EUS_03_20",
+#             mandat_is_remote=True,
+#             usager=self.test_usager,
+#         )
 
-    def test_confinement_formatted_form_triggers_redirect_to_FC(self):
-        self.client.force_login(self.aidant_thierry)
-        response = self.client.post(
-            "/creation_mandat/",
-            data={
-                "demarche": ["papiers", "logement"],
-                "duree": "EUS_03_20",
-                "is_remote": True,
-            },
-        )
-        connection_id = Connection.objects.last().id
-        self.assertEqual(self.client.session["connection"], connection_id)
-        self.assertEqual(
-            Connection.objects.get(id=connection_id).duree_keyword, "EUS_03_20"
-        )
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+#     def test_confinement_formatted_form_triggers_redirect_to_FC(self):
+#         self.client.force_login(self.aidant_thierry)
+#         response = self.client.post(
+#             "/creation_mandat/",
+#             data={
+#                 "demarche": ["papiers", "logement"],
+#                 "duree": "EUS_03_20",
+#                 "is_remote": True,
+#             },
+#         )
+#         connection_id = Connection.objects.last().id
+#         self.assertEqual(self.client.session["connection"], connection_id)
+#         self.assertEqual(
+#             Connection.objects.get(id=connection_id).duree_keyword, "EUS_03_20"
+#         )
+#         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 
-    def test_confinement_badly_formatted_form_remote_triggers_original_template(self):
-        self.client.force_login(self.aidant_thierry)
-        response = self.client.post(
-            "/creation_mandat/",
-            data={
-                "demarche": ["papiers", "logement"],
-                "duree": "EUS_03_20",
-                "is_remote": False,
-            },
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "aidants_connect_web/new_mandat/new_mandat.html"
-        )
+#     def test_confinement_badly_formatted_form_remote_triggers_original_template(self):
+#         self.client.force_login(self.aidant_thierry)
+#         response = self.client.post(
+#             "/creation_mandat/",
+#             data={
+#                 "demarche": ["papiers", "logement"],
+#                 "duree": "EUS_03_20",
+#                 "is_remote": False,
+#             },
+#         )
+#         self.assertEqual(response.status_code, 200)
+#         self.assertTemplateUsed(
+#             response, "aidants_connect_web/new_mandat/new_mandat.html"
+#         )
 
-    def test_confinement_post_to_recap_with_correct_data_redirects_to_success(self):
-        self.client.force_login(self.aidant_thierry)
-        session = self.client.session
+#     def test_confinement_post_to_recap_with_correct_data_redirects_to_success(self):
+#         self.client.force_login(self.aidant_thierry)
+#         session = self.client.session
 
-        session["connection"] = self.mandat_builder.id
-        session.save()
+#         session["connection"] = self.mandat_builder.id
+#         session.save()
 
-        response = self.client.post(
-            "/creation_mandat/recapitulatif/",
-            data={"personal_data": True, "brief": True, "otp_token": "123456"},
-        )
+#         response = self.client.post(
+#             "/creation_mandat/recapitulatif/",
+#             data={"personal_data": True, "brief": True, "otp_token": "123456"},
+#         )
 
-        self.assertRedirects(response, "/creation_mandat/succes/")
+#         self.assertRedirects(response, "/creation_mandat/succes/")
 
-    def test_confinement_entries_create_remote_autorisation_and_journal_entries(self):
-        self.client.force_login(self.aidant_thierry)
-        session = self.client.session
+#     def test_confinement_entries_create_remote_autorisation_and_journal_entries(self):
+#         self.client.force_login(self.aidant_thierry)
+#         session = self.client.session
 
-        session["connection"] = self.mandat_builder.id
-        session.save()
+#         session["connection"] = self.mandat_builder.id
+#         session.save()
 
-        self.client.post(
-            "/creation_mandat/recapitulatif/",
-            data={"personal_data": True, "brief": True, "otp_token": "123456"},
-        )
+#         self.client.post(
+#             "/creation_mandat/recapitulatif/",
+#             data={"personal_data": True, "brief": True, "otp_token": "123456"},
+#         )
 
-        # test journal entries
-        journal_entries = Journal.objects.filter(
-            Q(action="create_autorisation") | Q(action="create_attestation")
-        )
+#         # test journal entries
+#         journal_entries = Journal.objects.filter(
+#             Q(action="create_autorisation") | Q(action="create_attestation")
+#         )
 
-        status_journal_entry = list(
-            journal_entries.values_list("is_remote_mandat", flat=True)
-        )
-        self.assertEqual(status_journal_entry.count(True), 3)
+#         status_journal_entry = list(
+#             journal_entries.values_list("is_remote_mandat", flat=True)
+#         )
+#         self.assertEqual(status_journal_entry.count(True), 3)
 
-        autorisation_journal_entry = journal_entries.last()
-        self.assertEqual(autorisation_journal_entry.duree, 3)
+#         autorisation_journal_entry = journal_entries.last()
+#         self.assertEqual(autorisation_journal_entry.duree, 3)
 
-        # test autorisations
-        autorisations = Autorisation.objects.all()
-        remote_statuses = [auto.mandat.is_remote for auto in autorisations]
-        self.assertEqual(remote_statuses, [True, True])
-        expiration_dates = [auto.mandat.expiration_date for auto in autorisations]
-        self.assertEqual(
-            expiration_dates, [ETAT_URGENCE_2020_LAST_DAY, ETAT_URGENCE_2020_LAST_DAY]
-        )
+#         # test autorisations
+#         autorisations = Autorisation.objects.all()
+#         remote_statuses = [auto.mandat.is_remote for auto in autorisations]
+#         self.assertEqual(remote_statuses, [True, True])
+#         expiration_dates = [auto.mandat.expiration_date for auto in autorisations]
+#         self.assertEqual(
+#             expiration_dates, [ETAT_URGENCE_2020_LAST_DAY, ETAT_URGENCE_2020_LAST_DAY]
+#         )
 
 
 @tag("new_mandat")

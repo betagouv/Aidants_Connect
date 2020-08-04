@@ -325,7 +325,7 @@ CSP_SCRIPT_SRC = (
     "'self'",
     "'sha256-FUfFEwUd+ObSebyGDfkxyV7KwtyvBBwsE/VxIOfPD68='",  # tabbed_admin
     "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E='",  # main.html
-    "'sha256-KmV6UDCSIgj53bsOoy8uwsFoQNpcFRhqLgcL8kgXIXg='",  # new_mandat.html
+    "'sha256-qtDLNBeXbQEZ6BoCPDfxDpo3OOJsnlVc/NGAMBmfHq0='",  # new_mandat.html
 )
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
