@@ -14,13 +14,23 @@ h4, h5, h6 {
   padding: 4em 0;
 }
 
+.section-color a.button-outline:hover {
+  background-color: var(--theme-background-white);
+  color: var(--theme-primary);
+}
+
 .button {
   margin: 0 !important;
 }
 
-a.button-outline:hover {
+/* .navbar {
+  border-bottom: 1px solid var(--theme-background-grey);
+} */
+
+
+/* a.button-outline:hover {
   background-color: var(--lighter-grey);
-}
+} */
 
 .small-grid {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -141,7 +151,7 @@ a.no-decoration {
 .background-color-blue {
   background-color: #0053b3;
 }
-.background-color-gray {
+.background-color-grey {
   background-color: var(--theme-background-grey);
 }
 .background-color-white {
