@@ -11,7 +11,26 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.views import usagers
+from aidants_connect_web.views import espace_aidant, usagers
+
+
+class EspaceAidantHomePageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.aidant = AidantFactory()
+
+    def test_anonymous_user_cannot_access_espace_aidant_view(self):
+        response = self.client.get("/espace-aidant/")
+        self.assertRedirects(response, "/accounts/login/?next=/espace-aidant/")
+
+    def test_espace_aidant_home_url_triggers_the_right_view(self):
+        found = resolve("/espace-aidant/")
+        self.assertEqual(found.func, espace_aidant.home)
+
+    def test_espace_aidant_home_url_triggers_the_right_template(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get("/espace-aidant/")
+        self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
 
 
 @tag("usagers")

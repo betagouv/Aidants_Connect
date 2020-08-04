@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
@@ -36,7 +36,7 @@ class Organisation(models.Model):
     admin_num_mandats.short_description = "Nombre de mandats"
 
 
-class AidantQuerySet(models.QuerySet):
+class AidantManager(BaseUserManager):
     def active(self):
         return self.filter(is_active=True)
 
@@ -47,7 +47,7 @@ class Aidant(AbstractUser):
         Organisation, null=True, on_delete=models.CASCADE, related_name="aidants"
     )
 
-    objects = AidantQuerySet.as_manager()
+    objects = AidantManager()
 
     class Meta:
         verbose_name = "aidant"
