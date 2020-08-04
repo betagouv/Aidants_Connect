@@ -1,6 +1,6 @@
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 
 @login_required
@@ -18,8 +18,21 @@ def home(request):
 def organisation(request):
     aidant = request.user
     messages = django_messages.get_messages(request)
+
+    organisation = aidant.organisation
+    if not organisation:
+        django_messages.error(request, "Vous n'êtes pas rattaché à une organisation.")
+        return redirect("espace_aidant_home")
+
+    organisation_aidants_active = organisation.aidants.active()
+
     return render(
         request,
         "aidants_connect_web/espace_aidant/organisation.html",
-        {"aidant": aidant, "messages": messages},
+        {
+            "aidant": aidant,
+            "organisation": organisation,
+            "organisation_aidants_active": organisation_aidants_active,
+            "messages": messages,
+        },
     )

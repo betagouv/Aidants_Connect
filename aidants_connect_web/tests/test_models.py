@@ -324,7 +324,7 @@ class AidantModelTests(TestCase):
         AidantFactory(username="cgireau@domain.user")
         self.assertEqual(len(Aidant.objects.all()), 2)
 
-    def test_get_aidant_organization(self):
+    def test_get_aidant_organisation(self):
         orga = OrganisationFactory(
             name="COMMUNE DE HOULBEC COCHEREL",
             siret=123,
