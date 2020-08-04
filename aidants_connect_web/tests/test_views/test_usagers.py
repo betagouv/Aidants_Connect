@@ -142,7 +142,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_3_1.id + 1}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_expired_autorisation_triggers_redirect(self):
@@ -151,7 +151,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_2_1.mandat.id}"
             f"/autorisations/{self.autorisation_2_1.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_revoked_autorisation_triggers_redirect(self):
@@ -160,7 +160,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_1_2.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_non_existing_usager_triggers_redirect(self):
@@ -169,7 +169,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_2.id + 1}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_wrong_usager_autorisation_triggers_redirect(self):
@@ -178,7 +178,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_3_1.mandat.id}"
             f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_wrong_aidant_autorisation_triggers_redirect(self):
@@ -187,5 +187,5 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_2.id}/mandats/{self.autorisation_3_1.mandat.id}"
             f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)

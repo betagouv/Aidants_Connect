@@ -175,13 +175,13 @@ def new_mandat_recap(request):
                 log.error("Error happened in Recap")
                 log.error(error)
                 django_messages.error(request, f"Error with Usager attribute : {error}")
-                return redirect("dashboard")
+                return redirect("espace_aidant_home")
 
             except IntegrityError as error:
                 log.error("Error happened in Recap")
                 log.error(error)
                 django_messages.error(request, f"No Usager was given : {error}")
-                return redirect("dashboard")
+                return redirect("espace_aidant_home")
 
             return redirect("new_mandat_success")
 

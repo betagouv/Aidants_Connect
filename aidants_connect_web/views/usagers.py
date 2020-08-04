@@ -36,7 +36,7 @@ def usager_details(request, usager_id):
     usager = aidant.get_usager(usager_id)
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
 
     active_mandats = (
         Mandat.objects.prefetch_related("autorisations")
@@ -72,20 +72,20 @@ def usagers_mandats_autorisations_cancel_confirm(
     usager = aidant.get_usager(usager_id)
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
 
     autorisation = usager.get_autorisation(mandat_id, autorisation_id)
     if not autorisation:
         django_messages.error(
             request, "Cette autorisation est introuvable ou inaccessible."
         )
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
     if autorisation.is_revoked:
         django_messages.error(request, "L'autorisation a été révoquée")
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
     if autorisation.is_expired:
         django_messages.error(request, "L'autorisation a déjà expiré")
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
 
     if request.method == "POST":
         form = request.POST

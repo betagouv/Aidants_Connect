@@ -77,7 +77,7 @@ class UseAutorisationTests(FunctionalTestCase):
 
     def test_use_autorisation_with_preloging(self):
         # prelogin
-        self.open_live_url("/dashboard/")
+        self.open_live_url("/espace-aidant/")
         login_aidant(self)
 
         url = f"/authorize/?{FC_URL_PARAMETERS}"

@@ -44,17 +44,6 @@ def logout_page(request):
     return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
-@login_required
-def dashboard(request):
-    aidant = request.user
-    messages = django_messages.get_messages(request)
-    return render(
-        request,
-        "aidants_connect_web/dashboard.html",
-        {"aidant": aidant, "messages": messages},
-    )
-
-
 def guide_utilisation(request):
     return render(request, "public_website/guide_utilisation.html")
 

@@ -9,7 +9,7 @@
       <ul class="nav__links">
       {% if request.user.is_authenticated %}
         <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'dashboard' %}">Espace Aidant</a>
+          <a class="button-outline secondary" href="{% url 'espace_aidant_home' %}">Espace Aidant</a>
         </li>
         <li class="nav__item">
           <a class="button-outline secondary" href="{% url 'ressources' %}">Ressources</a>

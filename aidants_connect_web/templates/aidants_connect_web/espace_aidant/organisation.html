@@ -1,0 +1,24 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Mon organisation{% endblock %}
+
+{% block extracss %}
+<link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    {% if messages %}
+      <div class="notification success" role="alert">
+        {% for message in messages %}
+          {{ message }}
+        {% endfor %}
+      </div>
+    {% endif %}
+    <h1 class="section__title">Mon organisation</h1>
+  </div>
+</section>
+{% endblock content %}
