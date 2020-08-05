@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 
 from aidants_connect_web.decorators import activity_required
-from aidants_connect_web.models import Journal
+from aidants_connect_web.models import Mandat, Journal
 
 
 logging.basicConfig(level=logging.INFO)
@@ -38,8 +38,18 @@ def usager_details(request, usager_id):
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("dashboard")
 
-    active_autorisations = aidant.get_active_autorisations_for_usager(usager_id)
-    inactive_autorisations = aidant.get_inactive_autorisations_for_usager(usager_id)
+    active_mandats = (
+        Mandat.objects.prefetch_related("autorisations")
+        .filter(organisation=aidant.organisation, usager=usager)
+        .active()
+    )
+    inactive_mandats = (
+        Mandat.objects.prefetch_related("autorisations")
+        .filter(organisation=aidant.organisation, usager=usager)
+        .inactive()
+    )
+    # active_autorisations = aidant.get_active_autorisations_for_usager(usager_id)
+    # inactive_autorisations = aidant.get_inactive_autorisations_for_usager(usager_id)
 
     return render(
         request,
@@ -47,8 +57,10 @@ def usager_details(request, usager_id):
         {
             "aidant": aidant,
             "usager": usager,
-            "active_autorisations": active_autorisations,
-            "inactive_autorisations": inactive_autorisations,
+            "active_mandats": active_mandats,
+            "inactive_mandats": inactive_mandats,
+            # "active_autorisations": active_autorisations,
+            # "inactive_autorisations": inactive_autorisations,
             "messages": messages,
         },
     )
