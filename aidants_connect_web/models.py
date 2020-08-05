@@ -283,7 +283,10 @@ class MandatQuerySet(models.QuerySet):
         )
 
     def inactive(self):
-        return self.filter(expiration_date__lt=timezone.now())
+        return self.filter(
+            Q(expiration_date__lt=timezone.now())
+            | ~Q(autorisations__revocation_date__isnull=True)
+        ).distinct()
 
 
 class Mandat(models.Model):

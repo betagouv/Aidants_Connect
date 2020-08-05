@@ -48,8 +48,6 @@ def usager_details(request, usager_id):
         .filter(organisation=aidant.organisation, usager=usager)
         .inactive()
     )
-    # active_autorisations = aidant.get_active_autorisations_for_usager(usager_id)
-    # inactive_autorisations = aidant.get_inactive_autorisations_for_usager(usager_id)
 
     return render(
         request,
@@ -59,8 +57,6 @@ def usager_details(request, usager_id):
             "usager": usager,
             "active_mandats": active_mandats,
             "inactive_mandats": inactive_mandats,
-            # "active_autorisations": active_autorisations,
-            # "inactive_autorisations": inactive_autorisations,
             "messages": messages,
         },
     )
