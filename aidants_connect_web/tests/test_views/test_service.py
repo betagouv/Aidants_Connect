@@ -43,9 +43,9 @@ class LoginPageTests(TestCase):
     def test_journal_records_when_aidant_logs_in(self):
         self.assertEqual(len(Journal.objects.all()), 0)
         self.client.force_login(self.aidant)
-        response = self.client.get("/dashboard/")
+        response = self.client.get("/espace-aidant/")
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "aidants_connect_web/dashboard.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
         self.assertEqual(Journal.objects.count(), 1)
         self.assertEqual(Journal.objects.all()[0].action, "connect_aidant")
         self.client.get("/usagers/")
@@ -54,9 +54,9 @@ class LoginPageTests(TestCase):
     def test_login_view_redirects_to_next_if_aidant_is_authenticated(self):
         self.assertEqual(len(Journal.objects.all()), 0)
         self.client.force_login(self.aidant)
-        response = self.client.get("/accounts/login/?next=/dashboard/", follow=True)
+        response = self.client.get("/accounts/login/?next=/espace-aidant/", follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "aidants_connect_web/dashboard.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
 
 
 @tag("service")
@@ -247,14 +247,14 @@ class StatistiquesTests(TestCase):
         # mandats should be non-staff_organisation and active
         response = self.client.get("/stats/")
         self.assertEqual(response.context["mandats_count"], 2)
-        self.assertEqual(response.context["mandats_active_count"], 1)
+        self.assertEqual(response.context["active_mandats_count"], 1)
 
     def test_usager_without_recent_mandat_are_not_counted_as_recent(self):
         # Usagers should be non-staff_organisation related and if current,
         # should have been created recenlty
         response = self.client.get("/stats/")
         self.assertEqual(response.context["usagers_with_mandat_count"], 2)
-        self.assertEqual(response.context["usagers_with_mandat_active_count"], 1)
+        self.assertEqual(response.context["usagers_with_active_mandat_count"], 1)
 
     def test_old_autorisation_use_are_not_counted_as_recent(self):
         response = self.client.get("/stats/")

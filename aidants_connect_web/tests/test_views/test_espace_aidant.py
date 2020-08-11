@@ -11,7 +11,26 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.views import usagers
+from aidants_connect_web.views import espace_aidant, usagers
+
+
+class EspaceAidantHomePageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.aidant = AidantFactory()
+
+    def test_anonymous_user_cannot_access_espace_aidant_view(self):
+        response = self.client.get("/espace-aidant/")
+        self.assertRedirects(response, "/accounts/login/?next=/espace-aidant/")
+
+    def test_espace_aidant_home_url_triggers_the_right_view(self):
+        found = resolve("/espace-aidant/")
+        self.assertEqual(found.func, espace_aidant.home)
+
+    def test_espace_aidant_home_url_triggers_the_right_template(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get("/espace-aidant/")
+        self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
 
 
 @tag("usagers")
@@ -142,7 +161,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_3_1.id + 1}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_expired_autorisation_triggers_redirect(self):
@@ -151,7 +170,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_2_1.mandat.id}"
             f"/autorisations/{self.autorisation_2_1.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_revoked_autorisation_triggers_redirect(self):
@@ -160,7 +179,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_1_2.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_non_existing_usager_triggers_redirect(self):
@@ -169,7 +188,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_2.id + 1}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_wrong_usager_autorisation_triggers_redirect(self):
@@ -178,7 +197,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_3_1.mandat.id}"
             f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_wrong_aidant_autorisation_triggers_redirect(self):
@@ -187,5 +206,5 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_2.id}/mandats/{self.autorisation_3_1.mandat.id}"
             f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
         )
-        url = "/dashboard/"
+        url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)

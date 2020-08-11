@@ -8,6 +8,7 @@ from aidants_connect_web.views import (
     id_provider,
     new_mandat,
     service,
+    espace_aidant,
     usagers,
 )
 
@@ -15,7 +16,13 @@ urlpatterns = [
     # service
     path("accounts/login/", magicauth_views.LoginView.as_view(), name="login"),
     path("activity_check/", service.activity_check, name="activity_check"),
-    path("dashboard/", service.dashboard, name="dashboard"),
+    # espace aidant : home, organisation
+    path("espace-aidant/", espace_aidant.home, name="espace_aidant_home"),
+    path(
+        "espace-aidant/organisation/",
+        espace_aidant.organisation,
+        name="espace_aidant_organisation",
+    ),
     # usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
     path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),

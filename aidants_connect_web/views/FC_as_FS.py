@@ -116,7 +116,7 @@ def fc_callback(request):
     usager, error = get_user_info(connection)
     if error:
         django_messages.error(request, error)
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
 
     connection.usager = usager
     connection.save()

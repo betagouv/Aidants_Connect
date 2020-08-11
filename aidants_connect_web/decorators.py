@@ -12,7 +12,10 @@ def activity_required(view=None, redirect_field_name="next"):
     """
 
     def test(user):
-        time_since_last_action = timezone.now() - user.get_last_action_timestamp()
+        user_last_action_ts = user.get_last_action_timestamp()
+        if not user_last_action_ts:
+            return False
+        time_since_last_action = timezone.now() - user_last_action_ts
         is_alive = time_since_last_action < settings.ACTIVITY_CHECK_DURATION
         return is_alive
 

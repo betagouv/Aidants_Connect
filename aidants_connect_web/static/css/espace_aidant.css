@@ -1,0 +1,8 @@
+.grid a, .grid a:visited {
+  text-decoration: none;
+  color: black;
+}
+.grid a:hover {
+  background-color: #0053b3;
+  color: white;
+}

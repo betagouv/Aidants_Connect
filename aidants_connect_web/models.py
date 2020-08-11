@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
@@ -18,13 +18,13 @@ class Organisation(models.Model):
         return f"{self.name}"
 
     @cached_property
-    def num_aidants(self):
-        return self.aidants.count()
+    def num_active_aidants(self):
+        return self.aidants.active().count()
 
-    def admin_num_aidants(self):
-        return self.num_aidants
+    def admin_num_active_aidants(self):
+        return self.num_active_aidants
 
-    admin_num_aidants.short_description = "Nombre d'aidants"
+    admin_num_active_aidants.short_description = "Nombre d'aidants actifs"
 
     @cached_property
     def num_mandats(self):
@@ -36,11 +36,18 @@ class Organisation(models.Model):
     admin_num_mandats.short_description = "Nombre de mandats"
 
 
+class AidantManager(BaseUserManager):
+    def active(self):
+        return self.filter(is_active=True)
+
+
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
     organisation = models.ForeignKey(
         Organisation, null=True, on_delete=models.CASCADE, related_name="aidants"
     )
+
+    objects = AidantManager()
 
     class Meta:
         verbose_name = "aidant"
@@ -51,6 +58,9 @@ class Aidant(AbstractUser):
     @property
     def full_string_identifier(self):
         return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
+
+    def get_full_name(self):
+        return str(self)
 
     def get_valid_autorisation(self, demarche, usager):
         """

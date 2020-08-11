@@ -44,17 +44,6 @@ def logout_page(request):
     return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
-@login_required
-def dashboard(request):
-    aidant = request.user
-    messages = django_messages.get_messages(request)
-    return render(
-        request,
-        "aidants_connect_web/dashboard.html",
-        {"aidant": aidant, "messages": messages},
-    )
-
-
 def guide_utilisation(request):
     return render(request, "public_website/guide_utilisation.html")
 
@@ -72,18 +61,18 @@ def statistiques(request):
     # mandats
     # # mandats prep
     mandats = Mandat.objects.exclude(organisation__name=stafforg)
-    mandats_active = mandats.active()
+    active_mandats = mandats.active()
 
     # # mandat results
     mandat_count = mandats.count()
-    mandat_active_count = mandats_active.count()
+    active_mandat_count = active_mandats.count()
 
     # Usagers
     usagers_with_mandat_count = Usager.objects.filter(
         pk__in=get_usager_ids(mandats)
     ).count()
-    usagers_with_mandat_active_count = Usager.objects.filter(
-        pk__in=get_usager_ids(mandats_active)
+    usagers_with_active_mandat_count = Usager.objects.filter(
+        pk__in=get_usager_ids(active_mandats)
     ).count()
 
     # Autorisations
@@ -124,9 +113,9 @@ def statistiques(request):
             "organisations_count": organisations_count,
             "aidants_count": aidants_count,
             "mandats_count": mandat_count,
-            "mandats_active_count": mandat_active_count,
+            "active_mandats_count": active_mandat_count,
             "usagers_with_mandat_count": usagers_with_mandat_count,
-            "usagers_with_mandat_active_count": usagers_with_mandat_active_count,
+            "usagers_with_active_mandat_count": usagers_with_active_mandat_count,
             "autorisation_use_count": autorisation_use_count,
             "autorisation_use_recent_count": autorisation_use_recent_count,
             "usagers_helped_count": usagers_helped_count,

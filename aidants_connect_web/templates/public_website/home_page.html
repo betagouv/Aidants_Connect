@@ -8,11 +8,9 @@
 
 {% block content %}
 {% if messages %}
-  <div class="notification success closable full-width" role="alert">
-    {% for message in messages %}
-      {{ message }}
-    {% endfor %}
-  </div>
+  {% for message in messages %}
+    <div class="notification {% if message.tags %}{{ message.tags }}{% endif %} full-width" role="alert">{{ message }}</div>
+  {% endfor %}
 {% endif %}
 <div class="hero">
   <div class="hero__container">

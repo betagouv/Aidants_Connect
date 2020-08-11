@@ -67,7 +67,7 @@ class TOTPDeviceStaffAdmin(VisibleToStaff, TOTPDeviceAdmin):
 
 
 class OrganisationAdmin(VisibleToStaff, ModelAdmin):
-    list_display = ("name", "address", "admin_num_aidants", "admin_num_mandats")
+    list_display = ("name", "address", "admin_num_active_aidants", "admin_num_mandats")
     search_fields = ("name",)
 
 

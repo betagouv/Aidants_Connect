@@ -16,27 +16,25 @@ log = logging.getLogger()
 @login_required
 @activity_required
 def usagers_index(request):
-    messages = django_messages.get_messages(request)
     aidant = request.user
     usagers = aidant.get_usagers()
 
     return render(
         request,
         "aidants_connect_web/usagers.html",
-        {"aidant": aidant, "usagers": usagers, "messages": messages},
+        {"aidant": aidant, "usagers": usagers},
     )
 
 
 @login_required
 @activity_required
 def usager_details(request, usager_id):
-    messages = django_messages.get_messages(request)
     aidant = request.user
 
     usager = aidant.get_usager(usager_id)
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
 
     active_mandats = (
         Mandat.objects.prefetch_related("autorisations")
@@ -57,7 +55,6 @@ def usager_details(request, usager_id):
             "usager": usager,
             "active_mandats": active_mandats,
             "inactive_mandats": inactive_mandats,
-            "messages": messages,
         },
     )
 
@@ -72,20 +69,20 @@ def usagers_mandats_autorisations_cancel_confirm(
     usager = aidant.get_usager(usager_id)
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
 
     autorisation = usager.get_autorisation(mandat_id, autorisation_id)
     if not autorisation:
         django_messages.error(
             request, "Cette autorisation est introuvable ou inaccessible."
         )
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
     if autorisation.is_revoked:
         django_messages.error(request, "L'autorisation a été révoquée")
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
     if autorisation.is_expired:
         django_messages.error(request, "L'autorisation a déjà expiré")
-        return redirect("dashboard")
+        return redirect("espace_aidant_home")
 
     if request.method == "POST":
         form = request.POST
@@ -116,5 +113,10 @@ def usagers_mandats_autorisations_cancel_confirm(
     return render(
         request,
         "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
-        {"aidant": aidant, "usager": usager, "autorisation": autorisation},
+        {
+            "aidant": aidant,
+            "usager": usager,
+            "autorisation": autorisation,
+            "error": "Erreur lors de l'annulation de l'autorisation.",
+        },
     )

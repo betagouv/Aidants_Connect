@@ -55,12 +55,12 @@ class ViewAutorisationsTests(FunctionalTestCase):
         super().setUpClass()
 
     def test_grouped_autorisations(self):
-        self.open_live_url("/dashboard/")
+        self.open_live_url("/espace-aidant/")
 
         # Login
         login_aidant(self)
 
-        # Dashboard
+        # Espace Aidant home
         self.selenium.find_element_by_id("view_mandats").click()
 
         # autorisation List

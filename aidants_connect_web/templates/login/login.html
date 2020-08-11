@@ -31,11 +31,9 @@
         </div>
       {% else %}
         {% if messages %}
-          <div>
-            {% for message in messages %}
-              <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-            {% endfor %}
-          </div>
+          {% for message in messages %}
+            <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+          {% endfor %}
         {% endif %}
         <div class="form__group">
           <label for="id_email">Votre adresse email :</label>
