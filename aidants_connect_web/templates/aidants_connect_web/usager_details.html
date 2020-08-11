@@ -15,11 +15,9 @@
     </div>
     <h2>&nbsp;↳ {{ usager.get_full_name }}</h2>
     {% if messages %}
-      <div class="notification success" role="alert">
-        {% for message in messages %}
-          {{ message }}
-        {% endfor %}
-      </div>
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
     {% endif %}
   </div>
 </section>

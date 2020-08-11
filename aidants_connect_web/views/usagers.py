@@ -16,21 +16,19 @@ log = logging.getLogger()
 @login_required
 @activity_required
 def usagers_index(request):
-    messages = django_messages.get_messages(request)
     aidant = request.user
     usagers = aidant.get_usagers()
 
     return render(
         request,
         "aidants_connect_web/usagers.html",
-        {"aidant": aidant, "usagers": usagers, "messages": messages},
+        {"aidant": aidant, "usagers": usagers},
     )
 
 
 @login_required
 @activity_required
 def usager_details(request, usager_id):
-    messages = django_messages.get_messages(request)
     aidant = request.user
 
     usager = aidant.get_usager(usager_id)
@@ -57,7 +55,6 @@ def usager_details(request, usager_id):
             "usager": usager,
             "active_mandats": active_mandats,
             "inactive_mandats": inactive_mandats,
-            "messages": messages,
         },
     )
 
@@ -116,5 +113,10 @@ def usagers_mandats_autorisations_cancel_confirm(
     return render(
         request,
         "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
-        {"aidant": aidant, "usager": usager, "autorisation": autorisation},
+        {
+            "aidant": aidant,
+            "usager": usager,
+            "autorisation": autorisation,
+            "error": "Erreur lors de l'annulation de l'autorisation.",
+        },
     )

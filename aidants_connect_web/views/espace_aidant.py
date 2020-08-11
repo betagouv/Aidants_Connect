@@ -6,18 +6,15 @@ from django.shortcuts import render, redirect
 @login_required
 def home(request):
     aidant = request.user
-    messages = django_messages.get_messages(request)
+
     return render(
-        request,
-        "aidants_connect_web/espace_aidant/home.html",
-        {"aidant": aidant, "messages": messages},
+        request, "aidants_connect_web/espace_aidant/home.html", {"aidant": aidant},
     )
 
 
 @login_required
 def organisation(request):
     aidant = request.user
-    messages = django_messages.get_messages(request)
 
     organisation = aidant.organisation
     if not organisation:
@@ -33,6 +30,5 @@ def organisation(request):
             "aidant": aidant,
             "organisation": organisation,
             "organisation_aidants_active": organisation_aidants_active,
-            "messages": messages,
         },
     )

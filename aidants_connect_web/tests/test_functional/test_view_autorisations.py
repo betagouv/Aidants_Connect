@@ -60,7 +60,7 @@ class ViewAutorisationsTests(FunctionalTestCase):
         # Login
         login_aidant(self)
 
-        # Espace Usager home
+        # Espace Aidant home
         self.selenium.find_element_by_id("view_mandats").click()
 
         # autorisation List

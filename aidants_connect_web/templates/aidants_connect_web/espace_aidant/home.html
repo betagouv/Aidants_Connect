@@ -12,11 +12,9 @@
 <section class="section">
   <div class="container">
     {% if messages %}
-      <div class="notification success" role="alert">
-        {% for message in messages %}
-          {{ message }}
-        {% endfor %}
-      </div>
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
     {% endif %}
     <h1 class="section__title">Bienvenue sur votre Espace Aidant, {{ aidant.first_name }} !</h1>
     <div class="tiles">

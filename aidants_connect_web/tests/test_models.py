@@ -334,8 +334,8 @@ class AidantModelTests(TestCase):
         self.assertEqual(aidant.organisation.name, "COMMUNE DE HOULBEC COCHEREL")
 
     def test_get_aidants_active(self):
-        Aidant.objects.create(username="Aidant actif")
-        Aidant.objects.create(username="Aidant inactif", is_active=False)
+        AidantFactory(username="Aidant actif")
+        AidantFactory(username="Aidant inactif", is_active=False)
         self.assertEqual(Aidant.objects.active().count(), 1)
 
 
