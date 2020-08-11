@@ -140,7 +140,6 @@ class MandatModelTests(TestCase):
             duree_keyword="SHORT",
             expiration_date=timezone.now() + timedelta(days=1),
         )
-
         AutorisationFactory(
             mandat=self.mandat_1, demarche="justice",
         )
@@ -188,8 +187,10 @@ class MandatModelTests(TestCase):
             revocation_date=timezone.now() - timedelta(minutes=1),
         )
         active_mandats = Mandat.objects.active().count()
+        inactive_mandats = Mandat.objects.inactive().count()
 
         self.assertEqual(active_mandats, 2)
+        self.assertEqual(inactive_mandats, 1)
 
     def test_active_queryset_method_include_partially_revoked_mandat(self):
         partially_revoked_mandat = Mandat.objects.create(
@@ -208,8 +209,10 @@ class MandatModelTests(TestCase):
             mandat=partially_revoked_mandat, demarche="loisirs",
         )
         active_mandats = Mandat.objects.active().count()
+        inactive_mandats = Mandat.objects.inactive().count()
 
         self.assertEqual(active_mandats, 3)
+        self.assertEqual(inactive_mandats, 0)
 
     def test_active_queryset_method_excludes_expired_mandat(self):
         expired_mandat = Mandat.objects.create(
@@ -224,8 +227,10 @@ class MandatModelTests(TestCase):
         )
 
         active_mandats = Mandat.objects.active().count()
+        inactive_mandats = Mandat.objects.inactive().count()
 
         self.assertEqual(active_mandats, 2)
+        self.assertEqual(inactive_mandats, 1)
 
 
 @tag("models")
