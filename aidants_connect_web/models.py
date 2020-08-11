@@ -18,13 +18,13 @@ class Organisation(models.Model):
         return f"{self.name}"
 
     @cached_property
-    def num_aidants_active(self):
+    def num_active_aidants(self):
         return self.aidants.active().count()
 
-    def admin_num_aidants_active(self):
-        return self.num_aidants_active
+    def admin_num_active_aidants(self):
+        return self.num_active_aidants
 
-    admin_num_aidants_active.short_description = "Nombre d'aidants actifs"
+    admin_num_active_aidants.short_description = "Nombre d'aidants actifs"
 
     @cached_property
     def num_mandats(self):

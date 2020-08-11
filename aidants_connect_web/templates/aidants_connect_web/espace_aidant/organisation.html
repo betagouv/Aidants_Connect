@@ -25,7 +25,7 @@
         </div>
         <div class="tile background-color-gray">
           <h3>Aidants actifs</h3>
-          <h5>{{ organisation.num_aidants_active }}</h5>
+          <h5>{{ organisation.num_active_aidants }}</h5>
         </div>
         <div class="tile background-color-gray">
           <h3>Mandats créés</h3>
@@ -39,7 +39,7 @@
 <section class="section section-grey">
   <div class="container">
     <h2>Aidants actifs</h2>
-    {% if organisation_aidants_active %}
+    {% if organisation_active_aidants %}
       <table class="table">
         <thead>
           <tr>
@@ -48,7 +48,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for aidant in organisation_aidants_active %}
+          {% for aidant in organisation_active_aidants %}
             <tr>
               <td>{{ aidant.get_full_name }}</a></td>
               <td>{{ aidant.email }}</td>

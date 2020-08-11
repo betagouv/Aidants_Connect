@@ -21,7 +21,7 @@ def organisation(request):
         django_messages.error(request, "Vous n'êtes pas rattaché à une organisation.")
         return redirect("espace_aidant_home")
 
-    organisation_aidants_active = organisation.aidants.active()
+    organisation_active_aidants = organisation.aidants.active()
 
     return render(
         request,
@@ -29,6 +29,6 @@ def organisation(request):
         {
             "aidant": aidant,
             "organisation": organisation,
-            "organisation_aidants_active": organisation_aidants_active,
+            "organisation_active_aidants": organisation_active_aidants,
         },
     )
