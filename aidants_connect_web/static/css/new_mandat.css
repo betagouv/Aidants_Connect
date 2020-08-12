@@ -69,7 +69,6 @@ form {
   flex-direction: column;
   align-items: center;
 }
-
 .label-demarche>h3 {
   text-transform: uppercase;
 }
@@ -84,19 +83,6 @@ form {
   max-width: 250px;
 }
 
-.mandat__agreement fieldset {
-  flex-direction: column;
-  align-items: start;
-}
-
-.mandat__agreement .checkbox {
-  width: 100%;
-}
-
-.mandat__agreement .checkbox__group+.checkbox__group {
-  margin-top: 1em;
-  margin-bottom: 1em;
-}
 
 @supports not (display: grid) {
   .tile+.tile {

@@ -25,35 +25,49 @@
         <h2>Éléments du mandat</h2>
         <div class="panel">
           <div class="form__group">
-            <p id="recap_text">
+            <div id="recap_text">
               <strong>{{ usager }}</strong> autorise <strong>{{ aidant.organisation }}</strong> à réaliser à sa place
               les démarches administratives suivantes :
-            </p>
+            </div>
             <ul>
               {% for demarche in demarches %}
                 <li>{{ demarche }}</li>
               {% endfor %}
             </ul>
-            <p><strong>{{ duree }}</strong></p>
+            <p><strong>{{ duree }}.</strong></p>
+            {% if is_remote %}
+            <div><i>Mandat réalisé à distance</i></div>
+            {% endif %}
           </div>
         </div>
         <h2>Validation de l'usager</h2>
         {% if form.non_field_errors %}
           <div class="notification error" role="alert">{{ form.non_field_errors }}</div>
         {% endif %}
-        <div class="panel form__group mandat__agreement">
-          <p>En cochant les cases, <strong>{{ aidant }}</strong> confirme :</p>
-          <div class="checkbox__group">
+        <div class="panel form__group">
+          <div class="margin-bottom-1em">En cochant les cases, <strong>{{ aidant }}</strong> confirme :</div>
+          <div class="checkbox__group margin-bottom-1em">
             <input type="checkbox" id="id_personal_data" name="personal_data" required />
-            <label class="label-inline" for="id_personal_data">Avoir communiqué à <strong>{{ usager }}</strong> les informations concernant l’objet de l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression, etc.)</label>
+            <label class="label-inline" for="id_personal_data">
+              Avoir communiqué à <strong>{{ usager }}</strong> les informations concernant l’objet de l’intervention,
+              la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression…)
+            </label>
           </div>
           <div class="checkbox__group">
             <input type="checkbox" id="id_brief" name="brief" required />
-            <label class="label-inline" for="id_brief">Avoir obtenu et conservé un consentement écrit (capture d'écran, SMS ...) de la part de <strong> {{ usager }}</strong> pour conclure le mandat Aidant Connect et utiliser ses données à caractère personnel.</label>
+            <label class="label-inline" for="id_brief">
+              {% if is_remote %}
+                Avoir obtenu et conservé un consentement écrit (capture d’écran d’email, SMS…) de la part de <strong> {{ usager }}</strong>
+                pour conclure le mandat Aidant Connect <strong>à distance</strong> et utiliser ses données à caractère personnel.
+              {% else %}
+                Avoir obtenu et conservé un consentement écrit (signature du mandat après impression) de la part de <strong> {{ usager }}</strong>
+                pour conclure le mandat Aidant Connect et utiliser ses données à caractère personnel.
+              {% endif %}
+            </label>
           </div>
         </div>
         <h2>Validation de l'aidant</h2>
-        <div class="panel form__group mandat__agreement">
+        <div class="panel form__group">
           <fieldset>
             <div class="not_checkbox_group">
               <label for="id_otp_token">{{ form.otp_token.label_tag }}</label>

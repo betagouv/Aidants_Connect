@@ -83,12 +83,11 @@ def new_mandat_recap(request):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
-    # Django magic :
-    # https://docs.djangoproject.com/en/3.0/ref/models/instances/#django.db.models.Model.get_FOO_display
-    duree = connection.get_duree_keyword_display()
     demarches_description = [
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
+    duree = connection.get_duree_keyword_display()
+    is_remote = connection.mandat_is_remote
 
     if request.method == "GET":
         form = RecapMandatForm(aidant)
@@ -100,6 +99,7 @@ def new_mandat_recap(request):
                 "usager": usager,
                 "demarches": demarches_description,
                 "duree": duree,
+                "is_remote": is_remote,
                 "form": form,
             },
         )
