@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+from unittest import skip
 
 from django.conf import settings
 from django.contrib import messages as django_messages
+
 from django.db.models import Q
 from django.test import override_settings, tag, TestCase
 from django.test.client import Client
@@ -49,17 +51,22 @@ class NewMandatTests(TestCase):
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
 
-    def test_badly_formatted_form_remote_triggers_original_template(self):
-        self.client.force_login(self.aidant_thierry)
-        data = {"demarche": ["papiers", "logement"], "duree": "LONG", "is_remote": True}
-        response = self.client.post("/creation_mandat/", data=data)
-        self.assertTemplateUsed(
-            response, "aidants_connect_web/new_mandat/new_mandat.html"
-        )
-
     def test_well_formatted_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        data = {
+            "demarche": ["papiers", "logement"],
+            "duree": "SHORT",
+            "is_remote": True,
+        }
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        data = {"demarche": ["papiers", "logement"], "duree": "LONG", "is_remote": True}
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 
@@ -67,6 +74,9 @@ class NewMandatTests(TestCase):
 ETAT_URGENCE_2020_LAST_DAY = datetime.strptime("23/05/2020 +0100", "%d/%m/%Y %z")
 
 
+@skip(
+    "This test used to work during the COVID-19 lockdown in March 2020 ('duree': 'EUS_03_20' & 'is_remote': 'True')"  # noqa
+)
 @tag("new_mandat", "confinement")
 @override_settings(ETAT_URGENCE_2020_LAST_DAY=ETAT_URGENCE_2020_LAST_DAY)
 @freeze_time(datetime(2020, 5, 20, tzinfo=pytz_timezone("Europe/Paris")))

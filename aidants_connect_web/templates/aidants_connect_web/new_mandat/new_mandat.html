@@ -37,9 +37,9 @@
       {% if form.errors %}
         <div class="notification error" role="alert">{{ form.errors }}</div>
       {% endif %}
+      {% csrf_token %}
       <div id="demarches" class="tiles">
         <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
-        {% csrf_token %}
         <div id="demarches_list" class="grid">
           {% for value, label in form.demarche.field.choices %}
             <div id="{{ value }}" class="tile">
@@ -66,20 +66,20 @@
       </div>
       <div id="duree" class="tiles">
         <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
-        <div class="notification warning" role="alert">
-          <span>La signature du mandat se fait-elle à distance ? Si oui, cochez cette case</span>
-          <span>{{ form.is_remote }}</span>
-        </div>
         <div id="duree_list" class="grid">
           {% for value, label in form.duree.field.choices %}
             <div id="{{ value }}" class="tile">
               <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree" />
               <label class="label-duree" for="button-{{ value }}">
-                <h3>{{ label.title }}</h3>
+                <h3>{{ label.title }} <span class="duree-label-is-remote">à distance</span></h3>
                 <span>{{ label.description }}</span>
               </label>
             </div>
           {% endfor %}
+        </div>
+        <div class="notification warning margin-top-1em" role="alert">
+          <span>La signature du mandat se fait-elle à distance ? Si oui, cochez cette case</span>
+          <span>{{ form.is_remote }}</span>
         </div>
       </div>
       <div id="france_connection" class="tiles">
@@ -95,17 +95,15 @@
 <script>
   // init
   let mandat_is_remote_checkbox = document.getElementById("id_is_remote");
-  let mandat_duree_eus_div = document.getElementById("EUS_03_20");
-  let mandat_duree_eus_checkbox = document.getElementById("button-EUS_03_20");
-  let mandat_duree_long_div = document.getElementById("LONG");
-  let mandat_duree_long_checkbox = document.getElementById("button-LONG");
-  mandat_duree_eus_div.style.display = "none";
+  let mandat_duree_label_is_remote_span = document.getElementsByClassName("duree-label-is-remote");
+  for (var i = 0; i < mandat_duree_label_is_remote_span.length; i++) {
+      mandat_duree_label_is_remote_span[i].style.display = "none";
+    }
   // toggle mandat_is_remote
   mandat_is_remote_checkbox.addEventListener('change', function() {
-    mandat_duree_eus_checkbox.checked = false;
-    mandat_duree_eus_div.style.display = this.checked ? "initial" : "none";
-    mandat_duree_long_checkbox.checked = false;
-    mandat_duree_long_div.style.display = this.checked ? "none" : "initial";
+    for (var i = 0; i < mandat_duree_label_is_remote_span.length; i++) {
+      mandat_duree_label_is_remote_span[i].style.display = this.checked ? "initial" : "none";
+    }
   });
 </script>
 {% endblock %}

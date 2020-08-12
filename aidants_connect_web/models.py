@@ -530,11 +530,7 @@ class Journal(models.Model):
     def save(self, *args, **kwargs):
         if self.id:
             raise NotImplementedError("Editing is not allowed on journal entries")
-        else:
-            # COVID-19
-            if self.is_remote_mandat:
-                self.additional_information = self.INFO_REMOTE_MANDAT
-            super(Journal, self).save(*args, **kwargs)
+        super(Journal, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         raise NotImplementedError("Deleting is not allowed on journal entries")
@@ -593,9 +589,7 @@ class Journal(models.Model):
             duree=duree,
             access_token=access_token,
             attestation_hash=attestation_hash,
-            # COVID-19
             is_remote_mandat=is_remote_mandat,
-            additional_information=(cls.INFO_REMOTE_MANDAT if is_remote_mandat else ""),
         )
 
     @classmethod
@@ -610,9 +604,7 @@ class Journal(models.Model):
             demarche=autorisation.demarche,
             duree=autorisation.duration_for_humans,
             autorisation=autorisation.id,
-            # COVID-19
             is_remote_mandat=mandat.is_remote,
-            additional_information=(cls.INFO_REMOTE_MANDAT if mandat.is_remote else ""),
         )
 
     @classmethod

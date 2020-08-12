@@ -20,7 +20,7 @@ form {
 }
 
 .tile label {
-  padding: 12px 30px;
+  padding: 12px;
   width: 100%;
   height: 100%;
   display: flex;
@@ -45,8 +45,7 @@ form {
   z-index: 2;
   position: absolute;
   right: 20px;
-  top: 35px;
-  transform: translateY(-50%);
+  top: 20px;
   cursor: pointer;
   transition: all 100ms ease-in;
 }
@@ -70,7 +69,6 @@ form {
   flex-direction: column;
   align-items: center;
 }
-
 .label-demarche>h3 {
   text-transform: uppercase;
 }
@@ -85,19 +83,6 @@ form {
   max-width: 250px;
 }
 
-.mandat__agreement fieldset {
-  flex-direction: column;
-  align-items: start;
-}
-
-.mandat__agreement .checkbox {
-  width: 100%;
-}
-
-.mandat__agreement .checkbox__group+.checkbox__group {
-  margin-top: 1em;
-  margin-bottom: 1em;
-}
 
 @supports not (display: grid) {
   .tile+.tile {
