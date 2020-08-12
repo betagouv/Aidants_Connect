@@ -7,6 +7,7 @@
 {% endblock extracss %}
 
 {% block content %}
+<div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
 {% if messages %}
   {% for message in messages %}
     <div class="notification {% if message.tags %}{{ message.tags }}{% endif %} full-width" role="alert">{{ message }}</div>
@@ -19,7 +20,6 @@
     <p>Ce service sécurise et facilite le « faire pour le compte de »</p>
   </div>
 </div>
-<div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
 <section class="section section-grey">
   <div class="container">
     <div class="row">
@@ -85,7 +85,7 @@
               <input type="hidden" id="csrf_token" name="csrf_token" value="YWZhOWVmNGEwNzY4NjViZmQyMDk0ZjUxZjg0Y2Q2ZGU3NTVjN2NmNjFmY2JmYjZkZmI1MWEwZjkxZTIyNGMzNQ==" />
               <div class="form__group">
                 <div class="input__group">
-                  <input type="email" autocomplete="on" id="subscribe-email" name="w-field-field-154291-1000274-1065021-email" placeholder="votre@email.fr" required />
+                  <input type="email" id="subscribe-email" name="w-field-field-154291-1000274-1065021-email" placeholder="votre@email.fr" autocomplete="on" required />
                   <button class="button margin-left-1em" type="submit" name="subscribe" id="form-submit">Je m'abonne</button>
                 </div>
               </div>
@@ -97,7 +97,6 @@
           </div>
         </div>
       </div>
-      
     </div>
   </div>
 </section>

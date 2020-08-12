@@ -7,30 +7,32 @@
     </a>
     <nav role="navigation">
       <ul class="nav__links">
-      {% if request.user.is_authenticated %}
-        <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'espace_aidant_home' %}">Espace Aidant</a>
-        </li>
-        <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'ressources' %}">Ressources</a>
-        </li>
-        <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'logout' %}">Se déconnecter</a>
-        </li>
-      {% else %}
-        <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'home_page' %}">Accueil</a>
-        </li>
-        <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'ressources' %}">Ressources</a>
-        </li>
-        <li class="nav__item">
-          <a class="button-outline secondary" href="{% url 'faq_generale' %}">FAQ</a>
-        </li>
-        <li class="nav__item">
-          <a class="button-outline primary button-filled" href="{% url 'login' %}" >Se connecter</a>
-        </li>
-      {% endif %}
+        {% with view_name=request.resolver_match.view_name %}
+          {% if request.user.is_authenticated %}
+            <li class="nav__item">
+              <a {% if view_name in 'dashboard,usagers,usager_details,usagers_mandats_autorisations_cancel_confirm' %}class="font-weight-bold"{% endif %} href="{% url 'espace_aidant_home' %}">Mon Espace Aidant</a>
+            </li>
+            <li class="nav__item">
+              <a {% if view_name == 'ressources' %}class="font-weight-bold"{% endif %} href="{% url 'ressources' %}">Ressources</a>
+            </li>
+            <li class="nav__item">
+              <a href="{% url 'logout' %}">Se déconnecter</a>
+            </li>
+          {% else %}
+            <li class="nav__item">
+              <a {% if view_name == 'home_page' %}class="font-weight-bold"{% endif %} href="{% url 'home_page' %}">Accueil</a>
+            </li>
+            <li class="nav__item">
+              <a {% if view_name == 'ressources' %}class="font-weight-bold"{% endif %} href="{% url 'ressources' %}">Ressources</a>
+            </li>
+            <li class="nav__item">
+              <a {% if 'faq' in view_name %}class="font-weight-bold"{% endif %} href="{% url 'faq_generale' %}">FAQ</a>
+            </li>
+            <li class="nav__item">
+              <a class="active" href="{% url 'login' %}">Se connecter</a>
+            </li>
+          {% endif %}
+        {% endwith %}
       </ul>
     </nav>
   </div>
