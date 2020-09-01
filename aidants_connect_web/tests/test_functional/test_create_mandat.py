@@ -62,6 +62,14 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertEqual("Connexion - choix du compte", fc_title)
         time.sleep(2)
 
+        # Nouvelle mire dialog
+        temp_test_nouvelle_mire = self.selenium.find_element_by_id("message-on-login")
+        if temp_test_nouvelle_mire:
+            temp_test_nouvelle_mire_masquer = self.selenium.find_element_by_id(
+                "message-on-login-close"
+            )
+            temp_test_nouvelle_mire_masquer.click()
+
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element_by_id(
             "fi-identity-provider-example"
