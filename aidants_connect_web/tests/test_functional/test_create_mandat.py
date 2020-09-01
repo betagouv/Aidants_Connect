@@ -63,16 +63,11 @@ class CreateNewMandatTests(FunctionalTestCase):
         time.sleep(2)
 
         # Nouvelle mire dialog
-        try:
-            # temp_test_nouvelle_mire = self.selenium.find_element_by_id(
-            #     "message-on-login"
-            # )
+        if len(self.selenium.find_elements_by_id("message-on-login")) > 0:
             temp_test_nouvelle_mire_masquer = self.selenium.find_element_by_id(
                 "message-on-login-close"
             )
             temp_test_nouvelle_mire_masquer.click()
-        except self.selenium.common.exceptions.NoSuchElementException:
-            pass
 
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element_by_id(

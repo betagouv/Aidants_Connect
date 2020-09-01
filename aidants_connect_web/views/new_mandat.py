@@ -155,12 +155,8 @@ def new_mandat_recap(request):
                         demarche=demarche,
                     )
                     for similar_active_autorisation in similar_active_autorisations:
-                        similar_active_autorisation.revocation_date = now
-                        similar_active_autorisation.save(
-                            update_fields=["revocation_date"]
-                        )
-                        Journal.log_autorisation_cancel(
-                            similar_active_autorisation, aidant
+                        similar_active_autorisation.revoke(
+                            aidant=aidant, revocation_date=now
                         )
 
                     # Create new demarche autorisation
