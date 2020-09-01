@@ -55,9 +55,9 @@ class Aidant(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
-    @property
-    def full_string_identifier(self):
-        return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
+    # @property
+    # def full_string_identifier(self):
+    #     return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
 
     def get_full_name(self):
         return str(self)
@@ -158,11 +158,7 @@ class Aidant(AbstractUser):
         :return: the timestamp of this aidant's last logged action or `None`.
         """
         try:
-            return (
-                Journal.objects.filter(initiator=self.full_string_identifier)
-                .last()
-                .creation_date
-            )
+            return Journal.objects.filter(aidant=self).last().creation_date
         except AttributeError:
             return None
 
@@ -172,9 +168,7 @@ class Aidant(AbstractUser):
         by the aidant
         """
         journal_create_attestation = Journal.objects.filter(
-            initiator=self.full_string_identifier,
-            action="create_attestation",
-            access_token=access_token,
+            aidant=self, action="create_attestation", access_token=access_token,
         ).last()
         return journal_create_attestation
 
@@ -231,9 +225,9 @@ class Usager(models.Model):
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
 
-    @property
-    def full_string_identifier(self):
-        return f"{self.get_full_name()} - {self.id} - {self.email}"
+    # @property
+    # def full_string_identifier(self):
+    #     return f"{self.get_full_name()} - {self.id} - {self.email}"
 
     def get_full_name(self):
         return str(self)
@@ -378,7 +372,7 @@ class Autorisation(models.Model):
 
     # Autorisation information
     mandat = models.ForeignKey(
-        Mandat, on_delete=models.CASCADE, related_name="autorisations", null=True
+        Mandat, null=True, on_delete=models.CASCADE, related_name="autorisations"
     )
     demarche = models.CharField(max_length=16, choices=DEMARCHE_CHOICES)
 
@@ -494,7 +488,7 @@ class Connection(models.Model):
 
 class JournalQuerySet(models.QuerySet):
     def excluding_staff(self):
-        return self.exclude(initiator__icontains=settings.STAFF_ORGANISATION_NAME)
+        return self.exclude(aidant__organisation__name=settings.STAFF_ORGANISATION_NAME)
 
 
 class Journal(models.Model):
@@ -513,14 +507,18 @@ class Journal(models.Model):
 
     # mandatory
     action = models.CharField(max_length=30, choices=ACTIONS, blank=False)
-    initiator = models.TextField(blank=False)
+    aidant = models.ForeignKey(
+        Aidant, on_delete=models.PROTECT, related_name="journal_entries"
+    )
 
     # automatic
     creation_date = models.DateTimeField(auto_now_add=True)
 
     # action dependant
     demarche = models.CharField(max_length=100, blank=True, null=True)
-    usager = models.TextField(blank=True, null=True)
+    usager = models.ForeignKey(
+        Usager, null=True, on_delete=models.PROTECT, related_name="journal_entries"
+    )
     duree = models.IntegerField(blank=True, null=True)  # En jours
     access_token = models.TextField(blank=True, null=True)
     autorisation = models.IntegerField(blank=True, null=True)
@@ -535,7 +533,7 @@ class Journal(models.Model):
         verbose_name_plural = "entrées de journal"
 
     def __str__(self):
-        return f"Entrée #{self.id} : {self.action} - {self.initiator}"
+        return f"Entrée #{self.id} : {self.action} - {self.aidant}"
 
     def save(self, *args, **kwargs):
         if self.id:
@@ -545,39 +543,31 @@ class Journal(models.Model):
     def delete(self, *args, **kwargs):
         raise NotImplementedError("Deleting is not allowed on journal entries")
 
-    @property
-    def usager_id(self):
-        try:
-            return int(self.usager.split(" - ")[1])
-        except (IndexError, ValueError):
-            return None
+    # @property
+    # def usager_id(self):
+    #     try:
+    #         return int(self.usager.split(" - ")[1])
+    #     except (IndexError, ValueError):
+    #         return None
 
     @classmethod
     def log_connection(cls, aidant: Aidant):
-        return cls.objects.create(
-            initiator=aidant.full_string_identifier, action="connect_aidant"
-        )
+        return cls.objects.create(aidant=aidant, action="connect_aidant")
 
     @classmethod
     def log_activity_check(cls, aidant: Aidant):
-        return cls.objects.create(
-            initiator=aidant.full_string_identifier, action="activity_check_aidant"
-        )
+        return cls.objects.create(aidant=aidant, action="activity_check_aidant")
 
     @classmethod
     def log_franceconnection_usager(cls, aidant: Aidant, usager: Usager):
         return cls.objects.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
-            action="franceconnect_usager",
+            aidant=aidant, usager=usager, action="franceconnect_usager",
         )
 
     @classmethod
     def log_update_email_usager(cls, aidant: Aidant, usager: Usager):
         return cls.objects.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
-            action="update_email_usager",
+            aidant=aidant, usager=usager, action="update_email_usager",
         )
 
     @classmethod
@@ -592,8 +582,8 @@ class Journal(models.Model):
         attestation_hash: str,
     ):
         return cls.objects.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
+            aidant=aidant,
+            usager=usager,
             action="create_attestation",
             demarche=",".join(demarches),
             duree=duree,
@@ -608,8 +598,8 @@ class Journal(models.Model):
         usager = mandat.usager
 
         return cls.objects.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
+            aidant=aidant,
+            usager=usager,
             action="create_autorisation",
             demarche=autorisation.demarche,
             duree=autorisation.duration_for_humans,
@@ -627,8 +617,8 @@ class Journal(models.Model):
         autorisation: Autorisation,
     ):
         return cls.objects.create(
-            initiator=aidant.full_string_identifier,
-            usager=usager.full_string_identifier,
+            aidant=aidant,
+            usager=usager,
             action="use_autorisation",
             demarche=demarche,
             access_token=access_token,
@@ -638,8 +628,8 @@ class Journal(models.Model):
     @classmethod
     def log_autorisation_cancel(cls, autorisation: Autorisation, aidant: Aidant):
         return cls.objects.create(
-            initiator=aidant.full_string_identifier,
-            usager=autorisation.mandat.usager.full_string_identifier,
+            aidant=aidant,
+            usager=autorisation.mandat.usager,
             action="cancel_autorisation",
             demarche=autorisation.demarche,
             duree=autorisation.duration_for_humans,

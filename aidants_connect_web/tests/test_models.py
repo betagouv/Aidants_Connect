@@ -567,13 +567,15 @@ class AidantModelMethodsTests(TestCase):
 class JournalModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.entry1 = Journal.objects.create(action="connect_aidant", initiator="ABC")
         cls.aidant_thierry = AidantFactory(
             username="Thierry",
             email="thierry@thierry.com",
             first_name="Thierry",
             last_name="Martin",
             organisation=OrganisationFactory(name="Commune de Vernon"),
+        )
+        cls.journal_entry = Journal.objects.create(
+            action="connect_aidant", aidant=cls.aidant_thierry
         )
         cls.usager_ned = UsagerFactory(given_name="Ned", family_name="Flanders")
 
@@ -603,9 +605,7 @@ class JournalModelTests(TestCase):
         entry = Journal.log_connection(aidant=self.aidant_thierry)
         self.assertEqual(len(Journal.objects.all()), 3)
         self.assertEqual(entry.action, "connect_aidant")
-        self.assertEqual(
-            entry.initiator, "Thierry Martin - Commune de Vernon - thierry@thierry.com"
-        )
+        self.assertEqual(entry.aidant.id, self.aidant_thierry.id)
 
     def test_a_franceconnect_usager_journal_entry_can_be_created(self):
         entry = Journal.log_franceconnection_usager(
@@ -627,7 +627,7 @@ class JournalModelTests(TestCase):
 
         last_entry = journal_entries.last()
         self.assertEqual(last_entry.action, "create_autorisation")
-        self.assertIn("Ned Flanders", last_entry.usager)
+        self.assertEqual(last_entry.usager.id, self.usager_ned.id)
         self.assertEqual(last_entry.autorisation, autorisation.id)
 
     def test_log_autorisation_use_complete(self):

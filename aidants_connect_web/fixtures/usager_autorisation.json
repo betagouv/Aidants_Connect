@@ -48,7 +48,7 @@
         "pk": 1,
         "fields": {
             "action": "connect_aidant",
-            "initiator": "Admin - BetaGouv - admin@email.com",
+            "aidant": 1,
             "creation_date": "2020-03-03T10:44:56.714Z",
             "demarche": null,
             "usager": null,
@@ -62,10 +62,10 @@
         "pk": 2,
         "fields": {
             "action": "print_autorisation",
-            "initiator": "Admin - BetaGouv - admin@email.com",
+            "aidant": 1,
             "creation_date": "2020-03-03T10:58:06.618Z",
             "demarche": "social,travail",
-            "usager": "Angela Claire Louise DUBOIS - 1 - wossewodda-3728@yopmail.com",
+            "usager": 1,
             "duree": null,
             "access_token": null,
             "autorisation": null
@@ -76,10 +76,10 @@
         "pk": 3,
         "fields": {
             "action": "create_autorisation",
-            "initiator": "Admin - BetaGouv - admin@email.com",
+            "aidant": 1,
             "creation_date": "2020-03-03T10:58:06.625Z",
             "demarche": "social",
-            "usager": "Angela Claire Louise DUBOIS - 1 - wossewodda-3728@yopmail.com",
+            "usager": 1,
             "duree": 365,
             "access_token": "2020-03-03 10:58:06.619923+00:00",
             "autorisation": 1
@@ -90,10 +90,10 @@
         "pk": 4,
         "fields": {
             "action": "create_autorisation",
-            "initiator": "Admin - BetaGouv - admin@email.com",
+            "aidant": 1,
             "creation_date": "2020-03-03T10:58:06.632Z",
             "demarche": "travail",
-            "usager": "Angela Claire Louise DUBOIS - 1 - wossewodda-3728@yopmail.com",
+            "usager": 1,
             "duree": 365,
             "access_token": "2020-03-03 10:58:06.628293+00:00",
             "autorisation": 2

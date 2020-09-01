@@ -150,15 +150,15 @@ class StatistiquesTests(TestCase):
         )
 
         Journal.objects.create(
-            initiator=aidant_thierry.full_string_identifier,
-            usager=usager_homer.full_string_identifier,
+            aidant=aidant_thierry,
+            usager=usager_homer,
             action="use_autorisation",
             demarche="justice",
             autorisation=autorisation_justice_houlbec_homer.id,
         )
         Journal.objects.create(
-            initiator=aidant_thierry.full_string_identifier,
-            usager=usager_homer.full_string_identifier,
+            aidant=aidant_thierry,
+            usager=usager_homer,
             action="use_autorisation",
             demarche="justice",
             autorisation=autorisation_justice_houlbec_homer.id,
@@ -183,8 +183,8 @@ class StatistiquesTests(TestCase):
         )
 
         Journal.objects.create(
-            initiator=aidant_staff_organisation.full_string_identifier,
-            usager=usager_homer.full_string_identifier,
+            aidant=aidant_staff_organisation,
+            usager=usager_homer,
             action="use_autorisation",
             demarche="justice",
             autorisation=autorisation_justice_stafforg_homer.id,
@@ -201,8 +201,8 @@ class StatistiquesTests(TestCase):
 
         Journal.objects.create(
             action="use_autorisation",
-            initiator=aidant_staff_organisation.full_string_identifier,
-            usager=usager_laurent.full_string_identifier,
+            aidant=aidant_staff_organisation,
+            usager=usager_laurent,
             demarche="justice",
             autorisation=autorisation_justice_stafforg_laurent.id,
         )
@@ -225,13 +225,13 @@ class StatistiquesTests(TestCase):
 
         Journal.objects.create(
             action="use_autorisation",
-            initiator=aidant_thierry.full_string_identifier,
-            usager=usager_jacqueline.full_string_identifier,
+            aidant=aidant_thierry,
+            usager=usager_jacqueline,
             demarche=autorisation_justice_houlbec_jacqueline.demarche,
             duree=1,
             autorisation=autorisation_justice_houlbec_jacqueline.id,
         )
-        Journal.objects.filter(usager=usager_jacqueline.full_string_identifier).update(
+        Journal.objects.filter(usager=usager_jacqueline).update(
             creation_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc)
         )
 
