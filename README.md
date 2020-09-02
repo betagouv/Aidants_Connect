@@ -14,7 +14,9 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 - Django 3.0
 - PostgreSQL
 
-## Comment installer la base de données (pour Mac OSX)
+## Installer et lancer l'application
+
+### Installer la base de données (pour Mac OSX)
 
 Utilisez votre gestionnaire de paquets préféré pour installer la base.
 L'exemple qui suit emploie le gestionnaire [Homebrew](https://brew.sh) via la commande `brew`.
@@ -64,7 +66,7 @@ ALTER USER aidants_connect_team CREATEDB;
 \q
 ```
 
-## Installer l'application
+### Installer l'application
 
 Dans votre répertoire de travail, créez et activez un environnement virtuel :
 
@@ -141,7 +143,7 @@ Par défaut, les tests d'intégration sont lancés en mode _headless_, c'est-à-
 
 Dans de rares cas (comportement observé à ce jour sur une seule machine de dev), les tests d'intégration échouent car _la première connexion_ à une URL via l'API Selenium plante de manière inexpliquée. Un contournement empirique a été mis en place ; si vous rencontrez ce problème vous pouvez l'activer en passant à `True` la variable d'environnement `BYPASS_FIRST_LIVESERVER_CONNECTION` dans votre fichier `.env`.
 
-## Lancer l'application
+### Lancer l'application
 
 Pour lancer l'application sur le port `3000` :
 
@@ -149,7 +151,9 @@ Pour lancer l'application sur le port `3000` :
 python manage.py runserver 3000
 ```
 
-## Se connecter à l'application : authentification à double facteur (2FA)
+L'application sera disponible à l'URL `http://localhost:3000/`
+
+### Se connecter à l'application : authentification à double facteur (2FA)
 
 Pour pouvoir vous connecter à votre instance locale, il faut apparier à votre `superuser` un dispositif TOTP (`TOTP device`).
 
@@ -158,15 +162,18 @@ Pour cela, commencez par lui adjoindre un [jeton OTP](https://fr.wikipedia.org/w
 ```shell
 python manage.py addstatictoken <insert_admin_name> -t <insert_6_numbers>
 ```
-Le jeton généré vous permet de vous connecter une seule fois à l'interface d'administration Django, disponible par défaut à l'URL `http://localhost:3000/admin/`.
+
+Le jeton généré vous permet de vous connecter une seule fois à l'interface d'administration Django, disponible par défaut à l'URL `http://localhost:3000/admin/` (sauf si vous avez spécifié une autre URL dans la variable d'environment `ADMIN_URL`).
 En cas de problème, pas d'inquiétude : vous pouvez répéter la procédure précédente autant que nécessaire :)
 
-Ceci fait, cliquez sur _TOTP devices_, puis sur le bouton _Ajouter TOTP device +_.
-Choisissez votre `superuser` grâce à l'icône "loupe" située à côté du champ _User_, puis saisissez un nom pour votre dispositif TOTP (par exemple : _Mon téléphone_) dans le champ _Name_.
-Cliquez ensuite sur _Enregistrer et continuer les modifications_ tout en bas du formulaire.
-
-Une fois l'enregistrement effectué, l'écran devrait se rafraîchir et vous proposer un lien vers un [QR Code](https://fr.wikipedia.org/wiki/Code_QR).
-Vous pouvez à présent scanner celui-ci dans une application TOTP telle que [Authy](https://authy.com/) ou [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) pour utiliser l'authentification à double facteur dans votre environnement local.
+Une fois connecté à l'admin, voici les étapes pour ajouter un dispositif TOTP à votre `superuser` :
+1. cliquez sur _TOTP devices_
+2. Cliquez sur le bouton _Ajouter TOTP device +_
+3. Choisissez votre `superuser` grâce à l'icône "loupe" située à côté du champ _User_
+4. Saisissez un nom pour votre dispositif TOTP (par exemple : _Mon téléphone_) dans le champ _Name_
+5. Cliquez ensuite sur _Enregistrer et continuer les modifications_ tout en bas du formulaire
+6. Une fois l'enregistrement effectué, l'écran devrait se rafraîchir et vous proposer un lien vers un [QR Code](https://fr.wikipedia.org/wiki/Code_QR)
+7. Vous pouvez à présent scanner celui-ci dans une application TOTP telle que [Authy](https://authy.com/) ou [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) pour utiliser l'authentification à double facteur dans votre environnement local.
 
 ## Contribuer à l'application
 
@@ -247,4 +254,14 @@ Pour ce faire, il suffit d'exécuter ou de planifier la commande suivante :
 
 ```shell
 python manage.py delete_expired_connections
+```
+
+### Utiliser le Makefile
+
+Pour simplifier le lancement de certaines commandes, un Makefile est disponible. Exemples de commandes :
+
+```shell
+make shell
+make test
+make migrate
 ```
