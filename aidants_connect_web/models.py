@@ -418,6 +418,16 @@ class Autorisation(models.Model):
         # and 0 for a computer.
         return duration_for_computer.days + 1
 
+    def revoke(self, aidant: Aidant, revocation_date=None):
+        """
+        revoke an autorisation and create the corresponding journal entry
+        """
+        if revocation_date is None:
+            revocation_date = timezone.now()
+        self.revocation_date = revocation_date
+        self.save(update_fields=["revocation_date"])
+        Journal.log_autorisation_cancel(self, aidant)
+
 
 class ConnectionQuerySet(models.QuerySet):
     def expired(self):
