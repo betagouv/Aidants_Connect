@@ -4,10 +4,6 @@ from django.db import migrations
 
 
 def migrate_journal_aidant_and_usager(apps, schema_editor):
-    # Mandat = apps.get_model("aidants_connect_web", "Mandat")
-    # for mandat in Mandat.objects.all():
-    #     mandat.expiration_date = mandat.creation_date + timedelta(days=mandat.duree)
-    #     mandat.save()
     Aidant = apps.get_model("aidants_connect_web", "Aidant")
     Usager = apps.get_model("aidants_connect_web", "Usager")
     Journal = apps.get_model("aidants_connect_web", "Journal")
@@ -15,14 +11,19 @@ def migrate_journal_aidant_and_usager(apps, schema_editor):
         # initiator --> aidant
         if journal.initiator:
             try:
-                journal_aidant_email = journal.initiator.split(" - ")[2]
+                journal_initiator_split = journal.initiator.split(" - ")
+                # why (len - 1) ? an organisation name has a " - " in its name
+                journal_aidant_email = journal_initiator_split[
+                    len(journal_initiator_split) - 1
+                ]
                 journal.aidant = Aidant.objects.get(email=journal_aidant_email)
             except (IndexError, ValueError):
                 print("Journal initiator/aidant error", journal.__dict__)
         # usager --> usager_link
         if journal.usager:
             try:
-                journal_usager_id = journal.usager.split(" - ")[1]
+                journal_usager_split = journal.usager.split(" - ")
+                journal_usager_id = journal_usager_split[1]
                 journal.usager_link = Usager.objects.get(pk=journal_usager_id)
             except (IndexError, ValueError):
                 print("Journal usager/usager_link error", journal.__dict__)

@@ -55,10 +55,6 @@ class Aidant(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
-    # @property
-    # def full_string_identifier(self):
-    #     return f"{self.get_full_name()} - {self.organisation.name} - {self.email}"
-
     def get_full_name(self):
         return str(self)
 
@@ -224,10 +220,6 @@ class Usager(models.Model):
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
-
-    # @property
-    # def full_string_identifier(self):
-    #     return f"{self.get_full_name()} - {self.id} - {self.email}"
 
     def get_full_name(self):
         return str(self)
@@ -542,13 +534,6 @@ class Journal(models.Model):
 
     def delete(self, *args, **kwargs):
         raise NotImplementedError("Deleting is not allowed on journal entries")
-
-    # @property
-    # def usager_id(self):
-    #     try:
-    #         return int(self.usager.split(" - ")[1])
-    #     except (IndexError, ValueError):
-    #         return None
 
     @classmethod
     def log_connection(cls, aidant: Aidant):
