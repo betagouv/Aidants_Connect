@@ -92,8 +92,15 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
     # The fields to be used in displaying the `Aidant` model.
     # These override the definitions on the base `UserAdmin`
     # that references specific fields on `auth.User`.
-    list_display = ("__str__", "email", "organisation", "is_staff", "is_superuser")
-    list_filter = ("is_staff", "is_superuser")
+    list_display = (
+        "__str__",
+        "email",
+        "organisation",
+        "is_active",
+        "is_staff",
+        "is_superuser",
+    )
+    list_filter = ("is_active", "is_staff", "is_superuser")
     search_fields = ("first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
 
@@ -188,7 +195,7 @@ class ConnectionAdmin(ModelAdmin):
 
 class JournalAdmin(ModelAdmin):
     list_display = ("id", "action", "aidant", "creation_date")
-    list_filter = ("action",)
+    list_filter = ("action", "aidant")
     search_fields = ("action", "aidant")
     ordering = ("-creation_date",)
 
