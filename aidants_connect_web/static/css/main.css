@@ -2,7 +2,19 @@
 
 .hero__container {
   min-height: 10em;
-  /* padding: 5em 2em 5em 2em; */
+}
+
+.small__paragraph {
+  font-size: 1.125em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.large__paragraph {
+  font-size: 1.5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  line-height: 1.5em;
 }
 
 h4, h5, h6 {
@@ -47,6 +59,10 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+p {
+  font-family: Evolventa,Trebuchet MS,sans-serif;
 }
 
 .previews {
