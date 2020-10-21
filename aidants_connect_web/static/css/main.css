@@ -43,6 +43,7 @@ h4, h5, h6 {
   margin-top: var(--space-s);
 }
 
+
 .label.label-small {
   line-height: 1.2em;
 }
@@ -59,11 +60,9 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-}
-
-p {
   font-family: Evolventa,Trebuchet MS,sans-serif;
 }
+
 
 .previews {
   display: none;
