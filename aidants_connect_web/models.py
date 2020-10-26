@@ -11,7 +11,7 @@ from django.utils.functional import cached_property
 
 class Organisation(models.Model):
     name = models.TextField("Nom", default="No name provided")
-    siret = models.PositiveIntegerField("N° SIRET", default=1)
+    siret = models.BigIntegerField("N° SIRET", default=1)
     address = models.TextField("Adresse", default="No address provided")
 
     def __str__(self):
