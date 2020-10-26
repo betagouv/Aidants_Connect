@@ -26,6 +26,20 @@ def receiver(request):
             address=form.cleaned_data["organization_address"],
         )
 
+        send_mail(
+            subject="Une nouvelle structure",
+            message=f"""
+                la structure {this_organisation.name} vient
+                d'être validée pour avoir des accès à Aidants Connect.
+                ###
+                Vous pouvez consulter la demande sur :
+                https://datapass.api.gouv.fr/aidantsconnect/{form.cleaned_data["data_pass_id"]}
+            """,
+            from_email=settings.DATAPASS_FROM_EMAIL,
+            recipient_list=[settings.DATAPASS_TO_EMAIL],
+            fail_silently=False,
+        )
+
         return HttpResponse(status=202)
     for error in form.errors:
         message = f"{error} is invalid in the form @ datapass"
