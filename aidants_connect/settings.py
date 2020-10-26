@@ -394,3 +394,6 @@ TABBED_ADMIN_USE_JQUERY_UI = True
 SHELL_PLUS_IMPORTS = [
     "from datetime import datetime, timedelta",
 ]
+
+# Datapass
+DATAPASS_KEY = os.getenv("DATAPASS_KEY", None)
