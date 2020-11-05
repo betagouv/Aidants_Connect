@@ -57,7 +57,7 @@ def statistiques(request):
         return [query_set_item.usager_id for query_set_item in query_set]
 
     organisations_count = Organisation.objects.exclude(name=stafforg).count()
-    aidants_count = Aidant.objects.exclude(is_staff=True).count()
+    aidants_count = Aidant.objects.exclude(organisation__name=stafforg).count()
 
     # mandats
     # # mandats prep
