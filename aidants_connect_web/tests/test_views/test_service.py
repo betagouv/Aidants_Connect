@@ -243,6 +243,11 @@ class StatistiquesTests(TestCase):
         response = self.client.get("/stats/")
         self.assertTemplateUsed(response, "public_website/statistiques.html")
 
+    def test_stats_show_the_correct_number_of_aidants_non_staff_organisation(self):
+        # aidants should be non-staff_organisation
+        response = self.client.get("/stats/")
+        self.assertEqual(response.context["aidants_count"], 1)
+
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
         # mandats should be non-staff_organisation and active
         response = self.client.get("/stats/")
