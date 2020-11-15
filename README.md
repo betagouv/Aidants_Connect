@@ -128,6 +128,12 @@ Si vous ne les avez pas, installez les éléments suivants :
     ```shell
     brew install geckodriver
     ```
+**_NOTE:_** Si vous êtes sous linux, vous pouvez télécharger [ici](https://github.com/mozilla/geckodriver/releases) la dernière
+version du driver et déposer le fichier  `geckodriver` dans `VOTRE_VENV/bin` (ou dans `/usr/local/bin` si vous voulez
+donner un accès global au driver). 
+
+Avant de lancer les tests il faudra augmenter la valeur de la variable d'environnement `ACTIVITY_CHECK_THRESHOLD` qui 
+est par défaut à 0. (ce qui fera échoué plein de test)
 
 Puis lancez les commandes suivantes pour vérifier le style du code source et exécuter les tests de l'application :
 
