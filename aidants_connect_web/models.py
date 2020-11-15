@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
@@ -36,7 +36,7 @@ class Organisation(models.Model):
     admin_num_mandats.short_description = "Nombre de mandats"
 
 
-class AidantManager(BaseUserManager):
+class AidantManager(UserManager):
     def active(self):
         return self.filter(is_active=True)
 

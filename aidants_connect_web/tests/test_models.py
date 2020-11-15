@@ -305,6 +305,11 @@ class OrganisationModelTests(TestCase):
 
 @tag("models", "aidant")
 class AidantModelTests(TestCase):
+    def test_i_can_create_a_superuser(self):
+        self.assertEqual(Aidant.objects.filter(is_superuser=True).count(), 0)
+        Aidant.objects.create_superuser(username="admin")
+        self.assertEqual(Aidant.objects.filter(is_superuser=True).count(), 1)
+
     def test_what_happens_to_password_when_not_set(self):
         aidant = Aidant.objects.create(username="Marge")
         self.assertEqual(aidant.password, "")
