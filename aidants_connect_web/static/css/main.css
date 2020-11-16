@@ -69,6 +69,10 @@ body {
   height: 3em;
   margin-bottom: 1em;
 }
+.logo__anct {
+  margin: 1.5em 0 1.5em 0;
+}
+
 /* Container & main */
 
 .container.container-small {
