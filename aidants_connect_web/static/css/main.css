@@ -23,15 +23,6 @@ h4, h5, h6 {
   margin: 0 !important;
 }
 
-/* .navbar {
-  border-bottom: 1px solid var(--theme-background-grey);
-} */
-
-
-/* a.button-outline:hover {
-  background-color: var(--lighter-grey);
-} */
-
 .small-grid {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
@@ -65,7 +56,22 @@ body {
 .ac-color-red {
   color: #FF3954;
 }
+/* header & footer */
+.navbar__home {
+  height: 10em;
+}
 
+.navbar__gouvfr {
+  height: 10em;
+}
+
+.navbar__logo {
+  height: 3em;
+  margin-bottom: 1em;
+}
+.logo__anct {
+  margin: 1.5em 0 1.5em 0;
+}
 
 /* Container & main */
 
