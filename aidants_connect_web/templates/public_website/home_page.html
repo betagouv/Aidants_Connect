@@ -7,7 +7,7 @@
 {% endblock extracss %}
 
 {% block content %}
-<div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
+<div class="notification full-width" role="alert">Aidants Connect va être déployé sur l'ensemble du territoire national début 2021.</div>
 {% if messages %}
   {% for message in messages %}
     <div class="notification {% if message.tags %}{{ message.tags }}{% endif %} full-width" role="alert">{{ message }}</div>
@@ -15,8 +15,7 @@
 {% endif %}
 <div class="hero">
   <div class="hero__container">
-    <img class="logo-height-5em" src="{% static 'images/aidants-connect_logo.png' %}" alt="Logo Aidants Connect" />
-    <h1>Bienvenue sur Aidants Connect</h1>
+   <h1>Bienvenue sur Aidants Connect</h1>
     <p>Ce service sécurise et facilite le « faire pour le compte de »</p>
   </div>
 </div>
@@ -29,7 +28,7 @@
       <div>
         <h3>
           Vous accompagnez régulièrement des personnes en difficulté avec le numérique dans la réalisation de démarches en ligne ?<br />
-          <small class="font-weight-normal margin-top-10">→ Aidants Connect est fait pour vous !</small>
+          <small class="font-weight-normal margin-top-10">Aidants Connect est fait pour vous !</small>
         </h3>
         <h5>
           Aidants Connect s’adresse à une diversité d’aidants professionnels
