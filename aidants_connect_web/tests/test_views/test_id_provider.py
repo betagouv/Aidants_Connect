@@ -663,3 +663,26 @@ class EndSessionEndpointTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_only_accepts_GET_request(self):
+        response = self.client.post(
+            "/logout/",
+            data={
+                "post_logout_redirect_uri": settings.FC_AS_FI_LOGOUT_REDIRECT_URI,
+                "id_token_hint": self.access_token,
+                "state": "avalidstate123",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_only_accepts_preknown_redirect_uri(self):
+        response = self.client.get(
+            "/logout/",
+            data={
+                "post_logout_redirect_uri": "bad_uri",
+                "id_token_hint": self.access_token,
+                "state": "avalidstate123",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
