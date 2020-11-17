@@ -15,6 +15,7 @@ from aidants_connect_web.views import (
 urlpatterns = [
     # service
     path("accounts/login/", magicauth_views.LoginView.as_view(), name="login"),
+    path("logout-session/", service.logout_page, name="logout"),
     path("activity_check/", service.activity_check, name="activity_check"),
     # espace aidant : home, organisation
     path("espace-aidant/", espace_aidant.home, name="espace_aidant_home"),
@@ -63,8 +64,8 @@ urlpatterns = [
     path("authorize/", id_provider.authorize, name="authorize"),
     path("token/", id_provider.token, name="token"),
     path("userinfo/", id_provider.user_info, name="user_info"),
-    path("logout/", service.logout_page, name="logout"),
     path("select_demarche/", id_provider.fi_select_demarche, name="fi_select_demarche"),
+    path("logout/", id_provider.end_session_endpoint, name="end_session_endpoint",),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),

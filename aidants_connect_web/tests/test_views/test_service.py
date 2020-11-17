@@ -66,16 +66,16 @@ class LogoutPageTests(TestCase):
         self.aidant = AidantFactory()
 
     def test_logout_url_triggers_the_logout_view(self):
-        found = resolve("/logout/")
+        found = resolve("/logout-session/")
         self.assertEqual(found.func, service.logout_page)
 
     def test_logout_url_triggers_loging_if_not_logged_in(self):
-        response = self.client.get("/logout/")
-        self.assertRedirects(response, "/accounts/login/?next=/logout/")
+        response = self.client.get("/logout-session/")
+        self.assertRedirects(response, "/accounts/login/?next=/logout-session/")
 
     def test_logout_url_triggers_home_page_if_logged_in(self):
         self.client.force_login(self.aidant)
-        response = self.client.get("/logout/")
+        response = self.client.get("/logout-session/")
         self.assertRedirects(response, "/")
 
 

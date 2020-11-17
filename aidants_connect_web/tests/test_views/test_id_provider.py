@@ -603,3 +603,63 @@ class UserInfoTests(TestCase):
             "/userinfo/", **{"HTTP_AUTHORIZATION": "wrong_access_token"}
         )
         self.assertEqual(response.status_code, 403)
+
+
+@tag("id_provider")
+class EndSessionEndpointTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.usager = UsagerFactory(
+            given_name="Joséphine",
+            family_name="ST-PIERRE",
+            preferred_username="ST-PIERRE",
+            birthdate=date(1969, 12, 25),
+            gender=Usager.GENDER_FEMALE,
+            birthplace="70447",
+            birthcountry=Usager.BIRTHCOUNTRY_FRANCE,
+            sub="test_sub",
+            email="User@user.domain",
+            creation_date="2019-08-05T15:49:13.972Z",
+        )
+        self.aidant_thierry = AidantFactory()
+        self.mandat_thierry_usager = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        self.autorisation = AutorisationFactory(
+            mandat=self.mandat_thierry_usager, demarche="transports",
+        )
+
+        self.access_token = "test_access_token"
+        self.access_token_hash = make_password(
+            self.access_token, settings.FC_AS_FI_HASH_SALT
+        )
+        self.connection = Connection.objects.create(
+            state="avalidstate123",
+            code="test_code",
+            nonce="avalidnonde456",
+            usager=self.usager,
+            access_token=self.access_token_hash,
+            expires_on=datetime(
+                2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
+            ),
+            aidant=self.aidant_thierry,
+            autorisation=self.autorisation,
+        )
+
+    def test_end_session_endpoint_url_triggers_end_session_endpoint_view(self):
+        found = resolve("/logout/")
+        self.assertEqual(found.func, id_provider.end_session_endpoint)
+
+    def test_nominal_case_redirects_to_FC(self):
+        response = self.client.get(
+            "/logout/",
+            data={
+                "post_logout_redirect_uri": settings.FC_AS_FI_LOGOUT_REDIRECT_URI,
+                "id_token_hint": self.access_token,
+                "state": "avalidstate123",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+

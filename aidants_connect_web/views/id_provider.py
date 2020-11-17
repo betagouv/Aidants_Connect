@@ -13,6 +13,7 @@ from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
+    HttpResponseRedirect,
     JsonResponse,
 )
 from django.shortcuts import render, redirect
@@ -350,3 +351,7 @@ def user_info(request):
     )
 
     return JsonResponse(usager, safe=False)
+
+
+def end_session_endpoint(request):
+    return HttpResponseRedirect(redirect_uri)
