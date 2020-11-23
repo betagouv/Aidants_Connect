@@ -24,7 +24,7 @@ HOST = os.environ["HOST"]
 # FC as FI
 FC_AS_FI_CALLBACK_URL = os.environ["FC_AS_FI_CALLBACK_URL"]
 FC_AS_FI_ID = os.environ["FC_AS_FI_ID"]
-FC_AS_FI_SECRET = os.environ["FC_AS_FI_SECRET"]
+HASH_FC_AS_FI_SECRET = os.environ["HASH_FC_AS_FI_SECRET"]
 FC_AS_FI_HASH_SALT = os.environ["FC_AS_FI_HASH_SALT"]
 FC_AS_FI_LOGOUT_REDIRECT_URI = os.environ["FC_AS_FI_LOGOUT_REDIRECT_URI"]
 

@@ -386,7 +386,10 @@ class FISelectDemarcheTests(TestCase):
 @tag("id_provider")
 @override_settings(
     FC_AS_FI_ID="test_client_id",
-    FC_AS_FI_SECRET="test_client_secret",
+    # we don't need FC_AS_FI_SECRET's value.
+    # we use his hash instead.
+    HASH_FC_AS_FI_SECRET="e26ade3b37d31920d89e233c447b0d5e51accff2fdc51d1f377b0"
+                         "31b5d581e70",
     FC_AS_FI_CALLBACK_URL="test_url.test_url",
     HOST="localhost",
 )

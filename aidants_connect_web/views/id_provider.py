@@ -29,6 +29,8 @@ from aidants_connect_web.models import (
     Usager,
 )
 
+from aidants_connect_web.utilities import generate_sha256_hash
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
@@ -243,18 +245,24 @@ def token(request):
     if request.method == "GET":
         return HttpResponse("You did a GET on a POST only route")
 
+    client_secret = request.POST.get("client_secret")
+    try:
+        hash_client_secret = generate_sha256_hash(client_secret.encode())
+    except AttributeError:
+        return HttpResponseBadRequest()
+
     parameters = {
         "code": request.POST.get("code"),
         "grant_type": request.POST.get("grant_type"),
         "redirect_uri": request.POST.get("redirect_uri"),
         "client_id": request.POST.get("client_id"),
-        "client_secret": request.POST.get("client_secret"),
+        "hash_client_secret": hash_client_secret,
     }
     EXPECTED_STATIC_PARAMETERS = {
         "grant_type": "authorization_code",
         "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
         "client_id": settings.FC_AS_FI_ID,
-        "client_secret": settings.FC_AS_FI_SECRET,
+        "hash_client_secret": settings.HASH_FC_AS_FI_SECRET,
     }
 
     error, message = check_request_parameters(
@@ -292,7 +300,7 @@ def token(request):
         "sub": connection.usager.sub,
         "nonce": connection.nonce,
     }
-    encoded_id_token = jwt.encode(id_token, settings.FC_AS_FI_SECRET, algorithm="HS256")
+    encoded_id_token = jwt.encode(id_token, client_secret, algorithm="HS256")
 
     access_token = token_urlsafe(64)
     connection.access_token = make_password(access_token, settings.FC_AS_FI_HASH_SALT)
