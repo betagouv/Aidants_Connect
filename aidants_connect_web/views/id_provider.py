@@ -13,6 +13,7 @@ from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
+    HttpResponseRedirect,
     JsonResponse,
 )
 from django.shortcuts import render, redirect
@@ -350,3 +351,21 @@ def user_info(request):
     )
 
     return JsonResponse(usager, safe=False)
+
+
+def end_session_endpoint(request):
+    if request.method != "GET":
+        log.info("Request should be a GET @ end_session_endpoint")
+        return HttpResponseBadRequest()
+
+    redirect_uri = settings.FC_AS_FI_LOGOUT_REDIRECT_URI
+    if request.GET.get("post_logout_redirect_uri") != redirect_uri:
+        message = (
+            f"post_logout_redirect_uri is "
+            f"{request.GET.get('post_logout_redirect_uri')} instead of "
+            f"{redirect_uri} @ end_session_endpoint"
+        )
+        log.info(message)
+        return HttpResponseBadRequest()
+
+    return HttpResponseRedirect(redirect_uri)
