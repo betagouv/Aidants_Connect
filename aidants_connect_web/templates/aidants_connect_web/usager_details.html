@@ -41,7 +41,7 @@
           <ul class="label-list">
             <li class="label">Réalisé le <span title="{{ mandat.creation_date }}">{{ mandat.creation_date | date:"d F Y" }}</span></li>
             <li class="label">{{ mandat.get_duree_keyword_display }}</li>
-            <li class="label">Signé {% if mandat.is_remote %}<span>à distance</span>{% else %}<span>en présence</span>{% endif %}</li>
+            <li class="label">Signé {% if mandat.is_remote %}<span>à distance</span>{% else %}<span>en présentiel</span>{% endif %}</li>
           </ul>
           <br />
           <h6>{{ mandat.autorisations.count }} démarches</h6>
