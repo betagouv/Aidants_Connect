@@ -32,7 +32,9 @@ def generate_attestation_hash(aidant, usager, demarches, expiration_date):
         "demarches_list": ",".join(demarches),
         "expiration_date": expiration_date.date().isoformat(),
         "organisation_id": aidant.organisation.id,
-        "template_hash": generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH),
+        "template_hash": generate_file_sha256_hash(
+            f"templates/{settings.MANDAT_TEMPLATE_PATH}"
+        ),
         "usager_sub": usager.sub,
     }
     sorted_attestation_data = dict(sorted(attestation_data.items()))
@@ -230,6 +232,7 @@ def attestation_projet(request):
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
+            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
         },
     )
 
@@ -255,6 +258,7 @@ def attestation_final(request):
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
+            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
             "final": True,
         },
     )
