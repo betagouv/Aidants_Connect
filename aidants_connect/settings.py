@@ -271,9 +271,7 @@ DEMARCHES = {
     },
 }
 
-MANDAT_TEMPLATE_PATH = (
-    "templates/aidants_connect_web/mandat_templates/20200511_mandat.html"
-)
+MANDAT_TEMPLATE_PATH = "aidants_connect_web/mandat_templates/20201209_mandat.html"
 ATTESTATION_SALT = os.getenv("ATTESTATION_SALT", "")
 
 # Magic Auth
