@@ -704,7 +704,7 @@ class JournalModelTests(TestCase):
                 "logement,transports",
                 expiration_date.date().isoformat(),
                 str(self.aidant_thierry.organisation.id),
-                generate_file_sha256_hash(settings.MANDAT_TEMPLATE_PATH),
+                generate_file_sha256_hash(f"templates/{settings.MANDAT_TEMPLATE_PATH}"),
                 self.usager_ned.sub,
             ]
         )
