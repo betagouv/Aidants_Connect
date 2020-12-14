@@ -33,4 +33,4 @@ selenium==3.141.0
 sqlparse==0.3.1
 whitenoise==5.1.0
 
-git+git://github.com/betagouv/django-magicauth@add_totp
+git+git://github.com/betagouv/django-magicauth@0.7
