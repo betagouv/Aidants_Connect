@@ -1,6 +1,7 @@
+from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
+from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
 from django.contrib.admin import ModelAdmin, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-
 from django_celery_beat.admin import (
     ClockedScheduleAdmin,
     PeriodicTaskAdmin,
@@ -12,17 +13,12 @@ from django_celery_beat.models import (
     PeriodicTask,
     SolarSchedule,
 )
-
 from django_otp.admin import OTPAdminSite
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
-
-from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
-from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
 from magicauth.models import MagicToken
-
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
 
@@ -37,17 +33,18 @@ from aidants_connect_web.models import (
     Usager,
 )
 
-
 admin_site = OTPAdminSite(OTPAdminSite.name)
 
 admin_site.register(HoneypotLoginAttempt, HoneypotLoginAttemptAdmin)
 
 
-class VisibleToStaff:
-    """A mixin to make a model registered in the Admin visible to staff users."""
+class VisibleToAdminMetier:
+    """A mixin to make a model registered in the Admin visible to Admin Métier.
+       Admin Métier corresponds to the traditional django `is_staff`
+    """
 
     def has_module_permission(self, request):
-        return request.user.is_staff
+        return request.user.is_staff or request.user.is_superuser
 
     def has_view_permission(self, request, obj=None):
         return self.has_module_permission(request)
@@ -62,20 +59,44 @@ class VisibleToStaff:
         return self.has_module_permission(request)
 
 
-class StaticDeviceStaffAdmin(VisibleToStaff, StaticDeviceAdmin):
+class VisibleToTechAdmin:
+    """A mixin to make a model registered in the Admin visible to Tech Admins.
+        ATAC is modelised by is_superuser
+    """
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_add_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+
+class StaticDeviceStaffAdmin(VisibleToTechAdmin, StaticDeviceAdmin):
     pass
 
 
-class TOTPDeviceStaffAdmin(VisibleToStaff, TOTPDeviceAdmin):
+class TOTPDeviceStaffAdmin(VisibleToTechAdmin, TOTPDeviceAdmin):
     pass
 
 
-class OrganisationAdmin(VisibleToStaff, ModelAdmin):
-    list_display = ("name", "address", "admin_num_active_aidants", "admin_num_mandats")
+class OrganisationAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = ("name",
+                    "address",
+                    "admin_num_active_aidants",
+                    "admin_num_mandats")
     search_fields = ("name",)
 
 
-class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
+class AidantAdmin(VisibleToAdminMetier, DjangoUserAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
@@ -129,7 +150,7 @@ class AidantAdmin(VisibleToStaff, DjangoUserAdmin):
     )
 
 
-class UsagerAutorisationInline(VisibleToStaff, NestedTabularInline):
+class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):
     model = Autorisation
     fields = ("demarche", "revocation_date")
     readonly_fields = fields
@@ -137,7 +158,7 @@ class UsagerAutorisationInline(VisibleToStaff, NestedTabularInline):
     max_num = 0
 
 
-class UsagerMandatInline(VisibleToStaff, NestedTabularInline):
+class UsagerMandatInline(VisibleToTechAdmin, NestedTabularInline):
     model = Mandat
     fields = ("organisation", "creation_date", "expiration_date")
     readonly_fields = fields
@@ -146,7 +167,7 @@ class UsagerMandatInline(VisibleToStaff, NestedTabularInline):
     inlines = (UsagerAutorisationInline,)
 
 
-class UsagerAdmin(NestedModelAdmin, TabbedModelAdmin):
+class UsagerAdmin(VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin):
     list_display = ("__str__", "email", "creation_date")
     search_fields = ("given_name", "family_name", "email")
 
@@ -157,7 +178,7 @@ class UsagerAdmin(NestedModelAdmin, TabbedModelAdmin):
     tabs = [("Informations", tab_infos), ("Mandats", tab_mandats)]
 
 
-class MandatAutorisationInline(VisibleToStaff, TabularInline):
+class MandatAutorisationInline(VisibleToTechAdmin, TabularInline):
     model = Autorisation
     fields = ("demarche", "revocation_date")
     readonly_fields = fields
@@ -165,7 +186,7 @@ class MandatAutorisationInline(VisibleToStaff, TabularInline):
     max_num = 0
 
 
-class MandatAdmin(VisibleToStaff, ModelAdmin):
+class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
     list_display = (
         "id",
         "usager",
@@ -197,11 +218,17 @@ class ConnectionAdmin(ModelAdmin):
     list_display = ("id", "usager", "aidant", "complete")
 
 
-class JournalAdmin(ModelAdmin):
+class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
     list_display = ("id", "action", "aidant", "creation_date")
     list_filter = ("action", "aidant")
     search_fields = ("action", "aidant")
     ordering = ("-creation_date",)
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 # Display the following tables in the admin
@@ -215,7 +242,6 @@ admin_site.register(Connection, ConnectionAdmin)
 admin_site.register(MagicToken)
 admin_site.register(StaticDevice, StaticDeviceAdmin)
 admin_site.register(TOTPDevice, TOTPDeviceAdmin)
-
 
 # Also register the Django Celery Beat models
 admin_site.register(PeriodicTask, PeriodicTaskAdmin)
