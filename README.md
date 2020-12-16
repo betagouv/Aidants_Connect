@@ -90,6 +90,7 @@ export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
 Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env` et ajoutez vos informations :
 - Les champs obligatoires sont indiqués par le préfixe `<insert_`
 - Les informations `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
+- Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`  pour cela voir dans les annexes la procédure
 - Les valeur de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
 
 Créez un répertoire `staticfiles` à la racine du projet :
@@ -270,4 +271,12 @@ Pour simplifier le lancement de certaines commandes, un Makefile est disponible.
 make shell
 make test
 make migrate
+```
+
+### Calcul de `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`    
+Il faut utiliser `generate_sha256_hash`.
+
+```python
+from aidants_connect_web.utilities import generate_sha256_hash
+generate_sha256_hash("VALUE_FC_AS_FI_SECRET".encode("utf-8"))
 ```
