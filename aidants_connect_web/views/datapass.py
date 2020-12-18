@@ -12,9 +12,12 @@ log = logging.getLogger()
 
 
 def receiver(request):
-
-    if request.META["HTTP_AUTHORIZATION"] != settings.DATAPASS_KEY:
-        log.info("403: Bad authorization header for datapass call")
+    try:
+        if request.META["HTTP_AUTHORIZATION"] != settings.DATAPASS_KEY:
+            log.info("403: Bad authorization header for datapass call")
+            return HttpResponseForbidden()
+    except KeyError:
+        log.info("403: No authorization header for datapass call")
         return HttpResponseForbidden()
 
     form = DatapassForm(data=request.POST)

@@ -27,6 +27,10 @@ class Datapass(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_no_authorization_header_triggers_403(self):
+        response = self.client.get("/datapass_receiver/")
+        self.assertEqual(response.status_code, 403)
+
     def test_empty_data_triggers_400(self):
         response = self.client.post(
             "/datapass_receiver/", data={}, **{"HTTP_AUTHORIZATION": self.datapass_key}
