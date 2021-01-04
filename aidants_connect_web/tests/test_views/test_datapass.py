@@ -17,6 +17,13 @@ class Datapass(TestCase):
         }
         self.datapass_key = settings.DATAPASS_KEY
 
+    def datapass_request(self, data):
+        return self.client.post(
+            "/datapass_receiver/",
+            data=data,
+            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
+        )
+
     def test_datapass_receiver_url_triggers_the_receiver_view(self):
         found = resolve("/datapass_receiver/")
         self.assertEqual(found.func, datapass.receiver)
@@ -28,24 +35,15 @@ class Datapass(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_no_authorization_header_triggers_403(self):
-        response = self.client.get("/datapass_receiver/")
+        response = self.client.post("/datapass_receiver/")
         self.assertEqual(response.status_code, 403)
 
     def test_empty_data_triggers_400(self):
-        response = self.client.post(
-            "/datapass_receiver/",
-            data={},
-            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
-        )
+        response = self.datapass_request(data={})
         self.assertEqual(response.status_code, 400)
 
     def test_message_body_can_create_organisation(self):
-        response = self.client.post(
-            "/datapass_receiver/",
-            data=self.good_data_from_datapass,
-            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
-        )
-
+        response = self.datapass_request(data=self.good_data_from_datapass)
         self.assertEqual(response.status_code, 202)
         self.assertEqual(Organisation.objects.count(), 1)
         self.assertEqual(
@@ -59,20 +57,12 @@ class Datapass(TestCase):
 
             bad_data_from_datapass = self.good_data_from_datapass.copy()
             bad_data_from_datapass[should_be_a_number] = "bad_data"
-            response = self.client.post(
-                "/datapass_receiver/",
-                data=bad_data_from_datapass,
-                **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
-            )
 
+            response = self.datapass_request(data=bad_data_from_datapass)
             self.assertEqual(response.status_code, 400)
 
     def test_good_data_creates_email(self):
-        self.client.post(
-            "/datapass_receiver/",
-            data=self.good_data_from_datapass,
-            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
-        )
+        self.datapass_request(data=self.good_data_from_datapass)
 
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
