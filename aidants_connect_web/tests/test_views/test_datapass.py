@@ -33,7 +33,9 @@ class Datapass(TestCase):
 
     def test_empty_data_triggers_400(self):
         response = self.client.post(
-            "/datapass_receiver/", data={}, **{"HTTP_AUTHORIZATION": self.datapass_key}
+            "/datapass_receiver/",
+            data={},
+            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
         )
         self.assertEqual(response.status_code, 400)
 
@@ -41,7 +43,7 @@ class Datapass(TestCase):
         response = self.client.post(
             "/datapass_receiver/",
             data=self.good_data_from_datapass,
-            **{"HTTP_AUTHORIZATION": self.datapass_key},
+            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
         )
 
         self.assertEqual(response.status_code, 202)
@@ -60,7 +62,7 @@ class Datapass(TestCase):
             response = self.client.post(
                 "/datapass_receiver/",
                 data=bad_data_from_datapass,
-                **{"HTTP_AUTHORIZATION": self.datapass_key},
+                **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
             )
 
             self.assertEqual(response.status_code, 400)
@@ -69,7 +71,7 @@ class Datapass(TestCase):
         self.client.post(
             "/datapass_receiver/",
             data=self.good_data_from_datapass,
-            **{"HTTP_AUTHORIZATION": self.datapass_key},
+            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
         )
 
         self.assertEqual(len(mail.outbox), 1)

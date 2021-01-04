@@ -13,7 +13,7 @@ log = logging.getLogger()
 
 def receiver(request):
     try:
-        if request.META["HTTP_AUTHORIZATION"] != settings.DATAPASS_KEY:
+        if request.META["HTTP_AUTHORIZATION"] != f"Bearer {settings.DATAPASS_KEY}":
             log.info("403: Bad authorization header for datapass call")
             return HttpResponseForbidden()
     except KeyError:
