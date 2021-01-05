@@ -19,6 +19,8 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
+from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
 from magicauth.models import MagicToken
 
 from nested_admin import NestedModelAdmin, NestedTabularInline
@@ -37,6 +39,8 @@ from aidants_connect_web.models import (
 
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
+
+admin_site.register(HoneypotLoginAttempt, HoneypotLoginAttemptAdmin)
 
 
 class VisibleToStaff:
