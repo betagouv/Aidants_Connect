@@ -132,13 +132,6 @@ class MandatForm(forms.Form):
     # models.MandatDureeKeywords
     DUREES = [
         ("SHORT", {"title": "Mandat court", "description": "(expire demain)"}),
-        # (
-        #     "EUS_03_20",
-        #     {
-        #         "title": "Mandat confinement",
-        #         "description": "(expire à la fin de l'état d'urgence sanitaire)",
-        #     },
-        # ),
         ("LONG", {"title": "Mandat long", "description": "(12 mois)"}),
     ]
     duree = forms.ChoiceField(choices=DUREES, required=True, initial=3)
