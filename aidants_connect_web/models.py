@@ -171,7 +171,11 @@ class Aidant(AbstractUser):
 
 class UsagerQuerySet(models.QuerySet):
     def active(self):
-        return self.filter(mandats__expiration_date__gt=timezone.now()).distinct()
+        return (
+            self.filter(mandats__expiration_date__gt=timezone.now())
+            .filter(mandats__autorisations__revocation_date__isnull=True)
+            .distinct()
+        )
 
     def visible_by(self, aidant):
         """

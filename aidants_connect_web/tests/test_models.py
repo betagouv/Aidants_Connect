@@ -125,6 +125,28 @@ class UsagerModelTests(TestCase):
         usager.normalize_birthplace()
         self.assertEqual(usager.birthplace, "12345")
 
+    def test_active_usager_excludes_usager_with_revoked_mandats(self):
+        usager = UsagerFactory()
+        mandat_1 = MandatFactory(usager=usager)
+        AutorisationFactory(
+            mandat=mandat_1,
+            demarche="justice",
+            revocation_date=timezone.now() - timedelta(minutes=1),
+        )
+        usagers = Usager.objects.all()
+        self.assertEqual(usagers.count(), 1)
+        self.assertEqual(usagers.active().count(), 0)
+
+    def test_active_usager_excludes_usager_with_expired_mandats(self):
+        usager = UsagerFactory()
+        mandat_1 = MandatFactory(
+            usager=usager, expiration_date=timezone.now() - timedelta(minutes=1)
+        )
+        AutorisationFactory(mandat=mandat_1, demarche="justice")
+        usagers = Usager.objects.all()
+        self.assertEqual(usagers.count(), 1)
+        self.assertEqual(usagers.active().count(), 0)
+
 
 @tag("models")
 class MandatModelTests(TestCase):
@@ -348,15 +370,25 @@ class AidantModelTests(TestCase):
 class AidantModelMethodsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
+        # Aidants : Marge & Lisa belong to the same organisation, Patricia does not
         cls.aidant_marge = AidantFactory(username="Marge")
         cls.aidant_lisa = AidantFactory(
             username="Lisa", organisation=cls.aidant_marge.organisation
         )
         cls.aidant_patricia = AidantFactory(username="Patricia")
+
+        # Active Usagers
         cls.usager_homer = UsagerFactory(given_name="Homer")
         cls.usager_ned = UsagerFactory(given_name="Ned")
+
+        # Usager with no mandat
         cls.usager_bart = UsagerFactory(given_name="Bart")
 
+        # Inactive Usagers
+        cls.usager_sophie = UsagerFactory(given_name="Sophie")
+        cls.usager_lola = UsagerFactory(given_name="Lola")
+
+        # Mandats Marge
         cls.mandat_marge_homer_1 = MandatFactory(
             organisation=cls.aidant_marge.organisation,
             usager=cls.usager_homer,
@@ -393,6 +425,7 @@ class AidantModelMethodsTests(TestCase):
             mandat=cls.mandat_marge_ned_1, demarche="Logement",
         )
 
+        # Partially revoked mandat
         cls.mandat_marge_ned_2 = MandatFactory(
             organisation=cls.aidant_marge.organisation,
             usager=cls.usager_ned,
@@ -416,14 +449,36 @@ class AidantModelMethodsTests(TestCase):
             mandat=cls.mandat_marge_ned_2,
             revocation_date=timezone.now(),
         )
+        # Expired mandat
+        cls.mandat_marge_sophie = MandatFactory(
+            organisation=cls.aidant_marge.organisation,
+            usager=cls.usager_sophie,
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
+        AutorisationFactory(
+            mandat=cls.mandat_marge_sophie, demarche="transports",
+        )
+        # Revoked mandat
+        cls.mandat_marge_lola = MandatFactory(
+            organisation=cls.aidant_marge.organisation,
+            usager=cls.usager_lola,
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        AutorisationFactory(
+            demarche="papiers",
+            mandat=cls.mandat_marge_lola,
+            revocation_date=timezone.now(),
+        )
 
     def test_get_usagers(self):
-        self.assertEqual(len(self.aidant_marge.get_usagers()), 2)
-        self.assertEqual(len(self.aidant_lisa.get_usagers()), 2)
+        self.assertEqual(len(self.aidant_marge.get_usagers()), 4)
+        self.assertEqual(len(self.aidant_lisa.get_usagers()), 4)
         self.assertEqual(len(self.aidant_patricia.get_usagers()), 0)
 
     def test_active_usagers(self):
-        active_usagers = Usager.objects.active()
+        usagers = Usager.objects.all()
+        self.assertEqual(len(usagers), 5)
+        active_usagers = usagers.active()
         self.assertEqual(len(active_usagers), 2)
 
     def test_get_usagers_with_active_autorisation(self):
