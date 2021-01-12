@@ -98,7 +98,9 @@ class Aidant(AbstractUser):
         :return: a queryset of usagers who have an active autorisation
         with the aidant's organisation.
         """
-        return self.get_usagers().active()
+        active_mandats = Mandat.objects.filter(organisation=self.organisation).active()
+        user_list = active_mandats.values_list("usager", flat=True)
+        return Usager.objects.filter(pk__in=user_list)
 
     def get_autorisations(self):
         """

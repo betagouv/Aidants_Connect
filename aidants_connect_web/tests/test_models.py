@@ -470,16 +470,26 @@ class AidantModelMethodsTests(TestCase):
             revocation_date=timezone.now(),
         )
 
+        # Mandat Patricia
+        cls.mandat_marge_lola = MandatFactory(
+            organisation=cls.aidant_patricia.organisation,
+            usager=cls.usager_lola,
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+        AutorisationFactory(
+            demarche="papiers", mandat=cls.mandat_marge_lola,
+        )
+
     def test_get_usagers(self):
         self.assertEqual(len(self.aidant_marge.get_usagers()), 4)
         self.assertEqual(len(self.aidant_lisa.get_usagers()), 4)
-        self.assertEqual(len(self.aidant_patricia.get_usagers()), 0)
+        self.assertEqual(len(self.aidant_patricia.get_usagers()), 1)
 
     def test_active_usagers(self):
         usagers = Usager.objects.all()
         self.assertEqual(len(usagers), 5)
         active_usagers = usagers.active()
-        self.assertEqual(len(active_usagers), 2)
+        self.assertEqual(len(active_usagers), 3)
 
     def test_get_usagers_with_active_autorisation(self):
         self.assertEqual(
@@ -489,7 +499,7 @@ class AidantModelMethodsTests(TestCase):
             len(self.aidant_lisa.get_usagers_with_active_autorisation()), 2
         )
         self.assertEqual(
-            len(self.aidant_patricia.get_usagers_with_active_autorisation()), 0
+            len(self.aidant_patricia.get_usagers_with_active_autorisation()), 1
         )
 
     def test_get_active_autorisations_for_usager(self):
@@ -522,6 +532,18 @@ class AidantModelMethodsTests(TestCase):
         self.assertEqual(
             len(self.aidant_lisa.get_active_autorisations_for_usager(self.usager_bart)),
             0,
+        )
+        self.assertEqual(
+            len(self.aidant_lisa.get_active_autorisations_for_usager(self.usager_lola)),
+            0,
+        )
+        self.assertEqual(
+            len(
+                self.aidant_patricia.get_active_autorisations_for_usager(
+                    self.usager_lola
+                )
+            ),
+            1,
         )
 
     def test_get_inactive_autorisations_for_usager(self):
