@@ -40,7 +40,8 @@
       {% csrf_token %}
       <div id="demarches" class="tiles">
         <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
-        <div id="demarches_list" class="grid">
+        <fieldset id="demarches_list" class="grid">
+          <legend class="sr-only">Sélectionnez la ou les démarche(s)</legend>
           {% for value, label in form.demarche.field.choices %}
             <div id="{{ value }}" class="tile">
               <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche" />
@@ -62,11 +63,12 @@
               </label>
             </div>
           {% endfor %}
-        </div>
+        </fieldset>
       </div>
       <div id="duree" class="tiles">
         <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
-        <div id="duree_list" class="grid">
+        <fieldset id="duree_list" class="grid">
+            <legend class="sr-only">Choisissez la durée du mandat</legend>
           {% for value, label in form.duree.field.choices %}
             <div id="{{ value }}" class="tile">
               <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree" />
@@ -76,7 +78,7 @@
               </label>
             </div>
           {% endfor %}
-        </div>
+        </fieldset>
         <label for="{{ form.is_remote.id_for_label }}" class="notification warning margin-top-1em">
             La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
             {{ form.is_remote }}
