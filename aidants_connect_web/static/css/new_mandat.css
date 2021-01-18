@@ -20,7 +20,7 @@ form {
   cursor: pointer;
   border-color: transparent;
 }
-.tile:focus-within {
+.tile:focus-within, label:focus-within, input[type=image]:focus {
   transform: scale(1.03);
   outline: 2px solid #003b80;
   outline-offset: 2px;
