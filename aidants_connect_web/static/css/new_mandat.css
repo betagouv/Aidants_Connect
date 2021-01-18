@@ -60,6 +60,10 @@ form {
   background-color: #003b80;
 }
 
+.tile input:checked~label .label {
+  color: #003b80;
+}
+
 .tile input:checked~label::after {
   background-color: #003b80;
   border-color: white;
