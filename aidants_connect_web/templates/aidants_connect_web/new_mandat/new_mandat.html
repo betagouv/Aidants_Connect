@@ -77,10 +77,10 @@
             </div>
           {% endfor %}
         </div>
-        <div class="notification warning margin-top-1em" role="alert">
-          <span>La signature du mandat se fait-elle à distance ? Si oui, cochez cette case</span>
-          <span>{{ form.is_remote }}</span>
-        </div>
+        <label for="{{ form.is_remote.id_for_label }}" class="notification warning margin-top-1em">
+            La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
+            {{ form.is_remote }}
+        </label>
       </div>
       <div id="france_connection" class="tiles">
         <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
