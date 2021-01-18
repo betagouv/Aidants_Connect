@@ -82,13 +82,17 @@ form {
   flex-direction: column;
   align-items: center;
 }
-.label-demarche>h3 {
+.label-demarche>strong {
   text-transform: uppercase;
+  font-size: 1.2em;
 }
 
 .label-duree {
   display: flex;
   flex-direction: column;
+}
+.label-duree strong {
+  font-size: 1.2em;
 }
 
 #submit_button {
