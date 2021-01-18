@@ -55,6 +55,9 @@ form {
   cursor: pointer;
   transition: all 100ms ease-in;
 }
+.tile input[type=checkbox] ~ label::after {
+  border-radius: 4px;
+}
 
 .tile input:checked~label {
   color: white;
