@@ -253,6 +253,11 @@ img.logo-height-5em {
   }
 }
 
+/* Forms */
+a.button-outline, a.button-outline:active, a.button-outline:focus, a.button-outline:visited, button.button-outline, button.button-outline:active, button.button-outline:focus, button.button-outline:visited, a.button, a.button:active, a.button:focus, a.button:visited, button.button, button.button:active, button.button:focus, button.button:visited, input[type="button"], input[type="button"]:active, input[type="button"]:focus, input[type="button"]:visited, input[type="submit"], input[type="submit"]:active, input[type="submit"]:focus, input[type="submit"]:visited {
+    font-family: Evolventa,Trebuchet MS,sans-serif;
+}
+
 /* Accessibility */
 /* From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034 */
 
