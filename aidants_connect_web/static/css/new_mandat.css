@@ -10,15 +10,20 @@ form {
   font-size: 1.2em;
 }
 
-.tile input {
+.tile input,
+.tile input[type="checkbox"]:checked {
   order: 1;
   z-index: 2;
   position: absolute;
-  transform: translateY(-50%);
+  transform: translateY(-90%);
   cursor: pointer;
-  visibility: hidden;
+  border-color: transparent;
 }
-
+.tile:focus-within {
+  transform: scale(1.03);
+  outline: 2px solid #003b80;
+  outline-offset: 2px;
+}
 .tile label {
   padding: 12px;
   width: 100%;
