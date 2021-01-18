@@ -90,8 +90,8 @@ export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
 Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env` et ajoutez vos informations :
 - Les champs obligatoires sont indiqués par le préfixe `<insert_`
 - Les informations `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
-- Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`  pour cela voir dans les annexes la procédure
-- Les valeur de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
+- Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`  pour cela voir dans les annexes [la procédure](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret)
+- Les valeurs de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
 
 Créez un répertoire `staticfiles` à la racine du projet :
 
@@ -118,6 +118,7 @@ python manage.py shell
 from aidants_connect_web.models import Aidant, Organisation
 a = Aidant.objects.get(pk=1)
 a.organisation = Organisation.objects.create(name=<insert_organisation_name>)
+a.save()
 exit()
 ```
 
@@ -134,9 +135,9 @@ version du driver et déposer le fichier  `geckodriver` dans `VOTRE_VENV/bin` (o
 donner un accès global au driver). 
 
 Avant de lancer les tests il faudra augmenter la valeur de la variable d'environnement `ACTIVITY_CHECK_THRESHOLD` qui 
-est par défaut à 0. (ce qui fera échoué plein de test)
+est par défaut à 0 (ce qui fera échouer plein de tests).
 
-Puis lancez les commandes suivantes pour vérifier le style du code source et exécuter les tests de l'application :
+Puis lancez les commandes suivantes pour vérifier le style du code source et exécuter les tests de l'application :
 
 ```shell
 flake8
