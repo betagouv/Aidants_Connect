@@ -1,0 +1,13 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "superuser status"
+msgstr "statut Admin Technique (super-utilisateur)"
+
+msgid "staff status"
+msgstr "statut Admin Métier (is_staff)"
