@@ -10,52 +10,6 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("aidants_connect_web", "0001_initial"),
-        ("aidants_connect_web", "0002_journal"),
-        ("aidants_connect_web", "0003_auto_20190827_1432"),
-        ("aidants_connect_web", "0004_one_mandat_per_demarche"),
-        ("aidants_connect_web", "0005_auto_20190830_1837"),
-        ("aidants_connect_web", "0006_auto_20190830_1846"),
-        ("aidants_connect_web", "0007_mandat_modified_by_access_token"),
-        ("aidants_connect_web", "0008_auto_20191021_1404"),
-        ("aidants_connect_web", "0009_auto_20191119_1056"),
-        ("aidants_connect_web", "0010_auto_20191119_1105"),
-        ("aidants_connect_web", "0011_remove_mandat_duree"),
-        ("aidants_connect_web", "0012_organisations"),
-        ("aidants_connect_web", "0013_null_birthplace"),
-        ("aidants_connect_web", "0014_auto_20200213_1706"),
-        ("aidants_connect_web", "0015_add_ordering_and_related_names"),
-        ("aidants_connect_web", "0016_rename_expiresOn"),
-        ("aidants_connect_web", "0017_journal_action_add_franceconnection_usager"),
-        ("aidants_connect_web", "0018_add_journal_action_print_mandat"),
-        ("aidants_connect_web", "0019_normalize_usager_data"),
-        ("aidants_connect_web", "0020_journal_action_add_update_email_usager"),
-        ("aidants_connect_web", "0021_remote_mandat"),
-        ("aidants_connect_web", "0022_auto_20200515_1455"),
-        ("aidants_connect_web", "0023_connection_mandat_is_remote"),
-        ("aidants_connect_web", "0024_rename_mandat_print"),
-        ("aidants_connect_web", "0025_rename_mandat_step1_prepare_fk"),
-        ("aidants_connect_web", "0026_rename_mandat_step2"),
-        ("aidants_connect_web", "0027_rename_mandat_step3"),
-        ("aidants_connect_web", "0028_rename_mandat_step4"),
-        ("aidants_connect_web", "0029_fix_related_names"),
-        ("aidants_connect_web", "0030_rename_is_remote_mandat_field"),
-        ("aidants_connect_web", "0031_remove_indexes_with_mandat"),
-        ("aidants_connect_web", "0032_allow_indexes_with_autorisation"),
-        ("aidants_connect_web", "0033_add_new_mandat_model"),
-        ("aidants_connect_web", "0034_add_related_names"),
-        ("aidants_connect_web", "0035_add_autorisation_revocation_date"),
-        ("aidants_connect_web", "0036_remove_autorisation_last_renewal_date"),
-        ("aidants_connect_web", "0037_auto_20200605_1658"),
-        ("aidants_connect_web", "0038_post_migration_cleanup"),
-        ("aidants_connect_web", "0039_journal_add_foreign_keys"),
-        ("aidants_connect_web", "0040_journal_migrate_aidant_and_usager"),
-        ("aidants_connect_web", "0041_journal_remove_initiator_and_usager"),
-        ("aidants_connect_web", "0042_journal_rename_usager"),
-        ("aidants_connect_web", "0043_auto_20201118_1601"),
-        ("aidants_connect_web", "0044_auto_20210111_1659"),
-    ]
     initial = True
 
     dependencies = [
@@ -158,8 +112,12 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"verbose_name": "aidant",},
-            managers=[("objects", aidants_connect_web.models.AidantManager()),],
+            options={
+                "verbose_name": "aidant",
+            },
+            managers=[
+                ("objects", aidants_connect_web.models.AidantManager()),
+            ],
         ),
         migrations.CreateModel(
             name="Autorisation",
@@ -284,7 +242,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"ordering": ["family_name", "given_name"],},
+            options={
+                "ordering": ["family_name", "given_name"],
+            },
         ),
         migrations.CreateModel(
             name="Mandat",
@@ -508,7 +468,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"verbose_name": "connexion",},
+            options={
+                "verbose_name": "connexion",
+            },
         ),
         migrations.AddField(
             model_name="autorisation",
