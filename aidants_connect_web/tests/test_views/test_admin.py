@@ -120,9 +120,9 @@ class VisibleToAdminMetierTests(TestCase):
 
 @tag("admin")
 class VisibilityAdminPageTests(TestCase):
-    only_by_atac_models = [StaticDevice, TOTPDevice, Mandat,
+    only_by_atac_models = [Mandat,
                            Usager, Connection, Journal]
-    amac_models = [Organisation, Aidant]
+    amac_models = [Organisation, Aidant, StaticDevice, TOTPDevice]
 
     def setUp(self):
         self.amac_user = AidantFactory(username="amac@email.com",

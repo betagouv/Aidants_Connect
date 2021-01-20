@@ -80,11 +80,11 @@ class VisibleToTechAdmin:
         return self.has_module_permission(request)
 
 
-class StaticDeviceStaffAdmin(VisibleToTechAdmin, StaticDeviceAdmin):
+class StaticDeviceStaffAdmin(VisibleToAdminMetier, StaticDeviceAdmin):
     pass
 
 
-class TOTPDeviceStaffAdmin(VisibleToTechAdmin, TOTPDeviceAdmin):
+class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
     pass
 
 
@@ -240,8 +240,8 @@ admin_site.register(Journal, JournalAdmin)
 admin_site.register(Connection, ConnectionAdmin)
 
 admin_site.register(MagicToken)
-admin_site.register(StaticDevice, StaticDeviceAdmin)
-admin_site.register(TOTPDevice, TOTPDeviceAdmin)
+admin_site.register(StaticDevice, StaticDeviceStaffAdmin)
+admin_site.register(TOTPDevice, TOTPDeviceStaffAdmin)
 
 # Also register the Django Celery Beat models
 admin_site.register(PeriodicTask, PeriodicTaskAdmin)
