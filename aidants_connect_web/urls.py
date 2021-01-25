@@ -65,7 +65,11 @@ urlpatterns = [
     path("token/", id_provider.token, name="token"),
     path("userinfo/", id_provider.user_info, name="user_info"),
     path("select_demarche/", id_provider.fi_select_demarche, name="fi_select_demarche"),
-    path("logout/", id_provider.end_session_endpoint, name="end_session_endpoint",),
+    path(
+        "logout/",
+        id_provider.end_session_endpoint,
+        name="end_session_endpoint",
+    ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
@@ -75,6 +79,7 @@ urlpatterns = [
     path("cgu/", service.cgu, name="cgu"),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
+    path("habilitation", service.habilitation, name="habilitation"),
     path("ressources/", service.ressources, name="ressources"),
     # # FAQ
     path("faq/", service.faq_generale, name="faq_generale"),

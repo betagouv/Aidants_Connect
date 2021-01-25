@@ -49,6 +49,10 @@ def guide_utilisation(request):
     return render(request, "public_website/guide_utilisation.html")
 
 
+def habilitation(request):
+    return render(request, "public_website/habilitation.html")
+
+
 def statistiques(request):
     last_30_days = timezone.now() - timedelta(days=30)
     stafforg = settings.STAFF_ORGANISATION_NAME

@@ -23,6 +23,9 @@
               <a {% if view_name == 'home_page' %}class="font-weight-bold"{% endif %} href="{% url 'home_page' %}">Accueil</a>
             </li>
             <li class="nav__item">
+              <a {% if view_name == 'habilitation' %}class="font-weight-bold"{% endif %} href="{% url 'habilitation' %}">Habilitation</a>
+            </li>
+            <li class="nav__item">
               <a {% if view_name == 'ressources' %}class="font-weight-bold"{% endif %} href="{% url 'ressources' %}">Ressources</a>
             </li>
             <li class="nav__item">
