@@ -30,12 +30,12 @@
         <div id="active-mandat-panel" class="panel">
           <div class="row">
             <h4 class="margin-bottom-0">
-              📝&nbsp;Mandat valable encore {{ mandat.expiration_date | timeuntil }}
+              <span aria-hidden="true">📝&nbsp;</span>Mandat valable encore {{ mandat.expiration_date | timeuntil }}
               <small title="{{ mandat.expiration_date }}">(jusqu'au {{ mandat.expiration_date | date:"d F Y" }})</small>
             </h4>
-            <div class="float-right">
-              <a id="view_mandat_attestation" class="button">🖨&nbsp;Voir l'attestation (bientôt)</a>
-              <a id="view_mandat_attestation" class="button-outline warning">🗑️&nbsp;Révoquer (bientôt)</a>
+            <div class="float-right text-right">
+              <a id="view_mandat_attestation" class="button"><span aria-hidden="true">🖨&nbsp;</span>Voir l’attestation (bientôt)</a>
+              <a id="view_mandat_attestation" class="button-outline warning"><span aria-hidden="true">🗑️&nbsp;</span>Révoquer (bientôt)</a>
             </div>
           </div>
           <ul class="label-list">
@@ -69,7 +69,9 @@
                     </td>
                     <td>
                       {% if not autorisation.revocation_date %}
-                        <a href="{% url 'usagers_mandats_autorisations_cancel_confirm' usager_id=usager.id mandat_id=mandat.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right" title="Révoquer l'autorisation">&nbsp;🗑️</a>
+                        <a href="{% url 'usagers_mandats_autorisations_cancel_confirm' usager_id=usager.id mandat_id=mandat.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right">
+                          Révoquer l’autorisation <span aria-hidden="true">&nbsp;🗑️</span>
+                        </a>
                       {% endif %}
                     </td>
                   </tr>
