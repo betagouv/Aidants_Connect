@@ -278,3 +278,7 @@ input:focus, select:focus, textarea:focus {
     border-color: #0061c4;
     transition: border-color .2s ease-out;
 }
+.notification a[href] {
+  color: #000;
+  color: var(--theme-dark-text);
+}
