@@ -104,7 +104,7 @@
             <li class="label">Signé {% if mandat.is_remote %}<span>à distance</span>{% else %}<span>en présence</span>{% endif %}</li>
           </ul>
           <br />
-          <h6>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count | pluralize }}</h6>
+          <h5>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count | pluralize }}</h5>
           <div>
             <table class="table">
               <thead>
