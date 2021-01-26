@@ -7,7 +7,10 @@
 {% endblock extracss %}
 
 {% block content %}
-<div class="notification full-width" role="alert">Le déploiement national d’Aidants Connect commencera au début de l’année 2021.</div>
+  <div class="notification full-width" role="alert">
+    Vous êtes une structure qui souhaite utiliser Aidants Connect ? Nous vous invitons à remplir
+    <a href="{% url 'habilitation' %}">notre formulaire d'habilitation</a>.
+  </div>
 {% if messages %}
   {% for message in messages %}
     <div class="notification {% if message.tags %}{{ message.tags }}{% endif %} full-width" role="alert">{{ message }}</div>
@@ -34,9 +37,8 @@
           <strong>Aidants Connect s’adresse à une diversité d’aidants professionnels</strong>
           Travailleurs sociaux, agents publics d’accueil, médiateurs numériques...
         </p>
-        <a class="button primary" href="{% url 'guide_utilisation' %}">Découvrir Aidants Connect</a>
-        &nbsp
         <a class="button primary" href="https://app.livestorm.co/incubateur-des-territoires/aidants-connect">Participer à une démo</a>
+        <a class="button" href="{% url 'habilitation' %}">Être habilité Aidants Connect</a>
       </div>
     </div>
   </div>
