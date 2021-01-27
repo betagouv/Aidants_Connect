@@ -120,9 +120,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"  # noqa
         )
-        self.assertEqual(
-            found.func, usagers.usagers_mandats_autorisations_cancel_confirm
-        )
+        self.assertEqual(found.func, usagers.confirm_autorisation_cancelation)
 
     def test_usagers_autorisations_cancel_url_triggers_the_correct_template(self):
         self.client.force_login(self.aidant_1)
@@ -131,8 +129,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
             f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
         )
         self.assertTemplateUsed(
-            response,
-            "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
+            response, "aidants_connect_web/confirm_autorisation_cancelation.html",
         )
 
         response_incorrect_confirm_form = self.client.post(
@@ -142,7 +139,7 @@ class AutorisationCancelConfirmPageTests(TestCase):
         )
         self.assertTemplateUsed(
             response_incorrect_confirm_form,
-            "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
+            "aidants_connect_web/confirm_autorisation_cancelation.html",
         )
 
         response_correct_confirm_form = self.client.post(

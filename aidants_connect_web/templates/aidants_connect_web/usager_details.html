@@ -69,7 +69,7 @@
                     </td>
                     <td>
                       {% if not autorisation.revocation_date %}
-                        <a href="{% url 'usagers_mandats_autorisations_cancel_confirm' usager_id=usager.id mandat_id=mandat.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right" title="Révoquer l'autorisation">&nbsp;🗑️</a>
+                        <a href="{% url 'confirm_autorisation_cancelation' usager_id=usager.id mandat_id=mandat.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right" title="Révoquer l'autorisation">&nbsp;🗑️</a>
                       {% endif %}
                     </td>
                   </tr>

@@ -61,9 +61,7 @@ def usager_details(request, usager_id):
 
 @login_required
 @activity_required
-def usagers_mandats_autorisations_cancel_confirm(
-    request, usager_id, mandat_id, autorisation_id
-):
+def confirm_autorisation_cancelation(request, usager_id, mandat_id, autorisation_id):
     aidant = request.user
 
     usager = aidant.get_usager(usager_id)
@@ -101,7 +99,7 @@ def usagers_mandats_autorisations_cancel_confirm(
         else:
             return render(
                 request,
-                "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
+                "aidants_connect_web/confirm_autorisation_cancelation.html",
                 {
                     "aidant": aidant,
                     "usager": usager,
@@ -112,7 +110,7 @@ def usagers_mandats_autorisations_cancel_confirm(
 
     return render(
         request,
-        "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
+        "aidants_connect_web/confirm_autorisation_cancelation.html",
         {
             "aidant": aidant,
             "usager": usager,
