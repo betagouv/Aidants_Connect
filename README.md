@@ -8,10 +8,9 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 - accéder à des ressources sur l'accompagnement des usagers ;
 - accéder à un suivi de ses mandats.
 
-## Pile technique
-
+Aidants Connect est construit sur les éléments suivants : 
 - Python 3.7
-- Django 3.0
+- Django 3.1
 - PostgreSQL
 
 ## Sommaire
