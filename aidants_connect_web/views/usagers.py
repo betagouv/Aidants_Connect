@@ -111,10 +111,5 @@ def confirm_autorisation_cancelation(request, usager_id, mandat_id, autorisation
     return render(
         request,
         "aidants_connect_web/confirm_autorisation_cancelation.html",
-        {
-            "aidant": aidant,
-            "usager": usager,
-            "autorisation": autorisation,
-            "error": "Erreur lors de l'annulation de l'autorisation.",
-        },
+        {"aidant": aidant, "usager": usager, "autorisation": autorisation},
     )
