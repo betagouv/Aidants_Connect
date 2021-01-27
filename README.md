@@ -127,6 +127,21 @@ Appliquez les migrations de la base de données :
 python manage.py migrate
 ```
 
+### Peupler la base de données
+
+Il existe plusieurs moyens de peupler la base de donnée.
+
+#### ⏩ Installation en local pour test : utiliser les _fixtures_
+
+Des données de test qui créent un environnement complet : 
+  ```shell
+    python manage.py loaddata admin.json
+    python manage.py loaddata usager_autorisation.json
+  ```
+Ce process créé automatiquement un _superuser_ `admin@email.com`. plus d'information sur comment se connecter avec ce compte sont disponible dans la section [Se connecter à l'application](#se-connecter-à-lapplication)
+
+#### Installation sur un serveur : Créer un _superuser_
+
 Créez un _superuser_ :
 
 ```shell
@@ -143,6 +158,17 @@ a.organisation = Organisation.objects.create(name=<insert_organisation_name>)
 a.save()
 exit()
 ```
+
+Pour pouvoir vous connecter à votre instance locale, il faut apparier à votre `superuser` un dispositif TOTP (`TOTP device`).
+
+Pour cela, commencez par lui adjoindre un [jeton OTP](https://fr.wikipedia.org/wiki/Mot_de_passe_%C3%A0_usage_unique) [statique](https://django-otp-official.readthedocs.io/en/stable/overview.html#module-django_otp.plugins.otp_static) :
+
+```shell
+python manage.py addstatictoken <insert_admin_name> -t <insert_6_numbers>
+```
+
+Notez ce code, il vous permetra de vous connecter la première foisà l'interface d'administration.
+
 
 ### Lancer les tests
 
@@ -183,27 +209,37 @@ python manage.py runserver 3000
 
 L'application sera disponible à l'URL `http://localhost:3000/`
 
-### Se connecter à l'application : authentification à double facteur (2FA)
+### Se connecter à l'application
 
-Pour pouvoir vous connecter à votre instance locale, il faut apparier à votre `superuser` un dispositif TOTP (`TOTP device`).
+Votre _superuser_ est créé et a un login, un mot de passe et un _static token_ c'est à dire un code à 6 chiffre utilisable une seule fois. Il faut maintenant obtenir le QR code qui vous permettre de vous connecter de manière perenne.
 
-Pour cela, commencez par lui adjoindre un [jeton OTP](https://fr.wikipedia.org/wiki/Mot_de_passe_%C3%A0_usage_unique) [statique](https://django-otp-official.readthedocs.io/en/stable/overview.html#module-django_otp.plugins.otp_static) :
+#### Trouver la page d'admin
 
-```shell
-python manage.py addstatictoken <insert_admin_name> -t <insert_6_numbers>
-```
+La page d'admin se trouve sur `/[Variable d'envirronement ADMIN_URL]` 
 
-Le jeton généré vous permet de vous connecter une seule fois à l'interface d'administration Django, disponible par défaut à l'URL `http://localhost:3000/admin/` (sauf si vous avez spécifié une autre URL dans la variable d'environment `ADMIN_URL`).
-En cas de problème, pas d'inquiétude : vous pouvez répéter la procédure précédente autant que nécessaire :)
+#### Se connecter à l'admin 
 
-Une fois connecté à l'admin, voici les étapes pour ajouter un dispositif TOTP à votre `superuser` :
-1. cliquez sur _TOTP devices_
-2. Cliquez sur le bouton _Ajouter TOTP device +_
-3. Choisissez votre `superuser` grâce à l'icône "loupe" située à côté du champ _User_
-4. Saisissez un nom pour votre dispositif TOTP (par exemple : _Mon téléphone_) dans le champ _Name_
-5. Cliquez ensuite sur _Enregistrer et continuer les modifications_ tout en bas du formulaire
-6. Une fois l'enregistrement effectué, l'écran devrait se rafraîchir et vous proposer un lien vers un [QR Code](https://fr.wikipedia.org/wiki/Code_QR)
-7. Vous pouvez à présent scanner celui-ci dans une application TOTP telle que [Authy](https://authy.com/) ou [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) pour utiliser l'authentification à double facteur dans votre environnement local.
+* ⏩ Si vous avez utilisé les _fixtures_ pour peupler votre base de données, 
+	* identifiant : `admin@email.com`;
+	* mot de passe : `admin`;
+	* Static OTP : `111111`
+* Sinon, utilisez le login, mot de passe et static token créés dans la section [Installation sur un serveur : Créer un _superuser_](#installation-sur-un-serveur--créer-un-superuser)
+
+#### Péréniser son authentification à double facteur (2FA)
+
+Une fois connecté à l'admin, cliquez sur **_TOTP devices_**
+
+* ⏩ Si vous avez utilisé les _fixtures_ :
+	* Cliquez sur le lien `qr code` à droite de l'entrée pour Admin
+	* Scannez le QRcode dans une application TOTP telle que [Authy](https://authy.com/) ou [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2)
+
+Si vous avez créé votre propre _superuser_ :
+1. Cliquez sur le bouton `Ajouter TOTP device +` 
+2. Choisissez votre _superuser_ grâce à l'icône "loupe" située à côté du champ _User_
+3. Saisissez un nom pour votre dispositif TOTP (par exemple : _Mon téléphone_) dans le champ `Name`
+4. Cliquez ensuite sur _Enregistrer et continuer les modifications_ tout en bas du formulaire
+5. Une fois l'enregistrement effectué, l'écran devrait se rafraîchir et vous proposer un lien vers un [QR Code](https://fr.wikipedia.org/wiki/Code_QR)
+6. Vous pouvez à présent scanner celui-ci dans une application TOTP telle que [Authy](https://authy.com/) ou [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) pour utiliser l'authentification à double facteur dans votre environnement local.
 
 ## Contribuer à l'application
 
@@ -222,6 +258,19 @@ pre-commit install
 - Fournisseur de Service (FS): [ici](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service)
 
 ### Ré-initialiser la base de données
+
+#### ⏩ Avec les données de test (_fixtures_) : Utiliser le Makefile
+
+Pour simplifier le lancement de certaines commandes, un Makefile est disponible. Exemples de commandes :
+
+```shell
+make destroy-rebuild-dev-db
+```
+
+Sur Windows, la commande `make` n'est pas disponible ; 
+Il faut passer chaque commande du `Makefile` (fichier présent à la racine du projet) les unes après les autres.
+
+#### Avec des données existantes
 
 Si vous avez des données existantes, vous pouvez d'abord les sauvegarder :
 
@@ -260,16 +309,6 @@ Enfin, chargez les données :
     python manage.py loaddata db.json
     ```
 
-- Soit des données de test qui créent aussi un _superuser_ rattaché à une `Organisation` `BetaGouv`:
-    * identifiant : `admin@email.com`;
-    * mot de passe : `admin`;
-    * Static OTP : `111111`.
-
-    ```shell
-    python manage.py loaddata admin.json
-    python manage.py loaddata usager_autorisation.json
-    ```
-
 - Soit repartir de zéro en recréant un _superuser_ (plus de détails dans la section [Installer l'application](#installer-lapplication)) :
 
     ```shell
@@ -284,16 +323,6 @@ Pour ce faire, il suffit d'exécuter ou de planifier la commande suivante :
 
 ```shell
 python manage.py delete_expired_connections
-```
-
-### Utiliser le Makefile
-
-Pour simplifier le lancement de certaines commandes, un Makefile est disponible. Exemples de commandes :
-
-```shell
-make shell
-make test
-make migrate
 ```
 
 ### Calcul de `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`    
