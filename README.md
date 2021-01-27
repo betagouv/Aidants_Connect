@@ -101,17 +101,19 @@ Installez les dépendances :
 pip install -r requirements.txt
 ```
 
-Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayez :
+> Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayez :
 
-```shell
-export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
-```
+> ```shell
+> export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
+> ```
 
-Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env` et ajoutez vos informations :
-- Les champs obligatoires sont indiqués par le préfixe `<insert_`
-- Les informations `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
-- Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`  pour cela voir dans les annexes [la procédure](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret)
-- Les valeurs de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
+Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env`. En test en local, vous ne devriez pas avoir à modifier ce `.env`.  
+
+Vous pouvez, sur un serveur, ajoutez vos informations :
+* Les champs obligatoires sont indiqués par le préfixe `<insert_`
+* Les informations de production `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
+* Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`  pour cela voir dans les annexes [la procédure](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret)
+* Les valeurs de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
 
 Créez un répertoire `staticfiles` à la racine du projet :
 
