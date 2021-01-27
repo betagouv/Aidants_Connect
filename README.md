@@ -14,6 +14,27 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 - Django 3.0
 - PostgreSQL
 
+## Sommaire
+[Installer et lancer l'application](#installer-et-lancer-lapplication)
+* [Installer la base de données (pour Mac OSX)](#installer-la-base-de-données-pour-mac-osx)
+* [Installer l'application](#installer-lapplication)
+* [Peupler la base de données](#peupler-la-base-de-données)
+	* ⏩[Installation en local pour test : utiliser les _fixtures_](#installation-en-local-pour-test--utiliser-les-fixtures)
+	* [Installation sur un serveur : Créer un _superuser_](#installation-sur-un-serveur--créer-un-superuser)
+* [Lancer l'application](#lancer-lapplication)
+* [Se connecter à l'application](#se-connecter-à-lapplication)
+	* [Trouver la page d'admin](#trouver-la-page-dadmin)
+	* [Péréniser son authentification à double facteur (2FA)](#péréniser-son-authentification-à-double-facteur-2fa)
+* [Lancer les tests](#lancer-les-tests)
+* [Contribuer à l'application](#contribuer-à-lapplication)
+* [Annexes](#annexes)
+	* [Documentation de FranceConnect](#documentation-de-franceconnect)
+	* [Ré-initialiser la base de données](#ré-initialiser-la-base-de-données)
+		* ⏩[Avec les données de test (fixtures) : Utiliser le Makefile](#avec-les-données-de-test-fixtures--utiliser-le-makefile)
+		* [Avec des données existantes](#avec-des-données-existantes)
+	* [Purger les connexions expirées](#purger-les-connexions-expirées)
+	* [Calcul de `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret)
+   
 ## Installer et lancer l'application
 
 ### Installer la base de données (pour Mac OSX)
