@@ -57,11 +57,11 @@
             <input type="checkbox" id="id_brief" name="brief" required />
             <label class="label-inline" for="id_brief">
               {% if is_remote %}
-                Avoir obtenu et conservé un consentement écrit (capture d’écran d’email, SMS…) de la part de <strong> {{ usager }}</strong>
-                pour conclure le mandat Aidant Connect <strong>à distance</strong> et utiliser ses données à caractère personnel.
+                avoir obtenu et conservé un consentement écrit (capture d’écran d’email, SMS…) de la part de <strong> {{ usager }}</strong>
+                pour conclure le mandat <strong>à distance</strong> et utiliser ses données à caractère personnel.
               {% else %}
-                Avoir obtenu et conservé un consentement écrit (signature du mandat après impression) de la part de <strong> {{ usager }}</strong>
-                pour conclure le mandat Aidant Connect et utiliser ses données à caractère personnel.
+                avoir obtenu le consentement de la part de <strong> {{ usager }}</strong>
+                pour conclure le mandat et utiliser ses données à caractère personnel.
               {% endif %}
             </label>
           </div>
