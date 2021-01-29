@@ -110,13 +110,13 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.other_organisation = OrganisationFactory(name="Other Organisation")
         self.unrelated_usager = UsagerFactory()
 
-        mandat_other_org_with_unrelated_usager = MandatFactory(
+        mandat_unrelated = MandatFactory(
             organisation=self.other_organisation,
             usager=self.unrelated_usager,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        self.autorisation_other_orga_with_unrelated_usager = AutorisationFactory(
-            mandat=mandat_other_org_with_unrelated_usager, demarche="Revenus"
+        self.autorisation_unrelated = AutorisationFactory(
+            mandat=mandat_unrelated, demarche="Revenus"
         )
 
         self.good_combo = {
@@ -178,9 +178,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_non_existing_autorisation_triggers_redirect(self):
-        non_existing_autorisation = (
-            self.autorisation_other_orga_with_unrelated_usager.id + 1
-        )
+        non_existing_autorisation = self.autorisation_unrelated.id + 1
 
         bad_combo = self.good_combo.copy()
         bad_combo["autorisation"] = non_existing_autorisation
@@ -211,17 +209,12 @@ class AutorisationCancelationConfirmPageTests(TestCase):
     def test_wrong_usager_autorisation_triggers_redirect(self):
 
         bad_combo = self.good_combo.copy()
-        bad_combo[
-            "autorisation"
-        ] = self.autorisation_other_orga_with_unrelated_usager.id
+        bad_combo["autorisation"] = self.autorisation_unrelated.id
 
         self.error_case_tester(bad_combo)
 
     def test_wrong_aidant_autorisation_triggers_redirect(self):
-
         bad_combo = self.good_combo.copy()
         bad_combo["usager"] = self.unrelated_usager.id
-        bad_combo[
-            "autorisation"
-        ] = self.autorisation_other_orga_with_unrelated_usager.id
+        bad_combo["autorisation"] = self.autorisation_unrelated.id
         self.error_case_tester(bad_combo)
