@@ -119,30 +119,26 @@ class AutorisationCancelationConfirmPageTests(TestCase):
             mandat=mandat_other_org_with_unrelated_usager, demarche="Revenus"
         )
 
+    def url_for_autorisation_cancelation_confimation(self, data):
+        return (
+            f"/usagers/{data['usager']}/mandats/{data['mandat']}"
+            f"/autorisations/{data['autorisation']}/cancel_confirm"
+        )
+
     def test_url_triggers_the_correct_view(self):
         found = resolve(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"  # noqa
+            self.url_for_autorisation_cancelation_confimation(self.good_combo)
         )
         self.assertEqual(found.func, usagers.confirm_autorisation_cancelation)
 
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
-        )
-        self.assertTemplateUsed(
-            response, "aidants_connect_web/confirm_autorisation_cancelation.html",
-        )
     def test_get_triggers_the_correct_template(self):
         self.client.force_login(self.our_aidant)
 
-        response_incorrect_confirm_form = self.client.post(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm",
-            data={},
+        response_to_get_request = self.client.get(
+            self.url_for_autorisation_cancelation_confimation(self.good_combo)
         )
         self.assertTemplateUsed(
-            response_incorrect_confirm_form,
+            response_to_get_request,
             "aidants_connect_web/confirm_autorisation_cancelation.html",
         )
 
@@ -150,8 +146,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response_correct_confirm_form = self.client.post(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm",
+            self.url_for_autorisation_cancelation_confimation(self.good_combo),
             data={"csrfmiddlewaretoken": "coucou"},
         )
         url = f"/usagers/{self.our_usager.id}/"
@@ -159,14 +154,15 @@ class AutorisationCancelationConfirmPageTests(TestCase):
             response_correct_confirm_form, url, fetch_redirect_response=False
         )
 
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_3_1.id + 1}/cancel_confirm"
     def test_incomplete_post_triggers_error(self):
         self.client.force_login(self.our_aidant)
+        response_incorrect_confirm_form = self.client.post(
+            self.url_for_autorisation_cancelation_confimation(self.good_combo), data={},
         )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+        self.assertTemplateUsed(
+            response_incorrect_confirm_form,
+            "aidants_connect_web/confirm_autorisation_cancelation.html",
+        )
 
     def test_expired_autorisation_triggers_redirect(self):
         self.client.force_login(self.aidant_1)
