@@ -79,7 +79,7 @@ class UsagersDetailsPageTests(TestCase):
         )
 
 
-@tag("usagers")
+@tag("usagers", "halo")
 class AutorisationCancelationConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
