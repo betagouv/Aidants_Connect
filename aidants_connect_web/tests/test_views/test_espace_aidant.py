@@ -121,13 +121,12 @@ class AutorisationCancelationConfirmPageTests(TestCase):
 
         self.good_combo = {
             "usager": self.our_usager.id,
-            "mandat": self.autorisation_valid.mandat.id,
             "autorisation": self.autorisation_valid.id,
         }
 
     def url_for_autorisation_cancelation_confimation(self, data):
         return (
-            f"/usagers/{data['usager']}/mandats/{data['mandat']}"
+            f"/usagers/{data['usager']}"
             f"/autorisations/{data['autorisation']}/cancel_confirm"
         )
 
@@ -191,14 +190,12 @@ class AutorisationCancelationConfirmPageTests(TestCase):
     def test_expired_autorisation_triggers_redirect(self):
 
         bad_combo = self.good_combo.copy()
-        bad_combo["mandat"] = self.autorisation_expired.mandat.id
         bad_combo["autorisation"] = self.autorisation_expired.id
 
         self.error_case_tester(bad_combo)
 
     def test_revoked_autorisation_triggers_redirect(self):
         bad_combo = self.good_combo.copy()
-        bad_combo["mandat"] = self.autorisation_revoked.mandat.id
         bad_combo["autorisation"] = self.autorisation_revoked.id
 
         self.error_case_tester(bad_combo)
@@ -215,9 +212,6 @@ class AutorisationCancelationConfirmPageTests(TestCase):
 
         bad_combo = self.good_combo.copy()
         bad_combo[
-            "mandat"
-        ] = self.autorisation_other_orga_with_unrelated_usager.mandat.id
-        bad_combo[
             "autorisation"
         ] = self.autorisation_other_orga_with_unrelated_usager.id
 
@@ -227,9 +221,6 @@ class AutorisationCancelationConfirmPageTests(TestCase):
 
         bad_combo = self.good_combo.copy()
         bad_combo["usager"] = self.unrelated_usager.id
-        bad_combo[
-            "mandat"
-        ] = self.autorisation_other_orga_with_unrelated_usager.mandat.id
         bad_combo[
             "autorisation"
         ] = self.autorisation_other_orga_with_unrelated_usager.id

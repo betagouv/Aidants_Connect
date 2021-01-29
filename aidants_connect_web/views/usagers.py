@@ -61,7 +61,7 @@ def usager_details(request, usager_id):
 
 @login_required
 @activity_required
-def confirm_autorisation_cancelation(request, usager_id, mandat_id, autorisation_id):
+def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
     aidant = request.user
 
     usager = aidant.get_usager(usager_id)
