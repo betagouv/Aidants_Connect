@@ -63,13 +63,14 @@ def usager_details(request, usager_id):
 @activity_required
 def confirm_autorisation_cancelation(request, usager_id, mandat_id, autorisation_id):
     aidant = request.user
-    # autorisation=Authorisation.get(pk=autorisation_id)
+
     usager = aidant.get_usager(usager_id)
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")
 
-    autorisation = usager.get_autorisation(mandat_id, autorisation_id)
+    autorisation = usager.get_autorisation(autorisation_id)
+
     if not autorisation:
         django_messages.error(
             request, "Cette autorisation est introuvable ou inaccessible."
