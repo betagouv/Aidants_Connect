@@ -119,6 +119,12 @@ class AutorisationCancelationConfirmPageTests(TestCase):
             mandat=mandat_other_org_with_unrelated_usager, demarche="Revenus"
         )
 
+        self.good_combo = {
+            "usager": self.our_usager.id,
+            "mandat": self.autorisation_valid.mandat.id,
+            "autorisation": self.autorisation_valid.id,
+        }
+
     def url_for_autorisation_cancelation_confimation(self, data):
         return (
             f"/usagers/{data['usager']}/mandats/{data['mandat']}"
@@ -164,47 +170,67 @@ class AutorisationCancelationConfirmPageTests(TestCase):
             "aidants_connect_web/confirm_autorisation_cancelation.html",
         )
 
-    def test_expired_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
+    def error_case_tester(self, data):
+        self.client.force_login(self.our_aidant)
         response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_2_1.mandat.id}"
-            f"/autorisations/{self.autorisation_2_1.id}/cancel_confirm"
+            self.url_for_autorisation_cancelation_confimation(data)
         )
         url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
+
+    def test_non_existing_autorisation_triggers_redirect(self):
+        non_existing_autorisation = (
+            self.autorisation_other_orga_with_unrelated_usager.id + 1
+        )
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["autorisation"] = non_existing_autorisation
+
+        self.error_case_tester(bad_combo)
+
+    def test_expired_autorisation_triggers_redirect(self):
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["mandat"] = self.autorisation_expired.mandat.id
+        bad_combo["autorisation"] = self.autorisation_expired.id
+
+        self.error_case_tester(bad_combo)
 
     def test_revoked_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_2.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+        bad_combo = self.good_combo.copy()
+        bad_combo["mandat"] = self.autorisation_revoked.mandat.id
+        bad_combo["autorisation"] = self.autorisation_revoked.id
+
+        self.error_case_tester(bad_combo)
 
     def test_non_existing_usager_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_2.id + 1}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+        non_existing_usager = self.unrelated_usager.id + 1
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["usager"] = non_existing_usager
+
+        self.error_case_tester(bad_combo)
 
     def test_wrong_usager_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_3_1.mandat.id}"
-            f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        bad_combo = self.good_combo.copy()
+        bad_combo[
+            "mandat"
+        ] = self.autorisation_other_orga_with_unrelated_usager.mandat.id
+        bad_combo[
+            "autorisation"
+        ] = self.autorisation_other_orga_with_unrelated_usager.id
+
+        self.error_case_tester(bad_combo)
 
     def test_wrong_aidant_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_2.id}/mandats/{self.autorisation_3_1.mandat.id}"
-            f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["usager"] = self.unrelated_usager.id
+        bad_combo[
+            "mandat"
+        ] = self.autorisation_other_orga_with_unrelated_usager.mandat.id
+        bad_combo[
+            "autorisation"
+        ] = self.autorisation_other_orga_with_unrelated_usager.id
+        self.error_case_tester(bad_combo)
