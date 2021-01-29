@@ -63,7 +63,7 @@ def usager_details(request, usager_id):
 @activity_required
 def confirm_autorisation_cancelation(request, usager_id, mandat_id, autorisation_id):
     aidant = request.user
-
+    # autorisation=Authorisation.get(pk=autorisation_id)
     usager = aidant.get_usager(usager_id)
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
@@ -84,7 +84,7 @@ def confirm_autorisation_cancelation(request, usager_id, mandat_id, autorisation
 
     if request.method == "POST":
         form = request.POST
-
+        log.warning(request.POST)
         if form:
             autorisation.revocation_date = timezone.now()
             autorisation.save(update_fields=["revocation_date"])
@@ -95,18 +95,6 @@ def confirm_autorisation_cancelation(request, usager_id, mandat_id, autorisation
                 request, "L'autorisation a été révoquée avec succès !"
             )
             return redirect("usager_details", usager_id=usager.id)
-
-        else:
-            return render(
-                request,
-                "aidants_connect_web/confirm_autorisation_cancelation.html",
-                {
-                    "aidant": aidant,
-                    "usager": usager,
-                    "autorisation": autorisation,
-                    "error": "Erreur lors de l'annulation de l'autorisation.",
-                },
-            )
 
     return render(
         request,
