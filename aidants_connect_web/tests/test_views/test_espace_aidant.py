@@ -6,6 +6,7 @@ from django.urls import resolve
 from django.utils import timezone
 
 from aidants_connect_web.tests.factories import (
+    OrganisationFactory,
     AidantFactory,
     AutorisationFactory,
     MandatFactory,
@@ -79,51 +80,52 @@ class UsagersDetailsPageTests(TestCase):
 
 
 @tag("usagers")
-class AutorisationCancelConfirmPageTests(TestCase):
+class AutorisationCancelationConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_1 = AidantFactory()
-        self.aidant_2 = AidantFactory(
-            username="jacques@domain.user", email="jacques@domain.user"
-        )
-        self.usager_1 = UsagerFactory()
-        self.usager_2 = UsagerFactory()
 
-        mandat_1 = MandatFactory(
-            organisation=self.aidant_1.organisation,
-            usager=self.usager_1,
-            expiration_date=timezone.now() + timedelta(days=6),
+        self.our_organisation = OrganisationFactory()
+        self.our_aidant = AidantFactory(organisation=self.our_organisation)
+        self.our_usager = UsagerFactory()
+
+        mandat_valid = MandatFactory(
+            organisation=self.our_organisation, usager=self.our_usager,
         )
-        self.autorisation_1_1 = AutorisationFactory(mandat=mandat_1, demarche="Revenus")
-        self.autorisation_1_2 = AutorisationFactory(
-            mandat=mandat_1, demarche="Papiers", revocation_date=timezone.now()
+        self.autorisation_valid = AutorisationFactory(
+            mandat=mandat_valid, demarche="Revenus"
+        )
+        self.autorisation_revoked = AutorisationFactory(
+            mandat=mandat_valid, demarche="Papiers", revocation_date=timezone.now()
         )
 
-        mandat_2 = MandatFactory(
-            organisation=self.aidant_1.organisation,
-            usager=self.usager_1,
+        mandat_expired = MandatFactory(
+            organisation=self.our_organisation,
+            usager=self.our_usager,
             expiration_date=timezone.now() - timedelta(days=6),
         )
-        self.autorisation_2_1 = AutorisationFactory(
-            mandat=mandat_2, demarche="Logement"
+        self.autorisation_expired = AutorisationFactory(
+            mandat=mandat_expired, demarche="Logement"
         )
 
-        mandat_3 = MandatFactory(
-            organisation=self.aidant_2.organisation,
-            usager=self.usager_2,
+        self.other_organisation = OrganisationFactory(name="Other Organisation")
+        self.unrelated_usager = UsagerFactory()
+
+        mandat_other_org_with_unrelated_usager = MandatFactory(
+            organisation=self.other_organisation,
+            usager=self.unrelated_usager,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        self.autorisation_3_1 = AutorisationFactory(mandat=mandat_3, demarche="Revenus")
+        self.autorisation_other_orga_with_unrelated_usager = AutorisationFactory(
+            mandat=mandat_other_org_with_unrelated_usager, demarche="Revenus"
+        )
 
-    def test_usagers_autorisations_cancel_url_triggers_the_correct_view(self):
+    def test_url_triggers_the_correct_view(self):
         found = resolve(
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"  # noqa
         )
         self.assertEqual(found.func, usagers.confirm_autorisation_cancelation)
 
-    def test_usagers_autorisations_cancel_url_triggers_the_correct_template(self):
-        self.client.force_login(self.aidant_1)
         response = self.client.get(
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
@@ -131,6 +133,8 @@ class AutorisationCancelConfirmPageTests(TestCase):
         self.assertTemplateUsed(
             response, "aidants_connect_web/confirm_autorisation_cancelation.html",
         )
+    def test_get_triggers_the_correct_template(self):
+        self.client.force_login(self.our_aidant)
 
         response_incorrect_confirm_form = self.client.post(
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
@@ -142,21 +146,24 @@ class AutorisationCancelConfirmPageTests(TestCase):
             "aidants_connect_web/confirm_autorisation_cancelation.html",
         )
 
+    def test_complete_post_triggers_redirect(self):
+        self.client.force_login(self.our_aidant)
+
         response_correct_confirm_form = self.client.post(
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm",
             data={"csrfmiddlewaretoken": "coucou"},
         )
-        url = f"/usagers/{self.usager_1.id}/"
+        url = f"/usagers/{self.our_usager.id}/"
         self.assertRedirects(
             response_correct_confirm_form, url, fetch_redirect_response=False
         )
 
-    def test_non_existing_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
         response = self.client.get(
             f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
             f"/autorisations/{self.autorisation_3_1.id + 1}/cancel_confirm"
+    def test_incomplete_post_triggers_error(self):
+        self.client.force_login(self.our_aidant)
         )
         url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
