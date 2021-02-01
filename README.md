@@ -109,11 +109,11 @@ pip install -r requirements.txt
 
 Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env`. En test en local, vous ne devriez pas avoir à modifier ce `.env`.  
 
-Vous pouvez, sur un serveur, ajoutez vos informations :
+Vous pouvez, sur un serveur, ajouter vos informations :
 * Les champs obligatoires sont indiqués par le préfixe `<insert_`
 * Les informations de production `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
 * Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`  pour cela voir dans les annexes [la procédure](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret)
-* Les valeurs de sécurité sont issues de https://docs.djangoproject.com/fr/2.2/topics/security/ et de https://www.youtube.com/watch?v=gvQW1vVNohg
+* Les valeurs de sécurité sont issues de [la section "sécurité" de la documentation Django](https://docs.djangoproject.com/fr/2.2/topics/security/) et de [la conférence Django and Web Security Headers](https://www.youtube.com/watch?v=gvQW1vVNohg)
 
 Créez un répertoire `staticfiles` à la racine du projet :
 
@@ -129,7 +129,7 @@ python manage.py migrate
 
 ### Peupler la base de données
 
-Il existe plusieurs moyens de peupler la base de donnée.
+Il existe plusieurs moyens de peupler la base de données.
 
 #### ⏩ Installation en local pour test : utiliser les _fixtures_
 
@@ -167,7 +167,7 @@ Pour cela, commencez par lui adjoindre un [jeton OTP](https://fr.wikipedia.org/w
 python manage.py addstatictoken <insert_admin_name> -t <insert_6_numbers>
 ```
 
-Notez ce code, il vous permetra de vous connecter la première foisà l'interface d'administration.
+Notez ce code, il vous permettra de vous connecter la première fois à l'interface d'administration.
 
 
 ### Lancer les tests
@@ -211,11 +211,11 @@ L'application sera disponible à l'URL `http://localhost:3000/`
 
 ### Se connecter à l'application
 
-Votre _superuser_ est créé et a un login, un mot de passe et un _static token_ c'est à dire un code à 6 chiffre utilisable une seule fois. Il faut maintenant obtenir le QR code qui vous permettre de vous connecter de manière perenne.
+Votre _superuser_ est créé et a un login, un mot de passe et un _static token_ c'est-à-dire un code à 6 chiffres utilisable une seule fois. Il faut maintenant obtenir le QR code qui vous permettra de vous connecter de manière pérenne.
 
 #### Trouver la page d'admin
 
-La page d'admin se trouve sur `/[Variable d'envirronement ADMIN_URL]` 
+La page d'admin se trouve sur `/[Variable d'environnement ADMIN_URL]` 
 
 #### Se connecter à l'admin 
 
