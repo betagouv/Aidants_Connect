@@ -1,4 +1,9 @@
 {% load static %}
+<nav class="skip-links nav__links">
+  <a href="#main">Aller au contenu principal</a>
+  <a href="#top_menu">Aller au menu</a>
+  <a href="#footer">Aller au pied de page</a>
+</nav>
 <header class="navbar">
   <div class="navbar__container">
     <a class="navbar__home" href="{% url 'home_page' %}">
@@ -6,7 +11,7 @@
       <img class="navbar__logo" src="{% static 'images/aidants-connect_logo.png' %}"  alt="Aidants Connect" />
     </a>
     <nav role="navigation">
-      <ul class="nav__links">
+      <ul class="nav__links" id="top_menu">
         {% with view_name=request.resolver_match.view_name %}
           {% if request.user.is_authenticated %}
             <li class="nav__item">
