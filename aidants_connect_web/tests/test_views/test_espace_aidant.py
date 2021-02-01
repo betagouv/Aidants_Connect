@@ -5,6 +5,8 @@ from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
 
+from aidants_connect_web.models import Autorisation
+
 from aidants_connect_web.tests.factories import (
     OrganisationFactory,
     AidantFactory,
@@ -119,13 +121,12 @@ class AutorisationCancelationConfirmPageTests(TestCase):
 
         self.good_combo = {
             "usager": self.our_usager.id,
-            "mandat": self.valid_autorisation.mandat.id,
             "autorisation": self.valid_autorisation.id,
         }
 
     def url_for_autorisation_cancelation_confimation(self, data):
         return (
-            f"/usagers/{data['usager']}/mandats/{data['mandat']}"
+            f"/usagers/{data['usager']}"
             f"/autorisations/{data['autorisation']}/cancel_confirm"
         )
 
@@ -177,48 +178,54 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_non_existing_autorisation_triggers_redirect(self):
-        non_existing_autorisation = self.unrelated_autorisation.id + 1
+        non_existing_autorisation = Autorisation.objects.last().id + 1
 
-        bad_combo = self.good_combo.copy()
-        bad_combo["autorisation"] = non_existing_autorisation
+        bad_combo_for_our_aidant = {
+            "usager": self.our_usager.id,
+            "autorisation": non_existing_autorisation,
+        }
 
-        self.error_case_tester(bad_combo)
+        self.error_case_tester(bad_combo_for_our_aidant)
 
     def test_expired_autorisation_triggers_redirect(self):
+        bad_combo_for_our_aidant = {
+            "usager": self.our_usager.id,
+            "autorisation": self.expired_autorisation.id,
+        }
 
-        bad_combo = self.good_combo.copy()
-        bad_combo["mandat"] = self.expired_autorisation.mandat.id
-        bad_combo["autorisation"] = self.expired_autorisation.id
-
-        self.error_case_tester(bad_combo)
+        self.error_case_tester(bad_combo_for_our_aidant)
 
     def test_revoked_autorisation_triggers_redirect(self):
-        bad_combo = self.good_combo.copy()
-        bad_combo["mandat"] = self.revoked_autorisation.mandat.id
-        bad_combo["autorisation"] = self.revoked_autorisation.id
+        bad_combo_for_our_aidant = {
+            "usager": self.our_usager.id,
+            "autorisation": self.revoked_autorisation.id,
+        }
 
-        self.error_case_tester(bad_combo)
+        self.error_case_tester(bad_combo_for_our_aidant)
 
     def test_non_existing_usager_triggers_redirect(self):
         non_existing_usager = self.unrelated_usager.id + 1
 
-        bad_combo = self.good_combo.copy()
-        bad_combo["usager"] = non_existing_usager
+        bad_combo_for_our_aidant = {
+            "usager": non_existing_usager,
+            "autorisation": self.valid_autorisation.id,
+        }
 
-        self.error_case_tester(bad_combo)
+        self.error_case_tester(bad_combo_for_our_aidant)
 
     def test_wrong_usager_autorisation_triggers_redirect(self):
 
-        bad_combo = self.good_combo.copy()
-        bad_combo["mandat"] = self.unrelated_autorisation.mandat.id
-        bad_combo["autorisation"] = self.unrelated_autorisation.id
+        bad_combo_for_our_aidant = {
+            "usager": self.our_usager.id,
+            "autorisation": self.unrelated_autorisation.id,
+        }
 
-        self.error_case_tester(bad_combo)
+        self.error_case_tester(bad_combo_for_our_aidant)
 
     def test_wrong_aidant_autorisation_triggers_redirect(self):
+        bad_combo_for_our_aidant = {
+            "usager": self.unrelated_usager.id,
+            "autorisation": self.unrelated_autorisation.id,
+        }
 
-        bad_combo = self.good_combo.copy()
-        bad_combo["usager"] = self.unrelated_usager.id
-        bad_combo["mandat"] = self.unrelated_autorisation.mandat.id
-        bad_combo["autorisation"] = self.unrelated_autorisation.id
-        self.error_case_tester(bad_combo)
+        self.error_case_tester(bad_combo_for_our_aidant)
