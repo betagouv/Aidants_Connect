@@ -235,7 +235,13 @@ a.no-decoration {
 img.logo-height-5em {
   max-height: 5em;
 }
-
+img.logo-height-4em {
+  max-height: 4em;
+}
+.logo-in-title {
+  height: 2.5em;
+  margin: 0 0 .5em;
+}
 
 /* Media */
 
