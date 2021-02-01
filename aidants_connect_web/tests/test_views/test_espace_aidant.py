@@ -116,7 +116,14 @@ class AutorisationCancelationConfirmPageTests(TestCase):
             organisation=self.other_organisation, usager=self.unrelated_usager,
         )
         self.unrelated_autorisation = AutorisationFactory(
-            mandat=unrelated_mandat, demarche="Revenus"
+            mandat=unrelated_mandat, demarche="Revenus")
+
+        mandat_other_org_with_our_usager = MandatFactory(
+            organisation=self.other_organisation, usager=self.our_usager,
+        )
+
+        self.autorisation_other_org_with_our_usager = AutorisationFactory(
+            mandat=mandat_other_org_with_our_usager, demarche="Logement"
         )
 
         self.good_combo = {
@@ -224,8 +231,8 @@ class AutorisationCancelationConfirmPageTests(TestCase):
 
     def test_wrong_aidant_autorisation_triggers_redirect(self):
         bad_combo_for_our_aidant = {
-            "usager": self.unrelated_usager.id,
-            "autorisation": self.unrelated_autorisation.id,
+            "usager": self.our_usager.id,
+            "autorisation": self.autorisation_other_org_with_our_usager.id,
         }
 
         self.error_case_tester(bad_combo_for_our_aidant)
