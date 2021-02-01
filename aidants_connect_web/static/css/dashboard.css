@@ -15,7 +15,16 @@
 .tile-box {
   width: 100%;
 }
-
+.tile-box h3 + strong,
+.tile-box h4 + strong {
+  font-size: 1.5em;
+  line-height: 1.5em;
+  display: block;
+}
+.tile-box h3, .tile-box h4 {
+  font-size: 1.5em;
+  margin-bottom: .7em;
+}
 .tile-subtitle {
   margin: 0;
   font-style: italic;
