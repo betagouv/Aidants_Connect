@@ -249,6 +249,7 @@ class Usager(models.Model):
         except Autorisation.DoesNotExist:
             return None
         if autorisation.mandat.usager == self:
+
             return autorisation
 
     def normalize_birthplace(self):

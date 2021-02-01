@@ -32,6 +32,7 @@ def usager_details(request, usager_id):
     aidant = request.user
 
     usager = aidant.get_usager(usager_id)
+
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")
@@ -65,6 +66,7 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
     aidant = request.user
 
     usager = aidant.get_usager(usager_id)
+
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")

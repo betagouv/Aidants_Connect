@@ -230,10 +230,11 @@ class AutorisationCancelationConfirmPageTests(TestCase):
 
         self.error_case_tester(bad_combo_for_our_aidant)
 
+    @tag("hey")
     def test_wrong_aidant_autorisation_triggers_redirect(self):
         bad_combo_for_our_aidant = {
-            "usager": self.unrelated_usager.id,
-            "autorisation": self.unrelated_autorisation.id,
+            "usager": self.our_usager.id,
+            "autorisation": self.autorisation_other_org_with_our_usager.id,
         }
 
         self.error_case_tester(bad_combo_for_our_aidant)
