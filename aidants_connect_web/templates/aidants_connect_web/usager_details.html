@@ -24,18 +24,18 @@
 
 <section class="section section-grey">
   <div class="container">
-    <h2>Mandats en cours</h2>
+    <h3>Mandats en cours</h3>
     {% if active_mandats %}
       {% for mandat in active_mandats %}
         <div id="active-mandat-panel" class="panel">
           <div class="row">
             <h4 class="margin-bottom-0">
-              📝&nbsp;Mandat valable encore {{ mandat.expiration_date | timeuntil }}
+              <span aria-hidden="true">📝&nbsp;</span>Mandat valable encore {{ mandat.expiration_date | timeuntil }}
               <small title="{{ mandat.expiration_date }}">(jusqu'au {{ mandat.expiration_date | date:"d F Y" }})</small>
             </h4>
-            <div class="float-right">
-              <a id="view_mandat_attestation" class="button">🖨&nbsp;Voir l'attestation (bientôt)</a>
-              <a id="view_mandat_attestation" class="button-outline warning">🗑️&nbsp;Révoquer (bientôt)</a>
+            <div class="float-right text-right">
+              <a id="view_mandat_attestation" class="button"><span aria-hidden="true">🖨&nbsp;</span>Voir l’attestation (bientôt)</a>
+              <a id="view_mandat_attestation" class="button-outline warning"><span aria-hidden="true">🗑️&nbsp;</span>Révoquer (bientôt)</a>
             </div>
           </div>
           <ul class="label-list">
@@ -44,14 +44,14 @@
             <li class="label">Signé {% if mandat.is_remote %}<span>à distance</span>{% else %}<span>en présence</span>{% endif %}</li>
           </ul>
           <br />
-          <h6>{{ mandat.autorisations.count }} démarches</h6>
+          <h5>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count | pluralize }}</h5>
           <div>
             <table class="table">
               <thead>
                 <tr>
-                  <th class="th-40">Périmètre de la démarche</th>
-                  <th class="th-20">Date d'expiration</th>
-                  <th class="th-20">
+                  <th scope="col" class="th-40">Périmètre de la démarche</th>
+                  <th scope="col" class="th-20">Date d’expiration</th>
+                  <th scope="col" class="th-20">
                     <span class="float-right">Actions</span>
                   </th>
                 </tr>
@@ -69,7 +69,9 @@
                     </td>
                     <td>
                       {% if not autorisation.revocation_date %}
-                        <a href="{% url 'usagers_mandats_autorisations_cancel_confirm' usager_id=usager.id mandat_id=mandat.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right" title="Révoquer l'autorisation">&nbsp;🗑️</a>
+                        <a href="{% url 'usagers_mandats_autorisations_cancel_confirm' usager_id=usager.id mandat_id=mandat.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right">
+                          Révoquer l’autorisation <span aria-hidden="true">&nbsp;🗑️</span>
+                        </a>
                       {% endif %}
                     </td>
                   </tr>
@@ -85,7 +87,7 @@
 
     <br />
 
-    <h2>Mandats expirés ou révoqués</h2>
+    <h3>Mandats expirés ou révoqués</h3>
     {% if inactive_mandats %}
       {% for mandat in inactive_mandats %}
         <div id="inactive-mandat-panel" class="panel">
@@ -104,14 +106,14 @@
             <li class="label">Signé {% if mandat.is_remote %}<span>à distance</span>{% else %}<span>en présence</span>{% endif %}</li>
           </ul>
           <br />
-          <h6>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count | pluralize }}</h6>
+          <h5>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count | pluralize }}</h5>
           <div>
             <table class="table">
               <thead>
                 <tr>
-                  <th class="th-40">Périmètre de la démarche</th>
-                  <th class="th-20">Date d'expiration</th>
-                  <th class="th-20">
+                  <th scope="col" class="th-40">Périmètre de la démarche</th>
+                  <th scope="col" class="th-20">Date d'expiration</th>
+                  <th scope="col" class="th-20">
                     <span class="float-right">Actions</span>
                   </th>
                 </tr>

@@ -21,12 +21,12 @@
     <div class="tiles">
       <h2>Les usagers avec qui vous avez un mandat</h2>
       {% if usagers %}
-        <!-- <input class="table__filter" type="text" name="input_val" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)"> -->
+        {# <input class="table__filter" type="text" name="input_val" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)"> #}
         <table class="table">
           <thead>
             <tr>
-              <th class="th-66">Nom</th>
-              <th>Date de naissance</th>
+              <th scope="col" class="th-66">Nom</th>
+              <th scope="col">Date de naissance</th>
             </tr>
           </thead>
           <tbody>

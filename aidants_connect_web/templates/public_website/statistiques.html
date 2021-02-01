@@ -12,7 +12,7 @@
 {% block content %}
 <section class="section" id="statistics">
   <div class="container">
-    <h1 class="section__title">Statistiques d'Aidants Connect</h1>
+    <h1 class="section__title">Statistiques d’Aidants Connect</h1>
     <div class="tiles">
 
       <h2>Déploiement</h2>
@@ -20,13 +20,13 @@
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">Structures</h3>
-            <h3><strong>{{ organisations_count }}</strong></h3>
+            <strong>{{ organisations_count }}</strong>
           </div>
         </div>
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">Aidants</h3>
-            <h3><strong>{{ aidants_count }}</strong></h3>
+            <strong>{{ aidants_count }}</strong>
           </div>
         </div>
       </div>
@@ -38,16 +38,16 @@
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">Mandats créés</h3>
-            <h3><strong>{{ mandats_count }}</strong></h3>
+            <strong>{{ mandats_count }}</strong>
           </div>
           <p class="tile-subtitle">
-            depuis le 18/03/2020
+            depuis le 18 mars 2020
           </p>
         </div>
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">Mandats actifs</h3>
-            <h3><strong>{{ active_mandats_count }}</strong></h3>
+            <strong>{{ active_mandats_count }}</strong>
           </div>
         </div>
       </div>
@@ -59,13 +59,13 @@
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">Usagers</h3>
-            <h3><strong>{{ usagers_with_mandat_count }}</strong></h3>
+            <strong>{{ usagers_with_mandat_count }}</strong>
           </div>
         </div>
         <div class="tile-box">
           <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Usagers actif</h3>
-            <h3><strong>{{ usagers_with_active_mandat_count }}</strong></h3>
+            <h3 class="font-weight-normal">Usagers actifs</h3>
+            <strong>{{ usagers_with_active_mandat_count }}</strong>
           </div>
         </div>
       </div>
@@ -77,41 +77,37 @@
         <div class="tile-box">
             <div class="tile tile-grey text-center">
               <h3 class="font-weight-normal">Depuis le lancement</h3>
-              <h3>
-                <strong>
-                  Usagers accompagnés : {{ usagers_helped_count }}
-                  <br>
-                  Connexions effectuées : {{ autorisation_use_count }}
-                  <br>
-                </strong>
-              </h3>
+              <strong>
+                Usagers accompagnés : {{ usagers_helped_count }}
+                <br>
+                Connexions effectuées : {{ autorisation_use_count }}
+                <br>
+              </strong>
             </div>
           </div>
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">30 derniers jours</h3>
-            <h3>
-              <strong>
-                Usagers accompagnés : {{ usagers_helped_recent_count }}
-                <br>
-                Connexions effectuées : {{ autorisation_use_recent_count }}
-                <br>
-              </strong>
-            </h3>
+            <strong>
+              Usagers accompagnés : {{ usagers_helped_recent_count }}
+              <br>
+              Connexions effectuées : {{ autorisation_use_recent_count }}
+              <br>
+            </strong>
           </div>
         </div>
       </div>
       
-      <h4>Par type de démarche</h4>
+      <h3>Par type de démarche</h3>
       <div class="grid small-grid">
         {% for stat_item in demarches_count %}
           <div class="tile-box">
             <div class="tile tile-grey text-center">
-              <h3 class="font-weight-normal">
-                <img class="icon-inline" src="{{ stat_item.icon }}" alt="Icon {{ stat_item.title }}" />
+              <h4 class="font-weight-normal">
+                <img class="icon-inline" src="{{ stat_item.icon }}" alt="" />
                 {{ stat_item.title }}
-              </h3>
-              <h3><strong>{{ stat_item.value }}</strong></h3>
+              </h4>
+              <strong>{{ stat_item.value }}</strong>
             </div>
           </div>
         {% endfor %}
