@@ -35,6 +35,13 @@ class LoginAttemptAdminPageTests(TestCase):
         admin_url = f"/{admin}admin_honeypot/loginattempt/{login_attempt_id}/change/"
         self.assertEqual(admin_url, path)
 
+    def test_sidebar_is_not_in_login_admin_page(self):
+        admin = settings.ADMIN_URL
+        amac_client = Client()
+        response = amac_client.get(f"/{admin}login", follow=True)
+        self.assertTemplateUsed(response, "aidants_connect_web/admin/login.html")
+        self.assertNotContains(response, "nav-sidebar")
+
 
 @tag("admin")
 class VisibleToTechAdminTests(TestCase):
