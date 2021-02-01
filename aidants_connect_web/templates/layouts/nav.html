@@ -10,7 +10,7 @@
         {% with view_name=request.resolver_match.view_name %}
           {% if request.user.is_authenticated %}
             <li class="nav__item">
-              <a {% if view_name in 'espace_aidant_home,espace_aidant_organisation,usagers,usager_details,usagers_mandats_autorisations_cancel_confirm' %}class="font-weight-bold"{% endif %} href="{% url 'espace_aidant_home' %}">Mon Espace Aidant</a>
+              <a {% if view_name in 'espace_aidant_home,espace_aidant_organisation,usagers,usager_details,confirm_autorisation_cancelation' %}class="font-weight-bold"{% endif %} href="{% url 'espace_aidant_home' %}">Mon Espace Aidant</a>
             </li>
             <li class="nav__item">
               <a {% if view_name == 'ressources' %}class="font-weight-bold"{% endif %} href="{% url 'ressources' %}">Ressources</a>

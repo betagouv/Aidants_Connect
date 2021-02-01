@@ -61,9 +61,7 @@ def usager_details(request, usager_id):
 
 @login_required
 @activity_required
-def usagers_mandats_autorisations_cancel_confirm(
-    request, usager_id, mandat_id, autorisation_id
-):
+def confirm_autorisation_cancelation(request, usager_id, mandat_id, autorisation_id):
     aidant = request.user
 
     usager = aidant.get_usager(usager_id)
@@ -71,7 +69,8 @@ def usagers_mandats_autorisations_cancel_confirm(
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")
 
-    autorisation = usager.get_autorisation(mandat_id, autorisation_id)
+    autorisation = usager.get_autorisation(autorisation_id)
+
     if not autorisation:
         django_messages.error(
             request, "Cette autorisation est introuvable ou inaccessible."
@@ -98,25 +97,8 @@ def usagers_mandats_autorisations_cancel_confirm(
             )
             return redirect("usager_details", usager_id=usager.id)
 
-        else:
-            return render(
-                request,
-                "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
-                {
-                    "aidant": aidant,
-                    "usager": usager,
-                    "autorisation": autorisation,
-                    "error": "Erreur lors de l'annulation de l'autorisation.",
-                },
-            )
-
     return render(
         request,
-        "aidants_connect_web/usagers_mandats_autorisations_cancel_confirm.html",
-        {
-            "aidant": aidant,
-            "usager": usager,
-            "autorisation": autorisation,
-            "error": "Erreur lors de l'annulation de l'autorisation.",
-        },
+        "aidants_connect_web/confirm_autorisation_cancelation.html",
+        {"aidant": aidant, "usager": usager, "autorisation": autorisation},
     )

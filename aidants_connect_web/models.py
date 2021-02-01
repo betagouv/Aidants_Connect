@@ -236,11 +236,20 @@ class Usager(models.Model):
         except Mandat.DoesNotExist:
             return None
 
-    def get_autorisation(self, mandat_id, autorisation_id):
+    def get_autorisation(self, autorisation_id):
+        """
+        This method returns the Authorisation object with the id _autorisation_id_
+        only if the Usager of the autorization is the current usager.
+        Otherwise, returns None
+        :param autorisation_id:
+        :return: Autorisation object or None
+        """
         try:
-            return self.get_mandat(mandat_id).autorisations.get(pk=autorisation_id)
-        except (AttributeError, Autorisation.DoesNotExist):
+            autorisation = Autorisation.objects.get(pk=autorisation_id)
+        except Autorisation.DoesNotExist:
             return None
+        if autorisation.mandat.usager == self:
+            return autorisation
 
     def normalize_birthplace(self):
         if not self.birthplace:
