@@ -28,7 +28,7 @@ urlpatterns = [
     path("usagers/", usagers.usagers_index, name="usagers"),
     path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),
     path(
-        "usagers/<int:usager_id>/mandats/<int:mandat_id>/autorisations/<int:autorisation_id>/cancel_confirm",  # noqa
+        "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_confirm",  # noqa
         usagers.confirm_autorisation_cancelation,
         name="confirm_autorisation_cancelation",
     ),
