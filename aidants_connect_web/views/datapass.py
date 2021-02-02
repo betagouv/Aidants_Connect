@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.core.mail import send_mail
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
 
 from aidants_connect_web.forms import DatapassForm
 from aidants_connect_web.models import Organisation
@@ -11,6 +12,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
+@csrf_exempt
 def receiver(request):
     try:
         if request.META["HTTP_AUTHORIZATION"] != f"Bearer {settings.DATAPASS_KEY}":
