@@ -21,8 +21,16 @@ def receiver(request):
     except KeyError:
         log.info("403: No authorization header for datapass call")
         return HttpResponseForbidden()
+    import json
 
-    form = DatapassForm(data=request.POST)
+    try:
+        # if post data has json form
+        content = json.loads(request.body)
+    except json.decoder.JSONDecodeError:
+        # if post data has querystring form
+        content = request.POST
+
+    form = DatapassForm(data=content)
 
     if form.is_valid():
         this_organisation = Organisation.objects.create(
