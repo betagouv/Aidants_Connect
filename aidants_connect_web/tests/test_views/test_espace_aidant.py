@@ -6,6 +6,7 @@ from django.urls import resolve
 from django.utils import timezone
 
 from aidants_connect_web.tests.factories import (
+    OrganisationFactory,
     AidantFactory,
     AutorisationFactory,
     MandatFactory,
@@ -79,129 +80,145 @@ class UsagersDetailsPageTests(TestCase):
 
 
 @tag("usagers")
-class AutorisationCancelConfirmPageTests(TestCase):
+class AutorisationCancelationConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.aidant_1 = AidantFactory()
-        self.aidant_2 = AidantFactory(
-            username="jacques@domain.user", email="jacques@domain.user"
-        )
-        self.usager_1 = UsagerFactory()
-        self.usager_2 = UsagerFactory()
 
-        mandat_1 = MandatFactory(
-            organisation=self.aidant_1.organisation,
-            usager=self.usager_1,
-            expiration_date=timezone.now() + timedelta(days=6),
+        self.our_organisation = OrganisationFactory()
+        self.our_aidant = AidantFactory(organisation=self.our_organisation)
+        self.our_usager = UsagerFactory()
+
+        valid_mandat = MandatFactory(
+            organisation=self.our_organisation, usager=self.our_usager,
         )
-        self.autorisation_1_1 = AutorisationFactory(mandat=mandat_1, demarche="Revenus")
-        self.autorisation_1_2 = AutorisationFactory(
-            mandat=mandat_1, demarche="Papiers", revocation_date=timezone.now()
+        self.valid_autorisation = AutorisationFactory(
+            mandat=valid_mandat, demarche="Revenus"
+        )
+        self.revoked_autorisation = AutorisationFactory(
+            mandat=valid_mandat, demarche="Papiers", revocation_date=timezone.now()
         )
 
-        mandat_2 = MandatFactory(
-            organisation=self.aidant_1.organisation,
-            usager=self.usager_1,
+        expired_mandat = MandatFactory(
+            organisation=self.our_organisation,
+            usager=self.our_usager,
             expiration_date=timezone.now() - timedelta(days=6),
         )
-        self.autorisation_2_1 = AutorisationFactory(
-            mandat=mandat_2, demarche="Logement"
+        self.expired_autorisation = AutorisationFactory(
+            mandat=expired_mandat, demarche="Logement"
         )
 
-        mandat_3 = MandatFactory(
-            organisation=self.aidant_2.organisation,
-            usager=self.usager_2,
-            expiration_date=timezone.now() + timedelta(days=6),
-        )
-        self.autorisation_3_1 = AutorisationFactory(mandat=mandat_3, demarche="Revenus")
+        self.other_organisation = OrganisationFactory(name="Other Organisation")
+        self.unrelated_usager = UsagerFactory()
 
-    def test_usagers_autorisations_cancel_url_triggers_the_correct_view(self):
+        unrelated_mandat = MandatFactory(
+            organisation=self.other_organisation, usager=self.unrelated_usager,
+        )
+        self.unrelated_autorisation = AutorisationFactory(
+            mandat=unrelated_mandat, demarche="Revenus"
+        )
+
+        self.good_combo = {
+            "usager": self.our_usager.id,
+            "mandat": self.valid_autorisation.mandat.id,
+            "autorisation": self.valid_autorisation.id,
+        }
+
+    def url_for_autorisation_cancelation_confimation(self, data):
+        return (
+            f"/usagers/{data['usager']}/mandats/{data['mandat']}"
+            f"/autorisations/{data['autorisation']}/cancel_confirm"
+        )
+
+    def test_url_triggers_the_correct_view(self):
         found = resolve(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"  # noqa
+            self.url_for_autorisation_cancelation_confimation(self.good_combo)
         )
         self.assertEqual(found.func, usagers.confirm_autorisation_cancelation)
 
-    def test_usagers_autorisations_cancel_url_triggers_the_correct_template(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
+    def test_get_triggers_the_correct_template(self):
+        self.client.force_login(self.our_aidant)
+
+        response_to_get_request = self.client.get(
+            self.url_for_autorisation_cancelation_confimation(self.good_combo)
         )
         self.assertTemplateUsed(
-            response, "aidants_connect_web/confirm_autorisation_cancelation.html",
+            response_to_get_request,
+            "aidants_connect_web/confirm_autorisation_cancelation.html",
         )
 
+    def test_complete_post_triggers_redirect(self):
+        self.client.force_login(self.our_aidant)
+
+        response_correct_confirm_form = self.client.post(
+            self.url_for_autorisation_cancelation_confimation(self.good_combo),
+            data={"csrfmiddlewaretoken": "coucou"},
+        )
+        url = f"/usagers/{self.our_usager.id}/"
+        self.assertRedirects(
+            response_correct_confirm_form, url, fetch_redirect_response=False
+        )
+
+    def test_incomplete_post_triggers_error(self):
+        self.client.force_login(self.our_aidant)
         response_incorrect_confirm_form = self.client.post(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm",
-            data={},
+            self.url_for_autorisation_cancelation_confimation(self.good_combo), data={},
         )
         self.assertTemplateUsed(
             response_incorrect_confirm_form,
             "aidants_connect_web/confirm_autorisation_cancelation.html",
         )
 
-        response_correct_confirm_form = self.client.post(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm",
-            data={"csrfmiddlewaretoken": "coucou"},
+    def error_case_tester(self, data):
+        self.client.force_login(self.our_aidant)
+        response = self.client.get(
+            self.url_for_autorisation_cancelation_confimation(data)
         )
-        url = f"/usagers/{self.usager_1.id}/"
-        self.assertRedirects(
-            response_correct_confirm_form, url, fetch_redirect_response=False
-        )
+        url = "/espace-aidant/"
+        self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_non_existing_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_3_1.id + 1}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+        non_existing_autorisation = self.unrelated_autorisation.id + 1
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["autorisation"] = non_existing_autorisation
+
+        self.error_case_tester(bad_combo)
 
     def test_expired_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_2_1.mandat.id}"
-            f"/autorisations/{self.autorisation_2_1.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["mandat"] = self.expired_autorisation.mandat.id
+        bad_combo["autorisation"] = self.expired_autorisation.id
+
+        self.error_case_tester(bad_combo)
 
     def test_revoked_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_2.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+        bad_combo = self.good_combo.copy()
+        bad_combo["mandat"] = self.revoked_autorisation.mandat.id
+        bad_combo["autorisation"] = self.revoked_autorisation.id
+
+        self.error_case_tester(bad_combo)
 
     def test_non_existing_usager_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_2.id + 1}/mandats/{self.autorisation_1_1.mandat.id}"
-            f"/autorisations/{self.autorisation_1_1.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+        non_existing_usager = self.unrelated_usager.id + 1
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["usager"] = non_existing_usager
+
+        self.error_case_tester(bad_combo)
 
     def test_wrong_usager_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_1.id}/mandats/{self.autorisation_3_1.mandat.id}"
-            f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["mandat"] = self.unrelated_autorisation.mandat.id
+        bad_combo["autorisation"] = self.unrelated_autorisation.id
+
+        self.error_case_tester(bad_combo)
 
     def test_wrong_aidant_autorisation_triggers_redirect(self):
-        self.client.force_login(self.aidant_1)
-        response = self.client.get(
-            f"/usagers/{self.usager_2.id}/mandats/{self.autorisation_3_1.mandat.id}"
-            f"/autorisations/{self.autorisation_3_1.id}/cancel_confirm"
-        )
-        url = "/espace-aidant/"
-        self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        bad_combo = self.good_combo.copy()
+        bad_combo["usager"] = self.unrelated_usager.id
+        bad_combo["mandat"] = self.unrelated_autorisation.mandat.id
+        bad_combo["autorisation"] = self.unrelated_autorisation.id
+        self.error_case_tester(bad_combo)
