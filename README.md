@@ -199,6 +199,13 @@ Par défaut, les tests d'intégration sont lancés en mode _headless_, c'est-à-
 
 Dans de rares cas (comportement observé à ce jour sur une seule machine de dev), les tests d'intégration échouent car _la première connexion_ à une URL via l'API Selenium plante de manière inexpliquée. Un contournement empirique a été mis en place ; si vous rencontrez ce problème vous pouvez l'activer en passant à `True` la variable d'environnement `BYPASS_FIRST_LIVESERVER_CONNECTION` dans votre fichier `.env`.
 
+Astuce : la plupart des cas de tests portent une directive `@tag` pour leur associer des tags décrivant des fonctionnalités ou des caractéristiques des tests. Par exemple, `functional` pour les tests fonctionnels, `create_mandat` pour ce qui implique une création de mandat, etc.
+Cela vous permet de lancer seulement certains tests, grâce à l'option --tag. Par exemple, pour lancer les tests portant le tag `parrot` :
+
+```
+python manage.py test --tag parrot
+```
+
 ### Lancer l'application
 
 Pour lancer l'application sur le port `3000` :
