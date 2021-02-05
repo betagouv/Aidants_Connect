@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 
 from aidants_connect_web.decorators import activity_required
-from aidants_connect_web.models import Mandat, Journal
+from aidants_connect_web.models import Mandat, Journal, Autorisation
 
 
 logging.basicConfig(level=logging.INFO)
@@ -63,24 +63,14 @@ def usager_details(request, usager_id):
 @activity_required
 def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
     aidant = request.user
-
-    usager = aidant.get_usager(usager_id)
-    if not usager:
-        django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
-        return redirect("espace_aidant_home")
-
-    autorisation = usager.get_autorisation(autorisation_id)
-
-    if not autorisation:
+    try:
+        autorisation = aidant.get_active_autorisations_for_usager(usager_id).get(
+            pk=autorisation_id
+        )
+    except Autorisation.DoesNotExist:
         django_messages.error(
             request, "Cette autorisation est introuvable ou inaccessible."
         )
-        return redirect("espace_aidant_home")
-    if autorisation.is_revoked:
-        django_messages.error(request, "L'autorisation a été révoquée")
-        return redirect("espace_aidant_home")
-    if autorisation.is_expired:
-        django_messages.error(request, "L'autorisation a déjà expiré")
         return redirect("espace_aidant_home")
 
     if request.method == "POST":
@@ -95,10 +85,14 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
             django_messages.success(
                 request, "L'autorisation a été révoquée avec succès !"
             )
-            return redirect("usager_details", usager_id=usager.id)
+            return redirect("usager_details", usager_id=usager_id)
 
     return render(
         request,
         "aidants_connect_web/confirm_autorisation_cancelation.html",
-        {"aidant": aidant, "usager": usager, "autorisation": autorisation},
+        {
+            "aidant": aidant,
+            "usager": aidant.get_usager(usager_id),
+            "autorisation": autorisation,
+        },
     )
