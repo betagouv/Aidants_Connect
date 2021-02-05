@@ -14,74 +14,10 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.views import espace_aidant, usagers
+from aidants_connect_web.views import usagers
 
 
-class EspaceAidantHomePageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant = AidantFactory()
-
-    def test_anonymous_user_cannot_access_espace_aidant_view(self):
-        response = self.client.get("/espace-aidant/")
-        self.assertRedirects(response, "/accounts/login/?next=/espace-aidant/")
-
-    def test_espace_aidant_home_url_triggers_the_right_view(self):
-        found = resolve("/espace-aidant/")
-        self.assertEqual(found.func, espace_aidant.home)
-
-    def test_espace_aidant_home_url_triggers_the_right_template(self):
-        self.client.force_login(self.aidant)
-        response = self.client.get("/espace-aidant/")
-        self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
-
-
-@tag("usagers")
-class UsagersIndexPageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant = AidantFactory()
-
-    def test_usagers_index_url_triggers_the_usagers_index_view(self):
-        found = resolve("/usagers/")
-        self.assertEqual(found.func, usagers.usagers_index)
-
-    def test_usagers_index_url_triggers_the_usagers_index_template(self):
-        self.client.force_login(self.aidant)
-        response = self.client.get("/usagers/")
-        self.assertTemplateUsed(response, "aidants_connect_web/usagers.html")
-
-
-@tag("usagers")
-class UsagersDetailsPageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant = AidantFactory()
-        self.usager = UsagerFactory()
-        self.mandat = MandatFactory(
-            organisation=self.aidant.organisation, usager=self.usager
-        )
-        AutorisationFactory(mandat=self.mandat)
-
-    def test_usager_details_url_triggers_the_usager_details_view(self):
-        found = resolve(f"/usagers/{self.usager.id}/")
-        self.assertEqual(found.func, usagers.usager_details)
-
-    def test_usager_details_url_triggers_the_usager_details_template(self):
-        self.client.force_login(self.aidant)
-        response = self.client.get(f"/usagers/{self.usager.id}/")
-        self.assertTemplateUsed(response, "aidants_connect_web/usager_details.html")
-
-    def test_usager_details_template_dynamic_title(self):
-        self.client.force_login(self.aidant)
-        response = self.client.get(f"/usagers/{self.usager.id}/")
-        response_content = response.content.decode("utf-8")
-        self.assertIn(
-            "<title>Aidants Connect - Homer Simpson</title>", response_content
-        )
-
-
-@tag("usagers")
+@tag("usagers", "revoke")
 class AutorisationCancelationConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -91,7 +27,8 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.our_usager = UsagerFactory()
 
         valid_mandat = MandatFactory(
-            organisation=self.our_organisation, usager=self.our_usager,
+            organisation=self.our_organisation,
+            usager=self.our_usager,
         )
         self.valid_autorisation = AutorisationFactory(
             mandat=valid_mandat, demarche="Revenus"
@@ -113,13 +50,16 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.unrelated_usager = UsagerFactory()
 
         unrelated_mandat = MandatFactory(
-            organisation=self.other_organisation, usager=self.unrelated_usager,
+            organisation=self.other_organisation,
+            usager=self.unrelated_usager,
         )
         self.unrelated_autorisation = AutorisationFactory(
-            mandat=unrelated_mandat, demarche="Revenus")
+            mandat=unrelated_mandat, demarche="Revenus"
+        )
 
         mandat_other_org_with_our_usager = MandatFactory(
-            organisation=self.other_organisation, usager=self.our_usager,
+            organisation=self.other_organisation,
+            usager=self.our_usager,
         )
 
         self.autorisation_other_org_with_our_usager = AutorisationFactory(
@@ -169,7 +109,8 @@ class AutorisationCancelationConfirmPageTests(TestCase):
     def test_incomplete_post_triggers_error(self):
         self.client.force_login(self.our_aidant)
         response_incorrect_confirm_form = self.client.post(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo), data={},
+            self.url_for_autorisation_cancelation_confimation(self.good_combo),
+            data={},
         )
         self.assertTemplateUsed(
             response_incorrect_confirm_form,
