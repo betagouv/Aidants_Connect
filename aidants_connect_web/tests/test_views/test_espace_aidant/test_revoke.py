@@ -177,3 +177,35 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         }
 
         self.error_case_tester(bad_combo_for_our_aidant)
+
+
+@tag("usagers", "revoke", "revoke_mandat")
+class MandatCancelationConfirmPageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        self.our_organisation = OrganisationFactory()
+        self.our_aidant = AidantFactory(organisation=self.our_organisation)
+        self.our_usager = UsagerFactory()
+
+        valid_mandat = MandatFactory(
+            organisation=self.our_organisation,
+            usager=self.our_usager,
+        )
+        self.valid_autorisation = AutorisationFactory(
+            mandat=valid_mandat, demarche="Revenus"
+        )
+        self.good_combo = {
+            "usager": self.our_usager.id,
+            "autorisation": self.valid_autorisation.id,
+        }
+
+    def url_for_mandat_cancelation_confimation(self, data):
+        return (
+            f"/usagers/{data['usager']}"
+            f"/mandats/{data['autorisation']}/cancel_confirm"
+        )
+
+    def test_url_triggers_the_correct_view(self):
+        found = resolve(self.url_for_mandat_cancelation_confimation(self.good_combo))
+        self.assertEqual(found.func, usagers.confirm_mandat_cancelation)

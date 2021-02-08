@@ -96,3 +96,9 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
             "autorisation": autorisation,
         },
     )
+
+
+@login_required
+@activity_required
+def confirm_mandat_cancelation(request, usager_id, mandat_id):
+    pass
