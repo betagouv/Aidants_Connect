@@ -34,6 +34,7 @@ from aidants_connect_web.models import (
 )
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
+admin_site.login_template = "aidants_connect_web/admin/login.html"
 
 admin_site.register(HoneypotLoginAttempt, HoneypotLoginAttemptAdmin)
 
