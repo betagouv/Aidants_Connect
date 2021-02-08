@@ -284,7 +284,31 @@ input:focus, select:focus, textarea:focus {
     border-color: #0061c4;
     transition: border-color .2s ease-out;
 }
+:focus {
+  outline: 2px solid var(--theme-border-active);
+  outline-offset: 2px;
+}
 .notification a[href] {
   color: #000;
   color: var(--theme-dark-text);
+}
+
+.skip-links {
+  background: var(--theme-background-grey);
+  transition: transform 0.3s;
+  padding: .7em 1em .5em;
+  font-size: .9em;
+  position: absolute;
+  transform: translateY(-100%);
+}
+.skip-links:focus-within {
+  transform: translateY(0);
+  position: relative;
+}
+.skip-links a {
+  color: var(--theme-dark-text);
+  margin-right: 1em;
+}
+#top_menu {
+  padding: 3em 0; /* used to have top_menu visible on screen just after corresponding skiplink has been followed */
 }
