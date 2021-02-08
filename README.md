@@ -17,6 +17,7 @@ Aidants Connect est construit sur les éléments suivants :
 [Installer et lancer l'application](#installer-et-lancer-lapplication)
 * [Installer la base de données (pour Mac OSX)](#installer-la-base-de-données-pour-mac-osx)
 * [Installer l'application](#installer-lapplication)
+* [Configurer les variables d'environnement](#configurer-les-variables-denvironnement)
 * [Peupler la base de données](#peupler-la-base-de-données)
 	* ⏩[Installation en local pour test : utiliser les _fixtures_](#installation-en-local-pour-test--utiliser-les-fixtures)
 	* [Installation sur un serveur : Créer un _superuser_](#installation-sur-un-serveur--créer-un-superuser)
@@ -100,12 +101,42 @@ Installez les dépendances :
 ```shell
 pip install -r requirements.txt
 ```
+#### Troubleshooting
+Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayez :
 
-> Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayez :
+ ```shell
+export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
+ ```
 
-> ```shell
-> export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
-> ```
+Si vous avez un Mac M1
+* Si, lors de l'installation de `psycopg2-binary`, vous avez le message d'erreur suivant :
+```
+ ld: warning: directory not found for option '-L/usr/bin/openssl/lib/'
+    ld: library not found for -lssl
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    error: command 'clang' failed with exit status 1
+```
+
+* Si vous avez installé `openssl` via `brew`, vous pouvez essayer la commande suivante : 
+```shell
+env LDFLAGS='-L/opt/homebrew/opt/openssl@1.1/lib -L/opt/homebrew/opt/readline/lib' pip install -r requirements.txt
+```
+> https://stackoverflow.com/a/42264168
+
+- Si, lors de l'installation de `pillow` vous avez le message d'erreur suivant :
+```shell
+The headers or library files could not be found for zlib,
+    a required dependency when compiling Pillow from source.
+
+```
+Vous pouvez essayer :
+
+```shell
+brew install libjpeg
+```
+> https://github.com/python-pillow/Pillow/issues/5042#issuecomment-746681171
+
+### Configurer les variables d'environnement
 
 Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env`. En test en local, vous ne devriez pas avoir à modifier ce `.env`.  
 
