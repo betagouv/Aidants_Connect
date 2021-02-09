@@ -188,24 +188,58 @@ class MandatCancelationConfirmPageTests(TestCase):
         self.our_aidant = AidantFactory(organisation=self.our_organisation)
         self.our_usager = UsagerFactory()
 
-        valid_mandat = MandatFactory(
+        self.valid_mandat = MandatFactory(
             organisation=self.our_organisation,
             usager=self.our_usager,
         )
         self.valid_autorisation = AutorisationFactory(
-            mandat=valid_mandat, demarche="Revenus"
-        )
-        self.good_combo = {
-            "usager": self.our_usager.id,
-            "autorisation": self.valid_autorisation.id,
-        }
-
-    def url_for_mandat_cancelation_confimation(self, data):
-        return (
-            f"/usagers/{data['usager']}"
-            f"/mandats/{data['autorisation']}/cancel_confirm"
+            mandat=self.valid_mandat, demarche="Revenus"
         )
 
     def test_url_triggers_the_correct_view(self):
-        found = resolve(self.url_for_mandat_cancelation_confimation(self.good_combo))
+        found = resolve(f"/mandats/{self.valid_mandat.id}/cancel_confirm")
         self.assertEqual(found.func, usagers.confirm_mandat_cancelation)
+
+    def test_get_triggers_the_correct_template(self):
+        self.client.force_login(self.our_aidant)
+
+        response_to_get_request = self.client.get(
+            f"/mandats/{self.valid_mandat.id}/cancel_confirm"
+        )
+
+        self.assertTemplateUsed(
+            response_to_get_request,
+            "aidants_connect_web/confirm_mandat_cancellation.html",
+        )
+
+    def test_complete_post_triggers_redirect(self):
+
+        self.assertTrue(self.valid_mandat.is_active)
+
+        self.client.force_login(self.our_aidant)
+        response_correct_confirm_form = self.client.post(
+            f"/mandats/{self.valid_mandat.id}/cancel_confirm",
+            data={"csrfmiddlewaretoken": "coucou"},
+        )
+
+        self.assertRedirects(
+            response_correct_confirm_form,
+            f"/usagers/{self.our_usager.id}/",
+            fetch_redirect_response=False,
+        )
+        self.assertFalse(self.valid_mandat.is_active)
+
+    def test_incomplete_post_triggers_error(self):
+        self.client.force_login(self.our_aidant)
+        response_incorrect_confirm_form = self.client.post(
+            f"/mandats/{self.valid_mandat.id}/cancel_confirm",
+            data={},
+        )
+        self.assertTemplateUsed(
+            response_incorrect_confirm_form,
+            "aidants_connect_web/confirm_mandat_cancellation.html",
+        )
+        self.assertIn(
+            "Une erreur s'est produite lors de la révocation du mandat",
+            response_incorrect_confirm_form.context["error"],
+        )

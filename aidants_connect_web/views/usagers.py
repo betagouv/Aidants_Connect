@@ -100,5 +100,40 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
 
 @login_required
 @activity_required
-def confirm_mandat_cancelation(request, usager_id, mandat_id):
-    pass
+def confirm_mandat_cancelation(request, mandat_id):
+    aidant = request.user
+    mandat = Mandat.objects.get(pk=mandat_id, organisation=aidant.organisation)
+    usager = mandat.usager
+    if request.method == "POST":
+        if request.POST:
+            autorisation_in_mandat = Autorisation.objects.filter(mandat=mandat)
+            for autorisation in autorisation_in_mandat:
+                if not autorisation.revocation_date:
+                    autorisation.revocation_date = (
+                        autorisation.revocation_date
+                    ) = timezone.now()
+                    autorisation.save(update_fields=["revocation_date"])
+
+            return redirect("usager_details", usager_id=usager.id)
+        else:
+            return render(
+                request,
+                "aidants_connect_web/confirm_mandat_cancellation.html",
+                {
+                    "aidant": aidant,
+                    "usager": usager,
+                    "mandat": mandat,
+                    "error": """
+                        Une erreur s'est produite lors de la révocation du mandat
+                        """,
+                },
+            )
+    return render(
+        request,
+        "aidants_connect_web/confirm_mandat_cancellation.html",
+        {
+            "aidant": aidant,
+            "usager": usager,
+            "mandat": mandat,
+        },
+    )

@@ -34,7 +34,7 @@ urlpatterns = [
         name="confirm_autorisation_cancelation",
     ),
     path(
-        "usagers/<int:usager_id>/mandats/<int:mandats_id>/cancel_confirm",
+        "mandats/<int:mandat_id>/cancel_confirm",
         usagers.confirm_mandat_cancelation,
         name="confirm_mandat_cancelation",
     ),

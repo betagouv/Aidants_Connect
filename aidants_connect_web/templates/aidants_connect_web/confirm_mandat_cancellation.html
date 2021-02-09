@@ -1,0 +1,42 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Confirmer la révocation du mandat{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="section__title">Confirmer la révocation du mandat</h1>
+    <div class="tiles">
+      <form method="post" class="panel">
+        {% if error %}
+          <div class="notification error" role="alert">{{ error }}</div>
+        {% endif %}
+        {% csrf_token %}
+        <div class="form__group">
+          <p>
+            Le mandat avec l'usager <strong>{{ usager }}</strong>,
+            concernant les démarches suivantes :
+          </p>
+          <ul>
+            <li><strong>{{ autorisation.demarche }}</strong></li>
+          </ul>,
+          <p>
+            créé le <strong>{{ autorisation.creation_date | date:"d F Y" }}</strong> et expirant le <strong>{{ autorisation.expiration_date | date:"d F Y" }}</strong>,
+            va être <strong>révoquée</strong>.
+          </p>
+
+          <p>
+            Cliquez sur le bouton "Je confirme" pour confirmer l'action.
+          </p>
+        </div>
+        <div class="form__group">
+          <input type="submit" class="button" value="Je confirme" />
+          <a href="{% url 'usager_details' usager_id=usager.id %}" class="button-outline primary float-right">Retour</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock content %}

@@ -331,7 +331,7 @@ class Mandat(models.Model):
     def is_expired(self) -> bool:
         return timezone.now() > self.expiration_date
 
-    @cached_property
+    @property
     def is_active(self):
         # A `mandat` is considered `active` if it contains
         # at least one active `autorisation`.
