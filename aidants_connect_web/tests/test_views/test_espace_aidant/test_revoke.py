@@ -17,8 +17,8 @@ from aidants_connect_web.tests.factories import (
 from aidants_connect_web.views import usagers
 
 
-@tag("usagers", "revoke")
-class AutorisationCancelationConfirmPageTests(TestCase):
+@tag("usagers", "cancel")
+class AutorisationCancellationConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
 
@@ -71,7 +71,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
             "autorisation": self.valid_autorisation.id,
         }
 
-    def url_for_autorisation_cancelation_confimation(self, data):
+    def url_for_autorisation_cancellation_confimation(self, data):
         return (
             f"/usagers/{data['usager']}"
             f"/autorisations/{data['autorisation']}/cancel_confirm"
@@ -179,8 +179,8 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.error_case_tester(bad_combo_for_our_aidant)
 
 
-@tag("usagers", "revoke", "revoke_mandat")
-class MandatCancelationConfirmPageTests(TestCase):
+@tag("usagers", "cancel", "cancel_mandat")
+class MandatCancellationConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
 
@@ -244,7 +244,7 @@ class MandatCancelationConfirmPageTests(TestCase):
             response_incorrect_confirm_form.context["error"],
         )
 
-    def test_incomplete_post_triggers_error2(self):
+    def test_know_error_cases(self):
         def error_case_tester(mandat_id):
             self.client.force_login(self.our_aidant)
             response = self.client.get(f"/mandats/{mandat_id}/cancel_confirm")
