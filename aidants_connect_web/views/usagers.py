@@ -124,7 +124,8 @@ def confirm_mandat_cancelation(request, mandat_id):
                             autorisation.revocation_date
                         ) = timezone.now()
                         autorisation.save(update_fields=["revocation_date"])
-
+                        Journal.log_autorisation_cancel(autorisation, aidant)
+                Journal.log_mandat_cancel(mandat, aidant)
                 return redirect("usager_details", usager_id=usager.id)
             else:
                 return render(
