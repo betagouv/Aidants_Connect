@@ -35,7 +35,9 @@
             </h4>
             <div class="float-right text-right">
               <a id="view_mandat_attestation" class="button"><span aria-hidden="true">🖨&nbsp;</span>Voir l’attestation (bientôt)</a>
-              <a id="view_mandat_attestation" class="button-outline warning"><span aria-hidden="true">🗑️&nbsp;</span>Révoquer (bientôt)</a>
+              <a id="cancel_mandat" class="button-outline warning" href="{% url 'confirm_mandat_cancelation' mandat_id=mandat.id %}">
+                          Révoquer le mandat <span aria-hidden="true">&nbsp;🗑️</span>
+                        </a>
             </div>
           </div>
           <ul class="label-list">

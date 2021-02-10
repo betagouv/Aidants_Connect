@@ -16,14 +16,16 @@
         {% csrf_token %}
         <div class="form__group">
           <p>
-            Le mandat avec l'usager <strong>{{ usager }}</strong>,
+            Le mandat avec l'usager <strong>{{ usager_name }}</strong>,
             concernant les démarches suivantes :
           </p>
           <ul>
-            <li><strong>{{ autorisation.demarche }}</strong></li>
+            {% for autorisation in remaining_autorisations %}
+              <li><strong>{{ autorisation }}</strong></li>
+            {% endfor %}
           </ul>,
           <p>
-            créé le <strong>{{ autorisation.creation_date | date:"d F Y" }}</strong> et expirant le <strong>{{ autorisation.expiration_date | date:"d F Y" }}</strong>,
+            créé le <strong>{{ mandat.creation_date | date:"d F Y" }}</strong> et expirant le <strong>{{ mandat.expiration_date | date:"d F Y" }}</strong>,
             va être <strong>révoquée</strong>.
           </p>
 
@@ -33,7 +35,7 @@
         </div>
         <div class="form__group">
           <input type="submit" class="button" value="Je confirme" />
-          <a href="{% url 'usager_details' usager_id=usager.id %}" class="button-outline primary float-right">Retour</a>
+          <a href="{% url 'usager_details' usager_id=usager_id %}" class="button-outline primary float-right">Retour</a>
         </div>
       </form>
     </div>

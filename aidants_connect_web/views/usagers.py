@@ -109,6 +109,12 @@ def confirm_mandat_cancelation(request, mandat_id):
         return redirect("espace_aidant_home")
     if mandat.is_active:
         usager = mandat.usager
+        remaining_autorisations = (
+            mandat.autorisations.all()
+            .filter(revocation_date=None)
+            .values_list("demarche", flat=True)
+        )
+
         if request.method == "POST":
             if request.POST:
                 autorisation_in_mandat = Autorisation.objects.filter(mandat=mandat)
@@ -126,19 +132,24 @@ def confirm_mandat_cancelation(request, mandat_id):
                     "aidants_connect_web/confirm_mandat_cancellation.html",
                     {
                         "aidant": aidant,
-                        "usager": usager,
+                        "usager_name": usager.get_full_name(),
+                        "usager_id": usager.id,
                         "mandat": mandat,
+                        "remaining_autorisations": remaining_autorisations,
                         "error": """
                             Une erreur s'est produite lors de la révocation du mandat
                             """,
                     },
                 )
+
     return render(
         request,
         "aidants_connect_web/confirm_mandat_cancellation.html",
         {
             "aidant": aidant,
-            "usager": usager,
+            "usager_name": usager.get_full_name(),
+            "usager_id": usager.id,
             "mandat": mandat,
+            "remaining_autorisations": remaining_autorisations,
         },
     )
