@@ -5,7 +5,7 @@ from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
 
-from aidants_connect_web.models import Autorisation
+from aidants_connect_web.models import Autorisation, Mandat
 
 from aidants_connect_web.tests.factories import (
     OrganisationFactory,
@@ -243,3 +243,26 @@ class MandatCancelationConfirmPageTests(TestCase):
             "Une erreur s'est produite lors de la révocation du mandat",
             response_incorrect_confirm_form.context["error"],
         )
+
+    def test_incomplete_post_triggers_error2(self):
+        def error_case_tester(mandat_id):
+            self.client.force_login(self.our_aidant)
+            response = self.client.get(f"/mandats/{mandat_id}/cancel_confirm")
+            url = "/espace-aidant/"
+            self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        expired_mandat = MandatFactory(
+            expiration_date=timezone.now() - timedelta(hours=6)
+        )
+        revoked_mandat = MandatFactory()
+        AutorisationFactory(
+            mandat=revoked_mandat, revocation_date=timezone.now() - timedelta(hours=6)
+        )
+        other_org = OrganisationFactory(name="not our organisation")
+        unrelated_mandat = MandatFactory(organisation=other_org, usager=self.our_usager)
+        non_existing_mandat_id = Mandat.objects.last().id + 1
+
+        error_case_tester(non_existing_mandat_id)
+        error_case_tester(expired_mandat.id)
+        error_case_tester(revoked_mandat.id)
+        error_case_tester(unrelated_mandat.id)
