@@ -663,3 +663,7 @@ class CarteTOTP(models.Model):
     serial_number = models.CharField(max_length=100)
     seed = models.CharField(max_length=40)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "carte TOTP"
+        verbose_name_plural = "cartes TOTP"

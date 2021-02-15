@@ -31,6 +31,7 @@ from aidants_connect_web.models import (
     Mandat,
     Organisation,
     Usager,
+    CarteTOTP,
 )
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
@@ -229,6 +230,13 @@ class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
         return False
 
 
+class CarteTOTPAdmin(VisibleToTechAdmin, ModelAdmin):
+    list_display = ("id", "serial_number")
+    list_filter = ("id", "serial_number")
+    search_fields = ("serial_number",)
+    ordering = ("-created_at",)
+
+
 # Display the following tables in the admin
 admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
@@ -240,6 +248,7 @@ admin_site.register(Connection, ConnectionAdmin)
 admin_site.register(MagicToken)
 admin_site.register(StaticDevice, StaticDeviceStaffAdmin)
 admin_site.register(TOTPDevice, TOTPDeviceStaffAdmin)
+admin_site.register(CarteTOTP, CarteTOTPAdmin)
 
 # Also register the Django Celery Beat models
 admin_site.register(PeriodicTask, PeriodicTaskAdmin)
