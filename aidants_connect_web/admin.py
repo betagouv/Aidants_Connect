@@ -18,6 +18,8 @@ from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from import_export import resources
+from import_export.admin import ImportMixin
 from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
@@ -230,11 +232,19 @@ class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
         return False
 
 
-class CarteTOTPAdmin(VisibleToTechAdmin, ModelAdmin):
+class CarteTOTPResource(resources.ModelResource):
+    class Meta:
+        model = CarteTOTP
+        import_id_fields = ("serial_number",)
+        fields = ("serial_number", "seed")
+
+
+class CarteTOTPAdmin(ImportMixin, VisibleToTechAdmin, ModelAdmin):
     list_display = ("id", "serial_number")
     list_filter = ("id", "serial_number")
     search_fields = ("serial_number",)
     ordering = ("-created_at",)
+    resource_class = CarteTOTPResource
 
 
 # Display the following tables in the admin
