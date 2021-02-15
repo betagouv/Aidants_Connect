@@ -240,8 +240,7 @@ class CarteTOTPResource(resources.ModelResource):
 
 
 class CarteTOTPAdmin(ImportMixin, VisibleToTechAdmin, ModelAdmin):
-    list_display = ("id", "serial_number")
-    list_filter = ("id", "serial_number")
+    list_display = ("serial_number",)
     search_fields = ("serial_number",)
     ordering = ("-created_at",)
     resource_class = CarteTOTPResource
