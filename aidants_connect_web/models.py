@@ -516,6 +516,7 @@ class Journal(models.Model):
         ("create_autorisation", "Création d'une autorisation"),
         ("use_autorisation", "Utilisation d'une autorisation"),
         ("cancel_autorisation", "Révocation d'une autorisation"),
+        ("import_totp_cards", "Importation de cartes TOTP"),
     )
 
     INFO_REMOTE_MANDAT = "Mandat conclu à distance pendant l'état d'urgence sanitaire (23 mars 2020)"  # noqa
@@ -657,6 +658,13 @@ class Journal(models.Model):
             usager=mandat.usager,
             action="cancel_mandat",
             mandat=mandat,
+        )
+
+    @classmethod
+    def log_toitp_card_import(cls, aidant: Aidant, added: int, updated: int):
+        message = f"{added} ajouts - {updated} modifications"
+        return cls.objects.create(
+            aidant=aidant, action="import_totp_cards", additional_information=message
         )
 
 class CarteTOTP(models.Model):

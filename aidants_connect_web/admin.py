@@ -20,6 +20,7 @@ from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
 from import_export.admin import ImportMixin
+from import_export.results import RowResult
 from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
@@ -244,6 +245,14 @@ class CarteTOTPAdmin(ImportMixin, VisibleToTechAdmin, ModelAdmin):
     search_fields = ("serial_number",)
     ordering = ("-created_at",)
     resource_class = CarteTOTPResource
+
+    def generate_log_entries(self, result, request):
+        super().generate_log_entries(result, request)
+        Journal.log_toitp_card_import(
+            request.user,
+            result.totals[RowResult.IMPORT_TYPE_NEW],
+            result.totals[RowResult.IMPORT_TYPE_UPDATE],
+        )
 
 
 # Display the following tables in the admin
