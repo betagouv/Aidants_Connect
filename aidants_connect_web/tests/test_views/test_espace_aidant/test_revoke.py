@@ -79,7 +79,7 @@ class AutorisationCancellationConfirmPageTests(TestCase):
 
     def test_url_triggers_the_correct_view(self):
         found = resolve(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo)
+            self.url_for_autorisation_cancellation_confimation(self.good_combo)
         )
         self.assertEqual(found.func, usagers.confirm_autorisation_cancelation)
 
@@ -87,7 +87,7 @@ class AutorisationCancellationConfirmPageTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response_to_get_request = self.client.get(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo)
+            self.url_for_autorisation_cancellation_confimation(self.good_combo)
         )
         self.assertTemplateUsed(
             response_to_get_request,
@@ -98,7 +98,7 @@ class AutorisationCancellationConfirmPageTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response_correct_confirm_form = self.client.post(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo),
+            self.url_for_autorisation_cancellation_confimation(self.good_combo),
             data={"csrfmiddlewaretoken": "coucou"},
         )
         url = f"/usagers/{self.our_usager.id}/"
@@ -109,7 +109,7 @@ class AutorisationCancellationConfirmPageTests(TestCase):
     def test_incomplete_post_triggers_error(self):
         self.client.force_login(self.our_aidant)
         response_incorrect_confirm_form = self.client.post(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo),
+            self.url_for_autorisation_cancellation_confimation(self.good_combo),
             data={},
         )
         self.assertTemplateUsed(
@@ -120,7 +120,7 @@ class AutorisationCancellationConfirmPageTests(TestCase):
     def error_case_tester(self, data):
         self.client.force_login(self.our_aidant)
         response = self.client.get(
-            self.url_for_autorisation_cancelation_confimation(data)
+            self.url_for_autorisation_cancellation_confimation(data)
         )
         url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
