@@ -399,7 +399,7 @@ class Autorisation(models.Model):
     objects = AutorisationQuerySet.as_manager()
 
     def __str__(self):
-        return f"#{self.id}"
+        return f"#{self.id} {self.mandat} {self.mandat.usager} {self.demarche}"
 
     @cached_property
     def creation_date(self):
