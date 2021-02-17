@@ -8,7 +8,9 @@ def home(request):
     aidant = request.user
 
     return render(
-        request, "aidants_connect_web/espace_aidant/home.html", {"aidant": aidant},
+        request,
+        "aidants_connect_web/espace_aidant/home.html",
+        {"aidant": aidant},
     )
 
 

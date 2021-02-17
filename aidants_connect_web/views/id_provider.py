@@ -109,7 +109,8 @@ def authorize(request):
             )
 
         connection = Connection.objects.create(
-            state=parameters["state"], nonce=parameters["nonce"],
+            state=parameters["state"],
+            nonce=parameters["nonce"],
         )
         aidant = request.user
 

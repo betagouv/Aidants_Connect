@@ -163,7 +163,8 @@ class MandatModelTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=1),
         )
         AutorisationFactory(
-            mandat=self.mandat_1, demarche="justice",
+            mandat=self.mandat_1,
+            demarche="justice",
         )
 
         self.usager_2 = UsagerFactory(sub="anothersub")
@@ -175,10 +176,12 @@ class MandatModelTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=1),
         )
         AutorisationFactory(
-            mandat=self.mandat_2, demarche="argent",
+            mandat=self.mandat_2,
+            demarche="argent",
         )
         AutorisationFactory(
-            mandat=self.mandat_2, demarche="transport",
+            mandat=self.mandat_2,
+            demarche="transport",
         )
 
     def test_saving_and_retrieving_mandats(self):
@@ -228,7 +231,8 @@ class MandatModelTests(TestCase):
             revocation_date=timezone.now() - timedelta(minutes=1),
         )
         AutorisationFactory(
-            mandat=partially_revoked_mandat, demarche="loisirs",
+            mandat=partially_revoked_mandat,
+            demarche="loisirs",
         )
         active_mandats = Mandat.objects.active().count()
         inactive_mandats = Mandat.objects.inactive().count()
@@ -245,7 +249,8 @@ class MandatModelTests(TestCase):
             expiration_date=timezone.now() - timedelta(days=1),
         )
         AutorisationFactory(
-            mandat=expired_mandat, demarche="papiers",
+            mandat=expired_mandat,
+            demarche="papiers",
         )
 
         active_mandats = Mandat.objects.active().count()
@@ -277,10 +282,12 @@ class AutorisationModelTests(TestCase):
 
     def test_saving_and_retrieving_autorisation(self):
         first_autorisation = AutorisationFactory(
-            mandat=self.mandat_marge_homer_6, demarche="Carte grise",
+            mandat=self.mandat_marge_homer_6,
+            demarche="Carte grise",
         )
         second_autorisation = AutorisationFactory(
-            mandat=self.mandat_patricia_ned_6, demarche="Revenus",
+            mandat=self.mandat_patricia_ned_6,
+            demarche="Revenus",
         )
         self.assertEqual(Autorisation.objects.count(), 2)
 
@@ -300,7 +307,10 @@ class AutorisationModelTests(TestCase):
             usager=self.usager_homer,
             expiration_date=timezone.now() + timedelta(days=3),
         )
-        autorisation = AutorisationFactory(mandat=mandat, demarche="Carte grise",)
+        autorisation = AutorisationFactory(
+            mandat=mandat,
+            demarche="Carte grise",
+        )
         self.assertEqual(
             autorisation.creation_date,
             datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris")),
@@ -395,7 +405,8 @@ class AidantModelMethodsTests(TestCase):
             expiration_date=timezone.now() - timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_homer_1, demarche="Carte grise",
+            mandat=cls.mandat_marge_homer_1,
+            demarche="Carte grise",
         )
 
         cls.mandat_marge_homer_2 = MandatFactory(
@@ -404,7 +415,8 @@ class AidantModelMethodsTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_homer_2, demarche="Revenus",
+            mandat=cls.mandat_marge_homer_2,
+            demarche="Revenus",
         )
 
         cls.mandat_marge_homer_3 = MandatFactory(
@@ -413,7 +425,8 @@ class AidantModelMethodsTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=365),
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_homer_3, demarche="social",
+            mandat=cls.mandat_marge_homer_3,
+            demarche="social",
         )
 
         cls.mandat_marge_ned_1 = MandatFactory(
@@ -422,7 +435,8 @@ class AidantModelMethodsTests(TestCase):
             expiration_date=timezone.now() - timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_ned_1, demarche="Logement",
+            mandat=cls.mandat_marge_ned_1,
+            demarche="Logement",
         )
 
         # Partially revoked mandat
@@ -432,16 +446,20 @@ class AidantModelMethodsTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_ned_2, demarche="transports",
+            mandat=cls.mandat_marge_ned_2,
+            demarche="transports",
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_ned_2, demarche="famille",
+            mandat=cls.mandat_marge_ned_2,
+            demarche="famille",
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_ned_2, demarche="social",
+            mandat=cls.mandat_marge_ned_2,
+            demarche="social",
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_ned_2, demarche="travail",
+            mandat=cls.mandat_marge_ned_2,
+            demarche="travail",
         )
 
         AutorisationFactory(
@@ -456,7 +474,8 @@ class AidantModelMethodsTests(TestCase):
             expiration_date=timezone.now() - timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=cls.mandat_marge_sophie, demarche="transports",
+            mandat=cls.mandat_marge_sophie,
+            demarche="transports",
         )
         # Revoked mandat
         cls.mandat_marge_lola = MandatFactory(
@@ -477,7 +496,8 @@ class AidantModelMethodsTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         AutorisationFactory(
-            demarche="papiers", mandat=cls.mandat_marge_lola,
+            demarche="papiers",
+            mandat=cls.mandat_marge_lola,
         )
 
     def test_get_usagers(self):
@@ -612,10 +632,13 @@ class AidantModelMethodsTests(TestCase):
         # A valid mandat with one revoked autorisation
         usager_charles = UsagerFactory(given_name="Charles", sub="Charles")
         active_mandat = MandatFactory(
-            organisation=self.aidant_marge.organisation, usager=usager_charles,
+            organisation=self.aidant_marge.organisation,
+            usager=usager_charles,
         )
         valid_autorisation = AutorisationFactory(
-            mandat=active_mandat, demarche="papiers", revocation_date=None,
+            mandat=active_mandat,
+            demarche="papiers",
+            revocation_date=None,
         )
         AutorisationFactory(
             mandat=active_mandat,
@@ -637,7 +660,9 @@ class AidantModelMethodsTests(TestCase):
             expiration_date=timezone.now() - timedelta(days=1),
         )
         AutorisationFactory(
-            mandat=expired_mandat, demarche="social", revocation_date=None,
+            mandat=expired_mandat,
+            demarche="social",
+            revocation_date=None,
         )
 
         self.assertEqual(
@@ -667,7 +692,8 @@ class JournalModelTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         cls.first_autorisation = AutorisationFactory(
-            mandat=cls.first_mandat, demarche="Revenus",
+            mandat=cls.first_mandat,
+            demarche="Revenus",
         )
         Journal.log_autorisation_creation(
             cls.first_autorisation, aidant=cls.aidant_thierry
@@ -691,7 +717,8 @@ class JournalModelTests(TestCase):
 
     def test_a_franceconnect_usager_journal_entry_can_be_created(self):
         entry = Journal.log_franceconnection_usager(
-            aidant=self.aidant_thierry, usager=self.usager_ned,
+            aidant=self.aidant_thierry,
+            usager=self.usager_ned,
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
@@ -700,7 +727,8 @@ class JournalModelTests(TestCase):
     def test_log_autorisation_creation_complete(self):
 
         autorisation = AutorisationFactory(
-            mandat=self.mandat_thierry_ned_365, demarche="logement",
+            mandat=self.mandat_thierry_ned_365,
+            demarche="logement",
         )
         Journal.log_autorisation_creation(autorisation, self.aidant_thierry)
 

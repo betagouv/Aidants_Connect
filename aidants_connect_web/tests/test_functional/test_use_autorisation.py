@@ -53,7 +53,8 @@ class UseAutorisationTests(FunctionalTestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=mandat_aidant_1_jo_6, demarche="argent",
+            mandat=mandat_aidant_1_jo_6,
+            demarche="argent",
         )
 
         mandat_aidant_1_jo_12 = Mandat.objects.create(
@@ -63,7 +64,8 @@ class UseAutorisationTests(FunctionalTestCase):
         )
 
         AutorisationFactory(
-            mandat=mandat_aidant_1_jo_12, demarche="famille",
+            mandat=mandat_aidant_1_jo_12,
+            demarche="famille",
         )
 
         mandat_aidant_2_jo_12 = Mandat.objects.create(
@@ -72,7 +74,8 @@ class UseAutorisationTests(FunctionalTestCase):
             expiration_date=timezone.now() + timedelta(days=12),
         )
         AutorisationFactory(
-            mandat=mandat_aidant_2_jo_12, demarche="logement",
+            mandat=mandat_aidant_2_jo_12,
+            demarche="logement",
         )
 
     def test_use_autorisation_with_preloging(self):

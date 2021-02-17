@@ -95,7 +95,9 @@ class NewMandatRecapTests(TestCase):
             "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1"
         )
         self.test_usager = UsagerFactory(
-            given_name="Fabrice", birthplace="95277", sub=self.test_usager_sub,
+            given_name="Fabrice",
+            birthplace="95277",
+            sub=self.test_usager_sub,
         )
 
     def test_recap_url_triggers_the_recap_view(self):
@@ -264,12 +266,12 @@ class NewMandatRecapTests(TestCase):
 
             self.assertEqual(Autorisation.objects.count(), 3)
 
-            last_usager_organisation_papiers_autorisations = Autorisation.objects.filter(  # noqa
-                demarche="papiers",
-                mandat__usager=self.test_usager,
-                mandat__organisation=self.aidant_thierry.organisation,
-            ).order_by(
-                "-mandat__creation_date"
+            last_usager_organisation_papiers_autorisations = (
+                Autorisation.objects.filter(  # noqa
+                    demarche="papiers",
+                    mandat__usager=self.test_usager,
+                    mandat__organisation=self.aidant_thierry.organisation,
+                ).order_by("-mandat__creation_date")
             )
             new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
             old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]

@@ -35,10 +35,12 @@ class CancelAutorisationTests(FunctionalTestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=cls.mandat_thierry_josephine, demarche="argent",
+            mandat=cls.mandat_thierry_josephine,
+            demarche="argent",
         )
         AutorisationFactory(
-            mandat=cls.mandat_thierry_josephine, demarche="famille",
+            mandat=cls.mandat_thierry_josephine,
+            demarche="famille",
         )
 
         cls.mandat_jacqueline_josephine = MandatFactory(
@@ -47,7 +49,8 @@ class CancelAutorisationTests(FunctionalTestCase):
             expiration_date=timezone.now() + timedelta(days=12),
         )
         AutorisationFactory(
-            mandat=cls.mandat_jacqueline_josephine, demarche="logement",
+            mandat=cls.mandat_jacqueline_josephine,
+            demarche="logement",
         )
         super().setUpClass()
 

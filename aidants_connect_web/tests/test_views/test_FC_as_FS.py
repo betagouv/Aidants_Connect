@@ -268,7 +268,8 @@ class GetUserInfoTests(TestCase):
         self.usager = UsagerFactory(given_name="Joséphine", sub=self.usager_sub)
         self.aidant = AidantFactory()
         self.connection = Connection.objects.create(
-            access_token="mock_access_token", aidant=self.aidant,
+            access_token="mock_access_token",
+            aidant=self.aidant,
         )
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
