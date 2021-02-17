@@ -5,63 +5,64 @@
 {% block title %}Aidants Connect - Usagers{% endblock %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    <div class="row">
-      <h1 class="margin-bottom-0">Vos usagers</h1>
-      <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager">📝&nbsp;Ajouter un usager</a>
-    </div>
-    {% if messages %}
-      <div class="notification success" role="alert">
-        {% for message in messages %}
-          {{ message }}
-        {% endfor %}
+  <section class="section">
+    <div class="container">
+      <div class="row">
+        <h1 class="margin-bottom-0">Vos usagers</h1>
+        <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager">📝&nbsp;Ajouter un usager</a>
       </div>
-    {% endif %}
-    <div class="tiles">
-      <h2>Les usagers avec qui vous avez un mandat</h2>
-      {% if usagers %}
-        {# <input class="table__filter" type="text" name="input_val" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)"> #}
-        <table class="table">
-          <thead>
+      {% if messages %}
+        <div class="notification success" role="alert">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="tiles">
+        <h2>Les usagers avec qui vous avez un mandat</h2>
+        {% if usagers %}
+          {# <input class="table__filter" type="text" name="input_val" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)"> #}
+          <table class="table">
+            <thead>
             <tr>
               <th scope="col">Nom</th>
               <th scope="col">Prénom</th>
               <th scope="col">Date de naissance</th>
               <th scope="col">Autorisations</th>
             </tr>
-          </thead>
-          <tbody>
+            </thead>
+            <tbody>
             {% for usager, autorisations in usagers.items %}
 
               <tr>
-                  <td><a href="{% url 'usager_details' usager_id=usager.id %}"> Né(e): {{ usager.family_name }} {%  if usager.preferred_username  %} <br/> {{ usager.preferred_username }} {% endif %} </a></td>
+                <td><a href="{% url 'usager_details' usager_id=usager.id %}"> Né(e): {{ usager.family_name }}
+                  {% if usager.preferred_username %} <br/> {{ usager.preferred_username }} {% endif %} </a></td>
                 <td>{{ usager.given_name }}</td>
                 <td>{{ usager.birthdate | date:"d F" }}</td>
                 <td>
-                <ul>
-                   {% for autorisation, expired, expired_soon in autorisations %}
-                       <li>
+                  <ul>
+                    {% for autorisation, expired, expired_soon in autorisations %}
+                      <li>
                         {% if expired %}
-                           <span title="expiré le {{ expired| date:"d F" }}">{{ autorisation }} ⛔</span>
+                          <span title="expiré le {{ expired| date:"d F" }}">{{ autorisation }} ⛔</span>
                         {% elif expired_soon %}
-                           <span title="expire le {{ expired_soon| date:"d F" }}">{{ autorisation }} ⏳</span>
-                        {%  else %}
-                               <span>{{ autorisation }}</span>
-                       {% endif %}
-                       </li>
-                       {% endfor %}
-                </ul>
+                          <span title="expire le {{ expired_soon| date:"d F" }}">{{ autorisation }} ⏳</span>
+                        {% else %}
+                          <span>{{ autorisation }}</span>
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
                 </td>
               </tr>
             {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <div class="notification" role="alert">Vous n’avez pas d'usagers avec un mandat.</div>
-      {% endif %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="notification" role="alert">Vous n’avez pas d'usagers avec un mandat.</div>
+        {% endif %}
 
-    </div>
-  <div>
-</section>
+      </div>
+      <div>
+  </section>
 {% endblock content %}
