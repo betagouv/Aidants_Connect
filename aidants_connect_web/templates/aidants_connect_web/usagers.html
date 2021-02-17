@@ -49,12 +49,11 @@
                   <ul>
                     {% for autorisation, expired, expired_soon in autorisations %}
                       <li>
+                        {{ autorisation }}
                         {% if expired %}
-                          <span title="expiré le {{ expired| date:"d F" }}">{{ autorisation }} ⛔</span>
+                          <span title="expiré le {{ expired| date:"d F" }}">⛔</span>
                         {% elif expired_soon %}
-                          <span title="expire le {{ expired_soon| date:"d F" }}">{{ autorisation }} ⏳</span>
-                        {% else %}
-                          <span>{{ autorisation }}</span>
+                          <span title="expire le {{ expired_soon| date:"d F" }}">⏳</span>
                         {% endif %}
                       </li>
                     {% endfor %}
