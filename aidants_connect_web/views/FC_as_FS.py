@@ -122,7 +122,8 @@ def fc_callback(request):
     connection.save()
 
     Journal.log_franceconnection_usager(
-        aidant=connection.aidant, usager=connection.usager,
+        aidant=connection.aidant,
+        usager=connection.usager,
     )
 
     logout_base = f"{fc_base}/logout"

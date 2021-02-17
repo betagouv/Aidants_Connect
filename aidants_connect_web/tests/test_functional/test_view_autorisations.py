@@ -30,7 +30,8 @@ class ViewAutorisationsTests(FunctionalTestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=cls.mandat_aidant_josephine_6, demarche="social",
+            mandat=cls.mandat_aidant_josephine_6,
+            demarche="social",
         )
 
         cls.mandat_aidant_josephine_1 = MandatFactory(
@@ -40,7 +41,8 @@ class ViewAutorisationsTests(FunctionalTestCase):
         )
 
         AutorisationFactory(
-            mandat=cls.mandat_aidant_josephine_1, demarche="papiers",
+            mandat=cls.mandat_aidant_josephine_1,
+            demarche="papiers",
         )
 
         cls.mandat_aidant_corentin_365 = MandatFactory(
@@ -49,7 +51,8 @@ class ViewAutorisationsTests(FunctionalTestCase):
             expiration_date=timezone.now() + timedelta(days=365),
         )
         AutorisationFactory(
-            mandat=cls.mandat_aidant_corentin_365, demarche="famille",
+            mandat=cls.mandat_aidant_corentin_365,
+            demarche="famille",
         )
 
         super().setUpClass()

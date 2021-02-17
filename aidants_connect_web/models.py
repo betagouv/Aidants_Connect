@@ -166,7 +166,9 @@ class Aidant(AbstractUser):
         by the aidant
         """
         journal_create_attestation = Journal.objects.filter(
-            aidant=self, action="create_attestation", access_token=access_token,
+            aidant=self,
+            action="create_attestation",
+            access_token=access_token,
         ).last()
         return journal_create_attestation
 
@@ -204,7 +206,10 @@ class Usager(models.Model):
     preferred_username = models.CharField(max_length=255, blank=True)
 
     gender = models.CharField(
-        "Genre", max_length=6, choices=GENDER_CHOICES, default=GENDER_FEMALE,
+        "Genre",
+        max_length=6,
+        choices=GENDER_CHOICES,
+        default=GENDER_FEMALE,
     )
 
     birthdate = models.DateField("Date de naissance", blank=False)
@@ -212,7 +217,9 @@ class Usager(models.Model):
         "Lieu de naissance", max_length=5, blank=True, null=True
     )
     birthcountry = models.CharField(
-        "Pays de naissance", max_length=5, default=BIRTHCOUNTRY_FRANCE,
+        "Pays de naissance",
+        max_length=5,
+        default=BIRTHCOUNTRY_FRANCE,
     )
 
     sub = models.TextField(blank=False, unique=True)
@@ -561,13 +568,17 @@ class Journal(models.Model):
     @classmethod
     def log_franceconnection_usager(cls, aidant: Aidant, usager: Usager):
         return cls.objects.create(
-            aidant=aidant, usager=usager, action="franceconnect_usager",
+            aidant=aidant,
+            usager=usager,
+            action="franceconnect_usager",
         )
 
     @classmethod
     def log_update_email_usager(cls, aidant: Aidant, usager: Usager):
         return cls.objects.create(
-            aidant=aidant, usager=usager, action="update_email_usager",
+            aidant=aidant,
+            usager=usager,
+            action="update_email_usager",
         )
 
     @classmethod
