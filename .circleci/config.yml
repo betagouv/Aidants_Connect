@@ -46,6 +46,7 @@ jobs:
           name: run unit tests
           command: |
             . venv/bin/activate
+            black --check . --exclude aidants_connect_web/migrations/*
             flake8
             coverage run manage.py test
             coverage report
