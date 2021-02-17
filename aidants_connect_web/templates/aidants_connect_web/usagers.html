@@ -33,10 +33,16 @@
             </thead>
             <tbody>
             {% for usager, autorisations in usagers.items %}
-
               <tr>
-                <td><a href="{% url 'usager_details' usager_id=usager.id %}"> Né(e): {{ usager.family_name }}
-                  {% if usager.preferred_username %} <br/> {{ usager.preferred_username }} {% endif %} </a></td>
+                <td>
+                  <a href="{% url 'usager_details' usager_id=usager.id %}">
+                    {% if usager.preferred_username %}
+                      {{ usager.preferred_username }}<br/>
+                      Né(e)
+                    {% endif %}
+                    {{ usager.family_name }}
+                  </a>
+                </td>
                 <td>{{ usager.given_name }}</td>
                 <td>{{ usager.birthdate | date:"d F" }}</td>
                 <td>
