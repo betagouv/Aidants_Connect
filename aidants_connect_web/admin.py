@@ -41,7 +41,7 @@ admin_site.register(HoneypotLoginAttempt, HoneypotLoginAttemptAdmin)
 
 class VisibleToAdminMetier:
     """A mixin to make a model registered in the Admin visible to Admin Métier.
-       Admin Métier corresponds to the traditional django `is_staff`
+    Admin Métier corresponds to the traditional django `is_staff`
     """
 
     def has_module_permission(self, request):
@@ -62,7 +62,7 @@ class VisibleToAdminMetier:
 
 class VisibleToTechAdmin:
     """A mixin to make a model registered in the Admin visible to Tech Admins.
-        ATAC is modelised by is_superuser
+    ATAC is modelised by is_superuser
     """
 
     def has_module_permission(self, request):
@@ -90,10 +90,7 @@ class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
 
 
 class OrganisationAdmin(VisibleToAdminMetier, ModelAdmin):
-    list_display = ("name",
-                    "address",
-                    "admin_num_active_aidants",
-                    "admin_num_mandats")
+    list_display = ("name", "address", "admin_num_active_aidants", "admin_num_mandats")
     search_fields = ("name",)
 
 

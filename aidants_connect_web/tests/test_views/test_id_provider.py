@@ -56,10 +56,12 @@ class AuthorizeTests(TestCase):
         )
 
         AutorisationFactory(
-            mandat=mandat_2, demarche="Famille",
+            mandat=mandat_2,
+            demarche="Famille",
         )
         AutorisationFactory(
-            mandat=mandat_2, demarche="Revenus",
+            mandat=mandat_2,
+            demarche="Revenus",
         )
 
         mandat_3 = MandatFactory(
@@ -68,7 +70,8 @@ class AuthorizeTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=12),
         )
         AutorisationFactory(
-            mandat=mandat_3, demarche="Logement",
+            mandat=mandat_3,
+            demarche="Logement",
         )
         date_further_away_minus_one_hour = datetime(
             2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
@@ -252,7 +255,9 @@ class FISelectDemarcheTests(TestCase):
         )
         self.usager = UsagerFactory(given_name="Joséphine")
         self.connection = Connection.objects.create(
-            state="avalidstate123", nonce="avalidnonce456", usager=self.usager,
+            state="avalidstate123",
+            nonce="avalidnonce456",
+            usager=self.usager,
         )
         date_further_away_minus_one_hour = datetime(
             2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
@@ -274,10 +279,12 @@ class FISelectDemarcheTests(TestCase):
             creation_date=mandat_creation_date,
         )
         AutorisationFactory(
-            mandat=self.mandat_thierry_usager_1, demarche="transports",
+            mandat=self.mandat_thierry_usager_1,
+            demarche="transports",
         )
         AutorisationFactory(
-            mandat=self.mandat_thierry_usager_1, demarche="famille",
+            mandat=self.mandat_thierry_usager_1,
+            demarche="famille",
         )
 
         self.mandat_thierry_usager_2 = MandatFactory(
@@ -287,7 +294,8 @@ class FISelectDemarcheTests(TestCase):
             creation_date=mandat_creation_date,
         )
         AutorisationFactory(
-            mandat=self.mandat_thierry_usager_2, demarche="logement",
+            mandat=self.mandat_thierry_usager_2,
+            demarche="logement",
         )
 
     def test_FI_select_demarche_url_triggers_the_fi_select_demarche_view(self):
@@ -389,7 +397,7 @@ class FISelectDemarcheTests(TestCase):
     # we don't need FC_AS_FI_SECRET's value.
     # we use his hash instead.
     HASH_FC_AS_FI_SECRET="e26ade3b37d31920d89e233c447b0d5e51accff2fdc51d1f377b0"
-                         "31b5d581e70",
+    "31b5d581e70",
     FC_AS_FI_CALLBACK_URL="test_url.test_url",
     HOST="localhost",
 )
@@ -518,7 +526,8 @@ class UserInfoTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         self.autorisation = AutorisationFactory(
-            mandat=self.mandat_thierry_usager, demarche="transports",
+            mandat=self.mandat_thierry_usager,
+            demarche="transports",
         )
 
         self.access_token = "test_access_token"
@@ -631,7 +640,8 @@ class EndSessionEndpointTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=6),
         )
         self.autorisation = AutorisationFactory(
-            mandat=self.mandat_thierry_usager, demarche="transports",
+            mandat=self.mandat_thierry_usager,
+            demarche="transports",
         )
 
         self.access_token = "test_access_token"
