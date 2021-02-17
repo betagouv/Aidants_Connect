@@ -9,7 +9,7 @@ django-otp==0.9.3
 django-referrer-policy==1.0
 django-tabbed-admin==1.0.4
 
-black==19.10b0
+black==20.8b1
 celery[redis]==4.4.6
 coverage==5.1
 entrypoints==0.3
