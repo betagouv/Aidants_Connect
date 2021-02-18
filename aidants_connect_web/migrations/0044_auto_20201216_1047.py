@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0043_auto_20201118_1601"),
+        ("aidants_connect_web", "0001_202101_stable_schema"),
     ]
 
     operations = [
