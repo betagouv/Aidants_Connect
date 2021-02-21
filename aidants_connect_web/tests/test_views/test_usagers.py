@@ -29,6 +29,19 @@ class ViewAutorisationsTests(TestCase):
         cls.usager_corentin = UsagerFactory(
             given_name="Corentin", family_name="Dupont", preferred_username="Astro"
         )
+        cls.usager_philomene = UsagerFactory(
+            given_name="Philomène", family_name="Smith"
+        )
+
+        cls.mandat_aidant_phillomene = MandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_philomene,
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
+        AutorisationFactory(
+            mandat=cls.mandat_aidant_phillomene,
+            demarche="social",
+        )
 
         cls.mandat_aidant_alice_no_autorisation = MandatFactory(
             organisation=cls.aidant.organisation,
@@ -89,24 +102,20 @@ class ViewAutorisationsTests(TestCase):
                 self.mandat_aidant_josephine_1,
                 self.mandat_aidant_josephine_6,
                 self.mandat_aidant_alice_no_autorisation,
+                self.mandat_aidant_phillomene,
             ],
         )
 
     def test__get_usagers_dict_from_mandats(self):
         mandats = _get_mandats_for_usagers_index(self.aidant)
         usagers = _get_usagers_dict_from_mandats(mandats)
-        self.assertEqual(3, len(usagers))
+        self.assertEqual(4, len(usagers))
         usager, autorisations = usagers.popitem(last=False)
         self.assertEqual(usager, self.usager_corentin)
         self.assertEqual(
             autorisations,
             [
-                (
-                    "famille",
-                    self.mandat_inactif_aidant_corentin.expiration_date,
-                    self.mandat_inactif_aidant_corentin.expiration_date,
-                ),
-                ("famille", False, False),
+                ("famille", False),
             ],
         )
 
@@ -115,11 +124,15 @@ class ViewAutorisationsTests(TestCase):
         self.assertEqual(
             autorisations,
             [
-                ("papiers", False, self.mandat_aidant_josephine_1.expiration_date),
-                ("social", False, self.mandat_aidant_josephine_6.expiration_date),
+                ("papiers", self.mandat_aidant_josephine_1.expiration_date),
+                ("social", self.mandat_aidant_josephine_6.expiration_date),
             ],
         )
 
         usager, autorisations = usagers.popitem(last=False)
         self.assertEqual(usager, self.usager_alice)
         self.assertEqual(autorisations, [])
+
+        usager, autorisations = usagers.popitem(last=False)
+        self.assertEqual(usager, self.usager_philomene)
+        self.assertEqual(autorisations, [("Aucun mandats valides", None)])

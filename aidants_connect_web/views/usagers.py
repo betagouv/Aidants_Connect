@@ -29,27 +29,32 @@ def _get_mandats_for_usagers_index(aidant):
 
 def _get_usagers_dict_from_mandats(mandats):
     usagers = OrderedDict()
+    usagers_without_mandats = set()
     delta = settings.MANDAT_EXPIRED_SOON
     for mandat in mandats:
         if mandat.usager not in usagers:
             usagers[mandat.usager] = list()
-        expired = (
-            mandat.expiration_date if mandat.expiration_date < now() else False
-        )  # noqa
+        expired = mandat.expiration_date if mandat.expiration_date < now() else False
+        if expired:
+            usagers_without_mandats.add(mandat.usager)
+            continue
+
         expired_soon = (
             mandat.expiration_date
             if mandat.expiration_date - timedelta(days=delta) < now()
             else False
-        )  # noqa
+        )
         for autorisation in mandat.autorisations.all():
             if autorisation.revocation_date is None:
-                usagers[mandat.usager].append(
-                    (autorisation.demarche, expired, expired_soon)
-                )
+                if mandat.usager in usagers_without_mandats:
+                    usagers_without_mandats.remove(mandat.usager)
+
+                usagers[mandat.usager].append((autorisation.demarche, expired_soon))
             else:
-                usagers[mandat.usager].append(
-                    (autorisation.demarche, autorisation.revocation_date, False)
-                )
+                usagers_without_mandats.add(mandat.usagers)
+
+    for usager in usagers_without_mandats:
+        usagers[usager] = [("Aucun mandats valides", None)]
     return usagers
 
 
