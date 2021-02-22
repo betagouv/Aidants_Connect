@@ -29,7 +29,7 @@
       {% csrf_token %}
 
       <p>
-        {% trans "This importer will import the following fields: " %}
+        Le fichier à importer doit contenir les en-têtes suivants&nbsp;:
         <code>{{ fields|join:", " }}</code>
       </p>
 
@@ -135,20 +135,23 @@
 
     {% else %}
 
-      <h2>{% trans "Preview" %}</h2>
-
+      <h2>{% trans "Preview" %}
+        {% with result.valid_rows|length as total %}
+          ({{ total }} ligne{{ total|pluralize }} au total)
+        {% endwith %}
+      </h2>
       <table class="import-preview">
         <thead>
         <tr>
-          <th></th>
+          <td></td>
           {% for field in result.diff_headers %}
-            <th>{{ field }}</th>
+            <th scope="col">{{ field }}</th>
           {% endfor %}
         </tr>
         </thead>
-        {% for row in result.valid_rows %}
+        {% for row in result.valid_rows|slice:":10" %}
           <tr class="{{ row.import_type }}">
-            <td class="import-type">
+            <th scope="row" class="import-type">
               {% if row.import_type == 'new' %}
                 {% trans "New" %}
               {% elif row.import_type == 'skip' %}
@@ -158,7 +161,7 @@
               {% elif row.import_type == 'update' %}
                 {% trans "Update" %}
               {% endif %}
-            </td>
+            </th>
             {% for field in row.diff %}
               <td>{{ field }}</td>
             {% endfor %}
