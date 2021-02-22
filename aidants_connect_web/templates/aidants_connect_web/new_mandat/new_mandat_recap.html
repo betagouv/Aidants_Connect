@@ -50,21 +50,19 @@
             <input type="checkbox" id="id_personal_data" name="personal_data" required />
             <label class="label-inline" for="id_personal_data">
               Avoir communiqué à <strong>{{ usager }}</strong> les informations concernant l’objet de l’intervention,
-              la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données (accès, rectification, suppression…)
-            </label>
-          </div>
-          <div class="checkbox__group">
-            <input type="checkbox" id="id_brief" name="brief" required />
-            <label class="label-inline" for="id_brief">
+              la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données 
+              ET avoir conservé son consentement écrit 
               {% if is_remote %}
-                Avoir obtenu et conservé un consentement écrit (capture d’écran d’email, SMS…) de la part de <strong> {{ usager }}</strong>
-                pour conclure le mandat Aidant Connect <strong>à distance</strong> et utiliser ses données à caractère personnel.
+              (signature du mandat après impression) 
               {% else %}
-                Avoir obtenu et conservé un consentement écrit (signature du mandat après impression) de la part de <strong> {{ usager }}</strong>
-                pour conclure le mandat Aidant Connect et utiliser ses données à caractère personnel.
+              (capture d'écran email, SMS...)
               {% endif %}
+              pour conclure le mandat et utiliser ses données à caractère personnel. 
             </label>
           </div>
+        <h3>Rappels</h3>
+        <p>🤝 Le mandat est révocable à tout moment par les deux parties.</p>
+        <p>🗣 L'usager a des droits d'accès, de rectification et de suppression sur ses données.</p>
         </div>
         <h2>Validation de l'aidant</h2>
         <div class="panel form__group">
