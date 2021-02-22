@@ -17,4 +17,5 @@ def login_aidant(self):
     line_containing_magic_link = token_email.split("\n")[2]
     magic_link_https = line_containing_magic_link.split()[-1]
     magic_link_http = magic_link_https.replace("https", "http", 1)
-    self.selenium.get(magic_link_http)
+    magic_link_no_wait = magic_link_http.replace("chargement/code", "code", 1)
+    self.selenium.get(magic_link_no_wait)
