@@ -10,6 +10,7 @@ from aidants_connect_web.views import (
     service,
     espace_aidant,
     usagers,
+    datapass,
 )
 
 urlpatterns = [
@@ -89,6 +90,8 @@ urlpatterns = [
         service.faq_donnees_personnelles,
         name="faq_donnees_personnelles",
     ),
+    # # Datapass
+    path("datapass_receiver/", datapass.receiver, name="datapass_receiver"),
 ]
 
 urlpatterns.extend(magicauth_urls)

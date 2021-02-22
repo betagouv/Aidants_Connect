@@ -132,13 +132,6 @@ class MandatForm(forms.Form):
     # models.MandatDureeKeywords
     DUREES = [
         ("SHORT", {"title": "Mandat court", "description": "(expire demain)"}),
-        # (
-        #     "EUS_03_20",
-        #     {
-        #         "title": "Mandat confinement",
-        #         "description": "(expire à la fin de l'état d'urgence sanitaire)",
-        #     },
-        # ),
         ("LONG", {"title": "Mandat long", "description": "(12 mois)"}),
     ]
     duree = forms.ChoiceField(choices=DUREES, required=True, initial=3)
@@ -174,3 +167,10 @@ class RecapMandatForm(OTPForm, forms.Form):
         label="J’autorise mon aidant à utiliser mes données à caractère personnel."
     )
     brief = forms.BooleanField(label="brief")
+
+
+class DatapassForm(forms.Form):
+    data_pass_id = forms.IntegerField()
+    organization_name = forms.CharField()
+    organization_siret = forms.IntegerField()
+    organization_address = forms.CharField()
