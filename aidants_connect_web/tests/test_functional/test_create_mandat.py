@@ -97,10 +97,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         id_personal_data = checkboxes[1]
         self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
         id_personal_data.click()
-        id_brief = checkboxes[2]
-        self.assertEqual(id_brief.get_attribute("id"), "id_brief")
-        id_brief.click()
-        id_otp_token = checkboxes[3]
+        id_otp_token = checkboxes[2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys("123455")
         submit_button = checkboxes[-1]

@@ -166,7 +166,6 @@ class RecapMandatForm(OTPForm, forms.Form):
     personal_data = forms.BooleanField(
         label="J’autorise mon aidant à utiliser mes données à caractère personnel."
     )
-    brief = forms.BooleanField(label="brief")
 
 
 class DatapassForm(forms.Form):
