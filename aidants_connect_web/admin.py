@@ -245,6 +245,7 @@ class CarteTOTPAdmin(ImportMixin, VisibleToTechAdmin, ModelAdmin):
     search_fields = ("serial_number",)
     ordering = ("-created_at",)
     resource_class = CarteTOTPResource
+    import_template_name = "aidants_connect_web/admin/import_export/import.html"
 
     def generate_log_entries(self, result, request):
         super().generate_log_entries(result, request)
