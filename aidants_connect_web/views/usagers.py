@@ -1,28 +1,77 @@
 import logging
+from collections import OrderedDict
 
+from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
+from django.db.models.functions import Concat
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.utils.timezone import timedelta, now
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import Mandat, Journal, Autorisation
 
-
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
+
+
+def _get_mandats_for_usagers_index(aidant):
+    return (
+        Mandat.objects.prefetch_related("autorisations")
+        .filter(organisation=aidant.organisation)
+        .annotate(
+            for_ordering=Concat("usager__preferred_username", "usager__family_name")
+        )
+        .order_by("for_ordering", "expiration_date")
+    )
+
+
+def _get_usagers_dict_from_mandats(mandats):
+    usagers = OrderedDict()
+    usagers_without_mandats = set()
+    delta = settings.MANDAT_EXPIRED_SOON
+    for mandat in mandats:
+        if mandat.usager not in usagers:
+            usagers[mandat.usager] = list()
+        expired = mandat.expiration_date if mandat.expiration_date < now() else False
+        if expired:
+            usagers_without_mandats.add(mandat.usager)
+            continue
+
+        expired_soon = (
+            mandat.expiration_date
+            if mandat.expiration_date - timedelta(days=delta) < now()
+            else False
+        )
+        for autorisation in mandat.autorisations.all():
+            if autorisation.revocation_date is None:
+                if mandat.usager in usagers_without_mandats:
+                    usagers_without_mandats.remove(mandat.usager)
+
+                usagers[mandat.usager].append((autorisation.demarche, expired_soon))
+            else:
+                usagers_without_mandats.add(mandat.usagers)
+
+    for usager in usagers_without_mandats:
+        usagers[usager] = [("Aucun mandats valides", None)]
+    return usagers
 
 
 @login_required
 @activity_required
 def usagers_index(request):
     aidant = request.user
-    usagers = aidant.get_usagers()
+    mandats = _get_mandats_for_usagers_index(aidant)
+    usagers = _get_usagers_dict_from_mandats(mandats)
 
     return render(
         request,
         "aidants_connect_web/usagers.html",
-        {"aidant": aidant, "usagers": usagers},
+        {
+            "aidant": aidant,
+            "usagers": usagers,
+        },
     )
 
 

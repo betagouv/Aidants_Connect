@@ -21,8 +21,19 @@ class ViewAutorisationsTests(FunctionalTestCase):
         device = cls.aidant.staticdevice_set.create(id=cls.aidant.id)
         device.token_set.create(token="123456")
 
-        cls.usager_josephine = UsagerFactory(given_name="Joséphine")
-        cls.usager_corentin = UsagerFactory(given_name="Corentin")
+        cls.usager_alice = UsagerFactory(given_name="Alice", family_name="Lovelace")
+        cls.usager_josephine = UsagerFactory(
+            given_name="Joséphine", family_name="Dupont"
+        )
+        cls.usager_corentin = UsagerFactory(
+            given_name="Corentin", family_name="Dupont", preferred_username="Astro"
+        )
+
+        cls.mandat_aidant_alice_no_autorisation = MandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_alice,
+            expiration_date=timezone.now() + timedelta(days=5),
+        )
 
         cls.mandat_aidant_josephine_6 = MandatFactory(
             organisation=cls.aidant.organisation,
@@ -73,5 +84,5 @@ class ViewAutorisationsTests(FunctionalTestCase):
                     "table"
                 ).find_elements_by_css_selector("tbody tr")
             ),
-            2,
+            3,
         )
