@@ -5,7 +5,7 @@ from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
 
-from aidants_connect_web.models import Autorisation
+from aidants_connect_web.models import Autorisation, Mandat
 
 from aidants_connect_web.tests.factories import (
     OrganisationFactory,
@@ -17,8 +17,8 @@ from aidants_connect_web.tests.factories import (
 from aidants_connect_web.views import usagers
 
 
-@tag("usagers", "revoke")
-class AutorisationCancelationConfirmPageTests(TestCase):
+@tag("usagers", "cancel")
+class AutorisationCancellationConfirmPageTests(TestCase):
     def setUp(self):
         self.client = Client()
 
@@ -71,7 +71,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
             "autorisation": self.valid_autorisation.id,
         }
 
-    def url_for_autorisation_cancelation_confimation(self, data):
+    def url_for_autorisation_cancellation_confimation(self, data):
         return (
             f"/usagers/{data['usager']}"
             f"/autorisations/{data['autorisation']}/cancel_confirm"
@@ -79,7 +79,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
 
     def test_url_triggers_the_correct_view(self):
         found = resolve(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo)
+            self.url_for_autorisation_cancellation_confimation(self.good_combo)
         )
         self.assertEqual(found.func, usagers.confirm_autorisation_cancelation)
 
@@ -87,7 +87,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response_to_get_request = self.client.get(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo)
+            self.url_for_autorisation_cancellation_confimation(self.good_combo)
         )
         self.assertTemplateUsed(
             response_to_get_request,
@@ -98,7 +98,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response_correct_confirm_form = self.client.post(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo),
+            self.url_for_autorisation_cancellation_confimation(self.good_combo),
             data={"csrfmiddlewaretoken": "coucou"},
         )
         url = f"/usagers/{self.our_usager.id}/"
@@ -109,7 +109,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
     def test_incomplete_post_triggers_error(self):
         self.client.force_login(self.our_aidant)
         response_incorrect_confirm_form = self.client.post(
-            self.url_for_autorisation_cancelation_confimation(self.good_combo),
+            self.url_for_autorisation_cancellation_confimation(self.good_combo),
             data={},
         )
         self.assertTemplateUsed(
@@ -120,7 +120,7 @@ class AutorisationCancelationConfirmPageTests(TestCase):
     def error_case_tester(self, data):
         self.client.force_login(self.our_aidant)
         response = self.client.get(
-            self.url_for_autorisation_cancelation_confimation(data)
+            self.url_for_autorisation_cancellation_confimation(data)
         )
         url = "/espace-aidant/"
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -177,3 +177,92 @@ class AutorisationCancelationConfirmPageTests(TestCase):
         }
 
         self.error_case_tester(bad_combo_for_our_aidant)
+
+
+@tag("usagers", "cancel", "cancel_mandat")
+class MandatCancellationConfirmPageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        self.our_organisation = OrganisationFactory()
+        self.our_aidant = AidantFactory(organisation=self.our_organisation)
+        self.our_usager = UsagerFactory()
+
+        self.valid_mandat = MandatFactory(
+            organisation=self.our_organisation,
+            usager=self.our_usager,
+        )
+        self.valid_autorisation = AutorisationFactory(
+            mandat=self.valid_mandat, demarche="Revenus"
+        )
+
+    def test_url_triggers_the_correct_view(self):
+        found = resolve(f"/mandats/{self.valid_mandat.id}/cancel_confirm")
+        self.assertEqual(found.func, usagers.confirm_mandat_cancelation)
+
+    def test_get_triggers_the_correct_template(self):
+        self.client.force_login(self.our_aidant)
+
+        response_to_get_request = self.client.get(
+            f"/mandats/{self.valid_mandat.id}/cancel_confirm"
+        )
+
+        self.assertTemplateUsed(
+            response_to_get_request,
+            "aidants_connect_web/confirm_mandat_cancellation.html",
+        )
+
+    def test_complete_post_triggers_redirect(self):
+
+        self.assertTrue(self.valid_mandat.is_active)
+
+        self.client.force_login(self.our_aidant)
+        response_correct_confirm_form = self.client.post(
+            f"/mandats/{self.valid_mandat.id}/cancel_confirm",
+            data={"csrfmiddlewaretoken": "coucou"},
+        )
+
+        self.assertRedirects(
+            response_correct_confirm_form,
+            f"/usagers/{self.our_usager.id}/",
+            fetch_redirect_response=False,
+        )
+        self.assertFalse(self.valid_mandat.is_active)
+
+    def test_incomplete_post_triggers_error(self):
+        self.client.force_login(self.our_aidant)
+        response_incorrect_confirm_form = self.client.post(
+            f"/mandats/{self.valid_mandat.id}/cancel_confirm",
+            data={},
+        )
+        self.assertTemplateUsed(
+            response_incorrect_confirm_form,
+            "aidants_connect_web/confirm_mandat_cancellation.html",
+        )
+        self.assertIn(
+            "Une erreur s'est produite lors de la révocation du mandat",
+            response_incorrect_confirm_form.context["error"],
+        )
+
+    def test_know_error_cases(self):
+        def error_case_tester(mandat_id):
+            self.client.force_login(self.our_aidant)
+            response = self.client.get(f"/mandats/{mandat_id}/cancel_confirm")
+            url = "/espace-aidant/"
+            self.assertRedirects(response, url, fetch_redirect_response=False)
+
+        expired_mandat = MandatFactory(
+            expiration_date=timezone.now() - timedelta(hours=6)
+        )
+        revoked_mandat = MandatFactory()
+        AutorisationFactory(
+            mandat=revoked_mandat, revocation_date=timezone.now() - timedelta(hours=6)
+        )
+        other_org = OrganisationFactory(name="not our organisation")
+        unrelated_mandat = MandatFactory(organisation=other_org, usager=self.our_usager)
+        non_existing_mandat_id = Mandat.objects.last().id + 1
+
+        error_case_tester(non_existing_mandat_id)
+        error_case_tester(expired_mandat.id)
+        error_case_tester(revoked_mandat.id)
+        error_case_tester(unrelated_mandat.id)

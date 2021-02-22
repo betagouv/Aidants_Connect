@@ -331,7 +331,7 @@ class Mandat(models.Model):
     def is_expired(self) -> bool:
         return timezone.now() > self.expiration_date
 
-    @cached_property
+    @property
     def is_active(self):
         # A `mandat` is considered `active` if it contains
         # at least one active `autorisation`.
@@ -539,7 +539,9 @@ class Journal(models.Model):
     attestation_hash = models.CharField(max_length=100, blank=True, null=True)
     additional_information = models.TextField(blank=True, null=True)
     is_remote_mandat = models.BooleanField(default=False)
-
+    mandat = models.ForeignKey(
+        Mandat, null=True, on_delete=models.PROTECT, related_name="journal_entries"
+    )
     objects = JournalQuerySet.as_manager()
 
     class Meta:
@@ -645,4 +647,13 @@ class Journal(models.Model):
             demarche=autorisation.demarche,
             duree=autorisation.duration_for_humans,
             autorisation=autorisation.id,
+        )
+
+    @classmethod
+    def log_mandat_cancel(cls, mandat: Mandat, aidant: Aidant):
+        return cls.objects.create(
+            aidant=aidant,
+            usager=mandat.usager,
+            action="cancel_mandat",
+            mandat=mandat,
         )

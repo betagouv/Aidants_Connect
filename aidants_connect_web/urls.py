@@ -29,9 +29,14 @@ urlpatterns = [
     path("usagers/", usagers.usagers_index, name="usagers"),
     path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),
     path(
-        "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_confirm",  # noqa
+        "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_confirm",
         usagers.confirm_autorisation_cancelation,
         name="confirm_autorisation_cancelation",
+    ),
+    path(
+        "mandats/<int:mandat_id>/cancel_confirm",
+        usagers.confirm_mandat_cancelation,
+        name="confirm_mandat_cancelation",
     ),
     # new mandat
     path("creation_mandat/", new_mandat.new_mandat, name="new_mandat"),
