@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+  <title>Aidants Connect - Connexion en cours</title>
+</head>
+<body>
+<h1>Connexion en cours…</h1>
+<p>Veuillez patienter quelques instants.</p>
+<p>Si rien ne se passe, veuillez cliquer sur ce bouton :</p>
+<a id="connect_me" href="{{ next_step_url }}">Se connecter</a>
+<script>
+    var waitSeconds = {{ WAIT_SECONDS }};
+    setTimeout(function () {
+        url = document.getElementById('connect_me').href;
+        window.location.replace(url);
+    }, waitSeconds * 1000);
+</script>
+</body>
+</html>
