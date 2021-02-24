@@ -667,6 +667,7 @@ class Journal(models.Model):
             aidant=aidant, action="import_totp_cards", additional_information=message
         )
 
+
 class CarteTOTP(models.Model):
     serial_number = models.CharField(max_length=100)
     seed = models.CharField(max_length=40)
