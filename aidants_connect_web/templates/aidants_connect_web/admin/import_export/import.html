@@ -132,44 +132,32 @@
         {% endfor %}
         </tbody>
       </table>
-
     {% else %}
-
       <h2>{% trans "Preview" %}
         {% with result.valid_rows|length as total %}
           ({{ total }} ligne{{ total|pluralize }} au total)
         {% endwith %}
       </h2>
-      <table class="import-preview">
-        <thead>
-        <tr>
-          <td></td>
-          {% for field in result.diff_headers %}
-            <th scope="col">{{ field }}</th>
-          {% endfor %}
-        </tr>
-        </thead>
-        {% for row in result.valid_rows|slice:":10" %}
-          <tr class="{{ row.import_type }}">
-            <th scope="row" class="import-type">
-              {% if row.import_type == 'new' %}
-                {% trans "New" %}
-              {% elif row.import_type == 'skip' %}
-                {% trans "Skipped" %}
-              {% elif row.import_type == 'delete' %}
-                {% trans "Delete" %}
-              {% elif row.import_type == 'update' %}
-                {% trans "Update" %}
-              {% endif %}
-            </th>
-            {% for field in row.diff %}
-              <td>{{ field }}</td>
+      {% regroup result.valid_rows by import_type as row_list %}
+      {% for status in row_list %}
+        <h3>{{ status.list|length }} {{ status.grouper }}</h3>
+        <table class="import-preview">
+          <thead>
+          <tr>
+            {% for field in result.diff_headers %}
+              <th scope="col">{{ field }}</th>
             {% endfor %}
           </tr>
-        {% endfor %}
-      </table>
-
+          </thead>
+          {% for row in status.list|slice:":10" %}
+            <tr class="{{ row.import_type }}">
+              {% for field in row.diff %}
+                <td>{{ field }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </table>
+      {% endfor %}
     {% endif %}
-
   {% endif %}
 {% endblock %}
