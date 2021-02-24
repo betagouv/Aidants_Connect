@@ -240,7 +240,7 @@ class CarteTOTPResource(resources.ModelResource):
         fields = ("serial_number", "seed")
 
 
-class CarteTOTPAdmin(ImportMixin, VisibleToTechAdmin, ModelAdmin):
+class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = ("serial_number",)
     search_fields = ("serial_number",)
     ordering = ("-created_at",)
