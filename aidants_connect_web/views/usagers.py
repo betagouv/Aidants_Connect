@@ -44,14 +44,15 @@ def _get_usagers_dict_from_mandats(mandats):
             if mandat.expiration_date - timedelta(days=delta) < now()
             else False
         )
-        for autorisation in mandat.autorisations.all():
+
+        for autorisation in mandat.autorisations.all().order_by("pk"):
             if autorisation.revocation_date is None:
                 if mandat.usager in usagers_without_mandats:
                     usagers_without_mandats.remove(mandat.usager)
 
                 usagers[mandat.usager].append((autorisation.demarche, expired_soon))
-            else:
-                usagers_without_mandats.add(mandat.usagers)
+            elif not usagers[mandat.usager]:
+                usagers_without_mandats.add(mandat.usager)
 
     for usager in usagers_without_mandats:
         usagers[usager] = [("Aucun mandats valides", None)]

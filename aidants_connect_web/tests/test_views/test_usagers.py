@@ -58,11 +58,21 @@ class ViewAutorisationsTests(TestCase):
             mandat=cls.mandat_aidant_josephine_6,
             demarche="social",
         )
+        AutorisationFactory(
+            mandat=cls.mandat_aidant_josephine_6,
+            demarche="papiers",
+            revocation_date=timezone.now() - timedelta(days=6),
+        )
 
         cls.mandat_aidant_josephine_1 = MandatFactory(
             organisation=cls.aidant.organisation,
             usager=cls.usager_josephine,
             expiration_date=timezone.now() + timedelta(days=1),
+        )
+        AutorisationFactory(
+            mandat=cls.mandat_aidant_josephine_1,
+            demarche="famille",
+            revocation_date=timezone.now() - timedelta(days=6),
         )
 
         AutorisationFactory(
