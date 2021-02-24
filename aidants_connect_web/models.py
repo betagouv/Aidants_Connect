@@ -13,6 +13,7 @@ class Organisation(models.Model):
     name = models.TextField("Nom", default="No name provided")
     siret = models.BigIntegerField("N° SIRET", default=1)
     address = models.TextField("Adresse", default="No address provided")
+    zipcode = models.CharField("Code Postal", max_length=10, default="0")
 
     def __str__(self):
         return f"{self.name}"
