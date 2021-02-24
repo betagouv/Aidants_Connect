@@ -283,6 +283,7 @@ MAGICAUTH_LOGIN_VIEW_TEMPLATE = "login/login.html"
 MAGICAUTH_EMAIL_SENT_VIEW_TEMPLATE = "login/email_sent.html"
 MAGICAUTH_EMAIL_HTML_TEMPLATE = "login/email_template.html"
 MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
+MAGICAUTH_WAIT_VIEW_TEMPLATE = "login/wait.html"
 MAGICAUTH_ENABLE_2FA = True
 
 # https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py#L54  # noqa
@@ -329,6 +330,7 @@ CSP_SCRIPT_SRC = (
     "'sha256-FUfFEwUd+ObSebyGDfkxyV7KwtyvBBwsE/VxIOfPD68='",  # tabbed_admin
     "'sha256-dzE1fiHF13yOIlSQf8CYbmucPoYAOHwQ70Y3OO70o+E='",  # main.html
     "'sha256-qtDLNBeXbQEZ6BoCPDfxDpo3OOJsnlVc/NGAMBmfHq0='",  # new_mandat.html
+    "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
 )
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
