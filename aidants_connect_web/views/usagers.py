@@ -157,8 +157,8 @@ def confirm_mandat_cancelation(request, mandat_id):
     except Mandat.DoesNotExist:
         django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")
+    usager = mandat.usager
     if mandat.is_active:
-        usager = mandat.usager
         remaining_autorisations = (
             mandat.autorisations.all()
             .filter(revocation_date=None)
@@ -201,6 +201,6 @@ def confirm_mandat_cancelation(request, mandat_id):
             "usager_name": usager.get_full_name(),
             "usager_id": usager.id,
             "mandat": mandat,
-            "remaining_autorisations": remaining_autorisations,
+            "remaining_autorisations": [],
         },
     )

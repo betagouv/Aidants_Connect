@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.test import tag, TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from aidants_connect_web.tests.factories import (
@@ -146,3 +147,40 @@ class ViewAutorisationsTests(TestCase):
         usager, autorisations = usagers.popitem(last=False)
         self.assertEqual(usager, self.usager_philomene)
         self.assertEqual(autorisations, [("Aucun mandat valide", None)])
+
+
+@tag("usagers")
+class ViewCancelMandatTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.aidant = AidantFactory(
+            username="dupont@example.com", email="dupont@example.com"
+        )
+        device = cls.aidant.staticdevice_set.create(id=cls.aidant.id)
+        device.token_set.create(token="123456")
+
+        cls.usager_philomene = UsagerFactory(
+            given_name="Philomène", family_name="Smith"
+        )
+
+        cls.mandat_aidant_phillomene = MandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_philomene,
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
+        AutorisationFactory(
+            mandat=cls.mandat_aidant_phillomene,
+            demarche="social",
+        )
+        super().setUpClass()
+
+    def test_cancel_inactive_mandat(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get(
+            reverse(
+                "confirm_mandat_cancelation", args=(self.mandat_aidant_phillomene.id,)
+            )
+        )
+        self.assertEqual(
+            response.context["usager_name"], self.usager_philomene.get_full_name()
+        )
