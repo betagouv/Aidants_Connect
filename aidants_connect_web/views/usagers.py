@@ -258,3 +258,29 @@ def confirm_mandat_cancelation(request, mandat_id):
             "remaining_autorisations": [],
         },
     )
+
+
+@login_required
+@activity_required
+def mandat_cancellation_attestation(request, mandat_id):
+    organisation = request.user.organisation
+    try:
+        mandat = Mandat.objects.get(pk=mandat_id, organisation=organisation)
+        if not mandat.autorisations.all().exclude(revocation_date=None):
+            return redirect("espace_aidant_home")
+
+    except Mandat.DoesNotExist:
+        django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+        return redirect("espace_aidant_home")
+    usager = mandat.usager
+
+    return render(
+        request,
+        "aidants_connect_web/mandat_cancellation_attestation.html",
+        {
+            "organisation": organisation,
+            "usager_name": usager.get_full_name(),
+            "mandat": mandat,
+            "creation_date": mandat.creation_date.strftime("%d/%m/%Y à %Hh%M"),
+        },
+    )
