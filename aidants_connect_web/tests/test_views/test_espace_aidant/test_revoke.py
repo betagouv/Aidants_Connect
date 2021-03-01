@@ -1,4 +1,6 @@
 from datetime import timedelta
+import datetime
+import pytz
 
 from django.test import tag, TestCase
 from django.test.client import Client
@@ -266,3 +268,101 @@ class MandatCancellationConfirmPageTests(TestCase):
         error_case_tester(expired_mandat.id)
         error_case_tester(revoked_mandat.id)
         error_case_tester(unrelated_mandat.id)
+
+
+@tag("usagers", "cancel", "cancel_mandat", "attestation")
+class MandatCancellationAttestationTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        self.our_organisation = OrganisationFactory()
+        self.our_aidant = AidantFactory(organisation=self.our_organisation)
+        self.our_usager = UsagerFactory()
+
+        self.valid_mandat = MandatFactory(
+            organisation=self.our_organisation,
+            usager=self.our_usager,
+            creation_date=datetime.datetime(
+                2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
+            ),
+        )
+        self.valid_autorisation = AutorisationFactory(
+            mandat=self.valid_mandat, demarche="Revenus"
+        )
+
+        self.cancelled_mandat = MandatFactory(
+            organisation=self.our_organisation,
+            usager=self.our_usager,
+            creation_date=datetime.datetime(
+                2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
+            ),
+        )
+        AutorisationFactory(
+            mandat=self.cancelled_mandat,
+            demarche="Revenus",
+            revocation_date=timezone.now() - timedelta(minutes=5),
+        )
+
+        self.expired_mandat = MandatFactory(
+            organisation=self.our_organisation,
+            usager=self.our_usager,
+            creation_date=datetime.datetime(
+                2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
+            ),
+            expiration_date=timezone.now() - timedelta(minutes=5),
+        )
+        AutorisationFactory(
+            mandat=self.expired_mandat,
+            demarche="Revenus",
+            revocation_date=timezone.now() - timedelta(minutes=5),
+        )
+
+        AutorisationFactory(
+            mandat=self.expired_mandat,
+            demarche="Papiers",
+        )
+
+    def test_url_triggers_the_correct_view(self):
+        found = resolve(
+            f"/mandats/{self.cancelled_mandat.id}/attestation_de_revocation"
+        )
+        self.assertEqual(found.func, usagers.mandat_cancellation_attestation)
+
+    def test_get_triggers_the_correct_template(self):
+        self.client.force_login(self.our_aidant)
+
+        response_to_get_request = self.client.get(
+            f"/mandats/{self.cancelled_mandat.id}/attestation_de_revocation"
+        )
+
+        self.assertTemplateUsed(
+            response_to_get_request,
+            "aidants_connect_web/mandat_cancellation_attestation.html",
+        )
+
+    def test_template_contains_correct_information(self):
+        self.client.force_login(self.our_aidant)
+
+        response = self.client.get(
+            f"/mandats/{self.expired_mandat.id}/attestation_de_revocation"
+        )
+
+        self.assertIn(
+            b"Homer",
+            response.content,
+        )
+        self.assertIn(b"2021", response.content)
+        self.assertIn(b"HOULBEC", response.content)
+
+    def test_mandat_with_no_cancellations_redirects(self):
+        self.client.force_login(self.our_aidant)
+
+        response = self.client.get(
+            f"/mandats/{self.valid_mandat.id}/attestation_de_revocation"
+        )
+
+        self.assertRedirects(
+            response,
+            "/espace-aidant/",
+            fetch_redirect_response=False,
+        )
