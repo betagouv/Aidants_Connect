@@ -36,7 +36,6 @@ def fc_authorize(request):
         "birthplace",
         "given_name",
         "family_name",
-        "preferred_username",
         "birthcountry",
     ]
 
@@ -166,7 +165,6 @@ def get_user_info(connection: Connection) -> tuple:
             usager = Usager.objects.create(
                 given_name=user_info.get("given_name"),
                 family_name=user_info.get("family_name"),
-                preferred_username=user_info.get("preferred_username"),
                 birthdate=user_info.get("birthdate"),
                 gender=user_info.get("gender"),
                 birthplace=user_info.get("birthplace"),
