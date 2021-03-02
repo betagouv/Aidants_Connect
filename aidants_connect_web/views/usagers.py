@@ -55,7 +55,7 @@ def _get_usagers_dict_from_mandats(mandats):
                 usagers_without_mandats.add(mandat.usager)
 
     for usager in usagers_without_mandats:
-        usagers[usager] = [("Aucun mandats valides", None)]
+        usagers[usager] = [("Aucun mandat valide", None)]
     return usagers
 
 

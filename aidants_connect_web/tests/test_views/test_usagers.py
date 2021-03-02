@@ -145,4 +145,4 @@ class ViewAutorisationsTests(TestCase):
 
         usager, autorisations = usagers.popitem(last=False)
         self.assertEqual(usager, self.usager_philomene)
-        self.assertEqual(autorisations, [("Aucun mandats valides", None)])
+        self.assertEqual(autorisations, [("Aucun mandat valide", None)])
