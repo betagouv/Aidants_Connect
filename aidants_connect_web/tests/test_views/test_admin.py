@@ -5,11 +5,16 @@ from django.test import RequestFactory, tag, TestCase
 from django.test.client import Client
 from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
+from django_otp.admin import OTPAdminSite
 from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from import_export.results import Result
 
-from aidants_connect_web.admin import VisibleToAdminMetier
-from aidants_connect_web.admin import VisibleToTechAdmin
+from aidants_connect_web.admin import (
+    VisibleToAdminMetier,
+    VisibleToTechAdmin,
+    CarteTOTPAdmin,
+)
 
 from aidants_connect_web.models import (
     Aidant,
@@ -18,6 +23,7 @@ from aidants_connect_web.models import (
     Mandat,
     Organisation,
     Usager,
+    CarteTOTP,
 )
 from aidants_connect_web.tests.factories import AidantFactory
 
@@ -222,3 +228,24 @@ class JournalAdminPageTests(TestCase):
         url = reverse(self.url_root + "_add")
         response = self.atac_client.get(url)
         self.assertEqual(response.status_code, 403)
+
+
+@tag("admin")
+class TotpCardsImportTests(TestCase):
+    def setUp(self):
+        self.admin = OTPAdminSite(OTPAdminSite.name)
+
+    def test_log_entry_is_added(self):
+        initial_count = Journal.objects.count()
+
+        user = AidantFactory(is_staff=True, is_superuser=True)
+        factory = RequestFactory()
+        request = factory.get("/")
+        request.user = user
+
+        result = Result()
+
+        a = CarteTOTPAdmin(CarteTOTP, self.admin)
+        a.generate_log_entries(result, request)
+
+        self.assertEqual(Journal.objects.count(), 1 + initial_count)

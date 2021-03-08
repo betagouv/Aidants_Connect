@@ -18,6 +18,9 @@ from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from import_export import resources
+from import_export.admin import ImportMixin
+from import_export.results import RowResult
 from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
@@ -31,6 +34,7 @@ from aidants_connect_web.models import (
     Mandat,
     Organisation,
     Usager,
+    CarteTOTP,
 )
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
@@ -229,6 +233,29 @@ class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
         return False
 
 
+class CarteTOTPResource(resources.ModelResource):
+    class Meta:
+        model = CarteTOTP
+        import_id_fields = ("serial_number",)
+        fields = ("serial_number", "seed")
+
+
+class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
+    list_display = ("serial_number",)
+    search_fields = ("serial_number",)
+    ordering = ("-created_at",)
+    resource_class = CarteTOTPResource
+    import_template_name = "aidants_connect_web/admin/import_export/import.html"
+
+    def generate_log_entries(self, result, request):
+        super().generate_log_entries(result, request)
+        Journal.log_toitp_card_import(
+            request.user,
+            result.totals[RowResult.IMPORT_TYPE_NEW],
+            result.totals[RowResult.IMPORT_TYPE_UPDATE],
+        )
+
+
 # Display the following tables in the admin
 admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
@@ -240,6 +267,7 @@ admin_site.register(Connection, ConnectionAdmin)
 admin_site.register(MagicToken)
 admin_site.register(StaticDevice, StaticDeviceStaffAdmin)
 admin_site.register(TOTPDevice, TOTPDeviceStaffAdmin)
+admin_site.register(CarteTOTP, CarteTOTPAdmin)
 
 # Also register the Django Celery Beat models
 admin_site.register(PeriodicTask, PeriodicTaskAdmin)
