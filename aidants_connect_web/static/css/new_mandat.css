@@ -6,7 +6,12 @@ form {
   padding: 0;
   position: relative;
 }
-
+@media all and (-ms-high-contrast:none) {
+    /* ie11 specific */
+     .tile {
+         margin: 1em 0;
+     }
+}
 .tile h3 {
   font-size: 1.2em;
 }
