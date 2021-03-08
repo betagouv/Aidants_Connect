@@ -54,7 +54,7 @@
             <div class="grid">
               {% for value, label in form.demarche.field.choices %}
                 <div id="{{ value }}" class="tile">
-                  <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche"/>
+                  <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche" class="sr-only"/>
                   <label class="label-demarche" for="button-{{ value }}">
                     <img src="{{ label.icon }}" alt=""/>
                     <strong>{{ label.titre }}</strong>
@@ -83,7 +83,7 @@
             <div class="grid">
               {% for value, label in form.duree.field.choices %}
                 <div id="{{ value }}" class="tile">
-                  <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree"/>
+                  <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree" class="sr-only"/>
                   <label class="label-duree" for="button-{{ value }}">
                     <strong>{{ label.title }} <span class="duree-label-is-remote">à distance</span></strong>
                     <span>{{ label.description }}</span>
