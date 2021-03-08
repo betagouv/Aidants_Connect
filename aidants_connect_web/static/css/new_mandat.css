@@ -25,6 +25,9 @@ form {
   outline: 2px solid #003b80;
   outline-offset: 2px;
 }
+.tile input:focus {
+  outline: none; /* hidden because the tile itself has a visible focus */
+}
 .tile label {
   padding: 12px;
   width: 100%;
