@@ -49,44 +49,48 @@
         {% csrf_token %}
         <div id="demarches" class="tiles">
           <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
-          <fieldset id="demarches_list" class="grid">
+          <fieldset id="demarches_list">
             <legend class="sr-only">Sélectionnez la ou les démarche(s)</legend>
-            {% for value, label in form.demarche.field.choices %}
-              <div id="{{ value }}" class="tile">
-                <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche"/>
-                <label class="label-demarche" for="button-{{ value }}">
-                  <img src="{{ label.icon }}" alt="Icon {{ label.titre }}"/>
-                  <strong>{{ label.titre }}</strong>
-                  <p>
-                    {{ label.description }}
-                    {% if label.service_exemples %}
-                      <br/>
-                      <small title="exemples de services publics">
-                        <i>Exemples :</i>
-                        {% for service in label.service_exemples %}
-                          <span class="label label-small">{{ service }}</span>
-                        {% endfor %}
-                      </small>
-                    {% endif %}
-                  </p>
-                </label>
-              </div>
-            {% endfor %}
+            <div class="grid">
+              {% for value, label in form.demarche.field.choices %}
+                <div id="{{ value }}" class="tile">
+                  <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche"/>
+                  <label class="label-demarche" for="button-{{ value }}">
+                    <img src="{{ label.icon }}" alt="Icon {{ label.titre }}"/>
+                    <strong>{{ label.titre }}</strong>
+                    <p>
+                      {{ label.description }}
+                      {% if label.service_exemples %}
+                        <br/>
+                        <small title="exemples de services publics">
+                          <i>Exemples :</i>
+                          {% for service in label.service_exemples %}
+                            <span class="label label-small">{{ service }}</span>
+                          {% endfor %}
+                        </small>
+                      {% endif %}
+                    </p>
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
           </fieldset>
         </div>
         <div id="duree" class="tiles">
           <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
-          <fieldset id="duree_list" class="grid">
+          <fieldset id="duree_list">
             <legend class="sr-only">Choisissez la durée du mandat</legend>
-            {% for value, label in form.duree.field.choices %}
-              <div id="{{ value }}" class="tile">
-                <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree"/>
-                <label class="label-duree" for="button-{{ value }}">
-                  <strong>{{ label.title }} <span class="duree-label-is-remote">à distance</span></strong>
-                  <span>{{ label.description }}</span>
-                </label>
-              </div>
-            {% endfor %}
+            <div class="grid">
+              {% for value, label in form.duree.field.choices %}
+                <div id="{{ value }}" class="tile">
+                  <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree"/>
+                  <label class="label-duree" for="button-{{ value }}">
+                    <strong>{{ label.title }} <span class="duree-label-is-remote">à distance</span></strong>
+                    <span>{{ label.description }}</span>
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
           </fieldset>
           <label for="{{ form.is_remote.id_for_label }}" class="notification warning margin-top-1em">
             La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
