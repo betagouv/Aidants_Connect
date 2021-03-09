@@ -6,7 +6,12 @@ form {
   padding: 0;
   position: relative;
 }
-
+@media all and (-ms-high-contrast:none) {
+    /* ie11 specific */
+     .tile {
+         margin: 1em 0;
+     }
+}
 .tile h3 {
   font-size: 1.2em;
 }
@@ -24,6 +29,9 @@ form {
   transform: scale(1.03);
   outline: 2px solid #003b80;
   outline-offset: 2px;
+}
+.tile input:focus {
+  outline: none; /* hidden because the tile itself has a visible focus */
 }
 .tile label {
   padding: 12px;
