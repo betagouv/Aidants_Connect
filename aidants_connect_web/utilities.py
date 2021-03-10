@@ -1,5 +1,7 @@
 import io
 import hashlib
+from datetime import date
+
 import qrcode
 from pathlib import Path
 
@@ -45,3 +47,29 @@ def generate_qrcode_png(string: str):
     img = qrcode.make(string)
     img.save(stream, "PNG")
     return stream.getvalue()
+
+
+def generate_attestation_hash(
+    aidant,
+    usager,
+    demarches,
+    expiration_date,
+    creation_date=date.today().isoformat(),
+    mandat_template_path=settings.MANDAT_TEMPLATE_PATH,
+):
+    demarches.sort()
+    attestation_data = {
+        "aidant_id": aidant.id,
+        "creation_date": creation_date,
+        "demarches_list": ",".join(demarches),
+        "expiration_date": expiration_date.date().isoformat(),
+        "organisation_id": aidant.organisation.id,
+        "template_hash": generate_file_sha256_hash(f"templates/{mandat_template_path}"),
+        "usager_sub": usager.sub,
+    }
+    sorted_attestation_data = dict(sorted(attestation_data.items()))
+    attestation_string = ";".join(
+        str(x) for x in list(sorted_attestation_data.values())
+    )
+    attestation_string_with_salt = attestation_string + settings.ATTESTATION_SALT
+    return generate_sha256_hash(attestation_string_with_salt.encode("utf-8"))
