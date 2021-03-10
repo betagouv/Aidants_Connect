@@ -1,0 +1,88 @@
+.so {
+    color: #1B4991;
+    background-color: #FAD776;
+    border-radius: .3em;
+    padding: .5em 2em .5em 3em;
+    display: inline-block;
+    font-weight: bold;
+    position: relative;
+    background-image: url(../images/habilitation/arrow.svg);
+    background-repeat: no-repeat;
+    background-position: 0 50%;
+    background-size: auto 2em;
+}
+
+.how {
+    counter-reset: how;
+}
+
+.how > li {
+    border-left: 4px dotted #ccc;
+    min-height: 9em;
+    position: relative;
+    list-style-type: none;
+    padding: 0 0 3em 2em;
+}
+
+.how > li:before {
+    counter-increment: how;
+    display: block;
+    content: counter(how);
+    position: absolute;
+    left: -1.05em;
+    width: 1.8em;
+    height: 1.8em;
+    background: #1B4991;
+    border-radius: 50%;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    line-height: 1.8em;
+}
+
+.how > .how_5 {
+    border-left: 4px solid #fff;
+}
+
+.how > .how_5:before {
+    background-color: #EF4056;
+}
+
+.who > ul > li {
+    margin-bottom: 2em;
+}
+
+@media screen and (min-width: 600px) {
+    .how > li {
+        padding-right: 10em;
+        background-repeat: no-repeat;
+        background-position: top right;
+    }
+
+    .how > .how_1 {
+        background-image: url(../images/habilitation/step1.svg);
+    }
+
+    .how > .how_2 {
+        background-image: url(../images/habilitation/step2.svg);
+    }
+
+    .how > .how_3 {
+        background-image: url(../images/habilitation/step3.svg);
+    }
+
+    .how > .how_4 {
+        background-image: url(../images/habilitation/step4.svg);
+    }
+
+    .how > .how_5 {
+        border-left: 4px solid #fff;
+        background-image: url(../images/habilitation/step5.svg);
+    }
+
+    .who {
+        border-bottom: 4px solid #1B4991;
+        padding-right: 10em;
+        background: url(../images/habilitation/structure.svg) no-repeat bottom -4px right 2em;
+    }
+}
