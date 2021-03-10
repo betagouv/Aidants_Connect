@@ -1,3 +1,4 @@
+from os.path import join as path_join
 from datetime import date, datetime, timedelta
 
 from django.db.utils import IntegrityError
@@ -23,12 +24,13 @@ from aidants_connect_web.tests.factories import (
     AutorisationFactory,
     OrganisationFactory,
     UsagerFactory,
+    AttestationJournalFactory,
 )
 from aidants_connect_web.utilities import (
+    generate_attestation_hash,
     generate_file_sha256_hash,
     validate_attestation_hash,
 )
-from aidants_connect_web.views.new_mandat import generate_attestation_hash
 
 
 @tag("models")
@@ -258,6 +260,149 @@ class MandatModelTests(TestCase):
 
         self.assertEqual(active_mandats, 2)
         self.assertEqual(inactive_mandats, 1)
+
+    def test__get_template_path_legacy_nominal(self):
+        tpl_name = "20200511_mandat.html"
+        procedures = ["transports", "logement"]
+        expiration_date = timezone.now() + timedelta(days=6)
+        attestation_hash = generate_attestation_hash(
+            self.aidant_1,
+            self.usager_1,
+            procedures,
+            expiration_date,
+            mandat_template_path=path_join(settings.MANDAT_TEMPLATE_DIR, tpl_name),
+        )
+
+        AttestationJournalFactory(
+            aidant=self.aidant_1,
+            usager=self.usager_1,
+            demarche=",".join(procedures),
+            attestation_hash=attestation_hash,
+        )
+
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=expiration_date,
+        )
+
+        for procedure in procedures:
+            Autorisation.objects.create(mandat=mandate, demarche=procedure)
+
+            # Add another active mandate with auths so that we have a real life example
+            other_mandate = MandatFactory(
+                organisation=self.aidant_1.organisation, usager=self.usager_1
+            )
+            AutorisationFactory(mandat=other_mandate)
+
+        result = mandate.get_template_path(self.aidant_1)
+
+        self.assertEqual(result, f"aidants_connect_web/mandat_templates/{tpl_name}")
+
+    def test__get_template_path_legacy_with_old_mandate(self):
+        tpl_name = "20200511_mandat.html"
+        procedures = ["transports", "logement"]
+        expiration_date = timezone.now() - timedelta(days=6)
+        creation_date = timezone.now() - timedelta(days=12)
+        attestation_hash = generate_attestation_hash(
+            self.aidant_1,
+            self.usager_1,
+            procedures,
+            expiration_date,
+            creation_date=creation_date.date().isoformat(),
+            mandat_template_path=path_join(settings.MANDAT_TEMPLATE_DIR, tpl_name),
+        )
+
+        AttestationJournalFactory(
+            aidant=self.aidant_1,
+            usager=self.usager_1,
+            demarche=",".join(procedures),
+            attestation_hash=attestation_hash,
+            creation_date=creation_date,
+        )
+
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=creation_date,
+            duree_keyword="SHORT",
+            expiration_date=expiration_date,
+        )
+
+        for procedure in procedures:
+            Autorisation.objects.create(
+                mandat=mandate,
+                demarche=procedure,
+                revocation_date=timezone.now() - timedelta(days=6),
+            )
+
+            # Add another active mandate with auths so that we have a real life example
+            other_mandate = MandatFactory(
+                organisation=self.aidant_1.organisation, usager=self.usager_1
+            )
+            AutorisationFactory(mandat=other_mandate)
+
+        result = mandate.get_template_path(self.aidant_1)
+
+        self.assertEqual(result, f"aidants_connect_web/mandat_templates/{tpl_name}")
+
+    def test__get_template_path_legacy_with_old_delegation(self):
+        tpl_name = "20200511_mandat.html"
+        procedures = ["transports", "logement"]
+        expiration_date = timezone.now() + timedelta(days=6)
+        attestation_hash = generate_attestation_hash(
+            self.aidant_1,
+            self.usager_1,
+            procedures,
+            expiration_date,
+            mandat_template_path=path_join(settings.MANDAT_TEMPLATE_DIR, tpl_name),
+        )
+
+        old_attestation_hash = generate_attestation_hash(
+            self.aidant_1,
+            self.usager_1,
+            procedures,
+            expiration_date,
+            mandat_template_path=path_join(settings.MANDAT_TEMPLATE_DIR, "20200201_mandat.html"),
+        )
+
+        AttestationJournalFactory(
+            aidant=self.aidant_1,
+            usager=self.usager_1,
+            demarche=",".join(procedures),
+            attestation_hash=attestation_hash,
+        )
+
+        AttestationJournalFactory(
+            aidant=self.aidant_1,
+            usager=self.usager_1,
+            demarche=",".join(procedures),
+            attestation_hash=old_attestation_hash,
+            creation_date=datetime.now() - timedelta(weeks=1),
+        )
+
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=expiration_date,
+        )
+
+        for procedure in procedures:
+            Autorisation.objects.create(mandat=mandate, demarche=procedure)
+
+            # Add another active mandate with auths so that we have a real life example
+            other_mandate = MandatFactory(
+                organisation=self.aidant_1.organisation, usager=self.usager_1
+            )
+            AutorisationFactory(mandat=other_mandate)
+
+        result = mandate.get_template_path(self.aidant_1)
+
+        self.assertEqual(result, f"aidants_connect_web/mandat_templates/{tpl_name}")
 
 
 @tag("models")
@@ -725,7 +870,6 @@ class JournalModelTests(TestCase):
         self.assertEqual(entry.action, "franceconnect_usager")
 
     def test_log_autorisation_creation_complete(self):
-
         autorisation = AutorisationFactory(
             mandat=self.mandat_thierry_ned_365,
             demarche="logement",

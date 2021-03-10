@@ -14,35 +14,13 @@ from aidants_connect_web.forms import MandatForm, RecapMandatForm
 from aidants_connect_web.models import Autorisation, Connection, Journal, Mandat
 from aidants_connect_web.views.service import humanize_demarche_names
 from aidants_connect_web.utilities import (
-    generate_file_sha256_hash,
-    generate_sha256_hash,
+    generate_attestation_hash,
     generate_qrcode_png,
 )
 
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
-
-
-def generate_attestation_hash(aidant, usager, demarches, expiration_date):
-    demarches.sort()
-    attestation_data = {
-        "aidant_id": aidant.id,
-        "creation_date": date.today().isoformat(),
-        "demarches_list": ",".join(demarches),
-        "expiration_date": expiration_date.date().isoformat(),
-        "organisation_id": aidant.organisation.id,
-        "template_hash": generate_file_sha256_hash(
-            f"templates/{settings.MANDAT_TEMPLATE_PATH}"
-        ),
-        "usager_sub": usager.sub,
-    }
-    sorted_attestation_data = dict(sorted(attestation_data.items()))
-    attestation_string = ";".join(
-        str(x) for x in list(sorted_attestation_data.values())
-    )
-    attestation_string_with_salt = attestation_string + settings.ATTESTATION_SALT
-    return generate_sha256_hash(attestation_string_with_salt.encode("utf-8"))
 
 
 @login_required

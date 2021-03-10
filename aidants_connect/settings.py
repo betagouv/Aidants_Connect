@@ -273,7 +273,9 @@ DEMARCHES = {
     },
 }
 
-MANDAT_TEMPLATE_PATH = "aidants_connect_web/mandat_templates/20201209_mandat.html"
+MANDAT_TEMPLATE_DIR = "aidants_connect_web/mandat_templates"
+MANDAT_TEMPLATE_CURRENT_FILE = "20201209_mandat.html"
+MANDAT_TEMPLATE_PATH = os.path.join(MANDAT_TEMPLATE_DIR, MANDAT_TEMPLATE_CURRENT_FILE)
 ATTESTATION_SALT = os.getenv("ATTESTATION_SALT", "")
 
 # Magic Auth

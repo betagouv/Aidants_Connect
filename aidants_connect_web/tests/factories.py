@@ -9,6 +9,7 @@ from aidants_connect_web.models import (
     Mandat,
     Organisation,
     Usager,
+    Journal,
 )
 
 
@@ -80,3 +81,23 @@ class LegacyAutorisationFactory(AutorisationFactory):
 class ConnectionFactory(factory.DjangoModelFactory):
     class Meta:
         model = Connection
+
+
+class JournalFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Journal
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        creation_date = kwargs.pop("creation_date", None)
+        obj = super(JournalFactory, cls)._create(model_class, *args, **kwargs)
+        if creation_date is not None:
+            Journal.objects.filter(pk=obj.pk).update(creation_date=creation_date)
+        return obj
+
+
+class AttestationJournalFactory(JournalFactory):
+    action = "create_attestation"
+    is_remote_mandat = False
+    access_token = factory.Faker("md5")
+    duree = 6
