@@ -34,10 +34,10 @@
               <small title="{{ mandat.expiration_date }}">(jusqu'au {{ mandat.expiration_date | date:"d F Y" }})</small>
             </h4>
             <div class="float-right text-right">
-              <a id="view_mandat_attestation" class="button"><span aria-hidden="true">🖨&nbsp;</span>Voir l’attestation (bientôt)</a>
+              <a id="view_mandat_attestation" class="button" href="{% url 'mandat_visualisation' mandat_id=mandat.id %}"><span aria-hidden="true">🖨&nbsp;</span>Voir l’attestation</a>
               <a id="cancel_mandat" class="button-outline warning" href="{% url 'confirm_mandat_cancelation' mandat_id=mandat.id %}">
-                          Révoquer le mandat <span aria-hidden="true">&nbsp;🗑️</span>
-                        </a>
+                Révoquer le mandat <span aria-hidden="true">&nbsp;🗑️</span>
+              </a>
             </div>
           </div>
           <ul class="label-list">
@@ -99,7 +99,7 @@
               <small title="{{ mandat.expiration_date }}">(le {{ mandat.expiration_date | date:"d F Y" }})</small>
             </h4>
             <div class="float-right">
-              <a id="view_mandat_attestation" class="button">🖨&nbsp;Voir l'attestation (bientôt)</a>
+              <a id="view_mandat_attestation" class="button" href="{% url 'mandat_visualisation' mandat_id=mandat.id %}"><span aria-hidden="true">🖨&nbsp;</span>Voir l’attestation</a>
             </div>
           </div>
           <ul class="label-list">

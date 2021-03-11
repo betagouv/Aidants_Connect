@@ -6,7 +6,7 @@ from magicauth.urls import urlpatterns as magicauth_urls
 from aidants_connect_web.views import (
     FC_as_FS,
     id_provider,
-    new_mandat,
+    mandat,
     service,
     espace_aidant,
     usagers,
@@ -38,32 +38,37 @@ urlpatterns = [
         usagers.confirm_mandat_cancelation,
         name="confirm_mandat_cancelation",
     ),
+    path(
+        "mandats/<int:mandat_id>/visualisation",
+        mandat.attestation_visualisation,
+        name="mandat_visualisation",
+    ),
     # new mandat
-    path("creation_mandat/", new_mandat.new_mandat, name="new_mandat"),
+    path("creation_mandat/", mandat.new_mandat, name="new_mandat"),
     path(
         "creation_mandat/recapitulatif/",
-        new_mandat.new_mandat_recap,
+        mandat.new_mandat_recap,
         name="new_mandat_recap",
     ),
-    path("logout-callback/", new_mandat.new_mandat_recap, name="new_mandat_recap"),
+    path("logout-callback/", mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
         "creation_mandat/visualisation/projet/",
-        new_mandat.attestation_projet,
+        mandat.attestation_projet,
         name="new_attestation_projet",
     ),
     path(
         "creation_mandat/succes/",
-        new_mandat.new_mandat_success,
+        mandat.new_mandat_success,
         name="new_mandat_success",
     ),
     path(
         "creation_mandat/visualisation/final/",
-        new_mandat.attestation_final,
+        mandat.attestation_final,
         name="new_attestation_final",
     ),
     path(
         "creation_mandat/qrcode/",
-        new_mandat.attestation_qrcode,
+        mandat.attestation_qrcode,
         name="new_attestation_qrcode",
     ),
     # id_provider

@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.utils import timezone, formats
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
+
 from django.conf import settings
 
 from aidants_connect_web.decorators import activity_required
@@ -220,6 +221,23 @@ def attestation_projet(request):
 @login_required
 @activity_required
 def attestation_final(request):
+    return __attestation_visulisation(request, settings.MANDAT_TEMPLATE_PATH)
+
+
+@login_required
+@activity_required
+def attestation_visualisation(request, mandat_id):
+    mandat = Mandat.objects.filter(pk=mandat_id)
+    if mandat.count() != 1:
+        return HttpResponseNotFound("Pas de mandat")
+
+    if (template := mandat.first().get_template_path(request.user)) is not None:
+        return __attestation_visulisation(request, template)
+
+    return HttpResponseNotFound("Pas d'attestation trouvée pour ce mandat")
+
+
+def __attestation_visulisation(request, template: str):
     connection = Connection.objects.get(pk=request.session["connection"])
     aidant = request.user
     usager = connection.usager
@@ -238,7 +256,7 @@ def attestation_final(request):
             "date": formats.date_format(date.today(), "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
-            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
+            "current_mandat_template": template,
             "final": True,
         },
     )
