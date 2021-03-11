@@ -651,6 +651,7 @@ class Journal(models.Model):
         is_remote_mandat: bool,
         access_token: str,
         attestation_hash: str,
+        mandat: Mandat,
     ):
         return cls.objects.create(
             aidant=aidant,
@@ -660,6 +661,7 @@ class Journal(models.Model):
             duree=duree,
             access_token=access_token,
             attestation_hash=attestation_hash,
+            mandat=mandat,
             is_remote_mandat=is_remote_mandat,
         )
 
@@ -725,6 +727,14 @@ class Journal(models.Model):
 
     @classmethod
     def find_attestation_creation_entries(cls, mandat: Mandat) -> QuerySet["Journal"]:
+        # Let's first search by mandate
+        journal = cls.objects.filter(action="create_attestation", mandat=mandat)
+        if journal.count() == 1:
+            return journal
+
+        # If the journal entry was created prior to this modification, there's no
+        # association between the journal entry and the mandate so we need to search
+        # using the naive heuristics
         start = mandat.creation_date.replace(hour=0, minute=0, second=0, microsecond=0)
         end = start + timedelta(days=1)
         return cls.objects.filter(

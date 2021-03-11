@@ -103,8 +103,18 @@ def new_mandat_recap(request):
             mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
 
             try:
-                # Add a Journal 'create_attestation' action
                 connection.demarches.sort()
+
+                # Create a mandat
+                mandat = Mandat.objects.create(
+                    organisation=aidant.organisation,
+                    usager=usager,
+                    duree_keyword=connection.duree_keyword,
+                    expiration_date=mandat_expiration_date,
+                    is_remote=connection.mandat_is_remote,
+                )
+
+                # Add a Journal 'create_attestation' action
                 Journal.log_attestation_creation(
                     aidant=aidant,
                     usager=usager,
@@ -115,15 +125,7 @@ def new_mandat_recap(request):
                     attestation_hash=generate_attestation_hash(
                         aidant, usager, connection.demarches, mandat_expiration_date
                     ),
-                )
-
-                # Create a mandat
-                mandat = Mandat.objects.create(
-                    organisation=aidant.organisation,
-                    usager=usager,
-                    duree_keyword=connection.duree_keyword,
-                    expiration_date=mandat_expiration_date,
-                    is_remote=connection.mandat_is_remote,
+                    mandat=mandat,
                 )
 
                 # This loop creates one `autorisation` object per `démarche` in the form
