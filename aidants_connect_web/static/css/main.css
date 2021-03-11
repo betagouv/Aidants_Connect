@@ -161,6 +161,10 @@ a.no-decoration {
   margin-top: 0;
 }
 
+.margin-0 {
+  margin: 0;
+}
+
 .tiles {
   margin: 3em 0;
 }
@@ -209,6 +213,10 @@ a.no-decoration {
 }
 .max-width-50 {
   max-width: 50%;
+}
+
+.monospace {
+  font-family: monospace, monospace;
 }
 
 /* Table */

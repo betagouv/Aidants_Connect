@@ -1,6 +1,7 @@
 import io
 import hashlib
 from datetime import date
+from urllib.parse import urlencode, quote
 
 import qrcode
 from pathlib import Path
@@ -73,3 +74,11 @@ def generate_attestation_hash(
     )
     attestation_string_with_salt = attestation_string + settings.ATTESTATION_SALT
     return generate_sha256_hash(attestation_string_with_salt.encode("utf-8"))
+
+
+def generate_mailto_link(recipient: str, subject: str, body: str):
+    urlencoded = urlencode(
+        {"subject": subject, "body": body},
+        quote_via=lambda x, _, enc, err: quote(x, "", enc, err),
+    )
+    return f"mailto:{recipient}?{urlencoded}"

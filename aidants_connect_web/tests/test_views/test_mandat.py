@@ -18,7 +18,7 @@ from aidants_connect_web.tests.factories import (
     OrganisationFactory,
     UsagerFactory,
 )
-from aidants_connect_web.views import new_mandat
+from aidants_connect_web.views import mandat
 
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -32,7 +32,7 @@ class NewMandatTests(TestCase):
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
         found = resolve("/creation_mandat/")
-        self.assertEqual(found.func, new_mandat.new_mandat)
+        self.assertEqual(found.func, mandat.new_mandat)
 
     def test_new_mandat_url_triggers_new_mandat_template(self):
         self.client.force_login(self.aidant_thierry)
@@ -102,7 +102,7 @@ class NewMandatRecapTests(TestCase):
 
     def test_recap_url_triggers_the_recap_view(self):
         found = resolve("/creation_mandat/recapitulatif/")
-        self.assertEqual(found.func, new_mandat.new_mandat_recap)
+        self.assertEqual(found.func, mandat.new_mandat_recap)
 
     def test_recap_url_triggers_the_recap_template(self):
         self.client.force_login(self.aidant_thierry)
@@ -520,15 +520,15 @@ class GenerateAttestationTests(TestCase):
 
     def test_attestation_projet_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/visualisation/projet/")
-        self.assertEqual(found.func, new_mandat.attestation_projet)
+        self.assertEqual(found.func, mandat.attestation_projet)
 
     def test_attestation_final_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/visualisation/final/")
-        self.assertEqual(found.func, new_mandat.attestation_final)
+        self.assertEqual(found.func, mandat.attestation_final)
 
     def test_autorisation_qrcode_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/qrcode/")
-        self.assertEqual(found.func, new_mandat.attestation_qrcode)
+        self.assertEqual(found.func, mandat.attestation_qrcode)
 
     def test_response_is_the_print_page(self):
         self.client.force_login(self.aidant_thierry)

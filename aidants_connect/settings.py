@@ -407,3 +407,5 @@ DATAPASS_FROM_EMAIL = os.getenv("DATAPASS_FROM_EMAIL", None)
 DATAPASS_TO_EMAIL = os.getenv("DATAPASS_TO_EMAIL", None)
 
 MANDAT_EXPIRED_SOON = 30
+
+SUPPORT_EMAIL = "support@aidantsconnect.beta.gouv.fr"
