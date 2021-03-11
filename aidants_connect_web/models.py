@@ -651,6 +651,7 @@ class Journal(models.Model):
         is_remote_mandat: bool,
         access_token: str,
         attestation_hash: str,
+        mandat: Mandat,
     ):
         return cls.objects.create(
             aidant=aidant,
@@ -660,6 +661,7 @@ class Journal(models.Model):
             duree=duree,
             access_token=access_token,
             attestation_hash=attestation_hash,
+            mandat=mandat,
             is_remote_mandat=is_remote_mandat,
         )
 

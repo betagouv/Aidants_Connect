@@ -931,6 +931,7 @@ class JournalModelTests(TestCase):
     def test_a_create_attestation_journal_entry_can_be_created(self):
         demarches = ["transports", "logement"]
         expiration_date = timezone.now() + timedelta(days=6)
+        mandat = MandatFactory()
         entry = Journal.log_attestation_creation(
             aidant=self.aidant_thierry,
             usager=self.usager_ned,
@@ -941,6 +942,7 @@ class JournalModelTests(TestCase):
             attestation_hash=generate_attestation_hash(
                 self.aidant_thierry, self.usager_ned, demarches, expiration_date
             ),
+            mandat=mandat,
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)
