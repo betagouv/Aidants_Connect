@@ -165,6 +165,10 @@ def mentions_legales(request):
     return render(request, "public_website/mentions_legales.html")
 
 
+def accessibilite(request):
+    return render(request, "public_website/accessibilite.html")
+
+
 def ressources(request):
     return render(request, "public_website/ressource_page.html")
 
