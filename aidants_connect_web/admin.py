@@ -173,9 +173,8 @@ class UsagerAdmin(VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin):
     list_display = ("__str__", "email", "creation_date")
     search_fields = ("given_name", "family_name", "email")
 
-    tab_infos = (None, {"fields": ("given_name", "family_name", "email")})
-
-    tab_mandats = UsagerMandatInline
+    tab_infos = (("Info", {"fields": ("given_name", "family_name", "email")}),)
+    tab_mandats = (UsagerMandatInline,)
 
     tabs = [("Informations", tab_infos), ("Mandats", tab_mandats)]
 

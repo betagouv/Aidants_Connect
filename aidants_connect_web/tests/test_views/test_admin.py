@@ -25,7 +25,7 @@ from aidants_connect_web.models import (
     Usager,
     CarteTOTP,
 )
-from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 
 
 @tag("admin")
@@ -228,6 +228,37 @@ class JournalAdminPageTests(TestCase):
         url = reverse(self.url_root + "_add")
         response = self.atac_client.get(url)
         self.assertEqual(response.status_code, 403)
+
+
+@tag("admin")
+class UsagerAdminPageTests(TestCase):
+    def setUp(self):
+        self.atac_user = AidantFactory(
+            username="atac@email.com",
+            email="atac@email.com",
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.atac_user.set_password("password")
+        self.atac_user.save()
+        self.atac_device = StaticDevice.objects.create(
+            user=self.atac_user, name="Device"
+        )
+
+        self.usager = UsagerFactory()
+
+        self.atac_client = Client()
+        self.atac_client.force_login(self.atac_user)
+        atac_session = self.atac_client.session
+        atac_session[DEVICE_ID_SESSION_KEY] = self.atac_device.persistent_id
+        atac_session.save()
+        url_root = f"admin:{Journal._meta.app_label}_{Usager.__name__.lower()}"
+        self.url_root = url_root
+
+    def test_can_change_usager_by_admin_views(self):
+        url = reverse(self.url_root + "_change", args=(self.usager.pk,))
+        response = self.atac_client.get(url)
+        self.assertEqual(response.status_code, 200)
 
 
 @tag("admin")
