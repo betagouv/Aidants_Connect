@@ -87,6 +87,7 @@ urlpatterns = [
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("habilitation", service.habilitation, name="habilitation"),
     path("ressources/", service.ressources, name="ressources"),
+    path("accessibilite/", service.accessibilite, name="accessibilite"),
     # # FAQ
     path("faq/", service.faq_generale, name="faq_generale"),
     path("faq/mandat/", service.faq_mandat, name="faq_mandat"),
