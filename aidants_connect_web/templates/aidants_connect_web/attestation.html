@@ -30,4 +30,7 @@
 {% endblock content %}
 
 {% block footer %}
+  {% if modified %}
+    <em class="text-center margin-bottom-1em">Ce contrat est mis à jour régulièrement pour des raisons légales. Il peut avoir été modifié depuis votre dernière visite.</em>
+  {% endif %}
 {% endblock footer %}

@@ -4,9 +4,15 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
+from django.template import loader
 from django.utils import timezone
 from django.utils.functional import cached_property
+from typing import Union
+from os import walk as os_walk
+from os.path import join as path_join, dirname
+
+from aidants_connect_web.utilities import generate_attestation_hash
 
 
 class Organisation(models.Model):
@@ -338,6 +344,56 @@ class Mandat(models.Model):
         # at least one active `autorisation`.
         return self.autorisations.active().exists()
 
+    def get_mandate_template_path(self) -> Union[None, str]:
+        """Returns the template file path of the consent document that was presented
+        to the user when the mandate was issued.
+
+        :return: the template file relative path as can be used on Django's
+        template engine (without `templates` prepended), otherwise `None`
+        """
+        return self._get_mandate_template_path_from_journal_hash()
+
+    def _get_mandate_template_path_from_journal_hash(self) -> Union[None, str]:
+        """Legacy mode for `models.Mandat.text()`
+
+        This will search which template file was used using the hash login in
+        `models.Journal` entries and parse the template using it.
+
+        :return: None when:
+            - no log record could be found on this mandate
+            - the original template file could not be found
+        the template file relative path as can be used on Django's template engine
+        (without `templates` prepended`) otherwise
+        """
+
+        journal_entries = Journal.find_attestation_creation_entries(self)
+
+        if journal_entries.count() == 0:
+            return None
+
+        template_dir = dirname(
+            loader.get_template(settings.MANDAT_TEMPLATE_PATH).origin.name
+        )
+
+        demarches = [it.demarche for it in self.autorisations.all()]
+
+        for journal_entry in journal_entries:
+            for _, _, filenames in os_walk(template_dir):
+                for filename in filenames:
+                    file_hash = generate_attestation_hash(
+                        journal_entry.aidant,
+                        self.usager,
+                        demarches,
+                        self.expiration_date,
+                        journal_entry.creation_date.date().isoformat(),
+                        path_join(settings.MANDAT_TEMPLATE_DIR, filename),
+                    )
+
+                    if file_hash == journal_entry.attestation_hash:
+                        return path_join(settings.MANDAT_TEMPLATE_DIR, filename)
+
+        return None
+
     def admin_is_active(self):
         return self.is_active
 
@@ -595,6 +651,7 @@ class Journal(models.Model):
         is_remote_mandat: bool,
         access_token: str,
         attestation_hash: str,
+        mandat: Mandat,
     ):
         return cls.objects.create(
             aidant=aidant,
@@ -604,6 +661,7 @@ class Journal(models.Model):
             duree=duree,
             access_token=access_token,
             attestation_hash=attestation_hash,
+            mandat=mandat,
             is_remote_mandat=is_remote_mandat,
         )
 
@@ -665,6 +723,25 @@ class Journal(models.Model):
         message = f"{added} ajouts - {updated} modifications"
         return cls.objects.create(
             aidant=aidant, action="import_totp_cards", additional_information=message
+        )
+
+    @classmethod
+    def find_attestation_creation_entries(cls, mandat: Mandat) -> QuerySet["Journal"]:
+        # Let's first search by mandate
+        journal = cls.objects.filter(action="create_attestation", mandat=mandat)
+        if journal.count() == 1:
+            return journal
+
+        # If the journal entry was created prior to this modification, there's no
+        # association between the journal entry and the mandate so we need to search
+        # using the naive heuristics
+        start = mandat.creation_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timedelta(days=1)
+        return cls.objects.filter(
+            action="create_attestation",
+            usager=mandat.usager,
+            aidant__organisation=mandat.organisation,
+            creation_date__range=(start, end),
         )
 
 

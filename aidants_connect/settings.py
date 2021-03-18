@@ -273,7 +273,9 @@ DEMARCHES = {
     },
 }
 
-MANDAT_TEMPLATE_PATH = "aidants_connect_web/mandat_templates/20210308_mandat.html"
+MANDAT_TEMPLATE_DIR = "aidants_connect_web/mandat_templates"
+MANDAT_TEMPLATE_CURRENT_FILE = "20210308_mandat.html"
+MANDAT_TEMPLATE_PATH = os.path.join(MANDAT_TEMPLATE_DIR, MANDAT_TEMPLATE_CURRENT_FILE)
 ATTESTATION_SALT = os.getenv("ATTESTATION_SALT", "")
 
 # Magic Auth
@@ -405,3 +407,5 @@ DATAPASS_FROM_EMAIL = os.getenv("DATAPASS_FROM_EMAIL", None)
 DATAPASS_TO_EMAIL = os.getenv("DATAPASS_TO_EMAIL", None)
 
 MANDAT_EXPIRED_SOON = 30
+
+SUPPORT_EMAIL = "support@aidantsconnect.beta.gouv.fr"

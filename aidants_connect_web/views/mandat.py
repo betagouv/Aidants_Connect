@@ -1,48 +1,36 @@
-from datetime import date, timedelta
 import logging
+from datetime import date, timedelta
+from typing import Collection
 
+from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.shortcuts import render, redirect
-from django.utils import timezone, formats
 from django.http import HttpResponse
-from django.conf import settings
+from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
+from django.utils import timezone, formats
+from django.contrib.staticfiles import finders
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
-from aidants_connect_web.models import Autorisation, Connection, Journal, Mandat
-from aidants_connect_web.views.service import humanize_demarche_names
-from aidants_connect_web.utilities import (
-    generate_file_sha256_hash,
-    generate_sha256_hash,
-    generate_qrcode_png,
+from aidants_connect_web.models import (
+    Autorisation,
+    Connection,
+    Journal,
+    Mandat,
+    Usager,
+    Aidant,
 )
-
+from aidants_connect_web.utilities import (
+    generate_attestation_hash,
+    generate_qrcode_png,
+    generate_mailto_link,
+)
+from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
-
-
-def generate_attestation_hash(aidant, usager, demarches, expiration_date):
-    demarches.sort()
-    attestation_data = {
-        "aidant_id": aidant.id,
-        "creation_date": date.today().isoformat(),
-        "demarches_list": ",".join(demarches),
-        "expiration_date": expiration_date.date().isoformat(),
-        "organisation_id": aidant.organisation.id,
-        "template_hash": generate_file_sha256_hash(
-            f"templates/{settings.MANDAT_TEMPLATE_PATH}"
-        ),
-        "usager_sub": usager.sub,
-    }
-    sorted_attestation_data = dict(sorted(attestation_data.items()))
-    attestation_string = ";".join(
-        str(x) for x in list(sorted_attestation_data.values())
-    )
-    attestation_string_with_salt = attestation_string + settings.ATTESTATION_SALT
-    return generate_sha256_hash(attestation_string_with_salt.encode("utf-8"))
 
 
 @login_required
@@ -125,8 +113,18 @@ def new_mandat_recap(request):
             mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
 
             try:
-                # Add a Journal 'create_attestation' action
                 connection.demarches.sort()
+
+                # Create a mandat
+                mandat = Mandat.objects.create(
+                    organisation=aidant.organisation,
+                    usager=usager,
+                    duree_keyword=connection.duree_keyword,
+                    expiration_date=mandat_expiration_date,
+                    is_remote=connection.mandat_is_remote,
+                )
+
+                # Add a Journal 'create_attestation' action
                 Journal.log_attestation_creation(
                     aidant=aidant,
                     usager=usager,
@@ -137,15 +135,7 @@ def new_mandat_recap(request):
                     attestation_hash=generate_attestation_hash(
                         aidant, usager, connection.demarches, mandat_expiration_date
                     ),
-                )
-
-                # Create a mandat
-                mandat = Mandat.objects.create(
-                    organisation=aidant.organisation,
-                    usager=usager,
-                    duree_keyword=connection.duree_keyword,
-                    expiration_date=mandat_expiration_date,
-                    is_remote=connection.mandat_is_remote,
+                    mandat=mandat,
                 )
 
                 # This loop creates one `autorisation` object per `démarche` in the form
@@ -241,7 +231,8 @@ def attestation_projet(request):
 @activity_required
 def attestation_final(request):
     connection = Connection.objects.get(pk=request.session["connection"])
-    aidant = request.user
+    # noinspection PyTypeChecker
+    aidant: Aidant = request.user
     usager = connection.usager
     demarches = connection.demarches
 
@@ -249,17 +240,96 @@ def attestation_final(request):
     # https://docs.djangoproject.com/en/3.0/ref/models/instances/#django.db.models.Model.get_FOO_display
     duree = connection.get_duree_keyword_display()
 
+    return __attestation_visualisation(
+        request,
+        settings.MANDAT_TEMPLATE_PATH,
+        usager,
+        aidant,
+        date.today(),
+        demarches,
+        duree,
+    )
+
+
+@login_required
+@activity_required
+def attestation_visualisation(request, mandat_id):
+    # noinspection PyTypeChecker
+    aidant: Aidant = request.user
+    mandat_query_set = Mandat.objects.filter(pk=mandat_id)
+    if mandat_query_set.count() != 1:
+        mailto_body = render_to_string(
+            "aidants_connect_web/mandate_visualisation_errors/not_found_email_body.txt",
+            request=request,
+            context={"mandat_id": mandat_id},
+        )
+
+        return render(
+            request,
+            "aidants_connect_web/mandate_visualisation_errors/error_page.html",
+            {
+                "mandat_id": mandat_id,
+                "support_email": settings.SUPPORT_EMAIL,
+                "mailto": generate_mailto_link(
+                    settings.SUPPORT_EMAIL,
+                    f"Problème en essayant de visualiser le mandat n°{mandat_id}",
+                    mailto_body,
+                ),
+            },
+        )
+
+    mandat: Mandat = mandat_query_set.first()
+    template = mandat.get_mandate_template_path()
+
+    if template is not None:
+        # At this point, the generated QR code on the mandate comes from an independant
+        # HTTP request. Normally, what we should do is to modifiy how this HTTP request
+        # is done so that the mandate ID is passed during the request. But the mandate
+        # template can't be modified anymore because that would change their hash and
+        # defeat the algorithm that recovers the original mandate template from the
+        # journal entries. The only found solution, which is not nice, is to retain the
+        # mandate ID as a session state. Please forgive us for what we did...
+        request.session["qr_code_mandat_id"] = mandat_id
+        modified = False
+    else:
+        template = settings.MANDAT_TEMPLATE_PATH
+        modified = True
+
+    procedures = [it.demarche for it in mandat.autorisations.all()]
+    return __attestation_visualisation(
+        request,
+        template,
+        mandat.usager,
+        aidant,
+        mandat.creation_date.date(),
+        procedures,
+        mandat.get_duree_keyword_display(),
+        modified=modified,
+    )
+
+
+def __attestation_visualisation(
+    request,
+    template: str,
+    usager: Usager,
+    aidant: Aidant,
+    attestation_date: date,
+    demarches: Collection[str],
+    duree: str,
+    modified: bool = False,
+):
     return render(
         request,
         "aidants_connect_web/attestation.html",
         {
             "usager": usager,
             "aidant": aidant,
-            "date": formats.date_format(date.today(), "l j F Y"),
+            "date": formats.date_format(attestation_date, "l j F Y"),
             "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
             "duree": duree,
-            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
+            "current_mandat_template": template,
             "final": True,
+            "modified": modified,
         },
     )
 
@@ -267,14 +337,34 @@ def attestation_final(request):
 @login_required
 @activity_required
 def attestation_qrcode(request):
-    connection = Connection.objects.get(pk=request.session["connection"])
-    aidant = request.user
+    attestation_hash = None
+    connection = request.session.get("connection", None)
+    mandat_id = request.session.pop("qr_code_mandat_id", None)
 
-    journal_create_attestation = aidant.get_journal_create_attestation(
-        connection.access_token
-    )
-    journal_create_attestation_qrcode_png = generate_qrcode_png(
-        journal_create_attestation.attestation_hash
-    )
+    if connection is not None:
+        connection = Connection.objects.get(pk=connection)
+        aidant = request.user
 
-    return HttpResponse(journal_create_attestation_qrcode_png, "image/png")
+        journal_create_attestation = aidant.get_journal_create_attestation(
+            connection.access_token
+        )
+
+        attestation_hash = journal_create_attestation.attestation_hash
+    elif mandat_id is not None:
+        try:
+            mandat = Mandat.objects.get(pk=mandat_id)
+            journal = Journal.find_attestation_creation_entries(mandat)
+            # If the journal count is 1, let's use this, otherwise, we don't consider
+            # the results to be sufficiently specific to display a hash
+            if journal.count() == 1:
+                attestation_hash = journal.first().attestation_hash
+        except Exception:
+            pass
+
+    if attestation_hash is not None:
+        qrcode_png = generate_qrcode_png(attestation_hash)
+    else:
+        with open(finders.find("images/empty_qr_code.png"), "rb") as f:
+            qrcode_png = f.read()
+
+    return HttpResponse(qrcode_png, "image/png")
