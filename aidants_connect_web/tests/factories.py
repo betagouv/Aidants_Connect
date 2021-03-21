@@ -8,6 +8,7 @@ from aidants_connect_web.models import (
     Connection,
     Mandat,
     Organisation,
+    OrganisationType,
     Usager,
     Journal,
 )
@@ -20,6 +21,13 @@ class OrganisationFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Organisation
+
+
+class OrganisationTypeFactory(factory.DjangoModelFactory):
+    name = "Type par défaut"
+
+    class Meta:
+        model = OrganisationType
 
 
 class AidantFactory(factory.DjangoModelFactory):

@@ -16,6 +16,7 @@ from aidants_connect_web.models import (
     Journal,
     Mandat,
     Organisation,
+    OrganisationType,
     Usager,
 )
 from aidants_connect_web.tests.factories import (
@@ -23,6 +24,7 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     AutorisationFactory,
     OrganisationFactory,
+    OrganisationTypeFactory,
     UsagerFactory,
     AttestationJournalFactory,
 )
@@ -471,14 +473,19 @@ class AutorisationModelTests(TestCase):
 @tag("models")
 class OrganisationModelTests(TestCase):
     def test_create_and_retrieve_organisation(self):
+        self.assertEqual(OrganisationType.objects.count(), 12)
+        o_type = OrganisationTypeFactory(name="CCAS")
         OrganisationFactory(
             name="Girard S.A.R.L",
             siret="123",
+            type=o_type,
             address="3 rue du chat, 27120 Houlbec-Cocherel",
         )
         self.assertEqual(Organisation.objects.count(), 1)
+        self.assertEqual(OrganisationType.objects.count(), 13)
         organisation = Organisation.objects.all()[0]
         self.assertEqual(organisation.name, "Girard S.A.R.L")
+        self.assertEqual(organisation.type, o_type)
         self.assertEqual(organisation.address, "3 rue du chat, 27120 Houlbec-Cocherel")
 
 
