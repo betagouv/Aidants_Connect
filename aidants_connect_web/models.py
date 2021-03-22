@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q, QuerySet
+from django.db.models import Q, QuerySet, SET_NULL
 from django.template import loader
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -15,8 +15,18 @@ from os.path import join as path_join, dirname
 from aidants_connect_web.utilities import generate_attestation_hash
 
 
+class OrganisationType(models.Model):
+    name = models.CharField("Nom", max_length=350)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
 class Organisation(models.Model):
     name = models.TextField("Nom", default="No name provided")
+    type = models.ForeignKey(
+        OrganisationType, null=True, blank=True, on_delete=SET_NULL
+    )
     siret = models.BigIntegerField("N° SIRET", default=1)
     address = models.TextField("Adresse", default="No address provided")
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
