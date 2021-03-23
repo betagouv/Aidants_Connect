@@ -8,3 +8,8 @@ urlpatterns = [
     path("admin/", include("admin_honeypot.urls", namespace="admin_honeypot")),
     path("", include("aidants_connect_web.urls")),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns.append(path("__debug__/", include(debug_toolbar.urls)))
