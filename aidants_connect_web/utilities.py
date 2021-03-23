@@ -82,3 +82,7 @@ def generate_mailto_link(recipient: str, subject: str, body: str):
         quote_via=lambda x, _, enc, err: quote(x, "", enc, err),
     )
     return f"mailto:{recipient}?{urlencoded}"
+
+
+def mandate_template_path():
+    return settings.MANDAT_TEMPLATE_PATH

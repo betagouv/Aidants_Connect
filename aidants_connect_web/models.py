@@ -12,7 +12,10 @@ from typing import Union
 from os import walk as os_walk
 from os.path import join as path_join, dirname
 
-from aidants_connect_web.utilities import generate_attestation_hash
+from aidants_connect_web.utilities import (
+    generate_attestation_hash,
+    mandate_template_path,
+)
 
 
 class OrganisationType(models.Model):
@@ -339,6 +342,14 @@ class Mandat(models.Model):
     )
     is_remote = models.BooleanField("Signé à distance ?", default=False)
 
+    template_path = models.TextField(
+        "Template utilisé",
+        null=True,
+        blank=False,
+        default=mandate_template_path,
+        editable=False,
+    )
+
     objects = MandatQuerySet.as_manager()
 
     def __str__(self):
@@ -361,7 +372,11 @@ class Mandat(models.Model):
         :return: the template file relative path as can be used on Django's
         template engine (without `templates` prepended), otherwise `None`
         """
-        return self._get_mandate_template_path_from_journal_hash()
+        return (
+            self.template_path
+            if self.template_path is not None
+            else self._get_mandate_template_path_from_journal_hash()
+        )
 
     def _get_mandate_template_path_from_journal_hash(self) -> Union[None, str]:
         """Legacy mode for `models.Mandat.text()`
