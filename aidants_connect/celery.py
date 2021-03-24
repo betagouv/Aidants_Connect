@@ -1,5 +1,5 @@
 # This configuration file is taken from the official Celery documentation:
-# http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
+# http://docs.celeryproject.org/en/stable/django/first-steps-with-django.html
 # Please refer to it for additional information.
 
 import os
