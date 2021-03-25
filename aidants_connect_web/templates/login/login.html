@@ -6,7 +6,9 @@
 <link href="{% static 'css/home.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-{% block title %}Aidants Connect - Connexion{% endblock %}
+{% block title %}
+  Connexion{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
+{% endblock %}
 
 {% block content %}
 <div class="notification full-width" role="alert">Aidants Connect est pour le moment en phase d’expérimentation avec 13 structures.</div>
@@ -17,7 +19,7 @@
       <br>
       Connectez-vous
     </h1>
-    <p>Vous êtes un·e aidant·e professionnel·le et faites partie d’une structure habilitée Aidants Connect&nbsp;?</p>
+    <p>Vous êtes un ou une aidante professionnelle et faites partie d’une structure habilitée Aidants Connect&nbsp;?</p>
   </div>
 </div>
 <section class="section section-grey">
@@ -26,7 +28,7 @@
       {% csrf_token %}
       {% if user.is_authenticated %}
         <div class="notification" role="alert">
-          Vous êtes déjà connecté
+          Vous êtes déjà connecté.
         </div>
         <div class="text-center">
           <a href="{% url LOGGED_IN_REDIRECT_URL_NAME %}" class="btn btn-success">Accédez à l'accueil</a>
