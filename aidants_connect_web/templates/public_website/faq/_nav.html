@@ -1,0 +1,31 @@
+<nav class="side-menu" role="navigation" aria-label="Menu questions fréquentes">
+  <ul>
+    <li>
+      <a {% if active == "generale" %} class="active"
+        title="Le service Aidants Connect (rubrique active)"{% endif %}
+        href="{% url 'faq_generale' %}">
+        Le service Aidants Connect
+      </a>
+    </li>
+    <li>
+      <a {% if active == "mandat" %} class="active"
+           title="Le mandat (rubrique active)" {% endif %}
+           href="{% url 'faq_mandat' %}">
+        Le mandat
+    </a>
+    </li>
+    <li>
+      <a {% if active == "donnees_personnelles" %} class="active"
+         title="Les données personnelles (rubrique active)"{% endif %}
+         href="{% url 'faq_donnees_personnelles' %}">
+        Les données personnelles
+      </a>
+    </li>
+    <li>
+      <a {% if active == "habilitation" %} class="active"
+         title="L’habilitation (rubrique active)"{% endif %}
+         href="{% url 'faq_habilitation' %}">L’habilitation
+      </a>
+    </li>
+  </ul>
+</nav>

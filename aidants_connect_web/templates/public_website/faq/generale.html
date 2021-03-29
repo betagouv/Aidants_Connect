@@ -15,13 +15,7 @@
     <p class="section__subtitle">Vous trouverez ici les réponses aux questions les plus fréquemment posées à nos équipes.</p>
   </div>
   <div class="dashboard" id="faq-content">
-    <aside class="side-menu" role="navigation">
-      <ul>
-        <li><a class="active" href="{% url 'faq_generale' %}">Le service Aidants Connect</a></li>
-        <li><a href="{% url 'faq_mandat' %}">Le mandat</a></li>
-        <li><a href="{% url 'faq_donnees_personnelles' %}">Les données personnelles</a></li>
-      </ul>
-    </aside>
+    {% include 'public_website/faq/_nav.html' with active="generale" %}
     <div class="main">
       <div class="panel">
         <h2 id="questions-generales">Questions générales</h2>

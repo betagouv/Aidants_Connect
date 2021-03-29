@@ -18,13 +18,7 @@
       </p>
     </div>
     <div class="dashboard" id="faq-content">
-      <aside class="side-menu" role="navigation">
-        <ul>
-          <li><a href="{% url 'faq_generale' %}">Le service Aidants Connect</a></li>
-          <li><a href="{% url 'faq_mandat' %}">Le mandat</a></li>
-          <li><a href="{% url 'faq_donnees_personnelles' %}">Les données personnelles</a></li>
-        </ul>
-      </aside>
+      {% include 'public_website/faq/_nav.html' with active="habilitation" %}
       <div class="main">
         <div class="panel">
           <h2>Questions sur l’habilitation</h2>
