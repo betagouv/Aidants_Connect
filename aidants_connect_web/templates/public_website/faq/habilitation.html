@@ -1,0 +1,56 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - FAQ Habilitation{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <section class="section">
+    <div class="container container-small">
+      <h1 class="section__title">Foire aux questions</h1>
+      <p class="section__subtitle">
+        Vous trouverez ici les réponses aux questions les plus fréquemment posées à nos
+        équipes.
+      </p>
+    </div>
+    <div class="dashboard" id="faq-content">
+      <aside class="side-menu" role="navigation">
+        <ul>
+          <li><a href="{% url 'faq_generale' %}">Le service Aidants Connect</a></li>
+          <li><a href="{% url 'faq_mandat' %}">Le mandat</a></li>
+          <li><a href="{% url 'faq_donnees_personnelles' %}">Les données personnelles</a></li>
+        </ul>
+      </aside>
+      <div class="main">
+        <div class="panel">
+          <h2>Questions sur l’habilitation</h2>
+          <h3>Pourquoi les bénévoles ne peuvent pas être habilités Aidants Connect ?</h3>
+          <p>Les bénévoles ne peuvent pas utiliser le service Aidants Connect pour les raisons suivantes :</p>
+          <ul>
+            <li>Les bénévoles n’ont pas de contrat de travail avec la structure dans laquelle ils se portent
+              volontaires. En cas de litige, aucun recours n’est donc possible ;
+            </li>
+            <li>L’aidant professionnel engage sa responsabilité pénale comme celle de sa hiérarchie (c’est-à-dire le
+              responsable de la structure).
+            </li>
+          </ul>
+          <h3>Pourquoi les services civiques ne peuvent pas être habilités Aidants Connect ?</h3>
+          <p>Les services civiques ne peuvent pas utiliser le service Aidants Connect pour les raisons suivantes :</p>
+          <ul>
+            <li>Le service Aidants Connect est accessible uniquement aux professionnels de l’accompagnement qui ont donc
+              de l’expérience dans l’accompagnement des publics isolés ;
+            </li>
+            <li>Chaque aidant professionnel doit suivre une formation avant d’utiliser le service Aidants Connect ;</li>
+            <li>L’aidant professionnel engage sa responsabilité pénale comme celle de sa hiérarchie (c’est-à-dire le
+              responsable de la structure).
+            </li>
+          </ul>
+        </div>{# end div.panel #}
+      </div>{# end div.main #}
+    </div>{# end div.dashboard #}
+  </section>
+{% endblock content %}
