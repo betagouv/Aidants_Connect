@@ -6,11 +6,13 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q, QuerySet, SET_NULL
 from django.template import loader
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 from typing import Union
 from os import walk as os_walk
 from os.path import join as path_join, dirname
+from re import sub as regex_sub
 
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
@@ -365,6 +367,11 @@ class Mandat(models.Model):
         # at least one active `autorisation`.
         return self.autorisations.active().exists()
 
+    def get_absolute_url(self):
+        path = reverse("mandat_visualisation", kwargs={"mandat_id": self.pk})
+        url = regex_sub(r"/+", "/", f"{settings.HOST}{path}")
+        return f"https://{url}"
+
     def get_mandate_template_path(self) -> Union[None, str]:
         """Returns the template file path of the consent document that was presented
         to the user when the mandate was issued.
@@ -424,6 +431,18 @@ class Mandat(models.Model):
 
     admin_is_active.boolean = True
     admin_is_active.short_description = "is active"
+
+    @classmethod
+    def find_soon_expired(cls, nb_days_before: int) -> QuerySet["Mandat"]:
+        """Finds mandates that will be expired in less than `nb_days_before` days"""
+
+        start = timezone.now()
+        end = start + timedelta(days=nb_days_before)
+
+        return cls.objects.filter(
+            duree_keyword=AutorisationDureeKeywords.LONG,
+            expiration_date__range=(start, end),
+        ).order_by("organisation", "expiration_date")
 
 
 class AutorisationQuerySet(models.QuerySet):
