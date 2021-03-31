@@ -53,10 +53,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = os.getenv("APP_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.getenv("DEBUG") == "True":
-    DEBUG = True
-else:
-    DEBUG = False
+DEBUG = False
+# Allows any positive integer value as well as any casing
+# of `true` and `yes` for truthiness
+env_debug = os.getenv("DEBUG", "0").lower()
+try:
+    DEBUG = int(env_debug) > 0
+except ValueError:
+    DEBUG = env_debug in ["true", "yes"]
 
 
 # We support a comma-separated list of allowed hosts.
@@ -100,6 +104,12 @@ MIDDLEWARE = [
     "csp.middleware.CSPMiddleware",
     "django_otp.middleware.OTPMiddleware",
 ]
+
+# Add debug toolbar
+if DEBUG:
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+    INTERNAL_IPS = ["127.0.0.1"] + ALLOWED_HOSTS
 
 ROOT_URLCONF = "aidants_connect.urls"
 
