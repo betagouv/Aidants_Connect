@@ -1,7 +1,9 @@
 .hero img {
   max-width: 200px;
 }
-
+h2 .text-very-small::before {
+	content: '• ';
+}
 #videos .section__subtitle {
 	margin-bottom: 3em;
 }
