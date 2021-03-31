@@ -15,6 +15,7 @@ from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    MandatFactory,
     OrganisationFactory,
     UsagerFactory,
 )
@@ -529,6 +530,39 @@ class GenerateAttestationTests(TestCase):
     def test_autorisation_qrcode_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/qrcode/")
         self.assertEqual(found.func, mandat.attestation_qrcode)
+
+    def test_autorisation_qrcode_ok_with_connection_and_mandat_id(self):
+        mandat = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.test_usager,
+            expiration_date=timezone.now() + timedelta(days=5),
+        )
+
+        self.client.force_login(self.aidant_thierry)
+
+        session = self.client.session
+        session["connection"] = 1
+        session["qr_code_mandat_id"] = mandat.pk
+        session.save()
+
+        response = self.client.get("/creation_mandat/qrcode/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_autorisation_qrcode_ok_with_mandat_id(self):
+        mandat = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.test_usager,
+            expiration_date=timezone.now() + timedelta(days=5),
+        )
+
+        self.client.force_login(self.aidant_thierry)
+
+        session = self.client.session
+        session["qr_code_mandat_id"] = mandat.pk
+        session.save()
+
+        response = self.client.get("/creation_mandat/qrcode/")
+        self.assertEqual(response.status_code, 200)
 
     def test_response_is_the_print_page(self):
         self.client.force_login(self.aidant_thierry)
