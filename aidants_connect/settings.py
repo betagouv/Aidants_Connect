@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 from datetime import datetime, timedelta
 import os
+import re
+from typing import Union
 
 from dotenv import load_dotenv
 
@@ -19,6 +21,49 @@ from aidants_connect.postgres_url import turn_psql_url_into_param
 
 
 load_dotenv(verbose=True)
+
+
+def getenv_bool(env_var: str, default_value: Union[None, bool] = None) -> bool:
+    """Obtains a boolean value from an environement variable
+
+    Authorized values are casing variants of "true", "yes", "false" and "no" as well as
+    positive integer. Any other valuer will result in an error unless a default value
+    is provided.
+
+    If the environment variable does not exist and no default value is provided,
+    an error will be thrown
+
+    :param env_var: The name the the environment variable to load
+    :param default_value: The default value to take if env var does not exist
+    """
+    env_var = os.getenv(env_var, default_value)
+
+    if env_var is None:
+        raise ValueError(
+            f"{env_var} is not present in environment variables "
+            "and no default value was provided"
+        )
+
+    if isinstance(env_var, bool):
+        return env_var
+
+    if re.fullmatch(r"\d+", env_var) is not None:
+        return int(env_var) > 0
+
+    env_var = env_var.lower()
+    if env_var in ["true", "yes"]:
+        return True
+    elif env_var in ["false", "no"]:
+        return False
+    elif default_value is not None:
+        return default_value
+    else:
+        raise ValueError(
+            f"{env_var} does not have a valid boolean value; "
+            "authorized values are any casing of "
+            '["true", "yes", "false", "no"] as well as positive integers'
+        )
+
 
 HOST = os.environ["HOST"]
 # FC as FI
@@ -53,15 +98,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = os.getenv("APP_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-# Allows any positive integer value as well as any casing
-# of `true` and `yes` for truthiness
-env_debug = os.getenv("DEBUG", "0").lower()
-try:
-    DEBUG = int(env_debug) > 0
-except ValueError:
-    DEBUG = env_debug in ["true", "yes"]
-
+DEBUG = getenv_bool("DEBUG", False)
 
 # We support a comma-separated list of allowed hosts.
 ENV_SEPARATOR = ","
@@ -365,22 +402,21 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # Cookie security
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False if os.getenv("SESSION_COOKIE_SECURE") == "False" else True
-CSRF_COOKIE_SECURE = False if os.getenv("CSRF_COOKIE_SECURE") == "False" else True
+SESSION_COOKIE_SECURE = getenv_bool("SESSION_COOKIE_SECURE", True)
+CSRF_COOKIE_SECURE = getenv_bool("CSRF_COOKIE_SECURE", True)
 
 # SSL security
-SECURE_SSL_REDIRECT = False if os.getenv("SECURE_SSL_REDIRECT") == "False" else True
+SECURE_SSL_REDIRECT = getenv_bool("SECURE_SSL_REDIRECT", True)
 SECURE_HSTS_SECONDS = os.getenv("SECURE_HSTS_SECONDS")
 
 # django_OTP_throttling
 OTP_TOTP_THROTTLE_FACTOR = int(os.getenv("OTP_TOTP_THROTTLE_FACTOR", 1))
 
 # Functional tests behaviour
-HEADLESS_FUNCTIONAL_TESTS = (
-    False if os.getenv("HEADLESS_FUNCTIONAL_TESTS") == "False" else True
-)
-BYPASS_FIRST_LIVESERVER_CONNECTION = (
-    True if os.getenv("BYPASS_FIRST_LIVESERVER_CONNECTION") == "True" else False
+HEADLESS_FUNCTIONAL_TESTS = getenv_bool("HEADLESS_FUNCTIONAL_TESTS", True)
+
+BYPASS_FIRST_LIVESERVER_CONNECTION = getenv_bool(
+    "BYPASS_FIRST_LIVESERVER_CONNECTION", False
 )
 
 # Celery settings
