@@ -16,6 +16,8 @@ import re
 from typing import Union
 
 from dotenv import load_dotenv
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 from aidants_connect.postgres_url import turn_psql_url_into_param
 
@@ -104,6 +106,16 @@ DEBUG = getenv_bool("DEBUG", False)
 ENV_SEPARATOR = ","
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(ENV_SEPARATOR)
 
+# Init Sentry if the DSN is defined
+SENTRY_DSN = os.getenv("SENTRY_DSN", None)
+
+if SENTRY_DSN:
+    SENTRY_ENV = os.getenv("SENTRY_ENV", "unknown")
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        environment=SENTRY_ENV,
+    )
 
 # Application definition
 
