@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q, QuerySet, SET_NULL
+from django.db.models import Q, QuerySet, SET_NULL, CASCADE
 from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
@@ -797,3 +797,45 @@ class CarteTOTP(models.Model):
     class Meta:
         verbose_name = "carte TOTP"
         verbose_name_plural = "cartes TOTP"
+
+
+# The Dataviz* models represent metadata that are used for data display in Metabase.
+# Do not remove even if they are not used directly in the code.
+class DatavizDepartment(models.Model):
+    zipcode = models.CharField(
+        "Code Postal", max_length=10, null=False, blank=False, unique=True
+    )
+    dep_name = models.CharField(
+        "Nom de département", max_length=50, null=False, blank=False
+    )
+
+    class Meta:
+        db_table = "dataviz_department"
+        verbose_name = "Département"
+
+
+class DatavizRegion(models.Model):
+    name = models.CharField(
+        "Nom de région", max_length=50, null=False, blank=False, unique=True
+    )
+
+    class Meta:
+        db_table = "dataviz_region"
+        verbose_name = "Région"
+
+
+class DatavizDepartmentsToRegion(models.Model):
+    department = models.OneToOneField(
+        DatavizDepartment,
+        null=False,
+        blank=False,
+        on_delete=CASCADE,
+    )
+    region = models.ForeignKey(
+        DatavizRegion, null=False, blank=False, on_delete=CASCADE
+    )
+
+    class Meta:
+        db_table = "dataviz_departements_to_region"
+        verbose_name = "Assocation départments/région"
+        verbose_name_plural = "Assocations départments/région"
