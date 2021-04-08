@@ -77,12 +77,10 @@ class ViewAutorisationsTests(FunctionalTestCase):
         # Espace Aidant home
         self.selenium.find_element_by_id("view_mandats").click()
 
+        results = []
+        for el in self.selenium.find_elements_by_tag_name("table"):
+            for tr in el.find_elements_by_css_selector("tbody tr"):
+                results.append(tr)
+
         # autorisation List
-        self.assertEqual(
-            len(
-                self.selenium.find_element_by_tag_name(
-                    "table"
-                ).find_elements_by_css_selector("tbody tr")
-            ),
-            3,
-        )
+        self.assertEqual(len(results), 3)

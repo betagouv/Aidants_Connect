@@ -120,8 +120,10 @@ class ViewAutorisationsTests(TestCase):
     def test__get_usagers_dict_from_mandats(self):
         mandats = _get_mandats_for_usagers_index(self.aidant)
         usagers = _get_usagers_dict_from_mandats(mandats)
-        self.assertEqual(4, len(usagers))
-        usager, autorisations = usagers.popitem(last=False)
+        self.assertEqual(4, usagers["total"])
+        self.assertEqual(2, usagers["with_valid_mandate_count"])
+        self.assertEqual(2, usagers["without_valid_mandate_count"])
+        usager, autorisations = usagers["with_valid_mandate"].popitem(last=False)
         self.assertEqual(usager, self.usager_corentin)
         self.assertEqual(
             autorisations,
@@ -130,7 +132,7 @@ class ViewAutorisationsTests(TestCase):
             ],
         )
 
-        usager, autorisations = usagers.popitem(last=False)
+        usager, autorisations = usagers["with_valid_mandate"].popitem(last=False)
         self.assertEqual(usager, self.usager_josephine)
         self.assertEqual(
             autorisations,
@@ -140,13 +142,9 @@ class ViewAutorisationsTests(TestCase):
             ],
         )
 
-        usager, autorisations = usagers.popitem(last=False)
-        self.assertEqual(usager, self.usager_alice)
-        self.assertEqual(autorisations, [])
-
-        usager, autorisations = usagers.popitem(last=False)
-        self.assertEqual(usager, self.usager_philomene)
-        self.assertEqual(autorisations, [("Aucun mandat valide", None)])
+        self.assertSetEqual(
+            usagers["without_valid_mandate"], {self.usager_alice, self.usager_philomene}
+        )
 
 
 @tag("usagers")

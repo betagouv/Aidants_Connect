@@ -27,17 +27,60 @@ def _get_mandats_for_usagers_index(aidant):
     )
 
 
-def _get_usagers_dict_from_mandats(mandats):
+def _get_usagers_dict_from_mandats(mandats: Mandat) -> dict:
+    """
+    :return: A dict containing data about the users from input mandates with attributes:
+
+            with_valid_mandate -> OrderedDict[Usager, list[Tuple[str, bool]]
+
+                dictionnary associating the user with the list of its mandate's
+                authorizations. Each item of the list is a tuple of two items: the
+                the procedure (see aidants_connect.settings.DEMARCHES) covered by the
+                authorization (see aidants_aidants_connect_web.models.Autorisation) and
+                a boolean indication if the authorisation is soon to be expired.
+
+            without_valid_mandate -> set[Usager]
+
+                dict associating users without an active mandate with the number of
+                expired mandates
+
+            with_valid_mandate_count -> int
+
+                count of items in ``with_valid_mandate``
+
+            without_valid_mandate_count: int
+
+                count of items in ``without_valid_mandate``
+
+            total: int
+
+                total count of both ``with_valid_mandate`` and ``without_valid_mandate``
+
+        Example:
+            $ _get_usagers_dict_from_mandats(mandates)
+            {
+                "with_valid_mandate": {
+                    <Usager: Angela Claire Louise DUBOIS>: [
+                        ("papiers", False), ("transports", False)
+                    ]
+                },
+                "without_valid_mandate": {<Usager: Karl MARX>},
+                "with_valid_mandate_count": 1,
+                "without_valid_mandate_count": 1,
+                "total"2
+            }
+    """
     usagers = OrderedDict()
     usagers_without_mandats = set()
     delta = settings.MANDAT_EXPIRED_SOON
     for mandat in mandats:
-        if mandat.usager not in usagers:
-            usagers[mandat.usager] = list()
         expired = mandat.expiration_date if mandat.expiration_date < now() else False
         if expired:
             usagers_without_mandats.add(mandat.usager)
             continue
+
+        if mandat.usager not in usagers:
+            usagers[mandat.usager] = list()
 
         expired_soon = (
             mandat.expiration_date
@@ -45,18 +88,29 @@ def _get_usagers_dict_from_mandats(mandats):
             else False
         )
 
-        for autorisation in mandat.autorisations.all().order_by("pk"):
-            if autorisation.revocation_date is None:
+        autorisations = (
+            mandat.autorisations.filter(revocation_date=None).all().order_by("pk")
+        )
+
+        if autorisations.count() == 0:
+            usagers_without_mandats.add(mandat.usager)
+            usagers.pop(mandat.usager, mandat.usager)
+        else:
+            for autorisation in autorisations:
                 if mandat.usager in usagers_without_mandats:
                     usagers_without_mandats.remove(mandat.usager)
-
                 usagers[mandat.usager].append((autorisation.demarche, expired_soon))
-            elif not usagers[mandat.usager]:
-                usagers_without_mandats.add(mandat.usager)
 
-    for usager in usagers_without_mandats:
-        usagers[usager] = [("Aucun mandat valide", None)]
-    return usagers
+    with_valid_mandate_count = len(usagers)
+    without_valid_mandate_count = len(usagers_without_mandats)
+
+    return {
+        "with_valid_mandate": usagers,
+        "without_valid_mandate": usagers_without_mandats,
+        "with_valid_mandate_count": with_valid_mandate_count,
+        "without_valid_mandate_count": without_valid_mandate_count,
+        "total": with_valid_mandate_count + without_valid_mandate_count,
+    }
 
 
 @login_required
@@ -64,14 +118,14 @@ def _get_usagers_dict_from_mandats(mandats):
 def usagers_index(request):
     aidant = request.user
     mandats = _get_mandats_for_usagers_index(aidant)
-    usagers = _get_usagers_dict_from_mandats(mandats)
+    usagers_dict = _get_usagers_dict_from_mandats(mandats)
 
     return render(
         request,
         "aidants_connect_web/usagers.html",
         {
             "aidant": aidant,
-            "usagers": usagers,
+            "usagers_dict": usagers_dict,
         },
     )
 
