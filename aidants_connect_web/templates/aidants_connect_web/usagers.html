@@ -8,8 +8,8 @@
   <section class="section">
     <div class="container">
       <div class="row">
-        <h1 class="margin-bottom-0">Vos usagers</h1>
-        <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager">📝&nbsp;Ajouter un usager</a>
+        <h1 class="margin-bottom-0">Vos usagères et usagers</h1>
+        <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager"><span aria-hidden="true">📝&nbsp;</span>Ajouter une usagère ou un usager</a>
       </div>
       {% if messages %}
         <div class="notification success" role="alert">
@@ -19,9 +19,12 @@
         </div>
       {% endif %}
       <div class="tiles">
-        <h2>Les usagers avec qui vous avez un mandat</h2>
-        {% if usagers %}
+        {% if usagers_dict.total == 0 %}
+        <div class="notification" role="alert">Il n'y a encore personne avec qui vous avez un mandat.</div>
+        {% else %}
+          {% if usagers_dict.with_valid_mandate_count > 0 %}
           {# <input class="table__filter" type="text" name="input_val" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)"> #}
+          <h2>Les usagères et usagers avec qui vous avez un mandat actif</h2>
           <table class="table">
             <thead>
             <tr>
@@ -32,7 +35,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for usager, autorisations in usagers.items %}
+            {% for usager, autorisations in usagers_dict.with_valid_mandate.items %}
               <tr>
                 <td>
                   <a href="{% url 'usager_details' usager_id=usager.id %}">
@@ -44,14 +47,14 @@
                   </a>
                 </td>
                 <td>{{ usager.given_name }}</td>
-                <td>{{ usager.birthdate | date:"d F" }}</td>
+                <td>{{ usager.birthdate|date:"d F" }}</td>
                 <td>
                   <ul>
                     {% for autorisation, expired_soon in autorisations %}
                       <li>
                         {{ autorisation }}
                         {% if expired_soon %}
-                          <span title="expire le {{ expired_soon| date:"d F" }}">⏳</span>
+                          <span title="expire le {{ expired_soon|date:"d F" }}">⏳</span>
                         {% endif %}
                       </li>
                     {% endfor %}
@@ -61,11 +64,39 @@
             {% endfor %}
             </tbody>
           </table>
-        {% else %}
-          <div class="notification" role="alert">Vous n’avez pas d'usagers avec un mandat.</div>
-        {% endif %}
+          {% endif %}
+          {% if usagers_dict.without_valid_mandate_count > 0 %}
+          <h2>Les usagères et usagers avec qui vous avez un mandat passé</h2>
+          <table class="table">
+            <thead>
+            <tr>
+              <th scope="col">Nom</th>
+              <th scope="col">Prénom</th>
+              <th scope="col">Date de naissance</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for usager in usagers_dict.without_valid_mandate %}
+              <tr>
+                <td>
+                  <a href="{% url 'usager_details' usager_id=usager.id %}">
+                    {% if usager.preferred_username %}
+                      {{ usager.preferred_username }}<br/>
+                      Né(e)
+                    {% endif %}
+                    {{ usager.family_name }}
+                  </a>
+                </td>
+                <td>{{ usager.given_name }}</td>
+                <td>{{ usager.birthdate |date:"d F" }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
 
+        {% endif %}
       </div>
-      <div>
+    <div>
   </section>
 {% endblock content %}

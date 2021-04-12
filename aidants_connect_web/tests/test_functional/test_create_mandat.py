@@ -26,7 +26,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         login_aidant(self)
 
         welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
-        self.assertEqual(welcome_aidant, "Vos usagers")
+        self.assertEqual(welcome_aidant, "Vos usagères et usagers")
 
         usagers_before = self.selenium.find_elements_by_tag_name("tr")
         self.assertEqual(len(usagers_before), 0)
