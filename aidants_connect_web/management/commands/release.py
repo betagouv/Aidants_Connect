@@ -1,6 +1,6 @@
 import os
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
@@ -16,6 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
         if not dry_run:
+            self.check_current_branch()
             self.version = self.ask_for_new_version()
 
             if not self.confirm_if_ok():
@@ -29,6 +30,14 @@ class Command(BaseCommand):
 
         if not dry_run:
             self.tag_and_push_on_origin(self.version, self.changelog)
+
+    def check_current_branch(self):
+        current_branch = os.popen("git rev-parse --abbrev-ref HEAD")
+        if current_branch != "main":
+            raise CommandError(
+                "This script is intended to work ONLY on branch 'main'.\n"
+                "You can use it with the option --dry-run on any branch, though."
+            )
 
     def ask_for_new_version(self):
         self.stdout.write("Here are the latest versions:")
