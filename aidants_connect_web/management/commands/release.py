@@ -17,6 +17,7 @@ class Command(BaseCommand):
         self.stdout.write("OK, let’s tag this then!")
 
         self.tag_and_push_on_origin(self.version)
+        self.changelog = self.display_and_get_changelog()
 
     def ask_for_new_version(self):
         self.stdout.write("Here are the latest versions:")
@@ -30,9 +31,27 @@ class Command(BaseCommand):
         )
         return are_they_sure.lower().strip() == "y"
 
+    def display_and_get_changelog(self):
+        previous_version = os.popen("git tag | tail -1").read().strip()
+        command = (
+            f"git log --pretty='format:%s' --first-parent main {previous_version}..main"
+        )
+        changelog = os.popen(command).read()
+        self.stdout.write(
+            f"\nHere is the changelog since {previous_version},"
+            "you may want to use it for production log:"
+        )
+        self.write_horizontal_line()
+        self.stdout.write(changelog)
+        self.write_horizontal_line()
+        return changelog
+
     def tag_and_push_on_origin(self, version):
         os.system(f'git tag -a {version} -m ""')
         os.system("git push --tags")
         self.stdout.write(
             self.style.SUCCESS(f"Tag {version} was pushed to git origin!")
         )
+
+    def write_horizontal_line(self):
+        self.stdout.write("-" * 15)
