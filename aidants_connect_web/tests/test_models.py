@@ -541,6 +541,13 @@ class AidantModelMethodsTests(TestCase):
         )
         cls.aidant_patricia = AidantFactory(username="Patricia")
 
+        # Juliette is responsible in the same structure as Marge & Lisa
+        cls.respo_juliette = AidantFactory(
+            username="Juliette",
+            organisation=cls.aidant_marge.organisation,
+        )
+        cls.respo_juliette.responsable_de.add(cls.aidant_marge.organisation)
+
         # Active Usagers
         cls.usager_homer = UsagerFactory(given_name="Homer")
         cls.usager_ned = UsagerFactory(given_name="Ned")
@@ -822,6 +829,12 @@ class AidantModelMethodsTests(TestCase):
         self.assertEqual(
             self.aidant_marge.get_valid_autorisation("social", usager_charles), None
         )
+
+    def test_is_responsable_structure(self):
+        # an aidant without further modification is not responsable structure
+        self.assertFalse(self.aidant_lisa.is_responsable_structure())
+        # however Juliette is responsable structure
+        self.assertTrue(self.respo_juliette.is_responsable_structure())
 
 
 @tag("models", "journal")

@@ -194,6 +194,12 @@ class Aidant(AbstractUser):
         ).last()
         return journal_create_attestation
 
+    def is_responsable_structure(self):
+        """
+        :return: True if the Aidant is responsable of at least one organisation
+        """
+        return self.responsable_de.count() >= 1
+
 
 class UsagerQuerySet(models.QuerySet):
     def active(self):
