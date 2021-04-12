@@ -138,7 +138,10 @@ class AidantAdmin(VisibleToAdminMetier, DjangoUserAdmin):
             {"fields": ("username", "first_name", "last_name", "email", "password")},
         ),
         ("Informations professionnelles", {"fields": ("profession", "organisation")}),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser")}),
+        (
+            "Permissions",
+            {"fields": ("is_active", "is_staff", "is_superuser", "responsable_de")},
+        ),
     )
 
     # `add_fieldsets` is not a standard `ModelAdmin` attribute. `AidantAdmin`
