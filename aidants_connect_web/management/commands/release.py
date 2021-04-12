@@ -6,23 +6,31 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     help = "Generate a new tag using provided version number"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Only display changelog, do not tag-push anything",
+        )
+
     def handle(self, *args, **options):
-        self.version = self.ask_for_new_version()
+        if not options["dry_run"]:
+            self.version = self.ask_for_new_version()
 
-        if not self.confirm_if_ok():
-            self.stdout.write(
-                "You’re right, there’s no rush. Try again when you are ready."
-            )
-            return
-        self.stdout.write("OK, let’s tag this then!")
+            if not self.confirm_if_ok():
+                self.stdout.write(
+                    "You’re right, there’s no rush. Try again when you are ready."
+                )
+                return
+            self.stdout.write("OK, let’s tag this then!")
+            self.tag_and_push_on_origin(self.version)
 
-        self.tag_and_push_on_origin(self.version)
         self.changelog = self.display_and_get_changelog()
 
     def ask_for_new_version(self):
         self.stdout.write("Here are the latest versions:")
-        os.system("git tag -l | tail")
-        version = input("Which version number will you give to the new version? ")
+        os.system("git tag -l | tail -5")
+        version = input("How will you name this new version? ")
         return version
 
     def confirm_if_ok(self):
