@@ -14,7 +14,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        if not options["dry_run"]:
+        dry_run = options["dry_run"]
+        if not dry_run:
             self.version = self.ask_for_new_version()
 
             if not self.confirm_if_ok():
@@ -22,10 +23,12 @@ class Command(BaseCommand):
                     "You’re right, there’s no rush. Try again when you are ready."
                 )
                 return
-            self.stdout.write("OK, let’s tag this then!")
-            self.tag_and_push_on_origin(self.version)
+            self.stdout.write("OK, let’s release aidants-connect, then!")
 
         self.changelog = self.display_and_get_changelog()
+
+        if not dry_run:
+            self.tag_and_push_on_origin(self.version, self.changelog)
 
     def ask_for_new_version(self):
         self.stdout.write("Here are the latest versions:")
@@ -54,8 +57,9 @@ class Command(BaseCommand):
         self.write_horizontal_line()
         return changelog
 
-    def tag_and_push_on_origin(self, version):
-        os.system(f'git tag -a {version} -m ""')
+    def tag_and_push_on_origin(self, version, message):
+        cleaned_message = message.replace("'", "’")
+        os.system(f"git tag -a {version} -m '{cleaned_message}'")
         os.system("git push --tags")
         self.stdout.write(
             self.style.SUCCESS(f"Tag {version} was pushed to git origin!")
