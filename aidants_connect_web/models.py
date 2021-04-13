@@ -69,6 +69,7 @@ class Aidant(AbstractUser):
         Organisation, null=True, on_delete=models.CASCADE, related_name="aidants"
     )
     responsable_de = models.ManyToManyField(Organisation, related_name="responsables")
+    can_create_mandats = models.BooleanField(default=True)
     objects = AidantManager()
 
     class Meta:
