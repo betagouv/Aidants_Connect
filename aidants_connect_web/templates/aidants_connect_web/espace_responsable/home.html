@@ -1,0 +1,33 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Espace Responsable{% endblock %}
+
+{% block extracss %}
+<link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h1 class="section__title">Bienvenue sur votre Espace Responsable, {{ responsable.first_name }}&nbsp!</h1>
+    <h2>Les structures dont vous êtes responsable</h2>
+    <ul class="grid cards">
+      {% for org in responsable.responsable_de.all %}
+        <li class="card">
+          <a href="#" class="card__content">
+            <h3>{{ org.name }}</h3>
+            <div class="card__meta">{{ org.address }}</div>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock content %}

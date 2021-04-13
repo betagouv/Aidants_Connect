@@ -9,6 +9,7 @@ from aidants_connect_web.views import (
     mandat,
     service,
     espace_aidant,
+    espace_responsable,
     usagers,
     datapass,
 )
@@ -80,6 +81,10 @@ urlpatterns = [
         "logout/",
         id_provider.end_session_endpoint,
         name="end_session_endpoint",
+    ),
+    # Espace responsable structure
+    path(
+        "espace-responsable/", espace_responsable.home, name="espace_responsable_home"
     ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
