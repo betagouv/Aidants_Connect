@@ -44,32 +44,40 @@
     <div class="container">
       <form method="post">
         {% if form.errors %}
-          <div class="notification error" role="alert">{{ form.errors }}</div>
+        <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
         {% endif %}
         {% csrf_token %}
         <div id="demarches" class="tiles">
           <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
+          {% if form.errors.demarche %}
+          <section id="demarche_error_notification" class="notification error" role="alert">{{ form.errors.demarche }}</section>
+          {% endif %}
           <fieldset id="demarches_list">
             <legend class="sr-only">Sélectionnez la ou les démarche(s)</legend>
             <div class="grid">
               {% for value, label in form.demarche.field.choices %}
                 <div id="{{ value }}" class="tile">
-                  <input id="button-{{ value }}" type="checkbox" value="{{ value }}" name="demarche" class="sr-only"/>
+                  <input
+                    id="button-{{ value }}"
+                    type="checkbox"
+                    value="{{ value }}"
+                    name="demarche"
+                    class="sr-only"
+                    {% if form.errors.demarche %}aria-describedby="demarche_error_notification"{% endif %}
+                  />
                   <label class="label-demarche" for="button-{{ value }}">
                     <img src="{{ label.icon }}" alt=""/>
                     <strong>{{ label.titre }}</strong>
-                    <p>
-                      {{ label.description }}
-                      {% if label.service_exemples %}
-                        <br/>
-                        <small title="exemples de services publics">
-                          <i>Exemples :</i>
-                          {% for service in label.service_exemples %}
-                            <span class="label label-small">{{ service }}</span>
-                          {% endfor %}
-                        </small>
-                      {% endif %}
-                    </p>
+                    {{ label.description }}
+                    {% if label.service_exemples %}
+                      <br/>
+                      <small>
+                        <i>Exemples :</i>
+                        {% for service in label.service_exemples %}
+                          <span class="label label-small">{{ service }}</span>
+                        {% endfor %}
+                      </small>
+                    {% endif %}
                   </label>
                 </div>
               {% endfor %}
@@ -78,12 +86,22 @@
         </div>
         <div id="duree" class="tiles">
           <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
+          {% if form.errors.duree %}
+          <section id="duree_error_notification" class="notification error" role="alert">{{ form.errors.duree }}</section>
+          {% endif %}
           <fieldset id="duree_list">
             <legend class="sr-only">Choisissez la durée du mandat</legend>
             <div class="grid">
               {% for value, label in form.duree.field.choices %}
                 <div id="{{ value }}" class="tile">
-                  <input id="button-{{ value }}" type="radio" value="{{ value }}" name="duree" class="sr-only"/>
+                  <input
+                    id="button-{{ value }}"
+                    type="radio"
+                    value="{{ value }}"
+                    name="duree"
+                    class="sr-only"
+                    {% if form.errors.duree %}aria-describedby="duree_error_notification"{% endif %}
+                  />
                   <label class="label-duree" for="button-{{ value }}">
                     <strong>{{ label.title }} <span class="duree-label-is-remote">à distance</span></strong>
                     <span>{{ label.description }}</span>
@@ -96,30 +114,37 @@
             La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
             {{ form.is_remote }}
           </label>
+          <div id="phone_number_panel" class="card padding-1" hidden aria-hidden="true">
+            {% if form.errors.user_phone %}
+            <section class="notification error" role="alert">
+              {{ form.errors.user_phone }}
+            </section>
+            {% endif %}
+            <label for="id_user_phone">
+              Veuillez entrer le numéro de téléphone de l'usager ou de l'usagère :
+            </label>
+            <input
+              id="id_user_phone"
+              type="tel"
+              name="{{ form.user_phone.name }}"
+              value="{{ form.user_phone.value }}"
+              {% if form.errors.user_phone %}aria-describedby="phone_number_panel"{% endif %}
+            />
+          </div>
         </div>
         <div id="france_connection" class="tiles">
           <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
-          <input id="submit_button" type="image" src="{% static 'images/FCboutons-10.png' %}"
-                 alt="S’identifier avec FranceConnect"/>
+          <input
+            id="submit_button"
+            type="image"
+            src="{% static 'images/FCboutons-10.png' %}"
+            alt="S’identifier avec FranceConnect"/>
         </div>
       </form>
-      <div>
+    </div>
   </section>
 {% endblock content %}
 
 {% block extrajs %}
-  <script>
-      // init
-      let mandat_is_remote_checkbox = document.getElementById("id_is_remote");
-      let mandat_duree_label_is_remote_span = document.getElementsByClassName("duree-label-is-remote");
-      for (var i = 0; i < mandat_duree_label_is_remote_span.length; i++) {
-          mandat_duree_label_is_remote_span[i].style.display = "none";
-      }
-      // toggle mandat_is_remote
-      mandat_is_remote_checkbox.addEventListener('change', function () {
-          for (var i = 0; i < mandat_duree_label_is_remote_span.length; i++) {
-              mandat_duree_label_is_remote_span[i].style.display = this.checked ? "initial" : "none";
-          }
-      });
-  </script>
+  <script src="{% static 'js/new_mandat.js' %}"></script>
 {% endblock %}

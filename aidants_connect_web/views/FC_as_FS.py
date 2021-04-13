@@ -142,6 +142,8 @@ def get_user_info(connection: Connection) -> tuple:
     )
     user_info = fc_user_info.json()
 
+    user_phone = connection.user_phone if len(connection.user_phone) > 0 else None
+
     if user_info.get("birthplace") == "":
         user_info["birthplace"] = None
 
@@ -158,20 +160,32 @@ def get_user_info(connection: Connection) -> tuple:
 
             Journal.log_update_email_usager(aidant=connection.aidant, usager=usager)
 
+        if user_phone is not None and usager.phone != user_phone:
+            usager.phone = user_phone
+
+            Journal.log_update_phone_usager(aidant=connection.aidant, usager=usager)
+
+            usager.save()
+
         return usager, None
 
     except Usager.DoesNotExist:
+        kwargs = {
+            "given_name": user_info.get("given_name"),
+            "family_name": user_info.get("family_name"),
+            "birthdate": user_info.get("birthdate"),
+            "gender": user_info.get("gender"),
+            "birthplace": user_info.get("birthplace"),
+            "birthcountry": user_info.get("birthcountry"),
+            "sub": usager_sub,
+            "email": user_info.get("email"),
+        }
+
+        if user_phone is not None:
+            kwargs["phone"] = user_phone
+
         try:
-            usager = Usager.objects.create(
-                given_name=user_info.get("given_name"),
-                family_name=user_info.get("family_name"),
-                birthdate=user_info.get("birthdate"),
-                gender=user_info.get("gender"),
-                birthplace=user_info.get("birthplace"),
-                birthcountry=user_info.get("birthcountry"),
-                sub=usager_sub,
-                email=user_info.get("email"),
-            )
+            usager = Usager.objects.create(**kwargs)
             return usager, None
 
         except IntegrityError as e:

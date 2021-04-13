@@ -165,6 +165,14 @@ a.no-decoration {
   margin: 0;
 }
 
+.padding-0 {
+  padding: 0;
+}
+
+.padding-1 {
+  padding: 1em;
+}
+
 .tiles {
   margin: 3em 0;
 }

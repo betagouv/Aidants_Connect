@@ -137,6 +137,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "django_extensions",
     "import_export",
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [
@@ -469,3 +470,5 @@ MANDAT_EXPIRED_SOON_EMAIL_SUBJECT = "Ces mandats vont bientôt expirer"
 MANDAT_EXPIRED_SOON_EMAIL_FROM = "support@aidantsconnect.beta.gouv.fr"
 
 SUPPORT_EMAIL = "support@aidantsconnect.beta.gouv.fr"
+
+PHONENUMBER_DEFAULT_REGION = os.getenv("PHONENUMBER_DEFAULT_REGION", None)

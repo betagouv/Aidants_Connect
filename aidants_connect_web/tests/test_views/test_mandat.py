@@ -26,9 +26,11 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 
 @tag("new_mandat")
+@override_settings(PHONENUMBER_DEFAULT_REGION="FR")
 class NewMandatTests(TestCase):
     def setUp(self):
         self.client = Client()
+        self.phone_number = "0 800 840 800"
         self.aidant_thierry = AidantFactory()
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
@@ -55,17 +57,30 @@ class NewMandatTests(TestCase):
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+
+        # When mandate is remot and telephone number is absent,
+        # mandate creation should fail
         data = {
             "demarche": ["papiers", "logement"],
             "duree": "SHORT",
             "is_remote": True,
         }
         response = self.client.post("/creation_mandat/", data=data)
+        self.assertEqual(response.status_code, 400)
+
+        data["user_phone"] = self.phone_number
+        response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
-        data = {"demarche": ["papiers", "logement"], "duree": "LONG", "is_remote": True}
+        data = {
+            "demarche": ["papiers", "logement"],
+            "duree": "LONG",
+            "is_remote": True,
+            "user_phone": self.phone_number,
+        }
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 

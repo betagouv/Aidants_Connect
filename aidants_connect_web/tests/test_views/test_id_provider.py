@@ -504,6 +504,11 @@ class TokenTests(TestCase):
 
 
 @tag("id_provider")
+@override_settings(
+    # Override salt to get reproductible tests. In particular,
+    # on environment where salt is set to an empty string
+    FC_AS_FI_HASH_SALT="123456"
+)
 class UserInfoTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -563,6 +568,7 @@ class UserInfoTests(TestCase):
         FC_formatted_info = {
             "given_name": "Joséphine",
             "family_name": "ST-PIERRE",
+            "phone": "",
             "preferred_username": "ST-PIERRE",
             "birthdate": "1969-12-25",
             "gender": Usager.GENDER_FEMALE,
