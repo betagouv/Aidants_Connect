@@ -21,7 +21,7 @@
     <ul class="grid cards">
       {% for org in responsable.responsable_de.all %}
         <li class="card">
-          <a href="#" class="card__content">
+          <a href="{% url 'espace_responsable_organisation' organisation_id=org.id %}" class="card__content">
             <h3>{{ org.name }}</h3>
             <div class="card__meta">{{ org.address }}</div>
           </a>
