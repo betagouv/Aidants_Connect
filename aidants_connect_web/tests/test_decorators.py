@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from freezegun import freeze_time
 
-from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -52,4 +52,27 @@ class AidantRequiredTests(TestCase):
     def test_non_aidant_user_cannot_access_decorated_page(self):
         self.client.force_login(self.responsable_georges)
         response = self.client.get("/creation_mandat/")
+        self.assertEqual(response.status_code, 302)
+
+
+@tag("decorators")
+class RespoStructureRequiredTests(TestCase):
+    def setUp(self):
+        self.aidant_thierry = AidantFactory()
+        self.responsable_georges = AidantFactory(
+            username="georges@georges.com",
+            organisation=self.aidant_thierry.organisation,
+            can_create_mandats=False,
+        )
+        self.responsable_georges.responsable_de.add(self.aidant_thierry.organisation)
+        self.responsable_georges.responsable_de.add(OrganisationFactory())
+
+    def test_responsable_can_access_decorated_page(self):
+        self.client.force_login(self.responsable_georges)
+        response = self.client.get("/espace-responsable/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_non_responsable_user_cannot_access_decorated_page(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.get("/espace-responsable/")
         self.assertEqual(response.status_code, 302)
