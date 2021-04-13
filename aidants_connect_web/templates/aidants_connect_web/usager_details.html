@@ -11,7 +11,9 @@
       <h1 class="margin-bottom-0">
         <a id="retour_usagers" href="{% url 'usagers' %}">Vos usagers</a>
       </h1>
-      <a id="add_mandat" class="button float-right" href="{% url 'new_mandat' %}">📝&nbsp;Créer un mandat</a>
+      {% if aidant.can_create_mandats %}
+        <a id="add_mandat" class="button float-right" href="{% url 'new_mandat' %}">📝&nbsp;Créer un mandat</a>
+      {% endif %}
     </div>
     <h2>&nbsp;↳ {{ usager.get_full_name }}</h2>
     {% if messages %}
@@ -70,7 +72,7 @@
                       {% endif %}
                     </td>
                     <td>
-                      {% if not autorisation.revocation_date %}
+                      {% if aidant.can_create_mandats and not autorisation.revocation_date %}
                         <a href="{% url 'confirm_autorisation_cancelation' usager_id=usager.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right">
                           Révoquer l’autorisation <span aria-hidden="true">&nbsp;🗑️</span>
                         </a>
