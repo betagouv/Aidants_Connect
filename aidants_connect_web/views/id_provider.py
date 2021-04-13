@@ -22,7 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import jwt
 
-from aidants_connect_web.decorators import activity_required
+from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.models import (
     Connection,
     Journal,
@@ -77,6 +77,7 @@ def check_request_parameters(
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def authorize(request):
 
@@ -163,7 +164,8 @@ def authorize(request):
 
 
 @login_required
-@activity_required()
+@user_is_aidant
+@activity_required
 def fi_select_demarche(request):
     if request.method == "GET":
         parameters = {
