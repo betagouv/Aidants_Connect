@@ -12,7 +12,9 @@
         <a id="retour_usagers" href="{% url 'usagers' %}">Vos usagers</a>
       </h1>
       {% if aidant.can_create_mandats %}
-        <a id="add_mandat" class="button float-right" href="{% url 'new_mandat' %}">📝&nbsp;Créer un mandat</a>
+        <a id="add_mandat" class="button float-right" href="{% url 'new_mandat' %}">
+            <span aria-hidden="true">📝&nbsp;</span>Créer un mandat
+        </a>
       {% endif %}
     </div>
     <h2>&nbsp;↳ {{ usager.get_full_name }}</h2>
