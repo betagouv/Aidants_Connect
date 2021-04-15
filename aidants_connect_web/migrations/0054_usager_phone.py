@@ -7,7 +7,7 @@ import phonenumber_field.modelfields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0052_add_departements_to_region_table"),
+        ("aidants_connect_web", "0053_auto_20210421_1503"),
     ]
 
     operations = [

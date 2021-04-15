@@ -213,7 +213,7 @@ class AuthorizeTests(TestCase):
             },
         )
 
-        saved_items = Connection.objects.all()
+        saved_items = Connection.objects.all().order_by("pk")
         self.assertEqual(saved_items.count(), 2)
         connection = saved_items[1]
         self.assertEqual(connection.usager.sub, "123")

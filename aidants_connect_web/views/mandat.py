@@ -34,6 +34,7 @@ log = logging.getLogger()
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def new_mandat(request):
     aidant = request.user
