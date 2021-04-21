@@ -15,10 +15,34 @@ class EspaceResponsableHomePageTests(TestCase):
         self.client = Client()
         self.responsable_tom = AidantFactory(username="georges@plop.net")
         self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
+        self.aidant_john = AidantFactory(username="john@doe.du")
 
     def test_anonymous_user_cannot_access_espace_aidant_view(self):
         response = self.client.get("/espace-responsable/")
         self.assertRedirects(response, "/accounts/login/?next=/espace-responsable/")
+
+    def test_navigation_menu_contains_a_link_for_the_responsable_structure(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get("/")
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "Mon espace Responsable",
+            response_content,
+            (
+                "Link to espace responsable is invisible to a responsable, "
+                "it should be visible"
+            ),
+        )
+
+    def test_navigation_menu_does_not_contain_a_link_for_the_aidant(self):
+        self.client.force_login(self.aidant_john)
+        response = self.client.get("/")
+        response_content = response.content.decode("utf-8")
+        self.assertNotIn(
+            "Mon espace Responsable",
+            response_content,
+            "Link to espace responsable is visible to an aidant, it should not",
+        )
 
     def test_espace_responsable_home_url_triggers_the_right_view(self):
         found = resolve("/espace-responsable/")
