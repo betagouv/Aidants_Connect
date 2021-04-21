@@ -68,7 +68,8 @@ class Aidant(AbstractUser):
     organisation = models.ForeignKey(
         Organisation, null=True, on_delete=models.CASCADE, related_name="aidants"
     )
-
+    responsable_de = models.ManyToManyField(Organisation, related_name="responsables")
+    can_create_mandats = models.BooleanField(default=True)
     objects = AidantManager()
 
     class Meta:
@@ -193,6 +194,12 @@ class Aidant(AbstractUser):
             access_token=access_token,
         ).last()
         return journal_create_attestation
+
+    def is_responsable_structure(self):
+        """
+        :return: True if the Aidant is responsable of at least one organisation
+        """
+        return self.responsable_de.count() >= 1
 
 
 class UsagerQuerySet(models.QuerySet):

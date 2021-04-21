@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone, formats
 from django.contrib.staticfiles import finders
 
-from aidants_connect_web.decorators import activity_required
+from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
 from aidants_connect_web.models import (
     Autorisation,
@@ -34,6 +34,7 @@ log = logging.getLogger()
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def new_mandat(request):
     aidant = request.user
@@ -68,6 +69,7 @@ def new_mandat(request):
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def new_mandat_recap(request):
     connection = Connection.objects.get(pk=request.session["connection"])
@@ -188,6 +190,7 @@ def new_mandat_recap(request):
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def new_mandat_success(request):
     connection = Connection.objects.get(pk=request.session["connection"])
@@ -202,6 +205,7 @@ def new_mandat_success(request):
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def attestation_projet(request):
     connection = Connection.objects.get(pk=request.session["connection"])
@@ -228,6 +232,7 @@ def attestation_projet(request):
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def attestation_final(request):
     connection = Connection.objects.get(pk=request.session["connection"])
@@ -252,6 +257,7 @@ def attestation_final(request):
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def attestation_visualisation(request, mandat_id):
     # noinspection PyTypeChecker
@@ -347,6 +353,7 @@ def get_attestation_hash(mandat_id):
 
 
 @login_required
+@user_is_aidant
 @activity_required
 def attestation_qrcode(request):
     attestation_hash = None

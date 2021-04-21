@@ -23,12 +23,14 @@
         <a id="view_organisation" class="tile text-center background-color-grey" href="{% url 'espace_aidant_organisation' %}">
           <span aria-hidden="true">🏢<br /></span>Mon organisation
         </a>
-        <a id="view_mandats" class="tile text-center background-color-grey" href="{% url 'usagers' %}" >
-          <span aria-hidden="true">📂<br /></span>Mes mandats
-        </a>
-        <a id="add_usager" class="tile text-center background-color-grey" href="{% url 'new_mandat' %}">
-          <span aria-hidden="true">📝<br /></span>Créer un mandat
-        </a>
+        {% if aidant.can_create_mandats %}
+          <a id="view_mandats" class="tile text-center background-color-grey" href="{% url 'usagers' %}" >
+            <span aria-hidden="true">📂<br /></span>Mes mandats
+          </a>
+          <a id="add_usager" class="tile text-center background-color-grey" href="{% url 'new_mandat' %}">
+            <span aria-hidden="true">📝<br /></span>Créer un mandat
+          </a>
+        {% endif %}
         <a id="ask_for_help" class="tile text-center background-color-grey" href="mailto:contact@aidantsconnect.beta.gouv.fr?subject=sos&body=Bonjour, je suis (nom,prénom), de la structure (nom de structure), j’aimerais que vous me rappeliez afin de résoudre mon problème (description du problème), voici mon numéro (numéro de téléphone)">
           <span aria-hidden="true">🆘<br /></span>J’ai besoin d’aide
         </a>
