@@ -18,7 +18,7 @@
     {% endif %}
     <h1 class="section__title">Bienvenue sur votre Espace Responsable, {{ responsable.first_name }}&nbsp!</h1>
     <h2>Les structures dont vous êtes responsable</h2>
-    <ul class="grid cards">
+    <ul class="grid cards structures">
       {% for org in responsable.responsable_de.all %}
         <li class="card">
           <a href="{% url 'espace_responsable_organisation' organisation_id=org.id %}" class="card__content">
