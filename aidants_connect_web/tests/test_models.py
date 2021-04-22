@@ -488,6 +488,26 @@ class OrganisationModelTests(TestCase):
         self.assertEqual(organisation.type, o_type)
         self.assertEqual(organisation.address, "3 rue du chat, 27120 Houlbec-Cocherel")
 
+    def test_display_address(self):
+        organisation_no_address = Organisation(name="L'Internationale")
+        organisation_address = Organisation(
+            name="COMMUNE D'HOULBEC COCHEREL",
+            siret=123,
+            address="45 avenue du Général de Gaulle, 27120 HOULBEC COCHEREL",
+        )
+
+        organisation_no_address.save()
+        organisation_address.save()
+
+        self.assertEqual(organisation_no_address.display_address, "")
+        self.assertNotEqual(
+            organisation_no_address.display_address,
+            Organisation._meta.get_field("address").default,
+        )
+        self.assertEqual(
+            organisation_address.display_address, organisation_address.address
+        )
+
 
 @tag("models", "aidant")
 class AidantModelTests(TestCase):

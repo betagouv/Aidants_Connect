@@ -56,6 +56,10 @@ class Organisation(models.Model):
     def admin_num_mandats(self):
         return self.num_mandats
 
+    @property
+    def display_address(self):
+        return self.address if self.address != "No address provided" else ""
+
     admin_num_mandats.short_description = "Nombre de mandats"
 
 

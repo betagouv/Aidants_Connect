@@ -19,11 +19,11 @@
             Le mandat avec l'usager <strong>{{ usager_name }}</strong>,
             concernant les démarches suivantes :
           </p>
-          <ul>
+          <ul class="remaining-autorisations">
             {% for autorisation in remaining_autorisations %}
               <li><strong>{{ autorisation }}</strong></li>
             {% endfor %}
-          </ul>,
+          </ul>
           <p>
             créé le <strong>{{ mandat.creation_date | date:"d F Y" }}</strong> et expirant le <strong>{{ mandat.expiration_date | date:"d F Y" }}</strong>,
             va être <strong>révoquée</strong>.

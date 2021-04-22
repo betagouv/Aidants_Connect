@@ -7,6 +7,7 @@ from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
 
+from aidants_connect import settings
 from aidants_connect_web.models import Autorisation, Mandat
 
 from aidants_connect_web.tests.factories import (
@@ -195,7 +196,7 @@ class MandatCancellationConfirmPageTests(TestCase):
             usager=self.our_usager,
         )
         self.valid_autorisation = AutorisationFactory(
-            mandat=self.valid_mandat, demarche="Revenus"
+            mandat=self.valid_mandat, demarche=[*settings.DEMARCHES][0]
         )
 
     def test_url_triggers_the_correct_view(self):
@@ -211,7 +212,7 @@ class MandatCancellationConfirmPageTests(TestCase):
 
         self.assertTemplateUsed(
             response_to_get_request,
-            "aidants_connect_web/confirm_mandat_cancellation.html",
+            "aidants_connect_web/mandat_cancellation/confirm_mandat_cancellation.html",
         )
 
     def test_complete_post_triggers_redirect(self):
@@ -226,7 +227,7 @@ class MandatCancellationConfirmPageTests(TestCase):
 
         self.assertRedirects(
             response_correct_confirm_form,
-            f"/usagers/{self.our_usager.id}/",
+            f"/mandats/{self.valid_mandat.id}/cancel_success",
             fetch_redirect_response=False,
         )
         self.assertFalse(self.valid_mandat.is_active)
@@ -239,7 +240,7 @@ class MandatCancellationConfirmPageTests(TestCase):
         )
         self.assertTemplateUsed(
             response_incorrect_confirm_form,
-            "aidants_connect_web/confirm_mandat_cancellation.html",
+            "aidants_connect_web/mandat_cancellation/confirm_mandat_cancellation.html",
         )
         self.assertIn(
             "Une erreur s'est produite lors de la révocation du mandat",
@@ -337,7 +338,8 @@ class MandatCancellationAttestationTests(TestCase):
 
         self.assertTemplateUsed(
             response_to_get_request,
-            "aidants_connect_web/mandat_cancellation_attestation.html",
+            "aidants_connect_web/mandat_cancellation/"
+            "mandat_cancellation_attestation.html",
         )
 
     def test_template_contains_correct_information(self):

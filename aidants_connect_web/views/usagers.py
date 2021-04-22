@@ -10,7 +10,9 @@ from django.utils import timezone
 from django.utils.timezone import timedelta, now
 
 from aidants_connect_web.decorators import activity_required
-from aidants_connect_web.models import Mandat, Journal, Autorisation
+from aidants_connect_web.models import Mandat, Journal, Autorisation, Aidant
+from aidants_connect_web.views.service import humanize_demarche_names
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -205,19 +207,22 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
 @login_required
 @activity_required
 def confirm_mandat_cancelation(request, mandat_id):
-    aidant = request.user
+    # noinspection PyTypeChecker
+    aidant: Aidant = request.user
     try:
         mandat = Mandat.objects.get(pk=mandat_id, organisation=aidant.organisation)
     except Mandat.DoesNotExist:
         django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")
+
     usager = mandat.usager
+    remaining_autorisations = []
+
     if mandat.is_active:
-        remaining_autorisations = (
-            mandat.autorisations.all()
-            .filter(revocation_date=None)
-            .values_list("demarche", flat=True)
-        )
+        for autorisation in mandat.autorisations.filter(revocation_date=None):
+            remaining_autorisations.append(
+                humanize_demarche_names(autorisation.demarche)
+            )
 
         if request.method == "POST":
             if request.POST:
@@ -230,32 +235,58 @@ def confirm_mandat_cancelation(request, mandat_id):
                         autorisation.save(update_fields=["revocation_date"])
                         Journal.log_autorisation_cancel(autorisation, aidant)
                 Journal.log_mandat_cancel(mandat, aidant)
-                return redirect("usager_details", usager_id=usager.id)
+                return redirect("mandat_cancelation_success", mandat_id=mandat.id)
             else:
                 return render(
                     request,
-                    "aidants_connect_web/confirm_mandat_cancellation.html",
+                    "aidants_connect_web/mandat_cancellation/"
+                    "confirm_mandat_cancellation.html",
                     {
                         "aidant": aidant,
                         "usager_name": usager.get_full_name(),
                         "usager_id": usager.id,
                         "mandat": mandat,
                         "remaining_autorisations": remaining_autorisations,
-                        "error": """
-                            Une erreur s'est produite lors de la révocation du mandat
-                            """,
+                        "error": "Une erreur s'est produite lors "
+                        "de la révocation du mandat",
                     },
                 )
 
     return render(
         request,
-        "aidants_connect_web/confirm_mandat_cancellation.html",
+        "aidants_connect_web/mandat_cancellation/confirm_mandat_cancellation.html",
         {
             "aidant": aidant,
             "usager_name": usager.get_full_name(),
             "usager_id": usager.id,
             "mandat": mandat,
-            "remaining_autorisations": [],
+            "remaining_autorisations": remaining_autorisations,
+        },
+    )
+
+
+@login_required
+@activity_required
+def mandat_cancelation_success(request, mandat_id: int):
+    # noinspection PyTypeChecker
+    aidant: Aidant = request.user
+    try:
+        mandate = Mandat.objects.get(pk=mandat_id, organisation=aidant.organisation)
+    except Mandat.DoesNotExist:
+        django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+        return redirect("espace_aidant_home")
+    user = mandate.usager
+    if mandate.is_active:
+        django_messages.error(request, "Ce mandat est toujours actif.")
+        return redirect("usager_details", usager_id=user.id)
+
+    return render(
+        request,
+        "aidants_connect_web/mandat_cancellation/mandat_cancellation_success.html",
+        {
+            "aidant": aidant,
+            "mandat": mandate,
+            "usager": user,
         },
     )
 
@@ -274,13 +305,18 @@ def mandat_cancellation_attestation(request, mandat_id):
         return redirect("espace_aidant_home")
     usager = mandat.usager
 
+    revocation_date = (
+        mandat.autorisations.order_by("-revocation_date").first().revocation_date
+    )
+
     return render(
         request,
-        "aidants_connect_web/mandat_cancellation_attestation.html",
+        "aidants_connect_web/mandat_cancellation/mandat_cancellation_attestation.html",
         {
             "organisation": organisation,
             "usager_name": usager.get_full_name(),
             "mandat": mandat,
             "creation_date": mandat.creation_date.strftime("%d/%m/%Y à %Hh%M"),
+            "revocation_date": revocation_date,
         },
     )
