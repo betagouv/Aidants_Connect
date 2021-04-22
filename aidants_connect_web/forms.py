@@ -5,9 +5,13 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.forms import EmailField
+from django.forms.utils import ErrorList
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
+from phonenumber_field.formfields import PhoneNumberField
+from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from aidants_connect_web.models import Aidant, Organisation
 
@@ -126,7 +130,12 @@ class AidantChangeForm(forms.ModelForm):
 class MandatForm(forms.Form):
     DEMARCHES = [(key, value) for key, value in settings.DEMARCHES.items()]
     demarche = forms.MultipleChoiceField(
-        choices=DEMARCHES, required=True, widget=forms.CheckboxSelectMultiple
+        choices=DEMARCHES,
+        required=True,
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={
+            "required": _("Vous devez sélectionner au moins une démarche.")
+        },
     )
 
     # models.MandatDureeKeywords
@@ -134,9 +143,38 @@ class MandatForm(forms.Form):
         ("SHORT", {"title": "Mandat court", "description": "(expire demain)"}),
         ("LONG", {"title": "Mandat long", "description": "(12 mois)"}),
     ]
-    duree = forms.ChoiceField(choices=DUREES, required=True, initial=3)
+    duree = forms.ChoiceField(
+        choices=DUREES,
+        required=True,
+        initial=3,
+        error_messages={"required": _("Veuillez sélectionner la durée du mandat.")},
+    )
 
     is_remote = forms.BooleanField(required=False)
+
+    user_phone = PhoneNumberField(
+        initial="",
+        region=settings.PHONENUMBER_DEFAULT_REGION,
+        widget=PhoneNumberInternationalFallbackWidget(
+            region=settings.PHONENUMBER_DEFAULT_REGION
+        ),
+        required=False,
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+
+        user_phone = cleaned.get("user_phone", None)
+        if user_phone is not None and cleaned["is_remote"] and len(user_phone) == 0:
+            self.add_error(
+                "user_phone",
+                _(
+                    "Un numéro de téléphone est obligatoire "
+                    "si le mandat est signé à distance."
+                ),
+            )
+
+        return cleaned
 
 
 class OTPForm(forms.Form):
@@ -176,3 +214,14 @@ class DatapassForm(forms.Form):
     organization_name = forms.CharField()
     organization_siret = forms.IntegerField()
     organization_address = forms.CharField()
+
+
+class PatchedErrorList(ErrorList):
+    """An ErrorList that will just print itself as a <span> when it has only 1 item"""
+
+    def as_ul(self):
+        """Just return a <span> instead of a <ul> if there's only one error"""
+        if self.data and len(self) == 1:
+            return format_html('<span class="{}">{}</span>', self.error_class, self[0])
+
+        return super().as_ul()

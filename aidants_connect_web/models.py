@@ -13,6 +13,7 @@ from typing import Union
 from os import walk as os_walk
 from os.path import join as path_join, dirname
 from re import sub as regex_sub
+from phonenumber_field.modelfields import PhoneNumberField
 
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
@@ -254,6 +255,8 @@ class Usager(models.Model):
     sub = models.TextField(blank=False, unique=True)
     email = models.EmailField(blank=False, default=EMAIL_NOT_PROVIDED)
     creation_date = models.DateTimeField("Date de création", default=timezone.now)
+
+    phone = PhoneNumberField(blank=True)
 
     objects = UsagerQuerySet.as_manager()
 
@@ -567,6 +570,8 @@ class Connection(models.Model):
         max_length=16, choices=AutorisationDureeKeywords.choices, null=True
     )
     mandat_is_remote = models.BooleanField(default=False)
+    user_phone = PhoneNumberField(blank=True)
+
     usager = models.ForeignKey(
         Usager,
         blank=True,
@@ -619,6 +624,7 @@ class Journal(models.Model):
         ("activity_check_aidant", "Reprise de connexion d'un aidant"),
         ("franceconnect_usager", "FranceConnexion d'un usager"),
         ("update_email_usager", "L'email de l'usager a été modifié"),
+        ("update_phone_usager", "Le téléphone de l'usager a été modifié"),
         ("create_attestation", "Création d'une attestation"),
         ("create_autorisation", "Création d'une autorisation"),
         ("use_autorisation", "Utilisation d'une autorisation"),
@@ -690,6 +696,14 @@ class Journal(models.Model):
             aidant=aidant,
             usager=usager,
             action="update_email_usager",
+        )
+
+    @classmethod
+    def log_update_phone_usager(cls, aidant: Aidant, usager: Usager):
+        return cls.objects.create(
+            aidant=aidant,
+            usager=usager,
+            action="update_phone_usager",
         )
 
     @classmethod

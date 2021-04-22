@@ -214,11 +214,28 @@ class MandatFormTests(TestCase):
 
         form_2 = MandatForm(data={"demarche": [], "duree": "SHORT"})
         self.assertFalse(form_2.is_valid())
-        self.assertEqual(form_2.errors["demarche"], ["Ce champ est obligatoire."])
+        self.assertEqual(
+            form_2.errors["demarche"],
+            ["Vous devez sélectionner au moins une démarche."],
+        )
 
         form_3 = MandatForm(data={"demarche": ["travail"], "duree": ""})
         self.assertFalse(form_3.is_valid())
-        self.assertEqual(form_3.errors["duree"], ["Ce champ est obligatoire."])
+        self.assertEqual(
+            form_3.errors["duree"], ["Veuillez sélectionner la durée du mandat."]
+        )
+
+        form_4 = MandatForm(
+            data={"demarche": ["travail"], "duree": "SHORT", "is_remote": True}
+        )
+        self.assertFalse(form_4.is_valid())
+        self.assertEqual(
+            form_4.errors["user_phone"],
+            [
+                "Un numéro de téléphone est obligatoire si "
+                "le mandat est signé à distance."
+            ],
+        )
 
     def test_non_existing_demarche_triggers_error(self):
         form = MandatForm(data={"demarche": ["test"], "duree": "16"})

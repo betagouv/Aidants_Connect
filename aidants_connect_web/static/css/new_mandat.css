@@ -6,6 +6,11 @@ form {
   padding: 0;
   position: relative;
 }
+
+[hidden] {
+  display: none;
+}
+
 @media all and (-ms-high-contrast:none) {
     /* ie11 specific */
      .tile {

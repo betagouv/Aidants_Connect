@@ -271,6 +271,11 @@ class GetUserInfoTests(TestCase):
             access_token="mock_access_token",
             aidant=self.aidant,
         )
+        self.connection_with_phone = Connection.objects.create(
+            access_token="mock_access_token_with_phone",
+            aidant=self.aidant,
+            user_phone="0 800 840 800",
+        )
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
     def test_well_formatted_new_user_info_outputs_usager(self, mock_get):
@@ -375,3 +380,33 @@ class GetUserInfoTests(TestCase):
 
         last_journal_entry = Journal.objects.last()
         self.assertEqual(last_journal_entry.action, "update_email_usager")
+
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
+    def test_formatted_existing_user_with_phone_change_outputs_usager(self, mock_get):
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        mock_response.json = mock.Mock(
+            return_value={
+                "given_name": self.usager.given_name,
+                "family_name": self.usager.family_name,
+                "sub": self.usager_sub_fc,
+                "preferred_username": self.usager.preferred_username,
+                "birthdate": self.usager.birthdate,
+                "gender": self.usager.gender,
+                "birthplace": self.usager.birthplace,
+                "birthcountry": self.usager.birthcountry,
+                "email": "test@test.com",
+            }
+        )
+        mock_get.return_value = mock_response
+
+        usager, error = get_user_info(self.connection_with_phone)
+
+        self.assertEqual(usager.id, self.usager.id)
+        self.assertEqual(usager.given_name, "Joséphine")
+        self.assertEqual(usager.phone, "0 800 840 800")
+        self.assertIsNone(error)
+
+        last_journal_entry = Journal.objects.last()
+        self.assertEqual(last_journal_entry.action, "update_phone_usager")

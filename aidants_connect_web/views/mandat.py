@@ -13,7 +13,7 @@ from django.utils import timezone, formats
 from django.contrib.staticfiles import finders
 
 from aidants_connect_web.decorators import activity_required, user_is_aidant
-from aidants_connect_web.forms import MandatForm, RecapMandatForm
+from aidants_connect_web.forms import MandatForm, RecapMandatForm, PatchedErrorList
 from aidants_connect_web.models import (
     Autorisation,
     Connection,
@@ -48,16 +48,22 @@ def new_mandat(request):
         )
 
     else:
-        form = MandatForm(request.POST)
+        form = MandatForm(request.POST, error_class=PatchedErrorList)
 
         if form.is_valid():
             data = form.cleaned_data
-            connection = Connection.objects.create(
-                aidant=request.user,
-                demarches=data["demarche"],
-                duree_keyword=data["duree"],
-                mandat_is_remote=data["is_remote"],
-            )
+
+            kwargs = {
+                "aidant": request.user,
+                "demarches": data["demarche"],
+                "duree_keyword": data["duree"],
+                "mandat_is_remote": data["is_remote"],
+            }
+
+            if kwargs["mandat_is_remote"] is True:
+                kwargs["user_phone"] = data["user_phone"]
+
+            connection = Connection.objects.create(**kwargs)
             request.session["connection"] = connection.pk
             return redirect("fc_authorize")
         else:
