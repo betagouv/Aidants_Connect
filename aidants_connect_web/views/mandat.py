@@ -242,7 +242,6 @@ def attestation_projet(request):
 @activity_required
 def attestation_final(request):
     connection = Connection.objects.get(pk=request.session["connection"])
-    # noinspection PyTypeChecker
     aidant: Aidant = request.user
     usager = connection.usager
     demarches = connection.demarches
@@ -266,7 +265,6 @@ def attestation_final(request):
 @user_is_aidant
 @activity_required
 def attestation_visualisation(request, mandat_id):
-    # noinspection PyTypeChecker
     aidant: Aidant = request.user
     mandat_query_set = Mandat.objects.filter(pk=mandat_id)
     if mandat_query_set.count() != 1:

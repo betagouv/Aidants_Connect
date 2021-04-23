@@ -346,7 +346,7 @@ class MandatCancellationAttestationTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response = self.client.get(
-            f"/mandats/{self.expired_mandat.id}/attestation_de_revocation"
+            f"/mandats/{self.cancelled_mandat.id}/attestation_de_revocation"
         )
 
         self.assertIn(

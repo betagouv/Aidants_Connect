@@ -207,7 +207,6 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
 @login_required
 @activity_required
 def confirm_mandat_cancelation(request, mandat_id):
-    # noinspection PyTypeChecker
     aidant: Aidant = request.user
     try:
         mandat = Mandat.objects.get(pk=mandat_id, organisation=aidant.organisation)
@@ -268,7 +267,6 @@ def confirm_mandat_cancelation(request, mandat_id):
 @login_required
 @activity_required
 def mandat_cancelation_success(request, mandat_id: int):
-    # noinspection PyTypeChecker
     aidant: Aidant = request.user
     try:
         mandate = Mandat.objects.get(pk=mandat_id, organisation=aidant.organisation)
@@ -297,17 +295,13 @@ def mandat_cancellation_attestation(request, mandat_id):
     organisation = request.user.organisation
     try:
         mandat = Mandat.objects.get(pk=mandat_id, organisation=organisation)
-        if not mandat.autorisations.all().exclude(revocation_date=None):
+        if not mandat.was_explicitly_revoked:
             return redirect("espace_aidant_home")
 
     except Mandat.DoesNotExist:
         django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")
     usager = mandat.usager
-
-    revocation_date = (
-        mandat.autorisations.order_by("-revocation_date").first().revocation_date
-    )
 
     return render(
         request,
@@ -317,6 +311,6 @@ def mandat_cancellation_attestation(request, mandat_id):
             "usager_name": usager.get_full_name(),
             "mandat": mandat,
             "creation_date": mandat.creation_date.strftime("%d/%m/%Y à %Hh%M"),
-            "revocation_date": revocation_date,
+            "revocation_date": mandat.revocation_date.strftime("%d/%m/%Y à %Hh%M"),
         },
     )
