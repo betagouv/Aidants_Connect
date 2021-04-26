@@ -13,8 +13,14 @@ from aidants_connect_web.views import espace_responsable
 class EspaceResponsableHomePageTests(TestCase):
     def setUp(self):
         self.client = Client()
+        # Tom is responsable of 2 structures
         self.responsable_tom = AidantFactory(username="georges@plop.net")
         self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
+        self.responsable_tom.responsable_de.add(OrganisationFactory())
+        # Leia is responsable of only one structure
+        self.responsable_leia = AidantFactory(username="leia@resist.sw")
+        self.responsable_leia.responsable_de.add(self.responsable_leia.organisation)
+        # John is a simple aidant
         self.aidant_john = AidantFactory(username="john@doe.du")
 
     def test_anonymous_user_cannot_access_espace_aidant_view(self):
@@ -53,6 +59,14 @@ class EspaceResponsableHomePageTests(TestCase):
         response = self.client.get("/espace-responsable/")
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_responsable/home.html"
+        )
+
+    def test_responsable_is_redirected_if_has_only_one_structure(self):
+        self.client.force_login(self.responsable_leia)
+        response = self.client.get("/espace-responsable/")
+        self.assertRedirects(
+            response,
+            f"/espace-responsable/organisation/{self.responsable_leia.organisation.id}",
         )
 
 

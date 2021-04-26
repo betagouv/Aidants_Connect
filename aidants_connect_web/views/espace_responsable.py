@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from aidants_connect_web.models import Organisation
 from aidants_connect_web.decorators import (
@@ -27,6 +27,12 @@ def home(request):
         .prefetch_related("aidants")
         .order_by("name")
     )
+
+    if organisations.count() == 1:
+        organisation = organisations[0]
+        return redirect(
+            "espace_responsable_organisation", organisation_id=organisation.id
+        )
 
     return render(
         request,
