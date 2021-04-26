@@ -22,11 +22,16 @@ def check_organisation_and_responsable(responsable, organisation_id):
 @user_is_responsable_structure
 def home(request):
     responsable = request.user
+    organisations = (
+        Organisation.objects.filter(responsables=responsable)
+        .prefetch_related("aidants")
+        .order_by("name")
+    )
 
     return render(
         request,
         "aidants_connect_web/espace_responsable/home.html",
-        {"responsable": responsable},
+        {"responsable": responsable, "organisations": organisations},
     )
 
 
