@@ -880,9 +880,12 @@ class Journal(models.Model):
 
 
 class CarteTOTP(models.Model):
-    serial_number = models.CharField(max_length=100)
+    serial_number = models.CharField(max_length=100, unique=True)
     seed = models.CharField(max_length=40)
     created_at = models.DateTimeField(auto_now_add=True)
+    aidant = models.OneToOneField(
+        Aidant, null=True, blank=True, on_delete=SET_NULL, related_name="carte_totp"
+    )
 
     class Meta:
         verbose_name = "carte TOTP"

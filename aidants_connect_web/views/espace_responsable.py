@@ -45,14 +45,18 @@ def organisation(request, organisation_id):
     organisation = get_object_or_404(Organisation, pk=organisation_id)
     check_organisation_and_responsable(responsable, organisation)
 
-    organisation_active_aidants = organisation.aidants.active()
+    organisation = Organisation.objects.get(id=organisation_id)
+    aidants = organisation.aidants.order_by("-is_active", "last_name").prefetch_related(
+        "carte_totp"
+    )
+
     return render(
         request,
         "aidants_connect_web/espace_responsable/organisation.html",
         {
             "responsable": responsable,
             "organisation": organisation,
-            "organisation_active_aidants": organisation_active_aidants,
+            "aidants": aidants,
         },
     )
 

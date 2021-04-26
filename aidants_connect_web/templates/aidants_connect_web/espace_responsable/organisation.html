@@ -38,8 +38,8 @@
 
   <section class="section section-grey">
     <div class="container">
-      <h2>Aidants actifs</h2>
-      {% if organisation_active_aidants %}
+      <h2>Aidants</h2>
+      {% if aidants %}
         <table class="table">
           <thead>
           <tr>
@@ -49,7 +49,7 @@
           </tr>
           </thead>
           <tbody>
-          {% for aidant in organisation_active_aidants %}
+          {% for aidant in aidants %}
             <tr>
               <td>
                 <a href="{% url "espace_responsable_aidant" organisation_id=organisation.id aidant_id=aidant.id %}">
@@ -58,13 +58,13 @@
               </td>
               <td>{{ aidant.email }}</td>
               <td>
-                {% if forloop.first %}
-                  GADT00056376<br>
-                  {# <a href="#" class="button warning small">Détacher</a> #}
-                  {#<a href="#" class="button warning-light small">Modifier</a> #}
-                {% else %}
-                  <a href="#" class="button">Associer</a>
-                {% endif %}
+                {% with aidant.carte_totp.serial_number as sn %}
+                  {% if sn %}
+                    {{ sn }}
+                  {% else %}
+                    <a href="#" class="button">Associer</a>
+                  {% endif %}
+                {% endwith %}
               </td>
             </tr>
           {% endfor %}
