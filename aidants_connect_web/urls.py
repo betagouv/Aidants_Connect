@@ -117,6 +117,11 @@ urlpatterns = [
         espace_responsable.organisation,
         name="espace_responsable_organisation",
     ),
+    path(
+        "espace-responsable/organisation/<int:organisation_id>/aidant/<int:aidant_id>/",
+        espace_responsable.aidant,
+        name="espace_responsable_aidant",
+    ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),

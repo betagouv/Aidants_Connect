@@ -2,63 +2,77 @@
 
 {% load static %}
 
-{% block title %}Aidants Connect - Mon organisation{% endblock %}
+{% block title %}Aidants Connect - Mon organisation : {{ organisation.name }}{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-    <h1>Mon organisation : {{ organisation.name }}</h1>
-    <div class="tiles">
-      <div class="grid">
-        <div class="tile background-color-grey">
-          <h3>Adresse</h3>
-          <p>{{ organisation.address }}</p>
-        </div>
-        <div class="tile background-color-grey">
-          <h3>Aidants actifs</h3>
-          <h5>{{ organisation.num_active_aidants }}</h5>
-        </div>
-        <div class="tile background-color-grey">
-          <h3>Mandats créés</h3>
-          <h5>{{ organisation.num_mandats }}</h5>
+  <section class="section">
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      <h1>Mon organisation : {{ organisation.name }}</h1>
+      <div class="tiles">
+        <div class="grid">
+          <div class="tile background-color-grey">
+            <h3>Adresse</h3>
+            <p>{{ organisation.address }}</p>
+          </div>
+          <div class="tile background-color-grey">
+            <h3>Aidants actifs</h3>
+            <h5>{{ organisation.num_active_aidants }}</h5>
+          </div>
+          <div class="tile background-color-grey">
+            <h3>Mandats créés</h3>
+            <h5>{{ organisation.num_mandats }}</h5>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section section-grey">
-  <div class="container">
-    <h2>Aidants actifs</h2>
-    {% if organisation_active_aidants %}
-      <table class="table">
-        <thead>
+  <section class="section section-grey">
+    <div class="container">
+      <h2>Aidants actifs</h2>
+      {% if organisation_active_aidants %}
+        <table class="table">
+          <thead>
           <tr>
-            <th scope="col" class="th-50">Nom</th>
+            <th scope="col">Nom</th>
             <th scope="col">Email</th>
+            <th scope="col">Carte TOTP</th>
           </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
           {% for aidant in organisation_active_aidants %}
             <tr>
-              <td>{{ aidant.get_full_name }}</td>
+              <td>
+                <a href="{% url "espace_responsable_aidant" organisation_id=organisation.id aidant_id=aidant.id %}">
+                  {{ aidant.get_full_name }}
+                </a>
+              </td>
               <td>{{ aidant.email }}</td>
+              <td>
+                {% if forloop.first %}
+                  GADT00056376<br>
+                  {# <a href="#" class="button warning small">Détacher</a> #}
+                  {#<a href="#" class="button warning-light small">Modifier</a> #}
+                {% else %}
+                  <a href="#" class="button">Associer</a>
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <div class="notification" role="alert">L'organisation n'a pas encore d'aidants.</div>
-    {% endif %}
-  </div>
-</section>
+          </tbody>
+        </table>
+      {% else %}
+        <div class="notification" role="alert">L'organisation n'a pas encore d'aidants.</div>
+      {% endif %}
+    </div>
+  </section>
 {% endblock content %}

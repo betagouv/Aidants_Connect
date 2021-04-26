@@ -55,3 +55,23 @@ def organisation(request, organisation_id):
             "organisation_active_aidants": organisation_active_aidants,
         },
     )
+
+
+@login_required
+@user_is_responsable_structure
+@activity_required
+def aidant(request, organisation_id, aidant_id):
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
+
+    aidant = get_object_or_404(Aidant, pk=aidant_id)
+    if aidant.organisation.id != organisation_id:
+        raise Http404
+
+    organisation = Organisation.objects.get(id=organisation_id)
+    return render(
+        request,
+        "aidants_connect_web/espace_responsable/aidant.html",
+        {"aidant": aidant, "organisation": organisation},
+    )
