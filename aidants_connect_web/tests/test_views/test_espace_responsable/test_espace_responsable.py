@@ -17,9 +17,9 @@ class EspaceResponsableHomePageTests(TestCase):
         self.responsable_tom = AidantFactory(username="georges@plop.net")
         self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
         self.responsable_tom.responsable_de.add(OrganisationFactory())
-        # Leia is responsable of only one structure
-        self.responsable_leia = AidantFactory(username="leia@resist.sw")
-        self.responsable_leia.responsable_de.add(self.responsable_leia.organisation)
+        # Tim is responsable of only one structure
+        self.responsable_tim = AidantFactory(username="tim@tim.net")
+        self.responsable_tim.responsable_de.add(self.responsable_tim.organisation)
         # John is a simple aidant
         self.aidant_john = AidantFactory(username="john@doe.du")
 
@@ -62,11 +62,11 @@ class EspaceResponsableHomePageTests(TestCase):
         )
 
     def test_responsable_is_redirected_if_has_only_one_structure(self):
-        self.client.force_login(self.responsable_leia)
+        self.client.force_login(self.responsable_tim)
         response = self.client.get("/espace-responsable/")
         self.assertRedirects(
             response,
-            f"/espace-responsable/organisation/{self.responsable_leia.organisation.id}",
+            f"/espace-responsable/organisation/{self.responsable_tim.organisation.id}/",
         )
 
 
@@ -85,13 +85,13 @@ class EspaceResponsableOrganisationPage(TestCase):
 
     def test_espace_responsable_organisation_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
-        found = resolve(f"/espace-responsable/organisation/{self.id_organisation}")
+        found = resolve(f"/espace-responsable/organisation/{self.id_organisation}/")
         self.assertEqual(found.func, espace_responsable.organisation)
 
     def test_espace_responsable_organisation_url_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
         response = self.client.get(
-            f"/espace-responsable/organisation/{self.id_organisation}"
+            f"/espace-responsable/organisation/{self.id_organisation}/"
         )
         self.assertEqual(
             response.status_code,
@@ -106,6 +106,6 @@ class EspaceResponsableOrganisationPage(TestCase):
     def test_responsable_cannot_see_an_organisation_they_are_not_responsible_for(self):
         self.client.force_login(self.responsable_tom)
         response = self.client.get(
-            f"/espace-responsable/organisation/{self.autre_organisation.id}"
+            f"/espace-responsable/organisation/{self.autre_organisation.id}/"
         )
         self.assertEqual(response.status_code, 404)

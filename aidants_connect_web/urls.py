@@ -87,7 +87,7 @@ urlpatterns = [
         "espace-responsable/", espace_responsable.home, name="espace_responsable_home"
     ),
     path(
-        "espace-responsable/organisation/<int:organisation_id>",
+        "espace-responsable/organisation/<int:organisation_id>/",
         espace_responsable.organisation,
         name="espace_responsable_organisation",
     ),
