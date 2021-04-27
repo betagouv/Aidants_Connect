@@ -14,9 +14,18 @@
       <ul class="nav__links" id="top_menu">
         {% with view_name=request.resolver_match.view_name %}
           {% if request.user.is_authenticated %}
+            {%  if request.user.can_create_mandats %}
             <li class="nav__item">
-              <a {% if view_name in 'espace_aidant_home,espace_aidant_organisation,usagers,usager_details,confirm_autorisation_cancelation' %}class="font-weight-bold"{% endif %} href="{% url 'espace_aidant_home' %}">Mon Espace Aidant</a>
+              <a {% if "espace_aidant" in view_name or "usager" in view_name or "mandat" in view_name %}class="font-weight-bold"{% endif %} href="{% url 'espace_aidant_home' %}">Mon Espace Aidant</a>
             </li>
+            {% endif %}
+            {% if request.user.is_responsable_structure %}
+              <li class="nav__item">
+                <a href="{% url 'espace_responsable_home' %}" {% if "espace_responsable" in view_name %}class="font-weight-bold"{% endif %}>
+                  Mon espace Responsable
+                </a>
+              </li>
+            {% endif %}
             <li class="nav__item">
               <a {% if view_name == 'ressources' %}class="font-weight-bold"{% endif %} href="{% url 'ressources' %}">Ressources</a>
             </li>
