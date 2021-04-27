@@ -1,0 +1,40 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Attestation de révocation de mandat{% endblock %}
+
+{% block extracss %}
+<link href="{% static 'css/attestation.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block nav %}
+{% endblock nav %}
+
+{% block content %}
+{% include "aidants_connect_web/attestation_print.html" %}
+<section class="container">
+  <div class="navbar__home">
+    <img class="navbar__gouvfr" src="{% static 'images/Marianne_logo_1120.png' %}" alt=""/>
+    <img class="navbar__logo" src="{% static 'images/aidants-connect_logo.png' %}" alt=""/>
+  </div>
+
+  <h1 class="text-center">Révocation d'un mandat via le service « Aidants Connect »</h1>
+
+  <p>
+    Je soussigné(e), <strong>{{ usager_name }}</strong> souhaite révoquer le mandat « Aidants Connect » créé le {{ creation_date }} avec <strong>{{ organisation }}</strong>.
+  </p>
+
+  <p>
+    Fait à <strong {% if organisation.display_address == "" %}class="organisation-address"{% endif %}>{{ organisation.display_address }}</strong>,
+    le <strong>{{ revocation_date }}</strong>
+  </p>
+
+  <p class="margin-bottom-50">
+    <span>Le mandant</span>
+  </p>
+</section>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

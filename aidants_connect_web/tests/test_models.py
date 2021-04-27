@@ -263,6 +263,100 @@ class MandatModelTests(TestCase):
         self.assertEqual(active_mandats, 2)
         self.assertEqual(inactive_mandats, 1)
 
+    def test_revocation_date_valid_mandate_valid_auths(self):
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+
+        for procedure in ["transports", "logement"]:
+            Autorisation.objects.create(mandat=mandate, demarche=procedure)
+
+        self.assertEqual(mandate.revocation_date, None)
+
+    def test_revocation_date_valid_mandate_one_revoked_auth(self):
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+
+        Autorisation.objects.create(
+            mandat=mandate, demarche="transports", revocation_date=timezone.now()
+        )
+        Autorisation.objects.create(mandat=mandate, demarche="logement")
+
+        self.assertEqual(mandate.revocation_date, None)
+
+    def test_revocation_date_valid_mandate_all_revoked_auths(self):
+        revocation_date = timezone.now()
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+
+        for procedure in ["transports", "logement"]:
+            Autorisation.objects.create(
+                mandat=mandate, demarche=procedure, revocation_date=revocation_date
+            )
+
+        self.assertEqual(mandate.revocation_date, revocation_date)
+
+    def was_explicitly_revoked_valid_mandate_valid_auths(self):
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+
+        for procedure in ["transports", "logement"]:
+            Autorisation.objects.create(mandat=mandate, demarche=procedure)
+
+        self.assertEqual(mandate.was_explicitly_revoked, False)
+
+    def was_explicitly_revoked_valid_mandate_one_revoked_auth(self):
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+
+        Autorisation.objects.create(
+            mandat=mandate, demarche="transports", revocation_date=timezone.now()
+        )
+        Autorisation.objects.create(mandat=mandate, demarche="logement")
+
+        self.assertEqual(mandate.was_explicitly_revoked, False)
+
+    def was_explicitly_revoked_valid_mandate_all_revoked_auths(self):
+        revocation_date = timezone.now()
+        mandate = Mandat.objects.create(
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=6),
+        )
+
+        for procedure in ["transports", "logement"]:
+            Autorisation.objects.create(
+                mandat=mandate, demarche=procedure, revocation_date=revocation_date
+            )
+
+        self.assertEqual(mandate.was_explicitly_revoked, True)
+
     def test__get_template_path_from_journal_hash_nominal(self):
         tpl_name = "20200511_mandat.html"
         procedures = ["transports", "logement"]
@@ -487,6 +581,26 @@ class OrganisationModelTests(TestCase):
         self.assertEqual(organisation.name, "Girard S.A.R.L")
         self.assertEqual(organisation.type, o_type)
         self.assertEqual(organisation.address, "3 rue du chat, 27120 Houlbec-Cocherel")
+
+    def test_display_address(self):
+        organisation_no_address = Organisation(name="L'Internationale")
+        organisation_address = Organisation(
+            name="COMMUNE D'HOULBEC COCHEREL",
+            siret=123,
+            address="45 avenue du Général de Gaulle, 27120 HOULBEC COCHEREL",
+        )
+
+        organisation_no_address.save()
+        organisation_address.save()
+
+        self.assertEqual(organisation_no_address.display_address, "")
+        self.assertNotEqual(
+            organisation_no_address.display_address,
+            Organisation._meta.get_field("address").default,
+        )
+        self.assertEqual(
+            organisation_address.display_address, organisation_address.address
+        )
 
 
 @tag("models", "aidant")

@@ -99,11 +99,20 @@
         <div id="inactive-mandat-panel" class="panel">
           <div class="row">
             <h4>
-              📝&nbsp;Mandat expiré depuis {{ mandat.expiration_date | timesince }}
+              {% spaceless %}
+              {% if mandat.was_explicitly_revoked %}
+              <span aria-hidden="true">📝&nbsp;</span>Mandat révoqué depuis {{ mandat.revocation_date | timesince }}
+              {% else %}
+              <span aria-hidden="true">📝&nbsp;</span>Mandat expiré depuis {{ mandat.expiration_date | timesince }}
+              {% endif %}
+              {% endspaceless %}
               <small title="{{ mandat.expiration_date }}">(le {{ mandat.expiration_date | date:"d F Y" }})</small>
             </h4>
             <div class="float-right">
               <a id="view_mandat_attestation" class="button" href="{% url 'mandat_visualisation' mandat_id=mandat.id %}"><span aria-hidden="true">🖨&nbsp;</span>Voir l’attestation</a>
+              {% if mandat.was_explicitly_revoked %}
+              <a id="view-mandate-revocation" class="button" href="{% url 'mandat_cancellation_attestation' mandat_id=mandat.id %}"><span aria-hidden="true">🖨&nbsp;</span>Voir la révocation</a>
+              {% endif %}
             </div>
           </div>
           <ul class="label-list">
@@ -146,6 +155,6 @@
     {% else %}
       <div class="notification" role="alert">Vous n’avez pas de mandat expiré avec cet usager.</div>
     {% endif %}
-  <div>
+  </div>
 </section>
 {% endblock content %}

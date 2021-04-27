@@ -40,6 +40,16 @@ urlpatterns = [
         name="confirm_mandat_cancelation",
     ),
     path(
+        "mandats/<int:mandat_id>/cancel_success",
+        usagers.mandat_cancelation_success,
+        name="mandat_cancelation_success",
+    ),
+    path(
+        "mandats/<int:mandat_id>/attestation_de_revocation",
+        usagers.mandat_cancellation_attestation,
+        name="mandat_cancellation_attestation",
+    ),
+    path(
         "mandats/<int:mandat_id>/visualisation",
         mandat.attestation_visualisation,
         name="mandat_visualisation",

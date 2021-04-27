@@ -1,0 +1,13 @@
+<section class="no-print text-center">
+  {% if messages %}
+    <div class="notification success" role="alert">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    </div>
+  {% endif %}
+  <p>
+    <span aria-hidden="true">🖨 </span><i>Pour imprimer, sélectionnez dans le menu de votre navigateur « Fichier », puis « Imprimer ».</i>
+  </p>
+  <br>
+</section>

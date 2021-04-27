@@ -56,6 +56,10 @@ class Organisation(models.Model):
     def admin_num_mandats(self):
         return self.num_mandats
 
+    @property
+    def display_address(self):
+        return self.address if self.address != "No address provided" else ""
+
     admin_num_mandats.short_description = "Nombre de mandats"
 
 
@@ -376,6 +380,26 @@ class Mandat(models.Model):
         # A `mandat` is considered `active` if it contains
         # at least one active `autorisation`.
         return self.autorisations.active().exists()
+
+    @property
+    def revocation_date(self):
+        """
+        Returns the date of the most recently revoked authorization if all them
+        were revoked, ``None``, otherwise.
+        """
+        return (
+            self.autorisations.order_by("-revocation_date").first().revocation_date
+            if self.was_explicitly_revoked
+            else None
+        )
+
+    @property
+    def was_explicitly_revoked(self):
+        """
+        Returns whether the mandate was explicitely revoked, independently of it's
+        expiration date.
+        """
+        return not self.autorisations.exclude(revocation_date__isnull=False)
 
     def get_absolute_url(self):
         path = reverse("mandat_visualisation", kwargs={"mandat_id": self.pk})

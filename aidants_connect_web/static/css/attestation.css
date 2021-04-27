@@ -31,6 +31,12 @@ p + p, ul + p {
 .demarches + p {
     margin-top: .1em;
 }
+
+.organisation-address {
+  min-width: 15em;
+  display: inline-block;
+}
+
 @media print {
   @page {
     size: auto; /* auto is the initial value */
