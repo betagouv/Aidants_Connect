@@ -1,3 +1,4 @@
+from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
@@ -96,8 +97,20 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
     if aidant.organisation.id != organisation_id:
         raise Http404
 
-    # todo check if aidant already has an associated carte TOTP:
-    # in that case, we should redirect to "un-associate" first
+    if hasattr(aidant, "carte_totp"):
+        django_messages.error(
+            request,
+            (
+                f"Le compte de {aidant.get_full_name()} est déjà associé à une carte "
+                "TOTP. Vous devez d’abord retirer la carte de son compte avant de "
+                "pouvoir en associer une nouvelle."
+            ),
+        )
+        return redirect(
+            "espace_responsable_aidant",
+            organisation_id=organisation.id,
+            aidant_id=aidant.id,
+        )
 
     if request.method == "GET":
         form = CarteOTPSerialNumberForm()
@@ -119,7 +132,10 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
                 "espace_responsable_organisation", organisation_id=organisation.id
             )
         except Exception:
-            # Todo display an explanation on what happened exactly
+            django_messages.error(
+                request, "Une erreur s’est produite lors de la sauvegarde de la carte."
+            )
+            # todo send exception to Sentry
             return render(
                 request,
                 "aidants_connect_web/espace_responsable/write-carte-totp-sn.html",
