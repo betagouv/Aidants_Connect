@@ -1,19 +1,15 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
-from aidants_connect_web.models import Organisation
+from aidants_connect_web.models import Aidant, Organisation
 from aidants_connect_web.decorators import (
     user_is_responsable_structure,
     activity_required,
 )
 
 
-def check_organisation_and_responsable(responsable, organisation_id):
-    try:
-        organisation = Organisation.objects.get(id=organisation_id)
-    except Organisation.DoesNotExist:
-        raise Http404
+def check_organisation_and_responsable(responsable: Aidant, organisation: Organisation):
     if responsable not in organisation.responsables.all():
         raise Http404
 
@@ -45,10 +41,10 @@ def home(request):
 @user_is_responsable_structure
 @activity_required
 def organisation(request, organisation_id):
-    responsable = request.user
-    check_organisation_and_responsable(responsable, organisation_id)
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
 
-    organisation = Organisation.objects.get(id=organisation_id)
     organisation_active_aidants = organisation.aidants.active()
     return render(
         request,
