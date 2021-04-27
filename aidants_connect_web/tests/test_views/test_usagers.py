@@ -101,6 +101,12 @@ class ViewAutorisationsTests(TestCase):
             demarche="famille",
         )
 
+        cls.mandat_sans_autorisations_aidant_corentin = MandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_corentin,
+            expiration_date=timezone.now() + timedelta(days=366),
+        )
+
         super().setUpClass()
 
     def test__get_mandats_for_usagers_index(self):
@@ -110,6 +116,7 @@ class ViewAutorisationsTests(TestCase):
             [
                 self.mandat_inactif_aidant_corentin,
                 self.mandat_aidant_corentin_365,
+                self.mandat_sans_autorisations_aidant_corentin,
                 self.mandat_aidant_josephine_1,
                 self.mandat_aidant_josephine_6,
                 self.mandat_aidant_alice_no_autorisation,

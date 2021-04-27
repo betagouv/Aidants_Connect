@@ -79,9 +79,6 @@ def _get_usagers_dict_from_mandats(mandats: Mandat) -> dict:
             usagers_without_mandats.add(mandat.usager)
             continue
 
-        if mandat.usager not in usagers:
-            usagers[mandat.usager] = list()
-
         expired_soon = (
             mandat.expiration_date
             if mandat.expiration_date - timedelta(days=delta) < now()
@@ -93,12 +90,15 @@ def _get_usagers_dict_from_mandats(mandats: Mandat) -> dict:
         )
 
         if autorisations.count() == 0:
-            usagers_without_mandats.add(mandat.usager)
-            usagers.pop(mandat.usager, mandat.usager)
+            if mandat.usager not in usagers:
+                usagers_without_mandats.add(mandat.usager)
         else:
+            if mandat.usager not in usagers:
+                usagers[mandat.usager] = list()
+            if mandat.usager in usagers_without_mandats:
+                usagers_without_mandats.remove(mandat.usager)
+
             for autorisation in autorisations:
-                if mandat.usager in usagers_without_mandats:
-                    usagers_without_mandats.remove(mandat.usager)
                 usagers[mandat.usager].append((autorisation.demarche, expired_soon))
 
     with_valid_mandate_count = len(usagers)
