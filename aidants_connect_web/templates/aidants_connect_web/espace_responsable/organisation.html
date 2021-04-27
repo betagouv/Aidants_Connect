@@ -62,7 +62,7 @@
                   {% if sn %}
                     {{ sn }}
                   {% else %}
-                    <a href="#" class="button">Associer</a>
+                    <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}" class="button">Associer</a>
                   {% endif %}
                 {% endwith %}
               </td>

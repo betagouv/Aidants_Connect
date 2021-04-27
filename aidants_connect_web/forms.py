@@ -13,7 +13,7 @@ from django_otp import match_token
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from aidants_connect_web.models import Aidant, Organisation
+from aidants_connect_web.models import Aidant, CarteTOTP, Organisation
 
 
 class AidantCreationForm(forms.ModelForm):
@@ -207,6 +207,22 @@ class RecapMandatForm(OTPForm, forms.Form):
     personal_data = forms.BooleanField(
         label="J’autorise mon aidant à utiliser mes données à caractère personnel."
     )
+
+
+class CarteOTPSerialNumberForm(forms.Form):
+    serial_number = forms.CharField()
+
+    def clean_serial_number(self):
+        serial_number = self.cleaned_data["serial_number"]
+        try:
+            carte = CarteTOTP.objects.get(serial_number=serial_number)
+        except CarteTOTP.DoesNotExist:
+            raise ValidationError(
+                "Aucune carte n'a été trouvée avec ce numéro de série."
+            )
+        if carte.aidant:
+            raise ValidationError("Cette carte est déjà associée à un aidant.")
+        return serial_number
 
 
 class DatapassForm(forms.Form):
