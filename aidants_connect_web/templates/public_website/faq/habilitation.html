@@ -1,0 +1,68 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - FAQ Habilitation{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <section class="section">
+    <div class="container container-small">
+      <h1 class="section__title">Foire aux questions</h1>
+      <p class="section__subtitle">
+        Vous trouverez ici les réponses aux questions les plus fréquemment posées à nos
+        équipes.
+      </p>
+    </div>
+    <div class="dashboard" id="faq-content">
+      {% include 'public_website/faq/_nav.html' with active="habilitation" %}
+      <div class="main">
+        <div class="panel">
+          <h2>Questions sur l’habilitation</h2>
+          <h3>Pourquoi les bénévoles ne peuvent pas être habilités Aidants Connect&nbsp;?</h3>
+          <p>Les bénévoles ne peuvent pas utiliser le service Aidants Connect pour les raisons suivantes&nbsp;:</p>
+          <ul>
+            <li>Les bénévoles n’ont pas de contrat de travail avec la structure dans laquelle ils se portent
+              volontaires. En cas de litige, aucun recours n’est donc possible&nbsp;;
+            </li>
+            <li>L’aidant professionnel engage sa responsabilité pénale comme celle de sa hiérarchie (c’est-à-dire le
+              responsable de la structure).
+            </li>
+          </ul>
+          <h3>Pourquoi les services civiques ne peuvent pas être habilités Aidants Connect&nbsp;?</h3>
+          <p>Les services civiques ne peuvent pas utiliser le service Aidants Connect pour les raisons suivantes&nbsp;:</p>
+          <ul>
+            <li>Le service Aidants Connect est accessible uniquement aux professionnels de l’accompagnement qui ont donc
+              de l’expérience dans l’accompagnement des publics isolés&nbsp;;
+            </li>
+            <li>Chaque aidant professionnel doit suivre une formation avant d’utiliser le service Aidants Connect&nbsp;;</li>
+            <li>L’aidant professionnel engage sa responsabilité pénale comme celle de sa hiérarchie (c’est-à-dire le
+              responsable de la structure).
+            </li>
+          </ul>
+          <h3>L’habilitation se fait-elle au nom d’une personne physique ou au nom de la structure&nbsp;?</h3>
+          <p>L’habilitation est portée par la structure et se rapporte donc au nom de la structure. Tout changement relatif à la structure (adresse, responsable de structure)
+            doit être notifié à l’adresse mail suivante&nbsp;: contact@aidantsconnect.beta.gouv.fr.</p>
+          <h3>Dans le cadre d’une structure qui comporte plusieurs services d’accompagnement, est-il préférable de demander une seule habilitation pour la structure ou une habilitation par service&nbsp;?</h3>
+          <p>Le responsable de structure étant chargé d’assurer la sécurité de l’outil et son suivi, il est conseillé de minimiser le nombre d’aidants par habilitation.
+            Aidants Connect recommande une habilitation par lieu d’accueil.</p>
+          <h3>Quelles adresses e-mail renseigner dans le formulaire d’habilitation&nbsp;?</h3>
+          <p>L’adresse e-mail de l’aidant à habiliter doit être une adresse e-mail professionnelle, nominative et individuelle. Elle doit être associée à une personne en particulier. Les adresses e-mail génériques de type contact@, direction@ ccas.ville@, mairie@
+            ne peuvent donc pas être utilisées pour une habilitation Aidants Connect.</p>
+          <p>Il s’agit d’un prérequis pour garantir la sécurité de l’outil et la fiabilité des traces de connexion. En cas de litige,
+            Aidants Connect permet de retracer les données objectives (traces de connexion sur un site administratif) et de garantir la protection de l’aidant concerné si besoin - ce qui serait impossible avec une adresse mail générique.</p>
+          <h3>Les élus peuvent-ils être habilités Aidants Connect&nbsp;?</h3>
+          <p>Pour les communes disposant d’un <abbr title="Centre Communal d’action sociale">CCAS</abbr>, les élus ne peuvent pas être habilités.
+            Nous recommandons aux élus de faire habiliter le CCAS qui est la structure missionnée pour l’accompagnement social d’usagers.</p>
+          <p>Pour les communes ne disposant pas de CCAS (moins de 1500 habitants), les élus sont éligibles.</p>
+          <h3>Qui doit remplir le formulaire d’habilitation au sein de la structure&nbsp;?</h3>
+          <p>Nous recommandons que ce soit le responsable de structure, en charge de la mise en place d’Aidants Connect, qui se charge de remplir le formulaire d’habilitation.
+            Néanmoins, il est possible qu’un aidant puisse remplir le formulaire d’habilitation si le responsable de structure lui en a donné l’autorisation.</p>
+        </div>{# end div.panel #}
+      </div>{# end div.main #}
+    </div>{# end div.dashboard #}
+  </section>
+{% endblock content %}

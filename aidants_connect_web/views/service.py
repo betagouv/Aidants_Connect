@@ -183,3 +183,7 @@ def faq_mandat(request):
 
 def faq_donnees_personnelles(request):
     return render(request, "public_website/faq/donnees_personnelles.html")
+
+
+def faq_habilitation(request):
+    return render(request, "public_website/faq/habilitation.html")

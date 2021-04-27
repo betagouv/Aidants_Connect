@@ -101,6 +101,11 @@ urlpatterns = [
         service.faq_donnees_personnelles,
         name="faq_donnees_personnelles",
     ),
+    path(
+        "faq/habilitation/",
+        service.faq_habilitation,
+        name="faq_habilitation",
+    ),
     # # Datapass
     path("datapass_receiver/", datapass.receiver, name="datapass_receiver"),
 ]
