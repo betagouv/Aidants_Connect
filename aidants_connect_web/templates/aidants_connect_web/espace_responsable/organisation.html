@@ -1,6 +1,7 @@
 {% extends 'layouts/main.html' %}
 
 {% load static %}
+{% load ac_extras %}
 
 {% block title %}Aidants Connect - Mon organisation : {{ organisation.name }}{% endblock %}
 
@@ -40,29 +41,44 @@
     <div class="container">
       <h2>Aidants</h2>
       {% if aidants %}
-        <table class="table">
+        <table class="table aidants-list">
           <thead>
           <tr>
             <th scope="col">Nom</th>
             <th scope="col">Email</th>
-            <th scope="col">Carte TOTP</th>
+            <th scope="col" >Carte TOTP</th>
           </tr>
           </thead>
           <tbody>
           {% for aidant in aidants %}
-            <tr>
-              <td>
+            <tr {% if not aidant.is_active %}class="inactive"{% endif %}>
+              <th scope="row">
                 <a href="{% url "espace_responsable_aidant" organisation_id=organisation.id aidant_id=aidant.id %}">
                   {{ aidant.get_full_name }}
+                  {% if not aidant.is_active %}
+                  <br>(Compte désactivé)
+                  {% endif %}
                 </a>
-              </td>
+              </th>
               <td>{{ aidant.email }}</td>
               <td>
                 {% with aidant.carte_totp.serial_number as sn %}
                   {% if sn %}
                     {{ sn }}
+                    {% if not totp_devices_users|get_dict_key:aidant.id %}
+                      <div class="notification warning">
+
+                        <span aria-hidden="true">⚠️ </span>Le fonctionnement de cette carte n'a pas été vérifié.<br>
+                        Vous devez
+                        <a href="{% url "espace_responsable_validate_totp" organisation_id=organisation.id aidant_id=aidant.id %}">
+                          valider la carte</a>
+                        pour permettre à {{ aidant.get_full_name }} de se connecter à Aidants Connect.
+                      </div>
+
+                    {% endif %}
                   {% else %}
-                    <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}" class="button">Associer</a>
+                    <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}"
+                       class="button">Associer</a>
                   {% endif %}
                 {% endwith %}
               </td>

@@ -39,8 +39,8 @@
         {% csrf_token %}
         <div class="form__group">
           <label for="{{ form.otp_token.id_for_label }}">
-            Pour valider le fonctionnement de la carte, écrivez le code généré par celle-ci
-            en appuyant sur le bouton :
+            Pour valider le fonctionnement de la carte n°{{ aidant.carte_totp.serial_number }},
+            écrivez le code généré par celle-ci en appuyant sur le bouton :
           </label>
           <div class="max-width-50">
             {{ form.otp_token }}
