@@ -1,5 +1,6 @@
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -122,11 +123,16 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
         try:
             carte_totp = CarteTOTP.objects.get(serial_number=serial_number)
 
-            carte_totp.aidant = aidant
-            carte_totp.save()
-
-            totp_device = TOTPDevice(key=carte_totp.seed, user=aidant)
-            totp_device.save()
+            with transaction.atomic():
+                carte_totp.aidant = aidant
+                carte_totp.save()
+                totp_device = TOTPDevice(
+                    key=carte_totp.seed,
+                    user=aidant,
+                    step=60,  # todo: some devices may have a different step!
+                    name=f"Carte n° {serial_number}",
+                )
+                totp_device.save()
 
             return redirect(
                 "espace_responsable_organisation", organisation_id=organisation.id
@@ -136,11 +142,6 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
                 request, "Une erreur s’est produite lors de la sauvegarde de la carte."
             )
             # todo send exception to Sentry
-            return render(
-                request,
-                "aidants_connect_web/espace_responsable/write-carte-totp-sn.html",
-                {"aidant": aidant, "organisation": organisation, "form": form},
-            )
 
     return render(
         request,
