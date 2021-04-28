@@ -225,6 +225,15 @@ class CarteOTPSerialNumberForm(forms.Form):
         return serial_number
 
 
+class CarteTOTPValidationForm(forms.Form):
+    otp_token = forms.CharField(
+        max_length=6,
+        min_length=6,
+        validators=[RegexValidator(r"^\d{6}$")],
+        widget=forms.TextInput(attrs={"autocomplete": "off"}),
+    )
+
+
 class DatapassForm(forms.Form):
     data_pass_id = forms.IntegerField()
     organization_name = forms.CharField()

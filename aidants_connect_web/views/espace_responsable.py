@@ -11,7 +11,7 @@ from aidants_connect_web.decorators import (
     user_is_responsable_structure,
     activity_required,
 )
-from aidants_connect_web.forms import CarteOTPSerialNumberForm
+from aidants_connect_web.forms import CarteOTPSerialNumberForm, CarteTOTPValidationForm
 
 
 def check_organisation_and_responsable(responsable: Aidant, organisation: Organisation):
@@ -130,12 +130,16 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
                     key=carte_totp.seed,
                     user=aidant,
                     step=60,  # todo: some devices may have a different step!
+                    confirmed=False,
+                    tolerance=30,
                     name=f"Carte n° {serial_number}",
                 )
                 totp_device.save()
 
             return redirect(
-                "espace_responsable_organisation", organisation_id=organisation.id
+                "espace_responsable_validate_totp",
+                organisation_id=organisation.id,
+                aidant_id=aidant.id,
             )
         except Exception:
             django_messages.error(
@@ -146,5 +150,67 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
     return render(
         request,
         "aidants_connect_web/espace_responsable/write-carte-totp-sn.html",
+        {"aidant": aidant, "organisation": organisation, "form": form},
+    )
+
+
+@login_required
+@user_is_responsable_structure
+@activity_required
+def validate_aidant_carte_totp(request, organisation_id, aidant_id):
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
+
+    aidant = get_object_or_404(Aidant, pk=aidant_id)
+    if aidant.organisation.id != organisation_id:
+        raise Http404
+
+    if not hasattr(aidant, "carte_totp"):
+        django_messages.error(
+            request,
+            (
+                "Impossible de trouver une carte TOTP associée au compte de "
+                f"{aidant.get_full_name()}."
+                "Vous devez d’abord associer une carte à son compte."
+            ),
+        )
+        return redirect(
+            "espace_responsable_organisation",
+            organisation_id=organisation.id,
+        )
+
+    if request.method == "POST":
+        form = CarteTOTPValidationForm(request.POST)
+    else:
+        form = CarteTOTPValidationForm()
+
+    if form.is_valid():
+        token = form.cleaned_data["otp_token"]
+        totp_device = TOTPDevice.objects.get(
+            key=aidant.carte_totp.seed, user_id=aidant.id
+        )
+        valid = totp_device.verify_token(token)
+        if valid:
+            totp_device.tolerance = 1
+            totp_device.confirmed = True
+            totp_device.save()
+            django_messages.success(
+                request,
+                (
+                    "Tout s’est bien passé, le compte de "
+                    f"{aidant.get_full_name()} est prêt !"
+                ),
+            )
+            return redirect(
+                "espace_responsable_organisation",
+                organisation_id=organisation.id,
+            )
+        else:
+            django_messages.error(request, "Ce code n’est pas valide.")
+
+    return render(
+        request,
+        "aidants_connect_web/espace_responsable/validate-carte-totp.html",
         {"aidant": aidant, "organisation": organisation, "form": form},
     )

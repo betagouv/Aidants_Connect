@@ -130,6 +130,14 @@ urlpatterns = [
         espace_responsable.associate_aidant_carte_totp,
         name="espace_responsable_associate_totp",
     ),
+    path(
+        (
+            "espace-responsable/organisation/<int:organisation_id>"
+            "/aidant/<int:aidant_id>/valider-carte-totp"
+        ),
+        espace_responsable.validate_aidant_carte_totp,
+        name="espace_responsable_validate_totp",
+    ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),

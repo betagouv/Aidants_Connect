@@ -1,0 +1,56 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Valider la carte TOTP de {{ aidant.get_full_name }}{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <section class="section">
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <ul class="steps-form">
+        <li class="done">
+          <div>
+            Création du compte aidant
+          </div>
+        </li>
+        <li class="done">
+          <div>
+            Saisie du numéro de série<br>de la carte TOTP
+          </div>
+        </li>
+        <li class="active">
+          <div>
+            Validation de la carte
+          </div>
+        </li>
+      </ul>
+      <h1>Étape 3/3 : validation de la carte de {{ aidant.get_full_name }}</h1>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form__group">
+          <label for="{{ form.otp_token.id_for_label }}">
+            Pour valider le fonctionnement de la carte, écrivez le code généré par celle-ci
+            en appuyant sur le bouton :
+          </label>
+          <div class="max-width-50">
+            {{ form.otp_token }}
+          </div>
+          {{ form.otp_token.errors }}
+        </div>
+        <div class="form__group">
+          <button class="button" type="submit">Vérifier</button>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock content %}
