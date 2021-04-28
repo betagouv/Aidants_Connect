@@ -32,6 +32,7 @@
               <th scope="col">Prénom</th>
               <th scope="col">Date de naissance</th>
               <th scope="col">Autorisations</th>
+              <th scope="col">Action</th>
             </tr>
             </thead>
             <tbody>
@@ -60,6 +61,7 @@
                     {% endfor %}
                   </ul>
                 </td>
+              <td><a href="{% url 'renew_mandat' usager_id=usager.id %}">Renouveler le mandat</a></td>
               </tr>
             {% endfor %}
             </tbody>
@@ -73,6 +75,7 @@
               <th scope="col">Nom</th>
               <th scope="col">Prénom</th>
               <th scope="col">Date de naissance</th>
+              <th scope="col">Action</th>
             </tr>
             </thead>
             <tbody>
@@ -89,6 +92,7 @@
                 </td>
                 <td>{{ usager.given_name }}</td>
                 <td>{{ usager.birthdate |date:"d F" }}</td>
+                <td><a href="{% url 'renew_mandat' usager_id=usager.id %}">Renouveler le mandat</a></td>
               </tr>
             {% endfor %}
             </tbody>

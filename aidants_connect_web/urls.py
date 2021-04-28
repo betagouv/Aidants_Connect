@@ -7,6 +7,7 @@ from aidants_connect_web.views import (
     FC_as_FS,
     id_provider,
     mandat,
+    renew_mandat,
     service,
     espace_aidant,
     espace_responsable,
@@ -53,6 +54,10 @@ urlpatterns = [
         "mandats/<int:mandat_id>/visualisation",
         mandat.attestation_visualisation,
         name="mandat_visualisation",
+    ),
+    # renew mandat
+    path(
+        "renew_mandat/<int:usager_id>", renew_mandat.renew_mandat, name="renew_mandat"
     ),
     # new mandat
     path("creation_mandat/", mandat.new_mandat, name="new_mandat"),
