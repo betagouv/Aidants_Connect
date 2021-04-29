@@ -188,18 +188,96 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
 
             Journal.log_autorisation_cancel(autorisation, aidant)
 
-            django_messages.success(
-                request, "L'autorisation a été révoquée avec succès !"
+            return redirect(
+                "autorisation_cancelation_success",
+                usager_id=usager_id,
+                autorisation_id=autorisation_id,
             )
-            return redirect("usager_details", usager_id=usager_id)
 
     return render(
         request,
-        "aidants_connect_web/confirm_autorisation_cancelation.html",
+        "aidants_connect_web/mandat_auths_cancellation/"
+        "confirm_autorisation_cancelation.html",
         {
             "aidant": aidant,
             "usager": aidant.get_usager(usager_id),
             "autorisation": autorisation,
+        },
+    )
+
+
+@login_required
+@activity_required
+def autorisation_cancelation_success(request, usager_id, autorisation_id):
+    aidant: Aidant = request.user
+
+    try:
+        authorization = aidant.get_inactive_autorisations_for_usager(usager_id).get(
+            pk=autorisation_id
+        )
+    except Autorisation.DoesNotExist:
+        django_messages.error(
+            request, "Cette autorisation est introuvable ou inaccessible."
+        )
+        return redirect("espace_aidant_home")
+
+    if not authorization.is_revoked:
+        django_messages.error(request, "Cette autorisation est encore active.")
+        return redirect("espace_aidant_home")
+
+    return render(
+        request,
+        "aidants_connect_web/mandat_auths_cancellation/"
+        "authorization_cancellation_success.html",
+        {
+            "aidant": aidant,
+            "humanized_auth": humanize_demarche_names(authorization.demarche),
+            "usager": aidant.get_usager(usager_id),
+            "authorization": authorization,
+        },
+    )
+
+
+@login_required
+@activity_required
+def autorisation_cancelation_attestation(request, usager_id, autorisation_id):
+    aidant: Aidant = request.user
+    try:
+        autorisation = aidant.get_inactive_autorisations_for_usager(usager_id).get(
+            pk=autorisation_id
+        )
+    except Autorisation.DoesNotExist:
+        django_messages.error(
+            request, "Cette autorisation est introuvable ou inaccessible."
+        )
+        return redirect("espace_aidant_home")
+
+    mandat: Mandat = autorisation.mandat
+
+    if not autorisation.is_revoked:
+        django_messages.error(request, "Cette autorisation est encore active.")
+        return redirect("espace_aidant_home")
+
+    if not autorisation.was_separately_revoked:
+        return redirect("mandat_cancellation_attestation", mandat_id=mandat.id)
+
+    user = aidant.get_usager(usager_id)
+
+    return render(
+        request,
+        "aidants_connect_web/mandat_auths_cancellation/"
+        "authorization_cancellation_attestation.html",
+        {
+            "aidant": aidant,
+            "authorization": humanize_demarche_names(autorisation.demarche),
+            "user": user,
+            "organisation": autorisation.mandat.organisation,
+            "creation_date": autorisation.mandat.creation_date.strftime(
+                "%d/%m/%Y à %Hh%M"
+            ),
+            "revocation_date": autorisation.revocation_date.strftime(
+                "%d/%m/%Y à %Hh%M"
+            ),
         },
     )
 
@@ -238,7 +316,7 @@ def confirm_mandat_cancelation(request, mandat_id):
             else:
                 return render(
                     request,
-                    "aidants_connect_web/mandat_cancellation/"
+                    "aidants_connect_web/mandat_auths_cancellation/"
                     "confirm_mandat_cancellation.html",
                     {
                         "aidant": aidant,
@@ -253,7 +331,8 @@ def confirm_mandat_cancelation(request, mandat_id):
 
     return render(
         request,
-        "aidants_connect_web/mandat_cancellation/confirm_mandat_cancellation.html",
+        "aidants_connect_web/mandat_auths_cancellation/"
+        "confirm_mandat_cancellation.html",
         {
             "aidant": aidant,
             "usager_name": usager.get_full_name(),
@@ -280,7 +359,8 @@ def mandat_cancelation_success(request, mandat_id: int):
 
     return render(
         request,
-        "aidants_connect_web/mandat_cancellation/mandat_cancellation_success.html",
+        "aidants_connect_web/mandat_auths_cancellation/"
+        "mandat_cancellation_success.html",
         {
             "aidant": aidant,
             "mandat": mandate,
@@ -305,7 +385,8 @@ def mandat_cancellation_attestation(request, mandat_id):
 
     return render(
         request,
-        "aidants_connect_web/mandat_cancellation/mandat_cancellation_attestation.html",
+        "aidants_connect_web/mandat_auths_cancellation/"
+        "mandat_cancellation_attestation.html",
         {
             "organisation": organisation,
             "usager_name": usager.get_full_name(),

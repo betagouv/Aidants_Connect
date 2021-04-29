@@ -563,6 +563,73 @@ class AutorisationModelTests(TestCase):
             datetime(2019, 1, 17, tzinfo=pytz_timezone("Europe/Paris")),
         )
 
+    def test_was_separately_revoked_auth_not_revoked(self):
+        mandat = MandatFactory(
+            organisation=self.aidant_marge.organisation,
+            usager=self.usager_homer,
+            expiration_date=timezone.now() + timedelta(days=3),
+        )
+        autorisation: Autorisation = AutorisationFactory(
+            mandat=mandat,
+            demarche="Carte grise",
+        )
+
+        self.assertFalse(autorisation.was_separately_revoked)
+
+    def test_was_separately_revoked_mandate_not_revoked(self):
+        mandat = MandatFactory(
+            organisation=self.aidant_marge.organisation,
+            usager=self.usager_homer,
+            expiration_date=timezone.now() + timedelta(days=3),
+        )
+
+        AutorisationFactory(
+            mandat=mandat,
+            demarche="logement",
+        )
+
+        autorisation: Autorisation = AutorisationFactory(
+            mandat=mandat, demarche="papiers", revocation_date=timezone.now()
+        )
+
+        self.assertTrue(autorisation.was_separately_revoked)
+
+    def test_was_separately_revoked_mandate_revoked_false(self):
+        mandat = MandatFactory(
+            organisation=self.aidant_marge.organisation,
+            usager=self.usager_homer,
+            expiration_date=timezone.now() + timedelta(days=3),
+        )
+
+        AutorisationFactory(
+            mandat=mandat, demarche="logement", revocation_date=timezone.now()
+        )
+
+        autorisation: Autorisation = AutorisationFactory(
+            mandat=mandat, demarche="papiers", revocation_date=timezone.now()
+        )
+
+        self.assertFalse(autorisation.was_separately_revoked)
+
+    def test_was_separately_revoked_mandate_revoked_true(self):
+        mandat = MandatFactory(
+            organisation=self.aidant_marge.organisation,
+            usager=self.usager_homer,
+            expiration_date=timezone.now() + timedelta(days=3),
+        )
+
+        AutorisationFactory(
+            mandat=mandat, demarche="logement", revocation_date=timezone.now()
+        )
+
+        autorisation: Autorisation = AutorisationFactory(
+            mandat=mandat,
+            demarche="papiers",
+            revocation_date=timezone.now() - timedelta(days=1),
+        )
+
+        self.assertTrue(autorisation.was_separately_revoked)
+
 
 @tag("models")
 class OrganisationModelTests(TestCase):

@@ -70,7 +70,7 @@
                       {% if not autorisation.revocation_date %}
                         <span title="{{ mandat.expiration_date }}">{{ mandat.expiration_date | date:"d F Y" }}</span>
                       {% else %}
-                        <span class="text-red">Révoqué le {{ autorisation.revocation_date }}</span>
+                        <span class="text-red">Révoquée le {{ autorisation.revocation_date }}</span>
                       {% endif %}
                     </td>
                     <td>
@@ -78,7 +78,14 @@
                         <a href="{% url 'confirm_autorisation_cancelation' usager_id=usager.id autorisation_id=autorisation.id %}" class="button-outline warning small float-right">
                           Révoquer l’autorisation <span aria-hidden="true">&nbsp;🗑️</span>
                         </a>
-                      {% endif %}
+                      {% elif autorisation.was_separately_revoked %}{% spaceless %}
+                        <a
+                          class="button small float-right auth-revocation-attestation"
+                          href="{% url 'autorisation_cancelation_attestation' autorisation_id=autorisation.id usager_id=mandat.usager.id %}"
+                        >
+                          <span aria-hidden="true">🖨&nbsp;</span>Voir la révocation
+                        </a>
+                      {% endspaceless %}{% endif %}
                     </td>
                   </tr>
                 {% endfor %}
@@ -141,10 +148,19 @@
                       {% if not autorisation.revocation_date %}
                         <span title="{{ mandat.expiration_date }}">{{ mandat.expiration_date | date:"d F Y" }}</span>
                       {% else %}
-                        <span class="text-red">Révoqué le {{ autorisation.revocation_date }}</span>
+                        <span class="text-red">Révoquée le {{ autorisation.revocation_date }}</span>
                       {% endif %}
                     </td>
-                    <td></td>
+                    <td>
+                      {% if autorisation.was_separately_revoked %}{% spaceless %}
+                        <a
+                          class="button small float-right auth-revocation-attestation"
+                          href="{% url 'autorisation_cancelation_attestation' autorisation_id=autorisation.id usager_id=mandat.usager.id %}"
+                        >
+                          <span aria-hidden="true">🖨&nbsp;</span>Voir la révocation
+                        </a>
+                      {% endspaceless %}{% endif %}
+                    </td>
                   </tr>
                 {% endfor %}
               </tbody>
