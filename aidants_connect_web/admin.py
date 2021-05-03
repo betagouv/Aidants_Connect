@@ -20,6 +20,7 @@ from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
 from import_export.admin import ImportMixin
+from import_export.fields import Field
 from import_export.results import RowResult
 from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
@@ -98,7 +99,27 @@ class OrganisationAdmin(VisibleToAdminMetier, ModelAdmin):
     search_fields = ("name",)
 
 
-class AidantAdmin(VisibleToAdminMetier, DjangoUserAdmin):
+class AidantResource(resources.ModelResource):
+    organisation_id = Field(attribute="organisation_id", column_name="organisation_id")
+
+    class Meta:
+        model = Aidant
+        import_id_fields = ("username",)
+        fields = (
+            "username",
+            "last_name",
+            "first_name",
+            "profession",
+            "organisation_id",
+            "is_active",
+        )
+
+    def before_save_instance(self, instance: Aidant, using_transactions, dry_run):
+        if not instance.email:
+            instance.email = instance.username
+
+
+class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
@@ -115,6 +136,9 @@ class AidantAdmin(VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
+
+    # For bulk import
+    resource_class = AidantResource
 
     # The fields to be used in displaying the `Aidant` model.
     # These override the definitions on the base `UserAdmin`
