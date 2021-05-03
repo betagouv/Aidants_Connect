@@ -95,8 +95,15 @@ class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
 
 
 class OrganisationAdmin(VisibleToAdminMetier, ModelAdmin):
-    list_display = ("name", "address", "admin_num_active_aidants", "admin_num_mandats")
-    search_fields = ("name",)
+    list_display = (
+        "name",
+        "address",
+        "siret",
+        "admin_num_active_aidants",
+        "admin_num_mandats",
+        "id",
+    )
+    search_fields = ("name", "siret")
 
 
 class AidantResource(resources.ModelResource):
