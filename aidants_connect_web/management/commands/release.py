@@ -32,7 +32,7 @@ class Command(BaseCommand):
             self.tag_and_push_on_origin(self.version, self.changelog)
 
     def check_current_branch(self):
-        current_branch = os.popen("git rev-parse --abbrev-ref HEAD")
+        current_branch = os.popen("git rev-parse --abbrev-ref HEAD").read().strip()
         if current_branch != "main":
             raise CommandError(
                 "This script is intended to work ONLY on branch 'main'.\n"
