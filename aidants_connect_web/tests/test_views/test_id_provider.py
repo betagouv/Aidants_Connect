@@ -400,6 +400,7 @@ class FISelectDemarcheTests(TestCase):
     "31b5d581e70",
     FC_AS_FI_CALLBACK_URL="test_url.test_url",
     HOST="localhost",
+    FC_AS_FI_HASH_SALT="123456",
 )
 @override_settings(FC_CONNECTION_AGE=300)
 class TokenTests(TestCase):
