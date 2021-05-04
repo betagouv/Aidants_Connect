@@ -1,0 +1,25 @@
+{% extends "aidants_connect_web/admin/import_export/import.html" %}
+{% block fields_intro %}Seuls les en-têtes suivants dans le fichier seront importés&nbsp;:{% endblock %}
+
+{% block more_help %}
+  <details>
+    <summary>🆘 Aide sur les champs</summary>
+    <dl>
+      <dt>username</dt>
+      <dd>Obligatoire. Doit contenir l'e-mail de l'aidant.</dd>
+      <dt>organisation_id</dt>
+      <dd>Identifiant interne Django de l'organisation. Vous pouvez le retrouver dans la colonne ID de la page
+        Organisations de l'admin Django.
+      </dd>
+      <dt>first_name, last_name</dt>
+      <dd>Prénom et nom de famille de l'aidant, respectivement.</dd>
+      <dt>is_active</dt>
+      <dd>
+        Permet d'activer ou de désactiver le compte de l'aidant.<br>
+        Entrer 0 (zéro) ou <code>False</code> pour désactiver le compte.<br>
+        Entrer 1 ou <code>True</code> pour activer le compte.<br>
+        Même avec un compte activé, l'aidant ne peut pas se connecter sans carte TOTP.
+      </dd>
+    </dl>
+  </details>
+{% endblock %}

@@ -146,6 +146,7 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
 
     # For bulk import
     resource_class = AidantResource
+    import_template_name = "aidants_connect_web/admin/import_export/import_aidant.html"
 
     # The fields to be used in displaying the `Aidant` model.
     # These override the definitions on the base `UserAdmin`
