@@ -113,6 +113,10 @@ form {
   max-width: 250px;
 }
 
+#submit_renew_button {
+  padding: 10;
+  max-width: 250px;
+}
 
 @supports not (display: grid) {
   .tile+.tile {

@@ -656,6 +656,7 @@ class Journal(models.Model):
         ("use_autorisation", "Utilisation d'une autorisation"),
         ("cancel_autorisation", "Révocation d'une autorisation"),
         ("import_totp_cards", "Importation de cartes TOTP"),
+        ("init_renew_mandat", "Lancement d'une procédure de renouvellement"),
     )
 
     INFO_REMOTE_MANDAT = "Mandat conclu à distance pendant l'état d'urgence sanitaire (23 mars 2020)"  # noqa
@@ -730,6 +731,26 @@ class Journal(models.Model):
             aidant=aidant,
             usager=usager,
             action="update_phone_usager",
+        )
+
+    @classmethod
+    def log_init_renew_mandat(
+        cls,
+        aidant: Aidant,
+        usager: Usager,
+        demarches: list,
+        duree: int,
+        is_remote_mandat: bool,
+        access_token: str,
+    ):
+        return cls.objects.create(
+            aidant=aidant,
+            usager=usager,
+            action="init_renew_mandat",
+            demarche=",".join(demarches),
+            duree=duree,
+            access_token=access_token,
+            is_remote_mandat=is_remote_mandat,
         )
 
     @classmethod
