@@ -1,0 +1,41 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Mandat révoqué !{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1>
+      L'autorisation a été révoquée avec succès !
+    </h1>
+
+    <p>
+      L'autorisation « <strong>{{ humanized_auth }}</strong> » créée le
+      <strong>{{ authorization.creation_date | date:"d F Y" }}</strong> et expirant le
+      <strong>{{ authorization.expiration_date | date:"d F Y" }}</strong>
+      a été révoquée avec succès !
+    </p>
+
+    <div class="tiles">
+      <p>
+        {% spaceless %}
+          <a class="button"
+             href="{% url 'autorisation_cancelation_attestation' usager_id=usager.id autorisation_id=authorization.id %}"
+             target="_blank"
+             rel="noopener noreferrer"
+          >
+            <span aria-hidden="true">🖨 </span>Imprimer l'attestation de révocation
+          </a>
+        {% endspaceless %}
+      </p>
+      <p>
+        <a href="{% url 'usager_details' usager_id=usager.id %}">
+          Voir le profil de {{ usager.get_full_name }}.
+        </a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock content %}

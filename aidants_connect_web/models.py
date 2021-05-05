@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
@@ -9,7 +9,7 @@ from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
-from typing import Union
+from typing import Union, Optional
 from os import walk as os_walk
 from os.path import join as path_join, dirname
 from re import sub as regex_sub
@@ -383,8 +383,8 @@ class Mandat(models.Model):
         # at least one active `autorisation`.
         return self.autorisations.active().exists()
 
-    @property
-    def revocation_date(self):
+    @cached_property
+    def revocation_date(self) -> Optional[datetime]:
         """
         Returns the date of the most recently revoked authorization if all them
         were revoked, ``None``, otherwise.
@@ -395,8 +395,8 @@ class Mandat(models.Model):
             else None
         )
 
-    @property
-    def was_explicitly_revoked(self):
+    @cached_property
+    def was_explicitly_revoked(self) -> bool:
         """
         Returns whether the mandate was explicitely revoked, independently of it's
         expiration date.
@@ -562,6 +562,28 @@ class Autorisation(models.Model):
         # i.e. for a human, there is one day between now and tomorrow at the same time,
         # and 0 for a computer.
         return duration_for_computer.days + 1
+
+    @cached_property
+    def was_separately_revoked(self) -> bool:
+        """
+        :return: `True` if the authorization's revocation date is considered
+            different from the mandate's computed revocation date, `False` otherwise.
+            **Notes:** The mandate's computed revocation date is the date of the most
+            recently revoked authorization. The authorization's revocation date will be
+            recently revoked authorization. The authorization's revocation date will be
+            considered different if it was revoked outside a time window of 30 seconds
+            around the mandate's computed reocation date. I.E., if it was revoked at
+            least 15 seconds before or after the mandate.
+        """
+        if not self.is_revoked:
+            return False
+
+        if self.mandat.revocation_date is None:
+            return True
+
+        return abs(self.revocation_date - self.mandat.revocation_date) > timedelta(
+            seconds=15
+        )
 
     def revoke(self, aidant: Aidant, revocation_date=None):
         """

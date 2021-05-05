@@ -94,7 +94,8 @@ class AutorisationCancellationConfirmPageTests(TestCase):
         )
         self.assertTemplateUsed(
             response_to_get_request,
-            "aidants_connect_web/confirm_autorisation_cancelation.html",
+            "aidants_connect_web/mandat_auths_cancellation/"
+            "confirm_autorisation_cancelation.html",
         )
 
     def test_complete_post_triggers_redirect(self):
@@ -104,7 +105,10 @@ class AutorisationCancellationConfirmPageTests(TestCase):
             self.url_for_autorisation_cancellation_confimation(self.good_combo),
             data={"csrfmiddlewaretoken": "coucou"},
         )
-        url = f"/usagers/{self.our_usager.id}/"
+        url = (
+            f"/usagers/{self.our_usager.id}/autorisations/"
+            f"{self.valid_autorisation.id}/cancel_success"
+        )
         self.assertRedirects(
             response_correct_confirm_form, url, fetch_redirect_response=False
         )
@@ -117,7 +121,8 @@ class AutorisationCancellationConfirmPageTests(TestCase):
         )
         self.assertTemplateUsed(
             response_incorrect_confirm_form,
-            "aidants_connect_web/confirm_autorisation_cancelation.html",
+            "aidants_connect_web/mandat_auths_cancellation/"
+            "confirm_autorisation_cancelation.html",
         )
 
     def error_case_tester(self, data):
@@ -212,7 +217,8 @@ class MandatCancellationConfirmPageTests(TestCase):
 
         self.assertTemplateUsed(
             response_to_get_request,
-            "aidants_connect_web/mandat_cancellation/confirm_mandat_cancellation.html",
+            "aidants_connect_web/mandat_auths_cancellation/"
+            "confirm_mandat_cancellation.html",
         )
 
     def test_complete_post_triggers_redirect(self):
@@ -240,7 +246,8 @@ class MandatCancellationConfirmPageTests(TestCase):
         )
         self.assertTemplateUsed(
             response_incorrect_confirm_form,
-            "aidants_connect_web/mandat_cancellation/confirm_mandat_cancellation.html",
+            "aidants_connect_web/mandat_auths_cancellation/"
+            "confirm_mandat_cancellation.html",
         )
         self.assertIn(
             "Une erreur s'est produite lors de la révocation du mandat",
@@ -338,7 +345,7 @@ class MandatCancellationAttestationTests(TestCase):
 
         self.assertTemplateUsed(
             response_to_get_request,
-            "aidants_connect_web/mandat_cancellation/"
+            "aidants_connect_web/mandat_auths_cancellation/"
             "mandat_cancellation_attestation.html",
         )
 

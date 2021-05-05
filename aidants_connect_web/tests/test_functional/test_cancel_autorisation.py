@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.test import tag
 from django.utils import timezone
+from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import (
@@ -34,11 +35,11 @@ class CancelAutorisationTests(FunctionalTestCase):
             usager=cls.usager_josephine,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        AutorisationFactory(
+        cls.money_authorization = AutorisationFactory(
             mandat=cls.mandat_thierry_josephine,
             demarche="argent",
         )
-        AutorisationFactory(
+        cls.family_authorization = AutorisationFactory(
             mandat=cls.mandat_thierry_josephine,
             demarche="famille",
         )
@@ -77,7 +78,32 @@ class CancelAutorisationTests(FunctionalTestCase):
         submit_button = self.selenium.find_elements_by_tag_name("input")[1]
         submit_button.click()
 
+        # Display attestation
+        attestation_link = self.selenium.find_element_by_xpath(
+            f'.//a[@href="/usagers/{self.usager_josephine.id}'
+            f'/autorisations/{self.money_authorization.id}/cancel_attestation"]'
+        )
+        attestation_link.click()
+
+        wait = WebDriverWait(self.selenium, 10)
+        wait.until(lambda driver: len(driver.window_handles) == 2)
+        self.selenium.switch_to.window(self.selenium.window_handles[1])
+
+        recap_title = self.selenium.find_element_by_tag_name("h1").text
+        self.assertEqual(
+            recap_title,
+            "Révocation d'une autorisation via le service « Aidants Connect »",
+        )
+
+        self.selenium.close()
+        self.selenium.switch_to.window(self.selenium.window_handles[0])
+
         # See again all mandats of usager page
+        user_link = self.selenium.find_element_by_xpath(
+            f'.//a[@href="/usagers/{self.usager_josephine.id}/"]'
+        )
+        user_link.click()
+
         active_autorisations_after = self.selenium.find_elements_by_id(
             "active-mandat-panel"
         )
@@ -87,6 +113,14 @@ class CancelAutorisationTests(FunctionalTestCase):
         )
         self.assertEqual(len(active_mandats_autorisations_after), 2)
         self.assertIn("Révoqué", active_mandats_autorisations_after[0].text)
+
+        auth_revocation_attestation_button = (
+            self.selenium.find_elements_by_css_selector(
+                ".button.auth-revocation-attestation"
+            )
+        )
+        self.assertEqual(len(auth_revocation_attestation_button), 1)
+        self.assertIn("Voir la révocation", auth_revocation_attestation_button[0].text)
 
         # Check Journal
         last_journal_entry = Journal.objects.last()
@@ -103,6 +137,11 @@ class CancelAutorisationTests(FunctionalTestCase):
         submit_button.click()
 
         # See again all mandats of usager page
+        user_link = self.selenium.find_element_by_xpath(
+            f'.//a[@href="/usagers/{self.usager_josephine.id}/"]'
+        )
+        user_link.click()
+
         active_autorisations_after = self.selenium.find_elements_by_id(
             "active-mandat-panel"
         )

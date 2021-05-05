@@ -2,6 +2,8 @@ import time
 
 from django.conf import settings
 from django.test import tag
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support.expected_conditions import url_matches
 
 from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
@@ -23,6 +25,8 @@ class CreateNewMandatTests(FunctionalTestCase):
         device.token_set.create(token="123455")
 
     def test_create_new_mandat(self):
+        wait = WebDriverWait(self.selenium, 10)
+
         self.open_live_url("/usagers/")
 
         login_aidant(self)
@@ -84,6 +88,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button = self.selenium.find_elements_by_tag_name("input")[2]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
+        wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
         # FC - Validate the information
         submit_button = self.selenium.find_element_by_tag_name("button")
@@ -121,6 +126,8 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertEqual(len(active_mandats_after), 2)
 
     def test_create_new_remote_mandat(self):
+        wait = WebDriverWait(self.selenium, 10)
+
         self.open_live_url("/usagers/")
 
         login_aidant(self)
@@ -185,6 +192,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button = self.selenium.find_elements_by_tag_name("input")[2]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
+        wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
         # FC - Validate the information
         submit_button = self.selenium.find_element_by_tag_name("button")
