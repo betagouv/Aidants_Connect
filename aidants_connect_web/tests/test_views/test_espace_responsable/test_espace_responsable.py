@@ -17,6 +17,7 @@ class EspaceResponsableHomePageTests(TestCase):
         self.responsable_tom = AidantFactory(username="georges@plop.net")
         self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
         self.responsable_tom.responsable_de.add(OrganisationFactory())
+        self.responsable_tom.can_create_mandats = False
         # Tim is responsable of only one structure
         self.responsable_tim = AidantFactory(username="tim@tim.net")
         self.responsable_tim.responsable_de.add(self.responsable_tim.organisation)
@@ -37,6 +38,19 @@ class EspaceResponsableHomePageTests(TestCase):
             (
                 "Link to espace responsable is invisible to a responsable, "
                 "it should be visible"
+            ),
+        )
+
+    def test_hide_espace_aidant_from_responsable_who_cannot_create_mandats(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get("/")
+        response_content = response.content.decode("utf-8")
+        self.assertNotIn(
+            "Mon espace Aidant",
+            response_content,
+            (
+                "Link to espace aidant is visible to a responsable without "
+                " mandats permission, it should be invisible"
             ),
         )
 
