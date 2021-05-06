@@ -6,6 +6,7 @@ from django.utils.timezone import now
 from aidants_connect_web.models import (
     Autorisation,
     Connection,
+    CarteTOTP,
     Mandat,
     Organisation,
     OrganisationType,
@@ -21,6 +22,14 @@ class OrganisationFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Organisation
+
+
+class CarteTOTPFactory(factory.DjangoModelFactory):
+    seed = "xxxxxxxxxxx"
+    serial_number = "ABC000001"
+
+    class Meta:
+        model = CarteTOTP
 
 
 class OrganisationTypeFactory(factory.DjangoModelFactory):
@@ -78,7 +87,6 @@ class AutorisationFactory(factory.DjangoModelFactory):
 
 
 class LegacyAutorisationFactory(AutorisationFactory):
-
     # Used to test the migration script that actually *creates* mandats ^^
     mandat = None
 
