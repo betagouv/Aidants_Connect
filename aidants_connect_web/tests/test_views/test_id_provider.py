@@ -524,6 +524,7 @@ class UserInfoTests(TestCase):
             sub="test_sub",
             email="User@user.domain",
             creation_date="2019-08-05T15:49:13.972Z",
+            phone="0 800 840 800",
         )
         self.aidant_thierry = AidantFactory()
         self.mandat_thierry_usager = MandatFactory(
@@ -569,7 +570,6 @@ class UserInfoTests(TestCase):
         FC_formatted_info = {
             "given_name": "Joséphine",
             "family_name": "ST-PIERRE",
-            "phone": "",
             "preferred_username": "ST-PIERRE",
             "birthdate": "1969-12-25",
             "gender": Usager.GENDER_FEMALE,
