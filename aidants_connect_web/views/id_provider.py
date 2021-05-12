@@ -344,8 +344,22 @@ def user_info(request):
         log.info(auth_token)
         return HttpResponseForbidden()
 
-    usager = model_to_dict(connection.usager)
-    del usager["id"]
+    usager = model_to_dict(
+        connection.usager,
+        fields=[
+            "birthcountry",
+            "birthdate",
+            "birthplace",
+            "creation_date",
+            "email",
+            "family_name",
+            "gender",
+            "given_name",
+            "preferred_username",
+            "sub",
+        ],
+    )
+
     birthdate = usager["birthdate"]
     birthplace = usager["birthplace"]
     birthcountry = usager["birthcountry"]
