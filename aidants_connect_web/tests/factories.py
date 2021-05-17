@@ -25,7 +25,7 @@ class OrganisationFactory(factory.DjangoModelFactory):
 
 
 class CarteTOTPFactory(factory.DjangoModelFactory):
-    seed = "xxxxxxxxxxx"
+    seed = "0123456789ABCDEF"
     serial_number = "ABC000001"
 
     class Meta:
