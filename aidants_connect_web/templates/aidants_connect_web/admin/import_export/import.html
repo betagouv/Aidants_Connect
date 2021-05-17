@@ -29,10 +29,11 @@
       {% csrf_token %}
 
       <p>
-        Le fichier à importer doit contenir les en-têtes suivants&nbsp;:
+        {% block fields_intro %}Le fichier à importer doit contenir les en-têtes suivants&nbsp;:{% endblock %}
         <code>{{ fields|join:", " }}</code>
       </p>
-
+      {% block more_help %}
+      {% endblock %}
       <fieldset class="module aligned">
         {% for field in form %}
           <div class="form-row">
@@ -149,7 +150,7 @@
             {% endfor %}
           </tr>
           </thead>
-          {% for row in status.list|slice:":10" %}
+          {% for row in status.list|slice:":100" %}
             <tr class="{{ row.import_type }}">
               {% for field in row.diff %}
                 <td>{{ field }}</td>
