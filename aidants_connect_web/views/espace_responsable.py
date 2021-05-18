@@ -1,9 +1,11 @@
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.signals import user_logged_in
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
-
+from django.utils.safestring import mark_safe
+from django.urls import reverse
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_web.models import Aidant, CarteTOTP, Organisation
@@ -17,6 +19,36 @@ from aidants_connect_web.forms import CarteOTPSerialNumberForm, CarteTOTPValidat
 def check_organisation_and_responsable(responsable: Aidant, organisation: Organisation):
     if responsable not in organisation.responsables.all():
         raise Http404
+
+
+def check_responsable_has_a_totp_device(sender, user: Aidant, request, **kwargs):
+    if not user.is_responsable_structure():
+        return
+
+    try:  # try to get at least one totp device attached to this user, and return if so
+        TOTPDevice.objects.get(user=user)
+        return
+    except TOTPDevice.MultipleObjectsReturned:
+        return  # it's OK, I need at least one
+    except TOTPDevice.DoesNotExist:
+        pass
+
+    association_url = reverse(
+        "espace_responsable_associate_totp",
+        kwargs={"organisation_id": user.organisation.id, "aidant_id": user.id},
+    )
+    django_messages.warning(
+        request,
+        mark_safe(
+            "Bienvenue ! Avant toute chose, vous devez associer une carte TOTP à votre "
+            "compte afin de pouvoir vous connecter à nouveau à l'avenir. "
+            f'<strong><a href="{association_url}">Cliquez ici pour associer une carte '
+            "TOTP à votre compte.</a></strong>"
+        ),
+    )
+
+
+user_logged_in.connect(check_responsable_has_a_totp_device)
 
 
 @login_required
