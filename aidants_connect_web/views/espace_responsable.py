@@ -25,13 +25,8 @@ def check_responsable_has_a_totp_device(sender, user: Aidant, request, **kwargs)
     if not user.is_responsable_structure():
         return
 
-    try:  # try to get at least one totp device attached to this user, and return if so
-        TOTPDevice.objects.get(user=user)
+    if user.has_a_totp_device:
         return
-    except TOTPDevice.MultipleObjectsReturned:
-        return  # it's OK, I need at least one
-    except TOTPDevice.DoesNotExist:
-        pass
 
     association_url = reverse(
         "espace_responsable_associate_totp",

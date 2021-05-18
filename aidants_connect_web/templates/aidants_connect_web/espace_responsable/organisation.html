@@ -18,6 +18,15 @@
         {% endfor %}
       {% endif %}
       <h1>Mon organisation : {{ organisation.name }}</h1>
+      {% if not responsable.has_a_totp_device %}
+        <div class="notification warning" role="alert">
+          Avant toute chose, nous vous invitons à
+          <strong><a
+              href="{% url "espace_responsable_associate_totp" organisation_id=responsable.organisation.id aidant_id=responsable.id %}">
+            activer votre carte TOTP.
+          </a></strong>
+        </div>
+      {% endif %}
       <div class="tiles">
         <div class="grid">
           <div class="tile background-color-grey">
@@ -46,7 +55,7 @@
           <tr>
             <th scope="col">Nom</th>
             <th scope="col">Email</th>
-            <th scope="col" >Carte TOTP</th>
+            <th scope="col">Carte TOTP</th>
           </tr>
           </thead>
           <tbody>
@@ -56,7 +65,7 @@
                 <a href="{% url "espace_responsable_aidant" organisation_id=organisation.id aidant_id=aidant.id %}">
                   {{ aidant.get_full_name }}
                   {% if not aidant.is_active %}
-                  <br>(Compte désactivé)
+                    <br>(Compte désactivé)
                   {% endif %}
                 </a>
               </th>

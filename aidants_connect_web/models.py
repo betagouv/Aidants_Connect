@@ -9,6 +9,7 @@ from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from typing import Union, Optional
 from os import walk as os_walk
 from os.path import join as path_join, dirname
@@ -214,6 +215,16 @@ class Aidant(AbstractUser):
         :return: True if the Aidant is responsable of at least one organisation
         """
         return self.responsable_de.count() >= 1
+
+    @cached_property
+    def has_a_totp_device(self):
+        try:
+            TOTPDevice.objects.get(user=self)
+            return True
+        except TOTPDevice.MultipleObjectsReturned:
+            return True
+        except TOTPDevice.DoesNotExist:
+            return False
 
 
 class UsagerQuerySet(models.QuerySet):
