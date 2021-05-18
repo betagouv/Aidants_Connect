@@ -186,7 +186,12 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
     return render(
         request,
         "aidants_connect_web/espace_responsable/write-carte-totp-sn.html",
-        {"aidant": aidant, "organisation": organisation, "form": form},
+        {
+            "aidant": aidant,
+            "organisation": organisation,
+            "responsable": responsable,
+            "form": form,
+        },
     )
 
 
