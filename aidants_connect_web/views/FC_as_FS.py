@@ -21,6 +21,16 @@ log = logging.getLogger()
 def fc_authorize(request):
     connection = Connection.objects.get(pk=request.session["connection"])
 
+    if connection.draft:
+        # TODO: Test
+        django_messages.error(
+            request,
+            "Vous êtes en train de créer un mandat à distance pour "
+            "lequel l’utilisateur ou l'utilisatrice n'a pas encore donné son accord",
+        )
+
+        return redirect("home_page")
+
     connection.state = token_urlsafe(16)
     connection.nonce = token_urlsafe(16)
     connection.connection_type = "FS"
@@ -142,7 +152,7 @@ def get_user_info(connection: Connection) -> tuple:
     )
     user_info = fc_user_info.json()
 
-    user_phone = connection.user_phone if len(connection.user_phone) > 0 else None
+    user_phone = connection.user_phone
 
     if user_info.get("birthplace") == "":
         user_info["birthplace"] = None

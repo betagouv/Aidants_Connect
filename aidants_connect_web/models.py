@@ -1,4 +1,8 @@
 from datetime import timedelta, datetime
+from typing import Union, Optional, Iterable
+from os import walk as os_walk
+from os.path import join as path_join, dirname
+from re import sub as regex_sub
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
@@ -9,13 +13,17 @@ from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
-from django_otp.plugins.otp_totp.models import TOTPDevice
-from typing import Union, Optional
-from os import walk as os_walk
-from os.path import join as path_join, dirname
-from re import sub as regex_sub
-from phonenumber_field.modelfields import PhoneNumberField
 
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from phonenumber_field.modelfields import PhoneNumberField
+from phonenumbers import (
+    PhoneNumber,
+    PhoneNumberFormat,
+    format_number,
+    parse as numbers_parse,
+)
+
+from aidants_connect_web.constants import JOURNAL_ACTIONS, JournalActionKeywords
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
     mandate_template_path,
@@ -636,7 +644,11 @@ class Connection(models.Model):
         max_length=16, choices=AutorisationDureeKeywords.choices, null=True
     )
     mandat_is_remote = models.BooleanField(default=False)
-    user_phone = PhoneNumberField(blank=True)
+    user_phone = PhoneNumberField(blank=False, null=True, default=None)
+    consent_request_tag = models.CharField(
+        max_length=36, blank=False, null=True, default=None
+    )
+    draft = models.BooleanField(default=False)
 
     usager = models.ForeignKey(
         Usager,
@@ -668,8 +680,44 @@ class Connection(models.Model):
 
     objects = ConnectionQuerySet.as_manager()
 
+    def __init__(self, *args, **kwargs):
+        if kwargs.get("user_phone", None):
+            # Normalize phone number to international format
+            if isinstance(kwargs["user_phone"], str):
+                kwargs["user_phone"] = numbers_parse(
+                    kwargs["user_phone"], settings.PHONENUMBER_DEFAULT_REGION
+                )
+            kwargs["user_phone"] = format_number(
+                kwargs["user_phone"], PhoneNumberFormat.E164
+            )
+
+        if kwargs.get("mandat_is_remote", False):
+            kwargs["draft"] = True
+
+        super().__init__(*args, **kwargs)
+
     class Meta:
         verbose_name = "connexion"
+        constraints = [
+            models.UniqueConstraint(
+                fields=("user_phone", "consent_request_tag"),
+                name="connection_unique_consent_request_conversation",
+                condition=(
+                    Q(user_phone__isnull=False) & Q(consent_request_tag__isnull=False)
+                ),
+            ),
+            # Force the user_phone and consent_request_tag fields to be set when
+            # creating a draft connection.
+            models.CheckConstraint(
+                name="connection_remote_mandate_constraint",
+                check=Q(draft=False)
+                | (
+                    Q(draft=True)
+                    & Q(user_phone__isnull=False)
+                    & Q(consent_request_tag__isnull=False)
+                ),
+            ),
+        ]
 
     def __str__(self):
         return f"Connexion #{self.id} - {self.usager}"
@@ -685,24 +733,10 @@ class JournalQuerySet(models.QuerySet):
 
 
 class Journal(models.Model):
-    ACTIONS = (
-        ("connect_aidant", "Connexion d'un aidant"),
-        ("activity_check_aidant", "Reprise de connexion d'un aidant"),
-        ("franceconnect_usager", "FranceConnexion d'un usager"),
-        ("update_email_usager", "L'email de l'usager a été modifié"),
-        ("update_phone_usager", "Le téléphone de l'usager a été modifié"),
-        ("create_attestation", "Création d'une attestation"),
-        ("create_autorisation", "Création d'une autorisation"),
-        ("use_autorisation", "Utilisation d'une autorisation"),
-        ("cancel_autorisation", "Révocation d'une autorisation"),
-        ("import_totp_cards", "Importation de cartes TOTP"),
-        ("init_renew_mandat", "Lancement d'une procédure de renouvellement"),
-    )
-
     INFO_REMOTE_MANDAT = "Mandat conclu à distance pendant l'état d'urgence sanitaire (23 mars 2020)"  # noqa
 
     # mandatory
-    action = models.CharField(max_length=30, choices=ACTIONS, blank=False)
+    action = models.CharField(max_length=30, choices=JOURNAL_ACTIONS, blank=False)
     aidant = models.ForeignKey(
         Aidant, on_delete=models.PROTECT, related_name="journal_entries"
     )
@@ -724,11 +758,27 @@ class Journal(models.Model):
     mandat = models.ForeignKey(
         Mandat, null=True, on_delete=models.PROTECT, related_name="journal_entries"
     )
+
+    # Careful to save only international numbers here for research
+    user_phone = PhoneNumberField(blank=False, null=True, default=None)
+    consent_request_tag = models.CharField(
+        max_length=36, blank=False, null=True, default=None
+    )
+
     objects = JournalQuerySet.as_manager()
 
     class Meta:
         verbose_name = "entrée de journal"
         verbose_name_plural = "entrées de journal"
+        constraints = [
+            models.UniqueConstraint(
+                fields=("action", "user_phone", "consent_request_tag"),
+                name="journal_unique_consent_request_conversation",
+                condition=(
+                    Q(user_phone__isnull=False) & Q(consent_request_tag__isnull=False)
+                ),
+            )
+        ]
 
     def __str__(self):
         return f"Entrée #{self.id} : {self.action} - {self.aidant}"
@@ -875,6 +925,141 @@ class Journal(models.Model):
         message = f"{added} ajouts - {updated} modifications"
         return cls.objects.create(
             aidant=aidant, action="import_totp_cards", additional_information=message
+        )
+
+    @classmethod
+    def log_consent_request_sent(
+        cls,
+        aidant: Aidant,
+        demarche: Union[str, Iterable],
+        duree: int,
+        user_phone: Union[PhoneNumber, str],
+        consent_request_tag: str,
+    ) -> "Journal":
+        demarche = demarche if isinstance(demarche, str) else ",".join(demarche)
+        user_phone = (
+            numbers_parse(user_phone, settings.PHONENUMBER_DEFAULT_REGION)
+            if isinstance(user_phone, str)
+            else user_phone
+        )
+        return cls.objects.create(
+            aidant=aidant,
+            user_phone=format_number(user_phone, PhoneNumberFormat.E164),
+            demarche=demarche,
+            duree=duree,
+            consent_request_tag=consent_request_tag,
+            action=JournalActionKeywords.CONSENT_REQUEST_SENT,
+        )
+
+    @classmethod
+    def log_agreement_of_consent_received(
+        cls,
+        aidant: Aidant,
+        demarche: Union[str, Iterable],
+        duree: int,
+        user_phone: Union[PhoneNumber, str],
+        consent_request_tag: str,
+    ) -> "Journal":
+        demarche = demarche if isinstance(demarche, str) else ",".join(demarche)
+        user_phone = (
+            numbers_parse(user_phone, settings.PHONENUMBER_DEFAULT_REGION)
+            if isinstance(user_phone, str)
+            else user_phone
+        )
+        return cls.objects.create(
+            aidant=aidant,
+            demarche=demarche,
+            duree=duree,
+            user_phone=format_number(user_phone, PhoneNumberFormat.E164),
+            consent_request_tag=consent_request_tag,
+            action=JournalActionKeywords.AGREEMENT_OF_CONSENT_RECEIVED,
+        )
+
+    @classmethod
+    def log_denial_of_consent_received(
+        cls,
+        aidant: Aidant,
+        demarche: Union[str, Iterable],
+        duree: int,
+        user_phone: Union[PhoneNumber, str],
+        consent_request_tag: str,
+    ) -> "Journal":
+        demarche = demarche if isinstance(demarche, str) else ",".join(demarche)
+        user_phone = (
+            numbers_parse(user_phone, settings.PHONENUMBER_DEFAULT_REGION)
+            if isinstance(user_phone, str)
+            else user_phone
+        )
+        return cls.objects.create(
+            aidant=aidant,
+            demarche=demarche,
+            duree=duree,
+            user_phone=format_number(user_phone, PhoneNumberFormat.E164),
+            consent_request_tag=consent_request_tag,
+            action=JournalActionKeywords.DENIAL_OF_CONSENT_RECEIVED,
+        )
+
+    @classmethod
+    def find_consent_requests(
+        cls, user_phone: Union[PhoneNumber, str], consent_request_tag: str
+    ) -> QuerySet["Journal"]:
+        user_phone = (
+            numbers_parse(user_phone, settings.PHONENUMBER_DEFAULT_REGION)
+            if isinstance(user_phone, str)
+            else user_phone
+        )
+        return Journal.objects.filter(
+            user_phone=format_number(user_phone, PhoneNumberFormat.E164),
+            consent_request_tag=consent_request_tag,
+            action=JournalActionKeywords.CONSENT_REQUEST_SENT,
+        )
+
+    @classmethod
+    def find_consent_request(
+        cls, user_phone: Union[PhoneNumber, str], consent_request_tag: str
+    ) -> "Journal":
+        user_phone = (
+            numbers_parse(user_phone, settings.PHONENUMBER_DEFAULT_REGION)
+            if isinstance(user_phone, str)
+            else user_phone
+        )
+        return Journal.objects.get(
+            user_phone=format_number(user_phone, PhoneNumberFormat.E164),
+            consent_request_tag=consent_request_tag,
+            action=JournalActionKeywords.CONSENT_REQUEST_SENT,
+        )
+
+    @classmethod
+    def find_agreeement_of_consent(
+        cls, user_phone: Union[PhoneNumber, str], consent_request_tag: str
+    ) -> "Journal":
+        user_phone = (
+            numbers_parse(user_phone, settings.PHONENUMBER_DEFAULT_REGION)
+            if isinstance(user_phone, str)
+            else user_phone
+        )
+        return Journal.objects.get(
+            user_phone=format_number(user_phone, PhoneNumberFormat.E164),
+            consent_request_tag=consent_request_tag,
+            action=JournalActionKeywords.AGREEMENT_OF_CONSENT_RECEIVED,
+        )
+
+    @classmethod
+    def find_consent_denial_or_agreement(
+        cls, user_phone: Union[PhoneNumber, str], consent_request_tag: str
+    ) -> QuerySet["Journal"]:
+        user_phone = (
+            numbers_parse(user_phone, settings.PHONENUMBER_DEFAULT_REGION)
+            if isinstance(user_phone, str)
+            else user_phone
+        )
+        return Journal.objects.filter(
+            user_phone=format_number(user_phone, PhoneNumberFormat.E164),
+            consent_request_tag=consent_request_tag,
+            action__in=[
+                JournalActionKeywords.AGREEMENT_OF_CONSENT_RECEIVED,
+                JournalActionKeywords.DENIAL_OF_CONSENT_RECEIVED,
+            ],
         )
 
     @classmethod

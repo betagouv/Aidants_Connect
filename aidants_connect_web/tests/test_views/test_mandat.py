@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 
 from django.test import override_settings, tag, TestCase
 from django.test.client import Client
-from django.urls import resolve
+from django.urls import resolve, reverse
 from django.utils import timezone
 
 from freezegun import freeze_time
@@ -13,6 +14,7 @@ from pytz import timezone as pytz_timezone
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
+from aidants_connect_web.sms_api import SafeClient
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     MandatFactory,
@@ -20,6 +22,7 @@ from aidants_connect_web.tests.factories import (
     UsagerFactory,
 )
 from aidants_connect_web.views import mandat
+from aidants_connect_web.tests.test_utilities import SmsTestUtils
 
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
@@ -52,13 +55,15 @@ class NewMandatTests(TestCase):
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
 
-    def test_well_formatted_form_triggers_redirect_to_FC(self):
+    @patch.object(SafeClient, "put")
+    @patch.object(SafeClient, "post", side_effect=SmsTestUtils.patched_safe_client_post)
+    def test_well_formatted_form_triggers_redirect_to_FC(self, mock_post, mock_put):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 
-        # When mandate is remot and telephone number is absent,
+        # When mandate is remote and telephone number is absent,
         # mandate creation should fail
         data = {
             "demarche": ["papiers", "logement"],
@@ -70,7 +75,9 @@ class NewMandatTests(TestCase):
 
         data["user_phone"] = self.phone_number
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(
+            response, reverse("new_mandat_remote_pending"), target_status_code=200
+        )
 
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
         response = self.client.post("/creation_mandat/", data=data)
@@ -82,7 +89,9 @@ class NewMandatTests(TestCase):
             "user_phone": self.phone_number,
         }
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(
+            response, reverse("new_mandat_remote_pending"), target_status_code=200
+        )
 
 
 @tag("new_mandat")

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
+import sys
 from datetime import datetime, timedelta
 import os
 import re
@@ -138,6 +138,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "import_export",
     "phonenumber_field",
+    "django_js_reverse",
 ]
 
 MIDDLEWARE = [
@@ -471,3 +472,16 @@ MANDAT_EXPIRED_SOON_EMAIL_FROM = "support@aidantsconnect.beta.gouv.fr"
 SUPPORT_EMAIL = "support@aidantsconnect.beta.gouv.fr"
 
 PHONENUMBER_DEFAULT_REGION = os.getenv("PHONENUMBER_DEFAULT_REGION", "FR")
+
+JS_REVERSE_JS_GLOBAL_OBJECT_NAME = "window"
+
+# OVH API will be disengaged during testing
+OVH_SMS_ENABLED = False if "test" in sys.argv else getenv_bool("OVH_SMS_ENABLED", False)
+OVH_SMS_SERVICE_NAME = os.getenv("OVH_SMS_SERVICE_NAME")
+OVH_SMS_ENDPOINT = os.getenv("OVH_SMS_ENDPOINT")
+OVH_SMS_APPLICATION_KEY = os.getenv("OVH_SMS_APPLICATION_KEY")
+OVH_SMS_APPLICATION_SECRET = os.getenv("OVH_SMS_APPLICATION_SECRET")
+OVH_SMS_CONSUMER_KEY = os.getenv("OVH_SMS_CONSUMER_KEY")
+OVH_SMS_SENDER_ID = os.getenv("OVH_SMS_SENDER_ID")
+OVH_SMS_CALLBACK_DOMAIN = os.getenv("OVH_SMS_CALLBACK_DOMAIN", "http://localhost")
+OVH_SMS_RESPONSE_CONSENT = os.getenv("OVH_SMS_RESPONSE_CONSENT", "Oui")

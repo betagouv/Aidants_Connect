@@ -1,0 +1,6 @@
+Aidant Connect, bonjour.
+
+Un aidant a créé un mandat en votre nom. Confirmez-vous la création de ce mandat ?
+Répondez « oui » sans ponctuation à ce message pour confirmer votre consentement.
+
+Notez que toute autre réponse que « oui » sera interprétée comme un refus explicite.

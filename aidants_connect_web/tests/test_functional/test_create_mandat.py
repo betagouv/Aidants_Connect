@@ -1,16 +1,27 @@
 import time
+from unittest.mock import patch
 
 from django.conf import settings
-from django.test import tag
+from django.test import tag, override_settings
+from django.urls import reverse
+
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support.expected_conditions import url_matches
+from phonenumbers import parse as phone_parse
 
+from aidants_connect_web.constants import JournalActionKeywords
+from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
+from aidants_connect_web.sms_api import SafeClient
+from aidants_connect_web.tests.test_utilities import SmsTestUtils
 
 
 @tag("functional", "new_mandat")
+@override_settings(
+    OVH_SMS_ENABLED=False,
+)
 class CreateNewMandatTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
@@ -23,6 +34,11 @@ class CreateNewMandatTests(FunctionalTestCase):
         device = self.aidant.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
         device.token_set.create(token="123455")
+
+        # Clean consent requests
+        Journal.objects.filter(
+            action=JournalActionKeywords.CONSENT_REQUEST_SENT
+        ).delete()
 
     def test_create_new_mandat(self):
         wait = WebDriverWait(self.selenium, 10)
@@ -125,7 +141,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         ].find_elements_by_css_selector("tbody tr")
         self.assertEqual(len(active_mandats_after), 2)
 
-    def test_create_new_remote_mandat(self):
+    @patch.object(SafeClient, "put")
+    @patch.object(SafeClient, "post", side_effect=SmsTestUtils.patched_safe_client_post)
+    def test_create_new_remote_mandat(self, mock_post, mock_put):
         wait = WebDriverWait(self.selenium, 10)
 
         self.open_live_url("/usagers/")
@@ -168,6 +186,25 @@ class CreateNewMandatTests(FunctionalTestCase):
         # FranceConnect
         fc_button = self.selenium.find_element_by_id("submit_button")
         fc_button.click()
+
+        # Simulate user consent
+        consent_request = Journal.objects.get(
+            aidant=self.aidant,
+            user_phone=phone_parse(
+                "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+            ),
+            action=JournalActionKeywords.CONSENT_REQUEST_SENT,
+        )
+
+        self.client.post(
+            reverse("sms_callback"),
+            data=SmsTestUtils.get_request_data(
+                sms_tag=consent_request.consent_request_tag,
+                user_phone=consent_request.user_phone,
+            ),
+        )
+        self.selenium.refresh()
+
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)
         time.sleep(2)

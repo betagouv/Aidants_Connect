@@ -1,0 +1,22 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - En attente de consentement{% endblock %}
+
+{% block extracss %}
+<link href="{% static 'css/new_mandat.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1>Le mandat a distance est en attente du consentement de l’utilisateur ou l’utilisatrice.</h1>
+  </div>
+</section>
+{% endblock content %}
+
+{% block extrajs %}
+  <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
+  <script src="{% static 'js/remote_pending.js' %}"></script>
+{% endblock %}

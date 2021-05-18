@@ -1,4 +1,9 @@
+from random import randint
+from typing import Optional, Union
+from uuid import uuid4
+
 from django.test import tag, TestCase
+from phonenumbers import PhoneNumber, format_number, PhoneNumberFormat
 
 from aidants_connect_web.utilities import generate_sha256_hash
 
@@ -18,3 +23,33 @@ class UtilitiesTests(TestCase):
         )
         self.assertEqual(generate_sha256_hash("123salt".encode()), hash_123salt)
         self.assertEqual(len(generate_sha256_hash("123salt".encode())), 64)
+
+
+class SmsTestUtils:
+    @classmethod
+    def get_request_data(
+        cls,
+        sms_tag: Optional[str] = None,
+        user_phone: Union[PhoneNumber, str] = "0 800 840 800",
+        message: str = "oui",
+    ):
+        user_phone = (
+            format_number(user_phone, PhoneNumberFormat.E164)
+            if isinstance(user_phone, PhoneNumber)
+            else user_phone
+        )
+
+        return {
+            "shortcode": "82555",
+            "tag": sms_tag if sms_tag else str(uuid4()),
+            "id": str(randint(1, 10_000)),
+            "senderid": user_phone,
+            "message": message,
+        }
+
+    @classmethod
+    def patched_safe_client_post(cls, *args, **kwargs):
+        """
+        Patched version of aidants_connect_web.sms_api.SafeClient to prevent test fails
+        """
+        return {"validReceivers": kwargs["receivers"]}

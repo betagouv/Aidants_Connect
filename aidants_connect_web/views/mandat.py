@@ -1,16 +1,25 @@
 import logging
 from datetime import date, timedelta
+from uuid import uuid4
 from typing import Collection
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone, formats
 from django.contrib.staticfiles import finders
+from django.views.decorators.http import require_http_methods, require_GET
+
+from phonenumbers import (
+    PhoneNumber,
+    PhoneNumberFormat,
+    format_number,
+)
+
 
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm, RecapMandatForm, PatchedErrorList
@@ -28,6 +37,9 @@ from aidants_connect_web.utilities import (
     generate_mailto_link,
 )
 from aidants_connect_web.views.service import humanize_demarche_names
+from aidants_connect_web.sms_api import api
+from aidants_connect_web.constants import RemotePendingResponses
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -36,8 +48,9 @@ log = logging.getLogger()
 @login_required
 @user_is_aidant
 @activity_required
+@require_http_methods(["GET", "POST"])
 def new_mandat(request):
-    aidant = request.user
+    aidant: Aidant = request.user
     form = MandatForm()
 
     if request.method == "GET":
@@ -47,31 +60,60 @@ def new_mandat(request):
             {"aidant": aidant, "form": form},
         )
 
+    form = MandatForm(request.POST, error_class=PatchedErrorList)
+
+    if not form.is_valid():
+        return render(
+            request,
+            "aidants_connect_web/new_mandat/new_mandat.html",
+            {"aidant": aidant, "form": form},
+        )
+
+    data = form.cleaned_data
+    is_remote = data["is_remote"]
+
+    kwargs = {
+        "aidant": request.user,
+        "demarches": data["demarche"],
+        "duree_keyword": data["duree"],
+        "mandat_is_remote": is_remote,
+        "draft": is_remote,
+    }
+
+    if is_remote:
+        user_phone: PhoneNumber = data["user_phone"]
+
+        sms_tag = str(uuid4())
+
+        # Try to choose another UUID if there's already one
+        # associated with this number in DB.
+        while Journal.find_consent_requests(user_phone, sms_tag).count() != 0:
+            sms_tag = str(uuid4())
+
+        kwargs["user_phone"] = format_number(user_phone, PhoneNumberFormat.E164)
+        kwargs["consent_request_tag"] = sms_tag
+
+        api.send_sms_for_response(
+            user_phone,
+            sms_tag,
+            render_to_string("aidants_connect_web/sms_consent_request.txt"),
+        )
+
+        Journal.log_consent_request_sent(
+            aidant=aidant,
+            user_phone=user_phone,
+            consent_request_tag=sms_tag,
+            demarche=data["demarche"],
+            duree=1 if data["duree"] == "SHORT" else 365,
+        )
+
+    connection = Connection.objects.create(**kwargs)
+    request.session["connection"] = connection.pk
+
+    if not is_remote:
+        return redirect("fc_authorize")
     else:
-        form = MandatForm(request.POST, error_class=PatchedErrorList)
-
-        if form.is_valid():
-            data = form.cleaned_data
-
-            kwargs = {
-                "aidant": request.user,
-                "demarches": data["demarche"],
-                "duree_keyword": data["duree"],
-                "mandat_is_remote": data["is_remote"],
-            }
-
-            if kwargs["mandat_is_remote"] is True:
-                kwargs["user_phone"] = data["user_phone"]
-
-            connection = Connection.objects.create(**kwargs)
-            request.session["connection"] = connection.pk
-            return redirect("fc_authorize")
-        else:
-            return render(
-                request,
-                "aidants_connect_web/new_mandat/new_mandat.html",
-                {"aidant": aidant, "form": form},
-            )
+        return redirect("new_mandat_remote_pending")
 
 
 @login_required
@@ -193,6 +235,65 @@ def new_mandat_recap(request):
                     "form": form,
                 },
             )
+
+
+def __remote_pending(request) -> str:
+    connection = Connection.objects.get(pk=request.session["connection"])
+
+    if (
+        not connection
+        or not connection.mandat_is_remote
+        or not connection.consent_request_tag
+        or not connection.user_phone
+    ):
+        return RemotePendingResponses.INVALID_CONNECTION
+
+    if not connection.draft:
+        return RemotePendingResponses.NOT_DRAFT_CONNECTION
+
+    try:
+        Journal.find_agreeement_of_consent(
+            user_phone=connection.user_phone,
+            consent_request_tag=connection.consent_request_tag,
+        )
+        connection.draft = False
+        connection.save()
+    except Journal.DoesNotExist:
+        return RemotePendingResponses.NO_CONSENT
+
+    return RemotePendingResponses.OK
+
+
+@login_required
+@user_is_aidant
+@activity_required
+@require_GET
+def remote_pending(request):
+    result = __remote_pending(request)
+
+    if result == RemotePendingResponses.INVALID_CONNECTION:
+        django_messages.error(
+            request,
+            "Il n'y a aucun mandat à distance actuellement en cours de création",
+        )
+        return redirect("home_page")
+    elif result == RemotePendingResponses.NOT_DRAFT_CONNECTION:
+        return redirect("fc_authorize")
+    elif result == RemotePendingResponses.NO_CONSENT:
+        return render(request, "aidants_connect_web/new_mandat/remote_pending.html")
+
+    return redirect("fc_authorize")
+
+
+@login_required
+@user_is_aidant
+@activity_required
+@require_GET
+def remote_pending_json(request):
+    result = __remote_pending(request)
+    return JsonResponse(
+        {"connectionStatus": "OK" if result == RemotePendingResponses.OK else "NOK"}
+    )
 
 
 @login_required

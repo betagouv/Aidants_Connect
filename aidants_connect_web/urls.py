@@ -13,6 +13,7 @@ from aidants_connect_web.views import (
     espace_responsable,
     usagers,
     datapass,
+    sms,
 )
 
 urlpatterns = [
@@ -76,6 +77,16 @@ urlpatterns = [
         "creation_mandat/recapitulatif/",
         mandat.new_mandat_recap,
         name="new_mandat_recap",
+    ),
+    path(
+        "creation_mandat/remote/pending",
+        mandat.remote_pending,
+        name="new_mandat_remote_pending",
+    ),
+    path(
+        "creation_mandat/remote/pending.json",
+        mandat.remote_pending_json,
+        name="new_mandat_remote_pending_json",
     ),
     path("logout-callback/", mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
@@ -165,6 +176,8 @@ urlpatterns = [
     ),
     # # Datapass
     path("datapass_receiver/", datapass.receiver, name="datapass_receiver"),
+    # # SMS
+    path("sms/callback/", sms.callback, name="sms_callback"),
 ]
 
 urlpatterns.extend(magicauth_urls)
