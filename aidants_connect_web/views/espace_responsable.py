@@ -118,37 +118,38 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
 
     if request.method == "GET":
         form = CarteOTPSerialNumberForm()
-    else:
+
+    if request.method == "POST":
         form = CarteOTPSerialNumberForm(request.POST)
+        if form.is_valid():
+            serial_number = form.cleaned_data["serial_number"]
+            try:
+                carte_totp = CarteTOTP.objects.get(serial_number=serial_number)
 
-    if request.method == "POST" and form.is_valid():
-        serial_number = form.cleaned_data["serial_number"]
-        try:
-            carte_totp = CarteTOTP.objects.get(serial_number=serial_number)
+                with transaction.atomic():
+                    carte_totp.aidant = aidant
+                    carte_totp.save()
+                    totp_device = TOTPDevice(
+                        key=carte_totp.seed,
+                        user=aidant,
+                        step=60,  # todo: some devices may have a different step!
+                        confirmed=False,
+                        tolerance=30,
+                        name=f"Carte n° {serial_number}",
+                    )
+                    totp_device.save()
 
-            with transaction.atomic():
-                carte_totp.aidant = aidant
-                carte_totp.save()
-                totp_device = TOTPDevice(
-                    key=carte_totp.seed,
-                    user=aidant,
-                    step=60,  # todo: some devices may have a different step!
-                    confirmed=False,
-                    tolerance=30,
-                    name=f"Carte n° {serial_number}",
+                return redirect(
+                    "espace_responsable_validate_totp",
+                    organisation_id=organisation.id,
+                    aidant_id=aidant.id,
                 )
-                totp_device.save()
-
-            return redirect(
-                "espace_responsable_validate_totp",
-                organisation_id=organisation.id,
-                aidant_id=aidant.id,
-            )
-        except Exception:
-            django_messages.error(
-                request, "Une erreur s’est produite lors de la sauvegarde de la carte."
-            )
-            # todo send exception to Sentry
+            except Exception:
+                django_messages.error(
+                    request,
+                    "Une erreur s’est produite lors de la sauvegarde de la carte.",
+                )
+                # todo send exception to Sentry
 
     return render(
         request,
