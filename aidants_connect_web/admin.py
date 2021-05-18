@@ -143,6 +143,7 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
+    raw_id_fields = ("responsable_de",)
 
     # For bulk import
     resource_class = AidantResource
@@ -172,7 +173,15 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         ("Informations professionnelles", {"fields": ("profession", "organisation")}),
         (
             "Permissions",
-            {"fields": ("is_active", "is_staff", "is_superuser", "responsable_de")},
+            {
+                "fields": (
+                    "is_active",
+                    "can_create_mandats",
+                    "is_staff",
+                    "is_superuser",
+                    "responsable_de",
+                )
+            },
         ),
     )
 
@@ -277,6 +286,7 @@ class CarteTOTPResource(resources.ModelResource):
 class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = ("serial_number",)
     search_fields = ("serial_number",)
+    raw_id_fields = ("aidant",)
     ordering = ("-created_at",)
     resource_class = CarteTOTPResource
     import_template_name = "aidants_connect_web/admin/import_export/import.html"

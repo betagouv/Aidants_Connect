@@ -76,7 +76,14 @@ class Aidant(AbstractUser):
     responsable_de = models.ManyToManyField(
         Organisation, related_name="responsables", blank=True
     )
-    can_create_mandats = models.BooleanField(default=True)
+    can_create_mandats = models.BooleanField(
+        default=True,
+        verbose_name="Aidant - Peut créer des mandats",
+        help_text=(
+            "Précise si l’utilisateur peut accéder à l’espace aidant "
+            "pour créer des mandats."
+        ),
+    )
     objects = AidantManager()
 
     class Meta:
