@@ -8,18 +8,24 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aidants_connect_web', '0055_auto_20210503_1729'),
+        ("aidants_connect_web", "0055_auto_20210503_1729"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='cartetotp',
-            name='aidant',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='carte_totp', to=settings.AUTH_USER_MODEL),
+            model_name="cartetotp",
+            name="aidant",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="carte_totp",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='cartetotp',
-            name='serial_number',
+            model_name="cartetotp",
+            name="serial_number",
             field=models.CharField(max_length=100, unique=True),
         ),
     ]
