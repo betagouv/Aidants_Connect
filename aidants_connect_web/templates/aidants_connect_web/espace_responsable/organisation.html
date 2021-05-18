@@ -1,64 +1,94 @@
 {% extends 'layouts/main.html' %}
 
 {% load static %}
+{% load ac_extras %}
 
-{% block title %}Aidants Connect - Mon organisation{% endblock %}
+{% block title %}Aidants Connect - Mon organisation : {{ organisation.name }}{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-    <h1>Mon organisation : {{ organisation.name }}</h1>
-    <div class="tiles">
-      <div class="grid">
-        <div class="tile background-color-grey">
-          <h3>Adresse</h3>
-          <p>{{ organisation.address }}</p>
-        </div>
-        <div class="tile background-color-grey">
-          <h3>Aidants actifs</h3>
-          <h5>{{ organisation.num_active_aidants }}</h5>
-        </div>
-        <div class="tile background-color-grey">
-          <h3>Mandats créés</h3>
-          <h5>{{ organisation.num_mandats }}</h5>
+  <section class="section">
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      <h1>Mon organisation : {{ organisation.name }}</h1>
+      <div class="tiles">
+        <div class="grid">
+          <div class="tile background-color-grey">
+            <h3>Adresse</h3>
+            <p>{{ organisation.address }}</p>
+          </div>
+          <div class="tile background-color-grey">
+            <h3>SIRET</h3>
+            <p>{{ organisation.siret }}</p>
+          </div>
+          <div class="tile background-color-grey">
+            <h3>Aidants actifs</h3>
+            <p>{{ organisation.num_active_aidants }}</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section section-grey">
-  <div class="container">
-    <h2>Aidants actifs</h2>
-    {% if organisation_active_aidants %}
-      <table class="table">
-        <thead>
+  <section class="section section-grey">
+    <div class="container">
+      <h2>Aidants</h2>
+      {% if aidants %}
+        <table class="table aidants-list">
+          <thead>
           <tr>
-            <th scope="col" class="th-50">Nom</th>
+            <th scope="col">Nom</th>
             <th scope="col">Email</th>
+            <th scope="col" >Carte TOTP</th>
           </tr>
-        </thead>
-        <tbody>
-          {% for aidant in organisation_active_aidants %}
-            <tr>
-              <td>{{ aidant.get_full_name }}</td>
+          </thead>
+          <tbody>
+          {% for aidant in aidants %}
+            <tr {% if not aidant.is_active %}class="inactive"{% endif %}>
+              <th scope="row">
+                <a href="{% url "espace_responsable_aidant" organisation_id=organisation.id aidant_id=aidant.id %}">
+                  {{ aidant.get_full_name }}
+                  {% if not aidant.is_active %}
+                  <br>(Compte désactivé)
+                  {% endif %}
+                </a>
+              </th>
               <td>{{ aidant.email }}</td>
+              <td>
+                {% with aidant.carte_totp.serial_number as sn %}
+                  {% if sn %}
+                    {{ sn }}
+                    {% if not totp_devices_users|get_dict_key:aidant.id %}
+                      <div class="notification warning">
+
+                        <span aria-hidden="true">⚠️ </span>Le fonctionnement de cette carte n'a pas été vérifié.<br>
+                        Vous devez
+                        <a href="{% url "espace_responsable_validate_totp" organisation_id=organisation.id aidant_id=aidant.id %}">
+                          valider la carte</a>
+                        pour permettre à {{ aidant.get_full_name }} de se connecter à Aidants Connect.
+                      </div>
+
+                    {% endif %}
+                  {% else %}
+                    <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}"
+                       class="button">Associer</a>
+                  {% endif %}
+                {% endwith %}
+              </td>
             </tr>
           {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <div class="notification" role="alert">L'organisation n'a pas encore d'aidants.</div>
-    {% endif %}
-  </div>
-</section>
+          </tbody>
+        </table>
+      {% else %}
+        <div class="notification" role="alert">L'organisation n'a pas encore d'aidants.</div>
+      {% endif %}
+    </div>
+  </section>
 {% endblock content %}

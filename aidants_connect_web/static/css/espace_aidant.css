@@ -18,3 +18,12 @@
 .grid.structures a:hover .card__meta {
   color: #fff;
 }
+.aidants-list .inactive td,
+.aidants-list .inactive a {
+  color: grey;
+  font-style: italic;
+}
+.aidants-list .inactive a.button {
+  background: grey;
+  color: #fff;
+}

@@ -17,6 +17,7 @@ class EspaceResponsableHomePageTests(TestCase):
         self.responsable_tom = AidantFactory(username="georges@plop.net")
         self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
         self.responsable_tom.responsable_de.add(OrganisationFactory())
+        self.responsable_tom.can_create_mandats = False
         # Tim is responsable of only one structure
         self.responsable_tim = AidantFactory(username="tim@tim.net")
         self.responsable_tim.responsable_de.add(self.responsable_tim.organisation)
@@ -37,6 +38,19 @@ class EspaceResponsableHomePageTests(TestCase):
             (
                 "Link to espace responsable is invisible to a responsable, "
                 "it should be visible"
+            ),
+        )
+
+    def test_hide_espace_aidant_from_responsable_who_cannot_create_mandats(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get("/")
+        response_content = response.content.decode("utf-8")
+        self.assertNotIn(
+            "Mon espace Aidant",
+            response_content,
+            (
+                "Link to espace aidant is visible to a responsable without "
+                " mandats permission, it should be invisible"
             ),
         )
 
@@ -79,10 +93,6 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.id_organisation = self.responsable_tom.organisation.id
         self.autre_organisation = OrganisationFactory()
 
-    def test_anonymous_user_cannot_access_espace_responsable_view(self):
-        response = self.client.get("/espace-responsable/")
-        self.assertRedirects(response, "/accounts/login/?next=/espace-responsable/")
-
     def test_espace_responsable_organisation_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
         found = resolve(f"/espace-responsable/organisation/{self.id_organisation}/")
@@ -107,5 +117,53 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.client.force_login(self.responsable_tom)
         response = self.client.get(
             f"/espace-responsable/organisation/{self.autre_organisation.id}/"
+        )
+        self.assertEqual(response.status_code, 404)
+
+
+@tag("responsable-structure")
+class EspaceResponsableAidantPage(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.responsable_tom = AidantFactory(username="tom@tom.fr")
+        self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
+        self.aidant_tim = AidantFactory(
+            username="tim@tim.fr", organisation=self.responsable_tom.organisation
+        )
+        self.id_organisation = self.responsable_tom.organisation.id
+        self.aidant_tim_url = (
+            f"/espace-responsable/organisation/{self.id_organisation}"
+            f"/aidant/{self.aidant_tim.id}/"
+        )
+        self.autre_organisation = OrganisationFactory()
+        self.autre_aidant = AidantFactory(username="random@random.net")
+
+    def test_espace_responsable_aidant_url_triggers_the_right_view(self):
+        self.client.force_login(self.responsable_tom)
+        found = resolve(self.aidant_tim_url)
+        self.assertEqual(found.func, espace_responsable.aidant)
+
+    def test_espace_responsable_aidant_url_triggers_the_right_template(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(self.aidant_tim_url)
+        self.assertEqual(
+            response.status_code,
+            200,
+            f"trying to get {self.aidant_tim_url}",
+        )
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_responsable/aidant.html"
+        )
+
+    def test_responsable_cannot_see_an_aidant_they_are_not_responsible_for(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(
+            f"/espace-responsable/organisation/{self.autre_organisation.id}"
+            f"/aidant/{self.aidant_tim.id}/"
+        )
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(
+            f"/espace-responsable/organisation/{self.id_organisation}"
+            f"/aidant/{self.autre_aidant.id}/"
         )
         self.assertEqual(response.status_code, 404)
