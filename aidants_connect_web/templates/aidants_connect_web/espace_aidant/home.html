@@ -20,6 +20,14 @@
       Bienvenue sur
       {% if aidant.can_create_mandats %}votre Espace Aidant{% else %}Aidants Connect{% endif %},
       {{ aidant.first_name }} !</h1>
+      {% if aidant.is_responsable_structure and not aidant.has_a_totp_device %}
+        <div class="notification warning" role="alert">
+          Bienvenue&nbsp;! Avant toute chose, nous vous invitons à
+          <strong><a
+              href="{% url "espace_responsable_associate_totp" organisation_id=aidant.organisation.id aidant_id=aidant.id %}">
+            activer votre carte TOTP</a></strong> afin de pouvoir vous connecter à nouveau à l’avenir.
+        </div>
+      {% endif %}
     <div class="tiles aidant-home-services">
       <h2>Vos services</h2>
       <div class="grid">
@@ -27,7 +35,7 @@
           <a id="view_organisation" class="tile text-center background-color-grey" href="{% url 'espace_responsable_home' %}">
             <span aria-hidden="true">🏢<br /></span>Mon espace responsable
           </a>
-          {% if not user.has_a_totp_device %}
+          {% if not aidant.has_a_totp_device %}
             <a id="view_organisation" class="tile text-center background-color-grey" href="{% url "espace_responsable_associate_totp" organisation_id=aidant.organisation.id aidant_id=aidant.id %}">
               <span aria-hidden="true">💳<br /></span>Activer ma carte TOTP
             </a>
