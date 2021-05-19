@@ -2,6 +2,8 @@ from django.test import tag, TestCase
 from django.test.client import Client
 from django.urls import resolve
 
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     OrganisationFactory,
@@ -14,12 +16,12 @@ class EspaceResponsableHomePageTests(TestCase):
     def setUp(self):
         self.client = Client()
         # Tom is responsable of 2 structures
-        self.responsable_tom = AidantFactory(username="georges@plop.net")
+        self.responsable_tom = AidantFactory(username="tom@baie.fr")
         self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
         self.responsable_tom.responsable_de.add(OrganisationFactory())
         self.responsable_tom.can_create_mandats = False
         # Tim is responsable of only one structure
-        self.responsable_tim = AidantFactory(username="tim@tim.net")
+        self.responsable_tim = AidantFactory(username="tim@oree.fr")
         self.responsable_tim.responsable_de.add(self.responsable_tim.organisation)
         # John is a simple aidant
         self.aidant_john = AidantFactory(username="john@doe.du")
@@ -167,3 +169,67 @@ class EspaceResponsableAidantPage(TestCase):
             f"/aidant/{self.autre_aidant.id}/"
         )
         self.assertEqual(response.status_code, 404)
+
+
+@tag("responsable-structure")
+class InsistOnTOTPDeviceActivationTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        orga = OrganisationFactory()
+        # Mario is a responsable without TOTP Device activated
+        # => He should see the messages
+        self.responsable_mario = AidantFactory(
+            username="mario@brosse.fr", organisation=orga
+        )
+        self.responsable_mario.responsable_de.add(self.responsable_mario.organisation)
+        self.responsable_mario.responsable_de.add(OrganisationFactory())
+        # Mickey is a responsable with a TOTP Device activated
+        # => He should not see the messages
+        self.responsable_mickey = AidantFactory(
+            username="mickey@mousse.fr", organisation=orga
+        )
+        self.responsable_mickey.responsable_de.add(self.responsable_mickey.organisation)
+        self.responsable_mickey.responsable_de.add(OrganisationFactory())
+        device = TOTPDevice(user=self.responsable_mickey)
+        device.save()
+        # Guy has no TOTP Device but is a simple Aidant
+        # => He should not see the messages.
+        self.aidant_guy = AidantFactory(username="guy@mauve.fr")
+
+        self.urls_responsables = (
+            "/espace-aidant/",
+            "/espace-responsable/",
+            f"/espace-responsable/organisation/{orga.id}/",
+        )
+
+    def test_display_messages_to_reponsable_if_no_totp_device_is_activated(self):
+        self.client.force_login(self.responsable_mario)
+        for page in self.urls_responsables:
+            response = self.client.get(page)
+            response_content = response.content.decode("utf-8")
+            self.assertIn(
+                "activer votre carte TOTP",
+                response_content,
+                f"TOTP message is hidden on '{page}', it should be visible",
+            )
+
+    def test_hide_messages_from_reponsable_if_any_totp_device_is_activated(self):
+        self.client.force_login(self.responsable_mickey)
+        for page in self.urls_responsables:
+            response = self.client.get(page)
+            response_content = response.content.decode("utf-8")
+            self.assertNotIn(
+                "activer votre carte TOTP",
+                response_content,
+                f"TOTP message is shown on '{page}', it should be hidden",
+            )
+
+    def test_hide_messages_from_aidants_even_without_totp_device(self):
+        self.client.force_login(self.aidant_guy)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertNotIn(
+            "activer votre carte TOTP",
+            response_content,
+            "TOTP message is shown on espace-aidant, it should be hidden",
+        )
