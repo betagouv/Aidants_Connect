@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
-
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_web.models import Aidant, CarteTOTP, Organisation
@@ -154,7 +153,12 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
     return render(
         request,
         "aidants_connect_web/espace_responsable/write-carte-totp-sn.html",
-        {"aidant": aidant, "organisation": organisation, "form": form},
+        {
+            "aidant": aidant,
+            "organisation": organisation,
+            "responsable": responsable,
+            "form": form,
+        },
     )
 
 

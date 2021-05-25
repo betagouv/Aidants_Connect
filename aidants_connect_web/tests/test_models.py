@@ -5,6 +5,7 @@ from django.db.utils import IntegrityError
 from django.test import tag, TestCase
 from django.utils import timezone
 from django.conf import settings
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
@@ -729,6 +730,10 @@ class AidantModelMethodsTests(TestCase):
         )
         cls.respo_juliette.responsable_de.add(cls.aidant_marge.organisation)
 
+        # TOTP Device
+        device = TOTPDevice(user=cls.aidant_marge)
+        device.save()
+
         # Active Usagers
         cls.usager_homer = UsagerFactory(given_name="Homer")
         cls.usager_ned = UsagerFactory(given_name="Ned")
@@ -1016,6 +1021,10 @@ class AidantModelMethodsTests(TestCase):
         self.assertFalse(self.aidant_lisa.is_responsable_structure())
         # however Juliette is responsable structure
         self.assertTrue(self.respo_juliette.is_responsable_structure())
+
+    def test_has_a_totp_device(self):
+        self.assertFalse(self.aidant_lisa.has_a_totp_device)
+        self.assertTrue(self.aidant_marge.has_a_totp_device)
 
 
 @tag("models", "journal")
