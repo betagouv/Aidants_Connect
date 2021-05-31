@@ -119,6 +119,7 @@ class AidantResource(resources.ModelResource):
             "profession",
             "organisation_id",
             "is_active",
+            "responsable_de",
         )
 
     def before_save_instance(self, instance: Aidant, using_transactions, dry_run):
