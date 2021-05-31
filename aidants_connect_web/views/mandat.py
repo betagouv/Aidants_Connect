@@ -1,17 +1,18 @@
 import logging
-from datetime import date, timedelta
+from datetime import date
 from uuid import uuid4
 from typing import Collection
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles import finders
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone, formats
-from django.contrib.staticfiles import finders
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods, require_GET
 
 from phonenumbers import (
@@ -19,7 +20,6 @@ from phonenumbers import (
     PhoneNumberFormat,
     format_number,
 )
-
 
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm, RecapMandatForm, PatchedErrorList
@@ -38,7 +38,10 @@ from aidants_connect_web.utilities import (
 )
 from aidants_connect_web.views.service import humanize_demarche_names
 from aidants_connect_web.sms_api import api
-from aidants_connect_web.constants import RemotePendingResponses
+from aidants_connect_web.constants import (
+    RemotePendingResponses,
+    AuthorizationDurations,
+)
 
 
 logging.basicConfig(level=logging.INFO)
@@ -104,7 +107,7 @@ def new_mandat(request):
             user_phone=user_phone,
             consent_request_tag=sms_tag,
             demarche=data["demarche"],
-            duree=1 if data["duree"] == "SHORT" else 365,
+            duree=AuthorizationDurations.duration(data["duree"]),
         )
 
     connection = Connection.objects.create(**kwargs)
@@ -119,18 +122,26 @@ def new_mandat(request):
 @login_required
 @user_is_aidant
 @activity_required
+@require_http_methods(["GET", "POST"])
 def new_mandat_recap(request):
     connection = Connection.objects.get(pk=request.session["connection"])
-    aidant = request.user
-    usager = connection.usager
+    aidant: Aidant = request.user
+    usager: Usager = connection.usager
     demarches_description = [
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
     duree = connection.get_duree_keyword_display()
     is_remote = connection.mandat_is_remote
 
+    form = (
+        RecapMandatForm(aidant)
+        if request.method == "GET"
+        else RecapMandatForm(
+            aidant=aidant, data=request.POST, error_class=PatchedErrorList
+        )
+    )
+
     if request.method == "GET":
-        form = RecapMandatForm(aidant)
         return render(
             request,
             "aidants_connect_web/new_mandat/new_mandat_recap.html",
@@ -144,97 +155,90 @@ def new_mandat_recap(request):
             },
         )
 
-    else:
-        form = RecapMandatForm(aidant=aidant, data=request.POST)
+    if connection.draft:
+        form.add_error(
+            None,
+            _(
+                "L'utilisateur ou l'utilisatrice n'a pas encore donné son consentement "
+                "pour le mandat en cours de création"
+            ),
+        )
 
-        if form.is_valid():
-            now = timezone.now()
-            expiration_date = {
-                "SHORT": now + timedelta(days=1),
-                "LONG": now + timedelta(days=365),
-                "EUS_03_20": settings.ETAT_URGENCE_2020_LAST_DAY,
-            }
-            mandat_expiration_date = expiration_date.get(connection.duree_keyword)
-            days_before_expiration_date = {
-                "SHORT": 1,
-                "LONG": 365,
-                "EUS_03_20": 1 + (settings.ETAT_URGENCE_2020_LAST_DAY - now).days,
-            }
-            mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
+    if not form.is_valid():
+        return render(
+            request,
+            "aidants_connect_web/new_mandat/new_mandat_recap.html",
+            {
+                "aidant": aidant,
+                "usager": usager,
+                "demarche": demarches_description,
+                "duree": duree,
+                "form": form,
+            },
+        )
 
-            try:
-                connection.demarches.sort()
+    now = timezone.now()
+    mandat_expiration = AuthorizationDurations.expiration(connection.duree_keyword, now)
+    mandat_duration = AuthorizationDurations.duration(connection.duree_keyword, now)
 
-                # Create a mandat
-                mandat = Mandat.objects.create(
-                    organisation=aidant.organisation,
-                    usager=usager,
-                    duree_keyword=connection.duree_keyword,
-                    expiration_date=mandat_expiration_date,
-                    is_remote=connection.mandat_is_remote,
-                )
+    try:
+        connection.demarches.sort()
 
-                # Add a Journal 'create_attestation' action
-                Journal.log_attestation_creation(
-                    aidant=aidant,
-                    usager=usager,
-                    demarches=connection.demarches,
-                    duree=mandat_duree,
-                    is_remote_mandat=connection.mandat_is_remote,
-                    access_token=connection.access_token,
-                    attestation_hash=generate_attestation_hash(
-                        aidant, usager, connection.demarches, mandat_expiration_date
-                    ),
-                    mandat=mandat,
-                )
+        # Create a mandat
+        mandat = Mandat.objects.create(
+            organisation=aidant.organisation,
+            usager=usager,
+            duree_keyword=connection.duree_keyword,
+            expiration_date=mandat_expiration,
+            is_remote=connection.mandat_is_remote,
+        )
 
-                # This loop creates one `autorisation` object per `démarche` in the form
-                for demarche in connection.demarches:
-                    # Revoke existing demarche autorisation(s)
-                    similar_active_autorisations = Autorisation.objects.active().filter(
-                        mandat__organisation=aidant.organisation,
-                        mandat__usager=usager,
-                        demarche=demarche,
-                    )
-                    for similar_active_autorisation in similar_active_autorisations:
-                        similar_active_autorisation.revoke(
-                            aidant=aidant, revocation_date=now
-                        )
+        # Add a Journal 'create_attestation' action
+        Journal.log_attestation_creation(
+            aidant=aidant,
+            usager=usager,
+            demarches=connection.demarches,
+            duree=mandat_duration,
+            is_remote_mandat=connection.mandat_is_remote,
+            access_token=connection.access_token,
+            attestation_hash=generate_attestation_hash(
+                aidant, usager, connection.demarches, mandat_expiration
+            ),
+            mandat=mandat,
+        )
 
-                    # Create new demarche autorisation
-                    autorisation = Autorisation.objects.create(
-                        mandat=mandat,
-                        demarche=demarche,
-                        last_renewal_token=connection.access_token,
-                    )
-                    Journal.log_autorisation_creation(autorisation, aidant)
-
-            except AttributeError as error:
-                log.error("Error happened in Recap")
-                log.error(error)
-                django_messages.error(request, f"Error with Usager attribute : {error}")
-                return redirect("espace_aidant_home")
-
-            except IntegrityError as error:
-                log.error("Error happened in Recap")
-                log.error(error)
-                django_messages.error(request, f"No Usager was given : {error}")
-                return redirect("espace_aidant_home")
-
-            return redirect("new_mandat_success")
-
-        else:
-            return render(
-                request,
-                "aidants_connect_web/new_mandat/new_mandat_recap.html",
-                {
-                    "aidant": aidant,
-                    "usager": usager,
-                    "demarche": demarches_description,
-                    "duree": duree,
-                    "form": form,
-                },
+        # This loop creates one `autorisation` object per `démarche` in the form
+        for demarche in connection.demarches:
+            # Revoke existing demarche autorisation(s)
+            similar_active_autorisations = Autorisation.objects.active().filter(
+                mandat__organisation=aidant.organisation,
+                mandat__usager=usager,
+                demarche=demarche,
             )
+            for similar_active_autorisation in similar_active_autorisations:
+                similar_active_autorisation.revoke(aidant=aidant, revocation_date=now)
+
+            # Create new demarche autorisation
+            autorisation = Autorisation.objects.create(
+                mandat=mandat,
+                demarche=demarche,
+                last_renewal_token=connection.access_token,
+            )
+            Journal.log_autorisation_creation(autorisation, aidant)
+
+    except AttributeError as error:
+        log.error("Error happened in Recap")
+        log.error(error)
+        django_messages.error(request, f"Error with Usager attribute : {error}")
+        return redirect("espace_aidant_home")
+
+    except IntegrityError as error:
+        log.error("Error happened in Recap")
+        log.error(error)
+        django_messages.error(request, f"No Usager was given : {error}")
+        return redirect("espace_aidant_home")
+
+    return redirect("new_mandat_success")
 
 
 def __remote_pending(request) -> str:

@@ -1,3 +1,10 @@
+from datetime import date, timedelta
+
+from django.conf import settings
+from django.db.models import TextChoices
+from django.utils.timezone import now
+
+
 class JournalActionKeywords:
     CONNECT_AIDANT = "connect_aidant"
     ACTIVITY_CHECK_AIDANT = "activity_check_aidant"
@@ -53,3 +60,44 @@ class RemotePendingResponses:
     NOT_DRAFT_CONNECTION = "NOT_DRAFT_CONNECTION"
     NO_CONSENT = "NO_CONSENT"
     OK = "OK"
+
+
+class AuthorizationDurations:
+    SHORT = "SHORT"
+    LONG = "LONG"
+    EUS_03_20 = "EUS_03_20"
+
+    @classmethod
+    def duration(cls, value: str, fixed_date: date = None):
+        fixed_date = fixed_date if fixed_date else now()
+        return {
+            cls.SHORT: 1,
+            cls.LONG: 365,
+            cls.EUS_03_20: max(
+                1 + (settings.ETAT_URGENCE_2020_LAST_DAY - fixed_date).days, 0
+            ),
+        }[value]
+
+    @classmethod
+    def expiration(cls, value: str, fixed_date: date = None):
+        fixed_date = fixed_date if fixed_date else now()
+        return {
+            cls.SHORT: fixed_date + timedelta(days=1),
+            cls.LONG: fixed_date + timedelta(days=365),
+            cls.EUS_03_20: settings.ETAT_URGENCE_2020_LAST_DAY,
+        }[value]
+
+
+class AuthorizationDurationChoices(TextChoices):
+    SHORT = (
+        AuthorizationDurations.SHORT,
+        "pour une durée de 1 jour",
+    )
+    LONG = (
+        AuthorizationDurations.LONG,
+        "pour une durée de 1 an",
+    )
+    EUS_03_20 = (
+        AuthorizationDurations.EUS_03_20,
+        "jusqu’à la fin de l’état d’urgence sanitaire ",
+    )

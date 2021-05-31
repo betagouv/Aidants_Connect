@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from unittest.mock import patch
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -190,6 +191,32 @@ class NewMandatRecapTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
+
+    def test_post_to_recap_without_approved_consent_creates_error(self):
+        self.client.force_login(self.aidant_thierry)
+        mandat_builder = Connection.objects.create(
+            demarches=["papiers", "logement"],
+            duree_keyword="SHORT",
+            draft=True,
+            user_phone="0 800 840 800",
+            consent_request_tag=uuid4(),
+        )
+        session = self.client.session
+        session["connection"] = mandat_builder.id
+        session.save()
+
+        response = self.client.post(
+            "/creation_mandat/recapitulatif/",
+            data={"personal_data": True, "brief": True, "otp_token": "123456"},
+        )
+
+        self.assertFormError(
+            response,
+            "form",
+            None,
+            "L'utilisateur ou l'utilisatrice n'a pas encore donné "
+            "son consentement pour le mandat en cours de création",
+        )
 
     def test_updating_autorisation_for_same_organisation(self):
         # first session : creating the autorisation

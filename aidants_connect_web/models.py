@@ -23,7 +23,11 @@ from phonenumbers import (
     parse as numbers_parse,
 )
 
-from aidants_connect_web.constants import JOURNAL_ACTIONS, JournalActionKeywords
+from aidants_connect_web.constants import (
+    JOURNAL_ACTIONS,
+    JournalActionKeywords,
+    AuthorizationDurationChoices,
+)
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
     mandate_template_path,
@@ -334,21 +338,6 @@ class Usager(models.Model):
         return self.birthplace
 
 
-class AutorisationDureeKeywords(models.TextChoices):
-    SHORT = (
-        "SHORT",
-        "pour une durée de 1 jour",
-    )
-    LONG = (
-        "LONG",
-        "pour une durée de 1 an",
-    )
-    EUS_03_20 = (
-        "EUS_03_20",
-        "jusqu’à la fin de l’état d’urgence sanitaire ",
-    )
-
-
 def get_staff_organisation_name_id() -> int:
     try:
         return Organisation.objects.get(name=settings.STAFF_ORGANISATION_NAME).pk
@@ -382,7 +371,7 @@ class Mandat(models.Model):
     creation_date = models.DateTimeField("Date de création", default=timezone.now)
     expiration_date = models.DateTimeField("Date d'expiration", default=timezone.now)
     duree_keyword = models.CharField(
-        "Durée", max_length=16, choices=AutorisationDureeKeywords.choices, null=True
+        "Durée", max_length=16, choices=AuthorizationDurationChoices.choices, null=True
     )
     is_remote = models.BooleanField("Signé à distance ?", default=False)
 
@@ -502,7 +491,7 @@ class Mandat(models.Model):
         end = start + timedelta(days=nb_days_before)
 
         return cls.objects.filter(
-            duree_keyword=AutorisationDureeKeywords.LONG,
+            duree_keyword=AuthorizationDurationChoices.LONG,
             expiration_date__range=(start, end),
         ).order_by("organisation", "expiration_date")
 
@@ -641,7 +630,7 @@ class Connection(models.Model):
     )
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
     duree_keyword = models.CharField(
-        max_length=16, choices=AutorisationDureeKeywords.choices, null=True
+        max_length=16, choices=AuthorizationDurationChoices.choices, null=True
     )
     mandat_is_remote = models.BooleanField(default=False)
     user_phone = PhoneNumberField(blank=False, null=True, default=None)

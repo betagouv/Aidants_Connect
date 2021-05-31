@@ -473,6 +473,7 @@ SUPPORT_EMAIL = "support@aidantsconnect.beta.gouv.fr"
 
 PHONENUMBER_DEFAULT_REGION = os.getenv("PHONENUMBER_DEFAULT_REGION", "FR")
 
+JS_REVERSE_EXCLUDE_NAMESPACES = ["admin_honeypot", "djdt", "otpadmin", ADMIN_URL]
 JS_REVERSE_JS_GLOBAL_OBJECT_NAME = "window"
 
 # OVH API will be disengaged during testing

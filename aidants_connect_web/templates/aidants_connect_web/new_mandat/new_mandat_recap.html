@@ -17,8 +17,8 @@
   <section class="section section-grey">
     <div class="container container-small">
       <form method="post">
-        {% if form.errors %}
-          <div class="notification error" role="alert">{{ form.errors }}</div>
+        {% if form.non_field_errors %}
+          <div class="notification error" role="alert">{{ form.non_field_errors }}</div>
         {% endif %}
         {% csrf_token %}
         <a class="button-outline primary small float-right" href="{% url 'new_attestation_projet' %}" target="_blank" rel="noopener noreferrer">Voir le projet de mandat</a>
@@ -41,8 +41,8 @@
           </div>
         </div>
         <h2>Validation de l'usager</h2>
-        {% if form.non_field_errors %}
-          <div class="notification error" role="alert">{{ form.non_field_errors }}</div>
+        {% if form.errors.personal_data %}
+          <div class="notification error" role="alert">{{ form.errors.personal_data }}</div>
         {% endif %}
         <div class="panel form__group">
           <div class="margin-bottom-1em">En cochant les cases, <strong>{{ aidant }}</strong> confirme :</div>
@@ -65,6 +65,9 @@
         <p>🗣 L'usager a des droits d'accès, de rectification et de suppression sur ses données.</p>
         </div>
         <h2>Validation de l'aidant</h2>
+        {% if form.errors.otp_token %}
+          <div class="notification error" role="alert">{{ form.errors.otp_token }}</div>
+        {% endif %}
         <div class="panel form__group">
           <fieldset>
             <div class="not_checkbox_group">

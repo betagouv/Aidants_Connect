@@ -19,9 +19,7 @@ from aidants_connect_web.tests.test_utilities import SmsTestUtils
 
 
 @tag("functional", "new_mandat")
-@override_settings(
-    OVH_SMS_ENABLED=False,
-)
+@override_settings(OVH_SMS_ENABLED=False)
 class CreateNewMandatTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
@@ -203,7 +201,15 @@ class CreateNewMandatTests(FunctionalTestCase):
                 user_phone=consent_request.user_phone,
             ),
         )
-        self.selenium.refresh()
+
+        # Trigger the JS script
+        self.selenium.execute_script(
+            """
+            let event = new Event("trigger_manual");
+            window.dispatchEvent(event);
+            """
+        )
+        time.sleep(1)
 
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)

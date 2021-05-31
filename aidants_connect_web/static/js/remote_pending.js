@@ -6,14 +6,20 @@
             function onLoad(event) {
                 var xhr = event.target;
                 if (xhr.status === 200 && xhr.response.connectionStatus === "OK") {
-                    var url = window.location.origin + Urls.fcAuthorize();
+                    var path = "";
+                    if (window.location.pathname === Urls.renewMandatRemotePending()) {
+                        path = Urls.newMandatRecap();
+                    } else {
+                        path = Urls.fcAuthorize();
+                    }
+                    var url = window.location.origin + path;
                     location.replace(url);
                 }
             }
 
             var xhr = new XMLHttpRequest();
             xhr.responseType = "json";
-            xhr.timeout = 15000;
+            xhr.timeout = 5000;
             xhr.addEventListener("load", onLoad);
 
             var url = window.location.origin + Urls.newMandatRemotePendingJson();
@@ -23,6 +29,7 @@
             xhr.send()
         }
 
-        setInterval(poll, 30000);
+        window.addEventListener("trigger_manual", poll);
+        setInterval(poll, 10000);
     })
 })();

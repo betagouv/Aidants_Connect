@@ -71,6 +71,11 @@ urlpatterns = [
     path(
         "renew_mandat/<int:usager_id>", renew_mandat.renew_mandat, name="renew_mandat"
     ),
+    path(
+        "renew_mandat/remote/pending",
+        renew_mandat.remote_pending,
+        name="renew_mandat_remote_pending",
+    ),
     # new mandat
     path("creation_mandat/", mandat.new_mandat, name="new_mandat"),
     path(
@@ -88,7 +93,6 @@ urlpatterns = [
         mandat.remote_pending_json,
         name="new_mandat_remote_pending_json",
     ),
-    path("logout-callback/", mandat.new_mandat_recap, name="new_mandat_recap"),
     path(
         "creation_mandat/visualisation/projet/",
         mandat.attestation_projet,
@@ -118,6 +122,11 @@ urlpatterns = [
         "logout/",
         id_provider.end_session_endpoint,
         name="end_session_endpoint",
+    ),
+    path(
+        "logout-callback/",
+        mandat.new_mandat_recap,
+        name="end_session_endpoint_callback",
     ),
     # Espace responsable structure
     path(
