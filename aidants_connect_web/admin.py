@@ -15,6 +15,7 @@ from django_celery_beat.models import (
 )
 from django_otp.admin import OTPAdminSite
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
+from django_otp.plugins.otp_static.lib import add_static_token
 from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -108,6 +109,7 @@ class OrganisationAdmin(VisibleToAdminMetier, ModelAdmin):
 
 class AidantResource(resources.ModelResource):
     organisation_id = Field(attribute="organisation_id", column_name="organisation_id")
+    token = Field(attribute="token", column_name="token")
 
     class Meta:
         model = Aidant
@@ -120,11 +122,21 @@ class AidantResource(resources.ModelResource):
             "organisation_id",
             "is_active",
             "responsable_de",
+            "token",
         )
 
     def before_save_instance(self, instance: Aidant, using_transactions, dry_run):
         if not instance.email:
             instance.email = instance.username
+
+    def after_import_row(self, row, row_result, row_number=None, **kwargs):
+        if row_result.import_type not in (
+            RowResult.IMPORT_TYPE_NEW,
+            RowResult.IMPORT_TYPE_UPDATE,
+        ):
+            return
+        if len(row["token"]) == 6 and row["token"].isnumeric():
+            add_static_token(row["username"], row["token"])
 
 
 class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
