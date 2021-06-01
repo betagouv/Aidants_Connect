@@ -85,6 +85,8 @@ class Aidant(AbstractUser):
             "pour créer des mandats."
         ),
     )
+    validated_cgu_version = models.TextField(null=True)
+
     objects = AidantManager()
 
     class Meta:
@@ -215,6 +217,9 @@ class Aidant(AbstractUser):
         :return: True if the Aidant is responsable of at least one organisation
         """
         return self.responsable_de.count() >= 1
+
+    def must_validate_cgu(self):
+        return self.validated_cgu_version != settings.CGU_CURRENT_VERSION
 
     @cached_property
     def has_a_totp_device(self):
