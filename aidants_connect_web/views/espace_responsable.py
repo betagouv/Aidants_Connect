@@ -104,9 +104,9 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
         django_messages.error(
             request,
             (
-                f"Le compte de {aidant.get_full_name()} est déjà associé à une carte "
-                "TOTP. Vous devez d’abord retirer la carte de son compte avant de "
-                "pouvoir en associer une nouvelle."
+                f"Le compte de {aidant.get_full_name()} est déjà lié à une carte "
+                "Aidants Connect. Vous devez d’abord retirer la carte de son compte "
+                "avant de pouvoir en lier une nouvelle."
             ),
         )
         return redirect(
@@ -178,9 +178,9 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
         django_messages.error(
             request,
             (
-                "Impossible de trouver une carte TOTP associée au compte de "
+                "Impossible de trouver une carte Aidants Connect associée au compte de "
                 f"{aidant.get_full_name()}."
-                "Vous devez d’abord associer une carte à son compte."
+                "Vous devez d’abord lier une carte à son compte."
             ),
         )
         return redirect(

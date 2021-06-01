@@ -25,7 +25,7 @@
           Bienvenue&nbsp;! Avant toute chose, nous vous invitons à
           <strong><a
               href="{% url "espace_responsable_associate_totp" organisation_id=aidant.organisation.id aidant_id=aidant.id %}">
-            activer votre carte TOTP</a></strong> afin de pouvoir vous connecter à nouveau à l’avenir.
+            activer votre carte Aidants Connect</a></strong> afin de pouvoir vous connecter à nouveau à l’avenir.
         </div>
       {% endif %}
     <div class="tiles aidant-home-services">
@@ -37,7 +37,7 @@
           </a>
           {% if not aidant.has_a_totp_device %}
             <a id="view_organisation" class="tile text-center background-color-grey" href="{% url "espace_responsable_associate_totp" organisation_id=aidant.organisation.id aidant_id=aidant.id %}">
-              <span aria-hidden="true">💳<br /></span>Activer ma carte TOTP
+              <span aria-hidden="true">💳<br /></span>Activer ma carte
             </a>
           {% endif %}
         {% else %}

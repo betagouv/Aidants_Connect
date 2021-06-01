@@ -184,7 +184,7 @@ class OTPForm(forms.Form):
         validators=[RegexValidator(r"^\d{6}$")],
         label=(
             "Entrez le code à 6 chiffres généré par votre téléphone "
-            "ou votre carte OTP"
+            "ou votre carte Aidants Connect"
         ),
         widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )

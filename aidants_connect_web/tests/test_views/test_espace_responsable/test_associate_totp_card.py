@@ -31,11 +31,11 @@ class AssociateCarteTOTPTests(TestCase):
         self.org_id = self.responsable_tom.organisation.id
         self.association_url = (
             f"/espace-responsable/organisation/{self.org_id}/"
-            f"aidant/{self.aidant_tim.id}/associer-carte-totp"
+            f"aidant/{self.aidant_tim.id}/lier-carte"
         )
         self.validation_url = (
             f"/espace-responsable/organisation/{self.org_id}/"
-            f"aidant/{self.aidant_tim.id}/valider-carte-totp"
+            f"aidant/{self.aidant_tim.id}/valider-carte"
         )
 
     def test_association_page_triggers_the_right_view(self):

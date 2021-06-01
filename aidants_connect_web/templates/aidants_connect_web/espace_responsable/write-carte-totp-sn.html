@@ -25,7 +25,7 @@
         </li>
         <li class="active">
           <div>
-            Saisie du numéro de série<br>de la carte TOTP
+            Saisie du numéro de série<br>de la carte
           </div>
         </li>
         <li>
@@ -39,7 +39,7 @@
         {% csrf_token %}
         <div class="form__group">
           <label for="{{ form.serial_number.id_for_label }}">
-            Entrez le numéro de série de la carte TOTP que vous allez associer
+            Entrez le numéro de série de la carte Aidants Connect que vous allez lier
             à {% if aidant.id == responsable.id %}votre compte{% else %}{{ aidant.get_full_name }}{% endif %}&nbsp;:
           </label>
           {{ form.serial_number }}

@@ -39,7 +39,7 @@ class ValidateCarteTOTPTests(TestCase):
         self.organisation_url = f"/espace-responsable/organisation/{self.org_id}/"
         self.validation_url = (
             f"/espace-responsable/organisation/{self.org_id}/"
-            f"aidant/{self.aidant_tim.id}/valider-carte-totp"
+            f"aidant/{self.aidant_tim.id}/valider-carte"
         )
 
     def test_validation_page_triggers_the_right_view(self):

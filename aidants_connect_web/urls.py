@@ -128,7 +128,7 @@ urlpatterns = [
     path(
         (
             "espace-responsable/organisation/<int:organisation_id>"
-            "/aidant/<int:aidant_id>/associer-carte-totp"
+            "/aidant/<int:aidant_id>/lier-carte"
         ),
         espace_responsable.associate_aidant_carte_totp,
         name="espace_responsable_associate_totp",
@@ -136,7 +136,7 @@ urlpatterns = [
     path(
         (
             "espace-responsable/organisation/<int:organisation_id>"
-            "/aidant/<int:aidant_id>/valider-carte-totp"
+            "/aidant/<int:aidant_id>/valider-carte"
         ),
         espace_responsable.validate_aidant_carte_totp,
         name="espace_responsable_validate_totp",
