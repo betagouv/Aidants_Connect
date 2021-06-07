@@ -219,7 +219,7 @@ class Aidant(AbstractUser):
     @cached_property
     def has_a_totp_device(self):
         try:
-            TOTPDevice.objects.get(user=self)
+            TOTPDevice.objects.get(user=self, confirmed=True)
             return True
         except TOTPDevice.MultipleObjectsReturned:
             return True
