@@ -18,15 +18,7 @@
         {% endfor %}
       {% endif %}
       <h1>Mon organisation : {{ organisation.name }}</h1>
-      {% if not responsable.has_a_totp_device %}
-        <div class="notification warning" role="alert">
-          Avant toute chose, nous vous invitons à
-          <strong><a
-              href="{% url "espace_responsable_associate_totp" organisation_id=responsable.organisation.id aidant_id=responsable.id %}">
-            activer votre carte Aidants Connect.
-          </a></strong>
-        </div>
-      {% endif %}
+      {% include "aidants_connect_web/espace_aidant/notifications.html" with user=responsable %}
       <div class="tiles">
         <div class="grid">
           <div class="tile background-color-grey">
