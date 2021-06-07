@@ -41,7 +41,7 @@ class Command(BaseCommand):
 
     def ask_for_new_version(self):
         self.stdout.write("Here are the latest versions:")
-        os.system("git tag -l | tail -5")
+        os.system("git tag -l --sort=creatordate | tail -5")
         version = input("How will you name this new version? ")
         return version
 
@@ -52,7 +52,9 @@ class Command(BaseCommand):
         return are_they_sure.lower().strip() == "y"
 
     def display_and_get_changelog(self):
-        previous_version = os.popen("git tag | tail -1").read().strip()
+        previous_version = (
+            os.popen("git tag --sort=creatordate | tail -1").read().strip()
+        )
         command = (
             f"git log --pretty='format:%s' --first-parent main {previous_version}..main"
         )
