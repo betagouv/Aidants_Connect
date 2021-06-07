@@ -11,10 +11,11 @@
 {% block content %}
 <section class="section">
   <div class="container">
+    {% block before_content %}{% endblock %}
+
     <h1 class="section__title">Conditions générales d'utilisation</h1>
 
     {# Penser à mettre à jour CGU_CURRENT_VERSION dans settings.py si on veut que les aidants et responsables re-valident les CGU #}
-
     <p>
       Version 0.2
       <br>
@@ -45,7 +46,7 @@
       publics d’accueil, de médiateurs numériques salariés d’une structure de droit privé, etc.
     </p>
     <p>
-      Plus précisément, il peut s’agir de toute personne morale de droit public ou privé (administration, association, entreprise) 
+      Plus précisément, il peut s’agir de toute personne morale de droit public ou privé (administration, association, entreprise)
       qui (liste non exhaustive) :
     </p>
     <ul>
@@ -105,10 +106,10 @@
     <h2>Obtention d’un accès à Aidant Connect pour un Aidant</h2>
 
     <p>
-      Pour obtenir un accès au service, la Structure doit remplir le <a href="https://datapass.api.gouv.fr/aidants-connect">formulaire d’habilitation disponible en ligne</a>. 
+      Pour obtenir un accès au service, la Structure doit remplir le <a href="https://datapass.api.gouv.fr/aidants-connect">formulaire d’habilitation disponible en ligne</a>.
       L’équipe Aidants Connect valide la demande dans un délai de trois jours.
     </p>
-      
+
     <h2>Responsabilités de la Structure</h2>
 
     <p>
@@ -174,7 +175,7 @@
     <p>
       Il est recommandé de remettre à l’Usager la version papier du mandat réalisé.
     </p>
-  
+
     <h2>Responsabilités de l'Usager</h2>
 
     <p>
@@ -220,8 +221,8 @@
     <h2>Dispositions spécifiques concernant la conclusion d’un mandat à distance</h2>
 
     <p>
-      En tenant compte du fait que le mandat se forme que par l’acceptation du mandataire et résulte 
-      de l’exécution qui lui a été donnée par le mandataire (article 1984 et 1985 du code civil) ET qu’il peut être donné verbalement, 
+      En tenant compte du fait que le mandat se forme que par l’acceptation du mandataire et résulte
+      de l’exécution qui lui a été donnée par le mandataire (article 1984 et 1985 du code civil) ET qu’il peut être donné verbalement,
       l’aidant s’engage à :
     </p>
     <ul>
@@ -388,9 +389,9 @@
       d’autres usagers.
     </p>
     <p>
-      Sans connexion au compte Aidants Connect pendant six mois, et sans notification écrite (par email ou courrier) 
-      de la part de la Structure, l’accès de l’Aidant au service <a href="https://aidantsconnect.beta.gouv.fr/">aidantsconnect.beta.gouv.fr</a> sur Internet est 
-      automatiquement désactivé. 
+      Sans connexion au compte Aidants Connect pendant six mois, et sans notification écrite (par email ou courrier)
+      de la part de la Structure, l’accès de l’Aidant au service <a href="https://aidantsconnect.beta.gouv.fr/">aidantsconnect.beta.gouv.fr</a> sur Internet est
+      automatiquement désactivé.
     </p>
 
     <h2>Évolution des conditions d’utilisation</h2>
@@ -401,6 +402,8 @@
       nécessaire. Ces modifications et mises à jour s’imposent à l’utilisateur qui doit, en conséquence, se référer
       régulièrement à cette rubrique pour vérifier les conditions générales en vigueur.
     </p>
+
+    {% block after_content %}{% endblock %}
   </div>
 </section>
 {% endblock content %}

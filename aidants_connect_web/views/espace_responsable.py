@@ -10,7 +10,10 @@ from aidants_connect_web.decorators import (
     user_is_responsable_structure,
     activity_required,
 )
-from aidants_connect_web.forms import CarteOTPSerialNumberForm, CarteTOTPValidationForm
+from aidants_connect_web.forms import (
+    CarteOTPSerialNumberForm,
+    CarteTOTPValidationForm,
+)
 
 
 def check_organisation_and_responsable(responsable: Aidant, organisation: Organisation):

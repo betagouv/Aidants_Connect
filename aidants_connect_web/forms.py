@@ -241,6 +241,13 @@ class DatapassForm(forms.Form):
     organization_address = forms.CharField()
 
 
+class ValidateCGUForm(forms.Form):
+    agree = forms.BooleanField(
+        label="J’ai lu et j’accepte les conditions d’utilisation Aidants Connect.",
+        required=True,
+    )
+
+
 class PatchedErrorList(ErrorList):
     """An ErrorList that will just print itself as a <span> when it has only 1 item"""
 
