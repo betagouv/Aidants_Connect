@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.test import tag, TestCase
 from django.test.client import Client
 from django.urls import resolve
@@ -73,4 +74,47 @@ class UsagersDetailsPageTests(TestCase):
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "<title>Aidants Connect - Homer Simpson</title>", response_content
+        )
+
+
+@tag("responsable-structure")
+class InsistOnValidatingCGUsTests(TestCase):
+    def setUp(self) -> None:
+        # Riri has never validated any CGU
+        self.aidant_riri = AidantFactory(username="riri")
+        # Fifi has validated previous a previous CGU version
+        self.aidant_fifi = AidantFactory(username="fifi", validated_cgu_version="0.1")
+        # Loulou is up to date
+        self.aidant_loulou = AidantFactory(
+            username="loulou", validated_cgu_version=settings.CGU_CURRENT_VERSION
+        )
+
+    def test_ask_to_validate_cgu_if_no_cgu_validated(self):
+        self.client.force_login(self.aidant_riri)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "valider les conditions générales d’utilisation",
+            response_content,
+            "CGU message is hidden, it should be visible",
+        )
+
+    def test_ask_to_validate_cgu_if_obsolete_cgu_validated(self):
+        self.client.force_login(self.aidant_fifi)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "valider les conditions générales d’utilisation",
+            response_content,
+            "CGU message is hidden, it should be visible",
+        )
+
+    def test_dont_ask_to_validate_cgu_if_no_need(self):
+        self.client.force_login(self.aidant_loulou)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertNotIn(
+            "valider les conditions générales d’utilisation",
+            response_content,
+            "CGU message is shown, it should be hidden",
         )
