@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Aidants Connect - Valider la carte TOTP de {{ aidant.get_full_name }}{% endblock %}
+{% block title %}Aidants Connect - Valider la carte de {{ aidant.get_full_name }}{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
@@ -25,7 +25,7 @@
         </li>
         <li class="done">
           <div>
-            Saisie du numéro de série<br>de la carte TOTP
+            Saisie du numéro de série<br>de la carte
           </div>
         </li>
         <li class="active">

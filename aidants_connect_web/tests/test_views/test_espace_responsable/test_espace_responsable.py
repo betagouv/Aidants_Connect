@@ -208,7 +208,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
             response = self.client.get(page)
             response_content = response.content.decode("utf-8")
             self.assertIn(
-                "activer votre carte TOTP",
+                "activer votre carte Aidants Connect",
                 response_content,
                 f"TOTP message is hidden on '{page}', it should be visible",
             )
@@ -219,7 +219,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
             response = self.client.get(page)
             response_content = response.content.decode("utf-8")
             self.assertNotIn(
-                "activer votre carte TOTP",
+                "activer votre carte Aidants Connect",
                 response_content,
                 f"TOTP message is shown on '{page}', it should be hidden",
             )
@@ -229,7 +229,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
         response = self.client.get("/espace-aidant/")
         response_content = response.content.decode("utf-8")
         self.assertNotIn(
-            "activer votre carte TOTP",
+            "activer votre carte Aidants Connect",
             response_content,
             "TOTP message is shown on espace-aidant, it should be hidden",
         )

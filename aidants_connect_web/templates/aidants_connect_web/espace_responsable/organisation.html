@@ -23,7 +23,7 @@
           Avant toute chose, nous vous invitons à
           <strong><a
               href="{% url "espace_responsable_associate_totp" organisation_id=responsable.organisation.id aidant_id=responsable.id %}">
-            activer votre carte TOTP.
+            activer votre carte Aidants Connect.
           </a></strong>
         </div>
       {% endif %}
@@ -55,7 +55,7 @@
           <tr>
             <th scope="col">Nom</th>
             <th scope="col">Email</th>
-            <th scope="col">Carte TOTP</th>
+            <th scope="col">Carte Aidants Connect</th>
           </tr>
           </thead>
           <tbody>
@@ -87,7 +87,7 @@
                     {% endif %}
                   {% else %}
                     <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}"
-                       class="button">Associer</a>
+                       class="button">Lier une carte</a>
                   {% endif %}
                 {% endwith %}
               </td>
