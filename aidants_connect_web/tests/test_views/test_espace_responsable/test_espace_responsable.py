@@ -192,6 +192,16 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
         self.responsable_mickey.responsable_de.add(OrganisationFactory())
         device = TOTPDevice(user=self.responsable_mickey)
         device.save()
+        # Roger is a responsable with an *inactive* TOTP Device
+        # (e.g. after an unfinished card activation)
+        # => He should see the messages
+        self.responsable_hubert = AidantFactory(
+            username="hubert@lingot.fr", organisation=orga
+        )
+        self.responsable_hubert.responsable_de.add(self.responsable_hubert.organisation)
+        self.responsable_hubert.responsable_de.add(OrganisationFactory())
+        device = TOTPDevice(user=self.responsable_hubert, confirmed=False)
+        device.save()
         # Guy has no TOTP Device but is a simple Aidant
         # => He should not see the messages.
         self.aidant_guy = AidantFactory(username="guy@mauve.fr")
@@ -202,8 +212,19 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
             f"/espace-responsable/organisation/{orga.id}/",
         )
 
-    def test_display_messages_to_reponsable_if_no_totp_device_is_activated(self):
+    def test_display_messages_to_reponsable_if_no_totp_device_exists(self):
         self.client.force_login(self.responsable_mario)
+        for page in self.urls_responsables:
+            response = self.client.get(page)
+            response_content = response.content.decode("utf-8")
+            self.assertIn(
+                "activer votre carte Aidants Connect",
+                response_content,
+                f"TOTP message is hidden on '{page}', it should be visible",
+            )
+
+    def test_display_messages_to_reponsable_if_the_totp_device_is_unconfirmed(self):
+        self.client.force_login(self.responsable_hubert)
         for page in self.urls_responsables:
             response = self.client.get(page)
             response_content = response.content.decode("utf-8")
