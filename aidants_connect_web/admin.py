@@ -135,8 +135,9 @@ class AidantResource(resources.ModelResource):
             RowResult.IMPORT_TYPE_UPDATE,
         ):
             return
-        if len(row["token"]) == 6 and row["token"].isnumeric():
-            add_static_token(row["username"], row["token"])
+        token = str(row.get("token"))
+        if token and len(token) == 6 and token.isnumeric():
+            add_static_token(row["username"], int(token))
 
 
 class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
