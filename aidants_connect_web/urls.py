@@ -15,9 +15,6 @@ from aidants_connect_web.views import (
     datapass,
 )
 
-# custom error handlers
-handler404 = "aidants_connect_web.views.custom_errors.custom_404"
-
 urlpatterns = [
     # service
     path("accounts/login/", magicauth_views.LoginView.as_view(), name="login"),
