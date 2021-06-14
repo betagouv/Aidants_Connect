@@ -298,7 +298,7 @@ class CarteTOTPResource(resources.ModelResource):
 
 
 class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
-    list_display = ("serial_number",)
+    list_display = ("serial_number", "aidant")
     search_fields = ("serial_number",)
     raw_id_fields = ("aidant",)
     ordering = ("-created_at",)
