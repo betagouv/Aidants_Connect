@@ -157,7 +157,7 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
-    raw_id_fields = ("responsable_de",)
+    raw_id_fields = ("responsable_de", "organisation")
 
     # For bulk import
     resource_class = AidantResource
@@ -298,7 +298,7 @@ class CarteTOTPResource(resources.ModelResource):
 
 
 class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
-    list_display = ("serial_number",)
+    list_display = ("serial_number", "aidant")
     search_fields = ("serial_number",)
     raw_id_fields = ("aidant",)
     ordering = ("-created_at",)
