@@ -137,7 +137,7 @@ class AidantResource(resources.ModelResource):
             return
         token = str(row.get("token"))
         if token and len(token) == 6 and token.isnumeric():
-            add_static_token(row["username"], int(token))
+            add_static_token(row["username"], token)
 
 
 class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
