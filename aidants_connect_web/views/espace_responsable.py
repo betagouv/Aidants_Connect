@@ -13,6 +13,7 @@ from aidants_connect_web.decorators import (
 from aidants_connect_web.forms import (
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
+    RemoveCardFromAidantForm,
 )
 
 
@@ -84,10 +85,22 @@ def aidant(request, organisation_id, aidant_id):
     if aidant.organisation.id != organisation_id:
         raise Http404
 
+    form = RemoveCardFromAidantForm()
+
+    if request.method == "POST":
+        form = RemoveCardFromAidantForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            if aidant.carte_totp.serial_number == data["serial_number"]:
+                django_messages.success(
+                    request,
+                    "OK on va séparer la carte",
+                )
+
     return render(
         request,
         "aidants_connect_web/espace_responsable/aidant.html",
-        {"aidant": aidant, "organisation": organisation},
+        {"aidant": aidant, "organisation": organisation, "form": form},
     )
 
 

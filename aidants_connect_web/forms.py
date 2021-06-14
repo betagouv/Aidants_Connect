@@ -234,6 +234,10 @@ class CarteTOTPValidationForm(forms.Form):
     )
 
 
+class RemoveCardFromAidantForm(forms.Form):
+    serial_number = forms.HiddenInput()
+
+
 class DatapassForm(forms.Form):
     data_pass_id = forms.IntegerField()
     organization_name = forms.CharField()

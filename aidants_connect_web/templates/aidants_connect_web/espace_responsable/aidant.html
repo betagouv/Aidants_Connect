@@ -16,7 +16,52 @@
           <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
         {% endfor %}
       {% endif %}
-      <h1>Fiche aidant : {{ aidant.get_full_name }}</h1>
+      <h1>Fiche aidant : {{ aidant.get_full_name }}, {{ aidant.profession }}</h1>
+      <div class="tiles">
+        <div class="grid">
+          <div class="tile background-color-grey">
+            <h2>Carte Aidants Connect</h2>
+            {% with aidant.carte_totp.serial_number as sn %}
+              {% if sn %}
+                <p><span aria-hidden="true">💳 </span>{{ sn }}</p>
+              {% else %}
+                <p>
+                  Aucune carte associée.<br>
+                  <a href="#" class="button">Lier une carte</a>
+                </p>
+              {% endif %}
+            {% endwith %}
+          </div>
+          <div class="tile background-color-grey">
+            <h2>Profession</h2>
+            <p>{{ aidant.profession }}</p>
+          </div>
+          <div class="tile background-color-grey">
+            <h2>Adresse e-mail</h2>
+            <p>{{ aidant.email }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="section actions">
+        <h2>Actions</h2>
+        {% if aidant.carte_totp.serial_number %}
+          <details class="background-color-grey">
+            <summary>Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte</summary>
+            <form method="post">
+              {% csrf_token %}
+              <p>
+                Pour supprimer l'association entre la carte {{ aidant.carte_totp.serial_number }}
+                et le compte de l'aidant {{ aidant.get_full_name }},
+                cliquez sur le bouton «&nbsp;Dissocier&nbsp;».
+              </p>
+              {{ form.serial_number }}
+              <p>
+                <button class="button warning" type="submit">Dissocier</button>
+              </p>
+            </form>
+          </details>
+        {% endif %}
+      </div>
     </div>
   </section>
 {% endblock content %}
