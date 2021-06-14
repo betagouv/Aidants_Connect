@@ -157,7 +157,7 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
-    raw_id_fields = ("responsable_de",)
+    raw_id_fields = ("responsable_de", "organisation")
 
     # For bulk import
     resource_class = AidantResource
