@@ -26,8 +26,7 @@
                 <p><span aria-hidden="true">💳 </span>{{ sn }}</p>
               {% else %}
                 <p>
-                  Aucune carte associée.<br>
-                  <a href="#" class="button">Lier une carte</a>
+                  Aucune carte associée à {{ aidant.get_full_name }}.
                 </p>
               {% endif %}
             {% endwith %}
@@ -67,7 +66,16 @@
               </p>
             </form>
           </details>
+        {% else %}
+          <p>
+            <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}"
+               class="button large">
+              <span aria-hidden="true">💳 </span>
+              Lier une carte Aidants Connect
+            </a>
+          </p>
         {% endif %}
+        {# todo : actions d'activation / désactivation des comptes #}
       </div>
     </div>
   </section>
