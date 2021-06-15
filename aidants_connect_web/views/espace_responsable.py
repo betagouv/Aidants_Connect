@@ -5,7 +5,7 @@ from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.models import Aidant, CarteTOTP, Organisation
+from aidants_connect_web.models import Aidant, CarteTOTP, Journal, Organisation
 from aidants_connect_web.decorators import (
     user_is_responsable_structure,
     activity_required,
@@ -90,9 +90,10 @@ def aidant(request, organisation_id, aidant_id):
     if request.method == "POST":
         form = RemoveCardFromAidantForm(request.POST)
         if form.is_valid():
-            # data = form.cleaned_data
-            # reason = data.get("reason")
-            # other_reason = data.get("other_reason")
+            data = form.cleaned_data
+            reason = data.get("reason")
+            if reason == "autre":
+                reason = data.get("other_reason")
             sn = aidant.carte_totp.serial_number
             with transaction.atomic():
                 carte = CarteTOTP.objects.get(serial_number=sn)
@@ -100,6 +101,7 @@ def aidant(request, organisation_id, aidant_id):
                 device.delete()
                 carte.aidant = None
                 carte.save()
+                Journal.log_card_dissociation(responsable, aidant, sn, reason)
             django_messages.success(
                 request,
                 (
@@ -169,6 +171,7 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
                         name=f"Carte n° {serial_number}",
                     )
                     totp_device.save()
+                    Journal.log_card_association(responsable, aidant, serial_number)
 
                 return redirect(
                     "espace_responsable_validate_totp",
@@ -232,9 +235,13 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
         )
         valid = totp_device.verify_token(token)
         if valid:
-            totp_device.tolerance = 1
-            totp_device.confirmed = True
-            totp_device.save()
+            with transaction.atomic():
+                totp_device.tolerance = 1
+                totp_device.confirmed = True
+                totp_device.save()
+                Journal.log_card_validation(
+                    responsable, aidant, aidant.carte_totp.serial_number
+                )
             django_messages.success(
                 request,
                 (
