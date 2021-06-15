@@ -283,6 +283,15 @@ a.button-outline, a.button-outline:active, a.button-outline:focus, a.button-outl
     font-family: Evolventa,Trebuchet MS,sans-serif;
 }
 
+select {
+    /* cancel "appearance:none from template because AC's CSP prevents SVG background from display: */
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+    appearance: auto;
+    /* cancel background-image property to avoid errors in browser console: */
+    background: #fff;
+}
+
 /* Accessibility */
 /* From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034 */
 

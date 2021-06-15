@@ -54,7 +54,14 @@
                 et le compte de l'aidant {{ aidant.get_full_name }},
                 cliquez sur le bouton «&nbsp;Dissocier&nbsp;».
               </p>
-              {{ form.serial_number }}
+              <div class="form__group">
+                <label for="{{ form.reason.id_for_label }}">Pourquoi séparer cette carte du compte ?</label>
+                {{ form.reason }}
+              </div>
+              <p>
+                <label for="{{ form.other_reason.id_for_label }}">Autre raison :</label>
+                {{ form.other_reason }}
+              </p>
               <p>
                 <button class="button warning" type="submit">Dissocier</button>
               </p>
