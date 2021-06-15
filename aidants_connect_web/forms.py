@@ -248,7 +248,7 @@ class RemoveCardFromAidantForm(forms.Form):
             ("autre", "Autre : Je complète ci-dessous."),
         )
     )
-    other_reason = forms.CharField()
+    other_reason = forms.CharField(required=False)
 
 
 class DatapassForm(forms.Form):

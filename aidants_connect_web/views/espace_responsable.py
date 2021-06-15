@@ -90,12 +90,28 @@ def aidant(request, organisation_id, aidant_id):
     if request.method == "POST":
         form = RemoveCardFromAidantForm(request.POST)
         if form.is_valid():
-            data = form.cleaned_data
-            if aidant.carte_totp.serial_number == data["serial_number"]:
-                django_messages.success(
-                    request,
-                    "OK on va séparer la carte",
-                )
+            # data = form.cleaned_data
+            # reason = data.get("reason")
+            # other_reason = data.get("other_reason")
+            sn = aidant.carte_totp.serial_number
+            with transaction.atomic():
+                carte = CarteTOTP.objects.get(serial_number=sn)
+                device = TOTPDevice.objects.get(key=carte.seed, user=aidant)
+                device.delete()
+                carte.aidant = None
+                carte.save()
+            django_messages.success(
+                request,
+                (
+                    f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
+                    f"de l’aidant {aidant.get_full_name()}."
+                ),
+            )
+            return redirect(
+                "espace_responsable_aidant",
+                organisation_id=organisation.id,
+                aidant_id=aidant.id,
+            )
 
     return render(
         request,
