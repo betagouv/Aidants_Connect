@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0057_auto_20210525_1559"),
+        ("aidants_connect_web", "0058_aidant_validated_cgu_version"),
     ]
 
     operations = [
