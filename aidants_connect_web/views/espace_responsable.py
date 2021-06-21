@@ -97,8 +97,11 @@ def aidant(request, organisation_id, aidant_id):
             sn = aidant.carte_totp.serial_number
             with transaction.atomic():
                 carte = CarteTOTP.objects.get(serial_number=sn)
-                device = TOTPDevice.objects.get(key=carte.seed, user=aidant)
-                device.delete()
+                try:
+                    device = TOTPDevice.objects.get(key=carte.seed, user=aidant)
+                    device.delete()
+                except TOTPDevice.DoesNotExist:
+                    pass
                 carte.aidant = None
                 carte.save()
                 Journal.log_card_dissociation(responsable, aidant, sn, reason)
