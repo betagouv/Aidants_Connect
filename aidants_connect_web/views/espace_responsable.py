@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_http_methods
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_web.models import Aidant, CarteTOTP, Journal, Organisation
@@ -22,6 +23,7 @@ def check_organisation_and_responsable(responsable: Aidant, organisation: Organi
         raise Http404
 
 
+@require_http_methods(["GET"])
 @login_required
 @user_is_responsable_structure
 def home(request):
@@ -45,6 +47,7 @@ def home(request):
     )
 
 
+@require_http_methods(["GET"])
 @login_required
 @user_is_responsable_structure
 @activity_required
@@ -73,6 +76,7 @@ def organisation(request, organisation_id):
     )
 
 
+@require_http_methods(["GET", "POST"])
 @login_required
 @user_is_responsable_structure
 @activity_required
@@ -125,6 +129,7 @@ def aidant(request, organisation_id, aidant_id):
     )
 
 
+@require_http_methods(["GET", "POST"])
 @login_required
 @user_is_responsable_structure
 @activity_required
@@ -200,6 +205,7 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
     )
 
 
+@require_http_methods(["GET", "POST"])
 @login_required
 @user_is_responsable_structure
 @activity_required
