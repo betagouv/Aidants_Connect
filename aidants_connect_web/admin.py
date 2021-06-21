@@ -158,6 +158,7 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     form = AidantChangeForm
     add_form = AidantCreationForm
     raw_id_fields = ("responsable_de", "organisation")
+    readonly_fields = ("validated_cgu_version",)
 
     # For bulk import
     resource_class = AidantResource
@@ -197,6 +198,7 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 )
             },
         ),
+        ("Aidants Connect", {"fields": ("validated_cgu_version",)}),
     )
 
     # `add_fieldsets` is not a standard `ModelAdmin` attribute. `AidantAdmin`

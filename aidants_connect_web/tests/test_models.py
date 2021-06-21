@@ -717,9 +717,11 @@ class AidantModelMethodsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Aidants : Marge & Lisa belong to the same organisation, Patricia does not
-        cls.aidant_marge = AidantFactory(username="Marge")
+        cls.aidant_marge = AidantFactory(username="Marge", validated_cgu_version="0.1")
         cls.aidant_lisa = AidantFactory(
-            username="Lisa", organisation=cls.aidant_marge.organisation
+            username="Lisa",
+            organisation=cls.aidant_marge.organisation,
+            validated_cgu_version=settings.CGU_CURRENT_VERSION,
         )
         cls.aidant_patricia = AidantFactory(username="Patricia")
 
@@ -1021,6 +1023,16 @@ class AidantModelMethodsTests(TestCase):
         self.assertFalse(self.aidant_lisa.is_responsable_structure())
         # however Juliette is responsable structure
         self.assertTrue(self.respo_juliette.is_responsable_structure())
+
+    def test_must_validate_cgu(self):
+        # an aidant without further modification must validate user conditions
+        self.assertTrue(self.aidant_patricia.must_validate_cgu())
+        # an aidant who has validated current version of user conditions
+        # does not need to revalidate them
+        self.assertFalse(self.aidant_lisa.must_validate_cgu())
+        # an aidant who has validated an outaded version of CGU
+        # must validate them again
+        self.assertTrue(self.aidant_marge.must_validate_cgu())
 
     def test_has_a_totp_device(self):
         self.assertFalse(self.aidant_lisa.has_a_totp_device)

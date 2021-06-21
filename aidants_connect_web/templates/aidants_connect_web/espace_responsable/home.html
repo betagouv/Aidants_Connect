@@ -17,15 +17,7 @@
         {% endfor %}
       {% endif %}
       <h1 class="section__title">Bienvenue sur votre Espace Responsable, {{ responsable.first_name }}&nbsp!</h1>
-      {% if not responsable.has_a_totp_device %}
-        <div class="notification warning" role="alert">
-          Avant toute chose, nous vous invitons à
-          <strong><a
-              href="{% url "espace_responsable_associate_totp" organisation_id=responsable.organisation.id aidant_id=responsable.id %}">
-            activer votre carte Aidants Connect.
-          </a></strong>
-        </div>
-      {% endif %}
+      {% include "aidants_connect_web/espace_aidant/notifications.html" with user=responsable %}
       <h2>Les structures dont vous êtes responsable</h2>
       <ul class="grid cards structures">
         {% for org in organisations %}

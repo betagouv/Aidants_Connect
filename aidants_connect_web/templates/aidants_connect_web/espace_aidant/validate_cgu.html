@@ -1,0 +1,27 @@
+{% extends 'public_website/cgu.html' %}
+
+{% block before_content %}
+  <div class="notification full-width" role="alert">
+    Prenez connaissance des conditions d'utilisation Aidants Connect ci-dessous, puis
+    validez votre accord en bas de page.
+  </div>
+{% endblock %}
+
+
+{% block after_content %}
+  <div class="section section-grey">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.errors }}
+    <div class="form__group">
+      <label for="{{ form.agree.id_for_label }}">
+        {{ form.agree }}
+        {{ form.agree.label }}
+      </label>
+    </div>
+    <div class="form__group">
+      <button class="button">Valider</button>
+    </div>
+  </form>
+  </div>
+{% endblock %}

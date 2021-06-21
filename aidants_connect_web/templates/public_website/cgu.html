@@ -11,8 +11,11 @@
 {% block content %}
 <section class="section">
   <div class="container">
+    {% block before_content %}{% endblock %}
+
     <h1 class="section__title">Conditions générales d'utilisation</h1>
 
+    {# Penser à mettre à jour CGU_CURRENT_VERSION dans settings.py si on veut que les aidants et responsables re-valident les CGU #}
     <p>
       Version 0.2
       <br>
@@ -43,25 +46,25 @@
       publics d’accueil, de médiateurs numériques salariés d’une structure de droit privé, etc.
     </p>
     <p>
-      Plus précisément, il peut s’agir de toute personne morale de droit public ou privé (administration, association, entreprise) 
+      Plus précisément, il peut s’agir de toute personne morale de droit public ou privé (administration, association, entreprise)
       qui (liste non exhaustive) :
-      <ul>
-        <li>Intervient dans le cadre d’une mission de service public d’accompagnement à la réalisation de démarches 
-          pour les usagers (les maisons de services au public (MSAP), les structures titulaires du label « France services », 
-          les agents des collectivités au contact du public, les CCAS, les services publics de proximité, 
-          les PIMMS ainsi que les centres médico-sociaux) ;</li>
-        <li>Est labellisée « Pass Numérique » ;</li>
-        <li>Est membre du Réseau national de la médiation numérique ou contient dans son objet social la médiation 
-          ou l’inclusion numérique, le cas échéant dont les agents ou salariés sont titulaires des titres professionnels 
-          adéquats, notamment, le titre professionnel « conseiller en médiation numérique » ;</li>
-        <li>Participe à la politique d’animation de la vie sociale et développe des prestations de services, individualisées 
-          et spécialisées au sens de la circulaire n°2012-013 de la CNAF ;</li>
-        <li>Est titulaire d’un marché, d’une subvention ou d’une prestation d’accompagnement en matière d’accompagnement des usagers 
-          pour la réalisation des démarches administratives ou d’inclusion numérique ;</li>
-        <li>Intervient dans les pratiques professionnelles définies à l’article D. 142-1-1 du Code de l’action sociale et des familles, 
-          notamment les travailleurs sociaux.</li>
-      </ul>
     </p>
+    <ul>
+      <li>Intervient dans le cadre d’une mission de service public d’accompagnement à la réalisation de démarches
+        pour les usagers (les maisons de services au public (MSAP), les structures titulaires du label « France services »,
+        les agents des collectivités au contact du public, les CCAS, les services publics de proximité,
+        les PIMMS ainsi que les centres médico-sociaux) ;</li>
+      <li>Est labellisée « Pass Numérique » ;</li>
+      <li>Est membre du Réseau national de la médiation numérique ou contient dans son objet social la médiation
+        ou l’inclusion numérique, le cas échéant dont les agents ou salariés sont titulaires des titres professionnels
+        adéquats, notamment, le titre professionnel « conseiller en médiation numérique » ;</li>
+      <li>Participe à la politique d’animation de la vie sociale et développe des prestations de services, individualisées
+        et spécialisées au sens de la circulaire n°2012-013 de la CNAF ;</li>
+      <li>Est titulaire d’un marché, d’une subvention ou d’une prestation d’accompagnement en matière d’accompagnement des usagers
+        pour la réalisation des démarches administratives ou d’inclusion numérique ;</li>
+      <li>Intervient dans les pratiques professionnelles définies à l’article D. 142-1-1 du Code de l’action sociale et des familles,
+        notamment les travailleurs sociaux.</li>
+    </ul>
     <p>
       Le présent document définit les conditions et modalités d’utilisation du service
       <a href="https://aidantsconnect.beta.gouv.fr/">aidantsconnect.beta.gouv.fr</a> sur Internet.
@@ -77,60 +80,60 @@
 
     <h3>Vocabulaire</h3>
 
-    <p>
-      <ul>
-        <li>« Nous » se réfère à l’éditeur d’Aidants Connect.</li>
-        <li>« Editeur » se réfère à la Direction interministériel du numérique.</li>
-        <li>« Le service » se réfère à l’application web Aidants Connect.</li>
-        <li>« Structure » se réfère à la Structure d’accompagnement des usagers.</li>
-        <li>« Aidant » se réfère à un aidant professionnel travaillant au sein de la Structure déclarée sur le
-          service.</li>
-        <li>« Usager » se réfère à une personne accompagnée par la Structure.</li>
-      </ul>
-    </p>
+    <ul>
+      <li>« Nous » se réfère à l’éditeur d’Aidants Connect.</li>
+      <li>« Editeur » se réfère à la Direction interministériel du numérique.</li>
+      <li>« Le service » se réfère à l’application web Aidants Connect.</li>
+      <li>« Structure » se réfère à la Structure d’accompagnement des usagers.</li>
+      <li>« Aidant » se réfère à un aidant professionnel travaillant au sein de la Structure déclarée sur le
+        service.</li>
+      <li>« Usager » se réfère à une personne accompagnée par la Structure.</li>
+    </ul>
 
     <h2>Objet</h2>
 
     <p>
       Le service est une application web qui vous permet de :
-      <ul>
-        <li>D’authentifier les agents des structures habilitées « Aidants Connect » ;</li>
-        <li>De créer et conserver les mandats établis entre ces structures et les usagers ;</li>
-        <li>De sélectionner un mandat en cours de validité, de transmettre l’identité de l’usager aux fournisseurs de
-          service partenaires de « FranceConnect » et d’accomplir pour son compte des démarches administratives ;</li>
-        <li>De sécuriser les démarches administratives réalisées pour le compte d'Usager.</li>
-      </ul>
     </p>
+    <ul>
+      <li>D’authentifier les agents des structures habilitées « Aidants Connect » ;</li>
+      <li>De créer et conserver les mandats établis entre ces structures et les usagers ;</li>
+      <li>De sélectionner un mandat en cours de validité, de transmettre l’identité de l’usager aux fournisseurs de
+        service partenaires de « FranceConnect » et d’accomplir pour son compte des démarches administratives ;</li>
+      <li>De sécuriser les démarches administratives réalisées pour le compte d'Usager.</li>
+    </ul>
 
     <h2>Obtention d’un accès à Aidant Connect pour un Aidant</h2>
 
     <p>
-      Pour obtenir un accès au service, la Structure doit remplir le <a href="https://datapass.api.gouv.fr/aidants-connect">formulaire d’habilitation disponible en ligne</a>. 
+      Pour obtenir un accès au service, la Structure doit remplir le <a href="https://datapass.api.gouv.fr/aidants-connect">formulaire d’habilitation disponible en ligne</a>.
       L’équipe Aidants Connect valide la demande dans un délai de trois jours.
     </p>
-      
+
     <h2>Responsabilités de la Structure</h2>
 
     <p>
       La Structure s'engage à :
-      <ul>
-        <li>Transmettre et s’assurer que l’Aidant a pris connaissance des conditions d’utilisation du service Aidants Connect ;</li>
-        <li>Recueillir le consentement de l’Aidant au transfert de ses données à l’outil de support Aidants Connect.</li>
-      </ul>
-    </p>  
+    </p>
+    <ul>
+      <li>Transmettre et s’assurer que l’Aidant a pris connaissance des conditions d’utilisation du service Aidants Connect ;</li>
+      <li>Recueillir le consentement de l’Aidant au transfert de ses données à l’outil de support Aidants Connect.</li>
+    </ul>
 
     <h2>Responsabilités de l'Aidant</h2>
 
     <p>
       L'Aidant s'engage à :
-      <ul>
-        <li>Accomplir les démarches dans les conditions fixées par le mandat et sur la base des informations qui lui ont
-          été fournies par l'Usager ;</li>
-        Il ne pourra pas être reproché à l'Aidant d'avoir utilisé des informations données par l'Usager, si
-          celles-ci s'avèrent fausses ou erronées.
-        <li>Offrir à un usager les possibilités les plus simples pour révoquer le mandat à partir du moment où cet
-          Usager exprime le souhait de résilier un mandat.</li>
-      </ul>
+    </p>
+    <ul>
+      <li>Accomplir les démarches dans les conditions fixées par le mandat et sur la base des informations qui lui ont
+        été fournies par l'Usager ;</li>
+      Il ne pourra pas être reproché à l'Aidant d'avoir utilisé des informations données par l'Usager, si
+        celles-ci s'avèrent fausses ou erronées.
+      <li>Offrir à un usager les possibilités les plus simples pour révoquer le mandat à partir du moment où cet
+        Usager exprime le souhait de résilier un mandat.</li>
+    </ul>
+    <p>
        Il ne pourra pas être reproché à l'Aidant d'avoir utilisé des informations données par l'Usager, si
        celles-ci s'avèrent fausses ou erronées.
     </p>
@@ -140,61 +143,60 @@
     <p>
       En utilisant le service Aidants Connect, l’Aidant s’engage à :
     </p>
-    <p>
-      <ul>
-        <li>Respecter un devoir de confidentialité quant aux données personnelles de la personne accompagnée auxquelles il aura accès ;</li>
-        <li>Expliquer impérativement à la personne accompagnée les risques de divulgation des données personnelles à un tiers 
-          (cf. kit mis à disposition par la CNIL) ;</li>
-        <li>Préciser son statut professionnel attaché à sa profession et à ses missions ;</li>
-        <li>Demander l’autorisation d’accéder aux données personnelles de la personne accompagnée via la signature d’un mandat 
-          permettant à l’aidant de réaliser des démarches administratives en sa faveur  ;</li>
-        <li>N’utiliser le service Aidants Connect uniquement lorsqu’une personne accompagnée a explicitement donné mandat à l’aidant 
-          de réaliser les démarches administratives en ligne à sa faveur via la signature du mandat de délégation ;</li>
-        <li>Signaler tout vol ou perte des données d’identification au service Aidants Connect (téléphone portable, badge, ordinateur, autres...) ;</li>
-        <li>S’assurer de la protection de ses propres données d’authentification via des mots de passe robustes et toute méthode 
-          suggérée par Aidants Connect ;</li>
-        <li>Ne collecter et conserver que les informations strictement nécessaires aux démarches pour lesquels il est mandaté. 
-          Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et demander l’autorisation ;</li>
-        <li>Mettre à jour puis à supprimer l’ensemble des informations relatives à l’usager lorsqu’elles ne sont plus nécessaires 
-          à la réalisation des démarches ;</li> 
-        <li>Accueillir les usagers en faisant preuve d’une neutralité bienveillante.</li> 
-      </ul>
-     </p>
+    <ul>
+      <li>Respecter un devoir de confidentialité quant aux données personnelles de la personne accompagnée auxquelles il aura accès ;</li>
+      <li>Expliquer impérativement à la personne accompagnée les risques de divulgation des données personnelles à un tiers
+        (cf. kit mis à disposition par la CNIL) ;</li>
+      <li>Préciser son statut professionnel attaché à sa profession et à ses missions ;</li>
+      <li>Demander l’autorisation d’accéder aux données personnelles de la personne accompagnée via la signature d’un mandat
+        permettant à l’aidant de réaliser des démarches administratives en sa faveur  ;</li>
+      <li>N’utiliser le service Aidants Connect uniquement lorsqu’une personne accompagnée a explicitement donné mandat à l’aidant
+        de réaliser les démarches administratives en ligne à sa faveur via la signature du mandat de délégation ;</li>
+      <li>Signaler tout vol ou perte des données d’identification au service Aidants Connect (téléphone portable, badge, ordinateur, autres...) ;</li>
+      <li>S’assurer de la protection de ses propres données d’authentification via des mots de passe robustes et toute méthode
+        suggérée par Aidants Connect ;</li>
+      <li>Ne collecter et conserver que les informations strictement nécessaires aux démarches pour lesquels il est mandaté.
+        Pour effectuer d’autres démarches, il ou elle doit au préalable en informer l’usager et demander l’autorisation ;</li>
+      <li>Mettre à jour puis à supprimer l’ensemble des informations relatives à l’usager lorsqu’elles ne sont plus nécessaires
+        à la réalisation des démarches ;</li>
+      <li>Accueillir les usagers en faisant preuve d’une neutralité bienveillante.</li>
+    </ul>
 
     <h3>Information et transparence</h3>
     <p>
-      Lors de l’accompagnement de l’Usager, l’Aidant : 
-      <ul>
-        <li>Informe l’Usager des droits dont il dispose, prévus par les articles 13, 15, 16 et 17 du Règlement général sur la protection des données (RGPD), 
-        et notamment de la possibilité de révoquer à tout moment le mandat par les deux parties ;</li>
-        <li>S’assure que l’information a été réalisée de manière concise, transparente, compréhensible et aisément accessible conformément 
-          aux dispositions de l’article 12 du RGPD.</li>
-        </ul>
-      </p>
+      Lors de l’accompagnement de l’Usager, l’Aidant :
+    </p>
+    <ul>
+      <li>Informe l’Usager des droits dont il dispose, prévus par les articles 13, 15, 16 et 17 du Règlement général sur la protection des données (RGPD),
+      et notamment de la possibilité de révoquer à tout moment le mandat par les deux parties ;</li>
+      <li>S’assure que l’information a été réalisée de manière concise, transparente, compréhensible et aisément accessible conformément
+        aux dispositions de l’article 12 du RGPD.</li>
+    </ul>
     <p>
       Il est recommandé de remettre à l’Usager la version papier du mandat réalisé.
     </p>
-  
+
     <h2>Responsabilités de l'Usager</h2>
 
     <p>
       L'Usager s'engage à :
-      <ul>
-        <li>Donner les informations justes et pertinentes pour que l'aidant accomplisse les démarches administratives à sa place.
-        </li>
-      </ul>
     </p>
+
+    <ul>
+      <li>Donner les informations justes et pertinentes pour que l'aidant accomplisse les démarches administratives à sa place.
+      </li>
+    </ul>
 
     <h2>Modalités de révocation du mandat</h2>
 
     <p>
       Un Usager peut révoquer à tout moment un mandat le concernant par plusieurs moyens :
-      <ul>
-        <li>En faire la demande auprès de la structure, par demande orale, courrier papier ou par courrier électronique.</li>
-        <li>En faire la demande auprès du service, à l’email contactaidantsconnect@anct.gouv.fr ou à l’adresse postale Aidants
-          Connect - ANCT 20 avenue de Ségur 75007 Paris.</li>
-      </ul>
     </p>
+    <ul>
+      <li>En faire la demande auprès de la structure, par demande orale, courrier papier ou par courrier électronique.</li>
+      <li>En faire la demande auprès du service, à l’email contactaidantsconnect@anct.gouv.fr ou à l’adresse postale Aidants
+        Connect - ANCT 20 avenue de Ségur 75007 Paris.</li>
+    </ul>
 
     <h3>Courrier type</h3>
 
@@ -219,31 +221,31 @@
     <h2>Dispositions spécifiques concernant la conclusion d’un mandat à distance</h2>
 
     <p>
-      En tenant compte du fait que le mandat se forme que par l’acceptation du mandataire et résulte 
-      de l’exécution qui lui a été donnée par le mandataire (article 1984 et 1985 du code civil) ET qu’il peut être donné verbalement, 
+      En tenant compte du fait que le mandat se forme que par l’acceptation du mandataire et résulte
+      de l’exécution qui lui a été donnée par le mandataire (article 1984 et 1985 du code civil) ET qu’il peut être donné verbalement,
       l’aidant s’engage à :
-      <ul>
-        <li>Suivre les mêmes exigences de confidentialité, de responsabilité, d’information et de transparence détaillés sur les présentes 
-          conditions d'utilisation.</li>
-        <li>Suivre la procédure décrite ci-dessous (remplacer XXX par le nom de la structure de l’Aidant) :
-          <ul>
-            <li>Envoi par l’Aidant du projet de mandat ou d’un message contenant “En répondant OUI, vous donnez mandat 
-              à la structure XXX de faire à votre place les démarches XXX et XXX pendant la durée XXX”</li>
-            <li>Envoi par l’usager de la mention “OUI” par la même voie.</li>
-            <li>Envoi du mandat validé (avec QR code) par l’aidant ou de la mention “Votre mandat est créé”.</li>
-            <li>Conservation par l’aidant de l’ensemble des traces de ces échanges.</li>
-          </ul>
-        <li>Utiliser le même support de communication (SMS par exemple)  lors du processus de création du mandat à distance : 
-          pour l’envoi de la proposition de mandat à l’usager, pour la réception de son accord et la validation du mandat.</li>
-        <li>D’informer l’usager que ce mandat sera valable :
-          <ul>
-            <li>Jusqu’à la date indiquée sur le mandat ;</li>
-            <li>Révocable à tout demande sur simple demande de sa part ;</li>
-            <li>Jusqu’à l’annulation éventuelle du mandat par l’aidant lui même, qui s’engage à en informer l’usager.</li>
-          </ul>
-            </li>
-        </ul>
     </p>
+    <ul>
+      <li>Suivre les mêmes exigences de confidentialité, de responsabilité, d’information et de transparence détaillés sur les présentes
+        conditions d'utilisation.</li>
+      <li>Suivre la procédure décrite ci-dessous (remplacer XXX par le nom de la structure de l’Aidant) :
+        <ul>
+          <li>Envoi par l’Aidant du projet de mandat ou d’un message contenant “En répondant OUI, vous donnez mandat
+            à la structure XXX de faire à votre place les démarches XXX et XXX pendant la durée XXX”</li>
+          <li>Envoi par l’usager de la mention “OUI” par la même voie.</li>
+          <li>Envoi du mandat validé (avec QR code) par l’aidant ou de la mention “Votre mandat est créé”.</li>
+          <li>Conservation par l’aidant de l’ensemble des traces de ces échanges.</li>
+        </ul>
+      <li>Utiliser le même support de communication (SMS par exemple)  lors du processus de création du mandat à distance :
+        pour l’envoi de la proposition de mandat à l’usager, pour la réception de son accord et la validation du mandat.</li>
+      <li>D’informer l’usager que ce mandat sera valable :
+        <ul>
+          <li>Jusqu’à la date indiquée sur le mandat ;</li>
+          <li>Révocable à tout demande sur simple demande de sa part ;</li>
+          <li>Jusqu’à l’annulation éventuelle du mandat par l’aidant lui même, qui s’engage à en informer l’usager.</li>
+        </ul>
+      </li>
+    </ul>
 
     <h2>Vie privée</h2>
 
@@ -255,8 +257,9 @@
     </p>
     <p>
       Les catégories de données à caractère personnel enregistrées sont les suivantes :
-      <ol>
-        <li>Pour la gestion de l’identification de l’usager :</li>
+    </p>
+    <ol>
+      <li>Pour la gestion de l’identification de l’usager :
         <ul>
           <li>Nom de naissance ;</li>
           <li>Le(s) prénom(s) ;</li>
@@ -266,14 +269,15 @@
           <li>Alias technique FranceConnect ;</li>
           <li>Alias technique Aidants Connect.</li>
         </ul>
-        <li>Pour la gestion de l’identification des aidants habilités par les structures :</li>
+      </li>
+      <li>Pour la gestion de l’identification des aidants habilités par les structures :
         <ul>
           <li>Nom d’usage ;</li>
           <li>Le(s) prénom(s) ;</li>
           <li>Adresse de courrier électronique individuelle professionnelle.</li>
         </ul>
-      </ol>
-    </p>
+      </li>
+    </ol>
 
     <h2>Responsable du traitement</h2>
 
@@ -292,14 +296,14 @@
     <p>
       Nous ne pouvons utiliser vos données à caractère personnel qu’à des fins à la fois légitimes et nécessaires. Cela
       signifie concrètement que nous traitons vos données à caractère personnel pour les finalités suivantes :
-      <ul>
-        <li>Authentifier les agents des structures ;</li>
-        <li>Créer et conserver les mandats établis entre ces structures et les usagers ;</li>
-        <li>Sélectionner un mandat en cours de validité, de transmettre l’identité de l’usager aux fournisseurs de
-          service partenaires de FranceConnect et d’accomplir pour son compte des démarches administratives ;</li>
-        <li>Offrir aux usagers la traçabilité des actions effectuées par les aidants.</li>
-      </ul>
     </p>
+    <ul>
+      <li>Authentifier les agents des structures ;</li>
+      <li>Créer et conserver les mandats établis entre ces structures et les usagers ;</li>
+      <li>Sélectionner un mandat en cours de validité, de transmettre l’identité de l’usager aux fournisseurs de
+        service partenaires de FranceConnect et d’accomplir pour son compte des démarches administratives ;</li>
+      <li>Offrir aux usagers la traçabilité des actions effectuées par les aidants.</li>
+    </ul>
     <p>
       Nous nous engageons à prendre les mesures techniques et organisationnelles appropriées afin de garantir la
       sécurité du traitement des données à caractère personnel de chacun. En application du règlement général sur la
@@ -385,9 +389,9 @@
       d’autres usagers.
     </p>
     <p>
-      Sans connexion au compte Aidants Connect pendant six mois, et sans notification écrite (par email ou courrier) 
-      de la part de la Structure, l’accès de l’Aidant au service <a href="https://aidantsconnect.beta.gouv.fr/">aidantsconnect.beta.gouv.fr</a> sur Internet est 
-      automatiquement désactivé. 
+      Sans connexion au compte Aidants Connect pendant six mois, et sans notification écrite (par email ou courrier)
+      de la part de la Structure, l’accès de l’Aidant au service <a href="https://aidantsconnect.beta.gouv.fr/">aidantsconnect.beta.gouv.fr</a> sur Internet est
+      automatiquement désactivé.
     </p>
 
     <h2>Évolution des conditions d’utilisation</h2>
@@ -398,6 +402,8 @@
       nécessaire. Ces modifications et mises à jour s’imposent à l’utilisateur qui doit, en conséquence, se référer
       régulièrement à cette rubrique pour vérifier les conditions générales en vigueur.
     </p>
+
+    {% block after_content %}{% endblock %}
   </div>
 </section>
 {% endblock content %}
