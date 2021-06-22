@@ -433,7 +433,7 @@ OTP_TOTP_THROTTLE_FACTOR = int(os.getenv("OTP_TOTP_THROTTLE_FACTOR", 1))
 HEADLESS_FUNCTIONAL_TESTS = getenv_bool("HEADLESS_FUNCTIONAL_TESTS", True)
 
 # Disable logging in tests
-if len(sys.argv) > 1 and sys.argv[1] == "test":
+if "test" in sys.argv:
     logging.disable(logging.CRITICAL)
     LOGGING = {
         "version": 1,
