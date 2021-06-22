@@ -480,7 +480,7 @@ class MandatModelTests(TestCase):
             usager=self.usager_1,
             demarche=",".join(procedures),
             attestation_hash=old_attestation_hash,
-            creation_date=datetime.now() - timedelta(weeks=1),
+            creation_date=timezone.now() - timedelta(weeks=1),
         )
 
         mandate = Mandat.objects.create(
