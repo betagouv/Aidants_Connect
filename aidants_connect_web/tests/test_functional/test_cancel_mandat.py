@@ -14,23 +14,20 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 @tag("functional", "cancel_mandat")
 class CancelAutorisationTests(FunctionalTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.aidant_thierry = AidantFactory()
-        device = cls.aidant_thierry.staticdevice_set.create(id=cls.aidant_thierry.id)
+    def setUp(self):
+        self.aidant_thierry = AidantFactory()
+        device = self.aidant_thierry.staticdevice_set.create(id=self.aidant_thierry.id)
         device.token_set.create(token="123456")
 
-        cls.mandat = MandatFactory(organisation=cls.aidant_thierry.organisation)
+        self.mandat = MandatFactory(organisation=self.aidant_thierry.organisation)
         AutorisationFactory(
-            mandat=cls.mandat,
+            mandat=self.mandat,
             demarche="argent",
         )
         AutorisationFactory(
-            mandat=cls.mandat,
+            mandat=self.mandat,
             demarche="famille",
         )
-
-        super().setUpClass()
 
     def test_cancel_autorisation_of_active_mandat(self):
         self.open_live_url(f"/usagers/{self.mandat.usager.id}/")
