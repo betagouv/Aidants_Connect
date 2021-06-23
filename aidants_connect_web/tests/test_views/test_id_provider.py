@@ -29,17 +29,18 @@ from aidants_connect_web.views import id_provider
 
 @tag("id_provider")
 class AuthorizeTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant_thierry = AidantFactory()
-        self.aidant_jacques = AidantFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant_thierry = AidantFactory()
+        cls.aidant_jacques = AidantFactory(
             username="jacques@domain.user", email="jacques@domain.user"
         )
-        self.usager = UsagerFactory(given_name="Joséphine", sub="123")
+        cls.usager = UsagerFactory(given_name="Joséphine", sub="123")
 
         mandat_1 = MandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
+            organisation=cls.aidant_thierry.organisation,
+            usager=cls.usager,
             expiration_date=timezone.now() + timedelta(days=6),
         )
 
@@ -50,8 +51,8 @@ class AuthorizeTests(TestCase):
         )
 
         mandat_2 = MandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
+            organisation=cls.aidant_thierry.organisation,
+            usager=cls.usager,
             expiration_date=timezone.now() + timedelta(days=12),
         )
 
@@ -65,8 +66,8 @@ class AuthorizeTests(TestCase):
         )
 
         mandat_3 = MandatFactory(
-            organisation=self.aidant_jacques.organisation,
-            usager=self.usager,
+            organisation=cls.aidant_jacques.organisation,
+            usager=cls.usager,
             expiration_date=timezone.now() + timedelta(days=12),
         )
         AutorisationFactory(
@@ -76,10 +77,10 @@ class AuthorizeTests(TestCase):
         date_further_away_minus_one_hour = datetime(
             2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
         )
-        self.connection = Connection.objects.create(
+        cls.connection = Connection.objects.create(
             state="test_expiration_date_triggered",
             nonce="avalidnonce456",
-            usager=self.usager,
+            usager=cls.usager,
             expires_on=date_further_away_minus_one_hour,
         )
 
@@ -246,55 +247,56 @@ class AuthorizeTests(TestCase):
 
 @tag("id_provider")
 class FISelectDemarcheTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant_thierry = AidantFactory()
-        self.aidant_yasmina = AidantFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant_thierry = AidantFactory()
+        cls.aidant_yasmina = AidantFactory(
             username="yasmina@yasmina.com",
-            organisation=self.aidant_thierry.organisation,
+            organisation=cls.aidant_thierry.organisation,
         )
-        self.usager = UsagerFactory(given_name="Joséphine")
-        self.connection = Connection.objects.create(
+        cls.usager = UsagerFactory(given_name="Joséphine")
+        cls.connection = Connection.objects.create(
             state="avalidstate123",
             nonce="avalidnonce456",
-            usager=self.usager,
+            usager=cls.usager,
         )
         date_further_away_minus_one_hour = datetime(
             2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
         )
-        self.connection_2 = Connection.objects.create(
+        cls.connection_2 = Connection.objects.create(
             state="test_expiration_date_triggered",
             nonce="test_nonce",
-            usager=self.usager,
+            usager=cls.usager,
             expires_on=date_further_away_minus_one_hour,
         )
         mandat_creation_date = datetime(
             2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
         )
 
-        self.mandat_thierry_usager_1 = MandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
+        cls.mandat_thierry_usager_1 = MandatFactory(
+            organisation=cls.aidant_thierry.organisation,
+            usager=cls.usager,
             expiration_date=mandat_creation_date + timedelta(days=6),
             creation_date=mandat_creation_date,
         )
         AutorisationFactory(
-            mandat=self.mandat_thierry_usager_1,
+            mandat=cls.mandat_thierry_usager_1,
             demarche="transports",
         )
         AutorisationFactory(
-            mandat=self.mandat_thierry_usager_1,
+            mandat=cls.mandat_thierry_usager_1,
             demarche="famille",
         )
 
-        self.mandat_thierry_usager_2 = MandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
+        cls.mandat_thierry_usager_2 = MandatFactory(
+            organisation=cls.aidant_thierry.organisation,
+            usager=cls.usager,
             expiration_date=mandat_creation_date + timedelta(days=3),
             creation_date=mandat_creation_date,
         )
         AutorisationFactory(
-            mandat=self.mandat_thierry_usager_2,
+            mandat=cls.mandat_thierry_usager_2,
             demarche="logement",
         )
 
@@ -404,27 +406,28 @@ class FISelectDemarcheTests(TestCase):
 )
 @override_settings(FC_CONNECTION_AGE=300)
 class TokenTests(TestCase):
-    def setUp(self):
-        self.code = "test_code"
-        self.code_hash = make_password(self.code, settings.FC_AS_FI_HASH_SALT)
-        self.usager = UsagerFactory(given_name="Joséphine")
-        self.usager.sub = "avalidsub789"
-        self.usager.save()
-        self.connection = Connection()
-        self.connection.state = "avalidstate123"
-        self.connection.code = self.code_hash
-        self.connection.nonce = "avalidnonce456"
-        self.connection.usager = self.usager
-        self.connection.expires_on = datetime(
+    @classmethod
+    def setUpTestData(cls):
+        cls.code = "test_code"
+        cls.code_hash = make_password(cls.code, settings.FC_AS_FI_HASH_SALT)
+        cls.usager = UsagerFactory(given_name="Joséphine")
+        cls.usager.sub = "avalidsub789"
+        cls.usager.save()
+        cls.connection = Connection()
+        cls.connection.state = "avalidstate123"
+        cls.connection.code = cls.code_hash
+        cls.connection.nonce = "avalidnonce456"
+        cls.connection.usager = cls.usager
+        cls.connection.expires_on = datetime(
             2012, 1, 14, 3, 21, 34, tzinfo=pytz_timezone("Europe/Paris")
         )
-        self.connection.save()
-        self.fc_request = {
+        cls.connection.save()
+        cls.fc_request = {
             "grant_type": "authorization_code",
             "redirect_uri": "test_url.test_url",
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
-            "code": self.code,
+            "code": cls.code,
         }
 
     def test_token_url_triggers_token_view(self):
@@ -511,9 +514,10 @@ class TokenTests(TestCase):
     FC_AS_FI_HASH_SALT="123456"
 )
 class UserInfoTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.usager = UsagerFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -526,32 +530,32 @@ class UserInfoTests(TestCase):
             creation_date="2019-08-05T15:49:13.972Z",
             phone="0 800 840 800",
         )
-        self.aidant_thierry = AidantFactory()
-        self.mandat_thierry_usager = MandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
+        cls.aidant_thierry = AidantFactory()
+        cls.mandat_thierry_usager = MandatFactory(
+            organisation=cls.aidant_thierry.organisation,
+            usager=cls.usager,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        self.autorisation = AutorisationFactory(
-            mandat=self.mandat_thierry_usager,
+        cls.autorisation = AutorisationFactory(
+            mandat=cls.mandat_thierry_usager,
             demarche="transports",
         )
 
-        self.access_token = "test_access_token"
-        self.access_token_hash = make_password(
-            self.access_token, settings.FC_AS_FI_HASH_SALT
+        cls.access_token = "test_access_token"
+        cls.access_token_hash = make_password(
+            cls.access_token, settings.FC_AS_FI_HASH_SALT
         )
-        self.connection = Connection.objects.create(
+        cls.connection = Connection.objects.create(
             state="avalidstate123",
             code="test_code",
             nonce="avalidnonde456",
-            usager=self.usager,
-            access_token=self.access_token_hash,
+            usager=cls.usager,
+            access_token=cls.access_token_hash,
             expires_on=datetime(
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
-            aidant=self.aidant_thierry,
-            autorisation=self.autorisation,
+            aidant=cls.aidant_thierry,
+            autorisation=cls.autorisation,
         )
 
     def test_token_url_triggers_token_view(self):
@@ -626,9 +630,10 @@ class UserInfoTests(TestCase):
 
 @tag("id_provider")
 class EndSessionEndpointTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.usager = UsagerFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.usager = UsagerFactory(
             given_name="Joséphine",
             family_name="ST-PIERRE",
             preferred_username="ST-PIERRE",
@@ -640,32 +645,32 @@ class EndSessionEndpointTests(TestCase):
             email="User@user.domain",
             creation_date="2019-08-05T15:49:13.972Z",
         )
-        self.aidant_thierry = AidantFactory()
-        self.mandat_thierry_usager = MandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
+        cls.aidant_thierry = AidantFactory()
+        cls.mandat_thierry_usager = MandatFactory(
+            organisation=cls.aidant_thierry.organisation,
+            usager=cls.usager,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        self.autorisation = AutorisationFactory(
-            mandat=self.mandat_thierry_usager,
+        cls.autorisation = AutorisationFactory(
+            mandat=cls.mandat_thierry_usager,
             demarche="transports",
         )
 
-        self.access_token = "test_access_token"
-        self.access_token_hash = make_password(
-            self.access_token, settings.FC_AS_FI_HASH_SALT
+        cls.access_token = "test_access_token"
+        cls.access_token_hash = make_password(
+            cls.access_token, settings.FC_AS_FI_HASH_SALT
         )
-        self.connection = Connection.objects.create(
+        cls.connection = Connection.objects.create(
             state="avalidstate123",
             code="test_code",
             nonce="avalidnonde456",
-            usager=self.usager,
-            access_token=self.access_token_hash,
+            usager=cls.usager,
+            access_token=cls.access_token_hash,
             expires_on=datetime(
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
-            aidant=self.aidant_thierry,
-            autorisation=self.autorisation,
+            aidant=cls.aidant_thierry,
+            autorisation=cls.autorisation,
         )
 
     def test_end_session_endpoint_url_triggers_end_session_endpoint_view(self):

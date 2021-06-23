@@ -16,15 +16,16 @@ from aidants_connect_web.tests.factories import (
 
 @tag("renew_mandat")
 class RenewMandatTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.organisation = OrganisationFactory()
-        self.aidant_thierry = AidantFactory(organisation=self.organisation)
-        device = self.aidant_thierry.staticdevice_set.create(id=1)
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.organisation = OrganisationFactory()
+        cls.aidant_thierry = AidantFactory(organisation=cls.organisation)
+        device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
         device.token_set.create(token="223456")
 
-        self.usager = UsagerFactory(given_name="Fabrice")
+        cls.usager = UsagerFactory(given_name="Fabrice")
 
     def test_renew_mandat_ok(self):
         MandatFactory(

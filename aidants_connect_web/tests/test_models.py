@@ -155,37 +155,38 @@ class UsagerModelTests(TestCase):
 
 @tag("models")
 class MandatModelTests(TestCase):
-    def setUp(self):
-        self.organisation_1 = OrganisationFactory()
-        self.aidant_1 = AidantFactory(username="aidants1@organisation1.com")
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation_1 = OrganisationFactory()
+        cls.aidant_1 = AidantFactory(username="aidants1@organisation1.com")
 
-        self.usager_1 = UsagerFactory()
-        self.mandat_1 = Mandat.objects.create(
-            organisation=self.organisation_1,
-            usager=self.usager_1,
+        cls.usager_1 = UsagerFactory()
+        cls.mandat_1 = Mandat.objects.create(
+            organisation=cls.organisation_1,
+            usager=cls.usager_1,
             creation_date=timezone.now(),
             duree_keyword="SHORT",
             expiration_date=timezone.now() + timedelta(days=1),
         )
         AutorisationFactory(
-            mandat=self.mandat_1,
+            mandat=cls.mandat_1,
             demarche="justice",
         )
 
-        self.usager_2 = UsagerFactory(sub="anothersub")
-        self.mandat_2 = Mandat.objects.create(
-            organisation=self.organisation_1,
-            usager=self.usager_2,
+        cls.usager_2 = UsagerFactory(sub="anothersub")
+        cls.mandat_2 = Mandat.objects.create(
+            organisation=cls.organisation_1,
+            usager=cls.usager_2,
             creation_date=timezone.now(),
             duree_keyword="SHORT",
             expiration_date=timezone.now() + timedelta(days=1),
         )
         AutorisationFactory(
-            mandat=self.mandat_2,
+            mandat=cls.mandat_2,
             demarche="argent",
         )
         AutorisationFactory(
-            mandat=self.mandat_2,
+            mandat=cls.mandat_2,
             demarche="transport",
         )
 

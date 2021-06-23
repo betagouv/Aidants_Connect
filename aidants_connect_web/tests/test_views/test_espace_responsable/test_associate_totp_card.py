@@ -14,28 +14,29 @@ from aidants_connect_web.views import espace_responsable
 
 @tag("responsable-structure")
 class AssociateCarteTOTPTests(TestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
         # Create one responsable
-        self.responsable_tom = AidantFactory(username="tom@tom.fr")
-        self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
+        cls.responsable_tom = AidantFactory(username="tom@tom.fr")
+        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         # Create one aidant
-        self.aidant_tim = AidantFactory(
+        cls.aidant_tim = AidantFactory(
             username="tim@tim.fr",
-            organisation=self.responsable_tom.organisation,
+            organisation=cls.responsable_tom.organisation,
             first_name="Tim",
             last_name="Onier",
         )
         # Create one carte TOTP
-        self.carte = CarteTOTPFactory(serial_number="A123", seed="zzzz")
-        self.org_id = self.responsable_tom.organisation.id
-        self.association_url = (
-            f"/espace-responsable/organisation/{self.org_id}/"
-            f"aidant/{self.aidant_tim.id}/lier-carte"
+        cls.carte = CarteTOTPFactory(serial_number="A123", seed="zzzz")
+        cls.org_id = cls.responsable_tom.organisation.id
+        cls.association_url = (
+            f"/espace-responsable/organisation/{cls.org_id}/"
+            f"aidant/{cls.aidant_tim.id}/lier-carte"
         )
-        self.validation_url = (
-            f"/espace-responsable/organisation/{self.org_id}/"
-            f"aidant/{self.aidant_tim.id}/valider-carte"
+        cls.validation_url = (
+            f"/espace-responsable/organisation/{cls.org_id}/"
+            f"aidant/{cls.aidant_tim.id}/valider-carte"
         )
 
     def test_association_page_triggers_the_right_view(self):

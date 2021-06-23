@@ -128,40 +128,41 @@ class VisibilityAdminPageTests(TestCase):
     only_by_atac_models = [Mandat, Usager, Connection, Journal]
     amac_models = [Organisation, Aidant, StaticDevice, TOTPDevice]
 
-    def setUp(self):
-        self.amac_user = AidantFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.amac_user = AidantFactory(
             username="amac@email.com",
             email="amac@email.com",
             is_staff=True,
             is_superuser=False,
         )
-        self.amac_user.set_password("password")
-        self.amac_user.save()
-        amac_device = StaticDevice.objects.create(user=self.amac_user, name="Device")
+        cls.amac_user.set_password("password")
+        cls.amac_user.save()
+        amac_device = StaticDevice.objects.create(user=cls.amac_user, name="Device")
 
-        self.amac_client = Client()
-        self.amac_client.force_login(self.amac_user)
+        cls.amac_client = Client()
+        cls.amac_client.force_login(cls.amac_user)
         # we need do this :
         # https://docs.djangoproject.com/en/3.1/topics/testing/tools/#django.test.Client.session
-        amac_session = self.amac_client.session
+        amac_session = cls.amac_client.session
         amac_session[DEVICE_ID_SESSION_KEY] = amac_device.persistent_id
         amac_session.save()
 
-        self.atac_user = AidantFactory(
+        cls.atac_user = AidantFactory(
             username="atac@email.com",
             email="atac@email.com",
             is_staff=True,
             is_superuser=True,
         )
-        self.atac_user.set_password("password")
-        self.atac_user.save()
-        atac_device = StaticDevice.objects.create(user=self.atac_user, name="Device")
+        cls.atac_user.set_password("password")
+        cls.atac_user.save()
+        atac_device = StaticDevice.objects.create(user=cls.atac_user, name="Device")
 
-        self.atac_client = Client()
-        self.atac_client.force_login(self.atac_user)
+        cls.atac_client = Client()
+        cls.atac_client.force_login(cls.atac_user)
         # we need do this :
         # https://docs.djangoproject.com/en/3.1/topics/testing/tools/#django.test.Client.session
-        atac_session = self.atac_client.session
+        atac_session = cls.atac_client.session
         atac_session[DEVICE_ID_SESSION_KEY] = atac_device.persistent_id
         atac_session.save()
 
@@ -196,64 +197,62 @@ class VisibilityAdminPageTests(TestCase):
 
 @tag("admin")
 class JournalAdminPageTests(TestCase):
-    def setUp(self):
-        self.atac_user = AidantFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.atac_user = AidantFactory(
             username="atac@email.com",
             email="atac@email.com",
             is_staff=True,
             is_superuser=True,
         )
-        self.atac_user.set_password("password")
-        self.atac_user.save()
-        self.atac_device = StaticDevice.objects.create(
-            user=self.atac_user, name="Device"
-        )
+        cls.atac_user.set_password("password")
+        cls.atac_user.save()
+        cls.atac_device = StaticDevice.objects.create(user=cls.atac_user, name="Device")
 
-        self.atac_client = Client()
-        self.atac_client.force_login(self.atac_user)
-        atac_session = self.atac_client.session
-        atac_session[DEVICE_ID_SESSION_KEY] = self.atac_device.persistent_id
+        cls.atac_client = Client()
+        cls.atac_client.force_login(cls.atac_user)
+        atac_session = cls.atac_client.session
+        atac_session[DEVICE_ID_SESSION_KEY] = cls.atac_device.persistent_id
         atac_session.save()
         url_root = f"admin:{Journal._meta.app_label}_{Journal.__name__.lower()}"
-        self.url_root = url_root
+        cls.url_root = url_root
 
-    def test_cant_delete_journal_by_admin_views(self):
-        self.assertEqual(Journal.objects.count(), 1)
+    def test_cant_delete_journal_by_admin_views(cls):
+        cls.assertEqual(Journal.objects.count(), 1)
         journal = Journal.objects.all()[0]
-        url = reverse(self.url_root + "_delete", args=(journal.pk,))
-        response = self.atac_client.get(url)
-        self.assertEqual(response.status_code, 403)
+        url = reverse(cls.url_root + "_delete", args=(journal.pk,))
+        response = cls.atac_client.get(url)
+        cls.assertEqual(response.status_code, 403)
 
-    def test_cant_add_journal_by_admin_views(self):
-        url = reverse(self.url_root + "_add")
-        response = self.atac_client.get(url)
-        self.assertEqual(response.status_code, 403)
+    def test_cant_add_journal_by_admin_views(cls):
+        url = reverse(cls.url_root + "_add")
+        response = cls.atac_client.get(url)
+        cls.assertEqual(response.status_code, 403)
 
 
 @tag("admin")
 class UsagerAdminPageTests(TestCase):
-    def setUp(self):
-        self.atac_user = AidantFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.atac_user = AidantFactory(
             username="atac@email.com",
             email="atac@email.com",
             is_staff=True,
             is_superuser=True,
         )
-        self.atac_user.set_password("password")
-        self.atac_user.save()
-        self.atac_device = StaticDevice.objects.create(
-            user=self.atac_user, name="Device"
-        )
+        cls.atac_user.set_password("password")
+        cls.atac_user.save()
+        cls.atac_device = StaticDevice.objects.create(user=cls.atac_user, name="Device")
 
-        self.usager = UsagerFactory()
+        cls.usager = UsagerFactory()
 
-        self.atac_client = Client()
-        self.atac_client.force_login(self.atac_user)
-        atac_session = self.atac_client.session
-        atac_session[DEVICE_ID_SESSION_KEY] = self.atac_device.persistent_id
+        cls.atac_client = Client()
+        cls.atac_client.force_login(cls.atac_user)
+        atac_session = cls.atac_client.session
+        atac_session[DEVICE_ID_SESSION_KEY] = cls.atac_device.persistent_id
         atac_session.save()
         url_root = f"admin:{Journal._meta.app_label}_{Usager.__name__.lower()}"
-        self.url_root = url_root
+        cls.url_root = url_root
 
     def test_can_change_usager_by_admin_views(self):
         url = reverse(self.url_root + "_change", args=(self.usager.pk,))

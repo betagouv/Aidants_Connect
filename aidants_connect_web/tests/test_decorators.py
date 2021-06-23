@@ -12,9 +12,10 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 @tag("decorators")
 class ActivityRequiredTests(TestCase):
-    def setUp(self):
-        self.aidant_thierry = AidantFactory()
-        device = self.aidant_thierry.staticdevice_set.create(id=1)
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_thierry = AidantFactory()
+        device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 
     def test_activity_required_decorated_page_loads_if_action_just_happened(self):
@@ -35,14 +36,15 @@ class ActivityRequiredTests(TestCase):
 
 @tag("decorators")
 class AidantRequiredTests(TestCase):
-    def setUp(self):
-        self.aidant_thierry = AidantFactory()
-        self.responsable_georges = AidantFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_thierry = AidantFactory()
+        cls.responsable_georges = AidantFactory(
             username="georges@georges.com",
-            organisation=self.aidant_thierry.organisation,
+            organisation=cls.aidant_thierry.organisation,
             can_create_mandats=False,
         )
-        self.responsable_georges.responsable_de.add(self.aidant_thierry.organisation)
+        cls.responsable_georges.responsable_de.add(cls.aidant_thierry.organisation)
 
     def test_aidant_user_can_access_decorated_page(self):
         self.client.force_login(self.aidant_thierry)
@@ -57,15 +59,16 @@ class AidantRequiredTests(TestCase):
 
 @tag("decorators")
 class RespoStructureRequiredTests(TestCase):
-    def setUp(self):
-        self.aidant_thierry = AidantFactory()
-        self.responsable_georges = AidantFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_thierry = AidantFactory()
+        cls.responsable_georges = AidantFactory(
             username="georges@georges.com",
-            organisation=self.aidant_thierry.organisation,
+            organisation=cls.aidant_thierry.organisation,
             can_create_mandats=False,
         )
-        self.responsable_georges.responsable_de.add(self.aidant_thierry.organisation)
-        self.responsable_georges.responsable_de.add(OrganisationFactory())
+        cls.responsable_georges.responsable_de.add(cls.aidant_thierry.organisation)
+        cls.responsable_georges.responsable_de.add(OrganisationFactory())
 
     def test_responsable_can_access_decorated_page(self):
         self.client.force_login(self.responsable_georges)
