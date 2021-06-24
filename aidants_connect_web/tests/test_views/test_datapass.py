@@ -8,14 +8,15 @@ from django.urls import resolve
 
 @tag("datapass")
 class Datapass(TestCase):
-    def setUp(self):
-        self.good_data_from_datapass = {
+    @classmethod
+    def setUpTestData(cls):
+        cls.good_data_from_datapass = {
             "data_pass_id": 34,
             "organization_name": "La maison de l'aide",
             "organization_siret": 11111111111111,
             "organization_address": "4 rue du clos, 90210, La Colline de Bev",
         }
-        self.datapass_key = settings.DATAPASS_KEY
+        cls.datapass_key = settings.DATAPASS_KEY
 
     def datapass_request(self, data):
         return self.client.post(

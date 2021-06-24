@@ -17,43 +17,41 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 @tag("functional")
 class CancelAutorisationTests(FunctionalTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.aidant_thierry = AidantFactory()
-        device = cls.aidant_thierry.staticdevice_set.create(id=cls.aidant_thierry.id)
+    def setUp(self):
+        self.aidant_thierry = AidantFactory()
+        device = self.aidant_thierry.staticdevice_set.create(id=self.aidant_thierry.id)
         device.token_set.create(token="123456")
-        cls.aidant_jacqueline = AidantFactory(
+        self.aidant_jacqueline = AidantFactory(
             username="jfremont@domain.user",
             email="jfremont@domain.user",
             password="motdepassedejacqueline",
             first_name="Jacqueline",
             last_name="Fremont",
         )
-        cls.usager_josephine = UsagerFactory(given_name="Joséphine")
-        cls.mandat_thierry_josephine = MandatFactory(
-            organisation=cls.aidant_thierry.organisation,
-            usager=cls.usager_josephine,
+        self.usager_josephine = UsagerFactory(given_name="Joséphine")
+        self.mandat_thierry_josephine = MandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager_josephine,
             expiration_date=timezone.now() + timedelta(days=6),
         )
-        cls.money_authorization = AutorisationFactory(
-            mandat=cls.mandat_thierry_josephine,
+        self.money_authorization = AutorisationFactory(
+            mandat=self.mandat_thierry_josephine,
             demarche="argent",
         )
-        cls.family_authorization = AutorisationFactory(
-            mandat=cls.mandat_thierry_josephine,
+        self.family_authorization = AutorisationFactory(
+            mandat=self.mandat_thierry_josephine,
             demarche="famille",
         )
 
-        cls.mandat_jacqueline_josephine = MandatFactory(
-            organisation=cls.aidant_jacqueline.organisation,
-            usager=cls.usager_josephine,
+        self.mandat_jacqueline_josephine = MandatFactory(
+            organisation=self.aidant_jacqueline.organisation,
+            usager=self.usager_josephine,
             expiration_date=timezone.now() + timedelta(days=12),
         )
         AutorisationFactory(
-            mandat=cls.mandat_jacqueline_josephine,
+            mandat=self.mandat_jacqueline_josephine,
             demarche="logement",
         )
-        super().setUpClass()
 
     def test_cancel_autorisation_of_active_mandat(self):
         self.open_live_url(f"/usagers/{self.usager_josephine.id}/")

@@ -13,18 +13,19 @@ from aidants_connect_web.views import espace_responsable
 
 @tag("responsable-structure")
 class EspaceResponsableHomePageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
         # Tom is responsable of 2 structures
-        self.responsable_tom = AidantFactory(username="tom@baie.fr")
-        self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
-        self.responsable_tom.responsable_de.add(OrganisationFactory())
-        self.responsable_tom.can_create_mandats = False
+        cls.responsable_tom = AidantFactory(username="tom@baie.fr")
+        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
+        cls.responsable_tom.responsable_de.add(OrganisationFactory())
+        cls.responsable_tom.can_create_mandats = False
         # Tim is responsable of only one structure
-        self.responsable_tim = AidantFactory(username="tim@oree.fr")
-        self.responsable_tim.responsable_de.add(self.responsable_tim.organisation)
+        cls.responsable_tim = AidantFactory(username="tim@oree.fr")
+        cls.responsable_tim.responsable_de.add(cls.responsable_tim.organisation)
         # John is a simple aidant
-        self.aidant_john = AidantFactory(username="john@doe.du")
+        cls.aidant_john = AidantFactory(username="john@doe.du")
 
     def test_anonymous_user_cannot_access_espace_aidant_view(self):
         response = self.client.get("/espace-responsable/")
@@ -88,12 +89,13 @@ class EspaceResponsableHomePageTests(TestCase):
 
 @tag("responsable-structure")
 class EspaceResponsableOrganisationPage(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.responsable_tom = AidantFactory(username="georges@plop.net")
-        self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
-        self.id_organisation = self.responsable_tom.organisation.id
-        self.autre_organisation = OrganisationFactory()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.responsable_tom = AidantFactory(username="georges@plop.net")
+        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
+        cls.id_organisation = cls.responsable_tom.organisation.id
+        cls.autre_organisation = OrganisationFactory()
 
     def test_espace_responsable_organisation_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
@@ -125,20 +127,21 @@ class EspaceResponsableOrganisationPage(TestCase):
 
 @tag("responsable-structure")
 class EspaceResponsableAidantPage(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.responsable_tom = AidantFactory(username="tom@tom.fr")
-        self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
-        self.aidant_tim = AidantFactory(
-            username="tim@tim.fr", organisation=self.responsable_tom.organisation
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.responsable_tom = AidantFactory(username="tom@tom.fr")
+        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
+        cls.aidant_tim = AidantFactory(
+            username="tim@tim.fr", organisation=cls.responsable_tom.organisation
         )
-        self.id_organisation = self.responsable_tom.organisation.id
-        self.aidant_tim_url = (
-            f"/espace-responsable/organisation/{self.id_organisation}"
-            f"/aidant/{self.aidant_tim.id}/"
+        cls.id_organisation = cls.responsable_tom.organisation.id
+        cls.aidant_tim_url = (
+            f"/espace-responsable/organisation/{cls.id_organisation}"
+            f"/aidant/{cls.aidant_tim.id}/"
         )
-        self.autre_organisation = OrganisationFactory()
-        self.autre_aidant = AidantFactory(username="random@random.net")
+        cls.autre_organisation = OrganisationFactory()
+        cls.autre_aidant = AidantFactory(username="random@random.net")
 
     def test_espace_responsable_aidant_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
@@ -173,40 +176,41 @@ class EspaceResponsableAidantPage(TestCase):
 
 @tag("responsable-structure")
 class InsistOnTOTPDeviceActivationTests(TestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
         orga = OrganisationFactory()
         # Mario is a responsable without TOTP Device activated
         # => He should see the messages
-        self.responsable_mario = AidantFactory(
+        cls.responsable_mario = AidantFactory(
             username="mario@brosse.fr", organisation=orga
         )
-        self.responsable_mario.responsable_de.add(self.responsable_mario.organisation)
-        self.responsable_mario.responsable_de.add(OrganisationFactory())
+        cls.responsable_mario.responsable_de.add(cls.responsable_mario.organisation)
+        cls.responsable_mario.responsable_de.add(OrganisationFactory())
         # Mickey is a responsable with a TOTP Device activated
         # => He should not see the messages
-        self.responsable_mickey = AidantFactory(
+        cls.responsable_mickey = AidantFactory(
             username="mickey@mousse.fr", organisation=orga
         )
-        self.responsable_mickey.responsable_de.add(self.responsable_mickey.organisation)
-        self.responsable_mickey.responsable_de.add(OrganisationFactory())
-        device = TOTPDevice(user=self.responsable_mickey)
+        cls.responsable_mickey.responsable_de.add(cls.responsable_mickey.organisation)
+        cls.responsable_mickey.responsable_de.add(OrganisationFactory())
+        device = TOTPDevice(user=cls.responsable_mickey)
         device.save()
         # Roger is a responsable with an *inactive* TOTP Device
         # (e.g. after an unfinished card activation)
         # => He should see the messages
-        self.responsable_hubert = AidantFactory(
+        cls.responsable_hubert = AidantFactory(
             username="hubert@lingot.fr", organisation=orga
         )
-        self.responsable_hubert.responsable_de.add(self.responsable_hubert.organisation)
-        self.responsable_hubert.responsable_de.add(OrganisationFactory())
-        device = TOTPDevice(user=self.responsable_hubert, confirmed=False)
+        cls.responsable_hubert.responsable_de.add(cls.responsable_hubert.organisation)
+        cls.responsable_hubert.responsable_de.add(OrganisationFactory())
+        device = TOTPDevice(user=cls.responsable_hubert, confirmed=False)
         device.save()
         # Guy has no TOTP Device but is a simple Aidant
         # => He should not see the messages.
-        self.aidant_guy = AidantFactory(username="guy@mauve.fr")
+        cls.aidant_guy = AidantFactory(username="guy@mauve.fr")
 
-        self.urls_responsables = (
+        cls.urls_responsables = (
             "/espace-aidant/",
             "/espace-responsable/",
             f"/espace-responsable/organisation/{orga.id}/",

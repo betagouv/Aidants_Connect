@@ -36,9 +36,10 @@ class HomePageTests(TestCase):
 
 @tag("service")
 class LoginPageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant = AidantFactory()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant = AidantFactory()
 
     def test_journal_records_when_aidant_logs_in(self):
         self.assertEqual(len(Journal.objects.all()), 0)
@@ -61,9 +62,10 @@ class LoginPageTests(TestCase):
 
 @tag("service")
 class LogoutPageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant = AidantFactory()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant = AidantFactory()
 
     def test_logout_url_triggers_the_logout_view(self):
         found = resolve("/logout-session/")
@@ -81,9 +83,10 @@ class LogoutPageTests(TestCase):
 
 @tag("service")
 class ActivityCheckPageTests(TestCase):
-    def setUp(self):
-        self.aidant_thierry = AidantFactory()
-        device = self.aidant_thierry.staticdevice_set.create(id=1)
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_thierry = AidantFactory()
+        device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 
     def test_totp_url_triggers_totp_view(self):
@@ -139,7 +142,8 @@ class EnvironmentVariablesTests(TestCase):
 
 @tag("service")
 class StatistiquesTests(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
         mairie_de_houlbec = OrganisationFactory()
         aidant_thierry = AidantFactory()
         usager_homer = UsagerFactory()

@@ -14,8 +14,9 @@ from aidants_connect_web.tests.factories import AidantFactory, OrganisationFacto
 
 @tag("forms")
 class AidantCreationFormTests(TestCase):
-    def setUp(self):
-        self.data = {
+    @classmethod
+    def setUpTestData(cls):
+        cls.data = {
             "first_name": "Heliette",
             "last_name": "Bernart",
             "email": "hbernart@domain.user",
@@ -24,15 +25,15 @@ class AidantCreationFormTests(TestCase):
             "profession": "Mediatrice",
             "organisation": "3",
         }
-        self.organisation = OrganisationFactory(id=3)
-        self.existing_aidant = AidantFactory(
+        cls.organisation = OrganisationFactory(id=3)
+        cls.existing_aidant = AidantFactory(
             first_name="Armand",
             last_name="Giraud",
             email="agiraud@domain.user",
             username="agiraud@domain.user",
             password="flkqgnfdùqlgnqùflkgnùqflkngw",
             profession="Mediateur",
-            organisation=self.organisation,
+            organisation=cls.organisation,
         )
 
     def test_from_renders_item_text_input(self):
@@ -103,12 +104,13 @@ class AidantCreationFormTests(TestCase):
 
 
 class AidantChangeFormTests(TestCase):
-    def setUp(self):
-        self.organisation_nantes = OrganisationFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation_nantes = OrganisationFactory(
             name="Association Aide au Numérique"
         )
-        self.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
-        self.nantes_id = self.organisation_nantes.id
+        cls.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
+        cls.nantes_id = cls.organisation_nantes.id
         AidantFactory(
             first_name="Henri",
             last_name="Bernard",
@@ -116,17 +118,17 @@ class AidantChangeFormTests(TestCase):
             username="hello@domain.user",
             password="flkqgnfdùqlgnqùflkgnùqflkngw",
             profession="Mediateur",
-            organisation=self.organisation_nantes,
+            organisation=cls.organisation_nantes,
         )
-        self.aidant2 = AidantFactory(
+        cls.aidant2 = AidantFactory(
             first_name="Armand",
             last_name="Bernard",
             email="abernart@domain.user",
             username="abernart@domain.user",
             profession="Mediateur",
-            organisation=self.organisation_nantes,
+            organisation=cls.organisation_nantes,
         )
-        self.aidant2.set_password("nananana")
+        cls.aidant2.set_password("nananana")
 
     def test_change_email_propagates_to_username(self):
         self.assertEqual(self.aidant2.first_name, "Armand")
@@ -156,6 +158,7 @@ class AidantChangeFormTests(TestCase):
         self.assertCountEqual(form.errors, [])
 
     def test_change_date_propagates_to_aidant_profile(self):
+        self.aidant2.refresh_from_db()
         self.assertEqual(self.aidant2.first_name, "Armand")
         self.assertEqual(self.aidant2.email, "abernart@domain.user")
         self.assertEqual(self.aidant2.username, "abernart@domain.user")
@@ -181,6 +184,7 @@ class AidantChangeFormTests(TestCase):
         self.assertEqual(self.aidant2.last_name, "test")
 
     def test_change_to_email_fails_if_email_exists(self):
+        self.aidant2.refresh_from_db()
         changed_data = {
             "first_name": "Armand",
             "last_name": "Bernart",
@@ -255,10 +259,11 @@ class MandatFormTests(TestCase):
 
 
 class RecapMandatFormTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant_thierry = AidantFactory()
-        device = self.aidant_thierry.staticdevice_set.create(id=1)
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant_thierry = AidantFactory()
+        device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 
     def test_form_renders_item_text_input(self):

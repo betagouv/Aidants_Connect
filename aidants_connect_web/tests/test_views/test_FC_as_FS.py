@@ -260,20 +260,21 @@ class FCCallback(TestCase):
 
 @tag("new_mandat", "FC_as_FS")
 class GetUserInfoTests(TestCase):
-    def setUp(self):
-        self.usager_sub_fc = "123"
-        self.usager_sub = generate_sha256_hash(
-            f"{self.usager_sub_fc}{settings.FC_AS_FI_HASH_SALT}".encode()
+    @classmethod
+    def setUpTestData(cls):
+        cls.usager_sub_fc = "123"
+        cls.usager_sub = generate_sha256_hash(
+            f"{cls.usager_sub_fc}{settings.FC_AS_FI_HASH_SALT}".encode()
         )
-        self.usager = UsagerFactory(given_name="Joséphine", sub=self.usager_sub)
-        self.aidant = AidantFactory()
-        self.connection = Connection.objects.create(
+        cls.usager = UsagerFactory(given_name="Joséphine", sub=cls.usager_sub)
+        cls.aidant = AidantFactory()
+        cls.connection = Connection.objects.create(
             access_token="mock_access_token",
-            aidant=self.aidant,
+            aidant=cls.aidant,
         )
-        self.connection_with_phone = Connection.objects.create(
+        cls.connection_with_phone = Connection.objects.create(
             access_token="mock_access_token_with_phone",
-            aidant=self.aidant,
+            aidant=cls.aidant,
             user_phone="0 800 840 800",
         )
 

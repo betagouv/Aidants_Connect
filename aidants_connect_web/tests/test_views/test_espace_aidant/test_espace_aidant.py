@@ -14,9 +14,10 @@ from aidants_connect_web.views import espace_aidant, usagers
 
 @tag("usagers")
 class EspaceAidantHomePageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant = AidantFactory()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant = AidantFactory()
 
     def test_anonymous_user_cannot_access_espace_aidant_view(self):
         response = self.client.get("/espace-aidant/")
@@ -34,9 +35,10 @@ class EspaceAidantHomePageTests(TestCase):
 
 @tag("usagers")
 class UsagersIndexPageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant = AidantFactory()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant = AidantFactory()
 
     def test_usagers_index_url_triggers_the_usagers_index_view(self):
         found = resolve("/usagers/")
@@ -50,14 +52,15 @@ class UsagersIndexPageTests(TestCase):
 
 @tag("usagers")
 class UsagersDetailsPageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.aidant = AidantFactory()
-        self.usager = UsagerFactory()
-        self.mandat = MandatFactory(
-            organisation=self.aidant.organisation, usager=self.usager
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant = AidantFactory()
+        cls.usager = UsagerFactory()
+        cls.mandat = MandatFactory(
+            organisation=cls.aidant.organisation, usager=cls.usager
         )
-        AutorisationFactory(mandat=self.mandat)
+        AutorisationFactory(mandat=cls.mandat)
 
     def test_usager_details_url_triggers_the_usager_details_view(self):
         found = resolve(f"/usagers/{self.usager.id}/")

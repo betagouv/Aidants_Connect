@@ -22,56 +22,57 @@ from aidants_connect_web.views import usagers
 
 @tag("usagers", "cancel")
 class AutorisationCancellationConfirmPageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
 
-        self.our_organisation = OrganisationFactory()
-        self.our_aidant = AidantFactory(organisation=self.our_organisation)
-        self.our_usager = UsagerFactory()
+        cls.our_organisation = OrganisationFactory()
+        cls.our_aidant = AidantFactory(organisation=cls.our_organisation)
+        cls.our_usager = UsagerFactory()
 
         valid_mandat = MandatFactory(
-            organisation=self.our_organisation,
-            usager=self.our_usager,
+            organisation=cls.our_organisation,
+            usager=cls.our_usager,
         )
-        self.valid_autorisation = AutorisationFactory(
+        cls.valid_autorisation = AutorisationFactory(
             mandat=valid_mandat, demarche="Revenus"
         )
-        self.revoked_autorisation = AutorisationFactory(
+        cls.revoked_autorisation = AutorisationFactory(
             mandat=valid_mandat, demarche="Papiers", revocation_date=timezone.now()
         )
 
         expired_mandat = MandatFactory(
-            organisation=self.our_organisation,
-            usager=self.our_usager,
+            organisation=cls.our_organisation,
+            usager=cls.our_usager,
             expiration_date=timezone.now() - timedelta(days=6),
         )
-        self.expired_autorisation = AutorisationFactory(
+        cls.expired_autorisation = AutorisationFactory(
             mandat=expired_mandat, demarche="Logement"
         )
 
-        self.other_organisation = OrganisationFactory(name="Other Organisation")
-        self.unrelated_usager = UsagerFactory()
+        cls.other_organisation = OrganisationFactory(name="Other Organisation")
+        cls.unrelated_usager = UsagerFactory()
 
         unrelated_mandat = MandatFactory(
-            organisation=self.other_organisation,
-            usager=self.unrelated_usager,
+            organisation=cls.other_organisation,
+            usager=cls.unrelated_usager,
         )
-        self.unrelated_autorisation = AutorisationFactory(
+        cls.unrelated_autorisation = AutorisationFactory(
             mandat=unrelated_mandat, demarche="Revenus"
         )
 
         mandat_other_org_with_our_usager = MandatFactory(
-            organisation=self.other_organisation,
-            usager=self.our_usager,
+            organisation=cls.other_organisation,
+            usager=cls.our_usager,
         )
 
-        self.autorisation_other_org_with_our_usager = AutorisationFactory(
+        cls.autorisation_other_org_with_our_usager = AutorisationFactory(
             mandat=mandat_other_org_with_our_usager, demarche="Logement"
         )
 
-        self.good_combo = {
-            "usager": self.our_usager.id,
-            "autorisation": self.valid_autorisation.id,
+        cls.good_combo = {
+            "usager": cls.our_usager.id,
+            "autorisation": cls.valid_autorisation.id,
         }
 
     def url_for_autorisation_cancellation_confimation(self, data):
@@ -189,19 +190,20 @@ class AutorisationCancellationConfirmPageTests(TestCase):
 
 @tag("usagers", "cancel", "cancel_mandat")
 class MandatCancellationConfirmPageTests(TestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
 
-        self.our_organisation = OrganisationFactory()
-        self.our_aidant = AidantFactory(organisation=self.our_organisation)
-        self.our_usager = UsagerFactory()
+        cls.our_organisation = OrganisationFactory()
+        cls.our_aidant = AidantFactory(organisation=cls.our_organisation)
+        cls.our_usager = UsagerFactory()
 
-        self.valid_mandat = MandatFactory(
-            organisation=self.our_organisation,
-            usager=self.our_usager,
+        cls.valid_mandat = MandatFactory(
+            organisation=cls.our_organisation,
+            usager=cls.our_usager,
         )
-        self.valid_autorisation = AutorisationFactory(
-            mandat=self.valid_mandat, demarche=[*settings.DEMARCHES][0]
+        cls.valid_autorisation = AutorisationFactory(
+            mandat=cls.valid_mandat, demarche=[*settings.DEMARCHES][0]
         )
 
     def test_url_triggers_the_correct_view(self):
@@ -280,53 +282,54 @@ class MandatCancellationConfirmPageTests(TestCase):
 
 @tag("usagers", "cancel", "cancel_mandat", "attestation")
 class MandatCancellationAttestationTests(TestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
 
-        self.our_organisation = OrganisationFactory()
-        self.our_aidant = AidantFactory(organisation=self.our_organisation)
-        self.our_usager = UsagerFactory()
+        cls.our_organisation = OrganisationFactory()
+        cls.our_aidant = AidantFactory(organisation=cls.our_organisation)
+        cls.our_usager = UsagerFactory()
 
-        self.valid_mandat = MandatFactory(
-            organisation=self.our_organisation,
-            usager=self.our_usager,
+        cls.valid_mandat = MandatFactory(
+            organisation=cls.our_organisation,
+            usager=cls.our_usager,
             creation_date=datetime.datetime(
                 2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
             ),
         )
-        self.valid_autorisation = AutorisationFactory(
-            mandat=self.valid_mandat, demarche="Revenus"
+        cls.valid_autorisation = AutorisationFactory(
+            mandat=cls.valid_mandat, demarche="Revenus"
         )
 
-        self.cancelled_mandat = MandatFactory(
-            organisation=self.our_organisation,
-            usager=self.our_usager,
+        cls.cancelled_mandat = MandatFactory(
+            organisation=cls.our_organisation,
+            usager=cls.our_usager,
             creation_date=datetime.datetime(
                 2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
             ),
         )
         AutorisationFactory(
-            mandat=self.cancelled_mandat,
+            mandat=cls.cancelled_mandat,
             demarche="Revenus",
             revocation_date=timezone.now() - timedelta(minutes=5),
         )
 
-        self.expired_mandat = MandatFactory(
-            organisation=self.our_organisation,
-            usager=self.our_usager,
+        cls.expired_mandat = MandatFactory(
+            organisation=cls.our_organisation,
+            usager=cls.our_usager,
             creation_date=datetime.datetime(
                 2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
             ),
             expiration_date=timezone.now() - timedelta(minutes=5),
         )
         AutorisationFactory(
-            mandat=self.expired_mandat,
+            mandat=cls.expired_mandat,
             demarche="Revenus",
             revocation_date=timezone.now() - timedelta(minutes=5),
         )
 
         AutorisationFactory(
-            mandat=self.expired_mandat,
+            mandat=cls.expired_mandat,
             demarche="Papiers",
         )
 

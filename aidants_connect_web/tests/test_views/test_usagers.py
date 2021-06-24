@@ -18,7 +18,7 @@ from aidants_connect_web.views.usagers import _get_usagers_dict_from_mandats
 @tag("usagers")
 class ViewAutorisationsTests(TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpTestData(cls):
         cls.aidant = AidantFactory()
         device = cls.aidant.staticdevice_set.create(id=cls.aidant.id)
         device.token_set.create(token="123456")
@@ -107,8 +107,6 @@ class ViewAutorisationsTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=366),
         )
 
-        super().setUpClass()
-
     def test__get_mandats_for_usagers_index(self):
         mandats = _get_mandats_for_usagers_index(self.aidant)
         self.assertEqual(
@@ -157,7 +155,7 @@ class ViewAutorisationsTests(TestCase):
 @tag("usagers")
 class ViewCancelMandatTests(TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpTestData(cls):
         cls.aidant = AidantFactory(
             username="dupont@example.com", email="dupont@example.com"
         )
@@ -177,7 +175,6 @@ class ViewCancelMandatTests(TestCase):
             mandat=cls.mandat_aidant_phillomene,
             demarche="social",
         )
-        super().setUpClass()
 
     def test_cancel_inactive_mandat(self):
         self.client.force_login(self.aidant)

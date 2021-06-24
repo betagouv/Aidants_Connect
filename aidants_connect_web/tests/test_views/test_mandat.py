@@ -28,10 +28,11 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 @tag("new_mandat")
 @override_settings(PHONENUMBER_DEFAULT_REGION="FR")
 class NewMandatTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.phone_number = "0 800 840 800"
-        self.aidant_thierry = AidantFactory()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.phone_number = "0 800 840 800"
+        cls.aidant_thierry = AidantFactory()
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
         found = resolve("/creation_mandat/")
@@ -87,33 +88,34 @@ class NewMandatTests(TestCase):
 
 @tag("new_mandat")
 class NewMandatRecapTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.organisation = OrganisationFactory()
-        self.aidant_thierry = AidantFactory(organisation=self.organisation)
-        device = self.aidant_thierry.staticdevice_set.create(id=1)
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.organisation = OrganisationFactory()
+        cls.aidant_thierry = AidantFactory(organisation=cls.organisation)
+        device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
         device.token_set.create(token="223456")
-        self.aidant_monique = AidantFactory(
+        cls.aidant_monique = AidantFactory(
             first_name="Monique",
             username="monique@monique.com",
-            organisation=self.organisation,
+            organisation=cls.organisation,
         )
-        device = self.aidant_monique.staticdevice_set.create(id=2)
+        device = cls.aidant_monique.staticdevice_set.create(id=2)
         device.token_set.create(token="323456")
-        self.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
-        self.aidant_marge = AidantFactory(
-            first_name="Marge", username="Marge", organisation=self.organisation_nantes
+        cls.organisation_nantes = OrganisationFactory(name="Association Aide'o'Web")
+        cls.aidant_marge = AidantFactory(
+            first_name="Marge", username="Marge", organisation=cls.organisation_nantes
         )
-        device = self.aidant_marge.staticdevice_set.create(id=3)
+        device = cls.aidant_marge.staticdevice_set.create(id=3)
         device.token_set.create(token="423456")
-        self.test_usager_sub = (
+        cls.test_usager_sub = (
             "46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1"
         )
-        self.test_usager = UsagerFactory(
+        cls.test_usager = UsagerFactory(
             given_name="Fabrice",
             birthplace="95277",
-            sub=self.test_usager_sub,
+            sub=cls.test_usager_sub,
         )
 
     def test_recap_url_triggers_the_recap_view(self):
@@ -511,16 +513,17 @@ class NewMandatRecapTests(TestCase):
 
 @tag("new_mandat")
 class GenerateAttestationTests(TestCase):
-    def setUp(self):
-        self.aidant_thierry = AidantFactory()
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_thierry = AidantFactory()
+        cls.client = Client()
 
-        self.test_usager = UsagerFactory(
+        cls.test_usager = UsagerFactory(
             given_name="Fabrice",
             family_name="MERCIER",
             sub="46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
         )
-        self.autorisation_form = MandatForm(
+        cls.autorisation_form = MandatForm(
             data={"demarche": ["papiers", "logement"], "duree": "short"}
         )
 
@@ -531,7 +534,7 @@ class GenerateAttestationTests(TestCase):
             nonce="test_another_nonce",
             demarches=["papiers", "logement"],
             duree_keyword="SHORT",
-            usager=self.test_usager,
+            usager=cls.test_usager,
         )
 
     def test_attestation_projet_url_triggers_the_correct_view(self):

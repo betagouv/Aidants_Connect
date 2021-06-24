@@ -11,10 +11,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 @tag("functional")
 class CancelAutorisationTests(FunctionalTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.aidant_thierry = AidantFactory()
-        device = cls.aidant_thierry.staticdevice_set.create(id=cls.aidant_thierry.id)
+    def setUp(self):
+        self.aidant_thierry = AidantFactory()
+        device = self.aidant_thierry.staticdevice_set.create(id=self.aidant_thierry.id)
         device.token_set.create(token="123456")
         super().setUpClass()
 

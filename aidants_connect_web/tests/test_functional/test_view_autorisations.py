@@ -15,58 +15,55 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 @tag("functional")
 class ViewAutorisationsTests(FunctionalTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.aidant = AidantFactory()
-        device = cls.aidant.staticdevice_set.create(id=cls.aidant.id)
+    def setUp(self):
+        self.aidant = AidantFactory()
+        device = self.aidant.staticdevice_set.create(id=self.aidant.id)
         device.token_set.create(token="123456")
 
-        cls.usager_alice = UsagerFactory(given_name="Alice", family_name="Lovelace")
-        cls.usager_josephine = UsagerFactory(
+        self.usager_alice = UsagerFactory(given_name="Alice", family_name="Lovelace")
+        self.usager_josephine = UsagerFactory(
             given_name="Joséphine", family_name="Dupont"
         )
-        cls.usager_corentin = UsagerFactory(
+        self.usager_corentin = UsagerFactory(
             given_name="Corentin", family_name="Dupont", preferred_username="Astro"
         )
 
-        cls.mandat_aidant_alice_no_autorisation = MandatFactory(
-            organisation=cls.aidant.organisation,
-            usager=cls.usager_alice,
+        self.mandat_aidant_alice_no_autorisation = MandatFactory(
+            organisation=self.aidant.organisation,
+            usager=self.usager_alice,
             expiration_date=timezone.now() + timedelta(days=5),
         )
 
-        cls.mandat_aidant_josephine_6 = MandatFactory(
-            organisation=cls.aidant.organisation,
-            usager=cls.usager_josephine,
+        self.mandat_aidant_josephine_6 = MandatFactory(
+            organisation=self.aidant.organisation,
+            usager=self.usager_josephine,
             expiration_date=timezone.now() + timedelta(days=6),
         )
         AutorisationFactory(
-            mandat=cls.mandat_aidant_josephine_6,
+            mandat=self.mandat_aidant_josephine_6,
             demarche="social",
         )
 
-        cls.mandat_aidant_josephine_1 = MandatFactory(
-            organisation=cls.aidant.organisation,
-            usager=cls.usager_josephine,
+        self.mandat_aidant_josephine_1 = MandatFactory(
+            organisation=self.aidant.organisation,
+            usager=self.usager_josephine,
             expiration_date=timezone.now() + timedelta(days=1),
         )
 
         AutorisationFactory(
-            mandat=cls.mandat_aidant_josephine_1,
+            mandat=self.mandat_aidant_josephine_1,
             demarche="papiers",
         )
 
-        cls.mandat_aidant_corentin_365 = MandatFactory(
-            organisation=cls.aidant.organisation,
-            usager=cls.usager_corentin,
+        self.mandat_aidant_corentin_365 = MandatFactory(
+            organisation=self.aidant.organisation,
+            usager=self.usager_corentin,
             expiration_date=timezone.now() + timedelta(days=365),
         )
         AutorisationFactory(
-            mandat=cls.mandat_aidant_corentin_365,
+            mandat=self.mandat_aidant_corentin_365,
             demarche="famille",
         )
-
-        super().setUpClass()
 
     def test_grouped_autorisations(self):
         self.open_live_url("/espace-aidant/")

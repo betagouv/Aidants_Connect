@@ -34,11 +34,12 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
 
 @tag("commands")
 class DeleteExpiredConnectionsTests(TestCase):
-    def setUp(self):
-        self.conn_1 = ConnectionFactory(
+    @classmethod
+    def setUpTestData(cls):
+        cls.conn_1 = ConnectionFactory(
             expires_on=datetime(2020, 1, 1, 6, 0, 0, tzinfo=timezone.utc)
         )
-        self.conn_2 = ConnectionFactory(
+        cls.conn_2 = ConnectionFactory(
             expires_on=datetime(2020, 1, 1, 8, 0, 0, tzinfo=timezone.utc)
         )
 
