@@ -139,6 +139,21 @@ class AidantResource(resources.ModelResource):
         if card_sn:
             pass
 
+    def after_save_instance(self, instance: Aidant, using_transactions, dry_run):
+        if instance.carte_ac:
+            card_sn = instance.carte_ac
+            try:
+                carte_totp = CarteTOTP.objects.get(serial_number=card_sn)
+            except CarteTOTP.DoesNotExist:
+                raise Exception(
+                    f"Le numéro de série {card_sn} ne correspond à aucune carte TOTP"
+                    f" (e-mail {instance.username})."
+                )
+            carte_totp.aidant = instance
+            carte_totp.save()
+            totp_device = carte_totp.createTOTPDevice(confirmed=True)
+            totp_device.save()
+
 
 class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     def get_form(self, request, obj=None, **kwargs):
