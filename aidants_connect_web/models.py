@@ -946,6 +946,16 @@ class CarteTOTP(models.Model):
         verbose_name = "carte TOTP"
         verbose_name_plural = "cartes TOTP"
 
+    def createTOTPDevice(self, confirmed=False, tolerance=30):
+        return TOTPDevice(
+            key=self.seed,
+            user=self.aidant,
+            step=60,  # todo: some devices may have a different step!
+            confirmed=confirmed,
+            tolerance=tolerance,
+            name=f"Carte n° {self.serial_number}",
+        )
+
 
 # The Dataviz* models represent metadata that are used for data display in Metabase.
 # Do not remove even if they are not used directly in the code.
