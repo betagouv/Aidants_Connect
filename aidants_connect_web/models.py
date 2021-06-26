@@ -231,6 +231,14 @@ class Aidant(AbstractUser):
         except TOTPDevice.DoesNotExist:
             return False
 
+    @cached_property
+    def has_a_carte_totp(self):
+        try:
+            CarteTOTP.objects.get(aidant=self)
+            return True
+        except CarteTOTP.DoesNotExist:
+            return False
+
 
 class UsagerQuerySet(models.QuerySet):
     def active(self):

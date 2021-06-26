@@ -142,12 +142,32 @@ class AidantResource(resources.ModelResource):
     def after_save_instance(self, instance: Aidant, using_transactions, dry_run):
         if instance.carte_ac:
             card_sn = instance.carte_ac
+            # instance.carte_ac is the sn the import added to the aidant instance,
+            # it will not be persisted as-is in database.
+            if instance.has_a_carte_totp:
+                # instance.has_a_carte_totp is true if the aidant is associated with a
+                # CarteTOTP in database.
+                if instance.carte_totp.serial_number == card_sn:
+                    # trying to re-associate the same card: ignore
+                    return
+                raise Exception(
+                    f"L'aidant {instance.username} est déjà lié à la carte "
+                    f"{instance.carte_totp.serial_number}, impossible de le lier à "
+                    f"la carte {card_sn}."
+                )
+
             try:
                 carte_totp = CarteTOTP.objects.get(serial_number=card_sn)
             except CarteTOTP.DoesNotExist:
                 raise Exception(
                     f"Le numéro de série {card_sn} ne correspond à aucune carte TOTP"
                     f" (e-mail {instance.username})."
+                )
+            if carte_totp.aidant:
+                raise Exception(
+                    f"La carte {card_sn} est déjà liée à l'aidant "
+                    f"{carte_totp.aidant.username} : impossible de la lier à "
+                    f"{instance.username}."
                 )
             carte_totp.aidant = instance
             carte_totp.save()
