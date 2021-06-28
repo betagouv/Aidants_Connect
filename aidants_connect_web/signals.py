@@ -1,9 +1,20 @@
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
 
-from aidants_connect_web.models import Journal
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
+from aidants_connect_web.models import Aidant, Journal
 
 
 @receiver(user_logged_in)
-def on_login(sender, user, request, **kwargs):
+def log_connection_on_login(sender, user: Aidant, request, **kwargs):
     Journal.log_connection(user)
+
+
+@receiver(user_logged_in)
+def lower_totp_tolerance_on_login(sender, user: Aidant, request, **kwargs):
+    for device in TOTPDevice.objects.filter(
+        user=user, tolerance__gte=2, confirmed=True
+    ):
+        device.tolerance = 1
+        device.save()
