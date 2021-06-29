@@ -14,6 +14,8 @@ from datetime import datetime, timedelta
 import os
 import re
 from typing import Union
+import sys
+import logging
 
 from dotenv import load_dotenv
 import sentry_sdk
@@ -429,6 +431,21 @@ OTP_TOTP_THROTTLE_FACTOR = int(os.getenv("OTP_TOTP_THROTTLE_FACTOR", 1))
 
 # Functional tests behaviour
 HEADLESS_FUNCTIONAL_TESTS = getenv_bool("HEADLESS_FUNCTIONAL_TESTS", True)
+
+# Disable logging in tests
+if "test" in sys.argv:
+    logging.disable(logging.CRITICAL)
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": True,
+        "handlers": {
+            "file": {
+                "level": "DEBUG",
+                "class": "logging.NullHandler",
+            },
+        },
+    }
+
 
 BYPASS_FIRST_LIVESERVER_CONNECTION = getenv_bool(
     "BYPASS_FIRST_LIVESERVER_CONNECTION", False
