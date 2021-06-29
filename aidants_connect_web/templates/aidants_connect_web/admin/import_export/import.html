@@ -71,7 +71,7 @@
         {% for line, errors in result.row_errors %}
           {% for error in errors %}
             <details>
-              <summary>{% trans "Line number" %}: {{ line }} - {{ error.error }}</summary>
+              <summary>{% trans "Line number" %}&nbsp;: {{ line }} - {{ error.error }}</summary>
               <div><code>{{ error.row.values|join:", " }}</code></div>
               <div class="traceback">{{ error.traceback|linebreaks }}</div>
             </details>
