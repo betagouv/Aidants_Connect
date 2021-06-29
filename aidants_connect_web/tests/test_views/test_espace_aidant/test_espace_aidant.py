@@ -84,13 +84,14 @@ class UsagersDetailsPageTests(TestCase):
 
 @tag("responsable-structure")
 class InsistOnValidatingCGUsTests(TestCase):
-    def setUp(self) -> None:
+    @classmethod
+    def setUpTestData(cls):
         # Riri has never validated any CGU
-        self.aidant_riri = AidantFactory(username="riri")
+        cls.aidant_riri = AidantFactory(username="riri")
         # Fifi has validated previous a previous CGU version
-        self.aidant_fifi = AidantFactory(username="fifi", validated_cgu_version="0.1")
+        cls.aidant_fifi = AidantFactory(username="fifi", validated_cgu_version="0.1")
         # Loulou is up to date
-        self.aidant_loulou = AidantFactory(
+        cls.aidant_loulou = AidantFactory(
             username="loulou", validated_cgu_version=settings.CGU_CURRENT_VERSION
         )
 
