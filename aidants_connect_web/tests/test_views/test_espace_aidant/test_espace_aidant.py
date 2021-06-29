@@ -3,6 +3,8 @@ from django.test import tag, TestCase
 from django.test.client import Client
 from django.urls import resolve
 
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
@@ -121,3 +123,48 @@ class InsistOnValidatingCGUsTests(TestCase):
             response_content,
             "CGU message is shown, it should be hidden",
         )
+
+
+@tag("aidants", "totp")
+class LowerTOTPToleranceOnLoginTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.aidant = AidantFactory(username="tic")
+        cls.other_aidant = AidantFactory(username="tac")
+
+    def create_correct_device(self, aidant):
+        correct_device = TOTPDevice(user=aidant, tolerance=0, confirmed=True)
+        correct_device.save()
+
+    def create_overtolerant_device(self, aidant):
+        tolerant_device = TOTPDevice(user=aidant, tolerance=50, confirmed=True)
+        tolerant_device.save()
+
+    def count_overtolerant_devices(self):
+        return TOTPDevice.objects.filter(tolerance__gt=1).count()
+
+    def test_login_ok_with_one_overtolerant_device(self):
+        self.create_overtolerant_device(self.aidant)
+        self.assertEqual(1, self.count_overtolerant_devices())
+        self.client.force_login(self.aidant)
+        self.assertEqual(0, self.count_overtolerant_devices())
+
+    def test_login_ok_with_several_overtolerant_devices(self):
+        for _ in range(5):
+            self.create_overtolerant_device(self.aidant)
+        self.assertEqual(5, self.count_overtolerant_devices())
+        self.client.force_login(self.aidant)
+        self.assertEqual(0, self.count_overtolerant_devices())
+
+    def test_login_ok_with_no_overtolerant_device(self):
+        self.create_correct_device(self.aidant)
+        self.client.force_login(self.aidant)
+        self.assertEqual(0, self.count_overtolerant_devices())
+
+    def test_no_other_users_device_is_changed(self):
+        self.create_correct_device(self.aidant)
+        self.create_overtolerant_device(self.other_aidant)
+        self.assertEqual(1, self.count_overtolerant_devices())
+        self.client.force_login(self.aidant)
+        self.assertEqual(1, self.count_overtolerant_devices())
