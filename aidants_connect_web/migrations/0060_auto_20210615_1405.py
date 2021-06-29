@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("aidants_connect_web", "0058_aidant_validated_cgu_version"),
+        ("aidants_connect_web", "0059_fix_mandate_template_path"),
     ]
 
     operations = [
