@@ -15,6 +15,7 @@ from django_celery_beat.models import (
 )
 from django_otp.admin import OTPAdminSite
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
+from django_otp.plugins.otp_static.lib import add_static_token
 from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -108,6 +109,7 @@ class OrganisationAdmin(VisibleToAdminMetier, ModelAdmin):
 
 class AidantResource(resources.ModelResource):
     organisation_id = Field(attribute="organisation_id", column_name="organisation_id")
+    token = Field(attribute="token", column_name="token")
     carte_ac = Field(attribute="carte_ac", column_name="carte_ac")
 
     class Meta:
@@ -135,9 +137,9 @@ class AidantResource(resources.ModelResource):
         ):
             return
 
-        card_sn = str(row.get("carte_ac"))
-        if card_sn:
-            pass
+        token = str(row.get("token"))
+        if token and len(token) == 6 and token.isnumeric():
+            add_static_token(row["username"], token)
 
     def after_save_instance(self, instance: Aidant, using_transactions, dry_run):
         if instance.carte_ac:
