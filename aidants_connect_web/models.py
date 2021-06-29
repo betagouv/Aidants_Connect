@@ -16,6 +16,12 @@ from os.path import join as path_join, dirname
 from re import sub as regex_sub
 from phonenumber_field.modelfields import PhoneNumberField
 
+from aidants_connect_web.constants import (
+    JOURNAL_ACTIONS,
+    JournalActionKeywords,
+    AuthorizationDurationChoices,
+    AuthorizationDurations,
+)
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
     mandate_template_path,
@@ -207,7 +213,7 @@ class Aidant(AbstractUser):
         """
         journal_create_attestation = Journal.objects.filter(
             aidant=self,
-            action="create_attestation",
+            action=JournalActionKeywords.CREATE_ATTESTATION,
             access_token=access_token,
         ).last()
         return journal_create_attestation
@@ -339,21 +345,6 @@ class Usager(models.Model):
         return self.birthplace
 
 
-class AutorisationDureeKeywords(models.TextChoices):
-    SHORT = (
-        "SHORT",
-        "pour une durée de 1 jour",
-    )
-    LONG = (
-        "LONG",
-        "pour une durée de 1 an",
-    )
-    EUS_03_20 = (
-        "EUS_03_20",
-        "jusqu’à la fin de l’état d’urgence sanitaire ",
-    )
-
-
 def get_staff_organisation_name_id() -> int:
     try:
         return Organisation.objects.get(name=settings.STAFF_ORGANISATION_NAME).pk
@@ -387,7 +378,7 @@ class Mandat(models.Model):
     creation_date = models.DateTimeField("Date de création", default=timezone.now)
     expiration_date = models.DateTimeField("Date d'expiration", default=timezone.now)
     duree_keyword = models.CharField(
-        "Durée", max_length=16, choices=AutorisationDureeKeywords.choices, null=True
+        "Durée", max_length=16, choices=AuthorizationDurationChoices.choices, null=True
     )
     is_remote = models.BooleanField("Signé à distance ?", default=False)
 
@@ -507,7 +498,7 @@ class Mandat(models.Model):
         end = start + timedelta(days=nb_days_before)
 
         return cls.objects.filter(
-            duree_keyword=AutorisationDureeKeywords.LONG,
+            duree_keyword=AuthorizationDurations.LONG,
             expiration_date__range=(start, end),
         ).order_by("organisation", "expiration_date")
 
@@ -646,7 +637,7 @@ class Connection(models.Model):
     )
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
     duree_keyword = models.CharField(
-        max_length=16, choices=AutorisationDureeKeywords.choices, null=True
+        max_length=16, choices=AuthorizationDurationChoices.choices, null=True
     )
     mandat_is_remote = models.BooleanField(default=False)
     user_phone = PhoneNumberField(blank=True)
@@ -698,27 +689,10 @@ class JournalQuerySet(models.QuerySet):
 
 
 class Journal(models.Model):
-    ACTIONS = (
-        ("connect_aidant", "Connexion d'un aidant"),
-        ("activity_check_aidant", "Reprise de connexion d'un aidant"),
-        ("card_association", "Association d'une carte à d'un aidant"),
-        ("card_validation", "Validation d'une carte associée à un aidant"),
-        ("card_dissociation", "Séparation d'une carte et d'un aidant"),
-        ("franceconnect_usager", "FranceConnexion d'un usager"),
-        ("update_email_usager", "L'email de l'usager a été modifié"),
-        ("update_phone_usager", "Le téléphone de l'usager a été modifié"),
-        ("create_attestation", "Création d'une attestation"),
-        ("create_autorisation", "Création d'une autorisation"),
-        ("use_autorisation", "Utilisation d'une autorisation"),
-        ("cancel_autorisation", "Révocation d'une autorisation"),
-        ("import_totp_cards", "Importation de cartes TOTP"),
-        ("init_renew_mandat", "Lancement d'une procédure de renouvellement"),
-    )
-
     INFO_REMOTE_MANDAT = "Mandat conclu à distance pendant l'état d'urgence sanitaire (23 mars 2020)"  # noqa
 
     # mandatory
-    action = models.CharField(max_length=30, choices=ACTIONS, blank=False)
+    action = models.CharField(max_length=30, choices=JOURNAL_ACTIONS, blank=False)
     aidant = models.ForeignKey(
         Aidant, on_delete=models.PROTECT, related_name="journal_entries"
     )
@@ -759,18 +733,22 @@ class Journal(models.Model):
 
     @classmethod
     def log_connection(cls, aidant: Aidant):
-        return cls.objects.create(aidant=aidant, action="connect_aidant")
+        return cls.objects.create(
+            aidant=aidant, action=JournalActionKeywords.CONNECT_AIDANT
+        )
 
     @classmethod
     def log_activity_check(cls, aidant: Aidant):
-        return cls.objects.create(aidant=aidant, action="activity_check_aidant")
+        return cls.objects.create(
+            aidant=aidant, action=JournalActionKeywords.ACTIVITY_CHECK_AIDANT
+        )
 
     @classmethod
     def log_card_association(cls, responsable: Aidant, aidant: Aidant, sn: str):
         more_info = f"aidant.id = {aidant.id}, sn = {sn}"
         return cls.objects.create(
             aidant=responsable,
-            action="card_association",
+            action=JournalActionKeywords.CARD_ASSOCIATION,
             additional_information=more_info,
         )
 
@@ -779,7 +757,7 @@ class Journal(models.Model):
         more_info = f"aidant.id = {aidant.id}, sn = {sn}"
         return cls.objects.create(
             aidant=responsable,
-            action="card_validation",
+            action=JournalActionKeywords.CARD_VALIDATION,
             additional_information=more_info,
         )
 
@@ -790,7 +768,7 @@ class Journal(models.Model):
         more_info = f"aidant.id = {aidant.id}, sn = {sn}, reason = {reason}"
         return cls.objects.create(
             aidant=responsable,
-            action="card_dissociation",
+            action=JournalActionKeywords.CARD_DISSOCIATION,
             additional_information=more_info,
         )
 
@@ -799,7 +777,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=usager,
-            action="franceconnect_usager",
+            action=JournalActionKeywords.FRANCECONNECT_USAGER,
         )
 
     @classmethod
@@ -807,7 +785,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=usager,
-            action="update_email_usager",
+            action=JournalActionKeywords.UPDATE_EMAIL_USAGER,
         )
 
     @classmethod
@@ -815,7 +793,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=usager,
-            action="update_phone_usager",
+            action=JournalActionKeywords.UPDATE_PHONE_USAGER,
         )
 
     @classmethod
@@ -831,7 +809,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=usager,
-            action="init_renew_mandat",
+            action=JournalActionKeywords.INIT_RENEW_MANDAT,
             demarche=",".join(demarches),
             duree=duree,
             access_token=access_token,
@@ -853,7 +831,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=usager,
-            action="create_attestation",
+            action=JournalActionKeywords.CREATE_ATTESTATION,
             demarche=",".join(demarches),
             duree=duree,
             access_token=access_token,
@@ -870,7 +848,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=usager,
-            action="create_autorisation",
+            action=JournalActionKeywords.CREATE_AUTORISATION,
             demarche=autorisation.demarche,
             duree=autorisation.duration_for_humans,
             autorisation=autorisation.id,
@@ -889,7 +867,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=usager,
-            action="use_autorisation",
+            action=JournalActionKeywords.USE_AUTORISATION,
             demarche=demarche,
             access_token=access_token,
             autorisation=autorisation.id,
@@ -900,7 +878,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=autorisation.mandat.usager,
-            action="cancel_autorisation",
+            action=JournalActionKeywords.CANCEL_AUTORISATION,
             demarche=autorisation.demarche,
             duree=autorisation.duration_for_humans,
             autorisation=autorisation.id,
@@ -911,7 +889,7 @@ class Journal(models.Model):
         return cls.objects.create(
             aidant=aidant,
             usager=mandat.usager,
-            action="cancel_mandat",
+            action=JournalActionKeywords.CANCEL_MANDAT,
             mandat=mandat,
         )
 
@@ -919,13 +897,17 @@ class Journal(models.Model):
     def log_toitp_card_import(cls, aidant: Aidant, added: int, updated: int):
         message = f"{added} ajouts - {updated} modifications"
         return cls.objects.create(
-            aidant=aidant, action="import_totp_cards", additional_information=message
+            aidant=aidant,
+            action=JournalActionKeywords.IMPORT_TOTP_CARDS,
+            additional_information=message,
         )
 
     @classmethod
     def find_attestation_creation_entries(cls, mandat: Mandat) -> QuerySet["Journal"]:
         # Let's first search by mandate
-        journal = cls.objects.filter(action="create_attestation", mandat=mandat)
+        journal = cls.objects.filter(
+            action=JournalActionKeywords.CREATE_ATTESTATION, mandat=mandat
+        )
         if journal.count() == 1:
             return journal
 
@@ -935,7 +917,7 @@ class Journal(models.Model):
         start = mandat.creation_date.replace(hour=0, minute=0, second=0, microsecond=0)
         end = start + timedelta(days=1)
         return cls.objects.filter(
-            action="create_attestation",
+            action=JournalActionKeywords.CREATE_ATTESTATION,
             usager=mandat.usager,
             aidant__organisation=mandat.organisation,
             creation_date__range=(start, end),
