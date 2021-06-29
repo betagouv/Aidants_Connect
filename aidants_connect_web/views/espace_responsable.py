@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_web.models import Aidant, CarteTOTP, Journal, Organisation
@@ -23,7 +23,7 @@ def check_organisation_and_responsable(responsable: Aidant, organisation: Organi
         raise Http404
 
 
-@require_http_methods(["GET"])
+@require_GET
 @login_required
 @user_is_responsable_structure
 def home(request):
@@ -47,7 +47,7 @@ def home(request):
     )
 
 
-@require_http_methods(["GET"])
+@require_GET
 @login_required
 @user_is_responsable_structure
 @activity_required
@@ -91,41 +91,58 @@ def aidant(request, organisation_id, aidant_id):
 
     form = RemoveCardFromAidantForm()
 
-    if request.method == "POST":
-        form = RemoveCardFromAidantForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
-            reason = data.get("reason")
-            if reason == "autre":
-                reason = data.get("other_reason")
-            sn = aidant.carte_totp.serial_number
-            with transaction.atomic():
-                carte = CarteTOTP.objects.get(serial_number=sn)
-                try:
-                    device = TOTPDevice.objects.get(key=carte.seed, user=aidant)
-                    device.delete()
-                except TOTPDevice.DoesNotExist:
-                    pass
-                carte.aidant = None
-                carte.save()
-                Journal.log_card_dissociation(responsable, aidant, sn, reason)
-            django_messages.success(
-                request,
-                (
-                    f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
-                    f"de l’aidant {aidant.get_full_name()}."
-                ),
-            )
-            return redirect(
-                "espace_responsable_aidant",
-                organisation_id=organisation.id,
-                aidant_id=aidant.id,
-            )
-
     return render(
         request,
         "aidants_connect_web/espace_responsable/aidant.html",
         {"aidant": aidant, "organisation": organisation, "form": form},
+    )
+
+
+@require_POST
+@login_required
+@user_is_responsable_structure
+@activity_required
+def remove_card_from_aidant(request, organisation_id, aidant_id):
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
+    aidant = get_object_or_404(Aidant, pk=aidant_id)
+    if aidant.organisation.id != organisation_id:
+        raise Http404
+
+    form = RemoveCardFromAidantForm(request.POST)
+    if form.is_valid():
+        data = form.cleaned_data
+        reason = data.get("reason")
+        if reason == "autre":
+            reason = data.get("other_reason")
+        sn = aidant.carte_totp.serial_number
+        with transaction.atomic():
+            carte = CarteTOTP.objects.get(serial_number=sn)
+            try:
+                device = TOTPDevice.objects.get(key=carte.seed, user=aidant)
+                device.delete()
+            except TOTPDevice.DoesNotExist:
+                pass
+            carte.aidant = None
+            carte.save()
+            Journal.log_card_dissociation(responsable, aidant, sn, reason)
+        django_messages.success(
+            request,
+            (
+                f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
+                f"de l’aidant {aidant.get_full_name()}."
+            ),
+        )
+    else:
+        django_messages.error(
+            request,
+            "Une erreur s’est produite, impossible de séparer cette carte de l’aidant.",
+        )
+    return redirect(
+        "espace_responsable_aidant",
+        organisation_id=organisation.id,
+        aidant_id=aidant.id,
     )
 
 

@@ -12,22 +12,27 @@ from aidants_connect_web.models import CarteTOTP, Journal
 
 @tag("responsable-structure")
 class DissociateCarteTOTPTests(TestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
         # Create one responsable : Tom
-        self.responsable_tom = AidantFactory(username="tom@tom.fr")
-        self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
-        self.org_id = self.responsable_tom.organisation.id
+        cls.responsable_tom = AidantFactory(username="tom@tom.fr")
+        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
+        cls.org_id = cls.responsable_tom.organisation.id
         # Create one aidant : Tim
-        self.aidant_tim = AidantFactory(
+        cls.aidant_tim = AidantFactory(
             username="tim@tim.fr",
-            organisation=self.responsable_tom.organisation,
+            organisation=cls.responsable_tom.organisation,
             first_name="Tim",
             last_name="Onier",
         )
-        self.dissociation_url = (
-            f"/espace-responsable/organisation/{self.org_id}/"
-            f"aidant/{self.aidant_tim.id}/"
+        cls.dissociation_url = (
+            f"/espace-responsable/organisation/{cls.org_id}/"
+            f"aidant/{cls.aidant_tim.id}/supprimer-carte/"
+        )
+        cls.aidant_url = (
+            f"/espace-responsable/organisation/{cls.org_id}/"
+            f"aidant/{cls.aidant_tim.id}/"
         )
 
     def createCarteForTim(self):
@@ -52,9 +57,10 @@ class DissociateCarteTOTPTests(TestCase):
             self.dissociation_url,
             data={"reason": "perte"},
         )
-        self.assertRedirects(
-            response, self.dissociation_url, fetch_redirect_response=False
-        )
+        self.assertRedirects(response, self.aidant_url, fetch_redirect_response=False)
+        response = self.client.get(self.aidant_url)
+        response_content = response.content.decode("utf-8")
+        self.assertIn("Tout s’est bien passé", response_content)
         # Check card still exists but that TOTP Device doesn't
         carte = CarteTOTP.objects.last()
         self.assertEqual(carte.serial_number, self.carte.serial_number)

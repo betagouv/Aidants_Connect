@@ -46,7 +46,7 @@
         {% if aidant.carte_totp.serial_number %}
           <details class="background-color-grey">
             <summary>Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte</summary>
-            <form method="post">
+            <form method="post" action="{% url "espace_responsable_aidant_remove_card" organisation_id=organisation.id aidant_id=aidant.id %}">
               {% csrf_token %}
               <p>
                 Pour supprimer l'association entre la carte {{ aidant.carte_totp.serial_number }}
