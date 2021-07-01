@@ -302,6 +302,7 @@ class GetUserInfoTests(TestCase):
 
         self.assertEqual(usager.given_name, "Fabrice")
         self.assertEqual(usager.email, "test@test.com")
+        self.assertEqual(usager.preferred_username, "TROIS")
         self.assertIsNone(error)
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")

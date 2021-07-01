@@ -36,6 +36,7 @@ def fc_authorize(request):
         "birthplace",
         "given_name",
         "family_name",
+        "preferred_username",
         "birthcountry",
     ]
 
@@ -177,6 +178,7 @@ def get_user_info(connection: Connection) -> tuple:
             "gender": user_info.get("gender"),
             "birthplace": user_info.get("birthplace"),
             "birthcountry": user_info.get("birthcountry"),
+            "preferred_username": user_info.get("preferred_username"),
             "sub": usager_sub,
             "email": user_info.get("email"),
         }
