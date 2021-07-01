@@ -35,12 +35,12 @@ class DissociateCarteTOTPTests(TestCase):
             f"aidant/{cls.aidant_tim.id}/"
         )
 
-    def createCarteForTim(self):
+    def create_carte_for_tim(self):
         self.carte = CarteTOTPFactory(
             serial_number="A123", seed="FA169F10A9", aidant=self.aidant_tim
         )
 
-    def createDeviceForTim(self, confirmed=True):
+    def create_device_for_tim(self, confirmed=True):
         self.device = TOTPDevice(
             tolerance=30,
             key=self.carte.seed,
@@ -50,7 +50,7 @@ class DissociateCarteTOTPTests(TestCase):
         )
         self.device.save()
 
-    def doTheChecks(self):
+    def do_the_checks(self):
         # Submit post and check redirection is correct
         self.client.force_login(self.responsable_tom)
         response = self.client.post(
@@ -75,15 +75,15 @@ class DissociateCarteTOTPTests(TestCase):
         )
 
     def test_dissociation_in_nominal_case(self):
-        self.createCarteForTim()
-        self.createDeviceForTim()
-        self.doTheChecks()
+        self.create_carte_for_tim()
+        self.create_device_for_tim()
+        self.do_the_checks()
 
     def test_dissociation_without_existing_totp_device(self):
-        self.createCarteForTim()
-        self.doTheChecks()
+        self.create_carte_for_tim()
+        self.do_the_checks()
 
     def test_dissociation_with_unconfirmed_totp_device(self):
-        self.createCarteForTim()
-        self.createDeviceForTim(confirmed=False)
-        self.doTheChecks()
+        self.create_carte_for_tim()
+        self.create_device_for_tim(confirmed=False)
+        self.do_the_checks()
