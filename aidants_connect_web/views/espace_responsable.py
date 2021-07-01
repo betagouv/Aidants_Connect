@@ -135,10 +135,7 @@ def remove_card_from_aidant(request, organisation_id, aidant_id):
             ),
         )
     else:
-        django_messages.error(
-            request,
-            "Une erreur s’est produite, impossible de séparer cette carte de l’aidant.",
-        )
+        raise Exception("Invalid form for card/aidant dissociation")
     return redirect(
         "espace_responsable_aidant",
         organisation_id=organisation.id,
