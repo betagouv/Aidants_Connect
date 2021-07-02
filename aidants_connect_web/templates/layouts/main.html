@@ -17,11 +17,15 @@
   {% block extracss %}
   {% endblock %}
 
-  <!-- Polyfills -->
+  {# Polyfills #}
   <script type="text/javascript">
     if(/MSIE \d|Trident.*rv:/.test(navigator.userAgent)) {
-      document.write('<script src="https://unpkg.com/@babel/polyfill@7.0.0/dist/polyfill.js"><\/script>');
-      document.write('<script src="https://unpkg.com/url-polyfill@1.0.14/url-polyfill.js"><\/script>');
+      {# ES2015+ polyfill (Promise, Array.from, Object.assign, generators) #}
+      {# https://www.npmjs.com/package/@babel/polyfill #}
+      document.write('<script src="https://unpkg.com/@babel/polyfill@7.12.1/dist/polyfill.js"><\/script>');
+      {# Polyfill URL and URLSearchParams to match last WHATWG specifications #}
+      {# https://www.npmjs.com/package/url-polyfill #}
+      document.write('<script src="https://unpkg.com/url-polyfill@1.1.12/url-polyfill.js"><\/script>');
     }
   </script>
   <!-- Search Engine -->
