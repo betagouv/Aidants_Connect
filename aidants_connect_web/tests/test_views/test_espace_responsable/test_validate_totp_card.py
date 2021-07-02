@@ -10,6 +10,7 @@ from aidants_connect_web.tests.factories import (
     AidantFactory,
     CarteTOTPFactory,
 )
+from aidants_connect_web.models import Journal
 from aidants_connect_web.views import espace_responsable
 
 
@@ -77,6 +78,13 @@ class ValidateCarteTOTPTests(TestCase):
             totp_device.tolerance,
             30,
             "Validated TOTP Device should have a decreased tolerance",
+        )
+        # Check journal entry creation
+        journal_entry = Journal.objects.last()
+        self.assertEqual(
+            journal_entry.action,
+            "card_validation",
+            "A Journal entry should have been created on card validation.",
         )
 
         # Check organisation page does not warn about activation

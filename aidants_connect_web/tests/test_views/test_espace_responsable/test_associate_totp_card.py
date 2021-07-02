@@ -8,7 +8,7 @@ from aidants_connect_web.tests.factories import (
     AidantFactory,
     CarteTOTPFactory,
 )
-from aidants_connect_web.models import CarteTOTP
+from aidants_connect_web.models import CarteTOTP, Journal
 from aidants_connect_web.views import espace_responsable
 
 
@@ -73,6 +73,14 @@ class AssociateCarteTOTPTests(TestCase):
         # Check CarteTOTP object has been updated too
         card = CarteTOTP.objects.first()
         self.assertEqual(card.aidant, self.aidant_tim)
+
+        # Check journal entry creation
+        journal_entry = Journal.objects.last()
+        self.assertEqual(
+            journal_entry.action,
+            "card_association",
+            "A Journal entry should have been created on card association.",
+        )
 
         # Check organisation page warns about activation
         response = self.client.get(f"/espace-responsable/organisation/{self.org_id}/")

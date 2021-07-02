@@ -3,9 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.models import Aidant, CarteTOTP, Organisation
+from aidants_connect_web.models import Aidant, CarteTOTP, Journal, Organisation
 from aidants_connect_web.decorators import (
     user_is_responsable_structure,
     activity_required,
@@ -13,6 +14,7 @@ from aidants_connect_web.decorators import (
 from aidants_connect_web.forms import (
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
+    RemoveCardFromAidantForm,
 )
 
 
@@ -21,6 +23,7 @@ def check_organisation_and_responsable(responsable: Aidant, organisation: Organi
         raise Http404
 
 
+@require_GET
 @login_required
 @user_is_responsable_structure
 def home(request):
@@ -44,6 +47,7 @@ def home(request):
     )
 
 
+@require_GET
 @login_required
 @user_is_responsable_structure
 @activity_required
@@ -72,6 +76,7 @@ def organisation(request, organisation_id):
     )
 
 
+@require_http_methods(["GET", "POST"])
 @login_required
 @user_is_responsable_structure
 @activity_required
@@ -84,13 +89,64 @@ def aidant(request, organisation_id, aidant_id):
     if aidant.organisation.id != organisation_id:
         raise Http404
 
+    form = RemoveCardFromAidantForm()
+
     return render(
         request,
         "aidants_connect_web/espace_responsable/aidant.html",
-        {"aidant": aidant, "organisation": organisation},
+        {"aidant": aidant, "organisation": organisation, "form": form},
     )
 
 
+@require_POST
+@login_required
+@user_is_responsable_structure
+@activity_required
+def remove_card_from_aidant(request, organisation_id, aidant_id):
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
+    aidant = get_object_or_404(Aidant, pk=aidant_id)
+    if aidant.organisation.id != organisation_id:
+        raise Http404
+
+    form = RemoveCardFromAidantForm(request.POST)
+
+    if not form.is_valid():
+        raise Exception("Invalid form for card/aidant dissociation")
+
+    data = form.cleaned_data
+    reason = data.get("reason")
+    if reason == "autre":
+        reason = data.get("other_reason")
+    sn = aidant.carte_totp.serial_number
+    with transaction.atomic():
+        carte = CarteTOTP.objects.get(serial_number=sn)
+        try:
+            device = TOTPDevice.objects.get(key=carte.seed, user=aidant)
+            device.delete()
+        except TOTPDevice.DoesNotExist:
+            pass
+        carte.aidant = None
+        carte.save()
+        Journal.log_card_dissociation(responsable, aidant, sn, reason)
+
+    django_messages.success(
+        request,
+        (
+            f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
+            f"de l’aidant {aidant.get_full_name()}."
+        ),
+    )
+
+    return redirect(
+        "espace_responsable_aidant",
+        organisation_id=organisation.id,
+        aidant_id=aidant.id,
+    )
+
+
+@require_http_methods(["GET", "POST"])
 @login_required
 @user_is_responsable_structure
 @activity_required
@@ -140,6 +196,7 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
                         name=f"Carte n° {serial_number}",
                     )
                     totp_device.save()
+                    Journal.log_card_association(responsable, aidant, serial_number)
 
                 return redirect(
                     "espace_responsable_validate_totp",
@@ -165,6 +222,7 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
     )
 
 
+@require_http_methods(["GET", "POST"])
 @login_required
 @user_is_responsable_structure
 @activity_required
@@ -203,9 +261,13 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
         )
         valid = totp_device.verify_token(token)
         if valid:
-            totp_device.tolerance = 1
-            totp_device.confirmed = True
-            totp_device.save()
+            with transaction.atomic():
+                totp_device.tolerance = 1
+                totp_device.confirmed = True
+                totp_device.save()
+                Journal.log_card_validation(
+                    responsable, aidant, aidant.carte_totp.serial_number
+                )
             django_messages.success(
                 request,
                 (

@@ -129,6 +129,14 @@ urlpatterns = [
     ),
     path(
         (
+            "espace-responsable/organisation/<int:organisation_id>/"
+            "aidant/<int:aidant_id>/supprimer-carte/"
+        ),
+        espace_responsable.remove_card_from_aidant,
+        name="espace_responsable_aidant_remove_card",
+    ),
+    path(
+        (
             "espace-responsable/organisation/<int:organisation_id>"
             "/aidant/<int:aidant_id>/lier-carte"
         ),

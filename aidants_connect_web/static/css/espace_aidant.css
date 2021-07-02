@@ -27,3 +27,17 @@
   background: grey;
   color: #fff;
 }
+.actions details {
+  margin: .5em 0;
+}
+.actions summary {
+  padding: .7em;
+  cursor: pointer;
+}
+.actions details[open] {
+  padding: 0 0 .7em;
+}
+.actions details[open] summary {
+  margin-bottom: .7em;
+  font-weight: bold;
+}

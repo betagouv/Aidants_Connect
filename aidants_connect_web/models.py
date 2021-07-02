@@ -693,6 +693,9 @@ class Journal(models.Model):
     ACTIONS = (
         ("connect_aidant", "Connexion d'un aidant"),
         ("activity_check_aidant", "Reprise de connexion d'un aidant"),
+        ("card_association", "Association d'une carte à d'un aidant"),
+        ("card_validation", "Validation d'une carte associée à un aidant"),
+        ("card_dissociation", "Séparation d'une carte et d'un aidant"),
         ("franceconnect_usager", "FranceConnexion d'un usager"),
         ("update_email_usager", "L'email de l'usager a été modifié"),
         ("update_phone_usager", "Le téléphone de l'usager a été modifié"),
@@ -753,6 +756,35 @@ class Journal(models.Model):
     @classmethod
     def log_activity_check(cls, aidant: Aidant):
         return cls.objects.create(aidant=aidant, action="activity_check_aidant")
+
+    @classmethod
+    def log_card_association(cls, responsable: Aidant, aidant: Aidant, sn: str):
+        more_info = f"aidant.id = {aidant.id}, sn = {sn}"
+        return cls.objects.create(
+            aidant=responsable,
+            action="card_association",
+            additional_information=more_info,
+        )
+
+    @classmethod
+    def log_card_validation(cls, responsable: Aidant, aidant: Aidant, sn: str):
+        more_info = f"aidant.id = {aidant.id}, sn = {sn}"
+        return cls.objects.create(
+            aidant=responsable,
+            action="card_validation",
+            additional_information=more_info,
+        )
+
+    @classmethod
+    def log_card_dissociation(
+        cls, responsable: Aidant, aidant: Aidant, sn: str, reason: str
+    ):
+        more_info = f"aidant.id = {aidant.id}, sn = {sn}, reason = {reason}"
+        return cls.objects.create(
+            aidant=responsable,
+            action="card_dissociation",
+            additional_information=more_info,
+        )
 
     @classmethod
     def log_franceconnection_usager(cls, aidant: Aidant, usager: Usager):
