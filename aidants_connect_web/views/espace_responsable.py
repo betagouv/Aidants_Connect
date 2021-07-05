@@ -187,14 +187,7 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
                 with transaction.atomic():
                     carte_totp.aidant = aidant
                     carte_totp.save()
-                    totp_device = TOTPDevice(
-                        key=carte_totp.seed,
-                        user=aidant,
-                        step=60,  # todo: some devices may have a different step!
-                        confirmed=False,
-                        tolerance=30,
-                        name=f"Carte n° {serial_number}",
-                    )
+                    totp_device = carte_totp.createTOTPDevice()
                     totp_device.save()
                     Journal.log_card_association(responsable, aidant, serial_number)
 

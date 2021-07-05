@@ -231,6 +231,14 @@ class Aidant(AbstractUser):
         except TOTPDevice.DoesNotExist:
             return False
 
+    @cached_property
+    def has_a_carte_totp(self):
+        try:
+            CarteTOTP.objects.get(aidant=self)
+            return True
+        except CarteTOTP.DoesNotExist:
+            return False
+
 
 class UsagerQuerySet(models.QuerySet):
     def active(self):
@@ -945,6 +953,16 @@ class CarteTOTP(models.Model):
     class Meta:
         verbose_name = "carte TOTP"
         verbose_name_plural = "cartes TOTP"
+
+    def createTOTPDevice(self, confirmed=False, tolerance=30):
+        return TOTPDevice(
+            key=self.seed,
+            user=self.aidant,
+            step=60,  # todo: some devices may have a different step!
+            confirmed=confirmed,
+            tolerance=tolerance,
+            name=f"Carte n° {self.serial_number}",
+        )
 
 
 # The Dataviz* models represent metadata that are used for data display in Metabase.

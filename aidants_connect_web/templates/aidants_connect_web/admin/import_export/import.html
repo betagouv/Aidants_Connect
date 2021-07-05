@@ -61,23 +61,23 @@
     {% if result.has_errors %}
 
       <h2>{% trans "Errors" %}</h2>
-      <ul>
+      <div>
         {% for error in result.base_errors %}
-          <li>
-            {{ error.error }}
+          <details>
+            <summary>{{ error.error }}</summary>
             <div class="traceback">{{ error.traceback|linebreaks }}</div>
-          </li>
+          </details>
         {% endfor %}
         {% for line, errors in result.row_errors %}
           {% for error in errors %}
-            <li>
-              {% trans "Line number" %}: {{ line }} - {{ error.error }}
+            <details>
+              <summary>{% trans "Line number" %}&nbsp;: {{ line }} - {{ error.error }}</summary>
               <div><code>{{ error.row.values|join:", " }}</code></div>
               <div class="traceback">{{ error.traceback|linebreaks }}</div>
-            </li>
+            </details>
           {% endfor %}
         {% endfor %}
-      </ul>
+      </div>
 
     {% elif result.has_validation_errors %}
 
