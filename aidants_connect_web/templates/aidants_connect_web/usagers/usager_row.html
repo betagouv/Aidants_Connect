@@ -1,0 +1,34 @@
+<tr
+  data-controller="filter"
+  data-filter-firstname-value="{% if usager.preferred_username %}{{ usager.preferred_username }}&nbsp;{% endif %}{{ usager.family_name }}"
+  data-filter-familyname-value="{{ usager.given_name }}"
+  data-filter-search-value=""
+  data-filter-irrelevant-result-class="irrelevant-result"
+>
+  <td>
+    <a href="{% url 'usager_details' usager_id=usager.id %}">
+      {% if usager.preferred_username %}
+        {{ usager.preferred_username }}<br/>
+        Né(e)
+      {% endif %}
+      {{ usager.family_name }}
+    </a>
+  </td>
+  <td>{{ usager.given_name }}</td>
+  <td>{{ usager.birthdate |date:"d F" }}</td>
+  {% if with_valid_mandate %}
+    <td>
+      <ul>
+        {% for autorisation, expired_soon in autorisations %}
+          <li>
+            {{ autorisation }}
+            {% if expired_soon %}
+              <span title="expire le {{ expired_soon|date:"d F" }}">⏳</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </td>
+  {% endif %}
+  <td><a href="{% url 'renew_mandat' usager_id=usager.id %}">Renouveler le mandat</a></td>
+</tr>

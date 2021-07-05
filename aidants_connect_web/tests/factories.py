@@ -1,3 +1,5 @@
+from collections import Iterable
+
 import factory
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -51,6 +53,13 @@ class AidantFactory(factory.DjangoModelFactory):
     class Meta:
         model = get_user_model()
 
+    @factory.post_generation
+    def post(self, create, _, **kwargs):
+        if not create or not kwargs.get("with_otp_device", False):
+            return
+        device = self.staticdevice_set.create(id=self.id)
+        device.token_set.create(token="123456")
+
 
 class UsagerFactory(factory.DjangoModelFactory):
     given_name = "Homer"
@@ -75,6 +84,23 @@ class MandatFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Mandat
+
+    @factory.post_generation
+    def post(self, create, _, **kwargs):
+        authorisations = kwargs.get("create_authorisations", None)
+        if not create or not isinstance(authorisations, Iterable):
+            return
+
+        for auth in authorisations:
+            Autorisation.objects.create(
+                mandat=self,
+                demarche=str(auth),
+                revocation_date=None,
+            )
+
+
+class ExpiredMandatFactory(MandatFactory):
+    expiration_date = factory.LazyAttribute(lambda f: now() - timedelta(days=365))
 
 
 class AutorisationFactory(factory.DjangoModelFactory):

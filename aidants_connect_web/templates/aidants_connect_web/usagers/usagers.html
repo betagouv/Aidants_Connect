@@ -4,6 +4,10 @@
 
 {% block title %}Aidants Connect - Usagers{% endblock %}
 
+{% block extracss %}
+  <link href="{% static 'css/users_search.css' %}" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
   <section class="section">
     <div class="container">
@@ -11,6 +15,7 @@
         <h1 class="margin-bottom-0">Vos usagères et usagers</h1>
         <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager"><span aria-hidden="true">📝&nbsp;</span>Ajouter une usagère ou un usager</a>
       </div>
+      {% include "aidants_connect_web/users_search_bar.html" %}
       {% if messages %}
         <div class="notification success" role="alert">
           {% for message in messages %}
@@ -25,7 +30,7 @@
           {% if usagers_dict.with_valid_mandate_count > 0 %}
           {# <input class="table__filter" type="text" name="input_val" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)"> #}
           <h2>Les usagères et usagers avec qui vous avez un mandat actif</h2>
-          <table class="table">
+          <table class="table with-valid-mandate">
             <thead>
             <tr>
               <th scope="col">Nom</th>
@@ -37,39 +42,14 @@
             </thead>
             <tbody>
             {% for usager, autorisations in usagers_dict.with_valid_mandate.items %}
-              <tr>
-                <td>
-                  <a href="{% url 'usager_details' usager_id=usager.id %}">
-                    {% if usager.preferred_username %}
-                      {{ usager.preferred_username }}<br/>
-                      Né(e)
-                    {% endif %}
-                    {{ usager.family_name }}
-                  </a>
-                </td>
-                <td>{{ usager.given_name }}</td>
-                <td>{{ usager.birthdate|date:"d F" }}</td>
-                <td>
-                  <ul>
-                    {% for autorisation, expired_soon in autorisations %}
-                      <li>
-                        {{ autorisation }}
-                        {% if expired_soon %}
-                          <span title="expire le {{ expired_soon|date:"d F" }}">⏳</span>
-                        {% endif %}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                </td>
-              <td><a href="{% url 'renew_mandat' usager_id=usager.id %}">Renouveler le mandat</a></td>
-              </tr>
+              {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=True %}
             {% endfor %}
             </tbody>
           </table>
           {% endif %}
           {% if usagers_dict.without_valid_mandate_count > 0 %}
           <h2>Les usagères et usagers avec qui vous avez un mandat passé</h2>
-          <table class="table">
+          <table class="table without-valid-mandate">
             <thead>
             <tr>
               <th scope="col">Nom</th>
@@ -80,20 +60,7 @@
             </thead>
             <tbody>
             {% for usager in usagers_dict.without_valid_mandate %}
-              <tr>
-                <td>
-                  <a href="{% url 'usager_details' usager_id=usager.id %}">
-                    {% if usager.preferred_username %}
-                      {{ usager.preferred_username }}<br/>
-                      Né(e)
-                    {% endif %}
-                    {{ usager.family_name }}
-                  </a>
-                </td>
-                <td>{{ usager.given_name }}</td>
-                <td>{{ usager.birthdate |date:"d F" }}</td>
-                <td><a href="{% url 'renew_mandat' usager_id=usager.id %}">Renouveler le mandat</a></td>
-              </tr>
+              {% include "aidants_connect_web/usagers/usager_row.html" with usager=usager with_valid_mandate=False %}
             {% endfor %}
             </tbody>
           </table>
@@ -104,3 +71,8 @@
     <div>
   </section>
 {% endblock content %}
+
+{% block extrajs %}
+  <script src="https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"></script>
+  <script src="{% static 'js/users_search.js' %}"></script>
+{% endblock %}

@@ -102,7 +102,7 @@ class UseAutorisationTests(FunctionalTestCase):
         self.assertEqual(
             welcome_aidant, "Bienvenue sur votre Espace Aidants Connect, Thierry"
         )
-        usagers = self.selenium.find_elements_by_id("label-usager")
+        usagers = self.selenium.find_elements_by_class_name("label-usager")
         self.assertEqual(len(usagers), 1)
         self.assertEqual(usagers[0].text, "Joséphine ST-PIERRE")
         usagers[0].click()

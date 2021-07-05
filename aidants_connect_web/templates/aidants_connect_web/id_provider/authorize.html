@@ -5,7 +5,8 @@
 {% block title %}Aidants Connect - Sélectionnez l'usager{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/id_provider.css' %}" rel="stylesheet">
+  <link href="{% static 'css/id_provider.css' %}" rel="stylesheet" />
+  <link href="{% static 'css/users_search.css' %}" rel="stylesheet" />
 {% endblock extracss %}
 
 {% block content %}
@@ -20,13 +21,31 @@
       <h2>Sélectionnez l'usager que vous souhaitez FranceConnecter</h2>
       <p id="instructions">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
       {% if usagers %}
+        {% include "aidants_connect_web/users_search_bar.html" %}
         <fieldset>
           <div id="usagers" class="grid">
             {% for usager in usagers %}
-              <div id="usager" class="tile">
-                <input id="button-{{ usager.id }}" type="submit" value="{{ usager.id }}" name="chosen_usager" />
-                <label id="label-usager" for="button-{{ usager.id }}">
-                  <h3>{{ usager.given_name }} {{ usager.family_name }}</h3>
+              <div
+                class="tile usager"
+                data-controller="filter"
+                data-filter-firstname-value="{% if usager.preferred_username %}{{ usager.preferred_username }}&nbsp;{% endif %}{{ usager.family_name }}"
+                data-filter-familyname-value="{{ usager.given_name }}"
+                data-filter-search-value=""
+                data-filter-irrelevant-result-class="irrelevant-result"
+              >
+                <input
+                  id="button-{{ usager.id }}"
+                  type="submit"
+                  value="{{ usager.id }}"
+                  name="chosen_usager"
+                  aria-labelledby="label-usager-{{ usager.id }}"
+                />
+                <label
+                  id="label-usager-{{ usager.id }}"
+                  class="label-usager"
+                  for="button-{{ usager.id }}"
+                >
+                  {{ usager.given_name }} {% if usager.preferred_username %}{{ usager.preferred_username }}<br/>Né(e) {% endif %}{{ usager.family_name }}
                 </label>
               </div>
             {% endfor %}
@@ -41,6 +60,11 @@
         </div>
       {% endif %}
     </form>
-  <div>
+  </div>
 </section>
 {% endblock content %}
+
+{% block extrajs %}
+  <script src="https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"></script>
+  <script src="{% static 'js/users_search.js' %}"></script>
+{% endblock %}
