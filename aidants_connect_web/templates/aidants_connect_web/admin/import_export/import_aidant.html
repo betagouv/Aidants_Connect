@@ -14,6 +14,15 @@
       <dt>responsable_de</dt>
       <dd>Identifiants internes Django des organisations dont l'aidant est responsable.<br>
         Séparez les identifiants par des virgules, par exemple&nbsp;: <code>4,5,6</code></dd>
+      <dt>can_create_mandats</dt>
+      <dd>
+        Entrer <code>0</code> (zéro) ou <code>False</code> permet de créer un compte «&nbsp;responsable seulement&nbsp;»
+        qui ne peut pas créer de mandat.<br>
+        Entrer <code>1</code> ou <code>True</code> permet de créer un compte Aidant classique, qui peut créer des
+        mandats auprès des usagers.<br>
+        Si la case est laissée vide, la valeur par défaut sera <code>True</code>&nbsp;: par défaut, le compte peut
+        créer des mandats.
+      </dd>
       <dt>token</dt>
       <dd>Code à 6 chiffres, à usage unique, permettant à un responsable de se connecter sans carte TOTP.</dd>
       <dt>carte_ac</dt>
