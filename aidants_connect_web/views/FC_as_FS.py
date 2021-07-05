@@ -158,14 +158,15 @@ def get_user_info(connection: Connection) -> tuple:
         if usager.email != user_info.get("email"):
             usager.email = user_info.get("email")
             usager.save()
-
             Journal.log_update_email_usager(aidant=connection.aidant, usager=usager)
 
         if user_phone is not None and usager.phone != user_phone:
             usager.phone = user_phone
-
             Journal.log_update_phone_usager(aidant=connection.aidant, usager=usager)
+            usager.save()
 
+        if not usager.preferred_username and user_info.get("preferred_username"):
+            usager.preferred_username = user_info.get("preferred_username")
             usager.save()
 
         return usager, None

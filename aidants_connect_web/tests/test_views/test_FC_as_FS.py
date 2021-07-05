@@ -363,7 +363,7 @@ class GetUserInfoTests(TestCase):
                 "given_name": self.usager.given_name,
                 "family_name": self.usager.family_name,
                 "sub": self.usager_sub_fc,
-                "preferred_username": self.usager.preferred_username,
+                "preferred_username": "TROIS",
                 "birthdate": self.usager.birthdate,
                 "gender": self.usager.gender,
                 "birthplace": self.usager.birthplace,
@@ -377,6 +377,7 @@ class GetUserInfoTests(TestCase):
 
         self.assertEqual(usager.id, self.usager.id)
         self.assertEqual(usager.given_name, "Joséphine")
+        self.assertEqual(usager.preferred_username, "TROIS")
         self.assertEqual(usager.email, "new@email.com")
         self.assertIsNone(error)
 
