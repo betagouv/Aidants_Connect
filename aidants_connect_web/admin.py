@@ -124,6 +124,7 @@ class AidantResource(resources.ModelResource):
             "is_active",
             "responsable_de",
             "carte_ac",
+            "can_create_mandats",
         )
 
     def before_save_instance(self, instance: Aidant, using_transactions, dry_run):
