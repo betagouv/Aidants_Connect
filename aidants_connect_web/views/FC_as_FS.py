@@ -36,9 +36,10 @@ def fc_authorize(request):
         "birthplace",
         "given_name",
         "family_name",
-        "preferred_username",
         "birthcountry",
     ]
+    if settings.GET_PREFERRED_USERNAME_FROM_FC:
+        fc_scopes.append("preferred_username")
 
     parameters = (
         f"response_type=code"
