@@ -90,6 +90,7 @@ if os.environ.get("FC_AS_FS_TEST_PORT"):
 else:
     FC_AS_FS_TEST_PORT = 0
 
+GET_PREFERRED_USERNAME_FROM_FC = getenv_bool("GET_PREFERRED_USERNAME_FROM_FC", True)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
