@@ -142,7 +142,7 @@ class AidantResource(resources.ModelResource):
             add_static_token(row["username"], token)
 
     def after_save_instance(self, instance: Aidant, using_transactions, dry_run):
-        if instance.carte_ac:
+        if hasattr(instance, "carte_ac"):
             card_sn = instance.carte_ac
             # instance.carte_ac is the sn the import added to the aidant instance,
             # it will not be persisted as-is in database.
