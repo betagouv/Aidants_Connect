@@ -61,7 +61,7 @@
     {% if result.has_errors %}
 
       <h2>{% trans "Errors" %}</h2>
-      <div>
+      <div class="errors">
         {% for error in result.base_errors %}
           <details>
             <summary>{{ error.error }}</summary>

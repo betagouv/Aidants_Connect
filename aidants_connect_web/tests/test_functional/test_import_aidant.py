@@ -69,4 +69,10 @@ class ImportAidantTests(FunctionalTestCase):
                         "//table[@class='import-preview']"
                     )
                 except NoSuchElementException:
-                    self.fail(f"Import of following file failed: {entry.path}")
+                    first_error = self.selenium.find_element_by_xpath(
+                        "//div[@class='errors']/details[1]/summary"
+                    )
+                    self.fail(
+                        f"Import of following file failed: {entry.path} "
+                        f"with message: '{first_error.text}'"
+                    )
