@@ -8,6 +8,7 @@ from django.conf import settings
 from django.test import override_settings, tag, TestCase
 from django.test.client import Client
 
+from aidants_connect_web.constants import AuthorizationDurationChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash
@@ -21,7 +22,9 @@ fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 class FCAuthorize(TestCase):
     def setUp(self):
         Connection.objects.create(
-            id=1, demarches=["argent", "papiers"], duree_keyword="SHORT"
+            id=1,
+            demarches=["argent", "papiers"],
+            duree_keyword=AuthorizationDurationChoices.SHORT,
         )
 
     def test_well_formatted_request_fills_connection(self):

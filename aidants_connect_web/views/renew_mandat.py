@@ -11,6 +11,7 @@ from django.shortcuts import render, redirect
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Connection, Journal
+from aidants_connect_web.constants import AuthorizationDurations
 
 
 @login_required
@@ -48,7 +49,7 @@ def renew_mandat(request, usager_id):
                 duree_keyword=data["duree"],
                 mandat_is_remote=data["is_remote"],
             )
-            duree = 1 if connection.duree_keyword == "SHORT" else 365
+            duree = AuthorizationDurations.duration(connection.duree_keyword)
             Journal.log_init_renew_mandat(
                 aidant=aidant,
                 usager=usager,

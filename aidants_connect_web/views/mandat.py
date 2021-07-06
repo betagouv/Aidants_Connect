@@ -1,5 +1,5 @@
 import logging
-from datetime import date, timedelta
+from datetime import date
 from typing import Collection
 
 from django.conf import settings
@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone, formats
 from django.contrib.staticfiles import finders
 
+from aidants_connect_web.constants import AuthorizationDurations
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm, RecapMandatForm, PatchedErrorList
 from aidants_connect_web.models import (
@@ -107,18 +108,9 @@ def new_mandat_recap(request):
 
         if form.is_valid():
             now = timezone.now()
-            expiration_date = {
-                "SHORT": now + timedelta(days=1),
-                "LONG": now + timedelta(days=365),
-                "EUS_03_20": settings.ETAT_URGENCE_2020_LAST_DAY,
-            }
-            mandat_expiration_date = expiration_date.get(connection.duree_keyword)
-            days_before_expiration_date = {
-                "SHORT": 1,
-                "LONG": 365,
-                "EUS_03_20": 1 + (settings.ETAT_URGENCE_2020_LAST_DAY - now).days,
-            }
-            mandat_duree = days_before_expiration_date.get(connection.duree_keyword)
+            durationkw = connection.duree_keyword
+            mandat_expiration_date = AuthorizationDurations.expiration(durationkw, now)
+            mandat_duree = AuthorizationDurations.duration(durationkw, now)
 
             try:
                 connection.demarches.sort()
