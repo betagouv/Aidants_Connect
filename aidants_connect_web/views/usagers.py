@@ -124,7 +124,7 @@ def usagers_index(request):
 
     return render(
         request,
-        "aidants_connect_web/usagers.html",
+        "aidants_connect_web/usagers/usagers.html",
         {
             "aidant": aidant,
             "usagers_dict": usagers_dict,

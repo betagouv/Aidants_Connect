@@ -18,9 +18,9 @@ form {
   padding: 0;
 }
 
-.tile h3 {
+.tile .label-usager {
   font-size: 1.2em;
-  margin-bottom: 0;
+  font-weight: bold;
 }
 
 .tile input {

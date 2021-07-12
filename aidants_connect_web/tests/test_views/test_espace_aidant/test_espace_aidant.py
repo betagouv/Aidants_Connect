@@ -49,7 +49,7 @@ class UsagersIndexPageTests(TestCase):
     def test_usagers_index_url_triggers_the_usagers_index_template(self):
         self.client.force_login(self.aidant)
         response = self.client.get("/usagers/")
-        self.assertTemplateUsed(response, "aidants_connect_web/usagers.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/usagers/usagers.html")
 
 
 @tag("usagers")
