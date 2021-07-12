@@ -246,6 +246,41 @@ class Aidant(AbstractUser):
             return False
 
 
+class HabilitationRequest(models.Model):
+    first_name = models.CharField("Prénom", max_length=150)
+    last_name = models.CharField("Nom", max_length=150)
+    email = models.EmailField(
+        max_length=150,
+    )
+    organisation = models.ForeignKey(
+        Organisation,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="habilitation_requests",
+    )
+    profession = models.TextField(blank=False)
+    status = models.CharField(
+        "État",
+        blank=False,
+        max_length=150,
+        choices=(
+            ("validated", "Validée"),
+            ("processing", "En cours"),
+            ("refused", "Refusée"),
+            ("cancelled", "Annulée"),
+        ),
+    )
+    created_at = models.DateTimeField("Date de création", auto_now_add=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True)
+
+    def __str__(self):
+        return f"{self.email}"
+
+    class Meta:
+        verbose_name = "requête d’habilitation"
+        verbose_name_plural = "requêtes d’habilitation"
+
+
 class UsagerQuerySet(models.QuerySet):
     def active(self):
         return (

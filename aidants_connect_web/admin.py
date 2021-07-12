@@ -32,6 +32,7 @@ from aidants_connect_web.models import (
     Aidant,
     Autorisation,
     Connection,
+    HabilitationRequest,
     Journal,
     Mandat,
     Organisation,
@@ -250,6 +251,19 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     )
 
 
+class HabilitationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "email",
+        "first_name",
+        "last_name",
+        "organisation",
+        "profession",
+        "status",
+    )
+    readonly_fields = ("created_at", "updated_at")
+    raw_id_fields = ("organisation",)
+
+
 class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):
     model = Autorisation
     fields = ("demarche", "revocation_date")
@@ -357,6 +371,7 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 # Display the following tables in the admin
 admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
+admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)
 admin_site.register(Mandat, MandatAdmin)
 admin_site.register(Journal, JournalAdmin)
