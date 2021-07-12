@@ -276,7 +276,7 @@ class Usager(models.Model):
 
     given_name = models.CharField("Prénom", max_length=255, blank=False)
     family_name = models.CharField("Nom", max_length=255, blank=False)
-    preferred_username = models.CharField(max_length=255, blank=True)
+    preferred_username = models.CharField(max_length=255, blank=True, null=True)
 
     gender = models.CharField(
         "Genre",
