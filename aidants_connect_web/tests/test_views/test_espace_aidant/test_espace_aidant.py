@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.test import tag, TestCase
 from django.test.client import Client
-from django.urls import resolve
+from django.urls import resolve, reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
@@ -80,6 +80,13 @@ class UsagersDetailsPageTests(TestCase):
         self.assertIn(
             "<title>Aidants Connect - Homer Simpson</title>", response_content
         )
+
+    def test_usager_details_renew_mandat(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get(f"/usagers/{self.usager.id}/")
+        response_content = response.content.decode("utf-8")
+        self.assertIn("Renouveler le mandat", response_content)
+        self.assertIn(reverse("renew_mandat", args=(self.usager.pk,)), response_content)
 
 
 @tag("responsable-structure")
