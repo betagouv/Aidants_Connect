@@ -262,6 +262,21 @@ class HabilitationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     )
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("organisation",)
+    actions = ("mark_validated",)
+
+    def mark_validated(self, request, queryset):
+        number = 0
+        for habilitation_request in queryset:
+            result = habilitation_request.validate()
+            if result:
+                number += 1
+        self.message_user(
+            request, f"{number} requêtes d'habilitation ont été validées."
+        )
+
+    mark_validated.short_description = (
+        "Valider les demandes d’habilitation sélectionnées"
+    )
 
 
 class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):

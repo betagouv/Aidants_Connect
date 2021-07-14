@@ -276,6 +276,28 @@ class HabilitationRequest(models.Model):
     def __str__(self):
         return f"{self.email}"
 
+    def validate(self):
+        if self.status != "processing":
+            return False
+
+        if Aidant.objects.filter(username=self.email).count() > 0:
+            self.status = "validated"
+            self.save()
+            return True
+
+        aidant = Aidant(
+            last_name=self.last_name,
+            first_name=self.first_name,
+            profession=self.profession,
+            organisation=self.organisation,
+            email=self.email,
+            username=self.email,
+        )
+        aidant.save()
+        self.status = "validated"
+        self.save()
+        return True
+
     class Meta:
         verbose_name = "requête d’habilitation"
         verbose_name_plural = "requêtes d’habilitation"
