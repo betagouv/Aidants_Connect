@@ -59,6 +59,9 @@ def organisation(request, organisation_id):
     aidants = organisation.aidants.order_by("-is_active", "last_name").prefetch_related(
         "carte_totp"
     )
+    habilitation_requests = organisation.habilitation_requests.order_by(
+        "status", "email"
+    )
     totp_devices_users = {
         device.user.id: device.confirmed
         for device in TOTPDevice.objects.filter(user__in=aidants)
@@ -72,6 +75,7 @@ def organisation(request, organisation_id):
             "organisation": organisation,
             "aidants": aidants,
             "totp_devices_users": totp_devices_users,
+            "habilitation_requests": habilitation_requests,
         },
     )
 
