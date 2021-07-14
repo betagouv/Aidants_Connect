@@ -20,7 +20,7 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ImportMixin
+from import_export.admin import ImportMixin, ExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
 from magicauth.models import MagicToken
@@ -251,7 +251,23 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     )
 
 
-class HabilitationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
+class HabilitationRequestResource(resources.ModelResource):
+    class Meta:
+        model = HabilitationRequest
+        fields = (
+            "first_name",
+            "last_name",
+            "email",
+            "organisation",
+            "organisation__name",
+            "profession",
+            "status",
+            "created_at",
+            "updated_at",
+        )
+
+
+class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "email",
         "first_name",
@@ -263,6 +279,10 @@ class HabilitationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("organisation",)
     actions = ("mark_validated",)
+    list_filter = ("status",)
+    search_fields = ("first_name", "last_name", "email", "organisation__name")
+    ordering = ("email",)
+    resource_class = HabilitationRequestResource
 
     def mark_validated(self, request, queryset):
         number = 0
