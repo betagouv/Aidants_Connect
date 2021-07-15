@@ -251,6 +251,7 @@ class HabilitationRequest(models.Model):
     last_name = models.CharField("Nom", max_length=150)
     email = models.EmailField(
         max_length=150,
+        unique=True,
     )
     organisation = models.ForeignKey(
         Organisation,
@@ -258,11 +259,12 @@ class HabilitationRequest(models.Model):
         on_delete=models.CASCADE,
         related_name="habilitation_requests",
     )
-    profession = models.TextField(blank=False)
+    profession = models.CharField(blank=False, max_length=150)
     status = models.CharField(
         "État",
         blank=False,
         max_length=150,
+        default="processing",
         choices=(
             ("validated", "Validée"),
             ("processing", "En cours"),

@@ -14,6 +14,7 @@ from aidants_connect_web.decorators import (
 from aidants_connect_web.forms import (
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
+    HabilitationRequestCreationForm,
     RemoveCardFromAidantForm,
 )
 
@@ -291,4 +292,40 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
 @user_is_responsable_structure
 @activity_required
 def new_habilitation_request(request, organisation_id):
-    pass
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
+
+    if request.method == "GET":
+        form = HabilitationRequestCreationForm()
+        return render(
+            request,
+            "aidants_connect_web/espace_responsable/new-habilitation-request.html",
+            {"organisation": organisation, "form": form},
+        )
+
+    form = HabilitationRequestCreationForm(request.POST)
+
+    if not form.is_valid():
+        return render(
+            request,
+            "aidants_connect_web/espace_responsable/new-habilitation-request.html",
+            {"organisation": organisation, "form": form},
+        )
+
+    habilitation_request = form.save(commit=False)
+    habilitation_request.organisation = organisation
+    habilitation_request.save()
+
+    django_messages.success(
+        request,
+        (
+            f"La requête d’habilitation pour {habilitation_request.first_name} "
+            f"{habilitation_request.last_name} a bien été enregistrée."
+        ),
+    )
+
+    return redirect(
+        "espace_responsable_organisation",
+        organisation_id=organisation.id,
+    )

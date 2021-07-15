@@ -14,7 +14,12 @@ from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from aidants_connect_web.constants import AuthorizationDurations as ADKW
-from aidants_connect_web.models import Aidant, CarteTOTP, Organisation
+from aidants_connect_web.models import (
+    Aidant,
+    CarteTOTP,
+    HabilitationRequest,
+    Organisation,
+)
 
 
 class AidantCreationForm(forms.ModelForm):
@@ -262,6 +267,17 @@ class RemoveCardFromAidantForm(forms.Form):
         )
     )
     other_reason = forms.CharField(required=False)
+
+
+class HabilitationRequestCreationForm(forms.ModelForm):
+    class Meta:
+        model = HabilitationRequest
+        fields = (
+            "email",
+            "last_name",
+            "first_name",
+            "profession",
+        )
 
 
 class DatapassForm(forms.Form):

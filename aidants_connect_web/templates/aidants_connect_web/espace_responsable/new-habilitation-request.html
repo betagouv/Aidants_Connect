@@ -1,0 +1,59 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Ajouter un aidant à la structure {{ organisation.name }}{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <section class="section">
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <h1>Ajouter un aidant à l’organisation {{ organisation.name }}</h1>
+      <p>Pour ajouter un aidant à votre organisation, vous devez formuler une demande d'habilitation à l'aide du formulaire
+        ci-dessous. Tous les champs sont obligatoires.</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form__group">
+          <label for="{{ form.first_name.id_for_label }}">Prénom de l’aidant</label>
+          <div>
+            {{ form.first_name }}
+          </div>
+          {{ form.first_name.errors }}
+        </div>
+        <div class="form__group">
+          <label for="{{ form.last_name.id_for_label }}">Nom de l’aidant</label>
+          <div>
+            {{ form.last_name }}
+          </div>
+          {{ form.last_name.errors }}
+        </div>
+        <div class="form__group">
+          <label for="{{ form.email.id_for_label }}">Email professionnel de l’aidant</label>
+          <div>
+            {{ form.email }}
+          </div>
+          {{ form.email.errors }}
+        </div>
+        <div class="form__group">
+          <label for="{{ form.profession.id_for_label }}">Profession de l’aidant</label>
+          <div>
+            {{ form.profession }}
+          </div>
+          {{ form.profession.errors }}
+        </div>
+        <div class="form__group">
+          <button class="button" type="submit">Demander l'habilitation</button>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock content %}
