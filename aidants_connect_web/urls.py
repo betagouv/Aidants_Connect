@@ -128,6 +128,11 @@ urlpatterns = [
         name="espace_responsable_aidant",
     ),
     path(
+        "espace-responsable/organisation/<int:organisation_id>/aidant/ajouter/",
+        espace_responsable.new_habilitation_request,
+        name="espace_responsable_aidant_new",
+    ),
+    path(
         (
             "espace-responsable/organisation/<int:organisation_id>/"
             "aidant/<int:aidant_id>/supprimer-carte/"

@@ -284,3 +284,11 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
         "aidants_connect_web/espace_responsable/validate-carte-totp.html",
         {"aidant": aidant, "organisation": organisation, "form": form},
     )
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+@user_is_responsable_structure
+@activity_required
+def new_habilitation_request(request, organisation_id):
+    pass

@@ -43,6 +43,12 @@
   <section class="section section-grey">
     <div class="container">
       <h2>Aidants</h2>
+      <p class="text-right">
+        <a href="{% url "espace_responsable_aidant_new" organisation_id=organisation.id %}" class="button">
+          <span aria-hidden="true">👩</span>
+          Ajouter un aidant
+        </a>
+      </p>
       {% if aidants %}
         <table class="table aidants-list">
           <thead>
