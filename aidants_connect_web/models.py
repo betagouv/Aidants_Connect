@@ -290,11 +290,11 @@ class HabilitationRequest(models.Model):
         return f"{self.email}"
 
     def validate(self):
-        if self.status != "processing":
+        if self.status != self.STATUS_PROCESSING:
             return False
 
         if Aidant.objects.filter(username=self.email).count() > 0:
-            self.status = "validated"
+            self.status = self.STATUS_VALIDATED
             self.save()
             return True
 
@@ -306,8 +306,8 @@ class HabilitationRequest(models.Model):
             email=self.email,
             username=self.email,
         )
+        self.status = self.STATUS_VALIDATED
         aidant.save()
-        self.status = "validated"
         self.save()
         return True
 
@@ -316,8 +316,8 @@ class HabilitationRequest(models.Model):
         return self.STATUS_LABELS[self.status]
 
     class Meta:
-        verbose_name = "requête d’habilitation"
-        verbose_name_plural = "requêtes d’habilitation"
+        verbose_name = "demande d’habilitation"
+        verbose_name_plural = "demandes d’habilitation"
 
 
 class UsagerQuerySet(models.QuerySet):
