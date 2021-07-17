@@ -104,12 +104,13 @@
   {% if habilitation_requests %}
     <section class="section">
       <div class="container">
-        <h2>Requêtes d’habilitation</h2>
+        <h2>Demandes d’habilitation en cours</h2>
         <table class="table aidants-list">
           <thead>
           <tr>
             <th scope="col">Nom</th>
             <th scope="col">E-mail</th>
+            <th scope="col">Profession</th>
             <th scope="col">État de la demande</th>
           </tr>
           </thead>
@@ -118,6 +119,7 @@
             <tr>
               <th scope="row">{{ hab_request.first_name }} {{ hab_request.last_name }}</th>
               <td>{{ hab_request.email }}</td>
+              <td>{{ hab_request.profession }}</td>
               <td>{{ hab_request.status_label }}</td>
             </tr>
           {% endfor %}

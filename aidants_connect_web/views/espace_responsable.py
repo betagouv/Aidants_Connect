@@ -6,7 +6,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.models import Aidant, CarteTOTP, Journal, Organisation
+from aidants_connect_web.models import (
+    Aidant,
+    CarteTOTP,
+    HabilitationRequest,
+    Journal,
+    Organisation,
+)
 from aidants_connect_web.decorators import (
     user_is_responsable_structure,
     activity_required,
@@ -60,9 +66,9 @@ def organisation(request, organisation_id):
     aidants = organisation.aidants.order_by("-is_active", "last_name").prefetch_related(
         "carte_totp"
     )
-    habilitation_requests = organisation.habilitation_requests.order_by(
-        "status", "email"
-    )
+    habilitation_requests = organisation.habilitation_requests.exclude(
+        status=HabilitationRequest.STATUS_VALIDATED
+    ).order_by("status", "last_name")
     totp_devices_users = {
         device.user.id: device.confirmed
         for device in TOTPDevice.objects.filter(user__in=aidants)
