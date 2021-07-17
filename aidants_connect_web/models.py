@@ -264,6 +264,9 @@ class HabilitationRequest(models.Model):
     email = models.EmailField(
         max_length=150,
         unique=True,
+        error_messages={
+            "unique": "Une demande a déjà été déposée pour cette adresse e-mail.",
+        },
     )
     organisation = models.ForeignKey(
         Organisation,
