@@ -247,6 +247,18 @@ class Aidant(AbstractUser):
 
 
 class HabilitationRequest(models.Model):
+    STATUS_PROCESSING = "processing"
+    STATUS_VALIDATED = "validated"
+    STATUS_REFUSED = "refused"
+    STATUS_CANCELLED = "cancelled"
+
+    STATUS_LABELS = {
+        STATUS_VALIDATED: "Validée",
+        STATUS_PROCESSING: "En cours",
+        STATUS_REFUSED: "Refusée",
+        STATUS_CANCELLED: "Annulée",
+    }
+
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
     email = models.EmailField(
@@ -264,14 +276,10 @@ class HabilitationRequest(models.Model):
         "État",
         blank=False,
         max_length=150,
-        default="processing",
-        choices=(
-            ("validated", "Validée"),
-            ("processing", "En cours"),
-            ("refused", "Refusée"),
-            ("cancelled", "Annulée"),
-        ),
+        default=STATUS_PROCESSING,
+        choices=((status, label) for status, label in STATUS_LABELS.items()),
     )
+
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
 
@@ -299,6 +307,10 @@ class HabilitationRequest(models.Model):
         self.status = "validated"
         self.save()
         return True
+
+    @property
+    def status_label(self):
+        return self.STATUS_LABELS[self.status]
 
     class Meta:
         verbose_name = "requête d’habilitation"
