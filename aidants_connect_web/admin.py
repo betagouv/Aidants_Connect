@@ -278,7 +278,7 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     )
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("organisation",)
-    actions = ("mark_validated",)
+    actions = ("mark_validated", "mark_refused")
     list_filter = ("status",)
     search_fields = ("first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
@@ -297,6 +297,16 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     mark_validated.short_description = (
         "Valider les demandes d’habilitation sélectionnées"
     )
+
+    def mark_refused(self, request, queryset):
+        rows_updated = queryset.filter(
+            status=HabilitationRequest.STATUS_PROCESSING
+        ).update(status=HabilitationRequest.STATUS_REFUSED)
+        self.message_user(
+            request, f"{rows_updated} demandes d’habilitation ont été refusées."
+        )
+
+    mark_refused.short_description = "Refuser les demandes d’habilitation sélectionnées"
 
 
 class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):
