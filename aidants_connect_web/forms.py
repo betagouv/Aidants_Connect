@@ -13,6 +13,7 @@ from django_otp import match_token
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
+from aidants_connect_web.constants import AuthorizationDurations as ADKW
 from aidants_connect_web.models import Aidant, CarteTOTP, Organisation
 
 
@@ -140,8 +141,28 @@ class MandatForm(forms.Form):
 
     # models.MandatDureeKeywords
     DUREES = [
-        ("SHORT", {"title": "Mandat court", "description": "(expire demain)"}),
-        ("LONG", {"title": "Mandat long", "description": "(12 mois)"}),
+        (
+            ADKW.SHORT,
+            {"title": "Mandat court", "description": "(expire demain)"},
+        ),
+        (
+            ADKW.TRIMESTER,
+            {
+                "title": "Mandat de 3 mois",
+                "description": f"({ADKW.DAYS[ADKW.TRIMESTER]} jours)",
+            },
+        ),
+        (
+            ADKW.SEMESTER,
+            {
+                "title": "Mandat de 6 mois",
+                "description": f"({ADKW.DAYS[ADKW.SEMESTER]} jours)",
+            },
+        ),
+        (
+            ADKW.LONG,
+            {"title": "Mandat long", "description": "(12 mois)"},
+        ),
     ]
     duree = forms.ChoiceField(
         choices=DUREES,
