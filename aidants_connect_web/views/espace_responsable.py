@@ -298,28 +298,39 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
 @user_is_responsable_structure
 @activity_required
 def new_habilitation_request(request, organisation_id):
+    def render_template(request, organisation, form):
+        return render(
+            request,
+            "aidants_connect_web/espace_responsable/new-habilitation-request.html",
+            {"organisation": organisation, "form": form},
+        )
+
     responsable: Aidant = request.user
     organisation = get_object_or_404(Organisation, pk=organisation_id)
     check_organisation_and_responsable(responsable, organisation)
 
     if request.method == "GET":
         form = HabilitationRequestCreationForm()
-        return render(
-            request,
-            "aidants_connect_web/espace_responsable/new-habilitation-request.html",
-            {"organisation": organisation, "form": form},
-        )
+        return render_template(request, organisation, form)
 
     form = HabilitationRequestCreationForm(request.POST)
 
     if not form.is_valid():
-        return render(
-            request,
-            "aidants_connect_web/espace_responsable/new-habilitation-request.html",
-            {"organisation": organisation, "form": form},
-        )
+        return render_template(request, organisation, form)
 
     habilitation_request = form.save(commit=False)
+
+    if Aidant.objects.filter(email=habilitation_request.email).count() > 0:
+        django_messages.warning(
+            request,
+            (
+                f"Il existe déjà un compte aidant pour l’adresse e-mail "
+                f"{habilitation_request.email}. Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci."
+            ),
+        )
+        return render_template(request, organisation, form)
+
     habilitation_request.organisation = organisation
     habilitation_request.save()
 
