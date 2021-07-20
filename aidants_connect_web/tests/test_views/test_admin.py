@@ -18,12 +18,13 @@ from aidants_connect_web.admin import (
 
 from aidants_connect_web.models import (
     Aidant,
+    CarteTOTP,
     Connection,
+    HabilitationRequest,
     Journal,
     Mandat,
     Organisation,
     Usager,
-    CarteTOTP,
 )
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 
@@ -126,7 +127,7 @@ class VisibleToAdminMetierTests(TestCase):
 @tag("admin")
 class VisibilityAdminPageTests(TestCase):
     only_by_atac_models = [Mandat, Usager, Connection, Journal]
-    amac_models = [Organisation, Aidant, StaticDevice, TOTPDevice]
+    amac_models = [Organisation, Aidant, StaticDevice, TOTPDevice, HabilitationRequest]
 
     @classmethod
     def setUpTestData(cls):
