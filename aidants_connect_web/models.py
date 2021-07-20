@@ -289,7 +289,7 @@ class HabilitationRequest(models.Model):
     def __str__(self):
         return f"{self.email}"
 
-    def validate(self):
+    def validate_and_create_aidant(self):
         if self.status != self.STATUS_PROCESSING:
             return False
 

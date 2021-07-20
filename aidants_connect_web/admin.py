@@ -285,13 +285,13 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     resource_class = HabilitationRequestResource
 
     def mark_validated(self, request, queryset):
-        number = 0
-        for habilitation_request in queryset:
-            result = habilitation_request.validate()
-            if result:
-                number += 1
+        rows_updated = sum(
+            1
+            for habilitation_request in queryset
+            if habilitation_request.validate_and_create_aidant()
+        )
         self.message_user(
-            request, f"{number} requêtes d'habilitation ont été validées."
+            request, f"{rows_updated} demandes d'habilitation ont été validées."
         )
 
     mark_validated.short_description = (
