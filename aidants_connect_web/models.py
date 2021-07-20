@@ -263,10 +263,6 @@ class HabilitationRequest(models.Model):
     last_name = models.CharField("Nom", max_length=150)
     email = models.EmailField(
         max_length=150,
-        unique=True,
-        error_messages={
-            "unique": "Une demande a déjà été déposée pour cette adresse e-mail.",
-        },
     )
     organisation = models.ForeignKey(
         Organisation,
@@ -285,6 +281,15 @@ class HabilitationRequest(models.Model):
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=("email", "organisation"), name="unique_email_per_orga"
+            ),
+        )
+        verbose_name = "demande d’habilitation"
+        verbose_name_plural = "demandes d’habilitation"
 
     def __str__(self):
         return f"{self.email}"
@@ -314,10 +319,6 @@ class HabilitationRequest(models.Model):
     @property
     def status_label(self):
         return self.STATUS_LABELS[self.status]
-
-    class Meta:
-        verbose_name = "demande d’habilitation"
-        verbose_name_plural = "demandes d’habilitation"
 
 
 class UsagerQuerySet(models.QuerySet):

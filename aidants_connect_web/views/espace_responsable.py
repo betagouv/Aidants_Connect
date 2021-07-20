@@ -320,7 +320,13 @@ def new_habilitation_request(request, organisation_id):
 
     habilitation_request = form.save(commit=False)
 
-    if Aidant.objects.filter(email=habilitation_request.email).count() > 0:
+    if (
+        Aidant.objects.filter(
+            email=habilitation_request.email,
+            organisation__in=responsable.responsable_de.all(),
+        ).count()
+        > 0
+    ):
         django_messages.warning(
             request,
             (
@@ -331,9 +337,21 @@ def new_habilitation_request(request, organisation_id):
         )
         return render_template(request, organisation, form)
 
+    if HabilitationRequest.objects.filter(
+        email=habilitation_request.email, organisation=organisation
+    ):
+        django_messages.warning(
+            request,
+            (
+                "Une demande d'habilitation est déjà en cours pour l'adresse e-mail "
+                f"{habilitation_request.email}. Vous n’avez pas besoin d’en déposer "
+                "une nouvelle."
+            ),
+        )
+        return render_template(request, organisation, form)
+
     habilitation_request.organisation = organisation
     habilitation_request.save()
-
     django_messages.success(
         request,
         (
