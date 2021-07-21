@@ -6,3 +6,4 @@ class AidantConnectWebConfig(AppConfig):
 
     def ready(self):
         import aidants_connect_web.signals  # noqa
+        import aidants_connect_web.lookups  # noqa

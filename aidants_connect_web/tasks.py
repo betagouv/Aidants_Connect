@@ -120,3 +120,26 @@ def notify_new_habilitation_requests():
         message=text_message,
         html_message=html_message,
     )
+
+
+@shared_task()
+def notify_no_totp_workers():
+    workers_without_totp = Aidant.objects.filter(
+        email__isnull_or_blank=True, carte_totp__isnull=True
+    ).values_list("email", flat=True)
+
+    text_message = loader.render_to_string(
+        "aidants_connect_web/managment/notify_no_totp_workers.txt",
+    )
+
+    html_message = loader.render_to_string(
+        "aidants_connect_web/managment/notify_no_totp_workers.html",
+    )
+
+    send_mail(
+        from_email=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_FROM,
+        recipient_list=workers_without_totp,
+        subject=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_SUBJECT,
+        message=text_message,
+        html_message=html_message,
+    )
