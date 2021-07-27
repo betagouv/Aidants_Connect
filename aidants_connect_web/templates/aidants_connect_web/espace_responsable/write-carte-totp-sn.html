@@ -39,8 +39,9 @@
         {% csrf_token %}
         <div class="form__group">
           <label for="{{ form.serial_number.id_for_label }}">
-            Entrez le numéro de série de la carte Aidants Connect que vous allez lier
-            à {% if aidant.id == responsable.id %}votre compte{% else %}{{ aidant.get_full_name }}{% endif %}&nbsp;:
+            Entrez le numéro de série (de la forme <code>GADT000XXXXX</code>) présent sur le verso de la carte
+            que vous allez lier à
+            {% if aidant.id == responsable.id %}votre compte{% else %}{{ aidant.get_full_name }}{% endif %}&nbsp;:
           </label>
           {{ form.serial_number }}
           {% if form.errors.serial_number %}
