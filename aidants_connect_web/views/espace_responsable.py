@@ -310,10 +310,10 @@ def new_habilitation_request(request, organisation_id):
     check_organisation_and_responsable(responsable, organisation)
 
     if request.method == "GET":
-        form = HabilitationRequestCreationForm()
+        form = HabilitationRequestCreationForm(responsable, organisation)
         return render_template(request, organisation, form)
 
-    form = HabilitationRequestCreationForm(request.POST)
+    form = HabilitationRequestCreationForm(responsable, organisation, request.POST)
 
     if not form.is_valid():
         return render_template(request, organisation, form)
@@ -350,7 +350,6 @@ def new_habilitation_request(request, organisation_id):
         )
         return render_template(request, organisation, form)
 
-    habilitation_request.organisation = organisation
     habilitation_request.save()
     django_messages.success(
         request,

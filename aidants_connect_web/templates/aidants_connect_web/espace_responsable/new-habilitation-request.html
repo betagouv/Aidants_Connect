@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Aidants Connect - Ajouter un aidant à la structure {{ organisation.name }}{% endblock %}
+{% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
@@ -17,11 +17,17 @@
         {% endfor %}
       {% endif %}
 
-      <h1>Ajouter un aidant à l’organisation {{ organisation.name }}</h1>
+      <h1>Ajouter un aidant à une de vos organisations</h1>
       <p>Pour ajouter un aidant à votre organisation, vous devez formuler une demande d'habilitation à l'aide du formulaire
         ci-dessous. Tous les champs sont obligatoires.</p>
       <form method="post">
         {% csrf_token %}
+        <div class="form__group">
+          <label for="{{ form.organisation.id_for_label }}">Organisation</label>
+          <div>
+            {{ form.organisation }}
+          </div>
+        </div>
         <div class="form__group">
           <label for="{{ form.first_name.id_for_label }}">Prénom de l’aidant</label>
           <div>

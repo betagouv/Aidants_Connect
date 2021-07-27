@@ -270,6 +270,17 @@ class RemoveCardFromAidantForm(forms.Form):
 
 
 class HabilitationRequestCreationForm(forms.ModelForm):
+    def __init__(self, responsable, organisation, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.responsable = responsable
+        self.fields["organisation"] = forms.ModelChoiceField(
+            queryset=Organisation.objects.filter(
+                responsables=self.responsable
+            ).order_by("name"),
+            empty_label="Choisir...",
+        )
+        self.initial["organisation"] = organisation
+
     class Meta:
         model = HabilitationRequest
         fields = (
@@ -277,6 +288,7 @@ class HabilitationRequestCreationForm(forms.ModelForm):
             "last_name",
             "first_name",
             "profession",
+            "organisation",
         )
 
     def clean(self):

@@ -290,6 +290,8 @@ select {
     appearance: auto;
     /* cancel background-image property to avoid errors in browser console: */
     background: #fff;
+    /* other */
+    max-width: 100%;
 }
 
 /* Accessibility */
