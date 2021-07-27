@@ -279,6 +279,12 @@ class HabilitationRequestCreationForm(forms.ModelForm):
             "profession",
         )
 
+    def clean(self):
+        super().clean()
+        cleaned_data = self.cleaned_data
+        cleaned_data["email"] = cleaned_data.get("email").lower()
+        return cleaned_data
+
 
 class DatapassForm(forms.Form):
     data_pass_id = forms.IntegerField()
