@@ -1,14 +1,17 @@
 import logging
+from datetime import timedelta
 
+from django.db.models import Count, Q
 from django.template.defaultfilters import pluralize
 from django.core.mail import send_mail
 from django.template import loader
+from django.utils import timezone
 
 from celery import shared_task
 
 from aidants_connect_web.models import Connection
 from aidants_connect import settings
-from aidants_connect_web.models import Mandat, Organisation
+from aidants_connect_web.models import HabilitationRequest, Mandat, Organisation
 
 from typing import List
 
@@ -69,3 +72,27 @@ def notify_soon_expired_mandates():
             message=text_message,
             html_message=html_message,
         )
+
+
+@shared_task
+def notify_new_habilitation_requests():
+    logger.info("Checking new habilitation requests...")
+    created_from = timezone.now() + timedelta(days=-7)
+    habilitation_requests_qset = HabilitationRequest.objects.filter(
+        created_at__gt=created_from
+    )
+    organisations = Organisation.objects.filter(
+        habilitation_requests__created_at__gte=created_from
+    ).annotate(
+        num_requests=Count(
+            "habilitation_requests",
+            filter=Q(habilitation_requests__created_at__gt=created_from),
+        )
+    )
+
+    logger.info(
+        f"{habilitation_requests_qset.count()} habilitation requests "
+        f"in {organisations.count()} organisations"
+    )
+    for org in organisations:
+        logger.info(f"    {org.name} : {org.num_requests} requests")
