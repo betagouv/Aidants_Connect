@@ -11,7 +11,7 @@ from celery import shared_task
 
 from aidants_connect_web.models import Connection
 from aidants_connect import settings
-from aidants_connect_web.models import HabilitationRequest, Mandat, Organisation
+from aidants_connect_web.models import Aidant, HabilitationRequest, Mandat, Organisation
 
 from typing import List
 
@@ -77,10 +77,15 @@ def notify_soon_expired_mandates():
 @shared_task
 def notify_new_habilitation_requests():
     logger.info("Checking new habilitation requests...")
-    created_from = timezone.now() + timedelta(days=-7)
-    habilitation_requests_qset = HabilitationRequest.objects.filter(
-        created_at__gt=created_from
+    recipient_list = list(
+        Aidant.objects.filter(is_staff=True, is_active=True).values_list(
+            "email", flat=True
+        )
     )
+    created_from = timezone.now() + timedelta(days=-7)
+    habilitation_requests_count = HabilitationRequest.objects.filter(
+        created_at__gt=created_from
+    ).count()
     organisations = Organisation.objects.filter(
         habilitation_requests__created_at__gte=created_from
     ).annotate(
@@ -90,9 +95,28 @@ def notify_new_habilitation_requests():
         )
     )
 
-    logger.info(
-        f"{habilitation_requests_qset.count()} habilitation requests "
-        f"in {organisations.count()} organisations"
+    context = {
+        "organisations": organisations,
+        "total_requests": habilitation_requests_count,
+        "interval": 7,
+    }
+
+    text_message = loader.render_to_string(
+        "aidants_connect_web/managment/notify_new_habilitation_requests.txt",
+        context,
     )
-    for org in organisations:
-        logger.info(f"    {org.name} : {org.num_requests} requests")
+    html_message = loader.render_to_string(
+        "aidants_connect_web/managment/notify_new_habilitation_requests.html",
+        context,
+    )
+
+    send_mail(
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=recipient_list,
+        subject=(
+            f"[Aidants Connect] {habilitation_requests_count} "
+            "nouvelles demandes d’habilitation"
+        ),
+        message=text_message,
+        html_message=html_message,
+    )
