@@ -9,11 +9,12 @@ from aidants_connect_web.models import (
     Autorisation,
     Connection,
     CarteTOTP,
+    HabilitationRequest,
+    Journal,
     Mandat,
     Organisation,
     OrganisationType,
     Usager,
-    Journal,
 )
 
 
@@ -59,6 +60,17 @@ class AidantFactory(factory.DjangoModelFactory):
             return
         device = self.staticdevice_set.create(id=self.id)
         device.token_set.create(token="123456")
+
+
+class HabilitationRequestFactory(factory.DjangoModelFactory):
+    first_name = "Jean"
+    last_name = "Dupont"
+    email = "jean.dupont@do.du"
+    organisation = factory.SubFactory(OrganisationFactory)
+    profession = "Secrétaire"
+
+    class Meta:
+        model = HabilitationRequest
 
 
 class UsagerFactory(factory.DjangoModelFactory):
