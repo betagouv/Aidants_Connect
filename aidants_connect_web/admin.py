@@ -275,6 +275,7 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
         "organisation",
         "profession",
         "status",
+        "created_at",
     )
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("organisation",)
