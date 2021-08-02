@@ -8,11 +8,11 @@ from selenium.common.exceptions import NoSuchElementException
 
 import aidants_connect_web
 from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 
 
-@tag("functional", "new_mandat")
+@tag("functional", "import")
 class ImportAidantTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
@@ -21,12 +21,14 @@ class ImportAidantTests(FunctionalTestCase):
         super().setUpClass()
 
     def setUp(self) -> None:
+        self.organisation = OrganisationFactory(id=4444)
         self.aidant = AidantFactory(is_superuser=True, is_staff=True)
         self.aidant.set_password("laisser-passer-a38")
         self.aidant.save()
         device = self.aidant.staticdevice_set.create()
         device.token_set.create(token="123456")
-        device.token_set.create(token="123455")
+        WebDriverWait(self.selenium, 10)
+        self.login_admin()
 
     def login_admin(self):
         self.open_live_url(self.login_url)
@@ -68,9 +70,6 @@ class ImportAidantTests(FunctionalTestCase):
         file_import_confirm.click()
 
     def test_import_correct_files(self):
-        WebDriverWait(self.selenium, 10)
-        self.login_admin()
-
         excel_fixtures = path_join(
             dirname(aidants_connect_web.__file__),
             "fixtures",
@@ -82,9 +81,6 @@ class ImportAidantTests(FunctionalTestCase):
                 self.import_file(entry.path)
 
     def test_username_and_email_are_trimmed_and_lowercased(self):
-        WebDriverWait(self.selenium, 10)
-        self.login_admin()
-
         excel_file = path_join(
             dirname(aidants_connect_web.__file__),
             "fixtures",
