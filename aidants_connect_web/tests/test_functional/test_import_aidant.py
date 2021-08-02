@@ -7,6 +7,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 
 import aidants_connect_web
+from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 
@@ -41,6 +42,31 @@ class ImportAidantTests(FunctionalTestCase):
         django_admin_title = self.selenium.find_element_by_tag_name("h1").text
         self.assertEqual(django_admin_title, "Administration de Django")
 
+    def import_file(self, path):
+        self.open_live_url(self.import_url)
+        file_import_field = self.selenium.find_element_by_id("id_import_file")
+        file_import_field.send_keys(path)
+        xlsx_type_option = self.selenium.find_element_by_xpath(
+            "//select[@id='id_input_format']/option[text()='xlsx']"
+        )
+        xlsx_type_option.click()
+        file_import_submit = self.selenium.find_element_by_xpath(
+            "//input[@type='submit']"
+        )
+        file_import_submit.click()
+        try:
+            self.selenium.find_element_by_xpath("//table[@class='import-preview']")
+        except NoSuchElementException:
+            first_error = self.selenium.find_element_by_xpath(
+                "//div[@class='errors']/details[1]/summary"
+            )
+            self.fail(
+                f"Import of following file failed: {path} "
+                f"with message: '{first_error.text}'"
+            )
+        file_import_confirm = self.selenium.find_element_by_name("confirm")
+        file_import_confirm.click()
+
     def test_import_correct_files(self):
         WebDriverWait(self.selenium, 10)
         self.login_admin()
@@ -53,26 +79,38 @@ class ImportAidantTests(FunctionalTestCase):
         )
         for entry in os.scandir(excel_fixtures):
             if entry.is_file() and entry.path.endswith(".xlsx"):
-                self.open_live_url(self.import_url)
-                file_import_field = self.selenium.find_element_by_id("id_import_file")
-                file_import_field.send_keys(entry.path)
-                xlsx_type_option = self.selenium.find_element_by_xpath(
-                    "//select[@id='id_input_format']/option[text()='xlsx']"
-                )
-                xlsx_type_option.click()
-                file_import_submit = self.selenium.find_element_by_xpath(
-                    "//input[@type='submit']"
-                )
-                file_import_submit.click()
-                try:
-                    self.selenium.find_element_by_xpath(
-                        "//table[@class='import-preview']"
-                    )
-                except NoSuchElementException:
-                    first_error = self.selenium.find_element_by_xpath(
-                        "//div[@class='errors']/details[1]/summary"
-                    )
-                    self.fail(
-                        f"Import of following file failed: {entry.path} "
-                        f"with message: '{first_error.text}'"
-                    )
+                self.import_file(entry.path)
+
+    def test_username_and_email_are_trimmed_and_lowercased(self):
+        WebDriverWait(self.selenium, 10)
+        self.login_admin()
+
+        excel_file = path_join(
+            dirname(aidants_connect_web.__file__),
+            "fixtures",
+            "import-aidants",
+            "edge-cases",
+            "clean-username-and-email.xlsx",
+        )
+
+        self.import_file(excel_file)
+
+        self.assertEqual(4, Aidant.objects.count(), "Unexpected count of Aidants in DB")
+
+        aidant_a = Aidant.objects.get(
+            first_name="AvecUnEspace", last_name="Après Le Username"
+        )
+        self.assertEqual("avec.espace@apres.fr", aidant_a.username)
+        self.assertEqual("avec.espace@apres.fr", aidant_a.email)
+
+        aidant_b = Aidant.objects.get(
+            first_name="UneAdresseMail", last_name="Avec Des Majuscules"
+        )
+        self.assertEqual("un.email@avec.majuscules.fr", aidant_b.username)
+        self.assertEqual("un.email@avec.majuscules.fr", aidant_b.email)
+
+        aidant_c = Aidant.objects.get(
+            first_name="UneAdresseMail", last_name="Tout en Majuscules"
+        )
+        self.assertEqual("un.email@tout.en.majuscules.fr", aidant_c.username)
+        self.assertEqual("un.email@tout.en.majuscules.fr", aidant_c.email)
