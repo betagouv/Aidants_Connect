@@ -61,16 +61,120 @@ class EspaceResponsableHomePageTests(TestCase):
             "Confirmation message should be displayed.",
         )
 
-    def test_submitting_habilitation_request_nominal_case(self):
+    def test_add_aidant_allows_create_aidants_for_all_possible_organisations(self):
         self.client.force_login(self.responsable_tom)
+        for organisation in self.responsable_tom.responsable_de.all():
+            email = f"angela.dubois{organisation.id}@a.org"
+            organisation_url = f"/espace-responsable/organisation/{organisation.id}/"
+
+            response = self.client.post(
+                self.add_aidant_url,
+                data={
+                    "organisation": organisation.id,
+                    "first_name": "Angela",
+                    "last_name": "Dubois",
+                    "email": email,
+                    "profession": "Assistante sociale",
+                },
+            )
+            self.assertRedirects(
+                response, organisation_url, fetch_redirect_response=False
+            )
+            response = self.client.get(organisation_url)
+            response_content = response.content.decode("utf-8")
+            self.assertIn(
+                "La requête d’habilitation pour Angela Dubois a bien été enregistrée.",
+                response_content,
+                "Confirmation message should be displayed.",
+            )
+            self.assertIn(
+                email,
+                response_content,
+                "New habilitation request should be displayed on organisation page.",
+            )
+
+    def test_submit_habilitation_request_for_same_email_and_organisation(self):
+        self.client.force_login(self.responsable_tom)
+
+        HabilitationRequestFactory(organisation=self.org_a, email="a@a.fr")
+
         response = self.client.post(
             self.add_aidant_url,
             data={
                 "organisation": self.org_a.id,
+                "email": "a@a.fr",
                 "first_name": "Angela",
                 "last_name": "Dubois",
-                "email": "angela.dubois@a.org",
                 "profession": "Assistante sociale",
+            },
+        )
+        self.assertEqual(response.status_code, 200, "Response should not be redirected")
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "Une demande d’habilitation est déjà en cours",
+            response_content,
+            "Error message should be displayed.",
+        )
+
+    def test_submit_habilitation_request_for_same_email_and_sister_organisation(self):
+        self.client.force_login(self.responsable_tom)
+
+        HabilitationRequestFactory(organisation=self.org_a, email="b@b.fr")
+
+        response = self.client.post(
+            self.add_aidant_url,
+            data={
+                "organisation": self.org_b.id,
+                "email": "b@b.fr",
+                "first_name": "Bob",
+                "last_name": "Dubois",
+                "profession": "Assistant social",
+            },
+        )
+        self.assertEqual(response.status_code, 200, "Response should not be redirected")
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "Une demande d’habilitation est déjà en cours",
+            response_content,
+            "Error message should be displayed.",
+        )
+
+    def test_submitting_habilitation_request_if_aidant_already_exists(self):
+        self.client.force_login(self.responsable_tom)
+
+        AidantFactory(organisation=self.org_a, email="b@b.fr", username="b@b.fr")
+
+        response = self.client.post(
+            self.add_aidant_url,
+            data={
+                "organisation": self.org_b.id,
+                "email": "b@b.fr",
+                "first_name": "Bob",
+                "last_name": "Dubois",
+                "profession": "Assistant social",
+            },
+        )
+        self.assertEqual(response.status_code, 200, "Response should not be redirected")
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "Il existe déjà un compte aidant",
+            response_content,
+            "Error message should be displayed.",
+        )
+
+    def test_avoid_oracle_for_other_organisations_requests(self):
+        self.client.force_login(self.responsable_tom)
+
+        HabilitationRequestFactory(organisation=OrganisationFactory(), email="b@b.fr")
+
+        response = self.client.post(
+            self.add_aidant_url,
+            data={
+                "organisation": self.org_a.id,
+                "email": "b@b.fr",
+                "first_name": "Bob",
+                "last_name": "Dubois",
+                "profession": "Assistant social",
             },
         )
         self.assertRedirects(
@@ -79,12 +183,45 @@ class EspaceResponsableHomePageTests(TestCase):
         response = self.client.get(self.organisation_url)
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La requête d’habilitation pour Angela Dubois a bien été enregistrée.",
+            "La requête d’habilitation pour Bob Dubois a bien été enregistrée.",
             response_content,
             "Confirmation message should be displayed.",
         )
         self.assertIn(
-            "angela.dubois@a.org",
+            "b@b.fr",
+            response_content,
+            "New habilitation request should be displayed on organisation page.",
+        )
+
+    def test_avoid_oracle_for_other_organisations_aidants(self):
+        self.client.force_login(self.responsable_tom)
+
+        AidantFactory(
+            organisation=OrganisationFactory(), email="b@b.fr", username="b@b.fr"
+        )
+
+        response = self.client.post(
+            self.add_aidant_url,
+            data={
+                "organisation": self.org_a.id,
+                "email": "b@b.fr",
+                "first_name": "Bob",
+                "last_name": "Dubois",
+                "profession": "Assistant social",
+            },
+        )
+        self.assertRedirects(
+            response, self.organisation_url, fetch_redirect_response=False
+        )
+        response = self.client.get(self.organisation_url)
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "La requête d’habilitation pour Bob Dubois a bien été enregistrée.",
+            response_content,
+            "Confirmation message should be displayed.",
+        )
+        self.assertIn(
+            "b@b.fr",
             response_content,
             "New habilitation request should be displayed on organisation page.",
         )

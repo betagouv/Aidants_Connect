@@ -338,12 +338,13 @@ def new_habilitation_request(request, organisation_id):
         return render_template(request, organisation, form)
 
     if HabilitationRequest.objects.filter(
-        email=habilitation_request.email, organisation=organisation
+        email=habilitation_request.email,
+        organisation__in=responsable.responsable_de.all(),
     ):
         django_messages.warning(
             request,
             (
-                "Une demande d'habilitation est déjà en cours pour l'adresse e-mail "
+                "Une demande d’habilitation est déjà en cours pour l’adresse e-mail "
                 f"{habilitation_request.email}. Vous n’avez pas besoin d’en déposer "
                 "une nouvelle."
             ),
@@ -361,5 +362,5 @@ def new_habilitation_request(request, organisation_id):
 
     return redirect(
         "espace_responsable_organisation",
-        organisation_id=organisation.id,
+        organisation_id=habilitation_request.organisation.id,
     )

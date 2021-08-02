@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.core.validators import RegexValidator
 from django.forms import EmailField
 from django.forms.utils import ErrorList
@@ -290,6 +290,14 @@ class HabilitationRequestCreationForm(forms.ModelForm):
             "profession",
             "organisation",
         )
+        error_messages = {
+            NON_FIELD_ERRORS: {
+                "unique_together": (
+                    "Une demande d’habilitation est déjà en cours pour cette adresse "
+                    "e-mail. Vous n’avez pas besoin d’en déposer une nouvelle."
+                ),
+            }
+        }
 
     def clean(self):
         super().clean()
