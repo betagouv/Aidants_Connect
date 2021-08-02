@@ -132,6 +132,10 @@ class AidantResource(resources.ModelResource):
         if not instance.email:
             instance.email = instance.username
 
+    def before_import_row(self, row, row_number=None, **kwargs):
+        if row.get("username"):
+            row["username"] = row["username"].strip().lower()
+
     def after_import_row(self, row, row_result, row_number=None, **kwargs):
         if row_result.import_type not in (
             RowResult.IMPORT_TYPE_NEW,
