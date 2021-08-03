@@ -124,22 +124,41 @@ def notify_new_habilitation_requests():
 
 @shared_task()
 def notify_no_totp_workers():
-    workers_without_totp = Aidant.objects.filter(
-        email__isnull_or_blank=True, carte_totp__isnull=True
-    ).values_list("email", flat=True)
-
-    text_message = loader.render_to_string(
-        "aidants_connect_web/managment/notify_no_totp_workers.txt",
+    workers_without_totp = (
+        Aidant.objects.filter(email__isnull_or_blank=False, carte_totp__isnull=True)
+        .order_by("organisation__responsables__email")
+        .values("organisation__responsables__email", "email", "first_name", "last_name")
     )
 
-    html_message = loader.render_to_string(
-        "aidants_connect_web/managment/notify_no_totp_workers.html",
-    )
+    workers_without_totp_dict = {}
 
-    send_mail(
-        from_email=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_FROM,
-        recipient_list=workers_without_totp,
-        subject=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_SUBJECT,
-        message=text_message,
-        html_message=html_message,
-    )
+    for item in workers_without_totp:
+        manager_email = item.pop("organisation__responsables__email")
+
+        if manager_email not in workers_without_totp_dict:
+            workers_without_totp_dict[manager_email] = {
+                "users": [],
+                "notify_self": False,
+            }
+
+        if item["email"] == manager_email:
+            workers_without_totp_dict[manager_email]["notify_self"] = True
+        else:
+            workers_without_totp_dict[manager_email]["users"].append(item)
+
+    for manager_email, context in workers_without_totp_dict.items():
+        text_message = loader.render_to_string(
+            "aidants_connect_web/managment/notify_no_totp_workers.txt", context
+        )
+
+        html_message = loader.render_to_string(
+            "aidants_connect_web/managment/notify_no_totp_workers.html", context
+        )
+
+        send_mail(
+            from_email=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_FROM,
+            recipient_list=[manager_email],
+            subject=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
