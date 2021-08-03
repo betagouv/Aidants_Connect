@@ -12,6 +12,15 @@
                   <tr>
                     <td>
                       <p>Bonjour,</p>
+                      <p>L’équipe Aidants Connect vous informe qu'aucune carte Aidants Connect n'est liée aux aidants ou aidantes suivantes&nbsp;:</p>
+                      <ul>
+                      {% for user in users %}
+                        <li>{% if user.full_name != None %}{{ user.full_name }}{% else %}un aidant ou une aidante possédant l'e-mail {{ user.email }}{% endif %}{% if forloop.last and not notify_self %}.{% else %},{% endif %}</li>
+                      {% endfor %}
+                      {% if notify_self %}
+                        <li>vous-même.</li>
+                      {% endif %}
+                      </ul>
                     </td>
                   </tr>
                 </table>

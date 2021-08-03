@@ -124,6 +124,13 @@ def notify_new_habilitation_requests():
 
 @shared_task()
 def notify_no_totp_workers():
+    def none_if_blank(value):
+        return (
+            None
+            if value is None or isinstance(value, str) and len(value.strip()) == 0
+            else value
+        )
+
     workers_without_totp = (
         Aidant.objects.filter(email__isnull_or_blank=False, carte_totp__isnull=True)
         .order_by("organisation__responsables__email")
@@ -144,6 +151,15 @@ def notify_no_totp_workers():
         if item["email"] == manager_email:
             workers_without_totp_dict[manager_email]["notify_self"] = True
         else:
+            first_name = none_if_blank(item.pop("first_name", None))
+            last_name = none_if_blank(item.pop("last_name", None))
+
+            item["full_name"] = (
+                f"{first_name} {last_name}"
+                if first_name is not None and last_name is not None
+                else None
+            )
+
             workers_without_totp_dict[manager_email]["users"].append(item)
 
     for manager_email, context in workers_without_totp_dict.items():

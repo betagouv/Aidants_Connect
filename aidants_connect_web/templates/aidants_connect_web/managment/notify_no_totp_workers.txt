@@ -1,1 +1,9 @@
 Bonjour,
+
+L’équipe Aidants Connect vous informe qu'aucune carte Aidants Connect n'est liée aux aidants ou aidantes suivantes :
+{% for user in users %}
+- {% if user.full_name != None %}{{ user.full_name }}{% else %}un aidant ou une aidante possédant l'e-mail {{ user.email }}{% endif %}{% if forloop.last and not notify_self %}.{% else %},{% endif %}
+{% endfor %}
+{% if notify_self %}
+- vous-même.
+{% endif %}
