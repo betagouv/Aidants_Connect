@@ -139,18 +139,14 @@ class MandatForm(forms.Form):
         },
     )
 
-    # models.MandatDureeKeywords
     DUREES = [
         (
             ADKW.SHORT,
             {"title": "Mandat court", "description": "(expire demain)"},
         ),
         (
-            ADKW.TRIMESTER,
-            {
-                "title": "Mandat de 3 mois",
-                "description": f"({ADKW.DAYS[ADKW.TRIMESTER]} jours)",
-            },
+            ADKW.LONG,
+            {"title": "Mandat long", "description": "(12 mois)"},
         ),
         (
             ADKW.SEMESTER,
@@ -158,10 +154,6 @@ class MandatForm(forms.Form):
                 "title": "Mandat de 6 mois",
                 "description": f"({ADKW.DAYS[ADKW.SEMESTER]} jours)",
             },
-        ),
-        (
-            ADKW.LONG,
-            {"title": "Mandat long", "description": "(12 mois)"},
         ),
     ]
     duree = forms.ChoiceField(
