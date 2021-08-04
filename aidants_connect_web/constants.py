@@ -53,21 +53,23 @@ JOURNAL_ACTIONS = (
 
 class AuthorizationDurations:
     SHORT = "SHORT"
+    SEMESTER = "SEMESTER"
     LONG = "LONG"
     EUS_03_20 = "EUS_03_20"
+
+    DAYS = {SHORT: 1, SEMESTER: 182, LONG: 365}
 
     @classmethod
     def duration(cls, value: str, fixed_date: date = None):
         fixed_date = fixed_date if fixed_date else now()
-        result = {
-            cls.SHORT: 1,
-            cls.LONG: 365,
-            cls.EUS_03_20: max(
-                1 + (settings.ETAT_URGENCE_2020_LAST_DAY - fixed_date).days, 0
-            ),
-        }.get(value, None)
 
-        if result is None:
+        try:
+            result = (
+                max(1 + (settings.ETAT_URGENCE_2020_LAST_DAY - fixed_date).days, 0)
+                if value == cls.EUS_03_20
+                else cls.DAYS[value]
+            )
+        except ValueError:
             raise Exception(f"{value} is not an an authorized mandate duration keyword")
 
         return result
@@ -75,13 +77,14 @@ class AuthorizationDurations:
     @classmethod
     def expiration(cls, value: str, fixed_date: date = None):
         fixed_date = fixed_date if fixed_date else now()
-        result = {
-            cls.SHORT: fixed_date + timedelta(days=1),
-            cls.LONG: fixed_date + timedelta(days=365),
-            cls.EUS_03_20: settings.ETAT_URGENCE_2020_LAST_DAY,
-        }.get(value, None)
 
-        if result is None:
+        try:
+            result = (
+                settings.ETAT_URGENCE_2020_LAST_DAY
+                if value == cls.EUS_03_20
+                else fixed_date + timedelta(days=cls.DAYS[value])
+            )
+        except ValueError:
             raise Exception(f"{value} is not an an authorized mandate duration keyword")
 
         return result
@@ -91,6 +94,11 @@ class AuthorizationDurationChoices(TextChoices):
     SHORT = (
         AuthorizationDurations.SHORT,
         "pour une durée de 1 jour",
+    )
+    SEMESTER = (
+        AuthorizationDurations.SEMESTER,
+        "pour une durée de six mois "
+        f"({AuthorizationDurations.DAYS[AuthorizationDurations.SEMESTER]}) jours",
     )
     LONG = (
         AuthorizationDurations.LONG,
