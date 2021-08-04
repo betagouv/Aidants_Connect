@@ -28,10 +28,12 @@
     <form action="" method="post" enctype="multipart/form-data">
       {% csrf_token %}
 
+    {% block fields_listing %}
       <p>
         {% block fields_intro %}Le fichier à importer doit contenir les en-têtes suivants&nbsp;:{% endblock %}
         <code>{{ fields|join:", " }}</code>
       </p>
+    {% endblock %}
       {% block more_help %}
       {% endblock %}
       <fieldset class="module aligned">

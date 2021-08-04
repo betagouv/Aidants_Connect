@@ -23,7 +23,6 @@ from import_export import resources
 from import_export.admin import ImportMixin, ExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
-from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
 
@@ -39,6 +38,7 @@ from aidants_connect_web.models import (
     Usager,
     CarteTOTP,
 )
+from magicauth.models import MagicToken
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
 admin_site.login_template = "aidants_connect_web/admin/login.html"
@@ -96,16 +96,77 @@ class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
     pass
 
 
-class OrganisationAdmin(VisibleToAdminMetier, ModelAdmin):
+class OrganisationResource(resources.ModelResource):
+    zipcode = Field(attribute="zipcode", column_name="Code postal de la structure")
+    siret = Field(attribute="siret", column_name="SIRET de l’organisation")
+    status_not_field = Field(
+        column_name="Statut de la demande (send = à valider; pending = brouillon)"
+    )
+
+    def import_row(
+        self,
+        row,
+        instance_loader,
+        using_transactions=True,
+        dry_run=False,
+        raise_errors=False,
+        **kwargs,
+    ):
+        if (
+            row.get(
+                "Statut de la demande (send = à valider; pending = brouillon)", None
+            )
+            == "validated"
+        ):
+            return super().import_row(
+                row,
+                instance_loader,
+                using_transactions,
+                dry_run,
+                raise_errors,
+                **kwargs,
+            )
+        else:
+            row_result = self.get_row_result_class()()
+            row_result.import_type = RowResult.IMPORT_TYPE_SKIP
+            return row_result
+
+    def after_import_instance(self, instance, new, row_number=None, **kwargs):
+        if new:
+            instance.skip_new = True
+
+    def skip_row(self, instance, original):
+        if getattr(instance, "skip_new", False):
+            return True
+        if original.zipcode and original.zipcode != "0":
+            return True
+        return False
+
+    class Meta:
+        import_id_fields = ("siret",)
+        model = Organisation
+
+
+class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "name",
         "address",
         "siret",
+        "zipcode",
         "admin_num_active_aidants",
         "admin_num_mandats",
         "id",
     )
     search_fields = ("name", "siret")
+
+    # For bulk import
+    resource_class = OrganisationResource
+    change_list_template = (
+        "aidants_connect_web/admin/import_export/change_list_organisation_import.html"
+    )
+    import_template_name = (
+        "aidants_connect_web/admin/import_export/import_organisation.html"
+    )
 
 
 class AidantResource(resources.ModelResource):
