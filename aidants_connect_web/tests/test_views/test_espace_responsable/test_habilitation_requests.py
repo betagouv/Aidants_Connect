@@ -2,6 +2,7 @@ from django.test import tag, TestCase
 from django.test.client import Client
 from django.urls import resolve
 
+from aidants_connect_web.models import HabilitationRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     HabilitationRequestFactory,
@@ -11,7 +12,7 @@ from aidants_connect_web.views import espace_responsable
 
 
 @tag("responsable-structure")
-class EspaceResponsableHomePageTests(TestCase):
+class HabilitationRequestsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -92,6 +93,25 @@ class EspaceResponsableHomePageTests(TestCase):
                 response_content,
                 "New habilitation request should be displayed on organisation page.",
             )
+
+    def test_email_is_lowercased(self):
+        self.client.force_login(self.responsable_tom)
+        uppercased_email = "Angela.DUBOIS@doe.du"
+        lowercased_email = "angela.dubois@doe.du"
+
+        self.client.post(
+            self.add_aidant_url,
+            data={
+                "organisation": self.org_a.id,
+                "first_name": "Angela",
+                "last_name": "Dubois",
+                "email": uppercased_email,
+                "profession": "Assistante sociale",
+            },
+        )
+
+        last_request = HabilitationRequest.objects.last()
+        self.assertEqual(last_request.email, lowercased_email)
 
     def test_submit_habilitation_request_for_same_email_and_organisation(self):
         self.client.force_login(self.responsable_tom)

@@ -299,11 +299,8 @@ class HabilitationRequestCreationForm(forms.ModelForm):
             }
         }
 
-    def clean(self):
-        super().clean()
-        cleaned_data = self.cleaned_data
-        cleaned_data["email"] = cleaned_data.get("email").lower()
-        return cleaned_data
+    def clean_email(self):
+        return self.cleaned_data.get("email").lower()
 
 
 class DatapassForm(forms.Form):
