@@ -1,14 +1,17 @@
 import logging
+from datetime import timedelta
 
+from django.db.models import Count, Q
 from django.template.defaultfilters import pluralize
 from django.core.mail import send_mail
 from django.template import loader
+from django.utils import timezone
 
 from celery import shared_task
 
 from aidants_connect_web.models import Connection
 from aidants_connect import settings
-from aidants_connect_web.models import Mandat, Organisation
+from aidants_connect_web.models import Aidant, HabilitationRequest, Mandat, Organisation
 
 from typing import List
 
@@ -69,3 +72,51 @@ def notify_soon_expired_mandates():
             message=text_message,
             html_message=html_message,
         )
+
+
+@shared_task
+def notify_new_habilitation_requests():
+    logger.info("Checking new habilitation requests...")
+    recipient_list = list(
+        Aidant.objects.filter(is_staff=True, is_active=True).values_list(
+            "email", flat=True
+        )
+    )
+    created_from = timezone.now() + timedelta(days=-7)
+    habilitation_requests_count = HabilitationRequest.objects.filter(
+        created_at__gt=created_from
+    ).count()
+    organisations = Organisation.objects.filter(
+        habilitation_requests__created_at__gte=created_from
+    ).annotate(
+        num_requests=Count(
+            "habilitation_requests",
+            filter=Q(habilitation_requests__created_at__gt=created_from),
+        )
+    )
+
+    context = {
+        "organisations": organisations,
+        "total_requests": habilitation_requests_count,
+        "interval": 7,
+    }
+
+    text_message = loader.render_to_string(
+        "aidants_connect_web/managment/notify_new_habilitation_requests.txt",
+        context,
+    )
+    html_message = loader.render_to_string(
+        "aidants_connect_web/managment/notify_new_habilitation_requests.html",
+        context,
+    )
+
+    send_mail(
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=recipient_list,
+        subject=(
+            f"[Aidants Connect] {habilitation_requests_count} "
+            "nouvelles demandes d’habilitation"
+        ),
+        message=text_message,
+        html_message=html_message,
+    )

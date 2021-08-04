@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.core.validators import RegexValidator
 from django.forms import EmailField
 from django.forms.utils import ErrorList
@@ -14,7 +14,12 @@ from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from aidants_connect_web.constants import AuthorizationDurations as ADKW
-from aidants_connect_web.models import Aidant, CarteTOTP, Organisation
+from aidants_connect_web.models import (
+    Aidant,
+    CarteTOTP,
+    HabilitationRequest,
+    Organisation,
+)
 
 
 class AidantCreationForm(forms.ModelForm):
@@ -262,6 +267,40 @@ class RemoveCardFromAidantForm(forms.Form):
         )
     )
     other_reason = forms.CharField(required=False)
+
+
+class HabilitationRequestCreationForm(forms.ModelForm):
+    def __init__(self, responsable, organisation, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.responsable = responsable
+        self.fields["organisation"] = forms.ModelChoiceField(
+            queryset=Organisation.objects.filter(
+                responsables=self.responsable
+            ).order_by("name"),
+            empty_label="Choisir...",
+        )
+        self.initial["organisation"] = organisation
+
+    class Meta:
+        model = HabilitationRequest
+        fields = (
+            "email",
+            "last_name",
+            "first_name",
+            "profession",
+            "organisation",
+        )
+        error_messages = {
+            NON_FIELD_ERRORS: {
+                "unique_together": (
+                    "Une demande d’habilitation est déjà en cours pour cette adresse "
+                    "e-mail. Vous n’avez pas besoin d’en déposer une nouvelle."
+                ),
+            }
+        }
+
+    def clean_email(self):
+        return self.cleaned_data.get("email").lower()
 
 
 class DatapassForm(forms.Form):

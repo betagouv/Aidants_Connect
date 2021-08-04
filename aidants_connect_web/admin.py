@@ -20,7 +20,7 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ImportMixin
+from import_export.admin import ImportMixin, ExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
 from magicauth.models import MagicToken
@@ -32,6 +32,7 @@ from aidants_connect_web.models import (
     Aidant,
     Autorisation,
     Connection,
+    HabilitationRequest,
     Journal,
     Mandat,
     Organisation,
@@ -250,6 +251,65 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     )
 
 
+class HabilitationRequestResource(resources.ModelResource):
+    class Meta:
+        model = HabilitationRequest
+        fields = (
+            "first_name",
+            "last_name",
+            "email",
+            "organisation",
+            "organisation__name",
+            "profession",
+            "status",
+            "created_at",
+            "updated_at",
+        )
+
+
+class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "email",
+        "first_name",
+        "last_name",
+        "organisation",
+        "profession",
+        "status",
+        "created_at",
+    )
+    readonly_fields = ("created_at", "updated_at")
+    raw_id_fields = ("organisation",)
+    actions = ("mark_validated", "mark_refused")
+    list_filter = ("status",)
+    search_fields = ("first_name", "last_name", "email", "organisation__name")
+    ordering = ("email",)
+    resource_class = HabilitationRequestResource
+
+    def mark_validated(self, request, queryset):
+        rows_updated = sum(
+            1
+            for habilitation_request in queryset
+            if habilitation_request.validate_and_create_aidant()
+        )
+        self.message_user(
+            request, f"{rows_updated} demandes d'habilitation ont été validées."
+        )
+
+    mark_validated.short_description = (
+        "Valider les demandes d’habilitation sélectionnées"
+    )
+
+    def mark_refused(self, request, queryset):
+        rows_updated = queryset.filter(
+            status=HabilitationRequest.STATUS_PROCESSING
+        ).update(status=HabilitationRequest.STATUS_REFUSED)
+        self.message_user(
+            request, f"{rows_updated} demandes d’habilitation ont été refusées."
+        )
+
+    mark_refused.short_description = "Refuser les demandes d’habilitation sélectionnées"
+
+
 class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):
     model = Autorisation
     fields = ("demarche", "revocation_date")
@@ -357,6 +417,7 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 # Display the following tables in the admin
 admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
+admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)
 admin_site.register(Mandat, MandatAdmin)
 admin_site.register(Journal, JournalAdmin)

@@ -246,6 +246,81 @@ class Aidant(AbstractUser):
             return False
 
 
+class HabilitationRequest(models.Model):
+    STATUS_PROCESSING = "processing"
+    STATUS_VALIDATED = "validated"
+    STATUS_REFUSED = "refused"
+    STATUS_CANCELLED = "cancelled"
+
+    STATUS_LABELS = {
+        STATUS_VALIDATED: "Validée",
+        STATUS_PROCESSING: "En cours",
+        STATUS_REFUSED: "Refusée",
+        STATUS_CANCELLED: "Annulée",
+    }
+
+    first_name = models.CharField("Prénom", max_length=150)
+    last_name = models.CharField("Nom", max_length=150)
+    email = models.EmailField(
+        max_length=150,
+    )
+    organisation = models.ForeignKey(
+        Organisation,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="habilitation_requests",
+    )
+    profession = models.CharField(blank=False, max_length=150)
+    status = models.CharField(
+        "État",
+        blank=False,
+        max_length=150,
+        default=STATUS_PROCESSING,
+        choices=((status, label) for status, label in STATUS_LABELS.items()),
+    )
+
+    created_at = models.DateTimeField("Date de création", auto_now_add=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=("email", "organisation"), name="unique_email_per_orga"
+            ),
+        )
+        verbose_name = "demande d’habilitation"
+        verbose_name_plural = "demandes d’habilitation"
+
+    def __str__(self):
+        return f"{self.email}"
+
+    def validate_and_create_aidant(self):
+        if self.status != self.STATUS_PROCESSING:
+            return False
+
+        if Aidant.objects.filter(username=self.email).count() > 0:
+            self.status = self.STATUS_VALIDATED
+            self.save()
+            return True
+
+        aidant = Aidant(
+            last_name=self.last_name,
+            first_name=self.first_name,
+            profession=self.profession,
+            organisation=self.organisation,
+            email=self.email,
+            username=self.email,
+        )
+        self.status = self.STATUS_VALIDATED
+        aidant.save()
+        self.save()
+        return True
+
+    @property
+    def status_label(self):
+        return self.STATUS_LABELS[self.status]
+
+
 class UsagerQuerySet(models.QuerySet):
     def active(self):
         return (

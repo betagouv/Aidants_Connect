@@ -1,0 +1,16 @@
+Bonjour,
+
+Durant les {{ interval }} derniers jours, il y a eu sur Aidants Connect
+{{ total_requests }} nouvelles demandes d'habilitation
+dans {{ organisations.count }} structures différentes :
+
+{% for org in organisations %}
+- {{ org.name }} : {{ org.num_requests }} demandes
+{% endfor %}
+
+Afin de les traiter, vous pouvez les retrouver dans l'administration Django,
+dans la rubrique « demandes d’habilitation ».
+
+Bonne journée,
+
+Le robot Aidants Connect

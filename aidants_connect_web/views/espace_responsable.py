@@ -6,7 +6,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.models import Aidant, CarteTOTP, Journal, Organisation
+from aidants_connect_web.models import (
+    Aidant,
+    CarteTOTP,
+    HabilitationRequest,
+    Journal,
+    Organisation,
+)
 from aidants_connect_web.decorators import (
     user_is_responsable_structure,
     activity_required,
@@ -14,6 +20,7 @@ from aidants_connect_web.decorators import (
 from aidants_connect_web.forms import (
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
+    HabilitationRequestCreationForm,
     RemoveCardFromAidantForm,
 )
 
@@ -59,6 +66,9 @@ def organisation(request, organisation_id):
     aidants = organisation.aidants.order_by("-is_active", "last_name").prefetch_related(
         "carte_totp"
     )
+    habilitation_requests = organisation.habilitation_requests.exclude(
+        status=HabilitationRequest.STATUS_VALIDATED
+    ).order_by("status", "last_name")
     totp_devices_users = {
         device.user.id: device.confirmed
         for device in TOTPDevice.objects.filter(user__in=aidants)
@@ -72,6 +82,7 @@ def organisation(request, organisation_id):
             "organisation": organisation,
             "aidants": aidants,
             "totp_devices_users": totp_devices_users,
+            "habilitation_requests": habilitation_requests,
         },
     )
 
@@ -279,4 +290,74 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
         request,
         "aidants_connect_web/espace_responsable/validate-carte-totp.html",
         {"aidant": aidant, "organisation": organisation, "form": form},
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+@user_is_responsable_structure
+@activity_required
+def new_habilitation_request(request, organisation_id):
+    def render_template(request, organisation, form):
+        return render(
+            request,
+            "aidants_connect_web/espace_responsable/new-habilitation-request.html",
+            {"organisation": organisation, "form": form},
+        )
+
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
+
+    if request.method == "GET":
+        form = HabilitationRequestCreationForm(responsable, organisation)
+        return render_template(request, organisation, form)
+
+    form = HabilitationRequestCreationForm(responsable, organisation, request.POST)
+
+    if not form.is_valid():
+        return render_template(request, organisation, form)
+
+    habilitation_request = form.save(commit=False)
+
+    if Aidant.objects.filter(
+        email=habilitation_request.email,
+        organisation__in=responsable.responsable_de.all(),
+    ).exists():
+        django_messages.warning(
+            request,
+            (
+                f"Il existe déjà un compte aidant pour l’adresse e-mail "
+                f"{habilitation_request.email}. Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci."
+            ),
+        )
+        return render_template(request, organisation, form)
+
+    if HabilitationRequest.objects.filter(
+        email=habilitation_request.email,
+        organisation__in=responsable.responsable_de.all(),
+    ):
+        django_messages.warning(
+            request,
+            (
+                "Une demande d’habilitation est déjà en cours pour l’adresse e-mail "
+                f"{habilitation_request.email}. Vous n’avez pas besoin d’en déposer "
+                "une nouvelle."
+            ),
+        )
+        return render_template(request, organisation, form)
+
+    habilitation_request.save()
+    django_messages.success(
+        request,
+        (
+            f"La requête d’habilitation pour {habilitation_request.first_name} "
+            f"{habilitation_request.last_name} a bien été enregistrée."
+        ),
+    )
+
+    return redirect(
+        "espace_responsable_organisation",
+        organisation_id=habilitation_request.organisation.id,
     )
