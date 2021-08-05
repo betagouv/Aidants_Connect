@@ -69,6 +69,20 @@ class Organisation(models.Model):
 
     admin_num_mandats.short_description = "Nombre de mandats"
 
+    def set_empty_zipcode_from_address(self):
+        if self.zipcode != "0":
+            return
+        adr = self.address
+        if adr:
+            try:
+                without_city = adr.rpartition(" ")[0]
+                zipcode = without_city.rsplit(" ")[-1]
+                if zipcode.isdigit():
+                    self.zipcode = zipcode
+                    self.save()
+            except Exception:
+                pass
+
 
 class AidantManager(UserManager):
     def active(self):

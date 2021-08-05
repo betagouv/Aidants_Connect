@@ -168,6 +168,12 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "aidants_connect_web/admin/import_export/import_organisation.html"
     )
 
+    actions = ("find_zipcode_in_address",)
+
+    def find_zipcode_in_address(self, request, queryset):
+        for organisation in queryset:
+            organisation.set_empty_zipcode_from_address()
+
 
 class AidantResource(resources.ModelResource):
     organisation_id = Field(attribute="organisation_id", column_name="organisation_id")

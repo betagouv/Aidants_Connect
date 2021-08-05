@@ -671,6 +671,32 @@ class OrganisationModelTests(TestCase):
             organisation_address.display_address, organisation_address.address
         )
 
+    def test_set_empty_zipcode_from_address(self):
+        organisation_no_address = Organisation(name="L'Internationale")
+        organisation_no_address.save()
+        self.assertEqual("0", organisation_no_address.zipcode)
+        organisation_no_address.set_empty_zipcode_from_address()
+        organisation_no_address.refresh_from_db()
+        self.assertEqual("0", organisation_no_address.zipcode)
+
+        organisation_with_address = Organisation(
+            name="L'Internationale", address=" blaa 13013 Paris"
+        )
+        organisation_with_address.save()
+        self.assertEqual("0", organisation_with_address.zipcode)
+        organisation_with_address.set_empty_zipcode_from_address()
+        organisation_with_address.refresh_from_db()
+        self.assertEqual("13013", organisation_with_address.zipcode)
+
+        organisation_with_zipcode = Organisation(
+            name="L'Internationale", zipcode="75015", address=" blaa 13013 Paris"
+        )
+        organisation_with_zipcode.save()
+        self.assertEqual("75015", organisation_with_zipcode.zipcode)
+        organisation_with_zipcode.set_empty_zipcode_from_address()
+        organisation_with_zipcode.refresh_from_db()
+        self.assertEqual("75015", organisation_with_zipcode.zipcode)
+
 
 @tag("models", "aidant")
 class AidantModelTests(TestCase):
