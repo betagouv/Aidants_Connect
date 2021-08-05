@@ -264,11 +264,21 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
 
         return form
 
+    def display_totp_device_status(self, obj):
+        return obj.has_a_totp_device
+
+    display_totp_device_status.short_description = "Carte TOTP Activée"
+    display_totp_device_status.boolean = True
+
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
     raw_id_fields = ("responsable_de", "organisation")
-    readonly_fields = ("validated_cgu_version",)
+    readonly_fields = (
+        "validated_cgu_version",
+        "display_totp_device_status",
+        "carte_totp",
+    )
 
     # For bulk import
     resource_class = AidantResource
@@ -295,7 +305,17 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     fieldsets = (
         (
             "Informations personnelles",
-            {"fields": ("username", "first_name", "last_name", "email", "password")},
+            {
+                "fields": (
+                    "username",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "password",
+                    "carte_totp",
+                    "display_totp_device_status",
+                )
+            },
         ),
         ("Informations professionnelles", {"fields": ("profession", "organisation")}),
         (
