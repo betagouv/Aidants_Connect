@@ -1,18 +1,20 @@
 from django.test import tag, TestCase
 
 from aidants_connect_web.models import Journal
-from aidants_connect_web.tests.factories import JournalFactory, AidantFactory
+from aidants_connect_web.tests.factories import JournalFactory, OrganisationFactory
 
 
 @tag("lookups")
 class TestIsNullOrBlank(TestCase):
     @classmethod
     def setUpTestData(cls):
-        w = AidantFactory()
-        cls.journal_null_demarche = JournalFactory(demarche=None, aidant=w)
-        cls.journal_blank_demarche = JournalFactory(demarche="", aidant=w)
-        cls.journal_white_demarche = JournalFactory(demarche="   ", aidant=w)
-        cls.journal_non_empty_demarche = JournalFactory(demarche="papier", aidant=w)
+        o = OrganisationFactory()
+        cls.journal_null_demarche = JournalFactory(demarche=None, organisation=o)
+        cls.journal_blank_demarche = JournalFactory(demarche="", organisation=o)
+        cls.journal_white_demarche = JournalFactory(demarche="   ", organisation=o)
+        cls.journal_non_empty_demarche = JournalFactory(
+            demarche="papier", organisation=o
+        )
 
     def test_lookup(self):
         qset = Journal.objects.filter(demarche__isnull_or_blank=False)

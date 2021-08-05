@@ -5,7 +5,7 @@ from aidants_connect_web.tasks import notify_no_totp_workers
 
 class Command(BaseCommand):
     help = (
-        "Notifies community workers (aidants) "
+        "Notifies managers of community workers (aidants) "
         "who have not yet paired their TOTP card"
     )
 

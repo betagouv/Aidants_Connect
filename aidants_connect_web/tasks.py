@@ -5,6 +5,7 @@ from django.db.models import Count, Q
 from django.template.defaultfilters import pluralize
 from django.core.mail import send_mail
 from django.template import loader
+from django.urls import reverse
 from django.utils import timezone
 
 from celery import shared_task
@@ -146,6 +147,9 @@ def notify_no_totp_workers():
             workers_without_totp_dict[manager_email] = {
                 "users": [],
                 "notify_self": False,
+                "espace_responsable_url": (
+                    f"{settings.HOST}{reverse('espace_responsable_home')}"
+                ),
             }
 
         if item["email"] == manager_email:

@@ -1,4 +1,6 @@
 {% extends "layouts/email_base.html" %}
+{%  load ac_extras %}
+
 {% block email_body %}
   <table border="0" cellpadding="0" cellspacing="0" class="body">
     <tr>
@@ -18,13 +20,23 @@
                         <p>L’équipe Aidants Connect vous informe qu'aucune carte Aidants Connect n'est liée aux aidants ou aidantes suivantes&nbsp;:</p>
                         <ul>
                         {% for user in users %}
-                          <li>{% if user.full_name is not None %}{{ user.full_name }}{% else %}un aidant ou une aidante possédant l'e-mail {{ user.email }}{% endif %}{% if forloop.last and not notify_self %}.{% else %},{% endif %}</li>
+                          {% linebreakless %}
+                          <li>
+                            {% if user.full_name is not None %}
+                              {{ user.full_name }}
+                            {% else %}
+                              un aidant ou une aidante possédant l'e-mail {{ user.email }}
+                            {% endif %}
+                            {% list_term additionnal_cond=notify_self %}
+                          </li>
+                          {% endlinebreakless %}
                         {% endfor %}
                         {% if notify_self %}
                           <li>vous-même.</li>
                         {% endif %}
                         </ul>
                       {% endif %}
+                      <p>Rendez-vous dans <a href="{{ espace_responsable_url }}">votre espace responsable</a> afin de relier un compte aidant à une carte Aidants Connect</p>
                     </td>
                   </tr>
                 </table>
