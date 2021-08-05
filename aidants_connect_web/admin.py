@@ -281,7 +281,9 @@ class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "__str__",
         "email",
         "organisation",
+        "carte_totp",
         "is_active",
+        "can_create_mandats",
         "is_staff",
         "is_superuser",
     )
