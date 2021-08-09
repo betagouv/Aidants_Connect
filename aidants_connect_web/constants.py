@@ -21,6 +21,7 @@ class JournalActionKeywords:
     CANCEL_MANDAT = "cancel_mandat"
     IMPORT_TOTP_CARDS = "import_totp_cards"
     INIT_RENEW_MANDAT = "init_renew_mandat"
+    TRANSFER_MANDAT = "transfer_mandat"
 
 
 JOURNAL_ACTIONS = (
@@ -47,6 +48,10 @@ JOURNAL_ACTIONS = (
     (
         JournalActionKeywords.INIT_RENEW_MANDAT,
         "Lancement d'une procédure de renouvellement",
+    ),
+    (
+        JournalActionKeywords.TRANSFER_MANDAT,
+        "Transférer un mandat à une autre organisation",
     ),
 )
 

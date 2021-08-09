@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+{% load static ac_extras i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "css/admin/transfert_error.css" %}">
+  {{ media.css }}
+{% endblock %}
+
+{% block content %}
+  <h1>⚠&nbsp;Certains mandats n'ont pas pu être transférés vers la nouvelle organiation</h1>
+
+  <h2>
+    {% blocktranslate count counter=mandates|length %}
+      Vous allez transférer un mandat vers une autre organisation.
+      {% plural %}
+      Les {{ counter }} mandats suivants n'ont pas pu être transférés vers l'organisation {{ organisation }}&nbsp;:
+    {% endblocktranslate %}
+  </h2>
+
+  {% if mandates_count == 1 %}
+    {% for mandate in mandates %}<p>Il s'agit du mandat {{ mandate.template_repr }}</p>{% endfor %}
+  {% else %}
+    <ul>
+      {% for mandate in mandates %}
+        <li>
+          le mandat {{ mandate.template_repr }}{% list_term %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <div class="submit-row">
+    <a href="{% url 'otpadmin:aidants_connect_web_mandat_changelist' %}" class="default">Compris</a>
+  </div>
+{% endblock %}

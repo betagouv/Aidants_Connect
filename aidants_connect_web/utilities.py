@@ -1,12 +1,17 @@
 import io
 import hashlib
-from datetime import date
+from datetime import date, datetime
 from urllib.parse import urlencode, quote
 
 import qrcode
 from pathlib import Path
 
 from django.conf import settings
+
+from typing import TYPE_CHECKING, Optional, Union
+
+if TYPE_CHECKING:
+    from aidants_connect_web.models import Aidant, Usager
 
 
 def generate_sha256_hash(value: bytes):
@@ -51,20 +56,30 @@ def generate_qrcode_png(string: str):
 
 
 def generate_attestation_hash(
-    aidant,
-    usager,
-    demarches,
-    expiration_date,
-    creation_date=date.today().isoformat(),
-    mandat_template_path=settings.MANDAT_TEMPLATE_PATH,
+    aidant: "Aidant",
+    usager: "Usager",
+    demarches: Union[str, list],
+    expiration_date: datetime,
+    creation_date: str = date.today().isoformat(),
+    mandat_template_path: str = settings.MANDAT_TEMPLATE_PATH,
+    organisation_id: Optional[int] = None,
 ):
-    demarches.sort()
+    organisation_id = (
+        aidant.organisation.id if organisation_id is None else organisation_id
+    )
+
+    if isinstance(demarches, str):
+        demarches_list = demarches
+    else:
+        demarches.sort()
+        demarches_list = ",".join(demarches)
+
     attestation_data = {
         "aidant_id": aidant.id,
         "creation_date": creation_date,
-        "demarches_list": ",".join(demarches),
+        "demarches_list": demarches_list,
         "expiration_date": expiration_date.date().isoformat(),
-        "organisation_id": aidant.organisation.id,
+        "organisation_id": organisation_id,
         "template_hash": generate_file_sha256_hash(f"templates/{mandat_template_path}"),
         "usager_sub": usager.sub,
     }

@@ -1,0 +1,20 @@
+a.default {
+    float: right;
+    border: none;
+    font-weight: 400;
+    background: #417690;
+    padding: 10px 15px;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+}
+
+a.default:active,
+a.default:focus,
+a.default:hover {
+    background: #205067;
+}
+
+a[disabled].default {
+    opacity: 0.4;
+}
