@@ -490,7 +490,9 @@ class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
     actions = ("move_to_another_organisation",)
 
     def move_to_another_organisation(self, _, queryset):
-        ids = ",".join(str(pk) for pk in queryset.values_list("pk", flat=True))
+        ids = ",".join(
+            str(pk) for pk in queryset.order_by("pk").values_list("pk", flat=True)
+        )
         return HttpResponseRedirect(
             f"{reverse('otpadmin:aidants_connect_web_mandat_transfer')}?ids={ids}"
         )

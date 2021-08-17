@@ -1099,8 +1099,8 @@ class Journal(models.Model):
             organisation=mandat.organisation,
             action=JournalActionKeywords.TRANSFER_MANDAT,
             additional_information=(
-                f"previous_organisation={previous_organisation.pk}:"
-                f"previous_hash={previous_hash}"
+                f"previous_organisation = {previous_organisation.pk}, "
+                f"previous_hash = {previous_hash}"
             ),
         )
 
