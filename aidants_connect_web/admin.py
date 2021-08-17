@@ -97,6 +97,7 @@ class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
 
 
 class OrganisationResource(resources.ModelResource):
+    name = Field(attribute="name", column_name="Nom de la structure")
     zipcode = Field(attribute="zipcode", column_name="Code postal de la structure")
     siret = Field(attribute="siret", column_name="SIRET de l’organisation")
     status_not_field = Field(
@@ -118,18 +119,26 @@ class OrganisationResource(resources.ModelResource):
             )
             == "validated"
         ):
-            return super().import_row(
-                row,
-                instance_loader,
-                using_transactions,
-                dry_run,
-                raise_errors,
-                **kwargs,
-            )
-        else:
-            row_result = self.get_row_result_class()()
-            row_result.import_type = RowResult.IMPORT_TYPE_SKIP
-            return row_result
+            name = row.get("Nom de la structure", None)
+            siret = row.get("SIRET de l’organisation", None)
+
+            if (
+                siret
+                and name
+                and Organisation.objects.filter(name=name, siret=siret).count() == 1
+            ):
+                return super().import_row(
+                    row,
+                    instance_loader,
+                    using_transactions,
+                    dry_run,
+                    raise_errors,
+                    **kwargs,
+                )
+
+        row_result = self.get_row_result_class()()
+        row_result.import_type = RowResult.IMPORT_TYPE_SKIP
+        return row_result
 
     def after_import_instance(self, instance, new, row_number=None, **kwargs):
         if new:
@@ -143,7 +152,10 @@ class OrganisationResource(resources.ModelResource):
         return False
 
     class Meta:
-        import_id_fields = ("siret",)
+        import_id_fields = (
+            "name",
+            "siret",
+        )
         model = Organisation
 
 
