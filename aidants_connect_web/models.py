@@ -783,7 +783,7 @@ class Journal(models.Model):
     # mandatory
     action = models.CharField(max_length=30, choices=JOURNAL_ACTIONS, blank=False)
     aidant = models.ForeignKey(
-        Aidant, on_delete=models.PROTECT, related_name="journal_entries"
+        Aidant, on_delete=models.PROTECT, related_name="journal_entries", null=True
     )
 
     # automatic
@@ -803,6 +803,11 @@ class Journal(models.Model):
     mandat = models.ForeignKey(
         Mandat, null=True, on_delete=models.PROTECT, related_name="journal_entries"
     )
+
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.PROTECT, related_name="journal_entries"
+    )
+
     objects = JournalQuerySet.as_manager()
 
     class Meta:
@@ -823,13 +828,17 @@ class Journal(models.Model):
     @classmethod
     def log_connection(cls, aidant: Aidant):
         return cls.objects.create(
-            aidant=aidant, action=JournalActionKeywords.CONNECT_AIDANT
+            aidant=aidant,
+            organisation=aidant.organisation,
+            action=JournalActionKeywords.CONNECT_AIDANT,
         )
 
     @classmethod
     def log_activity_check(cls, aidant: Aidant):
         return cls.objects.create(
-            aidant=aidant, action=JournalActionKeywords.ACTIVITY_CHECK_AIDANT
+            aidant=aidant,
+            organisation=aidant.organisation,
+            action=JournalActionKeywords.ACTIVITY_CHECK_AIDANT,
         )
 
     @classmethod
@@ -837,6 +846,7 @@ class Journal(models.Model):
         more_info = f"aidant.id = {aidant.id}, sn = {sn}"
         return cls.objects.create(
             aidant=responsable,
+            organisation=responsable.organisation,
             action=JournalActionKeywords.CARD_ASSOCIATION,
             additional_information=more_info,
         )
@@ -846,6 +856,7 @@ class Journal(models.Model):
         more_info = f"aidant.id = {aidant.id}, sn = {sn}"
         return cls.objects.create(
             aidant=responsable,
+            organisation=responsable.organisation,
             action=JournalActionKeywords.CARD_VALIDATION,
             additional_information=more_info,
         )
@@ -857,6 +868,7 @@ class Journal(models.Model):
         more_info = f"aidant.id = {aidant.id}, sn = {sn}, reason = {reason}"
         return cls.objects.create(
             aidant=responsable,
+            organisation=responsable.organisation,
             action=JournalActionKeywords.CARD_DISSOCIATION,
             additional_information=more_info,
         )
@@ -865,6 +877,7 @@ class Journal(models.Model):
     def log_franceconnection_usager(cls, aidant: Aidant, usager: Usager):
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=usager,
             action=JournalActionKeywords.FRANCECONNECT_USAGER,
         )
@@ -873,6 +886,7 @@ class Journal(models.Model):
     def log_update_email_usager(cls, aidant: Aidant, usager: Usager):
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=usager,
             action=JournalActionKeywords.UPDATE_EMAIL_USAGER,
         )
@@ -881,6 +895,7 @@ class Journal(models.Model):
     def log_update_phone_usager(cls, aidant: Aidant, usager: Usager):
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=usager,
             action=JournalActionKeywords.UPDATE_PHONE_USAGER,
         )
@@ -897,6 +912,7 @@ class Journal(models.Model):
     ):
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=usager,
             action=JournalActionKeywords.INIT_RENEW_MANDAT,
             demarche=",".join(demarches),
@@ -919,6 +935,7 @@ class Journal(models.Model):
     ):
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=usager,
             action=JournalActionKeywords.CREATE_ATTESTATION,
             demarche=",".join(demarches),
@@ -936,6 +953,7 @@ class Journal(models.Model):
 
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=usager,
             action=JournalActionKeywords.CREATE_AUTORISATION,
             demarche=autorisation.demarche,
@@ -955,6 +973,7 @@ class Journal(models.Model):
     ):
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=usager,
             action=JournalActionKeywords.USE_AUTORISATION,
             demarche=demarche,
@@ -966,6 +985,7 @@ class Journal(models.Model):
     def log_autorisation_cancel(cls, autorisation: Autorisation, aidant: Aidant):
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=autorisation.mandat.usager,
             action=JournalActionKeywords.CANCEL_AUTORISATION,
             demarche=autorisation.demarche,
@@ -977,6 +997,7 @@ class Journal(models.Model):
     def log_mandat_cancel(cls, mandat: Mandat, aidant: Aidant):
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             usager=mandat.usager,
             action=JournalActionKeywords.CANCEL_MANDAT,
             mandat=mandat,
@@ -987,6 +1008,7 @@ class Journal(models.Model):
         message = f"{added} ajouts - {updated} modifications"
         return cls.objects.create(
             aidant=aidant,
+            organisation=aidant.organisation,
             action=JournalActionKeywords.IMPORT_TOTP_CARDS,
             additional_information=message,
         )

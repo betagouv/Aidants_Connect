@@ -49,6 +49,7 @@
         "fields": {
             "action": "connect_aidant",
             "aidant": 1,
+            "organisation": 1,
             "creation_date": "2020-03-03T10:44:56.714Z",
             "demarche": null,
             "usager": null,
@@ -63,6 +64,7 @@
         "fields": {
             "action": "print_autorisation",
             "aidant": 1,
+            "organisation": 1,
             "creation_date": "2020-03-03T10:58:06.618Z",
             "demarche": "social,travail",
             "usager": 1,
@@ -77,6 +79,7 @@
         "fields": {
             "action": "create_autorisation",
             "aidant": 1,
+            "organisation": 1,
             "creation_date": "2020-03-03T10:58:06.625Z",
             "demarche": "social",
             "usager": 1,
@@ -91,6 +94,7 @@
         "fields": {
             "action": "create_autorisation",
             "aidant": 1,
+            "organisation": 1,
             "creation_date": "2020-03-03T10:58:06.632Z",
             "demarche": "travail",
             "usager": 1,
