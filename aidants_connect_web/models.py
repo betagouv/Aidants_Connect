@@ -40,6 +40,7 @@ class OrganisationType(models.Model):
 
 
 class Organisation(models.Model):
+    data_pass_id = models.PositiveIntegerField("Datapass ID", null=True)
     name = models.TextField("Nom", default="No name provided")
     type = models.ForeignKey(
         OrganisationType, null=True, blank=True, on_delete=SET_NULL

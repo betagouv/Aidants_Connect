@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequ
 from django.views.decorators.csrf import csrf_exempt
 
 from aidants_connect_web.forms import DatapassForm
-from aidants_connect_web.models import Organisation
+from aidants_connect_web.models import Organisation, OrganisationType
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -33,10 +33,17 @@ def receiver(request):
     form = DatapassForm(data=content)
 
     if form.is_valid():
+
+        orga_type, _ = OrganisationType.objects.get_or_create(
+            name=form.cleaned_data["organization_type"]
+        )
         this_organisation = Organisation.objects.create(
+            data_pass_id=form.cleaned_data["data_pass_id"],
             name=form.cleaned_data["organization_name"],
             siret=form.cleaned_data["organization_siret"],
+            zipcode=form.cleaned_data["organization_postal_code"],
             address=form.cleaned_data["organization_address"],
+            type=orga_type,
         )
 
         send_mail(
