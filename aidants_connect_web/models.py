@@ -783,7 +783,7 @@ class Journal(models.Model):
     # mandatory
     action = models.CharField(max_length=30, choices=JOURNAL_ACTIONS, blank=False)
     aidant = models.ForeignKey(
-        Aidant, on_delete=models.PROTECT, related_name="journal_entries"
+        Aidant, on_delete=models.PROTECT, related_name="journal_entries", null=True
     )
 
     # automatic
@@ -803,6 +803,11 @@ class Journal(models.Model):
     mandat = models.ForeignKey(
         Mandat, null=True, on_delete=models.PROTECT, related_name="journal_entries"
     )
+
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.PROTECT, related_name="journal_entries"
+    )
+
     objects = JournalQuerySet.as_manager()
 
     class Meta:
