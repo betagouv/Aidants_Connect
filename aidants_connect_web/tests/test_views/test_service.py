@@ -156,6 +156,7 @@ class StatistiquesTests(TestCase):
 
         Journal.objects.create(
             aidant=aidant_thierry,
+            organisation=aidant_thierry.organisation,
             usager=usager_homer,
             action="use_autorisation",
             demarche="justice",
@@ -163,6 +164,7 @@ class StatistiquesTests(TestCase):
         )
         Journal.objects.create(
             aidant=aidant_thierry,
+            organisation=aidant_thierry.organisation,
             usager=usager_homer,
             action="use_autorisation",
             demarche="justice",
@@ -189,6 +191,7 @@ class StatistiquesTests(TestCase):
 
         Journal.objects.create(
             aidant=aidant_staff_organisation,
+            organisation=aidant_staff_organisation.organisation,
             usager=usager_homer,
             action="use_autorisation",
             demarche="justice",
@@ -207,6 +210,7 @@ class StatistiquesTests(TestCase):
         Journal.objects.create(
             action="use_autorisation",
             aidant=aidant_staff_organisation,
+            organisation=aidant_staff_organisation.organisation,
             usager=usager_laurent,
             demarche="justice",
             autorisation=autorisation_justice_stafforg_laurent.id,
@@ -231,6 +235,7 @@ class StatistiquesTests(TestCase):
         Journal.objects.create(
             action="use_autorisation",
             aidant=aidant_thierry,
+            organisation=aidant_thierry.organisation,
             usager=usager_jacqueline,
             demarche=autorisation_justice_houlbec_jacqueline.demarche,
             duree=1,

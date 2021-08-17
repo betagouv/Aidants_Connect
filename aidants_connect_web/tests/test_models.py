@@ -373,6 +373,7 @@ class MandatModelTests(TestCase):
 
         AttestationJournalFactory(
             aidant=self.aidant_1,
+            organisation=self.aidant_1.organisation,
             usager=self.usager_1,
             demarche=",".join(procedures),
             attestation_hash=attestation_hash,
@@ -415,6 +416,7 @@ class MandatModelTests(TestCase):
 
         AttestationJournalFactory(
             aidant=self.aidant_1,
+            organisation=self.aidant_1.organisation,
             usager=self.usager_1,
             demarche=",".join(procedures),
             attestation_hash=attestation_hash,
@@ -470,6 +472,7 @@ class MandatModelTests(TestCase):
 
         AttestationJournalFactory(
             aidant=self.aidant_1,
+            organisation=self.aidant_1.organisation,
             usager=self.usager_1,
             demarche=",".join(procedures),
             attestation_hash=attestation_hash,
@@ -477,6 +480,7 @@ class MandatModelTests(TestCase):
 
         AttestationJournalFactory(
             aidant=self.aidant_1,
+            organisation=self.aidant_1.organisation,
             usager=self.usager_1,
             demarche=",".join(procedures),
             attestation_hash=old_attestation_hash,
@@ -1078,7 +1082,9 @@ class JournalModelTests(TestCase):
             organisation=OrganisationFactory(name="Commune de Vernon"),
         )
         cls.journal_entry = Journal.objects.create(
-            action="connect_aidant", aidant=cls.aidant_thierry
+            action="connect_aidant",
+            aidant=cls.aidant_thierry,
+            organisation=cls.aidant_thierry.organisation,
         )
         cls.usager_ned = UsagerFactory(given_name="Ned", family_name="Flanders")
 
