@@ -177,8 +177,10 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "admin_num_active_aidants",
         "admin_num_mandats",
         "id",
+        "data_pass_id",
     )
-    search_fields = ("name", "siret")
+    readonly_fields = ("data_pass_id",)
+    search_fields = ("name", "siret", "data_pass_id")
 
     # For bulk import
     resource_class = OrganisationResource

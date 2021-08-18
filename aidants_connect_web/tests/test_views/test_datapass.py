@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core import mail
 from django.test import tag, TestCase
-from aidants_connect_web.models import Organisation
+from aidants_connect_web.models import Organisation, OrganisationType
 from aidants_connect_web.views import datapass
 from django.urls import resolve
 
@@ -15,6 +15,8 @@ class Datapass(TestCase):
             "organization_name": "La maison de l'aide",
             "organization_siret": 11111111111111,
             "organization_address": "4 rue du clos, 90210, La Colline de Bev",
+            "organization_type": "Mairie",
+            "organization_postal_code": "90210",
         }
         cls.datapass_key = settings.DATAPASS_KEY
 
@@ -44,6 +46,7 @@ class Datapass(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_message_body_can_create_organisation(self):
+        orga_type_count = OrganisationType.objects.count()
         response = self.datapass_request(data=self.good_data_from_datapass)
         self.assertEqual(response.status_code, 202)
         self.assertEqual(Organisation.objects.count(), 1)
@@ -52,6 +55,18 @@ class Datapass(TestCase):
             "4 rue du clos, 90210, La Colline de Bev",
         )
         self.assertEqual(Organisation.objects.first().siret, 11111111111111)
+        self.assertEqual(Organisation.objects.first().data_pass_id, 34)
+        self.assertEqual(
+            Organisation.objects.first().type,
+            OrganisationType.objects.get(name="Mairie"),
+        )
+        self.assertEqual(Organisation.objects.first().zipcode, "90210")
+        self.assertEqual(OrganisationType.objects.count(), orga_type_count + 1)
+
+        response = self.datapass_request(data=self.good_data_from_datapass)
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(Organisation.objects.count(), 2)
+        self.assertEqual(OrganisationType.objects.count(), orga_type_count + 1)
 
     def test_id_NaN_generates_bad_request(self):
         for should_be_a_number in ["data_pass_id", "organization_siret"]:

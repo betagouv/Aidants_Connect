@@ -308,6 +308,8 @@ class DatapassForm(forms.Form):
     organization_name = forms.CharField()
     organization_siret = forms.IntegerField()
     organization_address = forms.CharField()
+    organization_postal_code = forms.CharField()
+    organization_type = forms.CharField()
 
 
 class ValidateCGUForm(forms.Form):
