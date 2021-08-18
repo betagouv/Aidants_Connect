@@ -336,18 +336,6 @@ def __attestation_visualisation(
     )
 
 
-def get_attestation_hash(mandat_id):
-    try:
-        mandat = Mandat.objects.get(pk=mandat_id)
-        journal = Journal.find_attestation_creation_entries(mandat)
-        # If the journal count is 1, let's use this, otherwise, we don't consider
-        # the results to be sufficiently specific to display a hash
-        if journal.count() == 1:
-            return journal.first().attestation_hash
-    except Exception:
-        return None
-
-
 @login_required
 @user_is_aidant
 @activity_required
@@ -357,7 +345,7 @@ def attestation_qrcode(request):
     mandat_id = request.session.pop("qr_code_mandat_id", None)
 
     if mandat_id is not None:
-        attestation_hash = get_attestation_hash(mandat_id)
+        attestation_hash = Mandat.get_attestation_hash_or_none(mandat_id)
 
     elif connection is not None:
         connection = Connection.objects.get(pk=connection)

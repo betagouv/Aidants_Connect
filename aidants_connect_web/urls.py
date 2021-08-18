@@ -1,5 +1,4 @@
 from django.urls import path
-
 from magicauth import views as magicauth_views
 from magicauth.urls import urlpatterns as magicauth_urls
 

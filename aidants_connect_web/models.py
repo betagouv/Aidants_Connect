@@ -1,16 +1,17 @@
+import logging
 from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q, QuerySet, SET_NULL, CASCADE
-from django.template import loader
+from django.template import loader, defaultfilters
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from typing import Union, Optional
+from typing import Union, Optional, Collection
 from os import walk as os_walk
 from os.path import join as path_join, dirname
 from re import sub as regex_sub
@@ -26,6 +27,9 @@ from aidants_connect_web.utilities import (
     generate_attestation_hash,
     mandate_template_path,
 )
+
+
+logger = logging.getLogger()
 
 
 class OrganisationType(models.Model):
@@ -507,6 +511,21 @@ class Mandat(models.Model):
         )
 
     @cached_property
+    def template_repr(self):
+        """Defines a stadard way to represent a Mandat in templates"""
+        creation_date_repr = (
+            f" le {defaultfilters.date(self.creation_date)}"
+            if self.creation_date
+            else ""
+        )
+        duree_keyword_repr = (
+            f" pour une durée de {self.get_duree_keyword_display()}"
+            if self.duree_keyword
+            else ""
+        )
+        return f"signé avec {self.usager}{creation_date_repr}{duree_keyword_repr}"
+
+    @cached_property
     def was_explicitly_revoked(self) -> bool:
         """
         Returns whether the mandate was explicitely revoked, independently of it's
@@ -580,6 +599,23 @@ class Mandat(models.Model):
     admin_is_active.short_description = "is active"
 
     @classmethod
+    def get_attestation_or_none(cls, mandate_id):
+        try:
+            mandate = Mandat.objects.get(mandate_id)
+            journal = Journal.find_attestation_creation_entries(mandate)
+            # If the journal count is 1, let's use this, otherwise, we don't consider
+            # the results to be sufficiently specific to display a hash
+            if journal.count() == 1:
+                return journal.first()
+        except Exception:
+            return None
+
+    @classmethod
+    def get_attestation_hash_or_none(cls, mandate_id):
+        result = cls.get_attestation_or_none(mandate_id)
+        return result.attestation_hash if result is not None else result
+
+    @classmethod
     def find_soon_expired(cls, nb_days_before: int) -> QuerySet["Mandat"]:
         """Finds mandates that will be expired in less than `nb_days_before` days"""
 
@@ -590,6 +626,44 @@ class Mandat(models.Model):
             duree_keyword=AuthorizationDurations.LONG,
             expiration_date__range=(start, end),
         ).order_by("organisation", "expiration_date")
+
+    @classmethod
+    def transfer_to_organisation(cls, organisation: Organisation, ids: Collection[str]):
+        failed_updates = []
+
+        for mandate_id in ids:
+            try:
+                mandate = Mandat.objects.get(pk=mandate_id)
+                journal = Mandat.get_attestation_or_none(mandate_id)
+
+                with transaction.atomic():
+                    mandate.organisation = organisation
+                    mandate.save()
+
+                    Journal.log_transfert_mandat(
+                        mandate,
+                        mandate.organisation,
+                        getattr(journal, "attestation_hash", None),
+                    )
+                    if journal is not None:
+                        journal.attestation_hash = generate_attestation_hash(
+                            aidant=journal.aidant,
+                            usager=mandate.usager,
+                            demarches=journal.demarche,
+                            expiration_date=mandate.expiration_date,
+                            creation_date=mandate.expiration_date.date().isoformat(),
+                            mandat_template_path=mandate.get_mandate_template_path(),
+                            organisation_id=organisation.id,
+                        )
+                        journal.save()
+            except Exception:
+                failed_updates.append(mandate_id)
+                logger.exception(
+                    "An error happened while trying to transfer mandates to "
+                    "another organisation"
+                )
+
+        return len(failed_updates) != 0, failed_updates
 
 
 class AutorisationQuerySet(models.QuerySet):
@@ -1014,6 +1088,23 @@ class Journal(models.Model):
         )
 
     @classmethod
+    def log_transfert_mandat(
+        cls,
+        mandat: Mandat,
+        previous_organisation: Organisation,
+        previous_hash: Optional[str],
+    ):
+        return cls.objects.create(
+            mandat=mandat,
+            organisation=mandat.organisation,
+            action=JournalActionKeywords.TRANSFER_MANDAT,
+            additional_information=(
+                f"previous_organisation = {previous_organisation.pk}, "
+                f"previous_hash = {previous_hash}"
+            ),
+        )
+
+    @classmethod
     def find_attestation_creation_entries(cls, mandat: Mandat) -> QuerySet["Journal"]:
         # Let's first search by mandate
         journal = cls.objects.filter(
@@ -1025,8 +1116,8 @@ class Journal(models.Model):
         # If the journal entry was created prior to this modification, there's no
         # association between the journal entry and the mandate so we need to search
         # using the naive heuristics
-        start = mandat.creation_date.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = start + timedelta(days=1)
+        start = mandat.creation_date - timedelta(hours=24)
+        end = mandat.creation_date + timedelta(hours=24)
         return cls.objects.filter(
             action=JournalActionKeywords.CREATE_ATTESTATION,
             usager=mandat.usager,

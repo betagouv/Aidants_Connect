@@ -1,7 +1,14 @@
+import logging
+from collections import Collection
+
 from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
 from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
+from django.contrib import messages
 from django.contrib.admin import ModelAdmin, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.http import HttpResponseRedirect, HttpResponseNotAllowed
+from django.shortcuts import render
+from django.urls import reverse, path
 from django_celery_beat.admin import (
     ClockedScheduleAdmin,
     PeriodicTaskAdmin,
@@ -23,6 +30,7 @@ from import_export import resources
 from import_export.admin import ImportMixin, ExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
+from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
 
@@ -38,12 +46,13 @@ from aidants_connect_web.models import (
     Usager,
     CarteTOTP,
 )
-from magicauth.models import MagicToken
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
 admin_site.login_template = "aidants_connect_web/admin/login.html"
 
 admin_site.register(HoneypotLoginAttempt, HoneypotLoginAttemptAdmin)
+
+logger = logging.getLogger()
 
 
 class VisibleToAdminMetier:
@@ -474,8 +483,129 @@ class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
     )
 
     readonly_fields = fields
+    raw_id_fields = ("organisation",)
 
     inlines = (MandatAutorisationInline,)
+
+    actions = ("move_to_another_organisation",)
+
+    def move_to_another_organisation(self, _, queryset):
+        ids = ",".join(
+            str(pk) for pk in queryset.order_by("pk").values_list("pk", flat=True)
+        )
+        return HttpResponseRedirect(
+            f"{reverse('otpadmin:aidants_connect_web_mandat_transfer')}?ids={ids}"
+        )
+
+    move_to_another_organisation.short_description = (
+        "Transférer le mandat vers une autre organisation"
+    )
+
+    def get_urls(self):
+        return [
+            path(
+                "transfer/",
+                self.admin_site.admin_view(self.mandate_transfer),
+                name="aidants_connect_web_mandat_transfer",
+            ),
+            *super().get_urls(),
+        ]
+
+    def get_readonly_fields(self, request, obj=None):
+        if isinstance(obj, dict) and isinstance(
+            obj.get("exclude_from_readonly_fields", None), Collection
+        ):
+            readonly_fields = super().get_readonly_fields(request, obj)
+            return [
+                field
+                for field in readonly_fields
+                if field not in obj["exclude_from_readonly_fields"]
+            ]
+        else:
+            return super().get_readonly_fields(request, obj)
+
+    def mandate_transfer(self, request):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__mandate_transfer_get(request)
+        else:
+            return self.__mandate_transfer_post(request)
+
+    def __mandate_transfer_get(self, request):
+        ids: str = request.GET.get("ids")
+        if not ids:
+            self.message_user(
+                request,
+                "Des mandats doivent être sélectionnés afin d’appliquer un transfert. "
+                "Aucun élément n’a été transféré.",
+                messages.ERROR,
+            )
+
+            return HttpResponseRedirect(
+                reverse("otpadmin:aidants_connect_web_mandat_changelist")
+            )
+
+        include_fields = ["organisation"]
+        mandates = Mandat.objects.filter(pk__in=ids.split(","))
+        context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "form": self.get_form(
+                request,
+                obj={"exclude_from_readonly_fields": include_fields},
+                fields=include_fields,
+            ),
+            "ids": ids,
+            "mandates": mandates,
+            "mandates_count": mandates.count(),
+        }
+
+        return render(request, "admin/transfert.html", context)
+
+    def __mandate_transfer_post(self, request):
+        try:
+            ids = request.POST["ids"].split(",")
+            organisation = Organisation.objects.get(pk=request.POST["organisation"])
+            failure, failed_ids = Mandat.transfer_to_organisation(organisation, ids)
+
+            mandates = Mandat.objects.filter(pk__in=failed_ids)
+            if failure:
+                context = {
+                    **self.admin_site.each_context(request),
+                    "media": self.media,
+                    "mandates": mandates,
+                    "mandates_count": mandates.count(),
+                }
+
+                return render(request, "admin/transfert_error.html", context)
+        except Organisation.DoesNotExist:
+            self.message_user(
+                request,
+                "L'organisation sélectionnée n'existe pas. "
+                "Veuillez corriger votre requête",
+                messages.ERROR,
+            )
+
+            return HttpResponseRedirect(
+                f"{reverse('otpadmin:aidants_connect_web_mandat_transfer')}"
+                f"?ids={request.POST['ids']}"
+            )
+        except Exception:
+            logger.exception(
+                "An error happened while trying to transfer mandates to "
+                "another organisation"
+            )
+
+            self.message_user(
+                request,
+                "Les mandats n'ont pas pu être tansférés à cause d'une erreur.",
+                messages.ERROR,
+            )
+
+        return HttpResponseRedirect(
+            reverse("otpadmin:aidants_connect_web_mandat_changelist")
+        )
 
 
 class ConnectionAdmin(ModelAdmin):

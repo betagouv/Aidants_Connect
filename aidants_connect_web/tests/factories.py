@@ -45,7 +45,7 @@ class OrganisationTypeFactory(factory.DjangoModelFactory):
 class AidantFactory(factory.DjangoModelFactory):
     username = "thierry@thierry.com"
     email = "thierry@thierry.com"
-    password = "motdepassedethierry"
+    password = factory.PostGenerationMethodCall("set_password", "motdepassedethierry")
     last_name = "Goneau"
     first_name = "Thierry"
     profession = "secrétaire"

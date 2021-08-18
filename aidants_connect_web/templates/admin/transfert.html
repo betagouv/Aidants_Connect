@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+{% load static ac_extras i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media.js }}
+{% endblock %}
+
+{% block content %}
+  <h1>Vers organisation transférer&nbsp;?</h1>
+
+  <p>Sélectionner l'ogranisation vers laquelle vous souhaitez transférer les mandats.</p>
+
+  <form action="{% url 'otpadmin:aidants_connect_web_mandat_transfer' %}" method="POST">
+    <fieldset class="module aligned">
+      {{ form.as_p }}
+    </fieldset>
+    <div class="submit-row">
+      <input type="submit" value="Enregistrer" class="default" name="_save">
+      <p class="deletelink-box">
+        <a href="{% url 'otpadmin:aidants_connect_web_mandat_changelist' %}" class="closelink">Annuler</a>
+      </p>
+    </div>
+    {% csrf_token %}
+    <input type="text" name="ids" value="{{ ids }}" hidden="hidden">
+  </form>
+
+  <h2>
+    {% blocktranslate count counter=mandates_count %}
+      Vous allez transférer un mandat vers une autre organisation.
+      {% plural %}
+      Vous allez transférer les {{ counter }} mandats suivants vers une autre organisation&nbsp;:
+    {% endblocktranslate %}
+  </h2>
+
+  {% if mandates_count == 1 %}
+    {% for mandate in mandates %}<p>Il s'agit du mandat {{ mandate.template_repr }}</p>{% endfor %}
+  {% else %}
+    <ul>
+      {% for mandate in mandates %}
+        <li>
+          le mandat {{ mandate.template_repr }}{% list_term %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}
