@@ -63,12 +63,12 @@ def populate_template_path(apps, _):
         for file in files:
             filename = basename(file)
             file_hash = generate_attestation_hash(
-                journal.aidant,
-                mandate.usager,
-                [it.demarche for it in mandate.autorisations.all()],
-                mandate.expiration_date,
-                journal.creation_date.date().isoformat(),
-                path_join(settings.MANDAT_TEMPLATE_DIR, filename),
+                organisation=journal.aidant.organisation,
+                usager=mandate.usager,
+                demarches=[it.demarche for it in mandate.autorisations.all()],
+                expiration_date=mandate.expiration_date,
+                creation_date=journal.creation_date,
+                mandat_template_path=path_join(settings.MANDAT_TEMPLATE_DIR, filename),
             )
 
             if file_hash == journal.attestation_hash:

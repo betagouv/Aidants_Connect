@@ -364,10 +364,10 @@ class MandatModelTests(TestCase):
         procedures = ["transports", "logement"]
         expiration_date = timezone.now() + timedelta(days=6)
         attestation_hash = generate_attestation_hash(
-            self.aidant_1,
-            self.usager_1,
-            procedures,
-            expiration_date,
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            demarches=procedures,
+            expiration_date=expiration_date,
             mandat_template_path=path_join(settings.MANDAT_TEMPLATE_DIR, tpl_name),
         )
 
@@ -398,7 +398,7 @@ class MandatModelTests(TestCase):
 
         result = mandate._get_mandate_template_path_from_journal_hash()
 
-        self.assertEqual(result, f"aidants_connect_web/mandat_templates/{tpl_name}")
+        self.assertEqual(f"aidants_connect_web/mandat_templates/{tpl_name}", result)
 
     def test__get_template_path_from_journal_hash_with_old_mandate(self):
         tpl_name = "20200511_mandat.html"
@@ -406,11 +406,11 @@ class MandatModelTests(TestCase):
         expiration_date = timezone.now() - timedelta(days=6)
         creation_date = timezone.now() - timedelta(days=12)
         attestation_hash = generate_attestation_hash(
-            self.aidant_1,
-            self.usager_1,
-            procedures,
-            expiration_date,
-            creation_date=creation_date.date().isoformat(),
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            demarches=procedures,
+            expiration_date=expiration_date,
+            creation_date=creation_date,
             mandat_template_path=path_join(settings.MANDAT_TEMPLATE_DIR, tpl_name),
         )
 
@@ -446,25 +446,25 @@ class MandatModelTests(TestCase):
 
         result = mandate._get_mandate_template_path_from_journal_hash()
 
-        self.assertEqual(result, f"aidants_connect_web/mandat_templates/{tpl_name}")
+        self.assertEqual(f"aidants_connect_web/mandat_templates/{tpl_name}", result)
 
     def test__get_template_path_from_journal_hash_with_old_delegation(self):
         tpl_name = "20200511_mandat.html"
         procedures = ["transports", "logement"]
         expiration_date = timezone.now() + timedelta(days=6)
         attestation_hash = generate_attestation_hash(
-            self.aidant_1,
-            self.usager_1,
-            procedures,
-            expiration_date,
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            demarches=procedures,
+            expiration_date=expiration_date,
             mandat_template_path=path_join(settings.MANDAT_TEMPLATE_DIR, tpl_name),
         )
 
         old_attestation_hash = generate_attestation_hash(
-            self.aidant_1,
-            self.usager_1,
-            procedures,
-            expiration_date,
+            organisation=self.aidant_1.organisation,
+            usager=self.usager_1,
+            demarches=procedures,
+            expiration_date=expiration_date,
             mandat_template_path=path_join(
                 settings.MANDAT_TEMPLATE_DIR, "20200201_mandat.html"
             ),
@@ -1197,7 +1197,10 @@ class JournalModelTests(TestCase):
             is_remote_mandat=False,
             access_token="fjfgjfdkldlzlsmqqxxcn",
             attestation_hash=generate_attestation_hash(
-                self.aidant_thierry, self.usager_ned, demarches, expiration_date
+                organisation=self.aidant_thierry.organisation,
+                usager=self.usager_ned,
+                demarches=demarches,
+                expiration_date=expiration_date,
             ),
             mandat=mandat,
         )
@@ -1207,7 +1210,6 @@ class JournalModelTests(TestCase):
 
         attestation_string = ";".join(
             [
-                str(self.aidant_thierry.id),
                 date.today().isoformat(),
                 "logement,transports",
                 expiration_date.date().isoformat(),

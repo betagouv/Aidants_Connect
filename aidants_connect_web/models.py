@@ -579,11 +579,11 @@ class Mandat(models.Model):
             for _, _, filenames in os_walk(template_dir):
                 for filename in filenames:
                     file_hash = generate_attestation_hash(
-                        journal_entry.aidant,
+                        journal_entry.aidant.organisation,
                         self.usager,
                         demarches,
                         self.expiration_date,
-                        journal_entry.creation_date.date().isoformat(),
+                        journal_entry.creation_date,
                         path_join(settings.MANDAT_TEMPLATE_DIR, filename),
                     )
 
@@ -647,13 +647,12 @@ class Mandat(models.Model):
                     )
                     if journal is not None:
                         journal.attestation_hash = generate_attestation_hash(
-                            aidant=journal.aidant,
+                            organisation=organisation,
                             usager=mandate.usager,
                             demarches=journal.demarche,
                             expiration_date=mandate.expiration_date,
-                            creation_date=mandate.expiration_date.date().isoformat(),
+                            creation_date=mandate.expiration_date,
                             mandat_template_path=mandate.get_mandate_template_path(),
-                            organisation_id=organisation.id,
                         )
                         journal.save()
             except Exception:

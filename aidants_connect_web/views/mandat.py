@@ -80,8 +80,8 @@ def new_mandat(request):
 @activity_required
 def new_mandat_recap(request):
     connection = Connection.objects.get(pk=request.session["connection"])
-    aidant = request.user
-    usager = connection.usager
+    aidant: Aidant = request.user
+    usager: Usager = connection.usager
     demarches_description = [
         humanize_demarche_names(demarche) for demarche in connection.demarches
     ]
@@ -133,7 +133,10 @@ def new_mandat_recap(request):
                     is_remote_mandat=connection.mandat_is_remote,
                     access_token=connection.access_token,
                     attestation_hash=generate_attestation_hash(
-                        aidant, usager, connection.demarches, mandat_expiration_date
+                        organisation=aidant.organisation,
+                        usager=usager,
+                        demarches=connection.demarches,
+                        expiration_date=mandat_expiration_date,
                     ),
                     mandat=mandat,
                 )
