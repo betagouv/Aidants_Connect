@@ -176,11 +176,13 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "zipcode",
         "admin_num_active_aidants",
         "admin_num_mandats",
+        "is_active",
         "id",
         "data_pass_id",
     )
     readonly_fields = ("data_pass_id",)
     search_fields = ("name", "siret", "data_pass_id")
+    list_filter = ("is_active",)
 
     # For bulk import
     resource_class = OrganisationResource
@@ -191,11 +193,27 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "aidants_connect_web/admin/import_export/import_organisation.html"
     )
 
-    actions = ("find_zipcode_in_address",)
+    actions = (
+        "find_zipcode_in_address",
+        "deactivate_organisations",
+        "activate_organisations",
+    )
 
     def find_zipcode_in_address(self, request, queryset):
         for organisation in queryset:
             organisation.set_empty_zipcode_from_address()
+
+    def deactivate_organisations(self, request, queryset):
+        for organisation in queryset:
+            organisation.deactivate_organisation()
+
+    deactivate_organisations.short_description = "Désactiver les organisations"
+
+    def activate_organisations(self, request, queryset):
+        for organisation in queryset:
+            organisation.activate_organisation()
+
+    activate_organisations.short_description = "Activer les organisations"
 
 
 class AidantResource(resources.ModelResource):

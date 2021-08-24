@@ -675,6 +675,33 @@ class OrganisationModelTests(TestCase):
             organisation_address.display_address, organisation_address.address
         )
 
+    def test_deactivate_organisation(self):
+        orga_one = OrganisationFactory(name="L'Internationale")
+        orga_two = OrganisationFactory()
+        aidant_marge = AidantFactory(username="Marge", organisation=orga_one)
+        aidant_lisa = AidantFactory(username="Lisa", organisation=orga_one)
+        aidant_homer = AidantFactory(username="Homer", organisation=orga_two)
+
+        self.assertTrue(orga_one.is_active)
+        self.assertTrue(orga_two.is_active)
+        orga_one.deactivate_organisation()
+        orga_one.refresh_from_db()
+        aidant_marge.refresh_from_db()
+        aidant_lisa.refresh_from_db()
+        aidant_homer.refresh_from_db()
+        self.assertFalse(orga_one.is_active)
+        self.assertTrue(orga_two.is_active)
+
+        self.assertFalse(aidant_marge.is_active)
+        self.assertFalse(aidant_lisa.is_active)
+        self.assertTrue(aidant_homer.is_active)
+
+    def test_activate_organisation(self):
+        orga = OrganisationFactory(name="L'Internationale", is_active=False)
+        orga.activate_organisation()
+        orga.refresh_from_db()
+        self.assertTrue(orga.is_active)
+
     def test_set_empty_zipcode_from_address(self):
         organisation_no_address = Organisation(name="L'Internationale")
         organisation_no_address.save()
