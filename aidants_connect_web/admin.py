@@ -27,7 +27,7 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ImportMixin, ExportMixin
+from import_export.admin import ImportMixin, ExportMixin, ImportExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
 from magicauth.models import MagicToken
@@ -291,7 +291,7 @@ class AidantResource(resources.ModelResource):
             totp_device.save()
 
 
-class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
+class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
