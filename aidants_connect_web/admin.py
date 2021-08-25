@@ -220,6 +220,7 @@ class AidantResource(resources.ModelResource):
     organisation_id = Field(attribute="organisation_id", column_name="organisation_id")
     token = Field(attribute="token", column_name="token")
     carte_ac = Field(attribute="carte_ac", column_name="carte_ac")
+    carte_totp = Field(attribute="carte_totp", column_name="carte_ac", readonly=True)
 
     class Meta:
         model = Aidant
