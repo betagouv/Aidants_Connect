@@ -8,7 +8,11 @@ from selenium.common.exceptions import NoSuchElementException
 
 import aidants_connect_web
 from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    OrganisationFactory,
+    CarteTOTPFactory,
+)
 from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 
 
@@ -110,3 +114,21 @@ class ImportAidantTests(FunctionalTestCase):
         )
         self.assertEqual("un.email@tout.en.majuscules.fr", aidant_c.username)
         self.assertEqual("un.email@tout.en.majuscules.fr", aidant_c.email)
+
+    def test_import_carte_totp(self):
+        excel_file = path_join(
+            dirname(aidants_connect_web.__file__),
+            "fixtures",
+            "import-aidants",
+            "edge-cases",
+            "carte-totp-import.xlsx",
+        )
+        CarteTOTPFactory(serial_number="TEST01")
+
+        self.import_file(excel_file)
+
+        self.assertEqual(3, Aidant.objects.count(), "Unexpected count of Aidants in DB")
+
+        aidant_a = Aidant.objects.get(username="plop@example.net")
+        self.assertTrue(aidant_a.has_a_carte_totp)
+        self.assertTrue(aidant_a.has_a_totp_device)
