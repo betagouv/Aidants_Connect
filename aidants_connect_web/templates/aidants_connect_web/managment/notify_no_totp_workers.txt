@@ -1,0 +1,18 @@
+{% load ac_extras %}
+Bonjour,
+{% if not users  %}
+L’équipe Aidants Connect vous informe qu'aucune carte Aidants Connect n'est liée à votre compte.
+{% else %}
+L’équipe Aidants Connect vous informe qu'aucune carte Aidants Connect n'est liée aux aidants ou aidantes suivantes :
+{% for user in users %}
+{% linebreakless %}
+{% if user.full_name is not None %}
+  - {{ user.full_name }}
+{% else %}
+  - un aidant ou une aidante possédant l'e-mail {{ user.email }}
+{% endif %}
+{% list_term additionnal_cond=notify_self %}
+{% endlinebreakless %}{% endfor %}
+{% if notify_self %}- vous-même.{% endif %}
+{% endif %}
+Rendez-vous dans votre espace responsable ({{ espace_responsable_url }}) afin de relier un compte aidant à une carte Aidants Connect.

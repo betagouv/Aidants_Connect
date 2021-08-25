@@ -5,6 +5,7 @@ from django.db.models import Count, Q
 from django.template.defaultfilters import pluralize
 from django.core.mail import send_mail
 from django.template import loader
+from django.urls import reverse
 from django.utils import timezone
 
 from celery import shared_task
@@ -120,3 +121,64 @@ def notify_new_habilitation_requests():
         message=text_message,
         html_message=html_message,
     )
+
+
+@shared_task()
+def notify_no_totp_workers():
+    def none_if_blank(value):
+        return (
+            None
+            if value is None or isinstance(value, str) and len(value.strip()) == 0
+            else value
+        )
+
+    workers_without_totp = (
+        Aidant.objects.filter(email__isnull_or_blank=False, carte_totp__isnull=True)
+        .order_by("organisation__responsables__email")
+        .values("organisation__responsables__email", "email", "first_name", "last_name")
+    )
+
+    workers_without_totp_dict = {}
+
+    for item in workers_without_totp:
+        manager_email = item.pop("organisation__responsables__email")
+
+        if manager_email not in workers_without_totp_dict:
+            workers_without_totp_dict[manager_email] = {
+                "users": [],
+                "notify_self": False,
+                "espace_responsable_url": (
+                    f"{settings.HOST}{reverse('espace_responsable_home')}"
+                ),
+            }
+
+        if item["email"] == manager_email:
+            workers_without_totp_dict[manager_email]["notify_self"] = True
+        else:
+            first_name = none_if_blank(item.pop("first_name", None))
+            last_name = none_if_blank(item.pop("last_name", None))
+
+            item["full_name"] = (
+                f"{first_name} {last_name}"
+                if first_name is not None and last_name is not None
+                else None
+            )
+
+            workers_without_totp_dict[manager_email]["users"].append(item)
+
+    for manager_email, context in workers_without_totp_dict.items():
+        text_message = loader.render_to_string(
+            "aidants_connect_web/managment/notify_no_totp_workers.txt", context
+        )
+
+        html_message = loader.render_to_string(
+            "aidants_connect_web/managment/notify_no_totp_workers.html", context
+        )
+
+        send_mail(
+            from_email=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_FROM,
+            recipient_list=[manager_email],
+            subject=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
