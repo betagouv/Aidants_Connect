@@ -49,6 +49,8 @@ class Organisation(models.Model):
     address = models.TextField("Adresse", default="No address provided")
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
 
+    is_active = models.BooleanField("Est active", default=True, editable=False)
+
     def __str__(self):
         return f"{self.name}"
 
@@ -87,6 +89,17 @@ class Organisation(models.Model):
                     self.save()
             except Exception:
                 pass
+
+    def deactivate_organisation(self):
+        self.is_active = False
+        self.save()
+        for aidant in self.aidants.all():
+            aidant.is_active = False
+            aidant.save()
+
+    def activate_organisation(self):
+        self.is_active = True
+        self.save()
 
 
 class AidantManager(UserManager):
