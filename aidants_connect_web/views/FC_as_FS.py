@@ -1,14 +1,17 @@
 import logging
+from urllib.parse import urlencode
 from secrets import token_urlsafe
 import jwt
 from jwt.api_jwt import ExpiredSignatureError
 import requests as python_request
+
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from aidants_connect_web.models import Connection, Usager, Journal
 from aidants_connect_web.utilities import generate_sha256_hash
@@ -91,8 +94,42 @@ def fc_callback(request):
     headers = {"Accept": "application/json"}
 
     request_for_token = python_request.post(token_url, data=payload, headers=headers)
-    content = request_for_token.json()
+
+    def fc_error(log_msg):
+        log.error(log_msg)
+        django_messages.error(
+            request,
+            "Nous avons rencontré une erreur en tentant d'interagir avec "
+            "France Connect. C'est probabablement temporaire. Pouvez-vous réessayer "
+            "votre requête ?",
+        )
+
+        fields = urlencode(
+            {
+                "duree": connection.duree_keyword,
+                "is_remote": connection.mandat_is_remote,
+                "demarche": ",".join(connection.demarches),
+                "user_phone": connection.user_phone,
+            }
+        )
+
+        return redirect(f"{reverse('new_mandat')}?{fields}")
+
+    try:
+        content = request_for_token.json()
+    except ValueError:  # not a valid JSON
+        return fc_error(
+            f"Request to {token_url} failed. Status code: "
+            f"{request_for_token.status_code}, body: {request_for_token.text}"
+        )
+
     connection.access_token = content.get("access_token")
+    if connection.access_token is None:
+        return fc_error(
+            f"No access_token return when requesting {token_url}. JSON response: "
+            f"{repr(content)}"
+        )
+
     connection.save()
     fc_id_token = content.get("id_token")
 

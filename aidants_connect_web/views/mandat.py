@@ -39,9 +39,10 @@ log = logging.getLogger()
 @activity_required
 def new_mandat(request):
     aidant = request.user
-    form = MandatForm()
 
     if request.method == "GET":
+        form = MandatForm(initial=request.GET)
+
         return render(
             request,
             "aidants_connect_web/new_mandat/new_mandat.html",
