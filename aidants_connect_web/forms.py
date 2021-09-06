@@ -1,5 +1,3 @@
-from distutils.util import strtobool
-
 from django import forms
 from django.conf import settings
 from django.contrib.auth import password_validation
@@ -180,56 +178,6 @@ class MandatForm(forms.Form):
         ),
         required=False,
     )
-
-    def __init__(
-        self,
-        data=None,
-        files=None,
-        auto_id="id_%s",
-        prefix=None,
-        initial=None,
-        error_class=ErrorList,
-        label_suffix=None,
-        empty_permitted=False,
-        field_order=None,
-        use_required_attribute=None,
-        renderer=None,
-    ):
-
-        super().__init__(
-            data,
-            files,
-            auto_id,
-            prefix,
-            None,
-            error_class,
-            label_suffix,
-            empty_permitted,
-            field_order,
-            use_required_attribute,
-            renderer,
-        )
-
-        if initial is not None:
-            for field in self.fields.keys():
-                if field not in initial:
-                    continue
-                value = initial[field]
-
-                if field == "demarche" and isinstance(value, str):
-                    value = [
-                        item
-                        for item in value.split(",")
-                        if item in settings.DEMARCHES.keys()
-                    ]
-                elif field == "is_remote" and isinstance(value, str):
-                    try:
-                        value = bool(strtobool(value))
-                    except Exception:
-                        value = None
-
-                if value is not None:
-                    self.initial[field] = value
 
     def clean(self):
         cleaned = super().clean()

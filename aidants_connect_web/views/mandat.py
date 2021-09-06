@@ -39,9 +39,24 @@ log = logging.getLogger()
 @activity_required
 def new_mandat(request):
     aidant = request.user
+    try:
+        connection = Connection.objects.get(pk=request.session.get("connection"))
+    except Connection.DoesNotExist:
+        connection = None
 
     if request.method == "GET":
-        form = MandatForm(initial=request.GET)
+        inital = (
+            {
+                "duree": connection.duree_keyword,
+                "is_remote": connection.mandat_is_remote,
+                "demarche": connection.demarches,
+                "user_phone": connection.user_phone,
+            }
+            if connection is not None
+            else None
+        )
+
+        form = MandatForm(initial=inital)
 
         return render(
             request,

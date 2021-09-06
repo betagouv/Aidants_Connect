@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import urlencode
 from secrets import token_urlsafe
 import jwt
 from jwt.api_jwt import ExpiredSignatureError
@@ -104,16 +103,7 @@ def fc_callback(request):
             "votre requête ?",
         )
 
-        fields = urlencode(
-            {
-                "duree": connection.duree_keyword,
-                "is_remote": connection.mandat_is_remote,
-                "demarche": ",".join(connection.demarches),
-                "user_phone": connection.user_phone,
-            }
-        )
-
-        return redirect(f"{reverse('new_mandat')}?{fields}")
+        return redirect(reverse("new_mandat"))
 
     try:
         content = request_for_token.json()
