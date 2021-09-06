@@ -27,7 +27,7 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ImportMixin, ExportMixin
+from import_export.admin import ImportMixin, ExportMixin, ImportExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
 from magicauth.models import MagicToken
@@ -220,6 +220,7 @@ class AidantResource(resources.ModelResource):
     organisation_id = Field(attribute="organisation_id", column_name="organisation_id")
     token = Field(attribute="token", column_name="token")
     carte_ac = Field(attribute="carte_ac", column_name="carte_ac")
+    carte_totp = Field(attribute="carte_totp", column_name="carte_ac", readonly=True)
 
     class Meta:
         model = Aidant
@@ -256,7 +257,7 @@ class AidantResource(resources.ModelResource):
             add_static_token(row["username"], token)
 
     def after_save_instance(self, instance: Aidant, using_transactions, dry_run):
-        if hasattr(instance, "carte_ac"):
+        if hasattr(instance, "carte_ac") and instance.carte_ac is not None:
             card_sn = instance.carte_ac
             # instance.carte_ac is the sn the import added to the aidant instance,
             # it will not be persisted as-is in database.
@@ -291,7 +292,7 @@ class AidantResource(resources.ModelResource):
             totp_device.save()
 
 
-class AidantAdmin(ImportMixin, VisibleToAdminMetier, DjangoUserAdmin):
+class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
