@@ -429,6 +429,30 @@ class HabilitationRequestResource(resources.ModelResource):
         )
 
 
+class HabilitationRequestRegionFilter(SimpleListFilter):
+    title = "Région"
+
+    parameter_name = "region"
+
+    def lookups(self, request, model_admin):
+        return [(r.id, r.name) for r in DatavizRegion.objects.all()]
+
+    def queryset(self, request, queryset):
+        region_id = self.value()
+
+        if not region_id:
+            return
+
+        region = DatavizRegion.objects.get(id=region_id)
+        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
+        first_d2r = d2r.first()
+        q = Q(organisation__zipcode__startswith=first_d2r.department.zipcode)
+        for d in d2r.all():
+            q = q | Q(organisation__zipcode__startswith=d.department.zipcode)
+
+        return queryset.filter(q)
+
+
 class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "email",
@@ -442,7 +466,7 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused")
-    list_filter = ("status",)
+    list_filter = ("status", HabilitationRequestRegionFilter)
     search_fields = ("first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
     resource_class = HabilitationRequestResource
