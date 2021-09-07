@@ -4,8 +4,9 @@ from collections import Collection
 from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
 from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin, TabularInline
+from django.contrib.admin import ModelAdmin, TabularInline, SimpleListFilter
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponseNotAllowed
 from django.shortcuts import render
 from django.urls import reverse, path
@@ -45,6 +46,8 @@ from aidants_connect_web.models import (
     Organisation,
     Usager,
     CarteTOTP,
+    DatavizRegion,
+    DatavizDepartmentsToRegion,
 )
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
@@ -168,6 +171,30 @@ class OrganisationResource(resources.ModelResource):
         model = Organisation
 
 
+class OrganisationRegionFilter(SimpleListFilter):
+    title = "Région"
+
+    parameter_name = "region"
+
+    def lookups(self, request, model_admin):
+        return [(r.id, r.name) for r in DatavizRegion.objects.all()]
+
+    def queryset(self, request, queryset):
+        region_id = self.value()
+
+        if not region_id:
+            return
+
+        region = DatavizRegion.objects.get(id=region_id)
+        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
+        first_d2r = d2r.first()
+        q = Q(zipcode__startswith=first_d2r.department.zipcode)
+        for d in d2r.all():
+            q = q | Q(zipcode__startswith=d.department.zipcode)
+
+        return queryset.filter(q)
+
+
 class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "name",
@@ -182,7 +209,7 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     )
     readonly_fields = ("data_pass_id",)
     search_fields = ("name", "siret", "data_pass_id")
-    list_filter = ("is_active",)
+    list_filter = ("is_active", OrganisationRegionFilter)
 
     # For bulk import
     resource_class = OrganisationResource
