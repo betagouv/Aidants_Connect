@@ -177,13 +177,18 @@ class OrganisationRegionFilter(SimpleListFilter):
     parameter_name = "region"
 
     def lookups(self, request, model_admin):
-        return [(r.id, r.name) for r in DatavizRegion.objects.all()]
+        return [(r.id, r.name) for r in DatavizRegion.objects.all()] + [
+            ("other", "Autre")
+        ]
 
     def queryset(self, request, queryset):
         region_id = self.value()
 
         if not region_id:
             return
+
+        if region_id == "other":
+            return queryset.filter(zipcode=0)
 
         region = DatavizRegion.objects.get(id=region_id)
         d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
