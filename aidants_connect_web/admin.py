@@ -1,5 +1,7 @@
 import logging
+import operator
 from collections import Collection
+from functools import reduce
 
 from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
 from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
@@ -192,12 +194,11 @@ class OrganisationRegionFilter(SimpleListFilter):
 
         region = DatavizRegion.objects.get(id=region_id)
         d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
-        first_d2r = d2r.first()
-        q = Q(zipcode__startswith=first_d2r.department.zipcode)
-        for d in d2r.all():
-            q = q | Q(zipcode__startswith=d.department.zipcode)
-
-        return queryset.filter(q)
+        qgroup = reduce(
+            operator.or_,
+            (Q(zipcode__startswith=d.department.zipcode) for d in d2r.all()),
+        )
+        return queryset.filter(qgroup)
 
 
 class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
@@ -450,12 +451,14 @@ class HabilitationRequestRegionFilter(SimpleListFilter):
 
         region = DatavizRegion.objects.get(id=region_id)
         d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
-        first_d2r = d2r.first()
-        q = Q(organisation__zipcode__startswith=first_d2r.department.zipcode)
-        for d in d2r.all():
-            q = q | Q(organisation__zipcode__startswith=d.department.zipcode)
-
-        return queryset.filter(q)
+        qgroup = reduce(
+            operator.or_,
+            (
+                Q(organisation__zipcode__startswith=d.department.zipcode)
+                for d in d2r.all()
+            ),
+        )
+        return queryset.filter(qgroup)
 
 
 class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
