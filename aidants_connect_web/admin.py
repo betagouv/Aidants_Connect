@@ -1,11 +1,14 @@
 import logging
+import operator
 from collections import Collection
+from functools import reduce
 
 from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
 from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin, TabularInline
+from django.contrib.admin import ModelAdmin, TabularInline, SimpleListFilter
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponseNotAllowed
 from django.shortcuts import render
 from django.urls import reverse, path
@@ -45,6 +48,8 @@ from aidants_connect_web.models import (
     Organisation,
     Usager,
     CarteTOTP,
+    DatavizRegion,
+    DatavizDepartmentsToRegion,
 )
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
@@ -168,6 +173,34 @@ class OrganisationResource(resources.ModelResource):
         model = Organisation
 
 
+class OrganisationRegionFilter(SimpleListFilter):
+    title = "Région"
+
+    parameter_name = "region"
+
+    def lookups(self, request, model_admin):
+        return [(r.id, r.name) for r in DatavizRegion.objects.all()] + [
+            ("other", "Autre")
+        ]
+
+    def queryset(self, request, queryset):
+        region_id = self.value()
+
+        if not region_id:
+            return
+
+        if region_id == "other":
+            return queryset.filter(zipcode=0)
+
+        region = DatavizRegion.objects.get(id=region_id)
+        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
+        qgroup = reduce(
+            operator.or_,
+            (Q(zipcode__startswith=d.department.zipcode) for d in d2r.all()),
+        )
+        return queryset.filter(qgroup)
+
+
 class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "name",
@@ -182,7 +215,7 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     )
     readonly_fields = ("data_pass_id",)
     search_fields = ("name", "siret", "data_pass_id")
-    list_filter = ("is_active",)
+    list_filter = ("is_active", OrganisationRegionFilter)
 
     # For bulk import
     resource_class = OrganisationResource
@@ -402,6 +435,32 @@ class HabilitationRequestResource(resources.ModelResource):
         )
 
 
+class HabilitationRequestRegionFilter(SimpleListFilter):
+    title = "Région"
+
+    parameter_name = "region"
+
+    def lookups(self, request, model_admin):
+        return [(r.id, r.name) for r in DatavizRegion.objects.all()]
+
+    def queryset(self, request, queryset):
+        region_id = self.value()
+
+        if not region_id:
+            return
+
+        region = DatavizRegion.objects.get(id=region_id)
+        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
+        qgroup = reduce(
+            operator.or_,
+            (
+                Q(organisation__zipcode__startswith=d.department.zipcode)
+                for d in d2r.all()
+            ),
+        )
+        return queryset.filter(qgroup)
+
+
 class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "email",
@@ -415,7 +474,7 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused")
-    list_filter = ("status",)
+    list_filter = ("status", HabilitationRequestRegionFilter)
     search_fields = ("first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
     resource_class = HabilitationRequestResource
