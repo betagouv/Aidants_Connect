@@ -56,7 +56,7 @@ class Organisation(models.Model):
 
     @cached_property
     def num_active_aidants(self):
-        return self.aidants.active().count()
+        return self.current_aidants.active().count()
 
     def admin_num_active_aidants(self):
         return self.num_active_aidants
@@ -93,7 +93,7 @@ class Organisation(models.Model):
     def deactivate_organisation(self):
         self.is_active = False
         self.save()
-        for aidant in self.aidants.all():
+        for aidant in self.current_aidants.all():
             aidant.is_active = False
             aidant.save()
 
@@ -110,7 +110,16 @@ class AidantManager(UserManager):
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
     organisation = models.ForeignKey(
-        Organisation, null=True, on_delete=models.CASCADE, related_name="aidants"
+        Organisation,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="current_aidants",
+    )
+    organisations = models.ManyToManyField(
+        Organisation,
+        related_name="aidants",
+        blank=True,
+        verbose_name="Membre des organisations…",
     )
     responsable_de = models.ManyToManyField(
         Organisation, related_name="responsables", blank=True
@@ -132,6 +141,11 @@ class Aidant(AbstractUser):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.organisation is not None:
+            self.organisations.add(self.organisation)
 
     def get_full_name(self):
         return str(self)

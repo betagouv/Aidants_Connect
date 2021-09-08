@@ -37,7 +37,7 @@ def home(request):
     responsable = request.user
     organisations = (
         Organisation.objects.filter(responsables=responsable)
-        .prefetch_related("aidants")
+        .prefetch_related("current_aidants")
         .order_by("name")
     )
 
@@ -63,9 +63,9 @@ def organisation(request, organisation_id):
     organisation = get_object_or_404(Organisation, pk=organisation_id)
     check_organisation_and_responsable(responsable, organisation)
 
-    aidants = organisation.aidants.order_by("-is_active", "last_name").prefetch_related(
-        "carte_totp"
-    )
+    aidants = organisation.current_aidants.order_by(
+        "-is_active", "last_name"
+    ).prefetch_related("carte_totp")
     habilitation_requests = organisation.habilitation_requests.exclude(
         status=HabilitationRequest.STATUS_VALIDATED
     ).order_by("status", "last_name")
