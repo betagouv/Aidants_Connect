@@ -9,6 +9,11 @@
 {% endblock extracss %}
 
 {% block content %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
   <section id="engagement" class="section">
     <div class="container container-small">
       <h1 class="section__title">Créer ou renouveler un mandat</h1>
@@ -64,6 +69,7 @@
                     name="demarche"
                     class="sr-only"
                     {% if form.errors.demarche %}aria-describedby="demarche_error_notification"{% endif %}
+                    {% if value in form.demarche.value or value in form.demarche.initial %}checked{% endif %}
                   />
                   <label class="label-demarche" for="button-{{ value }}">
                     <img src="{{ label.icon }}" alt=""/>
@@ -101,6 +107,7 @@
                     name="duree"
                     class="sr-only"
                     {% if form.errors.duree %}aria-describedby="duree_error_notification"{% endif %}
+                    {% if value in form.duree.value or value in form.duree.initial %}checked{% endif %}
                   />
                   <label class="label-duree" for="button-{{ value }}">
                     <strong>{{ label.title }} <span class="duree-label-is-remote">à distance</span></strong>
