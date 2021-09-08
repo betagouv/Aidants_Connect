@@ -70,6 +70,10 @@ class Organisation(models.Model):
     def admin_num_mandats(self):
         return self.num_mandats
 
+    @cached_property
+    def num_active_mandats(self):
+        return sum(1 if m.is_active else 1 for m in self.mandats.all())
+
     @property
     def display_address(self):
         return self.address if self.address != "No address provided" else ""
@@ -523,6 +527,8 @@ class Mandat(models.Model):
 
     @property
     def is_active(self):
+        if self.is_expired:
+            return False
         # A `mandat` is considered `active` if it contains
         # at least one active `autorisation`.
         return self.autorisations.active().exists()
