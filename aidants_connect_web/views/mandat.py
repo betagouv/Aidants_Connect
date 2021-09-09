@@ -38,7 +38,7 @@ log = logging.getLogger()
 @user_is_aidant
 @activity_required
 def new_mandat(request):
-    aidant = request.user
+    aidant: Aidant = request.user
     try:
         connection = Connection.objects.get(pk=request.session.get("connection"))
     except Connection.DoesNotExist:
@@ -71,7 +71,8 @@ def new_mandat(request):
             data = form.cleaned_data
 
             kwargs = {
-                "aidant": request.user,
+                "aidant": aidant,
+                "organisation": aidant.organisation,
                 "demarches": data["demarche"],
                 "duree_keyword": data["duree"],
                 "mandat_is_remote": data["is_remote"],

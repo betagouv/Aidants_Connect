@@ -849,6 +849,15 @@ class Connection(models.Model):
         Aidant,
         blank=True,
         null=True,
+        default=None,
+        on_delete=models.CASCADE,
+        related_name="connections",
+    )
+    organisation = models.ForeignKey(
+        Organisation,
+        blank=True,
+        null=True,
+        default=None,
         on_delete=models.CASCADE,
         related_name="connections",
     )
@@ -864,6 +873,15 @@ class Connection(models.Model):
     objects = ConnectionQuerySet.as_manager()
 
     class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    (Q(aidant__isnull=True) & Q(organisation__isnull=True))
+                    | (Q(aidant__isnull=False) & Q(organisation__isnull=False))
+                ),
+                name="aidant_and_organisation_set_together",
+            )
+        ]
         verbose_name = "connexion"
 
     def __str__(self):

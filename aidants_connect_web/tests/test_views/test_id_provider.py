@@ -555,6 +555,7 @@ class UserInfoTests(TestCase):
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
             aidant=cls.aidant_thierry,
+            organisation=cls.aidant_thierry.organisation,
             autorisation=cls.autorisation,
         )
 
@@ -670,6 +671,7 @@ class EndSessionEndpointTests(TestCase):
                 2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
             ),
             aidant=cls.aidant_thierry,
+            organisation=cls.aidant_thierry.organisation,
             autorisation=cls.autorisation,
         )
 

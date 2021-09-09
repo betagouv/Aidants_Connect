@@ -23,11 +23,7 @@ from django.views.decorators.csrf import csrf_exempt
 import jwt
 
 from aidants_connect_web.decorators import activity_required, user_is_aidant
-from aidants_connect_web.models import (
-    Connection,
-    Journal,
-    Usager,
-)
+from aidants_connect_web.models import Connection, Journal, Usager, Aidant
 
 from aidants_connect_web.utilities import generate_sha256_hash
 
@@ -220,7 +216,7 @@ def fi_select_demarche(request):
             logout(request)
             return HttpResponseForbidden()
 
-        aidant = request.user
+        aidant: Aidant = request.user
         autorisation = aidant.get_valid_autorisation(
             parameters["chosen_demarche"], connection.usager
         )
@@ -234,6 +230,7 @@ def fi_select_demarche(request):
         connection.autorisation = autorisation
         connection.complete = True
         connection.aidant = aidant
+        connection.organisation = aidant.organisation
         connection.save()
 
         return redirect(
