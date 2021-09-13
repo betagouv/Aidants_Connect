@@ -49,7 +49,9 @@ def notify_soon_expired_mandates():
     )
 
     for organisation in organisations:
-        recipient_list = list(organisation.aidants.values_list("email", flat=True))
+        recipient_list = list(
+            organisation.current_aidants.values_list("email", flat=True)
+        )
 
         org_mandates: List[Mandat] = list(
             mandates_qset.filter(organisation=organisation)
