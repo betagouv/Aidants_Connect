@@ -59,6 +59,7 @@ class FCCallback(TestCase):
             id=1,
             expires_on=DATE + timedelta(minutes=5),
             aidant=self.aidant,
+            organisation=self.aidant.organisation,
         )
         Connection.objects.create(
             state="test_another_state",
@@ -274,10 +275,12 @@ class GetUserInfoTests(TestCase):
         cls.connection = Connection.objects.create(
             access_token="mock_access_token",
             aidant=cls.aidant,
+            organisation=cls.aidant.organisation,
         )
         cls.connection_with_phone = Connection.objects.create(
             access_token="mock_access_token_with_phone",
             aidant=cls.aidant,
+            organisation=cls.aidant.organisation,
             user_phone="0 800 840 800",
         )
 

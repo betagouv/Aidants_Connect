@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.models import Connection, Journal
+from aidants_connect_web.models import Connection, Journal, Aidant, Usager
 from aidants_connect_web.constants import AuthorizationDurations
 
 
@@ -18,8 +18,8 @@ from aidants_connect_web.constants import AuthorizationDurations
 @user_is_aidant
 @activity_required
 def renew_mandat(request, usager_id):
-    aidant = request.user
-    usager = aidant.get_usager(usager_id)
+    aidant: Aidant = request.user
+    usager: Usager = aidant.get_usager(usager_id)
 
     if not usager:
         django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
@@ -41,7 +41,8 @@ def renew_mandat(request, usager_id):
             data = form.cleaned_data
             access_token = make_password(token_urlsafe(64), settings.FC_AS_FI_HASH_SALT)
             connection = Connection.objects.create(
-                aidant=request.user,
+                aidant=aidant,
+                organisation=aidant.organisation,
                 connection_type="FS",
                 access_token=access_token,
                 usager=usager,
