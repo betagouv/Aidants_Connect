@@ -4,7 +4,10 @@ import django.db.models.deletion
 
 @transaction.atomic
 def populate_carers(apps, _):
-    objects = apps.get_model("aidants_connect_web", "Aidant").objects.all()
+    objects = apps.get_model("aidants_connect_web", "Aidant").objects.filter(
+        organisation__isnull=False
+    )
+
     for obj in objects:
         obj.organisations.add(obj.organisation)
 
