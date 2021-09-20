@@ -170,7 +170,7 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
     if aidant.organisation.id != organisation_id:
         raise Http404
 
-    if hasattr(aidant, "carte_totp"):
+    if aidant.has_a_carte_totp():
         django_messages.error(
             request,
             (

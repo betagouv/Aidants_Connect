@@ -273,7 +273,6 @@ class Aidant(AbstractUser):
     def must_validate_cgu(self):
         return self.validated_cgu_version != settings.CGU_CURRENT_VERSION
 
-    @cached_property
     def has_a_totp_device(self):
         try:
             TOTPDevice.objects.get(user=self, confirmed=True)
@@ -283,7 +282,6 @@ class Aidant(AbstractUser):
         except TOTPDevice.DoesNotExist:
             return False
 
-    @cached_property
     def has_a_carte_totp(self):
         try:
             CarteTOTP.objects.get(aidant=self)

@@ -130,5 +130,5 @@ class ImportAidantTests(FunctionalTestCase):
         self.assertEqual(3, Aidant.objects.count(), "Unexpected count of Aidants in DB")
 
         aidant_a = Aidant.objects.get(username="plop@example.net")
-        self.assertTrue(aidant_a.has_a_carte_totp)
-        self.assertTrue(aidant_a.has_a_totp_device)
+        self.assertTrue(aidant_a.has_a_carte_totp())
+        self.assertTrue(aidant_a.has_a_totp_device())

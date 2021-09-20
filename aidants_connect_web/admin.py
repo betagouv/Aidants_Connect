@@ -294,7 +294,7 @@ class AidantResource(resources.ModelResource):
             card_sn = instance.carte_ac
             # instance.carte_ac is the sn the import added to the aidant instance,
             # it will not be persisted as-is in database.
-            if instance.has_a_carte_totp:
+            if instance.has_a_carte_totp():
                 # instance.has_a_carte_totp is true if the aidant is associated with a
                 # CarteTOTP in database.
                 if instance.carte_totp.serial_number == card_sn:
@@ -340,7 +340,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         return form
 
     def display_totp_device_status(self, obj):
-        return obj.has_a_totp_device
+        return obj.has_a_totp_device()
 
     display_totp_device_status.short_description = "Carte TOTP Activée"
     display_totp_device_status.boolean = True
