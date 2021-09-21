@@ -72,7 +72,9 @@ class Organisation(models.Model):
 
     @cached_property
     def num_active_mandats(self):
-        return sum(1 if m.is_active else 1 for m in self.mandats.all())
+        return Mandat.objects.filter(
+            expiration_date__gte=timezone.now(), organisation=self
+        ).count()
 
     @property
     def display_address(self):
