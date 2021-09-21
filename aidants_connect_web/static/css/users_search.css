@@ -1,3 +1,11 @@
+.user-search {
+    margin-top: 1rem;
+}
+
+.user-search #filter-input-label {
+    align-self: center;
+}
+
 .irrelevant-result {
     display: none;
 }
