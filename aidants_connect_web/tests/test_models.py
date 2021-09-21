@@ -728,6 +728,36 @@ class OrganisationModelTests(TestCase):
         organisation_with_zipcode.refresh_from_db()
         self.assertEqual("75015", organisation_with_zipcode.zipcode)
 
+    def test_count_mandats(self):
+        def create_active_mandats(count, organisation):
+            for _ in range(count):
+                MandatFactory(
+                    organisation=organisation,
+                    expiration_date=timezone.now() + timedelta(days=6),
+                )
+
+        def create_expired_mandats(count, organisation):
+            for _ in range(count):
+                MandatFactory(
+                    organisation=organisation,
+                    expiration_date=timezone.now() - timedelta(days=6),
+                )
+
+        org_without_mandats = OrganisationFactory(name="Licornes")
+        self.assertEqual(0, org_without_mandats.num_mandats)
+        self.assertEqual(0, org_without_mandats.num_active_mandats)
+
+        org_with_active_mandats = OrganisationFactory(name="Dragons")
+        create_active_mandats(3, org_with_active_mandats)
+        self.assertEqual(3, org_with_active_mandats.num_mandats)
+        self.assertEqual(3, org_with_active_mandats.num_active_mandats)
+
+        org_with_active_and_inactive_mandats = OrganisationFactory(name="Libellules")
+        create_active_mandats(3, org_with_active_and_inactive_mandats)
+        create_expired_mandats(4, org_with_active_and_inactive_mandats)
+        self.assertEqual(7, org_with_active_and_inactive_mandats.num_mandats)
+        self.assertEqual(3, org_with_active_and_inactive_mandats.num_active_mandats)
+
 
 @tag("models", "aidant")
 class AidantModelTests(TestCase):
