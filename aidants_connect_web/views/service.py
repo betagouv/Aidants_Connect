@@ -27,7 +27,7 @@ def humanize_demarche_names(name: str) -> str:
     :return: list of human names and description
     """
     demarches = settings.DEMARCHES
-    return f"{demarches[name]['titre'].upper()}: {demarches[name]['description']}"
+    return f"{demarches[name]['titre'].upper()} : {demarches[name]['description']}"
 
 
 def home_page(request):
