@@ -12,6 +12,8 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponseNotAllowed
 from django.shortcuts import render
 from django.urls import reverse, path
+from django.utils.html import format_html_join
+from django.utils.safestring import mark_safe
 from django_celery_beat.admin import (
     ClockedScheduleAdmin,
     PeriodicTaskAdmin,
@@ -740,9 +742,45 @@ class CarteTOTPResource(resources.ModelResource):
 
 
 class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
+    def display_linked_totp_devices(self, obj):
+        devices = TOTPDevice.objects.filter(key=obj.seed)
+
+        aidant_id = 0
+        if obj.aidant is not None:
+            aidant_id = obj.aidant.id
+
+        return (
+            mark_safe(
+                '<table><tr><th scope="col">ID</th>'
+                '<th scope="col">Nom</th>'
+                '<th scope="col">Confirmé</th>'
+                '<th scope="col">Aidant</th>'
+                '<th scope="col">ID Aidant</th></tr>'
+            )
+            + format_html_join(
+                "",
+                "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>",
+                (
+                    (
+                        d.id,
+                        d.name,
+                        f"{'Oui' if d.confirmed else 'Non'}",
+                        d.user,
+                        f"{'🚨' if d.user.id != aidant_id else '✅'} {d.user.id}",
+                    )
+                    for d in devices
+                ),
+            )
+            + mark_safe("</table>")
+            or "-"
+        )
+
+    display_linked_totp_devices.short_description = "TOTP Device(s)"
+
     list_display = ("serial_number", "aidant")
     search_fields = ("serial_number",)
     raw_id_fields = ("aidant",)
+    readonly_fields = ("display_linked_totp_devices",)
     ordering = ("-created_at",)
     resource_class = CarteTOTPResource
     import_template_name = "aidants_connect_web/admin/import_export/import.html"
