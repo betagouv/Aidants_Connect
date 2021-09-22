@@ -348,7 +348,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
-    raw_id_fields = ("responsable_de", "organisation")
+    raw_id_fields = ("responsable_de", "organisation", "organisations")
     readonly_fields = (
         "validated_cgu_version",
         "display_totp_device_status",
@@ -376,7 +376,10 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     search_fields = ("first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
 
-    filter_horizontal = ("groups", "user_permissions")
+    filter_horizontal = (
+        "groups",
+        "user_permissions",
+    )
     fieldsets = (
         (
             "Informations personnelles",
@@ -392,7 +395,16 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 )
             },
         ),
-        ("Informations professionnelles", {"fields": ("profession", "organisation")}),
+        (
+            "Informations professionnelles",
+            {
+                "fields": (
+                    "profession",
+                    "organisation",
+                    "organisations",
+                )
+            },
+        ),
         (
             "Permissions",
             {
@@ -415,8 +427,25 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             "Informations personnelles",
             {"fields": ("first_name", "last_name", "email", "password", "username")},
         ),
-        ("Informations professionnelles", {"fields": ("profession", "organisation")}),
+        (
+            "Informations professionnelles",
+            {
+                "fields": (
+                    "profession",
+                    "organisation",
+                    "organisations",
+                )
+            },
+        ),
     )
+
+    # Ugh… When you save a model via admin forms it's not an atomic transaction.
+    # So… You need to override save_related… https://stackoverflow.com/a/1925784
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        organisation = form.cleaned_data["organisation"]
+        if organisation is not None:
+            form.instance.organisations.add(organisation)
 
 
 class HabilitationRequestResource(resources.ModelResource):
@@ -592,17 +621,15 @@ class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
         ]
 
     def get_readonly_fields(self, request, obj=None):
-        if isinstance(obj, dict) and isinstance(
-            obj.get("exclude_from_readonly_fields", None), Collection
+        readonly_fields = super().get_readonly_fields(request, obj)
+
+        if not (
+            isinstance(obj, dict)
+            and isinstance(obj.get("exclude_from_readonly_fields"), Collection)
         ):
-            readonly_fields = super().get_readonly_fields(request, obj)
-            return [
-                field
-                for field in readonly_fields
-                if field not in obj["exclude_from_readonly_fields"]
-            ]
-        else:
-            return super().get_readonly_fields(request, obj)
+            return readonly_fields
+
+        return set(readonly_fields) - set(obj["exclude_from_readonly_fields"])
 
     def mandate_transfer(self, request):
         if request.method not in ["GET", "POST"]:

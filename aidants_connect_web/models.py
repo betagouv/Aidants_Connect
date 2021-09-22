@@ -112,14 +112,15 @@ class Aidant(AbstractUser):
     organisation = models.ForeignKey(
         Organisation,
         null=True,
+        blank=True,
         on_delete=models.CASCADE,
         related_name="current_aidants",
     )
     organisations = models.ManyToManyField(
         Organisation,
-        related_name="aidants",
         blank=True,
-        verbose_name="Membre des organisations…",
+        verbose_name="Membre des organisations",
+        related_name="aidants",
     )
     responsable_de = models.ManyToManyField(
         Organisation, related_name="responsables", blank=True
