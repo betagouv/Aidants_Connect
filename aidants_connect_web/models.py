@@ -76,6 +76,10 @@ class Organisation(models.Model):
             expiration_date__gte=timezone.now(), organisation=self
         ).count()
 
+    @cached_property
+    def num_usagers(self):
+        return Mandat.objects.filter(organisation=self).distinct("usager").count()
+
     @property
     def display_address(self):
         return self.address if self.address != "No address provided" else ""

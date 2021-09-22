@@ -758,6 +758,17 @@ class OrganisationModelTests(TestCase):
         self.assertEqual(7, org_with_active_and_inactive_mandats.num_mandats)
         self.assertEqual(3, org_with_active_and_inactive_mandats.num_active_mandats)
 
+    def test_count_usagers(self):
+        def create_6_mandats_for_2_usagers(organisation):
+            thomas = UsagerFactory(given_name="Thomas")
+            for _ in range(5):
+                MandatFactory(organisation=organisation, usager=thomas)
+            MandatFactory(organisation=organisation)
+
+        organisation = OrganisationFactory()
+        create_6_mandats_for_2_usagers(organisation=organisation)
+        self.assertEqual(2, organisation.num_usagers)
+
 
 @tag("models", "aidant")
 class AidantModelTests(TestCase):
