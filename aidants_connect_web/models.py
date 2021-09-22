@@ -121,14 +121,11 @@ class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
     organisation = models.ForeignKey(
         Organisation,
-        null=True,
-        blank=True,
         on_delete=models.CASCADE,
         related_name="current_aidants",
     )
     organisations = models.ManyToManyField(
         Organisation,
-        blank=True,
         verbose_name="Membre des organisations",
         related_name="aidants",
     )
@@ -147,6 +144,8 @@ class Aidant(AbstractUser):
 
     objects = AidantManager()
 
+    REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]
+
     class Meta:
         verbose_name = "aidant"
 
@@ -155,8 +154,7 @@ class Aidant(AbstractUser):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        if self.organisation is not None:
-            self.organisations.add(self.organisation)
+        self.organisations.add(self.organisation)
 
     def get_full_name(self):
         return str(self)
