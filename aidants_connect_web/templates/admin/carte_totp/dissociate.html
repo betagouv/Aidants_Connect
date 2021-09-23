@@ -17,10 +17,12 @@
   {% if object.aidant is None %}
     <h1>Erreur : la carte {{ object.serial_number }} n’est liée à aucun aidant</h1>
     <p>Cette action ne peut être menée que sur les cartes qui sont associées à un aidant.</p>
-    <p class="deletelink-box">
-      <a href="{% url 'otpadmin:aidants_connect_web_cartetotp_change' object_id=object_id %}"
-         class="closelink">Retour</a>
-    </p>
+    <div class="submit-row">
+      <p class="deletelink-box">
+        <a href="{% url 'otpadmin:aidants_connect_web_cartetotp_change' object_id=object_id %}"
+           class="closelink">Retour</a>
+      </p>
+    </div>
   {% else %}
     <h1>Séparer la carte {{ object.serial_number }} de {{ object.aidant }}</h1>
 

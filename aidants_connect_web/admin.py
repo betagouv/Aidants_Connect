@@ -809,7 +809,7 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         elif request.method == "GET":
             return self.__dissociate_from_aidant_get(request, object_id)
         else:
-            return self.__dissociate_from_aidant_post(request)
+            return self.__dissociate_from_aidant_post(request, object_id)
 
     def __dissociate_from_aidant_get(self, request, object_id):
         object = CarteTOTP.objects.get(id=object_id)
@@ -823,8 +823,47 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 
         return render(request, "admin/carte_totp/dissociate.html", context)
 
-    def __dissociate_from_aidant_post(self, request):
-        return "tata"
+    def __dissociate_from_aidant_post(self, request, object_id):
+        try:
+            object = CarteTOTP.objects.get(id=object_id)
+            aidant = object.aidant
+            if aidant is None:
+                self.message_user(
+                    request,
+                    "Aucun aidant n’est associé à la carte " f"{object.serial_number}.",
+                )
+                return HttpResponseRedirect(
+                    reverse("otpadmin:aidants_connect_web_cartetotp_changelist")
+                )
+
+            totp_devices = TOTPDevice.objects.filter(user=aidant, key=object.seed)
+            for d in totp_devices:
+                d.delete()
+            object.aidant = None
+            object.save()
+
+            self.message_user(request, "Tout s'est bien passé.")
+            return HttpResponseRedirect(
+                reverse(
+                    "otpadmin:aidants_connect_web_cartetotp_change",
+                    kwargs={"object_id": object_id},
+                )
+            )
+        except Exception:
+            logger.exception(
+                "An error occured while trying to dissociate an aidant"
+                "from their carte TOTP"
+            )
+
+            self.message_user(
+                request,
+                "Quelque chose s’est mal passé durant l'opération.",
+                messages.ERROR,
+            )
+
+        return HttpResponseRedirect(
+            reverse("otpadmin:aidants_connect_web_cartetotp_changelist")
+        )
 
 
 # Display the following tables in the admin
