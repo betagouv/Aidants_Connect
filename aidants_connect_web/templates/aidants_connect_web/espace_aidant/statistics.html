@@ -1,0 +1,26 @@
+<div class="tiles">
+  <div class="grid">
+    <div class="tile background-color-grey">
+      <h3>Adresse</h3>
+      <p>
+        {{ organisation.address }}
+      </p>
+    </div>
+    <div class="tile background-color-grey">
+      <h3>Aidants actifs</h3>
+      <p class="font-weight-bold">{{ organisation.num_active_aidants }}</p>
+    </div>
+    <div class="tile background-color-grey">
+      <h3>Mandats créés</h3>
+      <p class="font-weight-bold"> {{ organisation.num_mandats }} </p>
+    </div>
+    <div class="tile background-color-grey">
+      <h3>Mandats actifs</h3>
+      <p class="font-weight-bold"> {{ organisation.num_active_mandats }}</p>
+    </div>
+    <div class="tile background-color-grey">
+      <h3>Usagers accompagnés</h3>
+      <p class="font-weight-bold">{{ organisation.num_usagers }}</p>
+    </div>
+  </div>
+</div>

@@ -70,6 +70,16 @@ class Organisation(models.Model):
     def admin_num_mandats(self):
         return self.num_mandats
 
+    @cached_property
+    def num_active_mandats(self):
+        return Mandat.objects.filter(
+            expiration_date__gte=timezone.now(), organisation=self
+        ).count()
+
+    @cached_property
+    def num_usagers(self):
+        return Mandat.objects.filter(organisation=self).distinct("usager").count()
+
     @property
     def display_address(self):
         return self.address if self.address != "No address provided" else ""
@@ -523,6 +533,8 @@ class Mandat(models.Model):
 
     @property
     def is_active(self):
+        if self.is_expired:
+            return False
         # A `mandat` is considered `active` if it contains
         # at least one active `autorisation`.
         return self.autorisations.active().exists()
