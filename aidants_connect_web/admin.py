@@ -742,15 +742,42 @@ class CarteTOTPResource(resources.ModelResource):
 
 
 class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
-    def display_linked_totp_devices(self, obj):
+    def totp_devices_diagnostic(self, obj):
         devices = TOTPDevice.objects.filter(key=obj.seed)
 
         aidant_id = 0
         if obj.aidant is not None:
             aidant_id = obj.aidant.id
 
+        if devices.count() == 0:
+            if aidant_id > 0:
+                return mark_safe(
+                    "🚨 Aucun device ne correspond à cette carte. <br>"
+                    "Pour régler le problème : créer un TOTP Device portant la seed "
+                    "de cette carte, ou délier pui re-lier la carte à l’aidant "
+                    f"{aidant_id} à l'aide des boutons dédiés en haut de page."
+                )
+            else:
+                return "✅ Tout va bien !"
+
+        if devices.count() == 1:
+            device = devices.first()
+            if aidant_id == 0:
+                return (
+                    f"🚨 Cette carte devrait être associée à l’aidant {device.user} : "
+                    f"saisir {device.user.id} dans le champ ci-dessus puis Enregistrer."
+                )
+            elif aidant_id != device.user.id:
+                return (
+                    f"🚨 Cette carte est assignée à l'aidant {obj.aidant}, "
+                    f"mais le device est assigné à {device.user}."
+                )
+            else:
+                return "✅ Tout va bien !"
+
         return (
             mark_safe(
+                "<p>🚨 Il faudrait garder un seul TOTP Device parmi ceux-ci :</p>"
                 '<table><tr><th scope="col">ID</th>'
                 '<th scope="col">Nom</th>'
                 '<th scope="col">Confirmé</th>'
@@ -772,15 +799,14 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
                 ),
             )
             + mark_safe("</table>")
-            or "-"
         )
 
-    display_linked_totp_devices.short_description = "TOTP Device(s)"
+    totp_devices_diagnostic.short_description = "Diagnostic Carte/TOTP Device"
 
     list_display = ("serial_number", "aidant")
     search_fields = ("serial_number",)
     raw_id_fields = ("aidant",)
-    readonly_fields = ("display_linked_totp_devices",)
+    readonly_fields = ("totp_devices_diagnostic",)
     ordering = ("-created_at",)
     resource_class = CarteTOTPResource
     import_template_name = "aidants_connect_web/admin/import_export/import.html"
