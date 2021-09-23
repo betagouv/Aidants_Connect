@@ -3,15 +3,21 @@
 {% load i18n admin_urls %}
 
 
-{% block submit_buttons_bottom %}
-
-  <div class="submit-row">
-    Actions spéciales&nbsp;:
-    <a href="{% url 'otpadmin:aidants_connect_web_carte_totp_dissociate' object_id=object_id %}">
+{% block object-tools-items %}
+  {% if adminform.form.instance.aidant is not None %}
+  <li>
+    <a href="{% url 'otpadmin:aidants_connect_web_carte_totp_dissociate' object_id=object_id %}" class="button">
       <span aria-hidden="true">✂️ </span>
       Dissocier la carte de l’aidant
     </a>
-  </div>
-
- {{ block.super }}
+  </li>
+  {% else %}
+  <li>
+    <a href="#todo" class="button">
+      <span aria-hidden="true">👩️ </span>
+      Lier la carte à un aidant
+    </a>
+  </li>
+  {% endif %}
+  {{ block.super }}
 {% endblock %}
