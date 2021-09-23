@@ -842,6 +842,10 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             object.aidant = None
             object.save()
 
+            Journal.log_card_dissociation(
+                request.user, aidant, object.serial_number, "Admin action"
+            )
+
             self.message_user(request, "Tout s'est bien passé.")
             return HttpResponseRedirect(
                 reverse(
