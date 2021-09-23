@@ -1,0 +1,17 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+{% load i18n admin_urls %}
+
+
+{% block submit_buttons_bottom %}
+
+  <div class="submit-row">
+    Actions spéciales&nbsp;:
+    <a href="{% url 'otpadmin:aidants_connect_web_carte_totp_dissociate' object_id=object_id %}">
+      <span aria-hidden="true">✂️ </span>
+      Dissocier la carte de l’aidant
+    </a>
+  </div>
+
+ {{ block.super }}
+{% endblock %}

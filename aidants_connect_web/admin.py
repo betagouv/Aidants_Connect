@@ -784,6 +784,7 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     ordering = ("-created_at",)
     resource_class = CarteTOTPResource
     import_template_name = "aidants_connect_web/admin/import_export/import.html"
+    change_form_template = "aidants_connect_web/admin/carte_totp/change_form.html"
 
     def generate_log_entries(self, result, request):
         super().generate_log_entries(result, request)
@@ -821,7 +822,9 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             "form": self.get_form(request, fields=[]),
         }
 
-        return render(request, "admin/carte_totp/dissociate.html", context)
+        return render(
+            request, "aidants_connect_web/admin/carte_totp/dissociate.html", context
+        )
 
     def __dissociate_from_aidant_post(self, request, object_id):
         try:
