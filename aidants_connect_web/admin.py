@@ -793,6 +793,39 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             result.totals[RowResult.IMPORT_TYPE_UPDATE],
         )
 
+    def get_urls(self):
+        return [
+            path(
+                "<path:object_id>/dissociate_from_aidant/",
+                self.admin_site.admin_view(self.dissociate_from_aidant),
+                name="aidants_connect_web_carte_totp_dissociate",
+            ),
+            *super().get_urls(),
+        ]
+
+    def dissociate_from_aidant(self, request, object_id):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__dissociate_from_aidant_get(request, object_id)
+        else:
+            return self.__dissociate_from_aidant_post(request)
+
+    def __dissociate_from_aidant_get(self, request, object_id):
+        object = CarteTOTP.objects.get(id=object_id)
+        context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "object_id": object_id,
+            "object": object,
+            "form": self.get_form(request, fields=[]),
+        }
+
+        return render(request, "admin/carte_totp/dissociate.html", context)
+
+    def __dissociate_from_aidant_post(self, request):
+        return "tata"
+
 
 # Display the following tables in the admin
 admin_site.register(Organisation, OrganisationAdmin)
