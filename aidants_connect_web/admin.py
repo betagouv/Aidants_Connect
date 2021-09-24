@@ -827,8 +827,21 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
                 self.admin_site.admin_view(self.dissociate_from_aidant),
                 name="aidants_connect_web_carte_totp_dissociate",
             ),
+            path(
+                "<path:object_id>/associate_to_aidant/",
+                self.admin_site.admin_view(self.associate_to_aidant),
+                name="aidants_connect_web_carte_totp_associate",
+            ),
             *super().get_urls(),
         ]
+
+    def associate_to_aidant(self, request, object_id):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__dissociate_from_aidant_get(request, object_id)
+        else:
+            return self.__dissociate_from_aidant_post(request, object_id)
 
     def dissociate_from_aidant(self, request, object_id):
         if request.method not in ["GET", "POST"]:
