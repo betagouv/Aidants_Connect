@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+{% load static ac_extras i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media.js }}
+{% endblock %}
+
+{% block content %}
+  {% if object.aidant is None %}
+    <h1>Associer la carte {{ object.serial_number }} à un aidant</h1>
+    <p>Saisissez l'aidant ci-dessous.</p>
+    <p>Un TOTP Device sera automatiquement créé si nécessaire.</p>
+  {% else %}
+    <h1>Créer un TOTP Device manquant pour la carte {{ object }}</h1>
+    <p>Elle est actuellement associée à l'aidant {{ object.aidant }} ({{ object.aidant.id }}).</p>
+    <p>Cela créera un TOTP Device uniquement si nécessaire.</p>
+  {% endif %}
+  <form action="{% url 'otpadmin:aidants_connect_web_carte_totp_associate' object_id=object_id %}" method="POST">
+    <fieldset class="module aligned">
+      {{ form.as_p }}
+    </fieldset>
+    <div class="submit-row">
+      <input type="submit" value="Associer" class="default" name="_save">
+      <p class="deletelink-box">
+        <a href="{% url 'otpadmin:aidants_connect_web_cartetotp_change' object_id=object_id %}" class="closelink">Annuler</a>
+      </p>
+    </div>
+    {% csrf_token %}
+  </form>
+
+{% endblock %}

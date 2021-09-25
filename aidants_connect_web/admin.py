@@ -839,9 +839,9 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         if request.method not in ["GET", "POST"]:
             return HttpResponseNotAllowed(["GET", "POST"])
         elif request.method == "GET":
-            return self.__dissociate_from_aidant_get(request, object_id)
+            return self.__associate_to_aidant_get(request, object_id)
         else:
-            return self.__dissociate_from_aidant_post(request, object_id)
+            return self.__associate_to_aidant_post(request, object_id)
 
     def dissociate_from_aidant(self, request, object_id):
         if request.method not in ["GET", "POST"]:
@@ -850,6 +850,119 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             return self.__dissociate_from_aidant_get(request, object_id)
         else:
             return self.__dissociate_from_aidant_post(request, object_id)
+
+    def __associate_to_aidant_get(self, request, object_id):
+        object = CarteTOTP.objects.get(id=object_id)
+        context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "object_id": object_id,
+            "object": object,
+            "form": self.get_form(request, fields=["aidant"], obj=object),
+        }
+
+        return render(
+            request, "aidants_connect_web/admin/carte_totp/associate.html", context
+        )
+
+    def __associate_to_aidant_post(self, request, object_id):
+        def redirect_to_list():
+            return HttpResponseRedirect(
+                reverse("otpadmin:aidants_connect_web_cartetotp_changelist")
+            )
+
+        def redirect_to_object(object_id):
+            return HttpResponseRedirect(
+                reverse(
+                    "otpadmin:aidants_connect_web_cartetotp_change",
+                    kwargs={"object_id": object_id},
+                )
+            )
+
+        def redirect_to_try_again(object_id):
+            return HttpResponseRedirect(
+                reverse(
+                    "otpadmin:aidants_connect_web_carte_totp_associate",
+                    kwargs={"object_id": object_id},
+                )
+            )
+
+        if request.POST["aidant"].isnumeric():
+            target_aidant_id = int(request.POST["aidant"])
+        else:
+            self.message_user(
+                request, "L'identifiant de l'aidant est obligatoire.", messages.ERROR
+            )
+            return redirect_to_try_again(object_id)
+        carte = CarteTOTP.objects.get(id=object_id)
+
+        try:
+            # Check if we are trying to associate the card with another aidant: BAD
+            if carte.aidant is not None:
+                if target_aidant_id != carte.aidant.id:
+                    self.message_user(
+                        request,
+                        f"La carte {carte} est déjà associée à un autre aidant.",
+                        messages.ERROR,
+                    )
+                    return redirect_to_list()
+
+            # link card with aidant
+            target_aidant = Aidant.objects.get(id=target_aidant_id)
+            if target_aidant.has_a_carte_totp and carte.aidant != target_aidant:
+                self.message_user(
+                    request,
+                    f"L’aidant {target_aidant} a déjà une carte TOTP. "
+                    "Vous ne pouvez pas le lier à celle-ci en plus.",
+                    messages.ERROR,
+                )
+                return redirect_to_try_again(object_id)
+            carte.aidant = target_aidant
+            carte.save()
+
+            # check if totp devices need to be created
+            totp_devices = TOTPDevice.objects.filter(user=target_aidant, key=carte.seed)
+            if totp_devices.count() > 0:
+                self.message_user(
+                    request, "Tout s'est bien passé. Le TOTP Device existait déjà."
+                )
+                return redirect_to_object(object_id)
+            else:
+                # No Device exists: crate the TOTP Device and save everything
+                new_device = carte.createTOTPDevice(confirmed=True)
+                new_device.save()
+                Journal.log_card_association(
+                    request.user, target_aidant, carte.serial_number
+                )
+                self.message_user(
+                    request,
+                    f"Tout s'est bien passé. La carte {carte} a été associée à "
+                    f"{target_aidant} et un TOTP Device a été créé.",
+                )
+                return redirect_to_list()
+
+        except Aidant.DoesNotExist:
+            self.message_user(
+                request,
+                f"Aucun aidant n’existe avec l'ID {target_aidant_id}. "
+                "Veuillez corriger votre saisie.",
+                messages.ERROR,
+            )
+            return redirect_to_try_again(object_id)
+        except Exception as e:
+            logger.exception(
+                "An error occured while trying to associate an aidant"
+                "with a new TOTP."
+            )
+            self.message_user(
+                request,
+                f"Quelque chose s’est mal passé durant l'opération. {e}",
+                messages.ERROR,
+            )
+
+        return HttpResponseRedirect(
+            reverse("otpadmin:aidants_connect_web_cartetotp_changelist")
+        )
 
     def __dissociate_from_aidant_get(self, request, object_id):
         object = CarteTOTP.objects.get(id=object_id)
@@ -872,7 +985,8 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             if aidant is None:
                 self.message_user(
                     request,
-                    "Aucun aidant n’est associé à la carte " f"{object.serial_number}.",
+                    f"Aucun aidant n’est associé à la carte {object.serial_number}.",
+                    messages.ERROR,
                 )
                 return HttpResponseRedirect(
                     reverse("otpadmin:aidants_connect_web_cartetotp_changelist")
