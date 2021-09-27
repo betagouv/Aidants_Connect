@@ -11,7 +11,9 @@
 {% block extrahead %}
   {{ block.super }}
   {{ media.js }}
+  <script src="{% static 'js/fill_aidant_field.js' %}"></script>
 {% endblock %}
+
 
 {% block content %}
   {% if object.aidant is None %}
@@ -20,7 +22,8 @@
     <p>Un TOTP Device sera automatiquement créé si nécessaire.</p>
   {% else %}
     <h1>Créer un TOTP Device manquant pour la carte {{ object }}</h1>
-    <p>Elle est actuellement associée à l'aidant {{ object.aidant }} ({{ object.aidant.id }}).</p>
+    <p>Elle est actuellement associée à l'aidant {{ object.aidant }} (<span
+        id="id_aidant_value">{{ object.aidant.id }}</span>).</p>
     <p>Cela créera un TOTP Device uniquement si nécessaire.</p>
   {% endif %}
   <form action="{% url 'otpadmin:aidants_connect_web_carte_totp_associate' object_id=object_id %}" method="POST">
