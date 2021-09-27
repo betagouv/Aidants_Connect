@@ -753,9 +753,8 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             if aidant_id > 0:
                 return mark_safe(
                     "🚨 Aucun device ne correspond à cette carte. <br>"
-                    "Pour régler le problème : créer un TOTP Device portant la seed "
-                    "de cette carte, ou délier pui re-lier la carte à l’aidant "
-                    f"{aidant_id} à l'aide des boutons dédiés en haut de page."
+                    "Pour régler le problème : cliquer sur le bouton "
+                    "« Créer un TOTP Device manquant » en haut de cette page."
                 )
             else:
                 return "✅ Tout va bien !"
@@ -786,10 +785,17 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             )
             + format_html_join(
                 "",
-                "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>",
+                (
+                    '<tr><td>{}</td><td><a href="{}">{}</a></td><td>{}</td>'
+                    "<td>{}</td><td>{}</td></tr>"
+                ),
                 (
                     (
                         d.id,
+                        reverse(
+                            "otpadmin:otp_totp_totpdevice_change",
+                            kwargs={"object_id": d.id},
+                        ),
                         d.name,
                         f"{'Oui' if d.confirmed else 'Non'}",
                         d.user,
