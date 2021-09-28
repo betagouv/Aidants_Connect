@@ -761,18 +761,27 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 
         if devices.count() == 1:
             device = devices.first()
+            device_url = reverse(
+                "otpadmin:otp_totp_totpdevice_change",
+                kwargs={"object_id": device.id},
+            )
             if aidant_id == 0:
-                return (
+                return mark_safe(
                     f"🚨 Cette carte devrait être associée à l’aidant {device.user} : "
                     f"saisir {device.user.id} dans le champ ci-dessus puis Enregistrer."
+                    f'<br><a href="{device_url}">Voir le device {device.name}</a>'
                 )
             elif aidant_id != device.user.id:
-                return (
+                return mark_safe(
                     f"🚨 Cette carte est assignée à l'aidant {obj.aidant}, "
                     f"mais le device est assigné à {device.user}."
+                    f'<br><a href="{device_url}">Voir le device {device.name}</a>'
                 )
             else:
-                return "✅ Tout va bien !"
+                return mark_safe(
+                    "✅ Tout va bien !"
+                    f'<br><a href="{device_url}">Voir le device {device.name}</a>'
+                )
 
         return (
             mark_safe(
