@@ -26,7 +26,12 @@ from aidants_connect_web.models import (
     Organisation,
     Usager,
 )
-from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    CarteTOTPFactory,
+    TOTPDeviceFactory,
+    UsagerFactory,
+)
 
 
 @tag("admin")
@@ -259,6 +264,61 @@ class UsagerAdminPageTests(TestCase):
         url = reverse(self.url_root + "_change", args=(self.usager.pk,))
         response = self.atac_client.get(url)
         self.assertEqual(response.status_code, 200)
+
+
+@tag("admin")
+class TOTPCardAdminPageTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = OTPAdminSite(OTPAdminSite.name)
+        cls.tested = CarteTOTPAdmin(CarteTOTP, cls.admin)
+
+    def test_diagnostic_totp(self):
+        tested = self.tested
+
+        # Cases in which everything is fine
+        # Not linked to any aidant or totp device
+        card_ok1 = CarteTOTPFactory()
+        # Linked to exactly one device and one aidant
+        card_ok2 = CarteTOTPFactory(aidant=AidantFactory(username="alicia"))
+        TOTPDeviceFactory(key=card_ok2.seed, user=card_ok2.aidant)
+        self.assertIn("Tout va bien", tested.totp_devices_diagnostic(card_ok1))
+        self.assertIn("Tout va bien", tested.totp_devices_diagnostic(card_ok2))
+
+        # Not linked to an aidant, but has a totp device
+        card_ko1 = CarteTOTPFactory()
+        TOTPDeviceFactory(key=card_ko1.seed, user=AidantFactory(username="bobdylane"))
+        self.assertIn(
+            "Cette carte devrait être associée à l’aidant",
+            tested.totp_devices_diagnostic(card_ko1),
+        )
+
+        # Card is linked to aidant but no device exists
+        card_ko2 = CarteTOTPFactory(aidant=AidantFactory(username="claudia"))
+        self.assertIn(
+            "Aucun device ne correspond à cette carte",
+            tested.totp_devices_diagnostic(card_ko2),
+        )
+
+        # Card and device linked to different aidants
+        card_ko3 = CarteTOTPFactory(aidant=AidantFactory(username="damian"))
+        device_ko3 = TOTPDeviceFactory(
+            key=card_ko3.seed, user=AidantFactory(username="eloise")
+        )
+        self.assertIn(
+            f"mais le device est assigné à {device_ko3.user}.",
+            tested.totp_devices_diagnostic(card_ko3),
+        )
+
+        # Several devices exist
+        card_ko4 = CarteTOTPFactory(aidant=AidantFactory(username="francois"))
+        for _ in range(2):
+            TOTPDeviceFactory(key=card_ko4.seed, user=card_ko4.aidant)
+
+        self.assertIn(
+            "Il faudrait garder un seul TOTP Device",
+            tested.totp_devices_diagnostic(card_ko4),
+        )
 
 
 @tag("admin")
