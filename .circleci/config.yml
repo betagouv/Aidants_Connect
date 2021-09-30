@@ -28,6 +28,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            mkdir -p staticfiles
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
@@ -37,18 +38,21 @@ jobs:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
 
-      # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
       - run:
-          name: run unit tests
+          name: run linting
           command: |
             . venv/bin/activate
             black --check . --exclude aidants_connect_web/migrations/*
             flake8
+      - run:
+          name: run unit tests
+          command: |
+            . venv/bin/activate
             coverage run manage.py test
+      - run:
+          name: coverage report
+          command: |
+            . venv/bin/activate
             coverage report
 
       - store_artifacts:
