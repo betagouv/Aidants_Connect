@@ -273,6 +273,49 @@ class TOTPCardAdminPageTests(TestCase):
         cls.admin = OTPAdminSite(OTPAdminSite.name)
         cls.tested = CarteTOTPAdmin(CarteTOTP, cls.admin)
 
+        cls.bizdev_user = AidantFactory(
+            username="bizdev@email.com",
+            email="bizdev@email.com",
+            is_staff=True,
+            is_superuser=False,
+        )
+        cls.bizdev_user.set_password("password")
+        cls.bizdev_user.save()
+        cls.bizdev_device = StaticDevice.objects.create(
+            user=cls.bizdev_user, name="Device"
+        )
+
+        cls.usager = UsagerFactory()
+
+        cls.bizdev_client = Client()
+        cls.bizdev_client.force_login(cls.bizdev_user)
+        bizdev_session = cls.bizdev_client.session
+        bizdev_session[DEVICE_ID_SESSION_KEY] = cls.bizdev_device.persistent_id
+        bizdev_session.save()
+
+    def test_associate_button_is_displayed(self):
+        card = CarteTOTPFactory()
+        card_change_url = reverse(
+            "otpadmin:aidants_connect_web_cartetotp_change",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.get(card_change_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Lier la carte à un aidant")
+
+    def test_dissociate_button_is_displayed(self):
+        card = CarteTOTPFactory(aidant=AidantFactory())
+        card_change_url = reverse(
+            "otpadmin:aidants_connect_web_cartetotp_change",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.get(card_change_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dissocier la carte de l’aidant")
+        self.assertContains(response, "Créer un TOTP Device manquant")
+
     def test_diagnostic_totp(self):
         tested = self.tested
 
