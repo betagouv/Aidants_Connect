@@ -953,6 +953,13 @@ class AidantModelMethodsTests(TestCase):
         self.assertEqual(len(self.aidant_lisa.get_usagers()), 4)
         self.assertEqual(len(self.aidant_patricia.get_usagers()), 1)
 
+    def test_get_usager(self):
+        usager_john = UsagerFactory()
+        self.assertIsNone(self.aidant_marge.get_usager(usager_john.id))
+        self.assertEqual(
+            self.aidant_marge.get_usager(self.usager_homer.id), self.usager_homer
+        )
+
     def test_active_usagers(self):
         usagers = Usager.objects.all()
         self.assertEqual(len(usagers), 5)
