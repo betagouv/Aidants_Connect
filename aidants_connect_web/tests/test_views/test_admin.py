@@ -363,6 +363,37 @@ class TOTPCardAdminPageTests(TestCase):
             tested.totp_devices_diagnostic(card_ko4),
         )
 
+    def test_associate_aidant_get(self):
+        card = CarteTOTPFactory()
+        card_change_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_associate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.get(card_change_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/admin/carte_totp/associate.html"
+        )
+        self.assertContains(response, "Saisissez l'aidant ci-dessous.")
+
+    def test_dissociate_aidant_get(self):
+        aidant = AidantFactory(
+            username="john@doe.fr", last_name="Delacour", first_name="Joël"
+        )
+        card = CarteTOTPFactory(aidant=aidant)
+        card_change_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_dissociate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.get(card_change_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/admin/carte_totp/dissociate.html"
+        )
+        self.assertContains(response, f"Séparer la carte {card} de {aidant}")
+
 
 @tag("admin")
 class TotpCardsImportTests(TestCase):
