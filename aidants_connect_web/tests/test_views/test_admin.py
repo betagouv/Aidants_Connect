@@ -453,6 +453,58 @@ class TOTPCardAdminPageTests(TestCase):
         totp_device = TOTPDevice.objects.get(user=aidant)
         self.assertEqual(totp_device.key, card.seed)
 
+    def test_dissociate_aidant_whith_totp_device(self):
+        aidant = AidantFactory(username="john@doe.fr")
+        totp_device = TOTPDeviceFactory(user=aidant)
+        card = CarteTOTPFactory(aidant=aidant, seed=totp_device.key)
+        card_dissociate_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_dissociate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.post(card_dissociate_url)
+        self.assertNotEqual(response.status_code, 500)
+        card_db = CarteTOTP.objects.get(id=card.id)
+        self.assertIsNone(card_db.aidant)
+        self.assertEqual(0, TOTPDevice.objects.filter(user=aidant).count())
+
+    def test_do_not_destroy_unrelated_totp_device(self):
+        aidant_tim = AidantFactory(username="tim@doe.fr")
+        aidant_tom = AidantFactory(username="tom@doe.fr")
+        totp_device = TOTPDeviceFactory(user=aidant_tim)
+        card = CarteTOTPFactory(aidant=aidant_tom, seed=totp_device.key)
+        card_dissociate_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_dissociate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.post(card_dissociate_url)
+        self.assertNotEqual(response.status_code, 500)
+        card_db = CarteTOTP.objects.get(id=card.id)
+        self.assertIsNone(card_db.aidant)
+        # device should be deleted only if it is associated with the same aidant
+        self.assertEqual(1, TOTPDevice.objects.filter(user=aidant_tim).count())
+
+    def test_dissociate_aidant_whithout_totp_device(self):
+        aidant = AidantFactory(username="john@doe.fr")
+        card = CarteTOTPFactory(aidant=aidant)
+        card_dissociate_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_dissociate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.post(card_dissociate_url)
+        self.assertNotEqual(response.status_code, 500)
+        card_db = CarteTOTP.objects.get(id=card.id)
+        self.assertIsNone(card_db.aidant)
+        self.assertEqual(0, TOTPDevice.objects.filter(user=aidant).count())
+
+    def test_dissociate_on_card_without_aidant(self):
+        card = CarteTOTPFactory()
+        card_dissociate_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_dissociate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.post(card_dissociate_url)
+        self.assertNotEqual(response.status_code, 500)
+
 
 @tag("admin")
 class TotpCardsImportTests(TestCase):
