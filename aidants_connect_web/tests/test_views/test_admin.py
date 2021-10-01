@@ -394,6 +394,65 @@ class TOTPCardAdminPageTests(TestCase):
         )
         self.assertContains(response, f"Séparer la carte {card} de {aidant}")
 
+    def test_associate_aidant_post(self):
+        card = CarteTOTPFactory()
+        card_associate_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_associate",
+            args=(card.id,),
+        )
+        aidant = AidantFactory(username="john@doe.fr")
+        self.bizdev_client.post(card_associate_url, {"aidant": aidant.id})
+
+        card_db = CarteTOTP.objects.get(id=card.id)
+        totp_device = TOTPDevice.objects.get(user=aidant)
+        self.assertEqual(card_db.aidant, aidant)
+        self.assertEqual(card_db.seed, totp_device.key)
+        self.assertTrue(totp_device.confirmed)
+
+    def test_associate_aidant_whith_already_another_card(self):
+        aidant = AidantFactory(username="john@doe.fr")
+        CarteTOTPFactory(aidant=aidant)
+        card = CarteTOTPFactory()
+        card_associate_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_associate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.post(card_associate_url, {"aidant": aidant.id})
+        self.assertRedirects(
+            response, card_associate_url, fetch_redirect_response=False
+        )
+        response = self.bizdev_client.get(card_associate_url)
+        self.assertContains(response, f"L’aidant {aidant} a déjà une carte TOTP.")
+        card_db = CarteTOTP.objects.get(id=card.id)
+        self.assertIsNone(card_db.aidant)
+
+    def test_associate_aidant_whith_already_totp_device(self):
+        aidant = AidantFactory(username="john@doe.fr")
+        card = CarteTOTPFactory()
+        TOTPDeviceFactory(key=card.seed, user=aidant)
+        card_associate_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_associate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.post(card_associate_url, {"aidant": aidant.id})
+        self.assertNotEqual(response.status_code, 500)
+        card_db = CarteTOTP.objects.get(id=card.id)
+        self.assertEqual(card_db.aidant, aidant)
+
+    def test_reassociate_aidant_whithout_totp_device(self):
+        aidant = AidantFactory(username="john@doe.fr")
+        card = CarteTOTPFactory(aidant=aidant)
+        card_associate_url = reverse(
+            "otpadmin:aidants_connect_web_carte_totp_associate",
+            args=(card.id,),
+        )
+        response = self.bizdev_client.post(card_associate_url, {"aidant": aidant.id})
+        self.assertNotEqual(response.status_code, 500)
+        card_db = CarteTOTP.objects.get(id=card.id)
+        self.assertEqual(card_db.aidant, aidant)
+        totp_device = TOTPDevice.objects.get(user=aidant)
+        self.assertEqual(totp_device.key, card.seed)
+
 
 @tag("admin")
 class TotpCardsImportTests(TestCase):
