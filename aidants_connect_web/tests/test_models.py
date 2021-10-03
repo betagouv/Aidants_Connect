@@ -834,6 +834,9 @@ class AidantModelMethodsTests(TestCase):
         # TOTP Device
         device = TOTPDevice(user=cls.aidant_marge)
         device.save()
+        for _ in range(2):
+            device = TOTPDevice(user=cls.aidant_patricia)
+            device.save()
 
         # Active Usagers
         cls.usager_homer = UsagerFactory(given_name="Homer")
@@ -1143,6 +1146,7 @@ class AidantModelMethodsTests(TestCase):
     def test_has_a_totp_device(self):
         self.assertFalse(self.aidant_lisa.has_a_totp_device)
         self.assertTrue(self.aidant_marge.has_a_totp_device)
+        self.assertTrue(self.aidant_patricia.has_a_totp_device)
 
 
 @tag("models", "journal")
