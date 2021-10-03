@@ -65,7 +65,7 @@ class AidantFactory(factory.DjangoModelFactory):
 class HabilitationRequestFactory(factory.DjangoModelFactory):
     first_name = "Jean"
     last_name = "Dupont"
-    email = "jean.dupont@do.du"
+    email = factory.Faker("email")
     organisation = factory.SubFactory(OrganisationFactory)
     profession = "Secrétaire"
 
