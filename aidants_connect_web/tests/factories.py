@@ -5,6 +5,8 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
 from aidants_connect_web.models import (
     Autorisation,
     Connection,
@@ -28,11 +30,16 @@ class OrganisationFactory(factory.DjangoModelFactory):
 
 
 class CarteTOTPFactory(factory.DjangoModelFactory):
-    seed = "0123456789ABCDEF"
-    serial_number = "ABC000001"
+    serial_number = factory.Sequence(lambda n: f"SN{n}")
+    seed = factory.Faker("hexify")
 
     class Meta:
         model = CarteTOTP
+
+
+class TOTPDeviceFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = TOTPDevice
 
 
 class OrganisationTypeFactory(factory.DjangoModelFactory):

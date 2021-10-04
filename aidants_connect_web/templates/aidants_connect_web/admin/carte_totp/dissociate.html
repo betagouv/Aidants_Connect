@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% load static ac_extras i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media.js }}
+{% endblock %}
+
+{% block content %}
+  {% if object.aidant is None %}
+    <h1>Erreur : la carte {{ object.serial_number }} n’est liée à aucun aidant</h1>
+    <p>Cette action ne peut être menée que sur les cartes qui sont associées à un aidant.</p>
+    <div class="submit-row">
+      <p class="deletelink-box">
+        <a href="{% url 'otpadmin:aidants_connect_web_cartetotp_change' object_id=object_id %}"
+           class="closelink">Retour</a>
+      </p>
+    </div>
+  {% else %}
+    <h1>Séparer la carte {{ object.serial_number }} de {{ object.aidant }}</h1>
+
+    <p>Êtes-vous certain(e) ?</p>
+    <p>Cela pourra empêcher {{ object.aidant }} de se connecter au service.</p>
+
+    <form action="{% url 'otpadmin:aidants_connect_web_carte_totp_dissociate' object_id=object_id %}" method="POST">
+      <div class="submit-row">
+        <input type="submit" value="Confirmer" class="default" name="_save">
+        <p class="deletelink-box">
+          <a href="{% url 'otpadmin:aidants_connect_web_cartetotp_change' object_id=object_id %}" class="closelink">Annuler</a>
+        </p>
+      </div>
+      {% csrf_token %}
+    </form>
+  {% endif %}
+
+{% endblock %}

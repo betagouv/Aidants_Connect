@@ -1,0 +1,28 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+
+{% block object-tools-items %}
+  {% if adminform.form.instance.aidant is not None %}
+    <li>
+      <a href="{% url 'otpadmin:aidants_connect_web_carte_totp_dissociate' object_id=object_id %}">
+        <span aria-hidden="true">✂️ </span>
+        Dissocier la carte de l’aidant
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'otpadmin:aidants_connect_web_carte_totp_associate' object_id=object_id %}">
+        <span aria-hidden="true">💳 </span>
+        Créer un TOTP Device manquant
+      </a>
+    </li>
+  {% else %}
+    <li>
+      <a href="{% url 'otpadmin:aidants_connect_web_carte_totp_associate' object_id=object_id %}">
+        <span aria-hidden="true">👩️ </span>
+        Lier la carte à un aidant
+      </a>
+    </li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
