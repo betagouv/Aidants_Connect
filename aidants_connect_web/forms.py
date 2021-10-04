@@ -40,9 +40,6 @@ class AidantCreationForm(forms.ModelForm):
     last_name = forms.CharField(label="Nom de famille")
 
     profession = forms.CharField(label="Profession")
-    organisation = forms.ModelChoiceField(
-        queryset=Organisation.objects.all(), empty_label="Organisation"
-    )
 
     class Meta:
         model = Aidant
