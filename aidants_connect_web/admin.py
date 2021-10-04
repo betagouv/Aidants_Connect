@@ -986,7 +986,6 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             "media": self.media,
             "object_id": object_id,
             "object": object,
-            "form": self.get_form(request, fields=[]),
         }
 
         return render(

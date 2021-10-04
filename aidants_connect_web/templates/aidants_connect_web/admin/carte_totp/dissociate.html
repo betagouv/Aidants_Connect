@@ -30,9 +30,6 @@
     <p>Cela pourra empêcher {{ object.aidant }} de se connecter au service.</p>
 
     <form action="{% url 'otpadmin:aidants_connect_web_carte_totp_dissociate' object_id=object_id %}" method="POST">
-      <fieldset class="module aligned">
-        {{ form.as_p }}
-      </fieldset>
       <div class="submit-row">
         <input type="submit" value="Confirmer" class="default" name="_save">
         <p class="deletelink-box">
