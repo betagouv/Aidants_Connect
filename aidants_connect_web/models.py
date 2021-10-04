@@ -211,16 +211,6 @@ class Aidant(AbstractUser):
         """
         return Autorisation.objects.visible_by(self).distinct()
 
-    def get_autorisation(self, autorisation_id):
-        """
-        :return: an autorisation or `None` if this autorisation is not
-        visible by this aidant.
-        """
-        try:
-            return self.get_autorisations().get(pk=autorisation_id)
-        except Autorisation.DoesNotExist:
-            return None
-
     def get_autorisations_for_usager(self, usager):
         """
         :param usager:
@@ -443,27 +433,6 @@ class Usager(models.Model):
 
     def get_full_name(self):
         return str(self)
-
-    def get_mandat(self, mandat_id):
-        try:
-            return self.mandats.get(pk=mandat_id)
-        except Mandat.DoesNotExist:
-            return None
-
-    def get_autorisation(self, autorisation_id):
-        """
-        This method returns the Authorisation object with the id _autorisation_id_
-        only if the Usager of the autorization is the current usager.
-        Otherwise, returns None
-        :param autorisation_id:
-        :return: Autorisation object or None
-        """
-        try:
-            autorisation = Autorisation.objects.get(pk=autorisation_id)
-        except Autorisation.DoesNotExist:
-            return None
-        if autorisation.mandat.usager == self:
-            return autorisation
 
     def normalize_birthplace(self):
         if not self.birthplace:
