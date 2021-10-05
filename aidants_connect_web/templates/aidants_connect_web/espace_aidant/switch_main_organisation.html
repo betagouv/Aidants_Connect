@@ -1,0 +1,51 @@
+{% extends "layouts/main.html" %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Changer d'organisation{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/form.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <section class="section">
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      <h1>Changement d'organisation</h1>
+
+      <form method="post">
+        {% csrf_token %}
+        <fieldset class="grid">
+          {% for organisation in aidant.organisations.all %}
+            <div class="tile">
+              <input
+                id="organisation-{{ organisation.id }}"
+                type="radio"
+                value="{{ organisation.id }}"
+                name="organisation"
+                class="sr-only"
+                {% if organisation.id == aidant.organisation.id %}checked{% endif %}
+              />
+              <label class="organisation-label" for="organisation-{{ organisation.id }}">
+                <strong>{{ organisation.name }}</strong>
+                <span>{{ organisation.address }}</span>
+              </label>
+            </div>
+          {% endfor %}
+          <input name="next" value="{{ next_url }}" hidden>
+        </fieldset>
+
+        <input
+          id="submit_button"
+          type="submit"
+          value="Sélectionner cette organisation"
+        />
+      </form>
+    </div>
+  </section>
+{% endblock %}

@@ -91,6 +91,19 @@ body {
   margin: 1.5em 0 1.5em 0;
 }
 
+.navbar__organisation {
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar__organisation .organisation-change-link {
+  text-align: center;
+}
+
+.navbar__organisation .organisation-name, .navbar__organisation .organisation-address {
+  margin: 0 auto;
+}
+
 /* Container & main */
 
 .container.container-small {

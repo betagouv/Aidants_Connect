@@ -10,6 +10,18 @@
       <img class="navbar__gouvfr" src="{% static 'images/Marianne_logo_1120.png' %}" alt="" />
       <img class="navbar__logo" src="{% static 'images/aidants-connect_logo.png' %}"  alt="Aidants Connect" />
     </a>
+    <section class="navbar__organisation">
+      <h2 class="organisation-name">{{ request.user.organisation.name }}</h2>
+      <p class="organisation-address">{{ request.user.organisation.address }}</p>
+      {% if request.user.organisations.count > 1 and not disable_change_organisation %}
+        <a
+          href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
+          class="organisation-change-link"
+        >
+          Changer d'organisation ?
+        </a>
+      {% endif %}
+    </section>
     <nav role="navigation" aria-label="Menu principal">
       <ul class="nav__links" id="top_menu">
         {% with view_name=request.resolver_match.view_name %}

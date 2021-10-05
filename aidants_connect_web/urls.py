@@ -31,6 +31,11 @@ urlpatterns = [
         espace_aidant.validate_cgus,
         name="espace_aidant_cgu",
     ),
+    path(
+        "espace-aidant/organisations/switch_main",
+        espace_aidant.switch_main_organisation,
+        name="espace_aidant_switch_main_organisation",
+    ),
     # usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
     path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),
