@@ -799,13 +799,6 @@ class AidantModelTests(TestCase):
         Aidant.objects.create(username="Marge", organisation=self.superuser_org)
         self.assertRaises(IntegrityError, Aidant.objects.create, username="Marge")
 
-    def test_aidant_fills_all_the_information(self):
-        self.assertEqual(len(Aidant.objects.all()), 0)
-        AidantFactory()
-        self.assertEqual(len(Aidant.objects.all()), 1)
-        AidantFactory()
-        self.assertEqual(len(Aidant.objects.all()), 2)
-
     def test_get_aidant_organisation(self):
         orga = OrganisationFactory(
             name="COMMUNE DE HOULBEC COCHEREL",
