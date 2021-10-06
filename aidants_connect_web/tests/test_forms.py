@@ -137,7 +137,6 @@ class AidantChangeFormTests(TestCase):
         self.assertEqual(self.aidant2.first_name, "Armand")
         self.assertEqual(self.aidant2.email, "abernart@domain.user")
         self.assertEqual(self.aidant2.username, "abernart@domain.user")
-        self.assertEqual(self.aidant2.first_name, "Armand")
 
         changed_data = {
             "first_name": "Armand",
@@ -165,7 +164,6 @@ class AidantChangeFormTests(TestCase):
         self.assertEqual(self.aidant2.first_name, "Armand")
         self.assertEqual(self.aidant2.email, "abernart@domain.user")
         self.assertEqual(self.aidant2.username, "abernart@domain.user")
-        self.assertEqual(self.aidant2.first_name, "Armand")
 
         changed_data = {
             "first_name": "Armand",
