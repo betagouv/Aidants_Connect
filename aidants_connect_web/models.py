@@ -56,7 +56,7 @@ class Organisation(models.Model):
 
     @cached_property
     def num_active_aidants(self):
-        return self.current_aidants.active().count()
+        return self.aidants.active().count()
 
     def admin_num_active_aidants(self):
         return self.num_active_aidants
@@ -153,6 +153,7 @@ class Aidant(AbstractUser):
     organisation = models.ForeignKey(
         Organisation,
         on_delete=models.CASCADE,
+        verbose_name="Organisation courante",
         related_name="current_aidants",
     )
     organisations = models.ManyToManyField(

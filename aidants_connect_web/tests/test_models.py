@@ -791,6 +791,20 @@ class OrganisationModelTests(TestCase):
         create_6_mandats_for_2_usagers(organisation=organisation)
         self.assertEqual(2, organisation.num_usagers)
 
+    def test_count_aidants(self):
+        orga_a = OrganisationFactory(name="A")
+        orga_b = OrganisationFactory(name="Baker Street")
+        for _ in range(2):
+            aidant_a = AidantFactory(organisation=orga_a)
+            aidant_a.organisations.set((orga_a, orga_b))
+        for _ in range(3):
+            aidant_b = AidantFactory(organisation=orga_b)
+            aidant_b.organisations.set((orga_a, orga_b))
+        for _ in range(4):
+            aidant_c = AidantFactory(organisation=orga_a, is_active=False)
+            aidant_c.organisations.set((orga_a, orga_b))
+        self.assertEqual(orga_a.num_active_aidants, 5)
+
 
 @tag("models", "aidant")
 class AidantModelTests(TestCase):
