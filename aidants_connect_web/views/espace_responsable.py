@@ -165,6 +165,14 @@ def remove_card_from_aidant(request, organisation_id, aidant_id):
     )
 
 
+@require_POST
+@login_required
+@user_is_responsable_structure
+@activity_required
+def change_aidant_organisations(request, aidant_id):
+    pass
+
+
 @require_http_methods(["GET", "POST"])
 @login_required
 @user_is_responsable_structure

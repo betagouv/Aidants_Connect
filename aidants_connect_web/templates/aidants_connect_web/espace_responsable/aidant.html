@@ -81,7 +81,7 @@
         {% if responsable.responsable_de.all|length > 0 %}
           <details class="background-color-grey">
             <summary>Changer les organisations de rattachement</summary>
-            <form method="post" action="">
+            <form method="post" action="{% url "espace_responsable_aidant_change_organisations" aidant_id=aidant.id %}">
               {% csrf_token %}
               <fieldset class="checkbox-list">
                 <legend>
