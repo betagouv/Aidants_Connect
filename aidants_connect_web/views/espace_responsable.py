@@ -98,7 +98,7 @@ def aidant(request, organisation_id, aidant_id):
     check_organisation_and_responsable(responsable, organisation)
 
     aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if aidant.organisation.id != organisation_id:
+    if organisation not in aidant.organisations.all():
         raise Http404
 
     form = RemoveCardFromAidantForm()
@@ -126,7 +126,7 @@ def remove_card_from_aidant(request, organisation_id, aidant_id):
     organisation = get_object_or_404(Organisation, pk=organisation_id)
     check_organisation_and_responsable(responsable, organisation)
     aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if aidant.organisation.id != organisation_id:
+    if organisation not in aidant.organisations.all():
         raise Http404
 
     form = RemoveCardFromAidantForm(request.POST)
@@ -175,7 +175,7 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
     check_organisation_and_responsable(responsable, organisation)
 
     aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if aidant.organisation.id != organisation_id:
+    if organisation not in aidant.organisations.all():
         raise Http404
 
     if hasattr(aidant, "carte_totp"):
@@ -244,7 +244,7 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
     check_organisation_and_responsable(responsable, organisation)
 
     aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if aidant.organisation.id != organisation_id:
+    if organisation not in aidant.organisations.all():
         raise Http404
 
     if not hasattr(aidant, "carte_totp"):
