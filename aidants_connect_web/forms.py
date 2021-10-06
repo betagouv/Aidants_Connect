@@ -269,6 +269,20 @@ class RemoveCardFromAidantForm(forms.Form):
     other_reason = forms.CharField(required=False)
 
 
+class ChangeAidantOrganisationsForm(forms.Form):
+    def __init__(self, responsable: Aidant, aidant: Aidant, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.aidant = aidant
+        self.responsable = responsable
+        self.fields["organisations"] = forms.ModelMultipleChoiceField(
+            queryset=Organisation.objects.filter(
+                responsables=self.responsable
+            ).order_by("name"),
+            widget=forms.CheckboxSelectMultiple,
+        )
+        self.initial["organisations"] = self.aidant.organisations.all()
+
+
 class HabilitationRequestCreationForm(forms.ModelForm):
     def __init__(self, responsable, organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)

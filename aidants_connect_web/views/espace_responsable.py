@@ -20,6 +20,7 @@ from aidants_connect_web.decorators import (
 from aidants_connect_web.forms import (
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
+    ChangeAidantOrganisationsForm,
     HabilitationRequestCreationForm,
     RemoveCardFromAidantForm,
 )
@@ -101,11 +102,18 @@ def aidant(request, organisation_id, aidant_id):
         raise Http404
 
     form = RemoveCardFromAidantForm()
+    orga_form = ChangeAidantOrganisationsForm(responsable, aidant)
 
     return render(
         request,
         "aidants_connect_web/espace_responsable/aidant.html",
-        {"aidant": aidant, "organisation": organisation, "form": form},
+        {
+            "aidant": aidant,
+            "organisation": organisation,
+            "form": form,
+            "orga_form": orga_form,
+            "responsable": responsable,
+        },
     )
 
 

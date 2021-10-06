@@ -1,11 +1,13 @@
 {% extends 'layouts/main.html' %}
 
 {% load static %}
+{% load ac_extras %}
 
 {% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/form.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
@@ -46,7 +48,8 @@
         {% if aidant.carte_totp.serial_number %}
           <details class="background-color-grey">
             <summary>Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte</summary>
-            <form method="post" action="{% url "espace_responsable_aidant_remove_card" organisation_id=organisation.id aidant_id=aidant.id %}">
+            <form method="post"
+                  action="{% url "espace_responsable_aidant_remove_card" organisation_id=organisation.id aidant_id=aidant.id %}">
               {% csrf_token %}
               <p>
                 Pour supprimer l'association entre la carte {{ aidant.carte_totp.serial_number }}
@@ -74,6 +77,44 @@
               Lier une carte Aidants Connect
             </a>
           </p>
+        {% endif %}
+        {% if responsable.responsable_de.all|length > 0 %}
+          <details class="background-color-grey">
+            <summary>Changer les organisations de rattachement</summary>
+            <form method="post" action="">
+              {% csrf_token %}
+              <fieldset class="checkbox-list">
+                <legend>
+                  Cochez la ou les organisations auxquelles rattacher {{ aidant }}.
+                  Cela lui permettra de créer des mandats en leur nom.
+                </legend>
+                <ul class="grid checkbox-list small-checkboxes">
+                  {% for value, label in orga_form.organisations.field.choices %}
+                    <li class="tile">
+                      <input
+                          type="checkbox"
+                          class="osr-only"
+                          value="{{ value }}"
+                          id="org_{{ value }}"
+                          {% if value in orga_form.organisations.value or value in orga_form.organisations.initial %}
+                          checked
+                          {% endif %}
+                      >
+                      <label for="org_{{ value }}">
+                        <span>
+                          <strong>{{ label }}</strong><br>
+                          {{ value.instance.address }}
+                        </span>
+                      </label>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </fieldset>
+              <p>
+                <button class="button" type="submit">Valider</button>
+              </p>
+            </form>
+          </details>
         {% endif %}
         {# todo : actions d'activation / désactivation des comptes #}
       </div>

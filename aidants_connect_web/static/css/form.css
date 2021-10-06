@@ -77,7 +77,12 @@ form {
 .tile input[type=checkbox] ~ label::after {
   border-radius: 4px;
 }
-
+.small-checkboxes .tile label::after {
+  width: 14px;
+  height: 14px;
+  right: 14px;
+  top: 14px;
+}
 .tile input:checked~label {
   color: white;
   background-color: #003b80;
