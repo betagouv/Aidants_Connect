@@ -10,7 +10,9 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 class UsagersTest(FunctionalTestCase):
     def setUp(self):
-        self.aidant = AidantFactory(post__with_otp_device=True)
+        self.aidant = AidantFactory(
+            email="thierry@thierry.com", post__with_otp_device=True
+        )
 
         self.usager_josephine = UsagerFactory(
             given_name="Joséphine", family_name="ST-PIERRE"

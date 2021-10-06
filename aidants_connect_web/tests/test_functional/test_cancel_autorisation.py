@@ -18,16 +18,10 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 @tag("functional")
 class CancelAutorisationTests(FunctionalTestCase):
     def setUp(self):
-        self.aidant_thierry = AidantFactory()
+        self.aidant_thierry = AidantFactory(email="thierry@thierry.com")
         device = self.aidant_thierry.staticdevice_set.create(id=self.aidant_thierry.id)
         device.token_set.create(token="123456")
-        self.aidant_jacqueline = AidantFactory(
-            username="jfremont@domain.user",
-            email="jfremont@domain.user",
-            password="motdepassedejacqueline",
-            first_name="Jacqueline",
-            last_name="Fremont",
-        )
+        self.aidant_jacqueline = AidantFactory()
         self.usager_josephine = UsagerFactory(given_name="Joséphine")
         self.mandat_thierry_josephine = MandatFactory(
             organisation=self.aidant_thierry.organisation,

@@ -17,7 +17,7 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 @tag("functional", "renew_mandat")
 class RenewMandatTests(FunctionalTestCase):
     def test_renew_mandat(self):
-        self.aidant = AidantFactory()
+        self.aidant = AidantFactory(email="thierry@thierry.com")
         device = self.aidant.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
         device.token_set.create(token="123455")

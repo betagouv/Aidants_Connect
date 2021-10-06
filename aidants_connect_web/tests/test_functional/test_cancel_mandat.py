@@ -15,7 +15,7 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 @tag("functional", "cancel_mandat")
 class CancelAutorisationTests(FunctionalTestCase):
     def setUp(self):
-        self.aidant_thierry = AidantFactory()
+        self.aidant_thierry = AidantFactory(email="thierry@thierry.com")
         device = self.aidant_thierry.staticdevice_set.create(id=self.aidant_thierry.id)
         device.token_set.create(token="123456")
 

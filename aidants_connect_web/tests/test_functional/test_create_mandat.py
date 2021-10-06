@@ -19,7 +19,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         super().setUpClass()
 
     def setUp(self) -> None:
-        self.aidant = AidantFactory()
+        self.aidant = AidantFactory(email="thierry@thierry.com")
         device = self.aidant.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
         device.token_set.create(token="123455")

@@ -16,7 +16,7 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 @tag("functional")
 class ViewAutorisationsTests(FunctionalTestCase):
     def setUp(self):
-        self.aidant = AidantFactory()
+        self.aidant = AidantFactory(email="thierry@thierry.com")
         device = self.aidant.staticdevice_set.create(id=self.aidant.id)
         device.token_set.create(token="123456")
 

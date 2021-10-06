@@ -20,7 +20,7 @@ class CancelAutorisationTests(FunctionalTestCase):
     def test_aidant_can_login(self):
         self.open_live_url("/accounts/login/")
         login_field = self.selenium.find_element_by_id("id_email")
-        login_field.send_keys("thierry@thierry.com")
+        login_field.send_keys(self.aidant_thierry.email)
         otp_field = self.selenium.find_element_by_id("id_otp_token")
         otp_field.send_keys("123456")
         submit_button = self.selenium.find_element_by_xpath("//button")
