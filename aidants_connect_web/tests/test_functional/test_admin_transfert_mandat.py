@@ -21,10 +21,7 @@ class ViewAutorisationsTests(FunctionalTestCase):
             is_superuser=True, is_staff=True, is_active=True, post__with_otp_device=True
         )
 
-        self.aidante_fatimah = AidantFactory(
-            username="fatimah@fatimah.com",
-            email="fatimah@fatimah.com",
-        )
+        self.aidante_fatimah = AidantFactory()
 
         self.mandate_1 = MandatFactory(organisation=self.aidant_thierry.organisation)
         self.mandate_2 = MandatFactory(organisation=self.aidant_thierry.organisation)

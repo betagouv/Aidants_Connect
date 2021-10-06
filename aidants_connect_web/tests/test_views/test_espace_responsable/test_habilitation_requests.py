@@ -17,7 +17,7 @@ class HabilitationRequestsTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         # Tom is responsable of organisations A and B
-        cls.responsable_tom = AidantFactory(username="tom@baie.fr")
+        cls.responsable_tom = AidantFactory()
         cls.org_a = cls.responsable_tom.organisation
         cls.org_b = OrganisationFactory(name="B")
         cls.responsable_tom.responsable_de.add(cls.org_a)
@@ -162,13 +162,13 @@ class HabilitationRequestsTests(TestCase):
     def test_submitting_habilitation_request_if_aidant_already_exists(self):
         self.client.force_login(self.responsable_tom)
 
-        AidantFactory(organisation=self.org_a, email="b@b.fr", username="b@b.fr")
+        existing_aidant = AidantFactory(organisation=self.org_a)
 
         response = self.client.post(
             self.add_aidant_url,
             data={
                 "organisation": self.org_b.id,
-                "email": "b@b.fr",
+                "email": existing_aidant.email,
                 "first_name": "Bob",
                 "last_name": "Dubois",
                 "profession": "Assistant social",
@@ -216,15 +216,13 @@ class HabilitationRequestsTests(TestCase):
     def test_avoid_oracle_for_other_organisations_aidants(self):
         self.client.force_login(self.responsable_tom)
 
-        AidantFactory(
-            organisation=OrganisationFactory(), email="b@b.fr", username="b@b.fr"
-        )
+        other_aidant = AidantFactory()
 
         response = self.client.post(
             self.add_aidant_url,
             data={
                 "organisation": self.org_a.id,
-                "email": "b@b.fr",
+                "email": other_aidant.email,
                 "first_name": "Bob",
                 "last_name": "Dubois",
                 "profession": "Assistant social",
@@ -241,7 +239,7 @@ class HabilitationRequestsTests(TestCase):
             "Confirmation message should be displayed.",
         )
         self.assertIn(
-            "b@b.fr",
+            other_aidant.email,
             response_content,
             "New habilitation request should be displayed on organisation page.",
         )
