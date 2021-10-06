@@ -124,6 +124,21 @@ class EspaceResponsableOrganisationPage(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+    def test_display_all_active_aidants(self):
+        self.client.force_login(self.responsable_tom)
+        aidant_a = AidantFactory(
+            first_name="Premier-Aidant", organisation=self.responsable_tom.organisation
+        )
+        aidant_b = AidantFactory(first_name="Second-Aidant")
+        aidant_b.organisations.set(
+            (aidant_b.organisation, self.responsable_tom.organisation)
+        )
+        response = self.client.get(
+            f"/espace-responsable/organisation/{self.id_organisation}/"
+        )
+        self.assertContains(response, aidant_a.first_name)
+        self.assertContains(response, aidant_b.first_name)
+
 
 @tag("responsable-structure")
 class EspaceResponsableAidantPage(TestCase):
