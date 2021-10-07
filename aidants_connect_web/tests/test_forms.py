@@ -44,7 +44,10 @@ class AidantCreationFormTests(TestCase):
         def field_test(name_of_field: str, data_set: dict) -> None:
             data_set[name_of_field] = ""
             form = AidantCreationForm(data=data_set)
-            self.assertFalse(form.is_valid())
+            self.assertFalse(
+                form.is_valid(),
+                f"Field {name_of_field} is considered valid, it should not.",
+            )
             self.assertEqual(form.errors[name_of_field], ["Ce champ est obligatoire."])
 
         for field in [

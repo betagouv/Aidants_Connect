@@ -38,11 +38,7 @@ class AidantCreationForm(forms.ModelForm):
     email = forms.EmailField(label="Email", widget=forms.EmailInput())
     username = forms.CharField(required=False)
     last_name = forms.CharField(label="Nom de famille")
-
     profession = forms.CharField(label="Profession")
-    organisation = forms.ModelChoiceField(
-        queryset=Organisation.objects.all(), empty_label="Organisation"
-    )
 
     class Meta:
         model = Aidant
@@ -55,13 +51,17 @@ class AidantCreationForm(forms.ModelForm):
             "username",
         )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["organisation"].required = True
+
     def clean(self):
         super().clean()
         cleaned_data = self.cleaned_data
         aidant_email = cleaned_data.get("email")
         if aidant_email in Aidant.objects.all().values_list("username", flat=True):
             self.add_error(
-                "email", forms.ValidationError("This email is already " "taken")
+                "email", forms.ValidationError("This email is already taken")
             )
         else:
             cleaned_data["username"] = aidant_email
