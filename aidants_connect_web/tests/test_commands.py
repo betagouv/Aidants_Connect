@@ -6,7 +6,7 @@ from django.core.management import call_command, CommandError
 from django.test import tag, TestCase
 from freezegun import freeze_time
 
-from aidants_connect_web.management.commands.createsuperuser import (
+from aidants_connect_overrides.management.commands.createsuperuser import (
     ERROR_MSG,
     ORGANISATION_ID_ARG,
     ORGANISATION_NAME_ARG,

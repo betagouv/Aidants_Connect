@@ -116,6 +116,31 @@ class AidantManager(UserManager):
     def active(self):
         return self.filter(is_active=True)
 
+    def __normalize_fields(self, extra_fields: dict):
+        for field_name in extra_fields.keys():
+            field = self.model._meta.get_field(field_name)
+            field_value = extra_fields[field_name]
+
+            if field.many_to_many and isinstance(field_value, str):
+                extra_fields[field_name] = [pk.strip() for pk in field_value.split(",")]
+            if field.many_to_one and not isinstance(
+                field_value, field.remote_field.model
+            ):
+                field_value = (
+                    int(field_value)
+                    if not isinstance(field_value, int)
+                    else field_value
+                )
+                extra_fields[field_name] = field.remote_field.model(field_value)
+
+    def create_user(self, username, email=None, password=None, **extra_fields):
+        self.__normalize_fields(extra_fields)
+        return super().create_user(username, email, password, **extra_fields)
+
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        self.__normalize_fields(extra_fields)
+        return super().create_superuser(username, email, password, **extra_fields)
+
 
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
