@@ -94,7 +94,7 @@ class Command(createsuperuser.Command):
                 "\t[1]: create a new one\n"
                 "\t[2]: provide the id of an already existing one\n"
                 "Choose either 1 or 2: "
-            )
+            ).strip()
 
         while organisation_id is None and organisation_name is None:
             if choice == "1":

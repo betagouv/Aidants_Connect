@@ -149,7 +149,6 @@ class CreateSuperUserTests(TestCase):
         with patch.dict(os.environ, {ORGANISATION_ID_ENV: str(self.orga_1.pk)}):
             call_command(
                 "createsuperuser",
-                f"{ORGANISATION_ID_ARG}={self.orga_1.pk}",
                 username="Karl_Marx",
                 email="karl_marx@internationale.de",
                 interactive=False,

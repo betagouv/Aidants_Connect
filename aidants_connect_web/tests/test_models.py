@@ -774,21 +774,29 @@ class OrganisationModelTests(TestCase):
 
 @tag("models", "aidant")
 class AidantModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.superuser_org = OrganisationFactory()
+
     def test_i_can_create_a_superuser(self):
         self.assertEqual(Aidant.objects.filter(is_superuser=True).count(), 0)
-        Aidant.objects.create_superuser(username="admin")
+        Aidant.objects.create_superuser(
+            username="admin", organisation=self.superuser_org
+        )
         self.assertEqual(Aidant.objects.filter(is_superuser=True).count(), 1)
 
     def test_what_happens_to_password_when_not_set(self):
-        aidant = Aidant.objects.create(username="Marge")
+        aidant = Aidant.objects.create(
+            username="Marge", organisation=self.superuser_org
+        )
         self.assertEqual(aidant.password, "")
 
     def test_what_happens_when_username_not_set(self):
-        aidant = Aidant.objects.create()
+        aidant = Aidant.objects.create(organisation=self.superuser_org)
         self.assertEqual(aidant.username, "")
 
     def test_what_happens_when_an_aidant_tries_to_use_same_username(self):
-        Aidant.objects.create(username="Marge")
+        Aidant.objects.create(username="Marge", organisation=self.superuser_org)
         self.assertRaises(IntegrityError, Aidant.objects.create, username="Marge")
 
     def test_aidant_fills_all_the_information(self):
