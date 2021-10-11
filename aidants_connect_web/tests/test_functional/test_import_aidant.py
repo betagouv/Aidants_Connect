@@ -27,7 +27,6 @@ class ImportAidantTests(FunctionalTestCase):
     def setUp(self) -> None:
         self.organisation = OrganisationFactory(id=4444)
         self.aidant = AidantFactory(
-            email="thierry@thierry.com",
             username="thierry@thierry.com",
             is_superuser=True,
             is_staff=True,
