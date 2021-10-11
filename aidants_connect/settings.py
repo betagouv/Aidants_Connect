@@ -10,63 +10,57 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-from datetime import datetime, timedelta
+import logging
 import os
 import re
-from typing import Union
 import sys
-import logging
+from datetime import datetime, timedelta
+from distutils.util import strtobool
+from typing import Union, Optional
 
-from dotenv import load_dotenv
 import sentry_sdk
+from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
 
 from aidants_connect.postgres_url import turn_psql_url_into_param
 
-
 load_dotenv(verbose=True)
 
 
-def getenv_bool(env_var: str, default_value: Union[None, bool] = None) -> bool:
+def getenv_bool(key: str, default: Optional[bool] = None) -> bool:
     """Obtains a boolean value from an environement variable
 
     Authorized values are casing variants of "true", "yes", "false" and "no" as well as
-    positive integer. Any other valuer will result in an error unless a default value
+    0 and 1. Any other valuer will result in an error unless a default value
     is provided.
 
     If the environment variable does not exist and no default value is provided,
     an error will be thrown
 
-    :param env_var: The name the the environment variable to load
-    :param default_value: The default value to take if env var does not exist
+    :param key: The name the the environment variable to load
+    :param default: The default value to take if env var does not exist
     """
-    env_var = os.getenv(env_var, default_value)
+    var = os.getenv(key, default)
 
-    if env_var is None:
+    if var is None:
         raise ValueError(
-            f"{env_var} is not present in environment variables "
+            f"{key} is not present in environment variables "
             "and no default value was provided"
         )
 
-    if isinstance(env_var, bool):
-        return env_var
+    if isinstance(var, bool):
+        return var
 
-    if re.fullmatch(r"\d+", env_var) is not None:
-        return int(env_var) > 0
-
-    env_var = env_var.lower()
-    if env_var in ["true", "yes"]:
-        return True
-    elif env_var in ["false", "no"]:
-        return False
-    elif default_value is not None:
-        return default_value
-    else:
-        raise ValueError(
-            f"{env_var} does not have a valid boolean value; "
-            "authorized values are any casing of "
-            '["true", "yes", "false", "no"] as well as positive integers'
-        )
+    try:
+        return bool(strtobool(var))
+    except ValueError:
+        if default is not None:
+            return default
+        else:
+            raise ValueError(
+                f"{key} does not have a valid boolean value; authorized values are "
+                'any casing of ["true", "yes", "false", "no"] as well as 0 and 1.'
+            )
 
 
 HOST = os.environ["HOST"]
@@ -95,7 +89,6 @@ GET_PREFERRED_USERNAME_FROM_FC = getenv_bool("GET_PREFERRED_USERNAME_FROM_FC", T
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -123,6 +116,7 @@ if SENTRY_DSN:
 # Application definition
 
 INSTALLED_APPS = [
+    "aidants_connect_overrides",
     "django.contrib.admin",
     "nested_admin",
     "tabbed_admin",
@@ -184,7 +178,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "aidants_connect.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -232,7 +225,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -449,7 +441,6 @@ if "test" in sys.argv:
         },
     }
 
-
 BYPASS_FIRST_LIVESERVER_CONNECTION = getenv_bool(
     "BYPASS_FIRST_LIVESERVER_CONNECTION", False
 )
@@ -480,7 +471,6 @@ TABBED_ADMIN_USE_JQUERY_UI = True
 SHELL_PLUS_IMPORTS = [
     "from datetime import datetime, timedelta",
 ]
-
 
 # Datapass
 DATAPASS_KEY = os.getenv("DATAPASS_KEY", None)

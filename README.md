@@ -151,21 +151,18 @@ Ce process créé automatiquement un _superuser_ `admin@email.com`. plus d'infor
 
 #### Installation sur un serveur : Créer un _superuser_
 
-Créez un _superuser_ :
+Créez un profil administrateur avec une organisation ar défaut :
 
 ```shell
-python manage.py createsuperuser --username <insert_admin_name>
+python manage.py createsuperuser --username <insert_admin_name> --organisation-name <insert_organisation_name>
 ```
 
-Adjoignez-lui une `Organisation` :
+Une organisation avec le nom que vous avez spécifié sera automatiquement créée pour ce profil. 
+Si vous avez déjà créé une organisation vous pouvez passer son numéro dans la base de donnée à la création du profil 
+admin :
 
-```
-python manage.py shell
-from aidants_connect_web.models import Aidant, Organisation
-a = Aidant.objects.get(pk=1)
-a.organisation = Organisation.objects.create(name=<insert_organisation_name>)
-a.save()
-exit()
+```shell
+python manage.py createsuperuser --username <insert_admin_name> --organisation <insert_organisation_pk>
 ```
 
 Pour pouvoir vous connecter à votre instance locale, il faut apparier à votre `superuser` un dispositif TOTP (`TOTP device`).

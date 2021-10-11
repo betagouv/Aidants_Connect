@@ -1,13 +1,20 @@
+import os
 from datetime import datetime, timedelta, timezone
+from unittest.mock import patch
 
-from django.core.management import call_command
+from django.core.management import call_command, CommandError
 from django.test import tag, TestCase
-
 from freezegun import freeze_time
 
-from aidants_connect_web.models import Connection
-from aidants_connect_web.tests.factories import ConnectionFactory
-
+from aidants_connect_overrides.management.commands.createsuperuser import (
+    ERROR_MSG,
+    ORGANISATION_ID_ARG,
+    ORGANISATION_NAME_ARG,
+    ORGANISATION_NAME_ENV,
+    ORGANISATION_ID_ENV,
+)
+from aidants_connect_web.models import Connection, Aidant
+from aidants_connect_web.tests.factories import ConnectionFactory, OrganisationFactory
 
 TZ_PARIS = timezone(offset=timedelta(hours=1), name="Europe/Paris")
 
@@ -58,3 +65,116 @@ class DeleteExpiredConnectionsTests(TestCase):
         remaining_connections = Connection.objects.all()
         self.assertEqual(remaining_connections.count(), 1)
         self.assertEqual(remaining_connections.first().id, self.conn_2.id)
+
+
+class CreateSuperUserTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.orga_1 = OrganisationFactory()
+
+    def test_raise_error_noinput_orga_id_and_orga_name(self):
+        with self.assertRaises(CommandError) as err:
+            call_command(
+                "createsuperuser",
+                f"{ORGANISATION_ID_ARG}={self.orga_1.id}",
+                f'{ORGANISATION_NAME_ARG}="L\'Internationale des travailleurs"',
+            )
+
+        self.assertEqual(
+            err.exception.__str__(), f"{ERROR_MSG} but not both at the same time."
+        )
+
+    def test_raise_error_noinput_no_orga(self):
+        with self.assertRaises(CommandError) as err:
+            call_command("createsuperuser", interactive=False)
+
+        self.assertEqual(err.exception.__str__(), f"{ERROR_MSG}.")
+
+    def test_organisation_name(self):
+        def input_mock(*_):
+            return "Proletaires_de_tous_les_pays"
+
+        with patch("getpass.getpass", input_mock):
+            call_command(
+                "createsuperuser",
+                f"{ORGANISATION_NAME_ARG}=L'Internationale des travailleurs",
+                username="Karl_Marx",
+                email="karl_marx@internationale.de",
+                stdin={"isatty": True},
+            )
+
+            self.assertEqual(
+                Aidant.objects.get(username="Karl_Marx").organisation.name,
+                "L'Internationale des travailleurs",
+            )
+
+    def test_organisation_name_env_var(self):
+        def input_mock(*_):
+            return "Proletaires_de_tous_les_pays"
+
+        with patch("getpass.getpass", input_mock), patch.dict(
+            os.environ, {ORGANISATION_NAME_ENV: "L'Internationale des travailleurs"}
+        ):
+            call_command(
+                "createsuperuser",
+                username="Karl_Marx",
+                email="karl_marx@internationale.de",
+                stdin={"isatty": True},
+            )
+
+            self.assertEqual(
+                Aidant.objects.get(username="Karl_Marx").organisation.name,
+                "L'Internationale des travailleurs",
+            )
+
+    def test_organisation_id(self):
+        def input_mock(*_):
+            return "Proletaires_de_tous_les_pays"
+
+        with patch("getpass.getpass", input_mock):
+            call_command(
+                "createsuperuser",
+                f"{ORGANISATION_ID_ARG}={self.orga_1.pk}",
+                username="Karl_Marx",
+                email="karl_marx@internationale.de",
+                stdin={"isatty": True},
+            )
+
+            self.assertEqual(
+                Aidant.objects.get(username="Karl_Marx").organisation.name,
+                self.orga_1.name,
+            )
+
+    def test_organisation_id_non_interactive(self):
+        with patch.dict(os.environ, {ORGANISATION_ID_ENV: str(self.orga_1.pk)}):
+            call_command(
+                "createsuperuser",
+                username="Karl_Marx",
+                email="karl_marx@internationale.de",
+                interactive=False,
+            )
+
+            self.assertEqual(
+                Aidant.objects.get(username="Karl_Marx").organisation.name,
+                self.orga_1.name,
+            )
+
+    def test_organisation_id_env_var_non_interactive(self):
+        with patch.dict(
+            os.environ,
+            {
+                ORGANISATION_ID_ENV: str(self.orga_1.pk),
+                "DJANGO_SUPERUSER_PASSWORD": "Proletaires_de_tous_les_pays",
+            },
+        ):
+            call_command(
+                "createsuperuser",
+                username="Karl_Marx",
+                email="karl_marx@internationale.de",
+                interactive=False,
+            )
+
+            self.assertEqual(
+                Aidant.objects.get(username="Karl_Marx").organisation.name,
+                self.orga_1.name,
+            )
