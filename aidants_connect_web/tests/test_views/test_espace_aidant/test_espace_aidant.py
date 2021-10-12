@@ -9,6 +9,7 @@ from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
     MandatFactory,
+    OrganisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import espace_aidant, usagers
@@ -33,6 +34,88 @@ class EspaceAidantHomePageTests(TestCase):
         self.client.force_login(self.aidant)
         response = self.client.get("/espace-aidant/")
         self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
+
+
+@tag("usagers")
+class SwitchOrganisationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.url = "/espace-aidant/organisations/switch_main"
+        cls.home_url = "/espace-aidant/"
+        cls.client = Client()
+        cls.aidant = AidantFactory()
+
+    def create_aidant_with_two_organisations(self):
+        first_org = OrganisationFactory(name="First")
+        second_org = OrganisationFactory(name="Second")
+        aidant = AidantFactory(organisation=first_org)
+        aidant.organisations.set((first_org, second_org))
+        return aidant
+
+    def test_switch_url_triggers_the_right_view(self):
+        found = resolve(self.url)
+        self.assertEqual(found.func, espace_aidant.switch_main_organisation)
+
+    def test_switch_url_triggers_the_right_template(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_aidant/switch_main_organisation.html"
+        )
+
+    def test_aidant_does_not_see_the_switch_if_they_cannot_change_orgs(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get("/")
+        self.assertNotContains(response, "Changer d'organisation")
+
+    def test_aidant_can_see_the_switch_if_they_can_change_orgs(self):
+        self.aidant.organisations.set((self.aidant.organisation, OrganisationFactory()))
+        self.client.force_login(self.aidant)
+        response = self.client.get("/")
+        self.assertContains(response, "Changer d'organisation")
+
+    def test_aidant_can_switch_to_an_org_they_belong_to(self):
+        aidant = self.create_aidant_with_two_organisations()
+        orgas = aidant.organisations.all()
+        self.client.force_login(aidant)
+        response = self.client.post(self.url, {"organisation": orgas[1].id})
+        self.assertRedirects(response, self.home_url, fetch_redirect_response=False)
+        aidant.refresh_from_db()
+        self.assertEqual(aidant.organisation.id, orgas[1].id)
+
+    def test_aidant_cannot_switch_to_an_unexisting_orga(self):
+        aidant = self.create_aidant_with_two_organisations()
+        orgas = aidant.organisations.all()
+        self.client.force_login(aidant)
+        response = self.client.post(
+            self.url,
+            {
+                "organisation": 9876543,
+            },
+        )
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+        response = self.client.get(self.url)
+        self.assertContains(response, "Il est impossible de vous assigner")
+        aidant.refresh_from_db()
+        self.assertEqual(aidant.organisation.id, orgas[0].id)
+
+    def test_aidant_cannot_switch_to_an_org_they_dont_belong(self):
+        aidant = self.create_aidant_with_two_organisations()
+        orgas = aidant.organisations.all()
+        unrelated_org = OrganisationFactory(name="Totally unrelated people")
+        self.client.force_login(aidant)
+        response = self.client.post(
+            self.url,
+            {
+                "organisation": unrelated_org.id,
+            },
+        )
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+        response = self.client.get(self.url)
+        self.assertContains(response, "Il est impossible de vous assigner")
+        self.assertNotContains(response, unrelated_org.name)
+        aidant.refresh_from_db()
+        self.assertEqual(aidant.organisation.id, orgas[0].id)
 
 
 @tag("usagers")
