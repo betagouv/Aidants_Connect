@@ -5,22 +5,25 @@ from django.core.mail import send_mail
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 
-from aidants_connect_web.forms import DatapassForm
+from aidants_connect_web.forms import DatapassHabilitationForm, DatapassForm
 from aidants_connect_web.models import Organisation, OrganisationType
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-@csrf_exempt
-def receiver(request):
+def check_authorization(request):
     try:
         if request.META["HTTP_AUTHORIZATION"] != f"Bearer {settings.DATAPASS_KEY}":
             log.info("403: Bad authorization header for datapass call")
-            return HttpResponseForbidden()
+            return False
     except KeyError:
         log.info("403: No authorization header for datapass call")
-        return HttpResponseForbidden()
+        return False
+    return True
+
+
+def get_content(request):
     import json
 
     try:
@@ -29,11 +32,19 @@ def receiver(request):
     except json.decoder.JSONDecodeError:
         # if post data has querystring form
         content = request.POST
+    return content
+
+
+@csrf_exempt
+def organisation_receiver(request):
+    if not check_authorization(request):
+        return HttpResponseForbidden()
+
+    content = get_content(request)
 
     form = DatapassForm(data=content)
 
     if form.is_valid():
-
         orga_type, _ = OrganisationType.objects.get_or_create(
             name=form.cleaned_data["organization_type"]
         )
@@ -61,6 +72,25 @@ def receiver(request):
         )
 
         return HttpResponse(status=202)
+    for error in form.errors:
+        message = f"{error} is invalid in the form @ datapass"
+        log.warning(message)
+    return HttpResponseBadRequest()
+
+
+@csrf_exempt
+def habilitation_receiver(request):
+    if not check_authorization(request):
+        return HttpResponseForbidden()
+
+    content = get_content(request)
+
+    form = DatapassHabilitationForm(data=content)
+
+    if form.is_valid():
+        form.save()
+        return HttpResponse(status=202)
+
     for error in form.errors:
         message = f"{error} is invalid in the form @ datapass"
         log.warning(message)

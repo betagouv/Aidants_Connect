@@ -328,3 +328,27 @@ class PatchedErrorList(ErrorList):
             return format_html('<span class="{}">{}</span>', self.error_class, self[0])
 
         return super().as_ul()
+
+
+class DatapassHabilitationForm(forms.ModelForm):
+    data_pass_id = forms.IntegerField()
+
+    class Meta:
+        model = HabilitationRequest
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "profession",
+        ]
+
+    def clean_data_pass_id(self):
+        data_pass_id = self.cleaned_data["data_pass_id"]
+        organisations = Organisation.objects.filter(data_pass_id=data_pass_id)
+        if not organisations.exists():
+            raise ValidationError("No organisation for data_pass_id")
+        self.cleaned_data["organisation"] = organisations[0]
+
+    def save(self, commit=True):
+        self.instance.organisation = self.cleaned_data["organisation"]
+        return super().save(commit)
