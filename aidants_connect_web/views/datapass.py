@@ -36,7 +36,7 @@ def get_content(request):
 
 
 @csrf_exempt
-def receiver(request):
+def organisation_receiver(request):
     if not check_authorization(request):
         return HttpResponseForbidden()
 

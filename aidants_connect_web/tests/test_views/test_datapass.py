@@ -53,7 +53,7 @@ class OrganisationDatapass(DatapassMixin, TestCase):
 
     def test_datapass_url_triggers_the_good_view(self):
         found = resolve(self.datapass_url)
-        self.assertEqual(found.func, datapass.receiver)
+        self.assertEqual(found.func, datapass.organisation_receiver)
 
     def test_message_body_can_create_organisation(self):
         orga_type_count = OrganisationType.objects.count()
