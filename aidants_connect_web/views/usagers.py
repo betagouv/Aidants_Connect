@@ -1,25 +1,20 @@
 import logging
 from collections import OrderedDict
-from urllib.parse import unquote
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db.models.functions import Concat
-from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import timedelta, now
-from django.views.decorators.http import require_http_methods
 
-from aidants_connect_web.decorators import activity_required, user_is_aidant
+from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import (
     Mandat,
     Journal,
     Autorisation,
     Aidant,
-    Organisation,
 )
 from aidants_connect_web.views.service import humanize_demarche_names
 
@@ -405,51 +400,3 @@ def mandat_cancellation_attestation(request, mandat_id):
             "revocation_date": mandat.revocation_date.strftime("%d/%m/%Y à %Hh%M"),
         },
     )
-
-
-@login_required
-@activity_required
-@user_is_aidant
-@require_http_methods(["GET", "POST"])
-def switch_main_organisation(request: HttpRequest):
-    aidant: Aidant = request.user
-
-    if request.method == "GET":
-        return render(
-            request,
-            "aidants_connect_web/espace_aidant/switch_main_organisation.html",
-            {
-                "aidant": aidant,
-                "next_url": request.GET.get("next", ""),
-                "organisations": aidant.organisations,
-                "disable_change_organisation": True,
-            },
-        )
-
-    organisation_id = request.POST["organisation"]
-
-    try:
-        organisation = Organisation.objects.get(pk=organisation_id)
-    except Organisation.DoesNotExist:
-        django_messages.error(
-            request,
-            f"Aucune organisation portant l'identifiant {organisation_id} n'existe",
-        )
-        return redirect("switch_main_organisation")
-
-    if organisation.id not in Organisation.objects.filter(
-        aidants__pk=aidant.pk
-    ).values_list("pk", flat=True):
-        django_messages.error(
-            request,
-            f"Vous ne faites pas partie de l'organisation {organisation.name}",
-        )
-        return redirect("switch_main_organisation")
-
-    aidant.organisation = organisation
-    aidant.save()
-
-    next_url = request.POST.get("next", reverse("espace_aidant_home"))
-    next_url = unquote(next_url) if next_url else reverse("espace_aidant_home")
-
-    return HttpResponseRedirect(next_url)
