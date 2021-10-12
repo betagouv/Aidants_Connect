@@ -17,15 +17,15 @@ class EspaceResponsableHomePageTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         # Tom is responsable of 2 structures
-        cls.responsable_tom = AidantFactory(username="tom@baie.fr")
+        cls.responsable_tom = AidantFactory()
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.responsable_tom.responsable_de.add(OrganisationFactory())
         cls.responsable_tom.can_create_mandats = False
         # Tim is responsable of only one structure
-        cls.responsable_tim = AidantFactory(username="tim@oree.fr")
+        cls.responsable_tim = AidantFactory()
         cls.responsable_tim.responsable_de.add(cls.responsable_tim.organisation)
         # John is a simple aidant
-        cls.aidant_john = AidantFactory(username="john@doe.du")
+        cls.aidant_john = AidantFactory()
 
     def test_anonymous_user_cannot_access_espace_aidant_view(self):
         response = self.client.get("/espace-responsable/")
@@ -92,7 +92,7 @@ class EspaceResponsableOrganisationPage(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.responsable_tom = AidantFactory(username="georges@plop.net")
+        cls.responsable_tom = AidantFactory()
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.id_organisation = cls.responsable_tom.organisation.id
         cls.autre_organisation = OrganisationFactory()
@@ -130,18 +130,16 @@ class EspaceResponsableAidantPage(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.responsable_tom = AidantFactory(username="tom@tom.fr")
+        cls.responsable_tom = AidantFactory()
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
-        cls.aidant_tim = AidantFactory(
-            username="tim@tim.fr", organisation=cls.responsable_tom.organisation
-        )
+        cls.aidant_tim = AidantFactory(organisation=cls.responsable_tom.organisation)
         cls.id_organisation = cls.responsable_tom.organisation.id
         cls.aidant_tim_url = (
             f"/espace-responsable/organisation/{cls.id_organisation}"
             f"/aidant/{cls.aidant_tim.id}/"
         )
         cls.autre_organisation = OrganisationFactory()
-        cls.autre_aidant = AidantFactory(username="random@random.net")
+        cls.autre_aidant = AidantFactory()
 
     def test_espace_responsable_aidant_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
@@ -179,7 +177,7 @@ class EspaceResponsableAddAidant(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.responsable_tom = AidantFactory(username="tom@tom.fr")
+        cls.responsable_tom = AidantFactory()
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
 
         cls.id_organisation = cls.responsable_tom.organisation.id

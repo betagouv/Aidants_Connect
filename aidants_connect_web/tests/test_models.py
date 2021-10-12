@@ -160,7 +160,7 @@ class MandatModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.organisation_1 = OrganisationFactory()
-        cls.aidant_1 = AidantFactory(username="aidants1@organisation1.com")
+        cls.aidant_1 = AidantFactory()
 
         cls.usager_1 = UsagerFactory()
         cls.mandat_1 = Mandat.objects.create(
@@ -515,8 +515,8 @@ class MandatModelTests(TestCase):
 class AutorisationModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.aidant_marge = AidantFactory(username="Marge")
-        cls.aidant_patricia = AidantFactory(username="Patricia")
+        cls.aidant_marge = AidantFactory()
+        cls.aidant_patricia = AidantFactory()
         cls.usager_homer = UsagerFactory()
         cls.usager_ned = UsagerFactory(family_name="Flanders", sub="nedflanders")
 
@@ -680,9 +680,9 @@ class OrganisationModelTests(TestCase):
     def test_deactivate_organisation(self):
         orga_one = OrganisationFactory(name="L'Internationale")
         orga_two = OrganisationFactory()
-        aidant_marge = AidantFactory(username="Marge", organisation=orga_one)
-        aidant_lisa = AidantFactory(username="Lisa", organisation=orga_one)
-        aidant_homer = AidantFactory(username="Homer", organisation=orga_two)
+        aidant_marge = AidantFactory(organisation=orga_one)
+        aidant_lisa = AidantFactory(organisation=orga_one)
+        aidant_homer = AidantFactory(organisation=orga_two)
 
         self.assertTrue(orga_one.is_active)
         self.assertTrue(orga_two.is_active)
@@ -799,25 +799,18 @@ class AidantModelTests(TestCase):
         Aidant.objects.create(username="Marge", organisation=self.superuser_org)
         self.assertRaises(IntegrityError, Aidant.objects.create, username="Marge")
 
-    def test_aidant_fills_all_the_information(self):
-        self.assertEqual(len(Aidant.objects.all()), 0)
-        AidantFactory(username="bhameau@domain.user")
-        self.assertEqual(len(Aidant.objects.all()), 1)
-        AidantFactory(username="cgireau@domain.user")
-        self.assertEqual(len(Aidant.objects.all()), 2)
-
     def test_get_aidant_organisation(self):
         orga = OrganisationFactory(
             name="COMMUNE DE HOULBEC COCHEREL",
             siret=123,
             address="45 avenue du Général de Gaulle, 90210 Beverly Hills",
         )
-        aidant = AidantFactory(username="bhameau@domain.user", organisation=orga)
+        aidant = AidantFactory(organisation=orga)
         self.assertEqual(aidant.organisation.name, "COMMUNE DE HOULBEC COCHEREL")
 
     def test_get_active_aidants(self):
-        AidantFactory(username="Aidant actif")
-        AidantFactory(username="Aidant inactif", is_active=False)
+        AidantFactory()
+        AidantFactory(is_active=False)
         self.assertEqual(Aidant.objects.active().count(), 1)
 
 
@@ -826,17 +819,15 @@ class AidantModelMethodsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Aidants : Marge & Lisa belong to the same organisation, Patricia does not
-        cls.aidant_marge = AidantFactory(username="Marge", validated_cgu_version="0.1")
+        cls.aidant_marge = AidantFactory(validated_cgu_version="0.1")
         cls.aidant_lisa = AidantFactory(
-            username="Lisa",
             organisation=cls.aidant_marge.organisation,
             validated_cgu_version=settings.CGU_CURRENT_VERSION,
         )
-        cls.aidant_patricia = AidantFactory(username="Patricia")
+        cls.aidant_patricia = AidantFactory()
 
         # Juliette is responsible in the same structure as Marge & Lisa
         cls.respo_juliette = AidantFactory(
-            username="Juliette",
             organisation=cls.aidant_marge.organisation,
         )
         cls.respo_juliette.responsable_de.add(cls.aidant_marge.organisation)
@@ -1164,7 +1155,6 @@ class JournalModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.aidant_thierry = AidantFactory(
-            username="Thierry",
             email="thierry@thierry.com",
             first_name="Thierry",
             last_name="Martin",
@@ -1331,7 +1321,7 @@ class HabilitationRequestMethodTests(TestCase):
         self.assertEqual(db_hab_request.status, HabilitationRequest.STATUS_VALIDATED)
 
     def test_validate_if_aidant_already_exists(self):
-        aidant = AidantFactory(username="toto@titi.net", email="toto@titi.net")
+        aidant = AidantFactory()
         habilitation_request = HabilitationRequestFactory(
             status=HabilitationRequest.STATUS_PROCESSING, email=aidant.email
         )

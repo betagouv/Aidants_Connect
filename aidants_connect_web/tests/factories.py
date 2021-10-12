@@ -50,8 +50,8 @@ class OrganisationTypeFactory(factory.DjangoModelFactory):
 
 
 class AidantFactory(factory.DjangoModelFactory):
-    username = "thierry@thierry.com"
-    email = "thierry@thierry.com"
+    username = factory.Faker("email")
+    email = factory.SelfAttribute("username")
     password = factory.PostGenerationMethodCall("set_password", "motdepassedethierry")
     last_name = "Goneau"
     first_name = "Thierry"

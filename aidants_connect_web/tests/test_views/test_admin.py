@@ -137,8 +137,6 @@ class VisibilityAdminPageTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.amac_user = AidantFactory(
-            username="amac@email.com",
-            email="amac@email.com",
             is_staff=True,
             is_superuser=False,
         )
@@ -155,8 +153,6 @@ class VisibilityAdminPageTests(TestCase):
         amac_session.save()
 
         cls.atac_user = AidantFactory(
-            username="atac@email.com",
-            email="atac@email.com",
             is_staff=True,
             is_superuser=True,
         )
@@ -206,8 +202,6 @@ class JournalAdminPageTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.atac_user = AidantFactory(
-            username="atac@email.com",
-            email="atac@email.com",
             is_staff=True,
             is_superuser=True,
         )
@@ -241,8 +235,6 @@ class UsagerAdminPageTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.atac_user = AidantFactory(
-            username="atac@email.com",
-            email="atac@email.com",
             is_staff=True,
             is_superuser=True,
         )
@@ -274,8 +266,6 @@ class TOTPCardAdminPageTests(TestCase):
         cls.tested = CarteTOTPAdmin(CarteTOTP, cls.admin)
 
         cls.bizdev_user = AidantFactory(
-            username="bizdev@email.com",
-            email="bizdev@email.com",
             is_staff=True,
             is_superuser=False,
         )
@@ -323,38 +313,36 @@ class TOTPCardAdminPageTests(TestCase):
         # Not linked to any aidant or totp device
         card_ok1 = CarteTOTPFactory()
         # Linked to exactly one device and one aidant
-        card_ok2 = CarteTOTPFactory(aidant=AidantFactory(username="alicia"))
+        card_ok2 = CarteTOTPFactory(aidant=AidantFactory())
         TOTPDeviceFactory(key=card_ok2.seed, user=card_ok2.aidant)
         self.assertIn("Tout va bien", tested.totp_devices_diagnostic(card_ok1))
         self.assertIn("Tout va bien", tested.totp_devices_diagnostic(card_ok2))
 
         # Not linked to an aidant, but has a totp device
         card_ko1 = CarteTOTPFactory()
-        TOTPDeviceFactory(key=card_ko1.seed, user=AidantFactory(username="bobdylane"))
+        TOTPDeviceFactory(key=card_ko1.seed, user=AidantFactory())
         self.assertIn(
             "Cette carte devrait être associée à l’aidant",
             tested.totp_devices_diagnostic(card_ko1),
         )
 
         # Card is linked to aidant but no device exists
-        card_ko2 = CarteTOTPFactory(aidant=AidantFactory(username="claudia"))
+        card_ko2 = CarteTOTPFactory(aidant=AidantFactory())
         self.assertIn(
             "Aucun device ne correspond à cette carte",
             tested.totp_devices_diagnostic(card_ko2),
         )
 
         # Card and device linked to different aidants
-        card_ko3 = CarteTOTPFactory(aidant=AidantFactory(username="damian"))
-        device_ko3 = TOTPDeviceFactory(
-            key=card_ko3.seed, user=AidantFactory(username="eloise")
-        )
+        card_ko3 = CarteTOTPFactory(aidant=AidantFactory())
+        device_ko3 = TOTPDeviceFactory(key=card_ko3.seed, user=AidantFactory())
         self.assertIn(
             f"mais le device est assigné à {device_ko3.user}.",
             tested.totp_devices_diagnostic(card_ko3),
         )
 
         # Several devices exist
-        card_ko4 = CarteTOTPFactory(aidant=AidantFactory(username="francois"))
+        card_ko4 = CarteTOTPFactory(aidant=AidantFactory())
         for _ in range(2):
             TOTPDeviceFactory(key=card_ko4.seed, user=card_ko4.aidant)
 
@@ -378,9 +366,7 @@ class TOTPCardAdminPageTests(TestCase):
         self.assertContains(response, "Saisissez l'aidant ci-dessous.")
 
     def test_dissociate_aidant_get(self):
-        aidant = AidantFactory(
-            username="john@doe.fr", last_name="Delacour", first_name="Joël"
-        )
+        aidant = AidantFactory(last_name="Delacour", first_name="Joël")
         card = CarteTOTPFactory(aidant=aidant)
         card_change_url = reverse(
             "otpadmin:aidants_connect_web_carte_totp_dissociate",
@@ -400,7 +386,7 @@ class TOTPCardAdminPageTests(TestCase):
             "otpadmin:aidants_connect_web_carte_totp_associate",
             args=(card.id,),
         )
-        aidant = AidantFactory(username="john@doe.fr")
+        aidant = AidantFactory()
         self.bizdev_client.post(card_associate_url, {"aidant": aidant.id})
 
         card_db = CarteTOTP.objects.get(id=card.id)
@@ -410,7 +396,7 @@ class TOTPCardAdminPageTests(TestCase):
         self.assertTrue(totp_device.confirmed)
 
     def test_associate_aidant_whith_already_another_card(self):
-        aidant = AidantFactory(username="john@doe.fr")
+        aidant = AidantFactory()
         CarteTOTPFactory(aidant=aidant)
         card = CarteTOTPFactory()
         card_associate_url = reverse(
@@ -427,7 +413,7 @@ class TOTPCardAdminPageTests(TestCase):
         self.assertIsNone(card_db.aidant)
 
     def test_associate_aidant_whith_already_totp_device(self):
-        aidant = AidantFactory(username="john@doe.fr")
+        aidant = AidantFactory()
         card = CarteTOTPFactory()
         TOTPDeviceFactory(key=card.seed, user=aidant)
         card_associate_url = reverse(
@@ -440,7 +426,7 @@ class TOTPCardAdminPageTests(TestCase):
         self.assertEqual(card_db.aidant, aidant)
 
     def test_reassociate_aidant_whithout_totp_device(self):
-        aidant = AidantFactory(username="john@doe.fr")
+        aidant = AidantFactory()
         card = CarteTOTPFactory(aidant=aidant)
         card_associate_url = reverse(
             "otpadmin:aidants_connect_web_carte_totp_associate",
@@ -454,7 +440,7 @@ class TOTPCardAdminPageTests(TestCase):
         self.assertEqual(totp_device.key, card.seed)
 
     def test_dissociate_aidant_whith_totp_device(self):
-        aidant = AidantFactory(username="john@doe.fr")
+        aidant = AidantFactory()
         totp_device = TOTPDeviceFactory(user=aidant)
         card = CarteTOTPFactory(aidant=aidant, seed=totp_device.key)
         card_dissociate_url = reverse(
@@ -468,8 +454,8 @@ class TOTPCardAdminPageTests(TestCase):
         self.assertEqual(0, TOTPDevice.objects.filter(user=aidant).count())
 
     def test_do_not_destroy_unrelated_totp_device(self):
-        aidant_tim = AidantFactory(username="tim@doe.fr")
-        aidant_tom = AidantFactory(username="tom@doe.fr")
+        aidant_tim = AidantFactory()
+        aidant_tom = AidantFactory()
         totp_device = TOTPDeviceFactory(user=aidant_tim)
         card = CarteTOTPFactory(aidant=aidant_tom, seed=totp_device.key)
         card_dissociate_url = reverse(
@@ -484,7 +470,7 @@ class TOTPCardAdminPageTests(TestCase):
         self.assertEqual(1, TOTPDevice.objects.filter(user=aidant_tim).count())
 
     def test_dissociate_aidant_whithout_totp_device(self):
-        aidant = AidantFactory(username="john@doe.fr")
+        aidant = AidantFactory()
         card = CarteTOTPFactory(aidant=aidant)
         card_dissociate_url = reverse(
             "otpadmin:aidants_connect_web_carte_totp_dissociate",

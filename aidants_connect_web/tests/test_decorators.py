@@ -40,7 +40,6 @@ class AidantRequiredTests(TestCase):
     def setUpTestData(cls):
         cls.aidant_thierry = AidantFactory()
         cls.responsable_georges = AidantFactory(
-            username="georges@georges.com",
             organisation=cls.aidant_thierry.organisation,
             can_create_mandats=False,
         )
@@ -63,7 +62,6 @@ class RespoStructureRequiredTests(TestCase):
     def setUpTestData(cls):
         cls.aidant_thierry = AidantFactory()
         cls.responsable_georges = AidantFactory(
-            username="georges@georges.com",
             organisation=cls.aidant_thierry.organisation,
             can_create_mandats=False,
         )

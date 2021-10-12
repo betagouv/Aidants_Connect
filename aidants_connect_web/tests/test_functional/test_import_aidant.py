@@ -26,7 +26,11 @@ class ImportAidantTests(FunctionalTestCase):
 
     def setUp(self) -> None:
         self.organisation = OrganisationFactory(id=4444)
-        self.aidant = AidantFactory(is_superuser=True, is_staff=True)
+        self.aidant = AidantFactory(
+            username="thierry@thierry.com",
+            is_superuser=True,
+            is_staff=True,
+        )
         self.aidant.set_password("laisser-passer-a38")
         self.aidant.save()
         device = self.aidant.staticdevice_set.create()

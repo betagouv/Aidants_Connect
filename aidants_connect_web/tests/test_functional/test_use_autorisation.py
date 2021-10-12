@@ -30,16 +30,10 @@ FC_URL_PARAMETERS = (
 @tag("functional", "id_provider")
 class UseAutorisationTests(FunctionalTestCase):
     def setUp(self):
-        self.aidant_1 = AidantFactory()
+        self.aidant_1 = AidantFactory(email="thierry@thierry.com")
         device = self.aidant_1.staticdevice_set.create(id=self.aidant_1.id)
         device.token_set.create(token="123456")
-        self.aidant_2 = AidantFactory(
-            username="jfremont@domain.user",
-            email="jfremont@domain.user",
-            password="motdepassedejacqueline",
-            first_name="Jacqueline",
-            last_name="Fremont",
-        )
+        self.aidant_2 = AidantFactory()
         self.usager_josephine = UsagerFactory(
             given_name="Joséphine", family_name="ST-PIERRE"
         )

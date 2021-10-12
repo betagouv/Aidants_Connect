@@ -33,9 +33,7 @@ class AuthorizeTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.aidant_thierry = AidantFactory()
-        cls.aidant_jacques = AidantFactory(
-            username="jacques@domain.user", email="jacques@domain.user"
-        )
+        cls.aidant_jacques = AidantFactory()
         cls.usager = UsagerFactory(given_name="Joséphine", sub="123")
 
         mandat_1 = MandatFactory(
@@ -252,7 +250,6 @@ class FISelectDemarcheTests(TestCase):
         cls.client = Client()
         cls.aidant_thierry = AidantFactory()
         cls.aidant_yasmina = AidantFactory(
-            username="yasmina@yasmina.com",
             organisation=cls.aidant_thierry.organisation,
         )
         cls.usager = UsagerFactory(given_name="Joséphine")
