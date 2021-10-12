@@ -182,6 +182,11 @@ urlpatterns = [
     ),
     # # Datapass
     path("datapass_receiver/", datapass.receiver, name="datapass_receiver"),
+    path(
+        "datapass_habilitation/",
+        datapass.habilitation_receiver,
+        name="datapass_habilitation",
+    ),
 ]
 
 urlpatterns.extend(magicauth_urls)

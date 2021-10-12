@@ -1,13 +1,44 @@
 from django.conf import settings
 from django.core import mail
 from django.test import tag, TestCase
-from aidants_connect_web.models import Organisation, OrganisationType
+from aidants_connect_web.models import (
+    HabilitationRequest,
+    Organisation,
+    OrganisationType,
+)
 from aidants_connect_web.views import datapass
+from aidants_connect_web.tests.factories import OrganisationFactory
 from django.urls import resolve
 
 
+class DatapassMixin:
+    def datapass_request(self, data):
+        return self.client.post(
+            self.datapass_url,
+            data=data,
+            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
+        )
+
+    def test_bad_authorization_header_triggers_403(self):
+        response = self.client.get(
+            self.datapass_url, **{"HTTP_AUTHORIZATION": "bad_token"}
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_no_authorization_header_triggers_403(self):
+        response = self.client.post(self.datapass_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_empty_data_triggers_400(self):
+        response = self.datapass_request(data={})
+        self.assertEqual(response.status_code, 400)
+
+
 @tag("datapass")
-class Datapass(TestCase):
+class OrganisationDatapass(DatapassMixin, TestCase):
+
+    datapass_url = "/datapass_receiver/"
+
     @classmethod
     def setUpTestData(cls):
         cls.good_data_from_datapass = {
@@ -20,30 +51,9 @@ class Datapass(TestCase):
         }
         cls.datapass_key = settings.DATAPASS_KEY
 
-    def datapass_request(self, data):
-        return self.client.post(
-            "/datapass_receiver/",
-            data=data,
-            **{"HTTP_AUTHORIZATION": f"Bearer {self.datapass_key}"},
-        )
-
-    def test_datapass_receiver_url_triggers_the_receiver_view(self):
-        found = resolve("/datapass_receiver/")
+    def test_datapass_url_triggers_the_good_view(self):
+        found = resolve(self.datapass_url)
         self.assertEqual(found.func, datapass.receiver)
-
-    def test_bad_authorization_header_triggers_403(self):
-        response = self.client.get(
-            "/datapass_receiver/", **{"HTTP_AUTHORIZATION": "bad_token"}
-        )
-        self.assertEqual(response.status_code, 403)
-
-    def test_no_authorization_header_triggers_403(self):
-        response = self.client.post("/datapass_receiver/")
-        self.assertEqual(response.status_code, 403)
-
-    def test_empty_data_triggers_400(self):
-        response = self.datapass_request(data={})
-        self.assertEqual(response.status_code, 400)
 
     def test_message_body_can_create_organisation(self):
         orga_type_count = OrganisationType.objects.count()
@@ -86,3 +96,29 @@ class Datapass(TestCase):
         self.assertIn("La maison de l'aide", email.body)
         self.assertIn(settings.DATAPASS_FROM_EMAIL, email.from_email)
         self.assertIn(settings.DATAPASS_TO_EMAIL, email.to)
+
+
+@tag("datapass")
+class HabilitationDatapass(DatapassMixin, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory(data_pass_id=42)
+        cls.good_data_from_datapass = {
+            "data_pass_id": 42,
+            "first_name": "Mario",
+            "last_name": "Brosse",
+            "email": "mario.brossse@world.fr",
+            "profession": "plombier",
+        }
+        cls.datapass_key = settings.DATAPASS_KEY
+        cls.datapass_url = "/datapass_habilitation/"
+
+    def test_datapass_url_triggers_the_good_view(self):
+        found = resolve(self.datapass_url)
+        self.assertEqual(found.func, datapass.habilitation_receiver)
+
+    def test_message_body_can_create_habilitation_request(self):
+        self.assertEqual(HabilitationRequest.objects.count(), 0)
+        response = self.datapass_request(data=self.good_data_from_datapass)
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(HabilitationRequest.objects.count(), 1)
