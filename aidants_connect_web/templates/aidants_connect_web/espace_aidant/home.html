@@ -5,61 +5,74 @@
 {% block title %}Aidants Connect - Espace Aidant{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-    <h1 class="section__title">
-      Bienvenue sur
-      {% if aidant.can_create_mandats %}votre Espace Aidant{% else %}Aidants Connect{% endif %},
-      {{ aidant.first_name }} !</h1>
+  <section class="section">
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      <h1 class="section__title">
+        Bienvenue sur
+        {% if aidant.can_create_mandats %}votre Espace Aidant{% else %}Aidants Connect{% endif %},
+        {{ aidant.first_name }} !</h1>
       {% include "aidants_connect_web/espace_aidant/notifications.html" with user=aidant %}
-    <div class="tiles aidant-home-services">
-      <h2>Vos services</h2>
-      <div class="grid">
-        {% if aidant.is_responsable_structure %}
-          <a id="view_organisation" class="tile text-center background-color-grey" href="{% url 'espace_responsable_home' %}">
-            <span aria-hidden="true">🏢<br /></span>Mon espace responsable
-          </a>
-          {% if not aidant.has_a_totp_device %}
-            <a id="view_organisation" class="tile text-center background-color-grey" href="{% url "espace_responsable_associate_totp" organisation_id=aidant.organisation.id aidant_id=aidant.id %}">
-              <span aria-hidden="true">💳<br /></span>Activer ma carte
+      <div class="tiles aidant-home-services">
+        <h2>Vos services</h2>
+        <div class="grid">
+          {% if aidant.is_responsable_structure %}
+            <a id="view_organisation" class="tile text-center background-color-grey"
+               href="{% url 'espace_responsable_home' %}">
+              <span aria-hidden="true">🏢<br/></span>Mon espace responsable
+            </a>
+            {% if not aidant.has_a_totp_device %}
+              <a id="view_organisation" class="tile text-center background-color-grey"
+                 href="{% url "espace_responsable_associate_totp" organisation_id=aidant.organisation.id aidant_id=aidant.id %}">
+                <span aria-hidden="true">💳<br/></span>Activer ma carte
+              </a>
+            {% endif %}
+          {% else %}
+            <a id="view_organisation" class="tile text-center background-color-grey"
+               href="{% url 'espace_aidant_organisation' %}">
+              <span aria-hidden="true">🏢<br/></span>Mon organisation
             </a>
           {% endif %}
-        {% else %}
-          <a id="view_organisation" class="tile text-center background-color-grey" href="{% url 'espace_aidant_organisation' %}">
-            <span aria-hidden="true">🏢<br /></span>Mon organisation
+          {% if aidant.can_create_mandats %}
+            <a id="view_mandats" class="tile text-center background-color-grey" href="{% url 'usagers' %}">
+              <span aria-hidden="true">📂<br/></span>Mes mandats
+            </a>
+            <a id="add_usager" class="tile text-center background-color-grey" href="{% url 'new_mandat' %}">
+              <span aria-hidden="true">📝<br/></span>Créer un mandat
+            </a>
+          {% endif %}
+          <a id="ask_for_help" class="tile text-center background-color-grey"
+             href="mailto:contact@aidantsconnect.beta.gouv.fr?subject=sos&body=Bonjour, je suis (nom,prénom), de la structure (nom de structure), j’aimerais que vous me rappeliez afin de résoudre mon problème (description du problème), voici mon numéro (numéro de téléphone)">
+            <span aria-hidden="true">🆘<br/></span>J’ai besoin d’aide
           </a>
-        {% endif %}
-        {% if aidant.can_create_mandats %}
-          <a id="view_mandats" class="tile text-center background-color-grey" href="{% url 'usagers' %}" >
-            <span aria-hidden="true">📂<br /></span>Mes mandats
+          <a id="help_tutorial" class="tile text-center background-color-grey"
+             href="https://www.etsijaccompagnais.fr/tutoriel-aidants-connect">
+            <span aria-hidden="true">💡<br/></span>Tutoriel Aidants Connect
           </a>
-          <a id="add_usager" class="tile text-center background-color-grey" href="{% url 'new_mandat' %}">
-            <span aria-hidden="true">📝<br /></span>Créer un mandat
-          </a>
-        {% endif %}
-        <a id="ask_for_help" class="tile text-center background-color-grey" href="mailto:contact@aidantsconnect.beta.gouv.fr?subject=sos&body=Bonjour, je suis (nom,prénom), de la structure (nom de structure), j’aimerais que vous me rappeliez afin de résoudre mon problème (description du problème), voici mon numéro (numéro de téléphone)">
-          <span aria-hidden="true">🆘<br /></span>J’ai besoin d’aide
-        </a>
-        <a id="help_tutorial" class="tile text-center background-color-grey" href="https://www.etsijaccompagnais.fr/tutoriel-aidants-connect">
-            <span aria-hidden="true">💡<br /></span>Tutoriel Aidants Connect
-          </a>
+          {% if request.user.organisations.count > 1 and not disable_change_organisation %}
+            <a
+                href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
+                class="tile text-center background-color-grey"
+            >
+              <span aria-hidden="true">🏢 &rarr;️ 🏢<br/></span>Changer d'organisation
+            </a>
+          {% endif %}
+        </div>
       </div>
     </div>
-  </div>
-</section>
-<section class="section section-grey">
-  <div class="container">
-    <h2>Vos ressources</h2>
-    {% include 'public_website/resource_list.html' %}
-  </div>
-</section>
+  </section>
+  <section class="section section-grey">
+    <div class="container">
+      <h2>Vos ressources</h2>
+      {% include 'public_website/resource_list.html' %}
+    </div>
+  </section>
 {% endblock content %}
