@@ -92,16 +92,14 @@ body {
 }
 
 .navbar__organisation {
-  display: flex;
-  flex-direction: column;
+  width: 15em;
+  left: 0;
+  padding: .5em;
+  border-radius: 0 .5em .5em .5em;
 }
-
-.navbar__organisation .organisation-change-link {
-  text-align: center;
-}
-
-.navbar__organisation .organisation-name, .navbar__organisation .organisation-address {
-  margin: 0 auto;
+.navbar__organisation:hover {
+  background: #ebeff3;
+  background: var(--lighter-grey);
 }
 
 /* Container & main */
