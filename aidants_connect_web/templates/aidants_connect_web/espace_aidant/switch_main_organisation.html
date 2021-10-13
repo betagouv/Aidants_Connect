@@ -21,6 +21,7 @@
       <form method="post">
         {% csrf_token %}
         <fieldset class="grid">
+          <legend class="sr-only">Choisir une nouvelle organisation active</legend>
           {% for organisation in aidant.organisations.all %}
             <div class="tile">
               <input
