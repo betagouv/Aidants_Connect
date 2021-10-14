@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from aidants_connect_web.forms import ValidateCGUForm
-from aidants_connect_web.models import Aidant, Organisation
+from aidants_connect_web.models import Aidant, Journal, Organisation
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 
 
@@ -92,8 +92,8 @@ def switch_main_organisation(request: HttpRequest):
     organisation_id = request.POST["organisation"]
 
     try:
-        organisation = Organisation.objects.get(pk=organisation_id)
-        if organisation not in aidant.organisations.all():
+        new_organisation = Organisation.objects.get(pk=organisation_id)
+        if new_organisation not in aidant.organisations.all():
             raise Organisation.DoesNotExist()
     except Organisation.DoesNotExist:
         django_messages.error(
@@ -103,8 +103,10 @@ def switch_main_organisation(request: HttpRequest):
         )
         return redirect("espace_aidant_switch_main_organisation")
 
-    aidant.organisation = organisation
+    previous_org = aidant.organisation
+    aidant.organisation = new_organisation
     aidant.save()
+    Journal.log_switch_organisation(aidant, previous_org)
 
     default_next = reverse("espace_aidant_home")
     next_url = request.POST.get("next", default_next)

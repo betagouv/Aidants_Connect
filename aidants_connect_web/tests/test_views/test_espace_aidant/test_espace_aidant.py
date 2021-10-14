@@ -5,6 +5,8 @@ from django.urls import resolve, reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from aidants_connect_web.constants import JournalActionKeywords
+from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
@@ -78,10 +80,22 @@ class SwitchOrganisationTests(TestCase):
         aidant = self.create_aidant_with_two_organisations()
         orgas = aidant.organisations.all()
         self.client.force_login(aidant)
+        self.assertEqual(
+            Journal.objects.filter(
+                action=JournalActionKeywords.SWITCH_ORGANISATION
+            ).count(),
+            0,
+        )
         response = self.client.post(self.url, {"organisation": orgas[1].id})
         self.assertRedirects(response, self.home_url, fetch_redirect_response=False)
         aidant.refresh_from_db()
         self.assertEqual(aidant.organisation.id, orgas[1].id)
+        self.assertEqual(
+            Journal.objects.filter(
+                action=JournalActionKeywords.SWITCH_ORGANISATION
+            ).count(),
+            1,
+        )
 
     def test_aidant_cannot_switch_to_an_unexisting_orga(self):
         aidant = self.create_aidant_with_two_organisations()

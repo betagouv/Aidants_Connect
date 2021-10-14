@@ -1176,6 +1176,19 @@ class Journal(models.Model):
             creation_date__range=(start, end),
         )
 
+    @classmethod
+    def log_switch_organisation(cls, aidant: Aidant, previous: Organisation):
+        more_info = (
+            f"previous organisation : {previous.name} (#{previous.id}) -"
+            f"new organisation : {aidant.organisation.name} (#{aidant.organisation.id})"
+        )
+        return cls.objects.create(
+            aidant=aidant,
+            organisation=aidant.organisation,
+            action=JournalActionKeywords.SWITCH_ORGANISATION,
+            additional_information=more_info,
+        )
+
 
 class CarteTOTP(models.Model):
     serial_number = models.CharField(max_length=100, unique=True)
