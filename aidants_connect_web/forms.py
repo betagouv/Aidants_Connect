@@ -280,6 +280,9 @@ class ChangeAidantOrganisationsForm(forms.Form):
             ).order_by("name"),
             widget=forms.CheckboxSelectMultiple,
         )
+        self.fields["organisations"].error_messages.update(
+            {"required": "Vous devez rattacher l’aidant à au moins une organisation."}
+        )
         self.initial["organisations"] = self.aidant.organisations.all()
 
 

@@ -21,23 +21,20 @@
       <h1>Fiche aidant : {{ aidant.get_full_name }}, {{ aidant.profession }}</h1>
       <div class="tiles">
         <div class="grid">
-          <div class="tile background-color-grey">
+          <div class="tile background-color-grey text-center">
             <h2>Carte Aidants Connect</h2>
-            {% with aidant.carte_totp.serial_number as sn %}
-              {% if sn %}
-                <p><span aria-hidden="true">💳 </span>{{ sn }}</p>
-              {% else %}
-                <p>
-                  Aucune carte associée à {{ aidant.get_full_name }}.
-                </p>
-              {% endif %}
-            {% endwith %}
+            {% with aidant.carte_totp.serial_number as sn %}{% if sn %}
+              <p><span aria-hidden="true">💳 </span>{{ sn }}</p>
+            {% else %}
+              <p>
+                Aucune carte associée à {{ aidant.get_full_name }}.
+              </p>{% endif %}{% endwith %}
           </div>
-          <div class="tile background-color-grey">
+          <div class="tile background-color-grey text-center">
             <h2>Profession</h2>
             <p>{{ aidant.profession }}</p>
           </div>
-          <div class="tile background-color-grey">
+          <div class="tile background-color-grey text-center">
             <h2>Adresse e-mail</h2>
             <p>{{ aidant.email }}</p>
           </div>
@@ -87,13 +84,17 @@
                 <legend>
                   Cochez la ou les organisations auxquelles rattacher {{ aidant }}.
                   Cela lui permettra de créer des mandats en leur nom.
+                  {% if form.errors.organisations %}
+                    {{ form.errors.organisations }}
+                  {% endif %}
                 </legend>
                 <ul class="grid checkbox-list small-checkboxes">
                   {% for value, label in orga_form.organisations.field.choices %}
                     <li class="tile">
                       <input
                           type="checkbox"
-                          class="osr-only"
+                          class="sr-only"
+                          name="organisations"
                           value="{{ value }}"
                           id="org_{{ value }}"
                           {% if value in orga_form.organisations.value or value in orga_form.organisations.initial %}

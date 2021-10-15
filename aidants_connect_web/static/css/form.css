@@ -2,7 +2,7 @@ form {
   max-width: 40em;
 }
 
-.tile {
+form .tile {
   padding: 0;
   position: relative;
 }

@@ -175,12 +175,39 @@ def change_aidant_organisations(request, aidant_id):
     if not responsable.can_see_aidant(aidant):
         raise Http404
 
-    form = ChangeAidantOrganisationsForm(responsable, aidant)
+    form = ChangeAidantOrganisationsForm(responsable, aidant, data=request.POST)
     if not form.is_valid():
+        errors = str(form.errors["organisations"])
+        django_messages.error(request, errors)
         return redirect(
             "espace_responsable_aidant",
             aidant_id=aidant.id,
         )
+
+    responsable_organisations = responsable.responsable_de.all()
+    aidant_organisations = aidant.organisations.all()
+    posted_organisations = form.cleaned_data["organisations"]
+
+    unrelated_organisations = aidant_organisations.difference(responsable_organisations)
+    aidant.organisations.set(unrelated_organisations.union(posted_organisations))
+    aidant.save()
+
+    if len(posted_organisations) > 1:
+        message = (
+            f"Tout s’est bien passé, {aidant} a été rattaché(e) aux organisations "
+            f"{', '.join(org.name for org in posted_organisations)}."
+        )
+    else:
+        message = (
+            f"Tout s’est bien passé, {aidant} a été rattaché(e) à l'organisation "
+            f"{posted_organisations[0].name}."
+        )
+    django_messages.success(request, message)
+
+    return redirect(
+        "espace_responsable_aidant",
+        aidant_id=aidant.id,
+    )
 
 
 @require_http_methods(["GET", "POST"])
