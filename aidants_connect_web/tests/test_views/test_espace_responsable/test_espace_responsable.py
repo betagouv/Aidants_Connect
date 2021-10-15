@@ -148,11 +148,7 @@ class EspaceResponsableAidantPage(TestCase):
         cls.responsable_tom = AidantFactory()
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(organisation=cls.responsable_tom.organisation)
-        cls.id_organisation = cls.responsable_tom.organisation.id
-        cls.aidant_tim_url = (
-            f"/espace-responsable/organisation/{cls.id_organisation}"
-            f"/aidant/{cls.aidant_tim.id}/"
-        )
+        cls.aidant_tim_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
         cls.autre_organisation = OrganisationFactory()
         cls.autre_aidant = AidantFactory()
 
@@ -176,13 +172,7 @@ class EspaceResponsableAidantPage(TestCase):
     def test_responsable_cannot_see_an_aidant_they_are_not_responsible_for(self):
         self.client.force_login(self.responsable_tom)
         response = self.client.get(
-            f"/espace-responsable/organisation/{self.autre_organisation.id}"
-            f"/aidant/{self.aidant_tim.id}/"
-        )
-        self.assertEqual(response.status_code, 404)
-        response = self.client.get(
-            f"/espace-responsable/organisation/{self.id_organisation}"
-            f"/aidant/{self.autre_aidant.id}/"
+            f"/espace-responsable/aidant/{self.autre_aidant.id}/"
         )
         self.assertEqual(response.status_code, 404)
 
@@ -196,9 +186,7 @@ class EspaceResponsableAddAidant(TestCase):
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
 
         cls.id_organisation = cls.responsable_tom.organisation.id
-        cls.add_aidant_url = (
-            f"/espace-responsable/organisation/{cls.id_organisation}" "/aidant/ajouter/"
-        )
+        cls.add_aidant_url = "/espace-responsable/aidant/ajouter/"
         cls.autre_organisation = OrganisationFactory()
 
     def test_add_aidant_url_triggers_the_right_view(self):

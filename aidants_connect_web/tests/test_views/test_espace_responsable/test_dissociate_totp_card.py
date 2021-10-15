@@ -27,13 +27,9 @@ class DissociateCarteTOTPTests(TestCase):
             last_name="Onier",
         )
         cls.dissociation_url = (
-            f"/espace-responsable/organisation/{cls.org_id}/"
-            f"aidant/{cls.aidant_tim.id}/supprimer-carte/"
+            f"/espace-responsable/aidant/{cls.aidant_tim.id}/supprimer-carte/"
         )
-        cls.aidant_url = (
-            f"/espace-responsable/organisation/{cls.org_id}/"
-            f"aidant/{cls.aidant_tim.id}/"
-        )
+        cls.aidant_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
 
     def create_carte_for_tim(self):
         self.carte = CarteTOTPFactory(

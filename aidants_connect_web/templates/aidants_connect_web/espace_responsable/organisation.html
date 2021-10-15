@@ -27,7 +27,7 @@
     <div class="container">
       <h2>Aidants</h2>
       <p class="text-right">
-        <a href="{% url "espace_responsable_aidant_new" organisation_id=organisation.id %}" class="button">
+        <a href="{% url "espace_responsable_aidant_new" %}" class="button">
           <span aria-hidden="true">👩</span>
           Ajouter un aidant
         </a>
@@ -45,7 +45,7 @@
           {% for aidant in aidants %}
             <tr {% if not aidant.is_active %}class="inactive"{% endif %}>
               <th scope="row">
-                <a href="{% url "espace_responsable_aidant" organisation_id=organisation.id aidant_id=aidant.id %}">
+                <a href="{% url "espace_responsable_aidant" aidant_id=aidant.id %}">
                   {{ aidant.get_full_name }}
                   {% if not aidant.is_active %}
                     <br>(Compte désactivé)
@@ -62,14 +62,14 @@
 
                         <span aria-hidden="true">⚠️ </span>Le fonctionnement de cette carte n'a pas été vérifié.<br>
                         Vous devez
-                        <a href="{% url "espace_responsable_validate_totp" organisation_id=organisation.id aidant_id=aidant.id %}">
+                        <a href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}">
                           valider la carte</a>
                         pour permettre à {{ aidant.get_full_name }} de se connecter à Aidants Connect.
                       </div>
 
                     {% endif %}
                   {% else %}
-                    <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}"
+                    <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
                        class="button">Lier une carte</a>
                   {% endif %}
                 {% endwith %}

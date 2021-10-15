@@ -24,9 +24,7 @@ class HabilitationRequestsTests(TestCase):
         cls.responsable_tom.responsable_de.add(cls.org_b)
         cls.responsable_tom.can_create_mandats = False
         # URL
-        cls.add_aidant_url = (
-            f"/espace-responsable/organisation/{cls.org_a.id}" "/aidant/ajouter/"
-        )
+        cls.add_aidant_url = "/espace-responsable/aidant/ajouter/"
         cls.organisation_url = f"/espace-responsable/organisation/{cls.org_a.id}/"
 
     def test_add_aidant_triggers_the_right_view(self):

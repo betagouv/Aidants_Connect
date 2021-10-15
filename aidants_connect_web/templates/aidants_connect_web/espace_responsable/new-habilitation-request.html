@@ -18,9 +18,10 @@
       {% endif %}
 
       <h1>Ajouter un aidant à une de vos organisations</h1>
-      <p>Pour ajouter un aidant à votre organisation, vous devez formuler une demande d'habilitation à l'aide du
-        formulaire
-        ci-dessous. Tous les champs sont obligatoires.</p>
+      <p>
+        Pour ajouter un aidant, vous devez formuler une demande d'habilitation à l'aide du
+        formulaire ci-dessous. Tous les champs sont obligatoires.
+      </p>
       <form method="post">
         {% csrf_token %}
         {% with form.non_field_errors as errors %}

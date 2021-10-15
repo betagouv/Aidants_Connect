@@ -2,7 +2,7 @@
   <div class="notification warning" role="alert">
     Bienvenue&nbsp;! Avant toute chose, nous vous invitons à
     <strong><a
-        href="{% url "espace_responsable_associate_totp" organisation_id=user.organisation.id aidant_id=user.id %}">
+        href="{% url "espace_responsable_associate_totp" aidant_id=user.id %}">
       activer votre carte Aidants Connect</a></strong> afin de pouvoir vous connecter à nouveau à l’avenir.
   </div>
 {% elif user.must_validate_cgu %}

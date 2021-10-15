@@ -284,7 +284,7 @@ class ChangeAidantOrganisationsForm(forms.Form):
 
 
 class HabilitationRequestCreationForm(forms.ModelForm):
-    def __init__(self, responsable, organisation, *args, **kwargs):
+    def __init__(self, responsable, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.responsable = responsable
         self.fields["organisation"] = forms.ModelChoiceField(
@@ -293,7 +293,6 @@ class HabilitationRequestCreationForm(forms.ModelForm):
             ).order_by("name"),
             empty_label="Choisir...",
         )
-        self.initial["organisation"] = organisation
 
     class Meta:
         model = HabilitationRequest

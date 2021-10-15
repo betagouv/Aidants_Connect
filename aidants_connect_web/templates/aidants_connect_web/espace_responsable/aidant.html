@@ -49,7 +49,7 @@
           <details class="background-color-grey">
             <summary>Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte</summary>
             <form method="post"
-                  action="{% url "espace_responsable_aidant_remove_card" organisation_id=organisation.id aidant_id=aidant.id %}">
+                  action="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}">
               {% csrf_token %}
               <p>
                 Pour supprimer l'association entre la carte {{ aidant.carte_totp.serial_number }}
@@ -71,7 +71,7 @@
           </details>
         {% else %}
           <p>
-            <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}"
+            <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
                class="button large">
               <span aria-hidden="true">💳 </span>
               Lier une carte Aidants Connect
