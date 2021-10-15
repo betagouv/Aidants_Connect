@@ -22,6 +22,7 @@ class JournalActionKeywords:
     IMPORT_TOTP_CARDS = "import_totp_cards"
     INIT_RENEW_MANDAT = "init_renew_mandat"
     TRANSFER_MANDAT = "transfer_mandat"
+    SWITCH_ORGANISATION = "switch_organisation"
 
 
 JOURNAL_ACTIONS = (
@@ -53,6 +54,7 @@ JOURNAL_ACTIONS = (
         JournalActionKeywords.TRANSFER_MANDAT,
         "Transférer un mandat à une autre organisation",
     ),
+    (JournalActionKeywords.SWITCH_ORGANISATION, "Changement d'organisation"),
 )
 
 

@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.timezone import timedelta, now
 
 from aidants_connect_web.decorators import activity_required
-from aidants_connect_web.models import Mandat, Journal, Autorisation, Aidant
+from aidants_connect_web.models import Aidant, Autorisation, Journal, Mandat
 from aidants_connect_web.views.service import humanize_demarche_names
 
 

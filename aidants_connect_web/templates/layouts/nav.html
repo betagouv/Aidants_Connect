@@ -7,21 +7,34 @@
 <header class="navbar">
   <div class="navbar__container">
     <a class="navbar__home" href="{% url 'home_page' %}">
-      <img class="navbar__gouvfr" src="{% static 'images/Marianne_logo_1120.png' %}" alt="" />
-      <img class="navbar__logo" src="{% static 'images/aidants-connect_logo.png' %}"  alt="Aidants Connect" />
+      <img class="navbar__gouvfr" src="{% static 'images/Marianne_logo_1120.png' %}" alt=""/>
+      <img class="navbar__logo" src="{% static 'images/aidants-connect_logo.png' %}" alt="Aidants Connect"/>
     </a>
     <nav role="navigation" aria-label="Menu principal">
       <ul class="nav__links" id="top_menu">
         {% with view_name=request.resolver_match.view_name %}
           {% if request.user.is_authenticated %}
-            {%  if request.user.can_create_mandats %}
-            <li class="nav__item">
-              <a {% if "espace_aidant" in view_name or "usager" in view_name or "mandat" in view_name %}class="font-weight-bold"{% endif %} href="{% url 'espace_aidant_home' %}">Mon Espace Aidant</a>
-            </li>
+            {% if request.user.organisations.count > 1 and not disable_change_organisation %}
+              <li class="nav__item">
+                <a
+                href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
+                class="dropdown"
+                aria-label="Changer d'organisation (actuellement {{ request.user.organisation.name }})"
+            >{{ request.user.organisation.name }} ▾
+                <div class="dropdown-content navbar__organisation">Changer d'organisation</div>
+                </a>
+              </li>
+            {% endif %}
+            {% if request.user.can_create_mandats %}
+              <li class="nav__item">
+                <a {% if "espace_aidant" in view_name or "usager" in view_name or "mandat" in view_name %}class="font-weight-bold"{% endif %}
+                   href="{% url 'espace_aidant_home' %}">Mon Espace Aidant</a>
+              </li>
             {% endif %}
             {% if request.user.is_responsable_structure %}
               <li class="nav__item">
-                <a href="{% url 'espace_responsable_home' %}" {% if "espace_responsable" in view_name %}class="font-weight-bold"{% endif %}>
+                <a href="{% url 'espace_responsable_home' %}"
+                   {% if "espace_responsable" in view_name %}class="font-weight-bold"{% endif %}>
                   Mon espace Responsable
                 </a>
               </li>
@@ -37,7 +50,8 @@
               <a {% if view_name == 'home_page' %}class="font-weight-bold"{% endif %} href="{% url 'home_page' %}">Accueil</a>
             </li>
             <li class="nav__item">
-              <a {% if view_name == 'habilitation' %}class="font-weight-bold"{% endif %} href="{% url 'habilitation' %}">Habilitation</a>
+              <a {% if view_name == 'habilitation' %}class="font-weight-bold"{% endif %}
+                 href="{% url 'habilitation' %}">Habilitation</a>
             </li>
             <li class="nav__item">
               <a {% if view_name == 'ressources' %}class="font-weight-bold"{% endif %} href="{% url 'ressources' %}">Ressources</a>

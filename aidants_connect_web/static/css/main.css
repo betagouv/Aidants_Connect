@@ -91,6 +91,17 @@ body {
   margin: 1.5em 0 1.5em 0;
 }
 
+.navbar__organisation {
+  width: 15em;
+  left: 0;
+  padding: .5em;
+  border-radius: 0 .5em .5em .5em;
+}
+.navbar__organisation:hover {
+  background: #ebeff3;
+  background: var(--lighter-grey);
+}
+
 /* Container & main */
 
 .container.container-small {
