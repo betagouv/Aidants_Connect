@@ -301,6 +301,15 @@ class Aidant(AbstractUser):
         """
         return self.responsable_de.count() >= 1
 
+    def can_see_aidant(self, aidant):
+        """
+        :return: True if the current object is responsible for at least one of aidant's
+        organisations
+        """
+        respo_orgas = self.responsable_de.all()
+        aidant_orgas = aidant.organisations.all()
+        return any(org in respo_orgas for org in aidant_orgas)
+
     def must_validate_cgu(self):
         return self.validated_cgu_version != settings.CGU_CURRENT_VERSION
 

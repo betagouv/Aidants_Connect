@@ -1168,6 +1168,10 @@ class AidantModelMethodsTests(TestCase):
         # however Juliette is responsable structure
         self.assertTrue(self.respo_juliette.is_responsable_structure())
 
+    def test_can_see_aidant(self):
+        self.assertTrue(self.respo_juliette.can_see_aidant(self.aidant_marge))
+        self.assertFalse(self.respo_juliette.can_see_aidant(self.aidant_patricia))
+
     def test_must_validate_cgu(self):
         # an aidant without further modification must validate user conditions
         self.assertTrue(self.aidant_patricia.must_validate_cgu())
