@@ -75,7 +75,7 @@
             </a>
           </p>
         {% endif %}
-        {% if responsable.responsable_de.all|length > 0 %}
+        {% if responsable.responsable_de.all|length > 1 %}
           <details class="background-color-grey">
             <summary>Changer les organisations de rattachement</summary>
             <form method="post" action="{% url "espace_responsable_aidant_change_organisations" aidant_id=aidant.id %}">
