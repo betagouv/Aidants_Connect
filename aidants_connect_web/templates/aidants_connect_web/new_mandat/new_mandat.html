@@ -17,7 +17,24 @@
   {% endif %}
   <section id="engagement" class="section">
     <div class="container container-small">
-      <h1 class="section__title">Créer ou renouveler un mandat</h1>
+      <h1 class="section__title">
+        Créer ou renouveler un mandat
+        {% if aidant.organisations.count > 1 %}
+          pour {{ aidant.organisation }}
+        {% endif %}
+      </h1>
+      {% if aidant.organisations.count > 1 %}
+        <div class="notification warning">
+          <p>Attention, vous allez créer un mandat au nom de cette structure :</p>
+          <p><strong>{{ aidant.organisation }}</strong><br>{{ aidant.organisation.address }}</p>
+          <p>
+            Si ce n'est pas la bonne structure,
+            <a href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}">
+              vous pouvez en changer
+            </a>.
+          </p>
+        </div>
+      {% endif %}
       <h2>Mentions à lire à l'usager</h2>
       <p>
         Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :

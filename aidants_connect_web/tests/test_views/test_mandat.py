@@ -33,6 +33,10 @@ class NewMandatTests(TestCase):
         cls.client = Client()
         cls.phone_number = "0 800 840 800"
         cls.aidant_thierry = AidantFactory()
+        cls.aidant_nour = AidantFactory()
+        cls.aidant_nour.organisations.set(
+            [cls.aidant_nour.organisation, cls.aidant_thierry.organisation]
+        )
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
         found = resolve("/creation_mandat/")
@@ -43,6 +47,20 @@ class NewMandatTests(TestCase):
         response = self.client.get("/creation_mandat/")
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
+        )
+
+    def test_no_warning_displayed_for_single_structure_aidant(self):
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.get("/creation_mandat/")
+        self.assertNotContains(
+            response, "Attention, vous allez créer un mandat au nom de cette structure"
+        )
+
+    def test_warning_displayed_for_multi_structure_aidant(self):
+        self.client.force_login(self.aidant_nour)
+        response = self.client.get("/creation_mandat/")
+        self.assertContains(
+            response, "Attention, vous allez créer un mandat au nom de cette structure"
         )
 
     def test_badly_formatted_form_triggers_original_template(self):
