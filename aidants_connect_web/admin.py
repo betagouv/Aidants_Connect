@@ -104,6 +104,17 @@ class VisibleToTechAdmin:
         return self.has_module_permission(request)
 
 
+class RegionFilter(SimpleListFilter):
+    title = "Région"
+
+    parameter_name = "region"
+
+    def lookups(self, request, model_admin):
+        return [(r.id, r.name) for r in DatavizRegion.objects.all()] + [
+            ("other", "Autre")
+        ]
+
+
 class StaticDeviceStaffAdmin(VisibleToAdminMetier, StaticDeviceAdmin):
     pass
 
@@ -175,16 +186,7 @@ class OrganisationResource(resources.ModelResource):
         model = Organisation
 
 
-class OrganisationRegionFilter(SimpleListFilter):
-    title = "Région"
-
-    parameter_name = "region"
-
-    def lookups(self, request, model_admin):
-        return [(r.id, r.name) for r in DatavizRegion.objects.all()] + [
-            ("other", "Autre")
-        ]
-
+class OrganisationRegionFilter(RegionFilter):
     def queryset(self, request, queryset):
         region_id = self.value()
 
@@ -466,14 +468,7 @@ class HabilitationRequestResource(resources.ModelResource):
         )
 
 
-class HabilitationRequestRegionFilter(SimpleListFilter):
-    title = "Région"
-
-    parameter_name = "region"
-
-    def lookups(self, request, model_admin):
-        return [(r.id, r.name) for r in DatavizRegion.objects.all()]
-
+class HabilitationRequestRegionFilter(RegionFilter):
     def queryset(self, request, queryset):
         region_id = self.value()
 
