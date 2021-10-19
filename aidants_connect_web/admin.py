@@ -329,6 +329,25 @@ class AidantResource(resources.ModelResource):
             totp_device.save()
 
 
+class AidantRegionFilter(RegionFilter):
+    def queryset(self, request, queryset):
+        region_id = self.value()
+
+        if not region_id:
+            return
+
+        region = DatavizRegion.objects.get(id=region_id)
+        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
+        qgroup = reduce(
+            operator.or_,
+            (
+                Q(organisations__zipcode__startswith=d.department.zipcode)
+                for d in d2r.all()
+            ),
+        )
+        return queryset.filter(qgroup)
+
+
 class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -376,7 +395,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_staff",
         "is_superuser",
     )
-    list_filter = ("is_active", "is_staff", "is_superuser")
+    list_filter = ("is_active", AidantRegionFilter, "is_staff", "is_superuser")
     search_fields = ("first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
 
