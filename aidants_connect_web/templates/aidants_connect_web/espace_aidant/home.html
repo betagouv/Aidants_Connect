@@ -21,6 +21,11 @@
         {% if aidant.can_create_mandats %}votre Espace Aidant{% else %}Aidants Connect{% endif %},
         {{ aidant.first_name }} !</h1>
       {% include "aidants_connect_web/espace_aidant/notifications.html" with user=aidant %}
+      {% if aidant.organisations.count > 1 %}
+        <div class="notification full-width">
+          Votre organisation active est <strong>{{ aidant.organisation }}</strong> — {{ aidant.organisation.address }}.
+        </div>
+      {% endif %}
       <div class="tiles aidant-home-services">
         <h2>Vos services</h2>
         <div class="grid">
