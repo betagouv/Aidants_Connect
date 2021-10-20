@@ -92,6 +92,25 @@ def organisation(request, organisation_id):
 @login_required
 @user_is_responsable_structure
 @activity_required
+def organisation_responsables(request, organisation_id):
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
+
+    return render(
+        request,
+        "aidants_connect_web/espace_responsable/responsables.html",
+        {
+            "user": responsable,
+            "organisation": organisation,
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+@user_is_responsable_structure
+@activity_required
 def aidant(request, aidant_id):
     responsable: Aidant = request.user
     aidant = get_object_or_404(Aidant, pk=aidant_id)

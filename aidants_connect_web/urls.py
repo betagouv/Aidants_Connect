@@ -127,6 +127,11 @@ urlpatterns = [
         name="espace_responsable_organisation",
     ),
     path(
+        "espace-responsable/organisation/<int:organisation_id>/responsables/",
+        espace_responsable.organisation_responsables,
+        name="espace_responsable_organisation_responsables",
+    ),
+    path(
         "espace-responsable/aidant/<int:aidant_id>/",
         espace_responsable.aidant,
         name="espace_responsable_aidant",
