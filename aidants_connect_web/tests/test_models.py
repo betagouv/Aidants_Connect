@@ -698,6 +698,26 @@ class OrganisationModelTests(TestCase):
         self.assertFalse(aidant_lisa.is_active)
         self.assertTrue(aidant_homer.is_active)
 
+    def test_deactivate_organisation_with_multistruct_aidant(self):
+        orga_one = OrganisationFactory(name="Ouane")
+        orga_two = OrganisationFactory(name="Tou")
+        aidant_nour = AidantFactory(organisation=orga_one)
+        aidant_nour.organisations.add(orga_two)
+
+        self.assertTrue(orga_one.is_active)
+        self.assertTrue(orga_two.is_active)
+        self.assertTrue(aidant_nour.is_active)
+        self.assertEqual(aidant_nour.organisation, orga_one)
+
+        orga_one.deactivate_organisation()
+        orga_one.refresh_from_db()
+        aidant_nour.refresh_from_db()
+
+        self.assertFalse(orga_one.is_active)
+        self.assertTrue(orga_two.is_active)
+        self.assertTrue(aidant_nour.is_active)
+        self.assertEqual(aidant_nour.organisation, orga_two)
+
     def test_activate_organisation(self):
         orga = OrganisationFactory(name="L'Internationale", is_active=False)
         orga.activate_organisation()
