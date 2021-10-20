@@ -33,10 +33,10 @@
                 SIRET : {{ org.siret }}</p>
               <p>
                 <span aria-hidden="true">👩</span>
-                {% if org.current_aidants.count == 0 %}
+                {% if org.aidants.count == 0 %}
                   Aucun aidant
                 {% else %}
-                  {{ org.current_aidants.count }} aidant{{ org.current_aidants.count|pluralize }}
+                  {{ org.aidants.count }} aidant{{ org.aidants.count|pluralize }}
                 {% endif %}
               </p>
             </a>
