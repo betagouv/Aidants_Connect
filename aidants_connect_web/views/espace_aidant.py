@@ -33,7 +33,7 @@ def organisation(request):
         django_messages.error(request, "Vous n'êtes pas rattaché à une organisation.")
         return redirect("espace_aidant_home")
 
-    organisation_active_aidants = organisation.current_aidants.active()
+    organisation_active_aidants = organisation.aidants.active()
 
     return render(
         request,
