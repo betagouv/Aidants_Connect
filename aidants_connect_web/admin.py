@@ -217,7 +217,7 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "id",
         "data_pass_id",
     )
-    readonly_fields = ("data_pass_id",)
+    readonly_fields = ("data_pass_id", "display_aidants")
     search_fields = ("name", "siret", "data_pass_id")
     list_filter = ("is_active", OrganisationRegionFilter)
 
@@ -235,6 +235,19 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "deactivate_organisations",
         "activate_organisations",
     )
+
+    def display_aidants(self, obj):
+        return mark_safe(
+            "<table><tr>"
+            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th></tr><tr>'
+            + "</tr><tr>".join(
+                f"<td>{aidant.id}</td><td>{aidant}</td><td>{aidant.email}</td>"
+                for aidant in obj.aidants.order_by("last_name").all()
+            )
+            + "</tr></table>"
+        )
+
+    display_aidants.short_description = "Aidants"
 
     def find_zipcode_in_address(self, request, queryset):
         for organisation in queryset:
