@@ -77,6 +77,10 @@ class Organisation(models.Model):
         ).count()
 
     @cached_property
+    def aidants_not_responsables(self):
+        return self.aidants.exclude(responsable_de=self).all()
+
+    @cached_property
     def num_usagers(self):
         return Mandat.objects.filter(organisation=self).distinct("usager").count()
 

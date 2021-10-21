@@ -27,10 +27,12 @@
     <div class="container">
       <h2>Aidants</h2>
       <p class="text-right">
+        {% if organisation.aidants_not_responsables|length > 0 %}
         <a href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}" class="button">
           <span aria-hidden="true">⚙️</span>
           Désigner un responsable
         </a>
+        {% endif %}
         <a href="{% url "espace_responsable_aidant_new" %}" class="button">
           <span aria-hidden="true">👩</span>
           Ajouter un aidant
