@@ -53,6 +53,9 @@
               <th scope="row">
                 <a href="{% url "espace_responsable_aidant" aidant_id=aidant.id %}">
                   {{ aidant.get_full_name }}
+                  {% if aidant in organisation.responsables.all %}
+                    <br>(Responsable)
+                  {% endif %}
                   {% if not aidant.is_active %}
                     <br>(Compte désactivé)
                   {% endif %}

@@ -271,11 +271,11 @@ class RemoveCardFromAidantForm(forms.Form):
 
 
 class AddOrganisationResponsableForm(forms.Form):
-    candidates = forms.ModelChoiceField(queryset=Aidant.objects.none())
+    candidate = forms.ModelChoiceField(queryset=Aidant.objects.none())
 
     def __init__(self, organisation: Organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["candidates"].queryset = organisation.aidants.exclude(
+        self.fields["candidate"].queryset = organisation.aidants.exclude(
             responsable_de=organisation
         ).order_by("last_name")
 
