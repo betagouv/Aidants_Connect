@@ -18,6 +18,7 @@ from aidants_connect_web.decorators import (
     activity_required,
 )
 from aidants_connect_web.forms import (
+    AddOrganisationResponsableForm,
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
     ChangeAidantOrganisationsForm,
@@ -96,13 +97,14 @@ def organisation_responsables(request, organisation_id):
     responsable: Aidant = request.user
     organisation = get_object_or_404(Organisation, pk=organisation_id)
     check_organisation_and_responsable(responsable, organisation)
-
+    form = AddOrganisationResponsableForm(organisation)
     return render(
         request,
         "aidants_connect_web/espace_responsable/responsables.html",
         {
             "user": responsable,
             "organisation": organisation,
+            "form": form,
         },
     )
 

@@ -43,11 +43,11 @@
           {% endif %}
         {% endwith %}
         <div class="form__group">
-          <label for="{{ form.organisation.id_for_label }}">Organisation</label>
+          <label for="{{ form.candidates.id_for_label }}">Nouveau responsable :</label>
           <div>
-            {{ form.organisation }}
+            {{ form.candidates }}
           </div>
-          {{ form.organisation.errors }}
+          {{ form.candidates.errors }}
         </div>
 
         <div class="form__group">
