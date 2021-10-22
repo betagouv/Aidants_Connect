@@ -87,6 +87,8 @@ def notify_new_habilitation_requests():
     habilitation_requests_count = HabilitationRequest.objects.filter(
         created_at__gt=created_from
     ).count()
+    if habilitation_requests_count == 0:
+        return
     organisations = Organisation.objects.filter(
         habilitation_requests__created_at__gte=created_from
     ).annotate(
@@ -159,7 +161,7 @@ def notify_no_totp_workers():
             last_name = none_if_blank(item.pop("last_name", None))
 
             item["full_name"] = (
-                f"{first_name} {last_name}"
+                f"{first_name} {last_name}"
                 if first_name is not None and last_name is not None
                 else None
             )

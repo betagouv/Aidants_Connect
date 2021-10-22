@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
+from django.core import mail
 from django.core.management import call_command, CommandError
 from django.test import tag, TestCase
 from freezegun import freeze_time
@@ -13,8 +14,16 @@ from aidants_connect_overrides.management.commands.createsuperuser import (
     ORGANISATION_NAME_ENV,
     ORGANISATION_ID_ENV,
 )
+from aidants_connect import settings
 from aidants_connect_web.models import Connection, Aidant
-from aidants_connect_web.tests.factories import ConnectionFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    CarteTOTPFactory,
+    ConnectionFactory,
+    HabilitationRequestFactory,
+    MandatFactory,
+    OrganisationFactory,
+)
 
 TZ_PARIS = timezone(offset=timedelta(hours=1), name="Europe/Paris")
 
@@ -67,6 +76,7 @@ class DeleteExpiredConnectionsTests(TestCase):
         self.assertEqual(remaining_connections.first().id, self.conn_2.id)
 
 
+@tag("commands")
 class CreateSuperUserTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -178,3 +188,125 @@ class CreateSuperUserTests(TestCase):
                 Aidant.objects.get(username="Karl_Marx").organisation.name,
                 self.orga_1.name,
             )
+
+
+@tag("commands")
+class NewHabilitationRequestsTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.bizdev = AidantFactory(is_staff=True)
+
+    def three_habilitation_requests_in_three_organisations(self):
+        for _ in range(3):
+            HabilitationRequestFactory()
+
+    def four_habilitation_requests_in_two_organisations(self):
+        for _ in range(2):
+            req_1 = HabilitationRequestFactory()
+            HabilitationRequestFactory(organisation=req_1.organisation)
+
+    def test_no_email_is_sent_if_no_habilitation_request(self):
+        call_command("notify_new_habilitation_requests")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_an_email_is_sent_if_there_is_an_habilitation_request(self):
+        self.three_habilitation_requests_in_three_organisations()
+        call_command("notify_new_habilitation_requests")
+        self.assertEqual(len(mail.outbox), 1)
+        mail_content = mail.outbox[0].body
+        mail_subject = mail.outbox[0].subject
+        self.assertIn("3 nouvelles demandes d’habilitation", mail_subject)
+        self.assertIn("3 nouvelles demandes d'habilitation", mail_content)
+        self.assertIn("dans 3 structures différentes", mail_content)
+
+    def test_counting_of_habilitation_requests(self):
+        self.four_habilitation_requests_in_two_organisations()
+        call_command("notify_new_habilitation_requests")
+        self.assertEqual(len(mail.outbox), 1)
+        mail_content = mail.outbox[0].body
+        mail_subject = mail.outbox[0].subject
+        self.assertIn("4 nouvelles demandes d’habilitation", mail_subject)
+        self.assertIn("4 nouvelles demandes d'habilitation", mail_content)
+        self.assertIn("dans 2 structures différentes", mail_content)
+
+
+@tag("commands")
+class NotifySoonExpiredMandatesTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.orga = OrganisationFactory()
+        cls.aidant = AidantFactory(organisation=cls.orga)
+        cls.unrelated_aidant = AidantFactory()
+
+    def test_one_soon_expired_mandate(self):
+        MandatFactory(organisation=self.orga, duree_keyword="LONG")
+        call_command("notify_soon_expired_mandates")
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.subject, settings.MANDAT_EXPIRED_SOON_EMAIL_SUBJECT)
+        self.assertIn(self.aidant.email, email.recipients())
+        self.assertNotIn(self.unrelated_aidant.email, email.recipients())
+
+    def test_two_soon_expired_mandates_in_same_orga(self):
+        for _ in range(2):
+            MandatFactory(organisation=self.orga, duree_keyword="LONG")
+        call_command("notify_soon_expired_mandates")
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.subject, settings.MANDAT_EXPIRED_SOON_EMAIL_SUBJECT)
+        self.assertIn(self.aidant.email, email.recipients())
+        self.assertNotIn(self.unrelated_aidant.email, email.recipients())
+
+    def test_two_soon_expired_mandates_in_different_orgas(self):
+        for _ in range(2):
+            aidant = AidantFactory()
+            MandatFactory(duree_keyword="LONG", organisation=aidant.organisation)
+        call_command("notify_soon_expired_mandates")
+        self.assertEqual(len(mail.outbox), 2)
+        first_email, second_email = mail.outbox
+        self.assertNotEqual(first_email.recipients(), second_email.recipients())
+        self.assertNotIn(first_email.recipients()[0], second_email.recipients())
+        self.assertNotIn(second_email.recipients()[0], first_email.recipients())
+
+
+@tag("commands")
+class NotifyNoTotpWorkersTests(TestCase):
+    def test_no_mail_sent_if_no_need(self):
+        call_command("notify_no_totp_workers")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_mail_is_sent_to_the_manager(self):
+        aidant = AidantFactory(first_name="Henri", last_name="Tournelle")
+        responsable = AidantFactory(
+            first_name="Hervé", last_name="Gétal", organisation=aidant.organisation
+        )
+        responsable.responsable_de.add(aidant.organisation)
+        call_command("notify_no_totp_workers")
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn(f"{aidant}", message.body)
+        self.assertIn("vous-même", message.body)
+        self.assertIn(responsable.email, message.recipients())
+
+    def test_aidant_with_carte_totp_does_not_appear_in_email(self):
+        responsable = AidantFactory(first_name="Arès", last_name="Ponsable")
+        responsable.responsable_de.add(responsable.organisation)
+        CarteTOTPFactory(aidant=responsable)
+        aidant_with_carte = AidantFactory(
+            first_name="Gaetan",
+            last_name="Carté",
+            organisation=responsable.organisation,
+        )
+        CarteTOTPFactory(aidant=aidant_with_carte)
+        aidant_without_carte = AidantFactory(
+            first_name="Roberto",
+            last_name="Bogan",
+            organisation=responsable.organisation,
+        )
+
+        call_command("notify_no_totp_workers")
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn(f"{aidant_without_carte}", message.body)
+        self.assertNotIn(f"{aidant_with_carte}", message.body)
+        self.assertNotIn("vous-même", message.body)

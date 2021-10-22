@@ -662,7 +662,10 @@ class Mandat(models.Model):
         end = start + timedelta(days=nb_days_before)
 
         return cls.objects.filter(
-            duree_keyword=AuthorizationDurations.LONG,
+            duree_keyword__in=(
+                AuthorizationDurations.LONG,
+                AuthorizationDurations.SEMESTER,
+            ),
             expiration_date__range=(start, end),
         ).order_by("organisation", "expiration_date")
 
