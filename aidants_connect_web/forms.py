@@ -270,19 +270,21 @@ class RemoveCardFromAidantForm(forms.Form):
 
 
 class ChangeAidantOrganisationsForm(forms.Form):
+    organisations = forms.ModelMultipleChoiceField(
+        queryset=Organisation.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={
+            "required": "Vous devez rattacher l’aidant à au moins une organisation."
+        },
+    )
+
     def __init__(self, responsable: Aidant, aidant: Aidant, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.aidant = aidant
         self.responsable = responsable
-        self.fields["organisations"] = forms.ModelMultipleChoiceField(
-            queryset=Organisation.objects.filter(
-                responsables=self.responsable
-            ).order_by("name"),
-            widget=forms.CheckboxSelectMultiple,
-        )
-        self.fields["organisations"].error_messages.update(
-            {"required": "Vous devez rattacher l’aidant à au moins une organisation."}
-        )
+        self.fields["organisations"].queryset = Organisation.objects.filter(
+            responsables=self.responsable
+        ).order_by("name")
         self.initial["organisations"] = self.aidant.organisations.all()
 
 
