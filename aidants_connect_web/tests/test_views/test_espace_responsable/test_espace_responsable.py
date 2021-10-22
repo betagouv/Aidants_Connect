@@ -417,3 +417,70 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
             response_content,
             "TOTP message is shown on espace-aidant, it should be hidden",
         )
+
+
+@tag("responsable-structure")
+class DesignationOfAnotherResponsable(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.orga = OrganisationFactory()
+        responsable = AidantFactory(organisation=cls.orga)
+        responsable.responsable_de.add(cls.orga)
+        cls.respo = responsable
+        cls.url = f"/espace-responsable/organisation/{cls.orga.id}/responsables/"
+        cls.orga_url = f"/espace-responsable/organisation/{cls.orga.id}/"
+
+    def _create_two_aidantes(self):
+        self.aidante_maxine = AidantFactory(organisation=self.orga)
+        self.aidante_ariane = AidantFactory()
+        self.aidante_ariane.organisations.add(self.orga)
+
+    def test_url_triggers_the_right_view(self):
+        found = resolve(self.url)
+        self.assertEqual(found.func, espace_responsable.organisation_responsables)
+
+    def test_url_triggers_the_right_template(self):
+        self.client.force_login(self.respo)
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_responsable/responsables.html"
+        )
+
+    def test_link_is_hidden_if_there_is_no_aidant_to_become_responsable(self):
+        self.client.force_login(self.respo)
+        response = self.client.get(self.orga_url)
+        self.assertNotContains(response, "Désigner un responsable")
+
+    def test_link_is_visible_if_there_is_an_aidant_to_become_responsable(self):
+        self._create_two_aidantes()
+        self.client.force_login(self.respo)
+        response = self.client.get(self.orga_url)
+        self.assertContains(response, "Désigner un responsable")
+
+    def test_current_aidant_can_become_responsable(self):
+        self._create_two_aidantes()
+        self.client.force_login(self.respo)
+        self.assertFalse(self.aidante_maxine.is_responsable_structure())
+        self.client.post(self.url, data={"candidate": self.aidante_maxine.id})
+        self.aidante_maxine.refresh_from_db()
+        self.assertTrue(self.aidante_maxine.is_responsable_structure())
+        self.assertIn(self.orga, self.aidante_maxine.responsable_de.all())
+
+    def test_aidant_can_become_responsable(self):
+        self._create_two_aidantes()
+        self.client.force_login(self.respo)
+        self.assertFalse(self.aidante_ariane.is_responsable_structure())
+        self.client.post(self.url, data={"candidate": self.aidante_ariane.id})
+        self.aidante_ariane.refresh_from_db()
+        self.assertTrue(self.aidante_ariane.is_responsable_structure())
+        self.assertIn(self.orga, self.aidante_ariane.responsable_de.all())
+
+    def test_unrelated_aidant_cannot_become_responsable(self):
+        self.aidante_bidule = AidantFactory()
+        self.client.force_login(self.respo)
+        self.assertFalse(self.aidante_bidule.is_responsable_structure())
+        self.client.post(self.url, data={"candidate": self.aidante_bidule.id})
+        self.aidante_bidule.refresh_from_db()
+        self.assertFalse(self.aidante_bidule.is_responsable_structure())
+        self.assertNotIn(self.orga, self.aidante_bidule.responsable_de.all())
