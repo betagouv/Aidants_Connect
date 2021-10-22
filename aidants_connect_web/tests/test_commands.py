@@ -14,11 +14,13 @@ from aidants_connect_overrides.management.commands.createsuperuser import (
     ORGANISATION_NAME_ENV,
     ORGANISATION_ID_ENV,
 )
+from aidants_connect import settings
 from aidants_connect_web.models import Connection, Aidant
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     ConnectionFactory,
     HabilitationRequestFactory,
+    MandatFactory,
     OrganisationFactory,
 )
 
@@ -225,3 +227,42 @@ class NewHabilitationRequestsTests(TestCase):
         self.assertIn("4 nouvelles demandes d’habilitation", mail_subject)
         self.assertIn("4 nouvelles demandes d'habilitation", mail_content)
         self.assertIn("dans 2 structures différentes", mail_content)
+
+
+@tag("commands")
+class NotifySoonExpiredMandatesTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.orga = OrganisationFactory()
+        cls.aidant = AidantFactory(organisation=cls.orga)
+        cls.unrelated_aidant = AidantFactory()
+
+    def test_one_soon_expired_mandate(self):
+        MandatFactory(organisation=self.orga, duree_keyword="LONG")
+        call_command("notify_soon_expired_mandates")
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.subject, settings.MANDAT_EXPIRED_SOON_EMAIL_SUBJECT)
+        self.assertIn(self.aidant.email, email.recipients())
+        self.assertNotIn(self.unrelated_aidant.email, email.recipients())
+
+    def test_two_soon_expired_mandates_in_same_orga(self):
+        for _ in range(2):
+            MandatFactory(organisation=self.orga, duree_keyword="LONG")
+        call_command("notify_soon_expired_mandates")
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.subject, settings.MANDAT_EXPIRED_SOON_EMAIL_SUBJECT)
+        self.assertIn(self.aidant.email, email.recipients())
+        self.assertNotIn(self.unrelated_aidant.email, email.recipients())
+
+    def test_two_soon_expired_mandates_in_different_orgas(self):
+        for _ in range(2):
+            aidant = AidantFactory()
+            MandatFactory(duree_keyword="LONG", organisation=aidant.organisation)
+        call_command("notify_soon_expired_mandates")
+        self.assertEqual(len(mail.outbox), 2)
+        first_email, second_email = mail.outbox
+        self.assertNotEqual(first_email.recipients(), second_email.recipients())
+        self.assertNotIn(first_email.recipients()[0], second_email.recipients())
+        self.assertNotIn(second_email.recipients()[0], first_email.recipients())
