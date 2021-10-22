@@ -18,6 +18,7 @@ from aidants_connect import settings
 from aidants_connect_web.models import Connection, Aidant
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    CarteTOTPFactory,
     ConnectionFactory,
     HabilitationRequestFactory,
     MandatFactory,
@@ -266,3 +267,46 @@ class NotifySoonExpiredMandatesTests(TestCase):
         self.assertNotEqual(first_email.recipients(), second_email.recipients())
         self.assertNotIn(first_email.recipients()[0], second_email.recipients())
         self.assertNotIn(second_email.recipients()[0], first_email.recipients())
+
+
+@tag("commands")
+class NotifyNoTotpWorkersTests(TestCase):
+    def test_no_mail_sent_if_no_need(self):
+        call_command("notify_no_totp_workers")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_mail_is_sent_to_the_manager(self):
+        aidant = AidantFactory(first_name="Henri", last_name="Tournelle")
+        responsable = AidantFactory(
+            first_name="Hervé", last_name="Gétal", organisation=aidant.organisation
+        )
+        responsable.responsable_de.add(aidant.organisation)
+        call_command("notify_no_totp_workers")
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn(f"{aidant}", message.body)
+        self.assertIn("vous-même", message.body)
+        self.assertIn(responsable.email, message.recipients())
+
+    def test_aidant_with_carte_totp_does_not_appear_in_email(self):
+        responsable = AidantFactory(first_name="Arès", last_name="Ponsable")
+        responsable.responsable_de.add(responsable.organisation)
+        CarteTOTPFactory(aidant=responsable)
+        aidant_with_carte = AidantFactory(
+            first_name="Gaetan",
+            last_name="Carté",
+            organisation=responsable.organisation,
+        )
+        CarteTOTPFactory(aidant=aidant_with_carte)
+        aidant_without_carte = AidantFactory(
+            first_name="Roberto",
+            last_name="Bogan",
+            organisation=responsable.organisation,
+        )
+
+        call_command("notify_no_totp_workers")
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn(f"{aidant_without_carte}", message.body)
+        self.assertNotIn(f"{aidant_with_carte}", message.body)
+        self.assertNotIn("vous-même", message.body)
