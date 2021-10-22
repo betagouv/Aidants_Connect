@@ -87,6 +87,8 @@ def notify_new_habilitation_requests():
     habilitation_requests_count = HabilitationRequest.objects.filter(
         created_at__gt=created_from
     ).count()
+    if habilitation_requests_count == 0:
+        return
     organisations = Organisation.objects.filter(
         habilitation_requests__created_at__gte=created_from
     ).annotate(

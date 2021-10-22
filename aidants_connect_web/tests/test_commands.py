@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
+from django.core import mail
 from django.core.management import call_command, CommandError
 from django.test import tag, TestCase
 from freezegun import freeze_time
@@ -14,7 +15,12 @@ from aidants_connect_overrides.management.commands.createsuperuser import (
     ORGANISATION_ID_ENV,
 )
 from aidants_connect_web.models import Connection, Aidant
-from aidants_connect_web.tests.factories import ConnectionFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    ConnectionFactory,
+    HabilitationRequestFactory,
+    OrganisationFactory,
+)
 
 TZ_PARIS = timezone(offset=timedelta(hours=1), name="Europe/Paris")
 
@@ -67,6 +73,7 @@ class DeleteExpiredConnectionsTests(TestCase):
         self.assertEqual(remaining_connections.first().id, self.conn_2.id)
 
 
+@tag("commands")
 class CreateSuperUserTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -178,3 +185,43 @@ class CreateSuperUserTests(TestCase):
                 Aidant.objects.get(username="Karl_Marx").organisation.name,
                 self.orga_1.name,
             )
+
+
+@tag("commands")
+class NewHabilitationRequestsTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.bizdev = AidantFactory(is_staff=True)
+
+    def three_habilitation_requests_in_three_organisations(self):
+        for _ in range(3):
+            HabilitationRequestFactory()
+
+    def four_habilitation_requests_in_two_organisations(self):
+        for _ in range(2):
+            req_1 = HabilitationRequestFactory()
+            HabilitationRequestFactory(organisation=req_1.organisation)
+
+    def test_no_email_is_sent_if_no_habilitation_request(self):
+        call_command("notify_new_habilitation_requests")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_an_email_is_sent_if_there_is_an_habilitation_request(self):
+        self.three_habilitation_requests_in_three_organisations()
+        call_command("notify_new_habilitation_requests")
+        self.assertEqual(len(mail.outbox), 1)
+        mail_content = mail.outbox[0].body
+        mail_subject = mail.outbox[0].subject
+        self.assertIn("3 nouvelles demandes d’habilitation", mail_subject)
+        self.assertIn("3 nouvelles demandes d'habilitation", mail_content)
+        self.assertIn("dans 3 structures différentes", mail_content)
+
+    def test_counting_of_habilitation_requests(self):
+        self.four_habilitation_requests_in_two_organisations()
+        call_command("notify_new_habilitation_requests")
+        self.assertEqual(len(mail.outbox), 1)
+        mail_content = mail.outbox[0].body
+        mail_subject = mail.outbox[0].subject
+        self.assertIn("4 nouvelles demandes d’habilitation", mail_subject)
+        self.assertIn("4 nouvelles demandes d'habilitation", mail_content)
+        self.assertIn("dans 2 structures différentes", mail_content)
