@@ -31,12 +31,10 @@ class AssociateCarteTOTPTests(TestCase):
         cls.carte = CarteTOTPFactory(serial_number="A123", seed="zzzz")
         cls.org_id = cls.responsable_tom.organisation.id
         cls.association_url = (
-            f"/espace-responsable/organisation/{cls.org_id}/"
-            f"aidant/{cls.aidant_tim.id}/lier-carte"
+            f"/espace-responsable/aidant/{cls.aidant_tim.id}/lier-carte"
         )
         cls.validation_url = (
-            f"/espace-responsable/organisation/{cls.org_id}/"
-            f"aidant/{cls.aidant_tim.id}/valider-carte"
+            f"/espace-responsable/aidant/{cls.aidant_tim.id}/valider-carte"
         )
 
     def test_association_page_triggers_the_right_view(self):

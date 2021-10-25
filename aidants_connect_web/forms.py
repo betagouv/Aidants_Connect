@@ -269,8 +269,27 @@ class RemoveCardFromAidantForm(forms.Form):
     other_reason = forms.CharField(required=False)
 
 
+class ChangeAidantOrganisationsForm(forms.Form):
+    organisations = forms.ModelMultipleChoiceField(
+        queryset=Organisation.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={
+            "required": "Vous devez rattacher l’aidant à au moins une organisation."
+        },
+    )
+
+    def __init__(self, responsable: Aidant, aidant: Aidant, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.aidant = aidant
+        self.responsable = responsable
+        self.fields["organisations"].queryset = Organisation.objects.filter(
+            responsables=self.responsable
+        ).order_by("name")
+        self.initial["organisations"] = self.aidant.organisations.all()
+
+
 class HabilitationRequestCreationForm(forms.ModelForm):
-    def __init__(self, responsable, organisation, *args, **kwargs):
+    def __init__(self, responsable, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.responsable = responsable
         self.fields["organisation"] = forms.ModelChoiceField(
@@ -279,7 +298,6 @@ class HabilitationRequestCreationForm(forms.ModelForm):
             ).order_by("name"),
             empty_label="Choisir...",
         )
-        self.initial["organisation"] = organisation
 
     class Meta:
         model = HabilitationRequest

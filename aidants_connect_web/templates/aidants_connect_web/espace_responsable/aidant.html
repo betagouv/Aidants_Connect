@@ -1,11 +1,13 @@
 {% extends 'layouts/main.html' %}
 
 {% load static %}
+{% load ac_extras %}
 
 {% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/form.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
@@ -19,23 +21,20 @@
       <h1>Fiche aidant : {{ aidant.get_full_name }}, {{ aidant.profession }}</h1>
       <div class="tiles">
         <div class="grid">
-          <div class="tile background-color-grey">
+          <div class="tile background-color-grey text-center">
             <h2>Carte Aidants Connect</h2>
-            {% with aidant.carte_totp.serial_number as sn %}
-              {% if sn %}
-                <p><span aria-hidden="true">💳 </span>{{ sn }}</p>
-              {% else %}
-                <p>
-                  Aucune carte associée à {{ aidant.get_full_name }}.
-                </p>
-              {% endif %}
-            {% endwith %}
+            {% with aidant.carte_totp.serial_number as sn %}{% if sn %}
+              <p><span aria-hidden="true">💳 </span>{{ sn }}</p>
+            {% else %}
+              <p>
+                Aucune carte associée à {{ aidant.get_full_name }}.
+              </p>{% endif %}{% endwith %}
           </div>
-          <div class="tile background-color-grey">
+          <div class="tile background-color-grey text-center">
             <h2>Profession</h2>
             <p>{{ aidant.profession }}</p>
           </div>
-          <div class="tile background-color-grey">
+          <div class="tile background-color-grey text-center">
             <h2>Adresse e-mail</h2>
             <p>{{ aidant.email }}</p>
           </div>
@@ -46,7 +45,8 @@
         {% if aidant.carte_totp.serial_number %}
           <details class="background-color-grey">
             <summary>Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte</summary>
-            <form method="post" action="{% url "espace_responsable_aidant_remove_card" organisation_id=organisation.id aidant_id=aidant.id %}">
+            <form method="post"
+                  action="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}">
               {% csrf_token %}
               <p>
                 Pour supprimer l'association entre la carte {{ aidant.carte_totp.serial_number }}
@@ -68,12 +68,54 @@
           </details>
         {% else %}
           <p>
-            <a href="{% url "espace_responsable_associate_totp" organisation_id=organisation.id aidant_id=aidant.id %}"
+            <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
                class="button large">
               <span aria-hidden="true">💳 </span>
               Lier une carte Aidants Connect
             </a>
           </p>
+        {% endif %}
+        {% if responsable.responsable_de.all|length > 1 %}
+          <details class="background-color-grey">
+            <summary>Changer les organisations de rattachement</summary>
+            <form method="post" action="{% url "espace_responsable_aidant_change_organisations" aidant_id=aidant.id %}">
+              {% csrf_token %}
+              <fieldset class="checkbox-list">
+                <legend>
+                  Cochez la ou les organisations auxquelles rattacher {{ aidant }}.
+                  Cela lui permettra de créer des mandats en leur nom.
+                  {% if form.errors.organisations %}
+                    {{ form.errors.organisations }}
+                  {% endif %}
+                </legend>
+                <ul class="grid checkbox-list small-checkboxes">
+                  {% for value, label in orga_form.organisations.field.choices %}
+                    <li class="tile">
+                      <input
+                          type="checkbox"
+                          class="sr-only"
+                          name="organisations"
+                          value="{{ value }}"
+                          id="org_{{ value }}"
+                          {% if value in orga_form.organisations.value or value in orga_form.organisations.initial %}
+                          checked
+                          {% endif %}
+                      >
+                      <label for="org_{{ value }}">
+                        <span>
+                          <strong>{{ label }}</strong><br>
+                          {{ value.instance.address }}
+                        </span>
+                      </label>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </fieldset>
+              <p>
+                <button class="button" type="submit">Valider</button>
+              </p>
+            </form>
+          </details>
         {% endif %}
         {# todo : actions d'activation / désactivation des comptes #}
       </div>

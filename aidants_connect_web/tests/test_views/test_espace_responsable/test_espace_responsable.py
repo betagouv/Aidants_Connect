@@ -124,6 +124,21 @@ class EspaceResponsableOrganisationPage(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+    def test_display_all_active_aidants(self):
+        self.client.force_login(self.responsable_tom)
+        aidant_a = AidantFactory(
+            first_name="Premier-Aidant", organisation=self.responsable_tom.organisation
+        )
+        aidant_b = AidantFactory(first_name="Second-Aidant")
+        aidant_b.organisations.set(
+            (aidant_b.organisation, self.responsable_tom.organisation)
+        )
+        response = self.client.get(
+            f"/espace-responsable/organisation/{self.id_organisation}/"
+        )
+        self.assertContains(response, aidant_a.first_name)
+        self.assertContains(response, aidant_b.first_name)
+
 
 @tag("responsable-structure")
 class EspaceResponsableAidantPage(TestCase):
@@ -133,11 +148,7 @@ class EspaceResponsableAidantPage(TestCase):
         cls.responsable_tom = AidantFactory()
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(organisation=cls.responsable_tom.organisation)
-        cls.id_organisation = cls.responsable_tom.organisation.id
-        cls.aidant_tim_url = (
-            f"/espace-responsable/organisation/{cls.id_organisation}"
-            f"/aidant/{cls.aidant_tim.id}/"
-        )
+        cls.aidant_tim_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
         cls.autre_organisation = OrganisationFactory()
         cls.autre_aidant = AidantFactory()
 
@@ -161,13 +172,132 @@ class EspaceResponsableAidantPage(TestCase):
     def test_responsable_cannot_see_an_aidant_they_are_not_responsible_for(self):
         self.client.force_login(self.responsable_tom)
         response = self.client.get(
-            f"/espace-responsable/organisation/{self.autre_organisation.id}"
-            f"/aidant/{self.aidant_tim.id}/"
+            f"/espace-responsable/aidant/{self.autre_aidant.id}/"
         )
         self.assertEqual(response.status_code, 404)
-        response = self.client.get(
-            f"/espace-responsable/organisation/{self.id_organisation}"
-            f"/aidant/{self.autre_aidant.id}/"
+
+
+@tag("responsable-structure")
+class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+
+        responsable = AidantFactory()
+        responsable.responsable_de.add(responsable.organisation)
+        responsable.responsable_de.add(OrganisationFactory())
+        cls.responsable_of_2 = responsable
+
+        responsable = AidantFactory()
+        responsable.responsable_de.add(responsable.organisation)
+        cls.responsable_of_1 = responsable
+
+    def get_aidant_url(self, aidant):
+        return f"/espace-responsable/aidant/{aidant.id}/"
+
+    def get_form_url(self, aidant):
+        return f"/espace-responsable/aidant/{aidant.id}/changer-organisations/"
+
+    def test_responsable_of_one_structure_cannot_see_the_form(self):
+        responsable = self.responsable_of_1
+        aidant = AidantFactory(organisation=responsable.organisation)
+        self.client.force_login(responsable)
+
+        response = self.client.get(self.get_aidant_url(aidant))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Changer les organisations de rattachement")
+
+    def test_responsable_of_several_structures_can_see_the_form(self):
+        responsable = self.responsable_of_2
+        aidant = AidantFactory(organisation=responsable.organisation)
+        self.client.force_login(responsable)
+
+        url = self.get_aidant_url(aidant)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Changer les organisations de rattachement")
+
+    def test_organisations_are_modified(self):
+        responsable = self.responsable_of_2
+        aidant = AidantFactory(organisation=responsable.organisation)
+        self.client.force_login(responsable)
+
+        self.assertEqual(len(aidant.organisations.all()), 1)
+        response = self.client.post(
+            self.get_form_url(aidant),
+            {"organisations": [org.id for org in responsable.responsable_de.all()]},
+        )
+        self.assertRedirects(response, self.get_aidant_url(aidant))
+        aidant.refresh_from_db()
+        self.assertEqual(len(aidant.organisations.all()), 2)
+        self.assertTrue(
+            all(
+                org in aidant.organisations.all()
+                for org in responsable.responsable_de.all()
+            )
+        )
+
+    def test_active_organisation_is_switched_if_necessary(self):
+        responsable = self.responsable_of_2
+        first_org, other_org = responsable.responsable_de.all()
+
+        aidant = AidantFactory(organisation=first_org)
+        self.assertEqual(len(aidant.organisations.all()), 1)
+        self.assertIn(first_org, aidant.organisations.all())
+
+        self.client.force_login(responsable)
+        response = self.client.post(
+            self.get_form_url(aidant),
+            {"organisations": [other_org.id]},
+        )
+        self.assertRedirects(response, self.get_aidant_url(aidant))
+
+        aidant.refresh_from_db()
+        self.assertEqual(
+            len(aidant.organisations.all()),
+            1,
+            "Aidant’s organisations should contain only one organisation.",
+        )
+        self.assertIn(other_org, aidant.organisations.all())
+        self.assertEqual(aidant.organisation, other_org)
+
+    def test_responsable_cannot_change_an_unrelated_organisation_on_their_aidants(self):
+        responsable = self.responsable_of_2
+        respo_org_1, respo_org_2 = responsable.responsable_de.all()
+        aidant = AidantFactory()
+        aidant_initial_org = aidant.organisation
+        aidant.organisations.add(respo_org_1)
+
+        self.assertIn(aidant_initial_org, aidant.organisations.all())
+        self.assertIn(respo_org_1, aidant.organisations.all())
+        self.assertEqual(len(aidant.organisations.all()), 2)
+
+        self.client.force_login(responsable)
+        self.client.post(
+            self.get_form_url(aidant),
+            {"organisations": [respo_org_1.id, respo_org_2.id]},
+        )
+
+        aidant.refresh_from_db()
+        self.assertIn(aidant_initial_org, aidant.organisations.all())
+        self.assertIn(respo_org_1, aidant.organisations.all())
+        self.assertIn(respo_org_2, aidant.organisations.all())
+        self.assertEqual(
+            len(aidant.organisations.all()),
+            3,
+            "Aidant’s organisations should contain 3 organisations.",
+        )
+        self.assertEqual(aidant.organisation, aidant_initial_org)
+
+    def test_responsable_cannot_change_orgs_of_unrelated_aidant(self):
+        responsable = self.responsable_of_2
+        aidant = AidantFactory()
+
+        self.client.force_login(responsable)
+        response = self.client.post(
+            self.get_form_url(aidant),
+            {"organisations": [responsable.organisation.id]},
         )
         self.assertEqual(response.status_code, 404)
 
@@ -181,9 +311,7 @@ class EspaceResponsableAddAidant(TestCase):
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
 
         cls.id_organisation = cls.responsable_tom.organisation.id
-        cls.add_aidant_url = (
-            f"/espace-responsable/organisation/{cls.id_organisation}" "/aidant/ajouter/"
-        )
+        cls.add_aidant_url = "/espace-responsable/aidant/ajouter/"
         cls.autre_organisation = OrganisationFactory()
 
     def test_add_aidant_url_triggers_the_right_view(self):

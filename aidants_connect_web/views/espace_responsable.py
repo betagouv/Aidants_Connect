@@ -20,6 +20,7 @@ from aidants_connect_web.decorators import (
 from aidants_connect_web.forms import (
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
+    ChangeAidantOrganisationsForm,
     HabilitationRequestCreationForm,
     RemoveCardFromAidantForm,
 )
@@ -63,9 +64,9 @@ def organisation(request, organisation_id):
     organisation = get_object_or_404(Organisation, pk=organisation_id)
     check_organisation_and_responsable(responsable, organisation)
 
-    aidants = organisation.current_aidants.order_by(
-        "-is_active", "last_name"
-    ).prefetch_related("carte_totp")
+    aidants = organisation.aidants.order_by("-is_active", "last_name").prefetch_related(
+        "carte_totp"
+    )
     habilitation_requests = organisation.habilitation_requests.exclude(
         status=HabilitationRequest.STATUS_VALIDATED
     ).order_by("status", "last_name")
@@ -91,21 +92,25 @@ def organisation(request, organisation_id):
 @login_required
 @user_is_responsable_structure
 @activity_required
-def aidant(request, organisation_id, aidant_id):
+def aidant(request, aidant_id):
     responsable: Aidant = request.user
-    organisation = get_object_or_404(Organisation, pk=organisation_id)
-    check_organisation_and_responsable(responsable, organisation)
-
     aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if aidant.organisation.id != organisation_id:
+    if not responsable.can_see_aidant(aidant):
         raise Http404
 
     form = RemoveCardFromAidantForm()
+    orga_form = ChangeAidantOrganisationsForm(responsable, aidant)
 
     return render(
         request,
         "aidants_connect_web/espace_responsable/aidant.html",
-        {"aidant": aidant, "organisation": organisation, "form": form},
+        {
+            "aidant": aidant,
+            "organisation": organisation,
+            "form": form,
+            "orga_form": orga_form,
+            "responsable": responsable,
+        },
     )
 
 
@@ -113,13 +118,17 @@ def aidant(request, organisation_id, aidant_id):
 @login_required
 @user_is_responsable_structure
 @activity_required
-def remove_card_from_aidant(request, organisation_id, aidant_id):
+def remove_card_from_aidant(request, aidant_id):
     responsable: Aidant = request.user
-    organisation = get_object_or_404(Organisation, pk=organisation_id)
-    check_organisation_and_responsable(responsable, organisation)
     aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if aidant.organisation.id != organisation_id:
+    if not responsable.can_see_aidant(aidant):
         raise Http404
+
+    if not aidant.has_a_carte_totp:
+        return redirect(
+            "espace_responsable_aidant",
+            aidant_id=aidant.id,
+        )
 
     form = RemoveCardFromAidantForm(request.POST)
 
@@ -152,7 +161,55 @@ def remove_card_from_aidant(request, organisation_id, aidant_id):
 
     return redirect(
         "espace_responsable_aidant",
-        organisation_id=organisation.id,
+        aidant_id=aidant.id,
+    )
+
+
+@require_POST
+@login_required
+@user_is_responsable_structure
+@activity_required
+def change_aidant_organisations(request, aidant_id):
+    responsable: Aidant = request.user
+    aidant = get_object_or_404(Aidant, pk=aidant_id)
+    if not responsable.can_see_aidant(aidant):
+        raise Http404
+
+    form = ChangeAidantOrganisationsForm(responsable, aidant, data=request.POST)
+    if not form.is_valid():
+        errors = str(form.errors["organisations"])
+        django_messages.error(request, errors)
+        return redirect(
+            "espace_responsable_aidant",
+            aidant_id=aidant.id,
+        )
+
+    responsable_organisations = responsable.responsable_de.all()
+    aidant_organisations = aidant.organisations.all()
+    posted_organisations = form.cleaned_data["organisations"]
+
+    unrelated_organisations = aidant_organisations.difference(responsable_organisations)
+    aidant.organisations.set(unrelated_organisations.union(posted_organisations))
+
+    if aidant.organisation not in aidant.organisations.all():
+        aidant.organisation = aidant.organisations.first()
+
+    aidant.save()
+
+    if len(posted_organisations) > 1:
+        message = (
+            f"Tout s’est bien passé, {aidant} a été rattaché(e) aux organisations "
+            f"{', '.join(org.name for org in posted_organisations)}."
+        )
+    else:
+        message = (
+            f"Tout s’est bien passé, {aidant} a été rattaché(e) à l'organisation "
+            f"{posted_organisations[0].name}."
+        )
+    django_messages.success(request, message)
+
+    return redirect(
+        "espace_responsable_aidant",
         aidant_id=aidant.id,
     )
 
@@ -161,13 +218,10 @@ def remove_card_from_aidant(request, organisation_id, aidant_id):
 @login_required
 @user_is_responsable_structure
 @activity_required
-def associate_aidant_carte_totp(request, organisation_id, aidant_id):
+def associate_aidant_carte_totp(request, aidant_id):
     responsable: Aidant = request.user
-    organisation = get_object_or_404(Organisation, pk=organisation_id)
-    check_organisation_and_responsable(responsable, organisation)
-
     aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if aidant.organisation.id != organisation_id:
+    if not responsable.can_see_aidant(aidant):
         raise Http404
 
     if hasattr(aidant, "carte_totp"):
@@ -181,7 +235,6 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
         )
         return redirect(
             "espace_responsable_aidant",
-            organisation_id=organisation.id,
             aidant_id=aidant.id,
         )
 
@@ -204,7 +257,6 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
 
                 return redirect(
                     "espace_responsable_validate_totp",
-                    organisation_id=organisation.id,
                     aidant_id=aidant.id,
                 )
             except Exception:
@@ -230,13 +282,10 @@ def associate_aidant_carte_totp(request, organisation_id, aidant_id):
 @login_required
 @user_is_responsable_structure
 @activity_required
-def validate_aidant_carte_totp(request, organisation_id, aidant_id):
+def validate_aidant_carte_totp(request, aidant_id):
     responsable: Aidant = request.user
-    organisation = get_object_or_404(Organisation, pk=organisation_id)
-    check_organisation_and_responsable(responsable, organisation)
-
     aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if aidant.organisation.id != organisation_id:
+    if not responsable.can_see_aidant(aidant):
         raise Http404
 
     if not hasattr(aidant, "carte_totp"):
@@ -249,8 +298,8 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
             ),
         )
         return redirect(
-            "espace_responsable_organisation",
-            organisation_id=organisation.id,
+            "espace_responsable_aidant",
+            aidant_id=aidant.id,
         )
 
     if request.method == "POST":
@@ -280,8 +329,8 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
                 ),
             )
             return redirect(
-                "espace_responsable_organisation",
-                organisation_id=organisation.id,
+                "espace_responsable_aidant",
+                aidant_id=aidant.id,
             )
         else:
             django_messages.error(request, "Ce code n’est pas valide.")
@@ -297,26 +346,24 @@ def validate_aidant_carte_totp(request, organisation_id, aidant_id):
 @login_required
 @user_is_responsable_structure
 @activity_required
-def new_habilitation_request(request, organisation_id):
-    def render_template(request, organisation, form):
+def new_habilitation_request(request):
+    def render_template(request, form):
         return render(
             request,
             "aidants_connect_web/espace_responsable/new-habilitation-request.html",
-            {"organisation": organisation, "form": form},
+            {"form": form},
         )
 
     responsable: Aidant = request.user
-    organisation = get_object_or_404(Organisation, pk=organisation_id)
-    check_organisation_and_responsable(responsable, organisation)
 
     if request.method == "GET":
-        form = HabilitationRequestCreationForm(responsable, organisation)
-        return render_template(request, organisation, form)
+        form = HabilitationRequestCreationForm(responsable)
+        return render_template(request, form)
 
-    form = HabilitationRequestCreationForm(responsable, organisation, request.POST)
+    form = HabilitationRequestCreationForm(responsable, request.POST)
 
     if not form.is_valid():
-        return render_template(request, organisation, form)
+        return render_template(request, form)
 
     habilitation_request = form.save(commit=False)
 
@@ -332,7 +379,7 @@ def new_habilitation_request(request, organisation_id):
                 "nouvelle demande pour cette adresse-ci."
             ),
         )
-        return render_template(request, organisation, form)
+        return render_template(request, form)
 
     if HabilitationRequest.objects.filter(
         email=habilitation_request.email,
@@ -346,7 +393,7 @@ def new_habilitation_request(request, organisation_id):
                 "une nouvelle."
             ),
         )
-        return render_template(request, organisation, form)
+        return render_template(request, form)
 
     habilitation_request.save()
     django_messages.success(

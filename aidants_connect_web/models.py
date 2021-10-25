@@ -56,7 +56,7 @@ class Organisation(models.Model):
 
     @cached_property
     def num_active_aidants(self):
-        return self.current_aidants.active().count()
+        return self.aidants.active().count()
 
     def admin_num_active_aidants(self):
         return self.num_active_aidants
@@ -153,6 +153,7 @@ class Aidant(AbstractUser):
     organisation = models.ForeignKey(
         Organisation,
         on_delete=models.CASCADE,
+        verbose_name="Organisation courante",
         related_name="current_aidants",
     )
     organisations = models.ManyToManyField(
@@ -299,6 +300,15 @@ class Aidant(AbstractUser):
         :return: True if the Aidant is responsable of at least one organisation
         """
         return self.responsable_de.count() >= 1
+
+    def can_see_aidant(self, aidant):
+        """
+        :return: True if the current object is responsible for at least one of aidant's
+        organisations
+        """
+        respo_orgas = self.responsable_de.all()
+        aidant_orgas = aidant.organisations.all()
+        return any(org in respo_orgas for org in aidant_orgas)
 
     def must_validate_cgu(self):
         return self.validated_cgu_version != settings.CGU_CURRENT_VERSION

@@ -39,10 +39,10 @@ class ValidateCarteTOTPTests(TestCase):
             tolerance=30, key=cls.carte.seed, user=cls.aidant_tim, step=60
         )
         cls.device.save()
-        cls.organisation_url = f"/espace-responsable/organisation/{cls.org_id}/"
+        cls.organisation_url = f"/espace-responsable/organisation/{cls.org_id}"
+        cls.aidant_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
         cls.validation_url = (
-            f"/espace-responsable/organisation/{cls.org_id}/"
-            f"aidant/{cls.aidant_tim.id}/valider-carte"
+            f"/espace-responsable/aidant/{cls.aidant_tim.id}/valider-carte"
         )
 
     def test_validation_page_triggers_the_right_view(self):
@@ -66,7 +66,7 @@ class ValidateCarteTOTPTests(TestCase):
                 data={"otp_token": str(888888)},
             )
             self.assertRedirects(
-                response, self.organisation_url, fetch_redirect_response=False
+                response, self.aidant_url, fetch_redirect_response=False
             )
 
         # Check TOTP device is correct
