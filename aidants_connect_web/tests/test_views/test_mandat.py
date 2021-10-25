@@ -85,7 +85,9 @@ class NewMandatTests(TestCase):
             "is_remote": True,
         }
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertEqual(response.status_code, 200)
+        # TODO: Reactivate when SMS consent is a thing
+        # self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
         data["user_phone"] = self.phone_number
         response = self.client.post("/creation_mandat/", data=data)

@@ -8,6 +8,8 @@
         }
 
         function toggle_phone_number_panel(checked) {
+            // TODO: Reactivate when SMS consent is a thing
+            return;
             let phone_number_panel = document.getElementById("phone_number_panel");
 
             if(checked) {
