@@ -1,4 +1,5 @@
 import time
+from unittest import skip
 
 from django.conf import settings
 from django.test import tag
@@ -125,6 +126,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         ].find_elements_by_css_selector("tbody tr")
         self.assertEqual(len(active_mandats_after), 2)
 
+    @skip("Reactivate when SMS consent is a thing")
     def test_create_new_remote_mandat(self):
         wait = WebDriverWait(self.selenium, 10)
 

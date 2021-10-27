@@ -182,15 +182,16 @@ class MandatForm(forms.Form):
     def clean(self):
         cleaned = super().clean()
 
-        user_phone = cleaned.get("user_phone", None)
-        if user_phone is not None and cleaned["is_remote"] and len(user_phone) == 0:
-            self.add_error(
-                "user_phone",
-                _(
-                    "Un numéro de téléphone est obligatoire "
-                    "si le mandat est signé à distance."
-                ),
-            )
+        # TODO: Reactivate when SMS consent is a thing
+        # user_phone = cleaned.get("user_phone")
+        # if user_phone is not None and cleaned["is_remote"] and len(user_phone) == 0:
+        #     self.add_error(
+        #         "user_phone",
+        #         _(
+        #             "Un numéro de téléphone est obligatoire "
+        #             "si le mandat est signé à distance."
+        #         ),
+        #     )
 
         return cleaned
 

@@ -232,17 +232,18 @@ class MandatFormTests(TestCase):
             form_3.errors["duree"], ["Veuillez sélectionner la durée du mandat."]
         )
 
-        form_4 = MandatForm(
-            data={"demarche": ["travail"], "duree": "SHORT", "is_remote": True}
-        )
-        self.assertFalse(form_4.is_valid())
-        self.assertEqual(
-            form_4.errors["user_phone"],
-            [
-                "Un numéro de téléphone est obligatoire si "
-                "le mandat est signé à distance."
-            ],
-        )
+        # TODO: Reactivate when SMS consent is a thing
+        # form_4 = MandatForm(
+        #     data={"demarche": ["travail"], "duree": "SHORT", "is_remote": True}
+        # )
+        # self.assertFalse(form_4.is_valid())
+        # self.assertEqual(
+        #     form_4.errors["user_phone"],
+        #     [
+        #         "Un numéro de téléphone est obligatoire si "
+        #         "le mandat est signé à distance."
+        #     ],
+        # )
 
     def test_non_existing_demarche_triggers_error(self):
         form = MandatForm(data={"demarche": ["test"], "duree": "16"})
