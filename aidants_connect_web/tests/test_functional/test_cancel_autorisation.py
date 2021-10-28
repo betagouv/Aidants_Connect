@@ -55,7 +55,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         # See all mandats of usager page
         active_mandats_before = self.selenium.find_elements_by_id("active-mandat-panel")
         self.assertEqual(len(active_mandats_before), 1)
-        active_mandats_autorisations_before = self.selenium.find_elements_by_id(
+        active_mandats_autorisations_before = self.selenium.find_elements_by_class_name(
             "active-mandat-autorisation-row"
         )
         self.assertEqual(len(active_mandats_autorisations_before), 2)
@@ -100,11 +100,16 @@ class CancelAutorisationTests(FunctionalTestCase):
             "active-mandat-panel"
         )
         self.assertEqual(len(active_autorisations_after), 1)
-        active_mandats_autorisations_after = self.selenium.find_elements_by_id(
+
+        active_mandats_autorisations_after = self.selenium.find_elements_by_class_name(
             "active-mandat-autorisation-row"
         )
+        revoked_mandat_autorisation_after = self.selenium.find_element_by_id(
+            f"active-mandat-autorisation-{self.money_authorization.demarche}"
+        )
+
         self.assertEqual(len(active_mandats_autorisations_after), 2)
-        self.assertIn("Révoqué", active_mandats_autorisations_after[0].text)
+        self.assertIn("Révoqué", revoked_mandat_autorisation_after.text)
 
         auth_revocation_attestation_button = (
             self.selenium.find_elements_by_css_selector(
@@ -119,9 +124,9 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.assertEqual(last_journal_entry.action, "cancel_autorisation")
 
         # Cancel second autorisation
-        cancel_mandat_autorisation_button = active_mandats_autorisations_after[
-            1
-        ].find_element_by_tag_name("a")
+        cancel_mandat_autorisation_button = self.selenium.find_element_by_id(
+            f"active-mandat-autorisation-{self.family_authorization.demarche}"
+        ).find_element_by_tag_name("a")
         cancel_mandat_autorisation_button.click()
 
         # Confirm cancellation
@@ -142,8 +147,10 @@ class CancelAutorisationTests(FunctionalTestCase):
             "inactive-mandat-panel"
         )
         self.assertEqual(len(inactive_autorisations_after), 1)
-        inactive_mandats_autorisations_after = self.selenium.find_elements_by_id(
-            "inactive-mandat-autorisation-row"
+        inactive_mandats_autorisations_after = (
+            self.selenium.find_elements_by_class_name(
+                "inactive-mandat-autorisation-row"
+            )
         )
         self.assertEqual(len(inactive_mandats_autorisations_after), 2)
         self.assertIn("Révoqué", inactive_mandats_autorisations_after[0].text)

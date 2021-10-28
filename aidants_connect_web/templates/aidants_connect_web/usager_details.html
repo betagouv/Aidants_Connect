@@ -65,7 +65,10 @@
               </thead>
               <tbody>
                 {% for autorisation in mandat.autorisations.all %}
-                  <tr id="active-mandat-autorisation-row">
+                  <tr
+                    id="active-mandat-autorisation-{{ autorisation.demarche }}"
+                    class="active-mandat-autorisation-row"
+                  >
                     <td>{{ autorisation.demarche }}</td>
                     <td>
                       {% if not autorisation.revocation_date %}
@@ -143,7 +146,10 @@
               </thead>
               <tbody>
                 {% for autorisation in mandat.autorisations.all %}
-                  <tr id="inactive-mandat-autorisation-row">
+                  <tr
+                    id="inactive-mandat-autorisation-{{ autorisation.demarche }}"
+                    class="inactive-mandat-autorisation-row"
+                  >
                     <td>{{ autorisation.demarche }}</td>
                     <td>
                       {% if not autorisation.revocation_date %}
