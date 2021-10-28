@@ -20,12 +20,12 @@
       <h1>Désigner un nouveau responsable pour {{ organisation }}</h1>
       {% if organisation.responsables.all|length == 1 %}
         <p>
-          Actuellement, votre organisation {{ organisation }} compte un seul responsable
-          : {{ organisation.responsables.first }}.
+          Actuellement, votre organisation {{ organisation }} compte un seul responsable : 
+          {{ organisation.responsables.first }}.
         </p>
       {% else %}
         <p>Actuellement, votre organisation {{ organisation }} compte {{ organisation.responsables.all|length }}
-          responsables :</p>
+          responsables :</p>
         <ul>
           {% for responsable in organisation.responsables.all %}
             <li>{{ responsable }}</li>
@@ -43,7 +43,7 @@
           {% endif %}
         {% endwith %}
         <div class="form__group">
-          <label for="{{ form.candidate.id_for_label }}">Nouveau responsable :</label>
+          <label for="{{ form.candidate.id_for_label }}">Nouveau responsable :</label>
           <div>
             {{ form.candidate }}
           </div>
