@@ -84,8 +84,8 @@
                 <legend>
                   Cochez la ou les organisations auxquelles rattacher {{ aidant }}.
                   Cela lui permettra de créer des mandats en leur nom.
-                  {% if form.errors.organisations %}
-                    {{ form.errors.organisations }}
+                  {% if orga_form.errors.organisations %}
+                    {{ orga_form.errors.organisations }}
                   {% endif %}
                 </legend>
                 <ul class="grid checkbox-list small-checkboxes">
