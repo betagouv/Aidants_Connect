@@ -109,7 +109,7 @@ class SwitchOrganisationTests(TestCase):
         )
         self.assertRedirects(response, self.url, fetch_redirect_response=False)
         response = self.client.get(self.url)
-        self.assertContains(response, "Il est impossible de vous assigner")
+        self.assertContains(response, "Il est impossible")
         aidant.refresh_from_db()
         self.assertEqual(aidant.organisation.id, orgas[0].id)
 
@@ -126,7 +126,7 @@ class SwitchOrganisationTests(TestCase):
         )
         self.assertRedirects(response, self.url, fetch_redirect_response=False)
         response = self.client.get(self.url)
-        self.assertContains(response, "Il est impossible de vous assigner")
+        self.assertContains(response, "Il est impossible")
         self.assertNotContains(response, unrelated_org.name)
         aidant.refresh_from_db()
         self.assertEqual(aidant.organisation.id, orgas[0].id)
