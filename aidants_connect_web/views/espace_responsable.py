@@ -18,6 +18,7 @@ from aidants_connect_web.decorators import (
     activity_required,
 )
 from aidants_connect_web.forms import (
+    AddOrganisationResponsableForm,
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
     ChangeAidantOrganisationsForm,
@@ -84,6 +85,54 @@ def organisation(request, organisation_id):
             "aidants": aidants,
             "totp_devices_users": totp_devices_users,
             "habilitation_requests": habilitation_requests,
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+@user_is_responsable_structure
+@activity_required
+def organisation_responsables(request, organisation_id):
+    responsable: Aidant = request.user
+    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    check_organisation_and_responsable(responsable, organisation)
+
+    if request.method == "GET":
+        form = AddOrganisationResponsableForm(organisation)
+        return render(
+            request,
+            "aidants_connect_web/espace_responsable/responsables.html",
+            {
+                "user": responsable,
+                "organisation": organisation,
+                "form": form,
+            },
+        )
+
+    form = AddOrganisationResponsableForm(organisation, data=request.POST)
+    if form.is_valid():
+        data = form.cleaned_data
+        new_responsable = data["candidate"]
+        new_responsable.responsable_de.add(organisation)
+        new_responsable.save()
+        django_messages.success(
+            request,
+            (
+                f"Tout s’est bien passé, {new_responsable} est maintenant responsable"
+                f"de l’organisation {organisation}."
+            ),
+        )
+        return redirect(
+            "espace_responsable_organisation", organisation_id=organisation_id
+        )
+    return render(
+        request,
+        "aidants_connect_web/espace_responsable/responsables.html",
+        {
+            "user": responsable,
+            "organisation": organisation,
+            "form": form,
         },
     )
 

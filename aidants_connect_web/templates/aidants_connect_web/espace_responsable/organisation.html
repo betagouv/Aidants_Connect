@@ -27,6 +27,12 @@
     <div class="container">
       <h2>Aidants</h2>
       <p class="text-right">
+        {% if organisation.aidants_not_responsables|length > 0 %}
+        <a href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}" class="button">
+          <span aria-hidden="true">⚙️</span>
+          Désigner un responsable
+        </a>
+        {% endif %}
         <a href="{% url "espace_responsable_aidant_new" %}" class="button">
           <span aria-hidden="true">👩</span>
           Ajouter un aidant
@@ -47,6 +53,9 @@
               <th scope="row">
                 <a href="{% url "espace_responsable_aidant" aidant_id=aidant.id %}">
                   {{ aidant.get_full_name }}
+                  {% if aidant in organisation.responsables.all %}
+                    <br>(Responsable)
+                  {% endif %}
                   {% if not aidant.is_active %}
                     <br>(Compte désactivé)
                   {% endif %}
