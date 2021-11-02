@@ -32,6 +32,7 @@ def fc_authorize(request):
     fc_id = settings.FC_AS_FS_ID
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
     fc_scopes = [
+        "openid",
         "email",
         "gender",
         "birthdate",
@@ -47,7 +48,7 @@ def fc_authorize(request):
         f"response_type=code"
         f"&client_id={fc_id}"
         f"&redirect_uri={fc_callback_uri}"
-        f"&scope={'openid' + ''.join(['%20' + scope for scope in fc_scopes])}"
+        f"&scope={'%20'.join(fc_scopes)}"
         f"&state={connection.state}"
         f"&nonce={connection.nonce}"
         f"&acr_values=eidas1"
