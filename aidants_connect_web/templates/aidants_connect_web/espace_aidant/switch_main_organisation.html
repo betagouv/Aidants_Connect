@@ -29,23 +29,23 @@
         </p>
         <fieldset class="grid">
           <legend class="sr-only">Choisir une nouvelle organisation active</legend>
-          {% for organisation in aidant.organisations.all %}
+          {% for value, label in form.organisation.field.choices %}
             <div class="tile">
               <input
-                  id="organisation-{{ organisation.id }}"
+                  id="organisation_{{ value }}"
                   type="radio"
-                  value="{{ organisation.id }}"
+                  value="{{ value }}"
                   name="organisation"
                   class="sr-only"
-                  {% if organisation.id == aidant.organisation.id %}checked{% endif %}
+                  {% if value == aidant.organisation.id %}checked{% endif %}
               />
-              <label class="organisation-label" for="organisation-{{ organisation.id }}">
-                <strong>{{ organisation.name }}</strong>
-                <span>{{ organisation.address }}</span>
+              <label class="organisation-label" for="organisation_{{ value }}">
+                <strong>{{ label }}</strong>
+                <span>{{ value.instance.address }}</span>
               </label>
             </div>
           {% endfor %}
-          <input name="next" value="{{ next_url }}" hidden>
+          {{ form.next_url.as_hidden }}
         </fieldset>
 
         <input

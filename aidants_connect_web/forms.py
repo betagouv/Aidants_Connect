@@ -270,6 +270,23 @@ class RemoveCardFromAidantForm(forms.Form):
     other_reason = forms.CharField(required=False)
 
 
+class SwitchMainAidantOrganisationForm(forms.Form):
+    organisation = forms.ModelChoiceField(
+        queryset=Organisation.objects.none(),
+        widget=forms.RadioSelect,
+    )
+    next_url = forms.CharField(required=False)
+
+    def __init__(self, aidant: Aidant, next_url="", *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.aidant = aidant
+        self.fields["organisation"].queryset = Organisation.objects.filter(
+            aidants=self.aidant
+        ).order_by("name")
+        self.initial["organisation"] = self.aidant.organisation
+        self.initial["next_url"] = next_url
+
+
 class AddOrganisationResponsableForm(forms.Form):
     candidate = forms.ModelChoiceField(queryset=Aidant.objects.none())
 

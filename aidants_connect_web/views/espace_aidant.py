@@ -8,8 +8,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
-from aidants_connect_web.forms import ValidateCGUForm
-from aidants_connect_web.models import Aidant, Journal, Organisation
+from aidants_connect_web.forms import ValidateCGUForm, SwitchMainAidantOrganisationForm
+from aidants_connect_web.models import Aidant, Journal
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 
 
@@ -78,38 +78,44 @@ def switch_main_organisation(request: HttpRequest):
     aidant: Aidant = request.user
 
     if request.method == "GET":
+        form = SwitchMainAidantOrganisationForm(
+            aidant, next_url=request.GET.get("next", "")
+        )
         return render(
             request,
             "aidants_connect_web/espace_aidant/switch_main_organisation.html",
             {
                 "aidant": aidant,
-                "next_url": request.GET.get("next", ""),
                 "organisations": aidant.organisations,
+                "form": form,
                 "disable_change_organisation": True,
             },
         )
 
-    organisation_id = request.POST["organisation"]
-
-    try:
-        new_organisation = Organisation.objects.get(pk=organisation_id)
-        if new_organisation not in aidant.organisations.all():
-            raise Organisation.DoesNotExist()
-    except Organisation.DoesNotExist:
+    form = SwitchMainAidantOrganisationForm(aidant, data=request.POST)
+    if not form.is_valid():
         django_messages.error(
             request,
-            "Il est impossible de vous assigner l'organisation numéro "
-            f"{organisation_id}",
+            "Il est impossible de vous déplacer dans cette organisation.",
         )
         return redirect("espace_aidant_switch_main_organisation")
 
+    data = form.cleaned_data
+
+    new_org = data.get("organisation")
     previous_org = aidant.organisation
-    aidant.organisation = new_organisation
+    aidant.organisation = new_org
     aidant.save()
+
     Journal.log_switch_organisation(aidant, previous_org)
 
+    django_messages.success(
+        request,
+        f"Votre organisation active est maintenant {new_org} — {new_org.address}.",
+    )
+
     default_next = reverse("espace_aidant_home")
-    next_url = request.POST.get("next", default_next)
+    next_url = data.get("next_url")
     next_url = unquote(next_url) if next_url else default_next
 
     return HttpResponseRedirect(next_url)
