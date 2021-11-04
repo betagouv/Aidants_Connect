@@ -6,7 +6,11 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequ
 from django.views.decorators.csrf import csrf_exempt
 
 from aidants_connect_web.forms import DatapassHabilitationForm, DatapassForm
-from aidants_connect_web.models import Organisation, OrganisationType
+from aidants_connect_web.models import (
+    Organisation,
+    OrganisationType,
+    HabilitationRequest,
+)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -33,6 +37,14 @@ def get_content(request):
         # if post data has querystring form
         content = request.POST
     return content
+
+
+def habilitation_already_exists(content):
+    if "email" not in content or "data_pass_id" not in content:
+        return False
+    return HabilitationRequest.objects.filter(
+        email=content["email"], organisation__data_pass_id=content["data_pass_id"]
+    )
 
 
 @csrf_exempt
@@ -84,6 +96,10 @@ def habilitation_receiver(request):
         return HttpResponseForbidden()
 
     content = get_content(request)
+
+    if habilitation_already_exists(content):
+        log.warning("Habilitation already exists.")
+        return HttpResponse(status=200)
 
     form = DatapassHabilitationForm(data=content)
 
