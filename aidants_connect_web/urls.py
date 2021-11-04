@@ -142,22 +142,30 @@ urlpatterns = [
         name="espace_responsable_aidant_new",
     ),
     path(
-        ("espace-responsable/aidant/<int:aidant_id>/supprimer-carte/"),
+        "espace-responsable/aidant/<int:aidant_id>/supprimer-carte/",
         espace_responsable.remove_card_from_aidant,
         name="espace_responsable_aidant_remove_card",
     ),
     path(
-        ("espace-responsable/aidant/<int:aidant_id>/changer-organisations/"),
+        "espace-responsable/aidant/<int:aidant_id>/changer-organisations/",
         espace_responsable.change_aidant_organisations,
         name="espace_responsable_aidant_change_organisations",
     ),
     path(
-        ("espace-responsable/aidant/<int:aidant_id>/lier-carte"),
+        (
+            "espace-responsable/aidant/<int:aidant_id>/"
+            "supprimer-organisation/<int:organisation_id>/"
+        ),
+        espace_responsable.remove_aidant_from_organisation,
+        name="espace_responsable_remove_aidant_from_organisation",
+    ),
+    path(
+        "espace-responsable/aidant/<int:aidant_id>/lier-carte",
         espace_responsable.associate_aidant_carte_totp,
         name="espace_responsable_associate_totp",
     ),
     path(
-        ("espace-responsable/aidant/<int:aidant_id>/valider-carte"),
+        "espace-responsable/aidant/<int:aidant_id>/valider-carte",
         espace_responsable.validate_aidant_carte_totp,
         name="espace_responsable_validate_totp",
     ),
