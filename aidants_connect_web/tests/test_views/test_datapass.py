@@ -7,7 +7,10 @@ from aidants_connect_web.models import (
     OrganisationType,
 )
 from aidants_connect_web.views import datapass
-from aidants_connect_web.tests.factories import OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    HabilitationRequestFactory,
+    OrganisationFactory,
+)
 from django.urls import resolve
 
 
@@ -116,6 +119,15 @@ class HabilitationDatapass(DatapassMixin, TestCase):
     def test_datapass_url_triggers_the_good_view(self):
         found = resolve(self.datapass_url)
         self.assertEqual(found.func, datapass.habilitation_receiver)
+
+    def test_datapass_dont_recreate_habilitation_request(self):
+        HabilitationRequestFactory(
+            organisation=self.organisation, email="mario.brossse@world.fr"
+        )
+        self.assertEqual(HabilitationRequest.objects.count(), 1)
+        response = self.datapass_request(data=self.good_data_from_datapass)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(HabilitationRequest.objects.count(), 1)
 
     def test_message_body_can_create_habilitation_request(self):
         self.assertEqual(HabilitationRequest.objects.count(), 0)
