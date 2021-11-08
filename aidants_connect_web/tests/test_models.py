@@ -1367,8 +1367,12 @@ class HabilitationRequestMethodTests(TestCase):
         self.assertEqual(
             1, Aidant.objects.filter(email=habilitation_request.email).count()
         )
-        db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
-        self.assertEqual(db_hab_request.status, HabilitationRequest.STATUS_VALIDATED)
+        habilitation_request.refresh_from_db()
+        self.assertEqual(
+            habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+        )
+        aidant.refresh_from_db()
+        self.assertIn(habilitation_request.organisation, aidant.organisations.all())
 
     def test_do_not_validate_if_invalid_status(self):
         for status in (

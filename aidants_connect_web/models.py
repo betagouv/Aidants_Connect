@@ -389,6 +389,8 @@ class HabilitationRequest(models.Model):
             return False
 
         if Aidant.objects.filter(username=self.email).count() > 0:
+            aidant = Aidant.objects.get(username=self.email)
+            aidant.organisations.add(self.organisation)
             self.status = self.STATUS_VALIDATED
             self.save()
             return True
