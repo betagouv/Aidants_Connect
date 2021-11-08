@@ -543,6 +543,7 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
         "first_name",
         "last_name",
         "organisation",
+        "display_datapass_id",
         "profession",
         "status",
         "created_at",
@@ -551,9 +552,25 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused")
     list_filter = ("status", HabilitationRequestRegionFilter)
-    search_fields = ("first_name", "last_name", "email", "organisation__name")
+    search_fields = (
+        "first_name",
+        "last_name",
+        "email",
+        "organisation__name",
+        "organisation__data_pass_id",
+    )
     ordering = ("email",)
     resource_class = HabilitationRequestResource
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.prefetch_related("organisation")
+
+    def display_datapass_id(self, obj):
+        if obj.organisation:
+            return obj.organisation.data_pass_id
+
+    display_datapass_id.short_description = "N° Datapass"
 
     def mark_validated(self, request, queryset):
         rows_updated = sum(
