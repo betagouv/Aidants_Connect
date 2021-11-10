@@ -205,6 +205,24 @@ class OrganisationRegionFilter(RegionFilter):
         return queryset.filter(qgroup)
 
 
+class WithoutDatapassIdFilter(SimpleListFilter):
+    title = "Numéro de demande Datapass"
+
+    parameter_name = "datapass_id"
+
+    def lookups(self, request, model_admin):
+        return (("without", "Sans n° Datapass"),)
+
+    def queryset(self, request, queryset):
+        datapass_id = self.value()
+
+        if not datapass_id:
+            return
+
+        if datapass_id == "without":
+            return queryset.filter(data_pass_id=None)
+
+
 class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "name",
@@ -219,7 +237,7 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     )
     readonly_fields = ("data_pass_id", "display_aidants")
     search_fields = ("name", "siret", "data_pass_id")
-    list_filter = ("is_active", OrganisationRegionFilter)
+    list_filter = ("is_active", WithoutDatapassIdFilter, OrganisationRegionFilter)
 
     # For bulk import
     resource_class = OrganisationResource
