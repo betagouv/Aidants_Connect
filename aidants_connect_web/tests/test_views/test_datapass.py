@@ -134,3 +134,8 @@ class HabilitationDatapass(DatapassMixin, TestCase):
         response = self.datapass_request(data=self.good_data_from_datapass)
         self.assertEqual(response.status_code, 202)
         self.assertEqual(HabilitationRequest.objects.count(), 1)
+        habilitation_request = HabilitationRequest.objects.first()
+        self.assertEqual(
+            habilitation_request.origin, HabilitationRequest.ORIGIN_DATAPASS
+        )
+        self.assertEqual(habilitation_request.status, HabilitationRequest.STATUS_NEW)

@@ -337,6 +337,7 @@ class Aidant(AbstractUser):
 
 
 class HabilitationRequest(models.Model):
+    STATUS_NEW = "new"
     STATUS_PROCESSING = "processing"
     STATUS_VALIDATED = "validated"
     STATUS_REFUSED = "refused"
@@ -347,8 +348,9 @@ class HabilitationRequest(models.Model):
     ORIGIN_OTHER = "autre"
 
     STATUS_LABELS = {
-        STATUS_VALIDATED: "Validée",
+        STATUS_NEW: "Nouvelle",
         STATUS_PROCESSING: "En cours",
+        STATUS_VALIDATED: "Validée",
         STATUS_REFUSED: "Refusée",
         STATUS_CANCELLED: "Annulée",
     }
@@ -375,7 +377,7 @@ class HabilitationRequest(models.Model):
         "État",
         blank=False,
         max_length=150,
-        default=STATUS_PROCESSING,
+        default=STATUS_NEW,
         choices=((status, label) for status, label in STATUS_LABELS.items()),
     )
     origin = models.CharField(
