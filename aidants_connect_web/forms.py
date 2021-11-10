@@ -397,4 +397,5 @@ class DatapassHabilitationForm(forms.ModelForm):
 
     def save(self, commit=True):
         self.instance.organisation = self.cleaned_data["organisation"]
+        self.instance.origin = HabilitationRequest.ORIGIN_DATAPASS
         return super().save(commit)

@@ -342,11 +342,21 @@ class HabilitationRequest(models.Model):
     STATUS_REFUSED = "refused"
     STATUS_CANCELLED = "cancelled"
 
+    ORIGIN_DATAPASS = "datapass"
+    ORIGIN_RESPONSABLE = "responsable"
+    ORIGIN_OTHER = "autre"
+
     STATUS_LABELS = {
         STATUS_VALIDATED: "Validée",
         STATUS_PROCESSING: "En cours",
         STATUS_REFUSED: "Refusée",
         STATUS_CANCELLED: "Annulée",
+    }
+
+    ORIGIN_LABELS = {
+        ORIGIN_DATAPASS: "Datapass",
+        ORIGIN_RESPONSABLE: "Responsable Structure",
+        ORIGIN_OTHER: "Autre",
     }
 
     first_name = models.CharField("Prénom", max_length=150)
@@ -367,6 +377,13 @@ class HabilitationRequest(models.Model):
         max_length=150,
         default=STATUS_PROCESSING,
         choices=((status, label) for status, label in STATUS_LABELS.items()),
+    )
+    origin = models.CharField(
+        "Origine",
+        blank=False,
+        max_length=150,
+        choices=((origin, label) for origin, label in ORIGIN_LABELS.items()),
+        default=ORIGIN_OTHER,
     )
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True)

@@ -444,6 +444,7 @@ def new_habilitation_request(request):
         )
         return render_template(request, form)
 
+    habilitation_request.origin = HabilitationRequest.ORIGIN_RESPONSABLE
     habilitation_request.save()
     django_messages.success(
         request,
