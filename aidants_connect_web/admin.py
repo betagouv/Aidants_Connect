@@ -235,7 +235,11 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "id",
         "data_pass_id",
     )
-    readonly_fields = ("data_pass_id", "display_aidants")
+    readonly_fields = (
+        "data_pass_id",
+        "display_aidants",
+        "display_habilitation_requests",
+    )
     search_fields = ("name", "siret", "data_pass_id")
     list_filter = ("is_active", WithoutDatapassIdFilter, OrganisationRegionFilter)
 
@@ -266,6 +270,30 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         )
 
     display_aidants.short_description = "Aidants"
+
+    def display_habilitation_requests(self, obj):
+        headers = ("Id", "Nom", "Prénom", "Email", "Origine", "État")
+        return mark_safe(
+            '<table><tr><th scope="col">'
+            + '</th><th scope="col">'.join(headers)
+            + "</th></tr><tr><td>"
+            + "</td></tr><tr><td>".join(
+                "</td><td>".join(
+                    (
+                        str(hr.id),
+                        hr.last_name,
+                        hr.first_name,
+                        hr.email,
+                        hr.origin_label,
+                        hr.status_label,
+                    )
+                )
+                for hr in obj.habilitation_requests.order_by("last_name").all()
+            )
+            + "</td></tr></table>"
+        )
+
+    display_habilitation_requests.short_description = "Demandes d'habilitation"
 
     def find_zipcode_in_address(self, request, queryset):
         for organisation in queryset:
