@@ -551,7 +551,7 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused")
-    list_filter = ("status", HabilitationRequestRegionFilter)
+    list_filter = ("status", "origin", HabilitationRequestRegionFilter)
     search_fields = (
         "first_name",
         "last_name",
