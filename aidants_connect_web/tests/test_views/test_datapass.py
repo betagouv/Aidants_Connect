@@ -110,7 +110,7 @@ class HabilitationDatapass(DatapassMixin, TestCase):
             "data_pass_id": 42,
             "first_name": "Mario",
             "last_name": "Brosse",
-            "email": "mario.brossse@world.fr",
+            "email": "Mario.Brossse@world.fr",
             "profession": "plombier",
         }
         cls.datapass_key = settings.DATAPASS_KEY
