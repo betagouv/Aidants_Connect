@@ -235,7 +235,12 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "id",
         "data_pass_id",
     )
-    readonly_fields = ("data_pass_id", "display_aidants")
+    readonly_fields = (
+        "data_pass_id",
+        "display_responsables",
+        "display_aidants",
+        "display_habilitation_requests",
+    )
     search_fields = ("name", "siret", "data_pass_id")
     list_filter = ("is_active", WithoutDatapassIdFilter, OrganisationRegionFilter)
 
@@ -254,18 +259,58 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "activate_organisations",
     )
 
+    def display_responsables(self, obj):
+        return self.format_list_of_aidants(obj.responsables.order_by("last_name").all())
+
+    display_responsables.short_description = "Responsables"
+
     def display_aidants(self, obj):
+        return self.format_list_of_aidants(obj.aidants.order_by("last_name").all())
+
+    display_aidants.short_description = "Aidants"
+
+    def format_list_of_aidants(self, aidants_list):
         return mark_safe(
             "<table><tr>"
             + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th></tr><tr>'
             + "</tr><tr>".join(
-                f"<td>{aidant.id}</td><td>{aidant}</td><td>{aidant.email}</td>"
-                for aidant in obj.aidants.order_by("last_name").all()
+                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td>'.format(
+                    aidant.id,
+                    reverse(
+                        "otpadmin:aidants_connect_web_aidant_change",
+                        kwargs={"object_id": aidant.id},
+                    ),
+                    aidant,
+                    aidant.email,
+                )
+                for aidant in aidants_list
             )
             + "</tr></table>"
         )
 
-    display_aidants.short_description = "Aidants"
+    def display_habilitation_requests(self, obj):
+        headers = ("Id", "Nom", "Prénom", "Email", "Origine", "État")
+        return mark_safe(
+            '<table><tr><th scope="col">'
+            + '</th><th scope="col">'.join(headers)
+            + "</th></tr><tr><td>"
+            + "</td></tr><tr><td>".join(
+                "</td><td>".join(
+                    (
+                        str(hr.id),
+                        hr.last_name,
+                        hr.first_name,
+                        hr.email,
+                        hr.origin_label,
+                        hr.status_label,
+                    )
+                )
+                for hr in obj.habilitation_requests.order_by("last_name").all()
+            )
+            + "</td></tr></table>"
+        )
+
+    display_habilitation_requests.short_description = "Demandes d'habilitation"
 
     def find_zipcode_in_address(self, request, queryset):
         for organisation in queryset:

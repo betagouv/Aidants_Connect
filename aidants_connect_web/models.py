@@ -431,6 +431,10 @@ class HabilitationRequest(models.Model):
     def status_label(self):
         return self.STATUS_LABELS[self.status]
 
+    @property
+    def origin_label(self):
+        return self.ORIGIN_LABELS[self.origin]
+
 
 class UsagerQuerySet(models.QuerySet):
     def active(self):
