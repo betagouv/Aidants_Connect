@@ -91,6 +91,14 @@ class HabilitationRequestsTests(TestCase):
                 response_content,
                 "New habilitation request should be displayed on organisation page.",
             )
+            created_habilitation_request = HabilitationRequest.objects.get(email=email)
+            self.assertEqual(
+                created_habilitation_request.origin,
+                HabilitationRequest.ORIGIN_RESPONSABLE,
+            )
+            self.assertEqual(
+                created_habilitation_request.status, HabilitationRequest.STATUS_NEW
+            )
 
     def test_email_is_lowercased(self):
         self.client.force_login(self.responsable_tom)

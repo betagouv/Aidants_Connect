@@ -395,6 +395,10 @@ class DatapassHabilitationForm(forms.ModelForm):
             raise ValidationError("No organisation for data_pass_id")
         self.cleaned_data["organisation"] = organisations[0]
 
+    def clean_email(self):
+        return self.cleaned_data.get("email").lower()
+
     def save(self, commit=True):
         self.instance.organisation = self.cleaned_data["organisation"]
+        self.instance.origin = HabilitationRequest.ORIGIN_DATAPASS
         return super().save(commit)

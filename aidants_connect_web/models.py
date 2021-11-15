@@ -337,16 +337,28 @@ class Aidant(AbstractUser):
 
 
 class HabilitationRequest(models.Model):
+    STATUS_NEW = "new"
     STATUS_PROCESSING = "processing"
     STATUS_VALIDATED = "validated"
     STATUS_REFUSED = "refused"
     STATUS_CANCELLED = "cancelled"
 
+    ORIGIN_DATAPASS = "datapass"
+    ORIGIN_RESPONSABLE = "responsable"
+    ORIGIN_OTHER = "autre"
+
     STATUS_LABELS = {
-        STATUS_VALIDATED: "Validée",
+        STATUS_NEW: "Nouvelle",
         STATUS_PROCESSING: "En cours",
+        STATUS_VALIDATED: "Validée",
         STATUS_REFUSED: "Refusée",
         STATUS_CANCELLED: "Annulée",
+    }
+
+    ORIGIN_LABELS = {
+        ORIGIN_DATAPASS: "Datapass",
+        ORIGIN_RESPONSABLE: "Responsable Structure",
+        ORIGIN_OTHER: "Autre",
     }
 
     first_name = models.CharField("Prénom", max_length=150)
@@ -365,8 +377,15 @@ class HabilitationRequest(models.Model):
         "État",
         blank=False,
         max_length=150,
-        default=STATUS_PROCESSING,
+        default=STATUS_NEW,
         choices=((status, label) for status, label in STATUS_LABELS.items()),
+    )
+    origin = models.CharField(
+        "Origine",
+        blank=False,
+        max_length=150,
+        choices=((origin, label) for origin, label in ORIGIN_LABELS.items()),
+        default=ORIGIN_OTHER,
     )
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
@@ -389,6 +408,8 @@ class HabilitationRequest(models.Model):
             return False
 
         if Aidant.objects.filter(username=self.email).count() > 0:
+            aidant = Aidant.objects.get(username=self.email)
+            aidant.organisations.add(self.organisation)
             self.status = self.STATUS_VALIDATED
             self.save()
             return True
