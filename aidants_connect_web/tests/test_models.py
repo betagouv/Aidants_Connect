@@ -1390,3 +1390,63 @@ class HabilitationRequestMethodTests(TestCase):
             )
             db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
             self.assertEqual(db_hab_request.status, status)
+
+    def test_remove_user_from_organisation_deactivate_user(self):
+        aidant: Aidant = AidantFactory()
+        organisation: Organisation = aidant.organisation
+        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
+        aidant.remove_from_organisation(aidant.organisation)
+        self.assertFalse(
+            aidant.is_active,
+            "L'aidant est toujours actif après la tentative de suppression de son "
+            "organisation.",
+        )
+        self.assertSequenceEqual([organisation], list(aidant.organisations.all()))
+
+    def test_remove_user_from_organisation(self):
+        aidant: Aidant = AidantFactory()
+        organisation: Organisation = aidant.organisation
+        supplementary_organisation_1 = OrganisationFactory()
+        supplementary_organisation_2 = OrganisationFactory()
+        aidant.organisations.add(
+            supplementary_organisation_1, supplementary_organisation_2
+        )
+
+        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
+        aidant.remove_from_organisation(supplementary_organisation_1)
+        self.assertTrue(
+            aidant.is_active,
+            "L'aidant n'est actif après la tentative de suppression d'une organisation "
+            "surnuméraire",
+        )
+        self.assertSequenceEqual(
+            [organisation, supplementary_organisation_2],
+            list(aidant.organisations.order_by("id").all()),
+        )
+
+    def test_remove_user_from_organisation_set_main_org(self):
+        aidant: Aidant = AidantFactory()
+        organisation: Organisation = aidant.organisation
+        supplementary_organisation_1 = OrganisationFactory()
+        supplementary_organisation_2 = OrganisationFactory()
+        aidant.organisations.add(
+            supplementary_organisation_1, supplementary_organisation_2
+        )
+
+        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
+        aidant.remove_from_organisation(organisation)
+        self.assertTrue(
+            aidant.is_active,
+            "L'aidant n'est actif après la tentative de suppression d'une organisation "
+            "surnuméraire",
+        )
+        self.assertSequenceEqual(
+            [supplementary_organisation_1, supplementary_organisation_2],
+            list(aidant.organisations.order_by("id").all()),
+        )
+        self.assertEqual(
+            supplementary_organisation_1,
+            aidant.organisation,
+            "L'orgnisation principale de l'aidant n'a pas été remplacé par une "
+            "organisation valide après que l'aidant en a été retiré",
+        )

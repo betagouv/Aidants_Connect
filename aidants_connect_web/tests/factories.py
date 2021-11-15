@@ -63,10 +63,14 @@ class AidantFactory(factory.DjangoModelFactory):
 
     @factory.post_generation
     def post(self, create, _, **kwargs):
-        if not create or not kwargs.get("with_otp_device", False):
+        if not create:
             return
-        device = self.staticdevice_set.create(id=self.id)
-        device.token_set.create(token="123456")
+        if kwargs.get("with_otp_device", False):
+            device = self.staticdevice_set.create(id=self.id)
+            device.token_set.create(token="123456")
+
+        if kwargs.get("is_organisation_manager", False):
+            self.responsable_de.add(self.organisation)
 
 
 class HabilitationRequestFactory(factory.DjangoModelFactory):

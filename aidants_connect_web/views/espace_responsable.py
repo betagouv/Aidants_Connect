@@ -246,7 +246,7 @@ def remove_aidant_from_organisation(
             {"aidant": aidant, "organisation": organisation},
         )
 
-    result = aidant.remove_user_from_organisation(organisation)
+    result = aidant.remove_from_organisation(organisation)
     if result is True:
         django_messages.success(
             request,

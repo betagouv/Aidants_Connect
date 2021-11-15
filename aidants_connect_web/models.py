@@ -335,9 +335,7 @@ class Aidant(AbstractUser):
         except CarteTOTP.DoesNotExist:
             return False
 
-    def remove_user_from_organisation(
-        self, organisation: Organisation
-    ) -> Optional[bool]:
+    def remove_from_organisation(self, organisation: Organisation) -> Optional[bool]:
         if self.organisations.filter(pk=organisation.id).count() == 0:
             return None
 
@@ -347,9 +345,9 @@ class Aidant(AbstractUser):
 
             return self.is_active
 
-        self.organisations.remove(self.organisation)
+        self.organisations.remove(organisation)
         if self.organisations.filter(pk=self.organisation.id).count() == 0:
-            self.organisation = self.organisations.first()
+            self.organisation = self.organisations.order_by("id").first()
             self.save()
 
         return self.is_active
