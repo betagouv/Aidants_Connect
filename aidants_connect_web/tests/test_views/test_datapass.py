@@ -32,10 +32,6 @@ class DatapassMixin:
         response = self.client.post(self.datapass_url)
         self.assertEqual(response.status_code, 403)
 
-    def test_empty_data_triggers_400(self):
-        response = self.datapass_request(data={})
-        self.assertEqual(response.status_code, 400)
-
 
 @tag("datapass")
 class OrganisationDatapass(DatapassMixin, TestCase):
@@ -57,6 +53,10 @@ class OrganisationDatapass(DatapassMixin, TestCase):
     def test_datapass_url_triggers_the_good_view(self):
         found = resolve(self.datapass_url)
         self.assertEqual(found.func, datapass.organisation_receiver)
+
+    def test_empty_data_triggers_400(self):
+        response = self.datapass_request(data={})
+        self.assertEqual(response.status_code, 400)
 
     def test_message_body_can_create_organisation(self):
         orga_type_count = OrganisationType.objects.count()
@@ -113,6 +113,15 @@ class HabilitationDatapass(DatapassMixin, TestCase):
             "email": "Mario.Brossse@world.fr",
             "profession": "plombier",
         }
+
+        cls.empty_value = {
+            "data_pass_id": 42,
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "profession": "",
+        }
+
         cls.datapass_key = settings.DATAPASS_KEY
         cls.datapass_url = "/datapass_habilitation/"
 
@@ -128,6 +137,14 @@ class HabilitationDatapass(DatapassMixin, TestCase):
         response = self.datapass_request(data=self.good_data_from_datapass)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(HabilitationRequest.objects.count(), 1)
+
+    def test_empty_message_body_dont_return_error(self):
+        self.assertEqual(HabilitationRequest.objects.count(), 0)
+        response = self.datapass_request(data=self.empty_value)
+        self.assertEqual(response.status_code, 200)
+        response = self.datapass_request(data={})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(HabilitationRequest.objects.count(), 0)
 
     def test_message_body_can_create_habilitation_request(self):
         self.assertEqual(HabilitationRequest.objects.count(), 0)

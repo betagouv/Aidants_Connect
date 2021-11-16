@@ -98,6 +98,13 @@ def habilitation_receiver(request):
 
     content = get_content(request)
 
+    if (
+        all(value == "" for key, value in content.items() if key != "data_pass_id")
+        or len(content) == 1
+    ):
+        log.warning("Habilitation form is empty.")
+        return HttpResponse(status=200)
+
     if habilitation_already_exists(content):
         log.warning("Habilitation already exists.")
         return HttpResponse(status=200)
