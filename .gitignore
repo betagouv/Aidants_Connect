@@ -18,3 +18,4 @@ htmlcov/
 .coverage.*
 coverage.xml
 *.cover
+/coverage.*
