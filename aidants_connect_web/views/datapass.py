@@ -58,11 +58,16 @@ def organisation_receiver(request):
     form = DatapassForm(data=content)
 
     if form.is_valid():
+        data_pass_id = form.cleaned_data["data_pass_id"]
+        if Organisation.objects.filter(data_pass_id=data_pass_id).exists():
+            log.warning("Organisation already exists.")
+            return HttpResponse(status=200)
+
         orga_type, _ = OrganisationType.objects.get_or_create(
             name=form.cleaned_data["organization_type"]
         )
         this_organisation = Organisation.objects.create(
-            data_pass_id=form.cleaned_data["data_pass_id"],
+            data_pass_id=data_pass_id,
             name=form.cleaned_data["organization_name"],
             siret=form.cleaned_data["organization_siret"],
             zipcode=form.cleaned_data["organization_postal_code"],

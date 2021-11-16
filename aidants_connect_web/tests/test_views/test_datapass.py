@@ -76,10 +76,19 @@ class OrganisationDatapass(DatapassMixin, TestCase):
         self.assertEqual(Organisation.objects.first().zipcode, "90210")
         self.assertEqual(OrganisationType.objects.count(), orga_type_count + 1)
 
-        response = self.datapass_request(data=self.good_data_from_datapass)
+        another_data = self.good_data_from_datapass.copy()
+        another_data["data_pass_id"] = 33
+        response = self.datapass_request(data=another_data)
         self.assertEqual(response.status_code, 202)
         self.assertEqual(Organisation.objects.count(), 2)
         self.assertEqual(OrganisationType.objects.count(), orga_type_count + 1)
+
+    def test_message_body_dont_recreate_organisation(self):
+        OrganisationFactory(data_pass_id=34)
+        self.assertEqual(Organisation.objects.count(), 1)
+        response = self.datapass_request(data=self.good_data_from_datapass)
+        self.assertEqual(Organisation.objects.count(), 1)
+        self.assertEqual(response.status_code, 200)
 
     def test_id_NaN_generates_bad_request(self):
         for should_be_a_number in ["data_pass_id", "organization_siret"]:
