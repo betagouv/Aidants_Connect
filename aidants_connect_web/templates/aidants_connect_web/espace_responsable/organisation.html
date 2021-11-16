@@ -85,11 +85,11 @@
                 {% endwith %}
                 {% if aidant.id != responsable.id and aidant.is_active %}
                   <a
-                  id="remove-aidant-{{ aidant.id }}-from-organisation"
-                  href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
-                  class="button warning"
+                    id="remove-aidant-{{ aidant.id }}-from-organisation"
+                    href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+                    class="button warning"
                   >
-                    {% if aidant.organisations.all|length > 1 %}
+                    {% if aidant.organisations.count > 1 %}
                       Retirer l'aidant de {{ organisation.name }}
                     {% else %}
                       Désactiver l'aidant

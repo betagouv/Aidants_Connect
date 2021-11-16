@@ -14,7 +14,7 @@ from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional")
-class ViewAutorisationsTests(FunctionalTestCase):
+class RemoveAidantFromOrganisationTests(FunctionalTestCase):
     def setUp(self):
         self.organisation = OrganisationFactory()
         self.aidant_responsable: Aidant = AidantFactory(

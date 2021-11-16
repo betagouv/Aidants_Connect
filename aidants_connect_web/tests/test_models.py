@@ -1416,8 +1416,8 @@ class HabilitationRequestMethodTests(TestCase):
         aidant.remove_from_organisation(supplementary_organisation_1)
         self.assertTrue(
             aidant.is_active,
-            "L'aidant n'est actif après la tentative de suppression d'une organisation "
-            "surnuméraire",
+            "L'aidant n'est plus actif après la tentative de suppression d'une "
+            "organisation surnuméraire",
         )
         self.assertSequenceEqual(
             [organisation, supplementary_organisation_2],
@@ -1437,8 +1437,8 @@ class HabilitationRequestMethodTests(TestCase):
         aidant.remove_from_organisation(organisation)
         self.assertTrue(
             aidant.is_active,
-            "L'aidant n'est actif après la tentative de suppression d'une organisation "
-            "surnuméraire",
+            "L'aidant n'est plus actif après la tentative de suppression d'une "
+            "organisation surnuméraire",
         )
         self.assertSequenceEqual(
             [supplementary_organisation_1, supplementary_organisation_2],
@@ -1447,6 +1447,6 @@ class HabilitationRequestMethodTests(TestCase):
         self.assertEqual(
             supplementary_organisation_1,
             aidant.organisation,
-            "L'orgnisation principale de l'aidant n'a pas été remplacé par une "
+            "L'organisation principale de l'aidant n'a pas été remplacée par une "
             "organisation valide après que l'aidant en a été retiré",
         )

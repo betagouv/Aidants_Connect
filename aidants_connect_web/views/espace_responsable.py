@@ -229,14 +229,7 @@ def remove_aidant_from_organisation(
     organisation: Organisation = get_object_or_404(Organisation, pk=organisation_id)
 
     if not responsable.can_see_aidant(aidant):
-        django_messages.error(
-            request,
-            f"L'aidant ou aidante avec l'identifiant numéro {aidant_id} ne fait pas "
-            f"partie de {organisation.name}",
-        )
-        return redirect(
-            "espace_responsable_organisation", organisation_id=organisation.id
-        )
+        raise Http404()
 
     if request.method == "GET":
         return render(

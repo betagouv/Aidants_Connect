@@ -346,7 +346,7 @@ class Aidant(AbstractUser):
             return self.is_active
 
         self.organisations.remove(organisation)
-        if self.organisations.filter(pk=self.organisation.id).count() == 0:
+        if self.organisation not in self.organisations.all():
             self.organisation = self.organisations.order_by("id").first()
             self.save()
 
