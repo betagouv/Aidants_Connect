@@ -108,14 +108,7 @@ class Organisation(models.Model):
         self.is_active = False
         self.save()
         for aidant in self.aidants.all():
-            if len(aidant.organisations.all()) == 1:
-                aidant.is_active = False
-                aidant.save()
-            else:
-                aidant.organisations.remove(self)
-                if aidant.organisation not in aidant.organisations.all():
-                    aidant.organisation = aidant.organisations.first()
-                aidant.save()
+            aidant.remove_from_organisation(self)
 
     def activate_organisation(self):
         self.is_active = True
