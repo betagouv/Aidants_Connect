@@ -1,9 +1,9 @@
 from django.core import mail
 
 
-def login_aidant(self):
+def login_aidant(self, aidant_email: str = "thierry@thierry.com"):
     login_field = self.selenium.find_element_by_id("id_email")
-    login_field.send_keys("thierry@thierry.com")
+    login_field.send_keys(aidant_email)
     otp_field = self.selenium.find_element_by_id("id_otp_token")
     otp_field.send_keys("123456")
     submit_button = self.selenium.find_element_by_xpath("//button")

@@ -1,7 +1,9 @@
+from typing import Collection
+
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import Http404
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -60,14 +62,15 @@ def home(request):
 @login_required
 @user_is_responsable_structure
 @activity_required
-def organisation(request, organisation_id):
+def organisation(request: HttpRequest, organisation_id: int):
     responsable: Aidant = request.user
-    organisation = get_object_or_404(Organisation, pk=organisation_id)
+    organisation: Organisation = get_object_or_404(Organisation, pk=organisation_id)
     check_organisation_and_responsable(responsable, organisation)
 
-    aidants = organisation.aidants.order_by("-is_active", "last_name").prefetch_related(
-        "carte_totp"
-    )
+    aidants: Collection[Aidant] = organisation.aidants.order_by(
+        "-is_active", "last_name"
+    ).prefetch_related("carte_totp")
+
     habilitation_requests = organisation.habilitation_requests.exclude(
         status=HabilitationRequest.STATUS_VALIDATED
     ).order_by("status", "last_name")
@@ -212,6 +215,43 @@ def remove_card_from_aidant(request, aidant_id):
         "espace_responsable_aidant",
         aidant_id=aidant.id,
     )
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+@user_is_responsable_structure
+@activity_required
+def remove_aidant_from_organisation(
+    request: HttpRequest, aidant_id: int, organisation_id: int
+) -> HttpResponse:
+    responsable: Aidant = request.user
+    aidant: Aidant = get_object_or_404(Aidant, pk=aidant_id)
+    organisation: Organisation = get_object_or_404(Organisation, pk=organisation_id)
+
+    if not responsable.can_see_aidant(aidant):
+        raise Http404()
+
+    if request.method == "GET":
+        return render(
+            request,
+            "aidants_connect_web/espace_responsable/"
+            "confirm-remove-aidant-from-organisation.html",
+            {"aidant": aidant, "organisation": organisation},
+        )
+
+    result = aidant.remove_from_organisation(organisation)
+    if result is True:
+        django_messages.success(
+            request,
+            f"{aidant.get_full_name()} ne fait maintenant plus partie de "
+            f"{organisation.name}",
+        )
+    else:
+        django_messages.success(
+            request, f"Le profil de {aidant.get_full_name()} a été désactivé"
+        )
+
+    return redirect("espace_responsable_organisation", organisation_id=organisation.id)
 
 
 @require_POST

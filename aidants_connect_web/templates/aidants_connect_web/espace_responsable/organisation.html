@@ -78,10 +78,24 @@
 
                     {% endif %}
                   {% else %}
-                    <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
-                       class="button">Lier une carte</a>
+                    <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}" class="button">
+                      Lier une carte
+                    </a>
                   {% endif %}
                 {% endwith %}
+                {% if aidant.id != responsable.id and aidant.is_active %}
+                  <a
+                    id="remove-aidant-{{ aidant.id }}-from-organisation"
+                    href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+                    class="button warning"
+                  >
+                    {% if aidant.organisations.count > 1 %}
+                      Retirer l'aidant de {{ organisation.name }}
+                    {% else %}
+                      Désactiver l'aidant
+                    {% endif %}
+                  </a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

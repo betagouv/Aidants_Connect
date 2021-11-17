@@ -335,6 +335,23 @@ class Aidant(AbstractUser):
         except CarteTOTP.DoesNotExist:
             return False
 
+    def remove_from_organisation(self, organisation: Organisation) -> Optional[bool]:
+        if self.organisations.filter(pk=organisation.id).count() == 0:
+            return None
+
+        if self.organisations.count() == 1:
+            self.is_active = False
+            self.save()
+
+            return self.is_active
+
+        self.organisations.remove(organisation)
+        if self.organisation not in self.organisations.all():
+            self.organisation = self.organisations.order_by("id").first()
+            self.save()
+
+        return self.is_active
+
 
 class HabilitationRequest(models.Model):
     STATUS_NEW = "new"
