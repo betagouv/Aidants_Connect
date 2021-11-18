@@ -47,6 +47,7 @@ class AidantCreationForm(forms.ModelForm):
             "last_name",
             "first_name",
             "profession",
+            "phone",
             "organisation",
             "username",
         )
@@ -104,6 +105,7 @@ class AidantChangeForm(forms.ModelForm):
             "last_name",
             "first_name",
             "profession",
+            "phone",
             "organisation",
             "username",
         )

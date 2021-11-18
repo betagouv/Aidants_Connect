@@ -348,6 +348,7 @@ class AidantResource(resources.ModelResource):
             "responsable_de",
             "carte_ac",
             "can_create_mandats",
+            "phone",
         )
 
     def before_save_instance(self, instance: Aidant, using_transactions, dry_run):
@@ -488,6 +489,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "first_name",
                     "last_name",
                     "email",
+                    "phone",
                     "password",
                     "carte_totp",
                     "display_totp_device_status",
