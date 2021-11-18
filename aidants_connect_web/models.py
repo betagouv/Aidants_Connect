@@ -147,6 +147,8 @@ class AidantManager(UserManager):
 
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
+    phone = PhoneNumberField("Téléphone", blank=True)
+
     organisation = models.ForeignKey(
         Organisation,
         on_delete=models.CASCADE,
