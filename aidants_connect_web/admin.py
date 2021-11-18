@@ -553,15 +553,16 @@ class HabilitationRequestResource(resources.ModelResource):
     class Meta:
         model = HabilitationRequest
         fields = (
+            "created_at",
+            "organisation__data_pass_id",
+            "organisation__name",
+            "organisation__type__name",
             "first_name",
             "last_name",
             "email",
-            "organisation",
-            "organisation__name",
             "profession",
-            "status",
-            "created_at",
-            "updated_at",
+            "organisation__address",
+            "organisation__zipcode",
         )
 
 
