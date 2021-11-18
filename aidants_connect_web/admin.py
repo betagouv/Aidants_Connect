@@ -35,6 +35,7 @@ from import_export import resources
 from import_export.admin import ImportMixin, ExportMixin, ImportExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
+from import_export.widgets import ManyToManyWidget
 from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
@@ -561,16 +562,24 @@ class HabilitationRequestResource(resources.ModelResource):
         attribute="organisation__type__name", column_name="Type de structure"
     )
     responsable__last_name = Field(
-        attribute="", column_name="Responsable Aidants Connect (Nom)"
+        attribute="organisation__responsables",
+        column_name="Responsable Aidants Connect (Nom)",
+        widget=ManyToManyWidget(Aidant, field="last_name", separator="\n"),
     )
     responsable__first_name = Field(
-        attribute="", column_name="Responsable Aidants Connect (Prénom)"
+        attribute="organisation__responsables",
+        column_name="Responsable Aidants Connect (Prénom)",
+        widget=ManyToManyWidget(Aidant, field="first_name", separator="\n"),
     )
     responsable__profession = Field(
-        attribute="", column_name="Intitulé de poste du responsable Aidants Connect"
+        attribute="organisation__responsables",
+        column_name="Intitulé de poste du responsable Aidants Connect",
+        widget=ManyToManyWidget(Aidant, field="profession", separator="\n"),
     )
     reponsable__email = Field(
-        attribute="", column_name="Responsable Aidants Connect (adresse mail)"
+        attribute="organisation__responsables",
+        column_name="Responsable Aidants Connect (adresse mail)",
+        widget=ManyToManyWidget(Aidant, field="email", separator="\n"),
     )
     responsable__phone = Field(
         attribute="", column_name="Téléphone responsable Aidants Connect"
