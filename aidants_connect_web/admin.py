@@ -35,7 +35,7 @@ from import_export import resources
 from import_export.admin import ImportMixin, ExportMixin, ImportExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
-from import_export.widgets import ManyToManyWidget
+from import_export.widgets import ManyToManyWidget, ForeignKeyWidget
 from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
@@ -335,6 +335,10 @@ class AidantResource(resources.ModelResource):
     token = Field(attribute="token", column_name="token")
     carte_ac = Field(attribute="carte_ac", column_name="carte_ac")
     carte_totp = Field(attribute="carte_totp", column_name="carte_ac", readonly=True)
+    datapass_id = Field(
+        attribute="organisation",
+        widget=ForeignKeyWidget(Organisation, field="data_pass_id"),
+    )
 
     class Meta:
         model = Aidant
