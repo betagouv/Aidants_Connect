@@ -131,6 +131,14 @@ class HabilitationDatapass(DatapassMixin, TestCase):
             "profession": "",
         }
 
+        cls.without_email = {
+            "data_pass_id": 42,
+            "first_name": "Mario",
+            "last_name": "Brosse",
+            "email": "",
+            "profession": "plombier",
+        }
+
         cls.datapass_key = settings.DATAPASS_KEY
         cls.datapass_url = "/datapass_habilitation/"
 
@@ -153,6 +161,12 @@ class HabilitationDatapass(DatapassMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.datapass_request(data={})
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(HabilitationRequest.objects.count(), 0)
+
+    def test_body_without_email_dont_raise_exception(self):
+        self.assertEqual(HabilitationRequest.objects.count(), 0)
+        response = self.datapass_request(data=self.without_email)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(HabilitationRequest.objects.count(), 0)
 
     def test_message_body_can_create_habilitation_request(self):

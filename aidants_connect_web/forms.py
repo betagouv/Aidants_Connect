@@ -396,7 +396,10 @@ class DatapassHabilitationForm(forms.ModelForm):
         self.cleaned_data["organisation"] = organisations[0]
 
     def clean_email(self):
-        return self.cleaned_data.get("email").lower()
+        email = self.cleaned_data.get("email")
+        if email:
+            return email.lower()
+        return email
 
     def save(self, commit=True):
         self.instance.organisation = self.cleaned_data["organisation"]
