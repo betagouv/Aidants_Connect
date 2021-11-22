@@ -136,3 +136,37 @@ class ImportAidantTests(FunctionalTestCase):
         aidant_a = Aidant.objects.get(username="plop@example.net")
         self.assertTrue(aidant_a.has_a_carte_totp)
         self.assertTrue(aidant_a.has_a_totp_device)
+
+    def test_import_using_datapass_id(self):
+        excel_file = path_join(
+            dirname(aidants_connect_web.__file__),
+            "fixtures",
+            "import-aidants",
+            "edge-cases",
+            "import-by-datapass-id.xlsx",
+        )
+
+        orga1 = OrganisationFactory(data_pass_id=5666)
+        orga2 = OrganisationFactory(data_pass_id=5667)
+        orga3 = OrganisationFactory(data_pass_id=5668)
+
+        self.import_file(excel_file)
+
+        self.assertEqual(5, Aidant.objects.count(), "Unexpected count of Aidants in DB")
+
+        aidant1 = Aidant.objects.get(username="aidant1@toto.net")
+        self.assertEqual(aidant1.organisation, orga1)
+
+        respo1 = Aidant.objects.get(username="respo1@toto.net")
+        self.assertEqual(aidant1.organisation, orga1)
+        self.assertIn(orga1, respo1.responsable_de.all())
+
+        respo2 = Aidant.objects.get(username="respo2@toto.net")
+        respo2_respo = respo2.responsable_de.all()
+        for org in (orga1, orga2):
+            self.assertIn(org, respo2_respo)
+
+        respo3 = Aidant.objects.get(username="respo3@toto.net")
+        respo3_respo = respo3.responsable_de.all()
+        for org in (orga1, orga2, orga3):
+            self.assertIn(org, respo3_respo)

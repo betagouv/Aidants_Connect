@@ -7,13 +7,22 @@
     <dl>
       <dt>username</dt>
       <dd>Obligatoire. Doit contenir l'e-mail de l'aidant.</dd>
+      <dt>datapass_id</dt>
+      <dd>Numéro de demande datapass de l'organisation.<br>
+        Si vous donnez ce numéro, <code>organisation_id</code> ne doit pas être présente.
+      </dd>
+      <dt>respo_de_datapass_id</dt>
+      <dd>Numéros de demande datapass des organisations dont l'aidant est responsable.
+        Séparez ces numéros par des <strong>POINTS-VIRGULES</strong>, par exemple : <code>4587;5933</code>.<br>
+        Si vous remplissez cette colonne, ne mettez pas de colonne <code>responsable_de</code>.
+      </dd>
       <dt>organisation_id</dt>
       <dd>Identifiant interne Django de l'organisation. Vous pouvez le retrouver dans la colonne ID de la page
         Organisations de l'admin Django.
       </dd>
       <dt>responsable_de</dt>
       <dd>Identifiants internes Django des organisations dont l'aidant est responsable.<br>
-        Séparez les identifiants par des virgules, par exemple&nbsp;: <code>4,5,6</code></dd>
+        Séparez les identifiants par des points-virgules, par exemple&nbsp;: <code>4;5;6</code></dd>
       <dt>can_create_mandats</dt>
       <dd>
         Entrer <code>0</code> (zéro) ou <code>False</code> permet de créer un compte «&nbsp;responsable seulement&nbsp;»
