@@ -42,8 +42,11 @@ def get_content(request):
 def habilitation_already_exists(content):
     if "email" not in content or "data_pass_id" not in content:
         return False
+    email = content["email"]
+    if email:
+        email = email.lower()
     return HabilitationRequest.objects.filter(
-        email=content["email"].lower(),
+        email=email,
         organisation__data_pass_id=content["data_pass_id"],
     )
 
