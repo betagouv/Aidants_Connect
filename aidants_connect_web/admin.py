@@ -339,6 +339,10 @@ class AidantResource(resources.ModelResource):
         attribute="organisation",
         widget=ForeignKeyWidget(Organisation, field="data_pass_id"),
     )
+    respo_de_datapass_id = Field(
+        attribute="responsable_de",
+        widget=ManyToManyWidget(Organisation, field="data_pass_id", separator=";"),
+    )
 
     class Meta:
         model = Aidant

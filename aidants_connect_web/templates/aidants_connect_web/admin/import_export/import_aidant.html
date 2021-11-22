@@ -8,8 +8,14 @@
       <dt>username</dt>
       <dd>Obligatoire. Doit contenir l'e-mail de l'aidant.</dd>
       <dt>datapass_id</dt>
-      <dd>Numéro de demande datapass de l'organisation. Si vous donnez ce numéro,
-        <code>organisation_id</code> n'est pas obligatoire.</dd>
+      <dd>Numéro de demande datapass de l'organisation.<br>
+        Si vous donnez ce numéro, <code>organisation_id</code> ne doit pas être présente.
+      </dd>
+      <dt>respo_de_datapass_id</dt>
+      <dd>Numéros de demande datapass des organisations dont l'aidant est responsable.
+        Séparez ces numéros par des <strong>POINTS-VIRGULES</strong>, par exemple : <code>4587;5933</code>.<br>
+        Si vous remplissez cette colonne, ne mettez pas de colonne <code>responsable_de</code>.
+      </dd>
       <dt>organisation_id</dt>
       <dd>Identifiant interne Django de l'organisation. Vous pouvez le retrouver dans la colonne ID de la page
         Organisations de l'admin Django.
