@@ -582,7 +582,9 @@ class HabilitationRequestResource(resources.ModelResource):
         widget=ManyToManyWidget(Aidant, field="email", separator="\n"),
     )
     responsable__phone = Field(
-        attribute="", column_name="Téléphone responsable Aidants Connect"
+        attribute="organisation__responsables",
+        column_name="Téléphone responsable Aidants Connect",
+        widget=ManyToManyWidget(Aidant, field="phone", separator="\n"),
     )
     last_name = Field(attribute="last_name", column_name="Nom de l'aidant à former")
     first_name = Field(
