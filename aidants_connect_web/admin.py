@@ -35,6 +35,7 @@ from import_export import resources
 from import_export.admin import ImportMixin, ExportMixin, ImportExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
+from import_export.widgets import ManyToManyWidget
 from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
@@ -550,19 +551,62 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
 
 
 class HabilitationRequestResource(resources.ModelResource):
+    created_at = Field(attribute="created_at", column_name="Date d'ajout")
+    organisation__data_pass_id = Field(
+        attribute="organisation__data_pass_id", column_name="N° de la demande Datapass"
+    )
+    organisation__name = Field(
+        attribute="organisation__name", column_name="Nom de la structure"
+    )
+    organisation__type__name = Field(
+        attribute="organisation__type__name", column_name="Type de structure"
+    )
+    responsable__last_name = Field(
+        attribute="organisation__responsables",
+        column_name="Responsable Aidants Connect (Nom)",
+        widget=ManyToManyWidget(Aidant, field="last_name", separator="\n"),
+    )
+    responsable__first_name = Field(
+        attribute="organisation__responsables",
+        column_name="Responsable Aidants Connect (Prénom)",
+        widget=ManyToManyWidget(Aidant, field="first_name", separator="\n"),
+    )
+    responsable__profession = Field(
+        attribute="organisation__responsables",
+        column_name="Intitulé de poste du responsable Aidants Connect",
+        widget=ManyToManyWidget(Aidant, field="profession", separator="\n"),
+    )
+    reponsable__email = Field(
+        attribute="organisation__responsables",
+        column_name="Responsable Aidants Connect (adresse mail)",
+        widget=ManyToManyWidget(Aidant, field="email", separator="\n"),
+    )
+    responsable__phone = Field(
+        attribute="organisation__responsables",
+        column_name="Téléphone responsable Aidants Connect",
+        widget=ManyToManyWidget(Aidant, field="phone", separator="\n"),
+    )
+    last_name = Field(attribute="last_name", column_name="Nom de l'aidant à former")
+    first_name = Field(
+        attribute="first_name", column_name="Prénom de l'aidant à former"
+    )
+    email = Field(attribute="email", column_name="Adresse e-mail de l'aidant à former")
+    profession = Field(
+        attribute="profession", column_name="Intitulé de poste de l'aidant à former"
+    )
+    organisation__address = Field(
+        attribute="organisation__address", column_name="Adresse Postale"
+    )
+    organisation__zipcode = Field(
+        attribute="organisation__zipcode", column_name="Code Postal"
+    )
+    organisation__city = Field(attribute="", column_name="Ville")
+    organisation__departement = Field(attribute="", column_name="Département")
+    organisation__region = Field(attribute="", column_name="Région")
+
     class Meta:
         model = HabilitationRequest
-        fields = (
-            "first_name",
-            "last_name",
-            "email",
-            "organisation",
-            "organisation__name",
-            "profession",
-            "status",
-            "created_at",
-            "updated_at",
-        )
+        fields = set()
 
 
 class HabilitationRequestRegionFilter(RegionFilter):
