@@ -15,12 +15,16 @@ class DolistBackend(EmailBackend):
         """A helper method that does the actual sending."""
         if not email_message.recipients():
             return False
+        # Dolist specific
+        email_message.extra_headers["X-Account-ID"] = settings.DOLIST_ACCOUNT
+        email_message.reply_to = email_message.from_email
+        email_message.from_email = settings.DOLIST_SENDER
+        # /Dolist specific
         encoding = email_message.encoding or settings.DEFAULT_CHARSET
         from_email = sanitize_address(email_message.from_email, encoding)
         recipients = [
             sanitize_address(addr, encoding) for addr in email_message.recipients()
         ]
-        email_message.extra_headers["X-Account-ID"] = settings.DOLIST_ACCOUNT
         message = email_message.message()
         try:
             self.connection.sendmail(
