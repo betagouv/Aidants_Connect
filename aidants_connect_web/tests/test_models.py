@@ -1162,6 +1162,18 @@ class AidantModelMethodsTests(TestCase):
             self.aidant_marge.get_valid_autorisation("social", usager_charles), None
         )
 
+    def test_is_in_organisation(self):
+        self.assertTrue(
+            self.aidant_marge.is_in_organisation(self.aidant_lisa.organisation),
+            "Aidant.is_in_organisation devrait indiquer que la personne fait partie de "
+            "sa propre organisation.",
+        )
+        self.assertFalse(
+            self.aidant_marge.is_in_organisation(OrganisationFactory()),
+            "Aidant.is_in_organisation devrait indiquer que la personne ne fait partie "
+            "d'une organisation étrangère.",
+        )
+
     def test_is_responsable_structure(self):
         # an aidant without further modification is not responsable structure
         self.assertFalse(self.aidant_lisa.is_responsable_structure())

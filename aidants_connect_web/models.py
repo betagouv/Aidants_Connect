@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
 from django.db.models import Q, QuerySet, SET_NULL, CASCADE
+from django.dispatch import Signal
 from django.template import loader, defaultfilters
 from django.urls import reverse
 from django.utils import timezone
@@ -143,6 +144,9 @@ class AidantManager(UserManager):
     def create_superuser(self, username, email=None, password=None, **extra_fields):
         self.__normalize_fields(extra_fields)
         return super().create_superuser(username, email, password, **extra_fields)
+
+
+aidants__organisations_changed = Signal()
 
 
 class Aidant(AbstractUser):
@@ -294,6 +298,9 @@ class Aidant(AbstractUser):
         ).last()
         return journal_create_attestation
 
+    def is_in_organisation(self, organisation: Organisation):
+        return self.organisations.filter(pk=organisation.id).exists()
+
     def is_responsable_structure(self):
         """
         :return: True if the Aidant is responsable of at least one organisation
@@ -331,7 +338,7 @@ class Aidant(AbstractUser):
             return False
 
     def remove_from_organisation(self, organisation: Organisation) -> Optional[bool]:
-        if self.organisations.filter(pk=organisation.id).count() == 0:
+        if not self.is_in_organisation(organisation):
             return None
 
         if self.organisations.count() == 1:
@@ -341,9 +348,40 @@ class Aidant(AbstractUser):
             return self.is_active
 
         self.organisations.remove(organisation)
-        if self.organisation not in self.organisations.all():
+        if not self.is_in_organisation(organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
+
+        aidants__organisations_changed.send(
+            sender=self.__class__, diff={"removed": [organisation], "added": []}
+        )
+
+        return self.is_active
+
+    def set_organisations(self, organisations: Collection[Organisation]):
+        if len(organisations) == 0:
+            return self.is_active
+
+        current = set(self.organisations.all())
+        future = set(organisations)
+        to_remove = current - future
+        to_add = future - current
+
+        if len(to_remove) == len(current) and len(to_add) == 0:
+            # Request to remove all organisation and add none
+            raise ValueError("Can't remove all the organisations from aidant")
+
+        self.organisations.add(*to_add)
+        self.organisations.remove(*to_remove)
+
+        if not self.is_in_organisation(self.organisation):
+            self.organisation = self.organisations.first()
+            self.save()
+
+        aidants__organisations_changed.send(
+            sender=self.__class__,
+            diff={"removed": list(to_remove), "added": list(to_add)},
+        )
 
         return self.is_active
 

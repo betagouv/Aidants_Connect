@@ -278,12 +278,7 @@ def change_aidant_organisations(request, aidant_id):
     posted_organisations = form.cleaned_data["organisations"]
 
     unrelated_organisations = aidant_organisations.difference(responsable_organisations)
-    aidant.organisations.set(unrelated_organisations.union(posted_organisations))
-
-    if aidant.organisation not in aidant.organisations.all():
-        aidant.organisation = aidant.organisations.first()
-
-    aidant.save()
+    aidant.set_organisations(unrelated_organisations.union(posted_organisations))
 
     if len(posted_organisations) > 1:
         message = (
