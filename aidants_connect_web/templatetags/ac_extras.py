@@ -1,7 +1,8 @@
 from re import sub as re_sub
 
 from django import template
-from django.template.base import Node
+from django.template import Library
+from django.template.base import Node, Parser, NodeList, TextNode
 
 register = template.Library()
 
@@ -59,15 +60,43 @@ def list_term(context, **kwargs):
 
 
 @register.tag
-def linebreakless(parser, _):
+def linebreakless(parser: Parser, _):
+    library = Library()
+    library.tag(LinebreaklessNode.KEEP_LINEBREAK_TAG, LinebreaklessNode.keeplinebreak)
+    parser.add_library(library)
     nodelist = parser.parse(("endlinebreakless",))
     parser.delete_first_token()
     return LinebreaklessNode(nodelist)
 
 
 class LinebreaklessNode(Node):
-    def __init__(self, nodelist):
+    KEEP_LINEBREAK_TAG = "keeplinebreak"
+
+    class KeepLineBreak(Node):
+        def render(self, context):
+            return "\\n"
+
+    @staticmethod
+    def keeplinebreak(_1, _2):
+        return LinebreaklessNode.KeepLineBreak()
+
+    def __init__(self, nodelist: NodeList):
         self.nodelist = nodelist
 
     def render(self, context):
-        return re_sub("\\s*\n+\\s*", "", self.nodelist.render(context).strip())
+        for i, node in enumerate(self.nodelist):
+            if isinstance(node, LinebreaklessNode.KeepLineBreak) and (
+                len(self.nodelist) <= i + 1
+                or not isinstance(self.nodelist[i + 1], TextNode)
+                or self.nodelist[i + 1].s.strip(" \t\r\f\v") != "\n"
+            ):
+                raise ValueError(
+                    f"{{% {self.KEEP_LINEBREAK_TAG} %}} needs to be followed by a "
+                    "linebreak."
+                )
+
+        return re_sub(
+            "\\s*\n+\\s*",
+            "",
+            self.nodelist.render(context).strip(),
+        ).replace("\\n", "\n")

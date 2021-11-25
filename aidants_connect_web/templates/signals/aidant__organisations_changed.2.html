@@ -1,0 +1,31 @@
+{% load ac_extras %}
+
+Bonjour,
+
+Vous recevez ce mail car les organisations dont vous faites partie a changé.
+
+{% linebreakless %}
+{% if added|length == 1 and removed|length == 0 %}
+Vous pouvez maintenant créer des mandats pour {{ added.0.name }}.
+{% elif added|length == 0 and removed|length == 1 %}
+Vous ne pouvez plus créer des mandats pour {{ removed.0.name }}.
+{% elif added|length == 1 and removed|length == 1 %}
+Vous pouvez maintenant créer des mandats pour {{ added.0.name }} et vous ne pouvez plus créer des mandats pour {{ removed.0.name }}.
+{% else %}
+{% if added|length >= 1 %}
+Vous pouvez maintenant créer des mandats pour les organisations suivantes :{% keeplinebreak %}
+{% for org in added %}
+- {{ org.name }}{% list_term %}{% keeplinebreak %}
+{% endfor %}
+{% endif %}{% keeplinebreak %}
+{% if removed|length >= 1 %}
+{% if added|length == 0 %}Vous{% else %}et vous{% endif %} ne pouvez plus créer des mandats pour les organisations suivantes :{% keeplinebreak %}
+{% for org in removed %}
+- {{ org.name }}{% list_term %}{% keeplinebreak %}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% keeplinebreak %}
+Bonne journée{% keeplinebreak %}
+Le robot Aidants Connect
+{% endlinebreakless %}
