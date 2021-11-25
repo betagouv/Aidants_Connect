@@ -1170,8 +1170,8 @@ class AidantModelMethodsTests(TestCase):
         )
         self.assertFalse(
             self.aidant_marge.is_in_organisation(OrganisationFactory()),
-            "Aidant.is_in_organisation devrait indiquer que la personne ne fait partie "
-            "d'une organisation étrangère.",
+            "Aidant.is_in_organisation devrait indiquer que la personne ne fait pas "
+            "partie d'une organisation étrangère.",
         )
 
     def test_is_responsable_structure(self):

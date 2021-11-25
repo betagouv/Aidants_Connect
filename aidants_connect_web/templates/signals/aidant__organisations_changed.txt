@@ -2,7 +2,7 @@
 
 Bonjour,
 
-Vous recevez ce mail car les organisations dont vous faites partie a changé.
+Vous recevez ce mail car la liste des organisations dont vous faites partie a changé.
 
 {% linebreakless %}
 {% if added|length == 1 and removed|length == 0 %}
@@ -27,5 +27,5 @@ Vous pouvez maintenant créer des mandats pour les organisations suivantes :{% 
 {% endif %}
 {% keeplinebreak %}
 Bonne journée{% keeplinebreak %}
-Le robot Aidants Connect
+L'équipe Aidants Connect
 {% endlinebreakless %}

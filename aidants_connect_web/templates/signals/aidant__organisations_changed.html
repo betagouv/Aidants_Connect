@@ -13,7 +13,8 @@
                   <tr>
                     <td>
                       <p>Bonjour,</p>
-                      <p>Vous recevez ce mail car les organisations dont vous faites partie a changé.</p>
+                      <p>Vous recevez ce mail car la liste des organisations dont vous faites partie a changé.</p>
+
                       {% if added|length == 1 and removed|length == 0 %}
                         <p>Vous pouvez maintenant créer des mandats pour {{ added.0.name }}.</p>
                       {% elif added|length == 0 and removed|length == 1 %}
@@ -39,7 +40,7 @@
                         {% endif %}
                       {% endif %}
                       <p>Bonne journée,</p>
-                      <p>Le robot Aidants Connect</p>
+                      <p>L'équipe Aidants Connect</p>
                     </td>
                   </tr>
                 </table>

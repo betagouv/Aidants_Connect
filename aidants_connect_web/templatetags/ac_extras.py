@@ -2,7 +2,7 @@ from re import sub as re_sub
 
 from django import template
 from django.template import Library
-from django.template.base import Node, Parser, NodeList, TextNode
+from django.template.base import Node, Parser, NodeList, TextNode, Token
 
 register = template.Library()
 
@@ -60,27 +60,31 @@ def list_term(context, **kwargs):
 
 
 @register.tag
-def linebreakless(parser: Parser, _):
+def linebreakless(parser: Parser, token: Token):
     library = Library()
     library.tag(LinebreaklessNode.KEEP_LINEBREAK_TAG, LinebreaklessNode.keeplinebreak)
     parser.add_library(library)
     nodelist = parser.parse(("endlinebreakless",))
     parser.delete_first_token()
-    return LinebreaklessNode(nodelist)
+    return LinebreaklessNode(token, nodelist)
 
 
 class LinebreaklessNode(Node):
     KEEP_LINEBREAK_TAG = "keeplinebreak"
 
     class KeepLineBreak(Node):
+        def __init__(self, token: Token):
+            self.token = token
+
         def render(self, context):
             return "\\n"
 
     @staticmethod
-    def keeplinebreak(_1, _2):
-        return LinebreaklessNode.KeepLineBreak()
+    def keeplinebreak(_, token: Token):
+        return LinebreaklessNode.KeepLineBreak(token)
 
-    def __init__(self, nodelist: NodeList):
+    def __init__(self, token: Token, nodelist: NodeList):
+        self.token = token
         self.nodelist = nodelist
 
     def render(self, context):
@@ -88,11 +92,12 @@ class LinebreaklessNode(Node):
             if isinstance(node, LinebreaklessNode.KeepLineBreak) and (
                 len(self.nodelist) <= i + 1
                 or not isinstance(self.nodelist[i + 1], TextNode)
-                or self.nodelist[i + 1].s.strip(" \t\r\f\v") != "\n"
+                or not self.nodelist[i + 1].s.strip(" \t\r\f\v").startswith("\n")
             ):
                 raise ValueError(
                     f"{{% {self.KEEP_LINEBREAK_TAG} %}} needs to be followed by a "
-                    "linebreak."
+                    "linebreak.\n"
+                    f'  File "{node.origin.name}", line {node.token.lineno}'
                 )
 
         return re_sub(

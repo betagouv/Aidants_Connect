@@ -498,7 +498,7 @@ PHONENUMBER_DEFAULT_REGION = os.getenv("PHONENUMBER_DEFAULT_REGION", "FR")
 
 AIDANTS__ORGANISATIONS_CHANGED_EMAIL_SUBJECT = os.getenv(
     "AIDANTS__ORGANISATIONS_CHANGED_EMAIL_SUBJECT",
-    "La liste des organisations dont vous faites partie a changée",
+    "La liste des organisations dont vous faites partie a changé",
 )
 AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM = os.getenv(
     "AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM", SUPPORT_EMAIL
