@@ -370,8 +370,9 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", None)
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", None)
 
-DOLIST_ACCOUNT = os.getenv("DOLIST_ACCOUNT", None)
-DOLIST_SENDER = os.getenv("DOLIST_SENDER", os.getenv("ADMIN_EMAIL"))
+## if email backend is aidants_connect_web.mail.ForceSpecificSenderBackend
+EMAIL_EXTRA_HEADERS = os.getenv("EMAIL_EXTRA_HEADERS", None)
+EMAIL_SENDER = os.getenv("EMAIL_SENDER", os.getenv("ADMIN_EMAIL"))
 
 ## Emails from the server
 SERVER_EMAIL = os.getenv("SERVER_EMAIL", os.getenv("ADMIN_EMAIL"))
