@@ -1,11 +1,13 @@
 import io
 import hashlib
+import os
 from datetime import date, datetime
 from urllib.parse import urlencode, quote
 
 import qrcode
 from pathlib import Path
 
+from django.apps import apps
 from django.conf import settings
 
 from typing import TYPE_CHECKING, Optional, Union
@@ -101,3 +103,36 @@ def generate_mailto_link(recipient: str, subject: str, body: str):
 
 def mandate_template_path():
     return settings.MANDAT_TEMPLATE_PATH
+
+
+def create_first_user_organisation_and_token():
+    Aidant = apps.get_model("aidants_connect_web", "Aidant")
+    Organisation = apps.get_model("aidants_connect_web", "Organisation")
+    StaticDevice = apps.get_model("otp_static", "StaticDevice")
+    StaticToken = apps.get_model("otp_static", "StaticToken")
+
+    init_orga_name = os.environ.get("INIT_ORGA_NAME", None)
+    init_admin_username = os.environ.get("INIT_ADMIN_USERNAME", None)
+    init_admin_password = os.environ.get("INIT_ADMIN_PASSWORD", None)
+    init_token = os.environ.get("INIT_TOKEN", "")
+
+    models = [Aidant, Organisation, StaticToken, StaticDevice]
+    if any([model.objects.exists() for model in models]):
+        return None
+
+    if len(init_token) != 6:
+        return None
+
+    if all([init_token, init_orga_name, init_admin_username, init_admin_password]):
+        orga = Organisation.objects.create(name=init_orga_name)
+        user = Aidant.objects.create_superuser(
+            username=init_admin_username,
+            password=init_admin_password,
+            organisation=orga,
+        )
+        device = StaticDevice.objects.create(user=user, name="Init Code")
+        StaticToken.objects.create(token=init_token, device=device)
+
+        return user
+
+    return None
