@@ -15,7 +15,7 @@ from aidants_connect_overrides.management.commands.createsuperuser import (
     ORGANISATION_ID_ENV,
 )
 from aidants_connect import settings
-from aidants_connect_web.models import Connection, Aidant
+from aidants_connect_web.models import Connection, Aidant, HabilitationRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     CarteTOTPFactory,
@@ -196,13 +196,21 @@ class NewHabilitationRequestsTests(TestCase):
     def setUpTestData(cls):
         cls.bizdev = AidantFactory(is_staff=True)
 
-    def three_habilitation_requests_in_three_organisations(self):
+    def three_manual_habilitation_requests_in_three_organisations(self):
+        for _ in range(3):
+            HabilitationRequestFactory(origin=HabilitationRequest.ORIGIN_RESPONSABLE)
         for _ in range(3):
             HabilitationRequestFactory()
 
-    def four_habilitation_requests_in_two_organisations(self):
+    def four_manual_habilitation_requests_in_two_organisations(self):
         for _ in range(2):
-            req_1 = HabilitationRequestFactory()
+            req_1 = HabilitationRequestFactory(
+                origin=HabilitationRequest.ORIGIN_RESPONSABLE
+            )
+            HabilitationRequestFactory(
+                organisation=req_1.organisation,
+                origin=HabilitationRequest.ORIGIN_RESPONSABLE,
+            )
             HabilitationRequestFactory(organisation=req_1.organisation)
 
     def test_no_email_is_sent_if_no_habilitation_request(self):
@@ -210,7 +218,7 @@ class NewHabilitationRequestsTests(TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_an_email_is_sent_if_there_is_an_habilitation_request(self):
-        self.three_habilitation_requests_in_three_organisations()
+        self.three_manual_habilitation_requests_in_three_organisations()
         call_command("notify_new_habilitation_requests")
         self.assertEqual(len(mail.outbox), 1)
         mail_content = mail.outbox[0].body
@@ -220,7 +228,7 @@ class NewHabilitationRequestsTests(TestCase):
         self.assertIn("dans 3 structures différentes", mail_content)
 
     def test_counting_of_habilitation_requests(self):
-        self.four_habilitation_requests_in_two_organisations()
+        self.four_manual_habilitation_requests_in_two_organisations()
         call_command("notify_new_habilitation_requests")
         self.assertEqual(len(mail.outbox), 1)
         mail_content = mail.outbox[0].body

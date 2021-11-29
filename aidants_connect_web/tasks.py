@@ -85,16 +85,21 @@ def notify_new_habilitation_requests():
     )
     created_from = timezone.now() + timedelta(days=-7)
     habilitation_requests_count = HabilitationRequest.objects.filter(
-        created_at__gt=created_from
+        created_at__gt=created_from,
+        origin=HabilitationRequest.ORIGIN_RESPONSABLE,
     ).count()
     if habilitation_requests_count == 0:
         return
     organisations = Organisation.objects.filter(
-        habilitation_requests__created_at__gte=created_from
+        habilitation_requests__created_at__gte=created_from,
+        habilitation_requests__origin=HabilitationRequest.ORIGIN_RESPONSABLE,
     ).annotate(
         num_requests=Count(
             "habilitation_requests",
-            filter=Q(habilitation_requests__created_at__gt=created_from),
+            filter=Q(
+                habilitation_requests__created_at__gt=created_from,
+                habilitation_requests__origin=HabilitationRequest.ORIGIN_RESPONSABLE,
+            ),
         )
     )
 
