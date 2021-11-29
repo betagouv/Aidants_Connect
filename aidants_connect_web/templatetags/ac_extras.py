@@ -71,13 +71,14 @@ def linebreakless(parser: Parser, token: Token):
 
 class LinebreaklessNode(Node):
     KEEP_LINEBREAK_TAG = "keeplinebreak"
+    KEEP_LINEBREAK_MARKUP = f"{{% {KEEP_LINEBREAK_TAG} %}}"
 
     class KeepLineBreak(Node):
         def __init__(self, token: Token):
             self.token = token
 
         def render(self, context):
-            return "\\n"
+            return LinebreaklessNode.KEEP_LINEBREAK_MARKUP
 
     @staticmethod
     def keeplinebreak(_, token: Token):
@@ -95,8 +96,8 @@ class LinebreaklessNode(Node):
                 or not self.nodelist[i + 1].s.strip(" \t\r\f\v").startswith("\n")
             ):
                 raise ValueError(
-                    f"{{% {self.KEEP_LINEBREAK_TAG} %}} needs to be followed by a "
-                    "linebreak.\n"
+                    f"{LinebreaklessNode.KEEP_LINEBREAK_MARKUP} needs to be followed "
+                    "by a linebreak.\n"
                     f'  File "{node.origin.name}", line {node.token.lineno}'
                 )
 
@@ -104,4 +105,4 @@ class LinebreaklessNode(Node):
             "\\s*\n+\\s*",
             "",
             self.nodelist.render(context).strip(),
-        ).replace("\\n", "\n")
+        ).replace(self.KEEP_LINEBREAK_MARKUP, "\n")

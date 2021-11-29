@@ -1,6 +1,8 @@
 from os.path import join as path_join
 from datetime import date, datetime, timedelta
+from unittest.mock import Mock
 
+import mock
 from django.db.utils import IntegrityError
 from django.test import tag, TestCase
 from django.utils import timezone
@@ -1199,6 +1201,146 @@ class AidantModelMethodsTests(TestCase):
         self.assertTrue(self.aidant_marge.has_a_totp_device)
         self.assertTrue(self.aidant_patricia.has_a_totp_device)
 
+    def test_remove_user_from_organisation_deactivate_user(self):
+        aidant: Aidant = AidantFactory()
+        organisation: Organisation = aidant.organisation
+        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
+        aidant.remove_from_organisation(aidant.organisation)
+        self.assertFalse(
+            aidant.is_active,
+            "L'aidant est toujours actif après la tentative de suppression de son "
+            "organisation.",
+        )
+        self.assertSequenceEqual([organisation], list(aidant.organisations.all()))
+
+    def test_remove_user_from_organisation(self):
+        aidant: Aidant = AidantFactory()
+        organisation: Organisation = aidant.organisation
+        supplementary_organisation_1 = OrganisationFactory()
+        supplementary_organisation_2 = OrganisationFactory()
+        aidant.organisations.add(
+            supplementary_organisation_1, supplementary_organisation_2
+        )
+
+        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
+        aidant.remove_from_organisation(supplementary_organisation_1)
+        self.assertTrue(
+            aidant.is_active,
+            "L'aidant n'est plus actif après la tentative de suppression d'une "
+            "organisation surnuméraire",
+        )
+        self.assertSequenceEqual(
+            [organisation, supplementary_organisation_2],
+            list(aidant.organisations.order_by("id").all()),
+        )
+
+    def test_remove_user_from_organisation_set_main_org(self):
+        aidant: Aidant = AidantFactory()
+        organisation: Organisation = aidant.organisation
+        supplementary_organisation_1 = OrganisationFactory()
+        supplementary_organisation_2 = OrganisationFactory()
+        aidant.organisations.add(
+            supplementary_organisation_1, supplementary_organisation_2
+        )
+
+        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
+        aidant.remove_from_organisation(organisation)
+        self.assertTrue(
+            aidant.is_active,
+            "L'aidant n'est plus actif après la tentative de suppression d'une "
+            "organisation surnuméraire",
+        )
+        self.assertSequenceEqual(
+            [supplementary_organisation_1, supplementary_organisation_2],
+            list(aidant.organisations.order_by("id").all()),
+        )
+        self.assertEqual(
+            supplementary_organisation_1,
+            aidant.organisation,
+            "L'organisation principale de l'aidant n'a pas été remplacée par une "
+            "organisation valide après que l'aidant en a été retiré",
+        )
+
+    @mock.patch("aidants_connect_web.models.aidants__organisations_changed.send")
+    def test_remove_user_from_organisation_sends_signal(self, send: Mock):
+        aidant: Aidant = AidantFactory()
+        supplementary_organisation_1 = OrganisationFactory()
+        aidant.organisations.add(supplementary_organisation_1)
+
+        aidant.remove_from_organisation(supplementary_organisation_1)
+
+        send.assert_called_once_with(
+            sender=aidant.__class__,
+            diff={"removed": [supplementary_organisation_1], "added": []},
+        )
+
+    def test_set_organisations_raises_error_when_removing_everything(self):
+        aidant: Aidant = AidantFactory()
+
+        with self.assertRaises(ValueError) as err:
+            aidant.set_organisations([])
+        self.assertEqual(
+            "Can't remove all the organisations from aidant", f"{err.exception}"
+        )
+
+    def test_set_organisations_correctly_sets_organisations(self):
+        aidant: Aidant = AidantFactory()
+
+        organisation_to_remove = OrganisationFactory()
+        aidant.organisations.add(organisation_to_remove)
+
+        organisation_to_set_1 = OrganisationFactory()
+        organisation_to_set_2 = OrganisationFactory()
+
+        self.assertSequenceEqual(
+            [aidant.organisation, organisation_to_remove],
+            list(aidant.organisations.order_by("id")),
+        )
+
+        aidant.set_organisations(
+            [aidant.organisation, organisation_to_set_1, organisation_to_set_2]
+        )
+
+        self.assertSequenceEqual(
+            [aidant.organisation, organisation_to_set_1, organisation_to_set_2],
+            list(aidant.organisations.order_by("id")),
+        )
+
+    def test_set_organisations_set_current_active_organisation_when_removed(self):
+        aidant: Aidant = AidantFactory()
+
+        organisation_to_set_1 = OrganisationFactory()
+        organisation_to_set_2 = OrganisationFactory()
+
+        aidant.set_organisations([organisation_to_set_1, organisation_to_set_2])
+
+        self.assertSequenceEqual(
+            [organisation_to_set_1, organisation_to_set_2],
+            list(aidant.organisations.order_by("id")),
+        )
+        self.assertEqual(organisation_to_set_1, aidant.organisation)
+
+    @mock.patch("aidants_connect_web.models.aidants__organisations_changed.send")
+    def test_set_organisations_sends_signal(self, send: Mock):
+        aidant: Aidant = AidantFactory()
+        previous_organisation = aidant.organisation
+
+        organisation_to_remove = OrganisationFactory()
+        aidant.organisations.add(organisation_to_remove)
+
+        organisation_to_set_1 = OrganisationFactory()
+        organisation_to_set_2 = OrganisationFactory()
+
+        aidant.set_organisations([organisation_to_set_1, organisation_to_set_2])
+
+        send.assert_called_once_with(
+            sender=aidant.__class__,
+            diff={
+                "removed": [previous_organisation, organisation_to_remove],
+                "added": [organisation_to_set_1, organisation_to_set_2],
+            },
+        )
+
 
 @tag("models", "journal")
 class JournalModelTests(TestCase):
@@ -1402,63 +1544,3 @@ class HabilitationRequestMethodTests(TestCase):
             )
             db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
             self.assertEqual(db_hab_request.status, status)
-
-    def test_remove_user_from_organisation_deactivate_user(self):
-        aidant: Aidant = AidantFactory()
-        organisation: Organisation = aidant.organisation
-        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
-        aidant.remove_from_organisation(aidant.organisation)
-        self.assertFalse(
-            aidant.is_active,
-            "L'aidant est toujours actif après la tentative de suppression de son "
-            "organisation.",
-        )
-        self.assertSequenceEqual([organisation], list(aidant.organisations.all()))
-
-    def test_remove_user_from_organisation(self):
-        aidant: Aidant = AidantFactory()
-        organisation: Organisation = aidant.organisation
-        supplementary_organisation_1 = OrganisationFactory()
-        supplementary_organisation_2 = OrganisationFactory()
-        aidant.organisations.add(
-            supplementary_organisation_1, supplementary_organisation_2
-        )
-
-        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
-        aidant.remove_from_organisation(supplementary_organisation_1)
-        self.assertTrue(
-            aidant.is_active,
-            "L'aidant n'est plus actif après la tentative de suppression d'une "
-            "organisation surnuméraire",
-        )
-        self.assertSequenceEqual(
-            [organisation, supplementary_organisation_2],
-            list(aidant.organisations.order_by("id").all()),
-        )
-
-    def test_remove_user_from_organisation_set_main_org(self):
-        aidant: Aidant = AidantFactory()
-        organisation: Organisation = aidant.organisation
-        supplementary_organisation_1 = OrganisationFactory()
-        supplementary_organisation_2 = OrganisationFactory()
-        aidant.organisations.add(
-            supplementary_organisation_1, supplementary_organisation_2
-        )
-
-        self.assertTrue(aidant.is_active, "L'aidant n'est pas actif")
-        aidant.remove_from_organisation(organisation)
-        self.assertTrue(
-            aidant.is_active,
-            "L'aidant n'est plus actif après la tentative de suppression d'une "
-            "organisation surnuméraire",
-        )
-        self.assertSequenceEqual(
-            [supplementary_organisation_1, supplementary_organisation_2],
-            list(aidant.organisations.order_by("id").all()),
-        )
-        self.assertEqual(
-            supplementary_organisation_1,
-            aidant.organisation,
-            "L'organisation principale de l'aidant n'a pas été remplacée par une "
-            "organisation valide après que l'aidant en a été retiré",
-        )

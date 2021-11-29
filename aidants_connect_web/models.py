@@ -360,19 +360,22 @@ class Aidant(AbstractUser):
 
     def set_organisations(self, organisations: Collection[Organisation]):
         if len(organisations) == 0:
-            return self.is_active
+            # Request to remove all organisation and add none
+            raise ValueError("Can't remove all the organisations from aidant")
 
         current = set(self.organisations.all())
         future = set(organisations)
         to_remove = current - future
         to_add = future - current
 
-        if len(to_remove) == len(current) and len(to_add) == 0:
-            # Request to remove all organisation and add none
-            raise ValueError("Can't remove all the organisations from aidant")
+        if len(to_add) == 0 and len(to_remove) == 0:
+            # Nothing to do!
+            return self.is_active
 
-        self.organisations.add(*to_add)
-        self.organisations.remove(*to_remove)
+        if len(to_add) > 0:
+            self.organisations.add(*to_add)
+        if len(to_remove) > 0:
+            self.organisations.remove(*to_remove)
 
         if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.first()
