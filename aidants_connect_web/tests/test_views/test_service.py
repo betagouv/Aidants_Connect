@@ -13,6 +13,7 @@ from aidants_connect_web.models import Journal, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
+    CarteTOTPFactory,
     MandatFactory,
     OrganisationFactory,
     UsagerFactory,
@@ -146,6 +147,7 @@ class StatistiquesTests(TestCase):
     def setUpTestData(cls):
         mairie_de_houlbec = OrganisationFactory()
         aidant_thierry = AidantFactory()
+        CarteTOTPFactory(aidant=aidant_thierry)
         usager_homer = UsagerFactory()
         mandat_houlbec_homer = MandatFactory(
             organisation=mairie_de_houlbec, usager=usager_homer
@@ -178,6 +180,7 @@ class StatistiquesTests(TestCase):
         aidant_staff_organisation = AidantFactory(
             username="test@user.domain", organisation=staff_organisation
         )
+        CarteTOTPFactory(aidant=aidant_staff_organisation)
 
         # an aidant staff_organisation has an attestation
         # with an usager also helped by another aidant
@@ -256,7 +259,9 @@ class StatistiquesTests(TestCase):
     def test_stats_show_the_correct_number_of_aidants_non_staff_organisation(self):
         # aidants should be non-staff_organisation
         response = self.client.get("/stats/")
-        self.assertEqual(response.context["aidants_count"], 1)
+        self.assertEqual(
+            response.context["aidants_count"], 1, "Should count aidant_thierry alone"
+        )
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
         # mandats should be non-staff_organisation and active
