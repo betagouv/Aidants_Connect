@@ -125,12 +125,27 @@ class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
 
 
 class OrganisationResource(resources.ModelResource):
+    datapass_id = Field(attribute="data_pass_id", column_name="Numéro de demande")
     name = Field(attribute="name", column_name="Nom de la structure")
     zipcode = Field(attribute="zipcode", column_name="Code postal de la structure")
     siret = Field(attribute="siret", column_name="SIRET de l’organisation")
     status_not_field = Field(
         column_name="Statut de la demande (send = à valider; pending = brouillon)"
     )
+
+    def import_field(self, field, obj, data, is_m2m=False):
+        """
+        Calls :meth:`import_export.fields.Field.save` if ``Field.attribute``
+        and ``Field.column_name`` are found in ``data``.
+        """
+        if field.attribute == "zipcode":
+            if not obj.zipcode or obj.zipcode == "0":
+                field.save(obj, data, is_m2m)
+        elif field.attribute == "data_pass_id":
+            if not obj.data_pass_id or obj.data_pass_id == 0:
+                field.save(obj, data, is_m2m)
+        else:
+            super().import_field(field, obj, data, is_m2m)
 
     def import_row(
         self,
@@ -141,12 +156,8 @@ class OrganisationResource(resources.ModelResource):
         raise_errors=False,
         **kwargs,
     ):
-        if (
-            row.get(
-                "Statut de la demande (send = à valider; pending = brouillon)", None
-            )
-            == "validated"
-        ):
+        name_row = "Statut de la demande (send = à valider; pending = brouillon)"
+        if row.get(name_row, None) == "validated":
             name = row.get("Nom de la structure", None)
             siret = row.get("SIRET de l’organisation", None)
 
@@ -175,7 +186,7 @@ class OrganisationResource(resources.ModelResource):
     def skip_row(self, instance, original):
         if getattr(instance, "skip_new", False):
             return True
-        if original.zipcode and original.zipcode != "0":
+        if original.data_pass_id and original.data_pass_id != instance.data_pass_id:
             return True
         return False
 
