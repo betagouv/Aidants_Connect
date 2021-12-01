@@ -715,7 +715,7 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
             status=HabilitationRequest.STATUS_PROCESSING
         )
         self.message_user(
-            request, f"{rows_updated} demandes d’habilitation ont été refusées."
+            request, f"{rows_updated} demandes d’habilitation sont maintenant en cours."
         )
 
     mark_processing.short_description = (
