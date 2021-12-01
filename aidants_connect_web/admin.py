@@ -702,7 +702,10 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
 
     def mark_refused(self, request, queryset):
         rows_updated = queryset.filter(
-            status=HabilitationRequest.STATUS_PROCESSING
+            status__in=(
+                HabilitationRequest.STATUS_PROCESSING,
+                HabilitationRequest.STATUS_NEW,
+            )
         ).update(status=HabilitationRequest.STATUS_REFUSED)
         self.message_user(
             request, f"{rows_updated} demandes d’habilitation ont été refusées."
