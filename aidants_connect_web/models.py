@@ -348,7 +348,7 @@ class Aidant(AbstractUser):
             return self.is_active
 
         self.organisations.remove(organisation)
-        if not self.is_in_organisation(organisation):
+        if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
 
@@ -378,12 +378,15 @@ class Aidant(AbstractUser):
             self.organisations.remove(*to_remove)
 
         if not self.is_in_organisation(self.organisation):
-            self.organisation = self.organisations.first()
+            self.organisation = self.organisations.order_by("id").first()
             self.save()
 
         aidants__organisations_changed.send(
             sender=self.__class__,
-            diff={"removed": list(to_remove), "added": list(to_add)},
+            diff={
+                "removed": sorted(to_remove, key=lambda org: org.pk),
+                "added": sorted(to_add, key=lambda org: org.pk),
+            },
         )
 
         return self.is_active

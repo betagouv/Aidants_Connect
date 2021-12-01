@@ -1261,6 +1261,28 @@ class AidantModelMethodsTests(TestCase):
             "organisation valide après que l'aidant en a été retiré",
         )
 
+    def test_remove_user_from_organisation_does_not_change_main_org(self):
+        aidant: Aidant = AidantFactory()
+        supplementary_organisation_1 = OrganisationFactory()
+        supplementary_organisation_2 = OrganisationFactory()
+        supplementary_organisation_to_remove = OrganisationFactory()
+        aidant.organisations.add(
+            supplementary_organisation_1,
+            supplementary_organisation_2,
+            supplementary_organisation_to_remove,
+            OrganisationFactory(),
+            OrganisationFactory(),
+            OrganisationFactory(),
+        )
+
+        aidant.organisation = supplementary_organisation_1
+
+        self.assertEqual(aidant.organisation, supplementary_organisation_1)
+
+        aidant.remove_from_organisation(supplementary_organisation_to_remove)
+
+        self.assertEqual(aidant.organisation, supplementary_organisation_1)
+
     @mock.patch("aidants_connect_web.models.aidants__organisations_changed.send")
     def test_remove_user_from_organisation_sends_signal(self, send: Mock):
         aidant: Aidant = AidantFactory()
@@ -1319,6 +1341,30 @@ class AidantModelMethodsTests(TestCase):
             list(aidant.organisations.order_by("id")),
         )
         self.assertEqual(organisation_to_set_1, aidant.organisation)
+
+    def test_set_organisations_does_not_change_main_org(self):
+        aidant: Aidant = AidantFactory()
+        supplementary_organisation_1 = OrganisationFactory()
+        supplementary_organisation_2 = OrganisationFactory()
+        supplementary_organisation_to_remove = OrganisationFactory()
+        aidant.organisations.add(
+            supplementary_organisation_1,
+            supplementary_organisation_2,
+            supplementary_organisation_to_remove,
+            OrganisationFactory(),
+            OrganisationFactory(),
+            OrganisationFactory(),
+        )
+
+        aidant.organisation = supplementary_organisation_1
+
+        self.assertEqual(aidant.organisation, supplementary_organisation_1)
+
+        aidant.set_organisations(
+            set(aidant.organisations.all()) - {supplementary_organisation_to_remove}
+        )
+
+        self.assertEqual(aidant.organisation, supplementary_organisation_1)
 
     @mock.patch("aidants_connect_web.models.aidants__organisations_changed.send")
     def test_set_organisations_sends_signal(self, send: Mock):
