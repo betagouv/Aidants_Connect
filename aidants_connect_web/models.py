@@ -460,7 +460,7 @@ class HabilitationRequest(models.Model):
         return f"{self.email}"
 
     def validate_and_create_aidant(self):
-        if self.status != self.STATUS_PROCESSING:
+        if self.status not in (self.STATUS_PROCESSING, self.STATUS_NEW):
             return False
 
         if Aidant.objects.filter(username=self.email).count() > 0:

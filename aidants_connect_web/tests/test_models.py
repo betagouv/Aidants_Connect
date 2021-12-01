@@ -1545,18 +1545,21 @@ class HabilitationRequestMethodTests(TestCase):
         pass
 
     def test_validate_when_all_is_fine(self):
-        habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_PROCESSING
-        )
-        self.assertEqual(
-            0, Aidant.objects.filter(email=habilitation_request.email).count()
-        )
-        self.assertTrue(habilitation_request.validate_and_create_aidant())
-        self.assertEqual(
-            1, Aidant.objects.filter(email=habilitation_request.email).count()
-        )
-        db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
-        self.assertEqual(db_hab_request.status, HabilitationRequest.STATUS_VALIDATED)
+        for habilitation_request in (
+            HabilitationRequestFactory(status=HabilitationRequest.STATUS_PROCESSING),
+            HabilitationRequestFactory(status=HabilitationRequest.STATUS_NEW),
+        ):
+            self.assertEqual(
+                0, Aidant.objects.filter(email=habilitation_request.email).count()
+            )
+            self.assertTrue(habilitation_request.validate_and_create_aidant())
+            self.assertEqual(
+                1, Aidant.objects.filter(email=habilitation_request.email).count()
+            )
+            db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
+            self.assertEqual(
+                db_hab_request.status, HabilitationRequest.STATUS_VALIDATED
+            )
 
     def test_validate_if_aidant_already_exists(self):
         aidant = AidantFactory()
