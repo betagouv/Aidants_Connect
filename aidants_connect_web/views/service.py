@@ -61,7 +61,20 @@ def statistiques(request):
         return [query_set_item.usager_id for query_set_item in query_set]
 
     organisations_count = Organisation.objects.exclude(name=stafforg).count()
-    aidants_count = Aidant.objects.exclude(organisation__name=stafforg).count()
+    aidants_count = (
+        Aidant.objects.exclude(organisation__name=stafforg)
+        .filter(carte_totp__isnull=False)
+        .filter(is_active=True)
+        .filter(can_create_mandats=True)
+        .count()
+    )
+    aidants_not_yet_habilitated_count = (
+        Aidant.objects.exclude(organisation__name=stafforg)
+        .filter(carte_totp__isnull=True)
+        .filter(is_active=True)
+        .filter(can_create_mandats=True)
+        .count()
+    )
 
     # mandats
     # # mandats prep
@@ -117,6 +130,7 @@ def statistiques(request):
         {
             "organisations_count": organisations_count,
             "aidants_count": aidants_count,
+            "aidants_habilitating_count": aidants_not_yet_habilitated_count,
             "mandats_count": mandat_count,
             "active_mandats_count": active_mandat_count,
             "usagers_with_mandat_count": usagers_with_mandat_count,

@@ -29,7 +29,10 @@
   margin: 0;
   font-style: italic;
 }
-
+.tile-box.stretch {
+  display: flex;
+  align-items: stretch;
+}
 .tile-grey {
   background-color: #ebeff3;
   display: inline-block;

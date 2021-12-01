@@ -7,4 +7,4 @@ from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCa
 class StatistiquesPage(FunctionalTestCase):
     def test_page_loads(self):
         self.open_live_url("/stats/")
-        self.assertEqual(len(self.selenium.find_elements_by_class_name("tile")), 18)
+        self.assertEqual(len(self.selenium.find_elements_by_class_name("tile")), 19)
