@@ -166,7 +166,7 @@ class HabilitationDatapass(DatapassMixin, TestCase):
     def test_body_without_email_dont_raise_exception(self):
         self.assertEqual(HabilitationRequest.objects.count(), 0)
         response = self.datapass_request(data=self.without_email)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(HabilitationRequest.objects.count(), 0)
 
     def test_message_body_can_create_habilitation_request(self):

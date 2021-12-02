@@ -126,4 +126,4 @@ def habilitation_receiver(request):
     for error in form.errors:
         message = f"{error} is invalid in the form @ datapass"
         log.warning(message)
-    return HttpResponseBadRequest()
+    return HttpResponse(status=200)
