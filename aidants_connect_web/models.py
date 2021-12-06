@@ -49,6 +49,7 @@ class Organisation(models.Model):
     siret = models.BigIntegerField("N° SIRET", default=1)
     address = models.TextField("Adresse", default="No address provided")
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
+    city = models.CharField("Ville", max_length=255, null=True)
 
     is_active = models.BooleanField("Est active", default=True, editable=False)
 
