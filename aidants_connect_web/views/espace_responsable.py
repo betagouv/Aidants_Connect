@@ -244,11 +244,11 @@ def remove_aidant_from_organisation(
         django_messages.success(
             request,
             f"{aidant.get_full_name()} ne fait maintenant plus partie de "
-            f"{organisation.name}",
+            f"{organisation.name}.",
         )
     else:
         django_messages.success(
-            request, f"Le profil de {aidant.get_full_name()} a été désactivé"
+            request, f"Le profil de {aidant.get_full_name()} a été désactivé."
         )
 
     return redirect("espace_responsable_organisation", organisation_id=organisation.id)
