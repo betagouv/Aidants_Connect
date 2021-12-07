@@ -27,8 +27,8 @@ def lower_totp_tolerance_on_login(sender, user: Aidant, request, **kwargs):
 
 
 @receiver(aidants__organisations_changed)
-def send_mail_aidant__organisations_changed(sender: Aidant, diff: dict, **_):
-    context = {"aidant": sender, **diff}
+def send_mail_aidant__organisations_changed(instance: Aidant, diff: dict, **_):
+    context = {"aidant": instance, **diff}
     text_message = loader.render_to_string(
         "signals/aidant__organisations_changed.txt", context
     )
@@ -38,7 +38,7 @@ def send_mail_aidant__organisations_changed(sender: Aidant, diff: dict, **_):
 
     send_mail(
         from_email=settings.AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM,
-        recipient_list=[sender.email],
+        recipient_list=[instance.email],
         subject=settings.AIDANTS__ORGANISATIONS_CHANGED_EMAIL_SUBJECT,
         message=text_message,
         html_message=html_message,
