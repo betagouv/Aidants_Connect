@@ -353,7 +353,9 @@ class Aidant(AbstractUser):
             self.save()
 
         aidants__organisations_changed.send(
-            sender=self.__class__, diff={"removed": [organisation], "added": []}
+            sender=self.__class__,
+            instance=self,
+            diff={"removed": [organisation], "added": []},
         )
 
         return self.is_active
@@ -383,6 +385,7 @@ class Aidant(AbstractUser):
 
         aidants__organisations_changed.send(
             sender=self.__class__,
+            instance=self,
             diff={
                 "removed": sorted(to_remove, key=lambda org: org.pk),
                 "added": sorted(to_add, key=lambda org: org.pk),

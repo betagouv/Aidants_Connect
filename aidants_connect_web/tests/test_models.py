@@ -1293,6 +1293,7 @@ class AidantModelMethodsTests(TestCase):
 
         send.assert_called_once_with(
             sender=aidant.__class__,
+            instance=aidant,
             diff={"removed": [supplementary_organisation_1], "added": []},
         )
 
@@ -1381,6 +1382,7 @@ class AidantModelMethodsTests(TestCase):
 
         send.assert_called_once_with(
             sender=aidant.__class__,
+            instance=aidant,
             diff={
                 "removed": [previous_organisation, organisation_to_remove],
                 "added": [organisation_to_set_1, organisation_to_set_2],
