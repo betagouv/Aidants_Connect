@@ -441,6 +441,9 @@ class AidantRegionFilter(RegionFilter):
         if not region_id:
             return
 
+        if region_id == "other":
+            return queryset.filter(organisations__zipcode=0)
+
         region = DatavizRegion.objects.get(id=region_id)
         d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
         qgroup = reduce(
@@ -642,6 +645,9 @@ class HabilitationRequestRegionFilter(RegionFilter):
 
         if not region_id:
             return
+
+        if region_id == "other":
+            return queryset.filter(organisation__zipcode=0)
 
         region = DatavizRegion.objects.get(id=region_id)
         d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
