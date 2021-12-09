@@ -5,7 +5,13 @@
   {% trans "Mettre à jour le siret" %}
 {% endblock %}
 
-{% block content_title %}{% if title %}<h1>{% trans "Mettre à jour à partir du fichier datapass [Code postal uniquement]" %}</h1>{% endif %}{% endblock %}
+{% block content_title %}
+  {% if title %}
+    <h1>
+      {% trans "Mettre à jour le code postal, le numéro datapass et la ville à partir du fichier datapass" %}
+    </h1>
+  {% endif %}
+{% endblock %}
 
 
 {% block fields_listing %}
