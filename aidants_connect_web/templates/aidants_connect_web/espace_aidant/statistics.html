@@ -1,11 +1,23 @@
 <div class="tiles">
   <div class="grid">
     <div class="tile background-color-grey">
-      <h3>Adresse</h3>
+      <h3>
+        <span aria-hidden="true">📍</span>
+        Adresse
+      </h3>
       <p>
-        {{ organisation.address }}
+        {{ organisation.address }}<br>
+        {{ organisation.zipcode }} {{ organisation.city }}
       </p>
     </div>
+    {% if organisation.data_pass_id %}
+    <div class="tile background-color-grey">
+      <h3>Numéro d’habilitation</h3>
+      <p>
+        {{ organisation.data_pass_id }}
+      </p>
+    </div>
+    {% endif %}
     <div class="tile background-color-grey">
       <h3>Aidants actifs</h3>
       <p class="font-weight-bold">{{ organisation.num_active_aidants }}</p>

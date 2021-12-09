@@ -139,6 +139,23 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.assertContains(response, aidant_a.first_name)
         self.assertContains(response, aidant_b.first_name)
 
+    def test_display_data_pass_id(self):
+        self.client.force_login(self.responsable_tom)
+        self.responsable_tom.organisation.data_pass_id = 4242
+        self.responsable_tom.organisation.save()
+        response = self.client.get(
+            f"/espace-responsable/organisation/{self.id_organisation}/"
+        )
+        self.assertContains(response, "Numéro d’habilitation")
+        self.assertContains(response, "4242")
+
+    def test_hide_block_if_no_data_pass_id(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(
+            f"/espace-responsable/organisation/{self.id_organisation}/"
+        )
+        self.assertNotContains(response, "Numéro d’habilitation")
+
 
 @tag("responsable-structure")
 class EspaceResponsableAidantPage(TestCase):
