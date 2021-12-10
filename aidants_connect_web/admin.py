@@ -924,8 +924,13 @@ class ConnectionAdmin(ModelAdmin):
 
 class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
     list_display = ("id", "action", "aidant", "creation_date")
-    list_filter = ("action", "aidant")
-    search_fields = ("action", "aidant")
+    list_filter = ("action",)
+    search_fields = (
+        "action",
+        "aidant__first_name",
+        "aidant__last_name",
+        "aidant__email",
+    )
     ordering = ("-creation_date",)
 
     def has_add_permission(self, request, obj=None):
