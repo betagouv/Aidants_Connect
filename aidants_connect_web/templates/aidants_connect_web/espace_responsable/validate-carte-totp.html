@@ -35,22 +35,30 @@
         </li>
       </ul>
       <h1>Étape 3/3 : validation de la carte de {{ aidant.get_full_name }}</h1>
-      <form method="post">
-        {% csrf_token %}
-        <div class="form__group">
-          <label for="{{ form.otp_token.id_for_label }}">
-            Pour valider le fonctionnement de la carte n°{{ aidant.carte_totp.serial_number }},
-            écrivez le code généré par celle-ci en appuyant sur le bouton :
-          </label>
-          <div class="max-width-50">
-            {{ form.otp_token }}
-          </div>
-          {{ form.otp_token.errors }}
+      <div class="row">
+        <div>
+          <form method="post">
+            {% csrf_token %}
+            <div class="form__group">
+              <label for="{{ form.otp_token.id_for_label }}">
+                Pour valider le fonctionnement de la carte n°{{ aidant.carte_totp.serial_number }},
+                écrivez le code à six chiffres obtenu en appuyant sur le bouton de celle-ci :
+              </label>
+              <div class="max-width-50">
+                {{ form.otp_token }}
+              </div>
+              {{ form.otp_token.errors }}
+            </div>
+            <div class="form__group">
+              <button class="button" type="submit">Vérifier</button>
+            </div>
+          </form>
         </div>
-        <div class="form__group">
-          <button class="button" type="submit">Vérifier</button>
+        <div class="min-width-35">
+          <img src="{% static 'images/AC_CarteOTP_Recto.svg' %}" alt="">
         </div>
-      </form>
+      </div>
+
     </div>
   </section>
 {% endblock content %}
