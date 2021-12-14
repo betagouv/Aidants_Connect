@@ -692,6 +692,9 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     )
     ordering = ("email",)
     resource_class = HabilitationRequestResource
+    change_list_template = (
+        "aidants_connect_web/admin/habilitation_request/change_list.html"
+    )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

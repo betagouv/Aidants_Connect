@@ -1,0 +1,13 @@
+{% extends "admin/import_export/change_list.html" %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="#">
+      <span aria-hidden="true">📧</span>
+      Habiliter à partir d’adresses e-mail
+    </a>
+  </li> 
+  {% include "admin/import_export/change_list_import_item.html" %}
+  {% include "admin/import_export/change_list_export_item.html" %}
+  {{ block.super }}
+{% endblock %}
