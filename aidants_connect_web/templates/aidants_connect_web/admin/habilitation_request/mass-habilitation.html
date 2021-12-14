@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+{% load static ac_extras i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media.js }}
+{% endblock %}
+
+{% block content %}
+  <h1>Habilitation en masse à partir des adresses e-mail</h1>
+
+  <p>Collez ci-dessous une liste d'adresses mail d'aidants dont vous voulez valider la demande d'habilitation.</p>
+
+  <form action="{% url "otpadmin:aidants_connect_web_habilitation_request_mass_validate" %}" method="POST">
+    <fieldset class="module aligned">
+      <label for="emails">Liste des e-mails (un par ligne)</label>
+      <textarea name="emails" id="emails" cols="30" rows="10"></textarea>
+    </fieldset>
+    <div class="submit-row">
+      <input type="submit" value="Valider" class="default" name="_save">
+      <p class="deletelink-box">
+        <a href="{% url 'otpadmin:aidants_connect_web_mandat_changelist' %}" class="closelink">Annuler</a>
+      </p>
+    </div>
+    {% csrf_token %}
+  </form>
+
+
+{% endblock %}

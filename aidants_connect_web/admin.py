@@ -745,6 +745,39 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
         "Passer « en cours » les demandes d'habilitation sélectionnées"
     )
 
+    def get_urls(self):
+        return [
+            path(
+                "validate-from-emails/",
+                self.admin_site.admin_view(self.validate_from_email),
+                name="aidants_connect_web_habilitation_request_mass_validate",
+            ),
+            *super().get_urls(),
+        ]
+
+    def validate_from_email(self, request):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__validate_from_email_get(request)
+        else:
+            return self.__validate_from_email_post(request)
+
+    def __validate_from_email_get(self, request):
+        context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+        }
+
+        return render(
+            request,
+            "aidants_connect_web/admin/habilitation_request/mass-habilitation.html",
+            context,
+        )
+
+    def __validate_from_email_post(self, request):
+        pass
+
 
 class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):
     model = Autorisation

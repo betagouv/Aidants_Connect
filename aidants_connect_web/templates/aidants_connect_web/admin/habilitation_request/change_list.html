@@ -2,11 +2,10 @@
 
 {% block object-tools-items %}
   <li>
-    <a href="#">
-      <span aria-hidden="true">📧</span>
+    <a class="viewsitelink" href="{% url "otpadmin:aidants_connect_web_habilitation_request_mass_validate" %}">
       Habiliter à partir d’adresses e-mail
     </a>
-  </li> 
+  </li>
   {% include "admin/import_export/change_list_import_item.html" %}
   {% include "admin/import_export/change_list_export_item.html" %}
   {{ block.super }}
