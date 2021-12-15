@@ -6,6 +6,7 @@ from aidants_connect_web.forms import (
     AidantCreationForm,
     AidantChangeForm,
     DatapassHabilitationForm,
+    MassEmailHabilitatonForm,
     MandatForm,
     RecapMandatForm,
 )
@@ -338,3 +339,54 @@ class DatapassAccreditationFormTests(TestCase):
         self.assertEqual(habilitation.last_name, "Brosse")
         self.assertEqual(habilitation.email, "mario.brossse@world.fr")
         self.assertEqual(habilitation.profession, "plombier")
+
+
+@tag("forms")
+class MassEmailHabilitatonFormTests(TestCase):
+    def test_filter_empty_values(self):
+        form = MassEmailHabilitatonForm(
+            data={
+                "email_list": """toto@tata.net
+
+                titi@lala.net""",
+            }
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual(
+            form.cleaned_data["email_list"], {"toto@tata.net", "titi@lala.net"}
+        )
+
+    def test_ok_with_only_one_email(self):
+        form = MassEmailHabilitatonForm(
+            data={
+                "email_list": "toto@tata.net",
+            }
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["email_list"], {"toto@tata.net"})
+
+    def test_reject_non_email_strings(self):
+        form = MassEmailHabilitatonForm(
+            data={
+                "email_list": """gabuzomeu
+                titi@lala.net""",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["email_list"],
+            ["Veuillez saisir uniquement des adresses e-mail valides."],
+        )
+
+    def test_reject_invalid_emails(self):
+        form = MassEmailHabilitatonForm(
+            data={
+                "email_list": """josée@accent.com
+                titi@lala.net""",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["email_list"],
+            ["Veuillez saisir uniquement des adresses e-mail valides."],
+        )

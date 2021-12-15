@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, EmailValidator
 from django.forms import EmailField
 from django.forms.utils import ErrorList
 from django.utils.html import format_html
@@ -407,3 +407,24 @@ class DatapassHabilitationForm(forms.ModelForm):
         self.instance.organisation = self.cleaned_data["organisation"]
         self.instance.origin = HabilitationRequest.ORIGIN_DATAPASS
         return super().save(commit)
+
+
+class MassEmailHabilitatonForm(forms.Form):
+    email_list = forms.Field(widget=forms.Textarea)
+
+    def clean_email_list(self):
+        email_list = self.cleaned_data.get("email_list")
+        validate_email = EmailValidator(
+            message="Veuillez saisir uniquement des adresses e-mail valides."
+        )
+
+        def is_email_valid(value):
+            validate_email(value)
+            return True
+
+        return set(
+            filter(
+                is_email_valid,
+                (filter(None, (email.strip() for email in email_list.splitlines()))),
+            )
+        )
