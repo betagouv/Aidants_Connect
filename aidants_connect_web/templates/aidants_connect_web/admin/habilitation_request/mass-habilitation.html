@@ -16,17 +16,49 @@
 {% block content %}
   <h1>Habilitation en masse à partir des adresses e-mail</h1>
 
-  <p>Collez ci-dessous une liste d'adresses mail d'aidants dont vous voulez valider la demande d'habilitation.</p>
-
+  <p>
+    Collez ci-dessous une liste d'adresses mail d'aidants dont vous voulez valider la demande
+    d'habilitation.
+  </p>
+  {% if ignored_emails %}
+    <div class="errornote">
+      {% blocktranslate count counter=ignored_emails|length %}
+        Nous n'avons pas pu traiter l'adress e-mail suivante : aucune demande
+        ne correspond, ou alors elle a déjà été annulée ou validée.
+        {% plural %}
+        Nous n'avons pas pu traiter les {{ counter }} e-mails suivants : aucune demande ne correspond,
+        ou alors elles ont déjà été validées/annulées.
+      {% endblocktranslate %}
+      <ul>
+        {% for email in ignored_emails %}
+          <li>{{ email }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  {% if treated_emails %}
+    <p>Les demandes d'habilitation suivantes ont été validées, les comptes aidant ont été créés :</p>
+    <ul>
+      {% for email in treated_emails %}
+        <li>{{ email }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
   <form action="{% url "otpadmin:aidants_connect_web_habilitation_request_mass_validate" %}" method="POST">
-    <fieldset class="module aligned">
-      <label for="emails">Liste des e-mails (un par ligne)</label>
-      <textarea name="emails" id="emails" cols="30" rows="10"></textarea>
-    </fieldset>
+    {% if form.errors %}
+      <p>Des erreurs se sont produites dans le formulaire.</p>
+    {% endif %}
+    <div class="module aligned">
+      <label for="{{ form.email_list.id_for_label }}">Liste des e-mails (un par ligne)</label>
+      {{ form.email_list }}
+      {% if form.errors.email_list %}
+        {{ form.errors.email_list }}
+      {% endif %}
+    </div>
     <div class="submit-row">
       <input type="submit" value="Valider" class="default" name="_save">
       <p class="deletelink-box">
-        <a href="{% url 'otpadmin:aidants_connect_web_mandat_changelist' %}" class="closelink">Annuler</a>
+        <a href="{% url 'otpadmin:aidants_connect_web_habilitationrequest_changelist' %}" class="closelink">Annuler</a>
       </p>
     </div>
     {% csrf_token %}
