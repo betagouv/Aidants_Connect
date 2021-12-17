@@ -133,7 +133,14 @@ class VisibleToAdminMetierTests(TestCase):
 @tag("admin")
 class VisibilityAdminPageTests(TestCase):
     only_by_atac_models = [Mandat, Usager, Connection, Journal]
-    amac_models = [Organisation, Aidant, StaticDevice, TOTPDevice, HabilitationRequest]
+    amac_models = [
+        Aidant,
+        CarteTOTP,
+        HabilitationRequest,
+        StaticDevice,
+        TOTPDevice,
+        Organisation,
+    ]
 
     @classmethod
     def setUpTestData(cls):
