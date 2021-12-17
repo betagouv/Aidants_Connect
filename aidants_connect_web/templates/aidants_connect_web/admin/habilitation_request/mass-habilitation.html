@@ -5,6 +5,7 @@
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "css/admin/aidants-connect.css" %}">
   {{ media.css }}
 {% endblock %}
 
@@ -15,7 +16,6 @@
 
 {% block content %}
   <h1>Habilitation en masse à partir des adresses e-mail</h1>
-
   <p>
     Collez ci-dessous une liste d'adresses mail d'aidants dont vous voulez valider la demande
     d'habilitation.
@@ -37,12 +37,14 @@
     </div>
   {% endif %}
   {% if treated_emails %}
-    <p>Les demandes d'habilitation suivantes ont été validées, les comptes aidant ont été créés :</p>
-    <ul>
-      {% for email in treated_emails %}
-        <li>{{ email }}</li>
-      {% endfor %}
-    </ul>
+    <div class="successnote">
+      <p>Les demandes d'habilitation suivantes ont été validées, les comptes aidant ont été créés :</p>
+      <ul>
+        {% for email in treated_emails %}
+          <li><span aria-hidden="true">✅ </span>{{ email }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endif %}
   <form action="{% url "otpadmin:aidants_connect_web_habilitation_request_mass_validate" %}" method="POST">
     {% if form.errors %}

@@ -810,7 +810,7 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
             self.message_user(
                 request,
                 f"Les {len(treated_emails)} demandes ont bien été validées.",
-                messages.ERROR,
+                messages.SUCCESS,
             )
             return HttpResponseRedirect(
                 reverse("otpadmin:aidants_connect_web_habilitationrequest_changelist")
