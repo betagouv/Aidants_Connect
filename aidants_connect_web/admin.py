@@ -1,6 +1,6 @@
 import logging
 import operator
-from collections import Collection
+from collections.abc import Collection
 from functools import reduce
 
 from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
