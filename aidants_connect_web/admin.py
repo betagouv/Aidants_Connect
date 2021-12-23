@@ -8,8 +8,8 @@ from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, TabularInline, SimpleListFilter
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from django.db.models import Q
-from django.http import HttpResponseRedirect, HttpResponseNotAllowed
+from django.db.models import Q, QuerySet
+from django.http import HttpResponseRedirect, HttpResponseNotAllowed, HttpRequest
 from django.shortcuts import render
 from django.urls import reverse, path
 from django.utils.html import format_html_join
@@ -479,6 +479,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
+    actions = ["mass_deactivate"]
     raw_id_fields = ("responsable_de", "organisation", "organisations")
     readonly_fields = (
         "validated_cgu_version",
@@ -578,6 +579,12 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         organisation = form.cleaned_data["organisation"]
         if organisation is not None:
             form.instance.organisations.add(organisation)
+
+    def mass_deactivate(self, request: HttpRequest, queryset: QuerySet):
+        queryset.update(is_active=False)
+        self.message_user(request, f"{queryset.count()} profils ont été désactivés")
+
+    mass_deactivate.short_description = "Désactiver les profils sélectionnés"
 
 
 class HabilitationRequestResource(resources.ModelResource):
