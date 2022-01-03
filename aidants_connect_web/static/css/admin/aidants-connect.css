@@ -1,0 +1,9 @@
+.successnote {
+    font-size: 14px;
+    padding: 10px 12px;
+    margin: 0 0 10px 0;
+    color: #008628;
+    border: 1px solid #008628;
+    background: #ebffed;
+    border-radius: 4px;
+}

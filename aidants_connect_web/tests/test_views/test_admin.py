@@ -29,6 +29,7 @@ from aidants_connect_web.models import (
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     CarteTOTPFactory,
+    HabilitationRequestFactory,
     TOTPDeviceFactory,
     UsagerFactory,
 )
@@ -132,7 +133,14 @@ class VisibleToAdminMetierTests(TestCase):
 @tag("admin")
 class VisibilityAdminPageTests(TestCase):
     only_by_atac_models = [Mandat, Usager, Connection, Journal]
-    amac_models = [Organisation, Aidant, StaticDevice, TOTPDevice, HabilitationRequest]
+    amac_models = [
+        Aidant,
+        CarteTOTP,
+        HabilitationRequest,
+        StaticDevice,
+        TOTPDevice,
+        Organisation,
+    ]
 
     @classmethod
     def setUpTestData(cls):
@@ -511,3 +519,73 @@ class TotpCardsImportTests(TestCase):
         a.generate_log_entries(result, request)
 
         self.assertEqual(Journal.objects.count(), 1 + initial_count)
+
+
+@tag("admin")
+class HabilitationRequestAdminPageTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = OTPAdminSite(OTPAdminSite.name)
+        cls.url = reverse(
+            "otpadmin:aidants_connect_web_habilitation_request_mass_validate"
+        )
+        cls.list_url = reverse(
+            "otpadmin:aidants_connect_web_habilitationrequest_changelist"
+        )
+        cls.bizdev_user = AidantFactory(
+            is_staff=True,
+            is_superuser=False,
+        )
+        cls.bizdev_user.set_password("password")
+        cls.bizdev_user.save()
+        cls.bizdev_device = StaticDevice.objects.create(
+            user=cls.bizdev_user, name="Device"
+        )
+
+        cls.bizdev_client = Client()
+        cls.bizdev_client.force_login(cls.bizdev_user)
+        bizdev_session = cls.bizdev_client.session
+        bizdev_session[DEVICE_ID_SESSION_KEY] = cls.bizdev_device.persistent_id
+        bizdev_session.save()
+
+    def test_mass_habilitation_page_is_available(self):
+        response = self.bizdev_client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response, "Habilitation en masse à partir des adresses e-mail"
+        )
+
+    def test_mass_habilitation_on_only_valid_addresses(self):
+        for _ in range(2):
+            HabilitationRequestFactory()
+        emails = tuple(obj.email for obj in HabilitationRequest.objects.all())
+        response = self.bizdev_client.post(self.url, {"email_list": "\n".join(emails)})
+        self.assertRedirects(response, self.list_url, fetch_redirect_response=False)
+        response = self.bizdev_client.get(self.list_url)
+        self.assertContains(response, "Les 2 demandes ont bien été validées.")
+        for email in emails:
+            habilitation_request = HabilitationRequest.objects.get(email=email)
+            self.assertEqual(
+                habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+            )
+            self.assertTrue(Aidant.objects.filter(email=email).exists())
+
+    def test_mass_habilitation_with_valid_and_invalid_addresses(self):
+        for _ in range(5):
+            HabilitationRequestFactory()
+        valid_emails = (obj.email for obj in HabilitationRequest.objects.all())
+        invalid_emails = ("jlfqksjqsdf@com.com", "qlfqf@non.net")
+        emails = "\n".join(invalid_emails) + "\n" + "\n".join(valid_emails)
+        response = self.bizdev_client.post(self.url, {"email_list": emails})
+        self.assertEqual(response.status_code, 200)  # no redirection
+        for email in valid_emails:
+            habilitation_request = HabilitationRequest.objects.get(email=email)
+            self.assertEqual(
+                habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+            )
+            self.assertTrue(Aidant.objects.filter(email=email).exists())
+        self.assertContains(
+            response, "Les demandes d'habilitation suivantes ont été validées"
+        )
+        self.assertContains(response, "Nous n'avons pas pu traiter les")

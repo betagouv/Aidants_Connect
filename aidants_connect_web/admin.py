@@ -40,7 +40,11 @@ from magicauth.models import MagicToken
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
 
-from aidants_connect_web.forms import AidantChangeForm, AidantCreationForm
+from aidants_connect_web.forms import (
+    AidantChangeForm,
+    AidantCreationForm,
+    MassEmailHabilitatonForm,
+)
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
@@ -692,6 +696,9 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     )
     ordering = ("email",)
     resource_class = HabilitationRequestResource
+    change_list_template = (
+        "aidants_connect_web/admin/habilitation_request/change_list.html"
+    )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -741,6 +748,80 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     mark_processing.short_description = (
         "Passer « en cours » les demandes d'habilitation sélectionnées"
     )
+
+    def get_urls(self):
+        return [
+            path(
+                "validate-from-emails/",
+                self.admin_site.admin_view(self.validate_from_email),
+                name="aidants_connect_web_habilitation_request_mass_validate",
+            ),
+            *super().get_urls(),
+        ]
+
+    def validate_from_email(self, request):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__validate_from_email_get(request)
+        else:
+            return self.__validate_from_email_post(request)
+
+    def __validate_from_email_get(self, request):
+        context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "form": MassEmailHabilitatonForm(),
+        }
+
+        return render(
+            request,
+            "aidants_connect_web/admin/habilitation_request/mass-habilitation.html",
+            context,
+        )
+
+    def __validate_from_email_post(self, request):
+        form = MassEmailHabilitatonForm(request.POST)
+        context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "form": form,
+        }
+        if not form.is_valid():
+            return render(
+                request,
+                "aidants_connect_web/admin/habilitation_request/mass-habilitation.html",
+                context,
+            )
+        email_list = form.cleaned_data.get("email_list")
+        valid_habilitation_requests = HabilitationRequest.objects.filter(
+            email__in=email_list
+        ).filter(
+            status__in=(
+                HabilitationRequest.STATUS_PROCESSING,
+                HabilitationRequest.STATUS_NEW,
+            )
+        )
+        treated_emails = set()
+        for habilitation_request in valid_habilitation_requests:
+            if habilitation_request.validate_and_create_aidant():
+                treated_emails.add(habilitation_request.email)
+        if len(email_list) > 0 and len(treated_emails) == len(email_list):
+            self.message_user(
+                request,
+                f"Les {len(treated_emails)} demandes ont bien été validées.",
+                messages.SUCCESS,
+            )
+            return HttpResponseRedirect(
+                reverse("otpadmin:aidants_connect_web_habilitationrequest_changelist")
+            )
+        context["treated_emails"] = treated_emails
+        context["ignored_emails"] = email_list - treated_emails
+        return render(
+            request,
+            "aidants_connect_web/admin/habilitation_request/mass-habilitation.html",
+            context,
+        )
 
 
 class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):
