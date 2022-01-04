@@ -234,7 +234,7 @@ class AidantChangeFormTests(TestCase):
         self.assertEqual(aidant.email, "good@mail.net")
         self.assertEqual(aidant.username, "good@mail.net")
 
-    def test_you_can_update_username_to_match_username(self):
+    def test_you_can_update_username_to_match_email(self):
         aidant = AidantFactory(
             email="good@mail.net",
             username="wrong@mail.net",
