@@ -5,7 +5,7 @@ from django.urls import resolve, reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.constants import JournalActionKeywords
+from aidants_connect.constants import JournalActionKeywords
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import (
     AidantFactory,

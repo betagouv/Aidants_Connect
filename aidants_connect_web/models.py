@@ -18,7 +18,7 @@ from os.path import join as path_join, dirname
 from re import sub as regex_sub
 from phonenumber_field.modelfields import PhoneNumberField
 
-from aidants_connect_web.constants import (
+from aidants_connect.constants import (
     JOURNAL_ACTIONS,
     JournalActionKeywords,
     AuthorizationDurationChoices,

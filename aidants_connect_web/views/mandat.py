@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone, formats
 from django.contrib.staticfiles import finders
 
-from aidants_connect_web.constants import AuthorizationDurations
+from aidants_connect.constants import AuthorizationDurations
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm, RecapMandatForm, PatchedErrorList
 from aidants_connect_web.models import (
