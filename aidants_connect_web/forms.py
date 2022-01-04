@@ -122,10 +122,15 @@ class AidantChangeForm(forms.ModelForm):
         cleaned_data = self.cleaned_data
         data_email = cleaned_data.get("email")
         initial_email = self.instance.email
+        initial_id = self.instance.id
 
         if data_email != initial_email:
-            claimed_emails = Aidant.objects.all().values_list("username", flat=True)
-            if data_email in claimed_emails:
+            if (
+                Aidant.objects.filter(email=data_email).exists()
+                or Aidant.objects.exclude(id=initial_id)
+                .filter(username=data_email)
+                .exists()
+            ):
                 self.add_error(
                     "email", forms.ValidationError("This email is already taken")
                 )

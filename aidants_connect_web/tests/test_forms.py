@@ -210,6 +210,54 @@ class AidantChangeFormTests(TestCase):
         self.assertEqual(self.aidant2.username, "abernart@domain.user")
         self.assertEqual(form.errors["email"], ["This email is already taken"])
 
+    def test_you_can_update_email_to_match_username(self):
+        aidant = AidantFactory(
+            email="wrong@mail.net",
+            username="good@mail.net",
+        )
+        changed_data = {
+            "username": "good@mail.net",
+            "email": "good@mail.net",
+            "first_name": aidant.first_name,
+            "last_name": aidant.last_name,
+            "profession": "Mediateur",
+            "organisation": str(aidant.organisation.id),
+        }
+        form = AidantChangeForm(
+            data=changed_data,
+            initial=model_to_dict(aidant),
+            instance=aidant,
+        )
+
+        aidant.refresh_from_db()
+        self.assertTrue(form.is_valid())
+        self.assertEqual(aidant.email, "good@mail.net")
+        self.assertEqual(aidant.username, "good@mail.net")
+
+    def test_you_can_update_username_to_match_username(self):
+        aidant = AidantFactory(
+            email="good@mail.net",
+            username="wrong@mail.net",
+        )
+        changed_data = {
+            "username": "good@mail.net",
+            "email": "good@mail.net",
+            "first_name": aidant.first_name,
+            "last_name": aidant.last_name,
+            "profession": "Mediateur",
+            "organisation": str(aidant.organisation.id),
+        }
+        form = AidantChangeForm(
+            data=changed_data,
+            initial=model_to_dict(aidant),
+            instance=aidant,
+        )
+
+        aidant.refresh_from_db()
+        self.assertTrue(form.is_valid())
+        self.assertEqual(aidant.email, "good@mail.net")
+        self.assertEqual(aidant.username, "good@mail.net")
+
 
 class MandatFormTests(TestCase):
     def test_form_renders_item_text_input(self):
