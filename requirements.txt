@@ -1,4 +1,4 @@
-Django==3.1.13
+Django==3.2.11
 
 django-admin-honeypot==1.1.0
 django-celery-beat==2.0.0
