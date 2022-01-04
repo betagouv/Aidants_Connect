@@ -126,7 +126,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "aidants_connect_web",
     "admin_honeypot",
     "django_otp",
     "django_otp.plugins.otp_static",
@@ -135,6 +134,8 @@ INSTALLED_APPS = [
     "django_extensions",
     "import_export",
     "phonenumber_field",
+    "aidants_connect_web",
+    "aidants_connect_habilitation",
 ]
 
 MIDDLEWARE = [
