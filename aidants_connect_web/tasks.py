@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
-
+from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 from celery import shared_task
 
 from aidants_connect_web.models import Connection
@@ -37,6 +37,37 @@ def delete_expired_connections():
         logger.info("No connection to delete.")
 
     return deleted_connections_count
+
+
+@shared_task
+def delete_duplicated_static_tokens():
+    logger.info("Deleting duplicated tokens...")
+    devices_with_duplicated_tokens = (
+        StaticDevice.objects.filter(user__is_staff=False)
+        .filter(user__is_superuser=False)
+        .values()
+        .annotate(token_count=Count("token_set"))
+        .filter(token_count__gte=2)
+    )
+
+    for device in devices_with_duplicated_tokens:
+        device_id = device["id"]
+        token_values = (
+            StaticToken.objects.filter(device__id=device_id)
+            .values_list("token", flat=True)
+            .distinct()
+        )
+        for value in token_values:
+            tokens_to_delete = StaticToken.objects.filter(device__id=device_id).filter(
+                token=value
+            )
+            count_tokens = tokens_to_delete.count()
+            if count_tokens > 1:
+                tokens_to_delete = StaticToken.objects.filter(
+                    device__id=device_id
+                ).filter(token=value)[: count_tokens - 1]
+                for token in tokens_to_delete:
+                    token.delete()
 
 
 @shared_task
