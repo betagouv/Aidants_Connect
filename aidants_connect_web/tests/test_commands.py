@@ -6,6 +6,8 @@ from django.core import mail
 from django.core.management import call_command, CommandError
 from django.test import tag, TestCase
 from freezegun import freeze_time
+from django_otp.plugins.otp_static.lib import add_static_token
+from django_otp.plugins.otp_static.models import StaticToken
 
 from aidants_connect_overrides.management.commands.createsuperuser import (
     ERROR_MSG,
@@ -74,6 +76,30 @@ class DeleteExpiredConnectionsTests(TestCase):
         remaining_connections = Connection.objects.all()
         self.assertEqual(remaining_connections.count(), 1)
         self.assertEqual(remaining_connections.first().id, self.conn_2.id)
+
+
+@tag("commands")
+class DeleteDuplicatedAndObsoleteTokensTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.command_name = "delete_duplicated_static_tokens"
+
+    def test_delete_duplicated_tokens_for_standard_aidant(self):
+        aidant = AidantFactory()
+        for _ in range(5):
+            add_static_token(aidant.username, 123456)
+        self.assertEqual(StaticToken.objects.count(), 5)
+        call_command(self.command_name)
+        self.assertEqual(StaticToken.objects.count(), 1)
+
+    def test_keep_one_token_of_every_value_for_standard_aidant(self):
+        aidant = AidantFactory()
+        for _ in range(5):
+            add_static_token(aidant.username, 123456)
+            add_static_token(aidant.username, 789123)
+        self.assertEqual(StaticToken.objects.count(), 10)
+        call_command(self.command_name)
+        self.assertEqual(StaticToken.objects.count(), 2)
 
 
 @tag("commands")
