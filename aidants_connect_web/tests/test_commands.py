@@ -84,7 +84,7 @@ class DeleteDuplicatedAndObsoleteTokensTests(TestCase):
     def setUpTestData(cls):
         cls.command_name = "delete_duplicated_static_tokens"
 
-    def test_delete_duplicated_tokens_for_standard_aidant(self):
+    def test_delete_duplicated_tokens_for_aidant(self):
         aidant = AidantFactory()
         for _ in range(5):
             add_static_token(aidant.username, 123456)
@@ -92,7 +92,7 @@ class DeleteDuplicatedAndObsoleteTokensTests(TestCase):
         call_command(self.command_name)
         self.assertEqual(StaticToken.objects.count(), 1)
 
-    def test_keep_one_token_of_every_value_for_standard_aidant(self):
+    def test_keep_one_token_of_every_value_for_aidant(self):
         aidant = AidantFactory()
         for _ in range(5):
             add_static_token(aidant.username, 123456)
