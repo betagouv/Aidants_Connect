@@ -322,13 +322,7 @@ class Aidant(AbstractUser):
 
     @cached_property
     def has_a_totp_device(self):
-        try:
-            TOTPDevice.objects.get(user=self, confirmed=True)
-            return True
-        except TOTPDevice.MultipleObjectsReturned:
-            return True
-        except TOTPDevice.DoesNotExist:
-            return False
+        return self.totpdevice_set.filter(confirmed=True).exists()
 
     @cached_property
     def has_a_carte_totp(self):
