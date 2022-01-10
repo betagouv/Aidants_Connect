@@ -64,6 +64,8 @@ def getenv_bool(key: str, default: Optional[bool] = None) -> bool:
 
 
 HOST = os.environ["HOST"]
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
 # FC as FI
 FC_AS_FI_CALLBACK_URL = os.environ["FC_AS_FI_CALLBACK_URL"]
 FC_AS_FI_ID = os.environ["FC_AS_FI_ID"]
