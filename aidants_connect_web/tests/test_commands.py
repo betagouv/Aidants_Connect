@@ -6,6 +6,9 @@ from django.core import mail
 from django.core.management import call_command, CommandError
 from django.test import tag, TestCase
 from freezegun import freeze_time
+from django_otp.plugins.otp_static.lib import add_static_token
+from django_otp.plugins.otp_static.models import StaticToken
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_overrides.management.commands.createsuperuser import (
     ERROR_MSG,
@@ -74,6 +77,48 @@ class DeleteExpiredConnectionsTests(TestCase):
         remaining_connections = Connection.objects.all()
         self.assertEqual(remaining_connections.count(), 1)
         self.assertEqual(remaining_connections.first().id, self.conn_2.id)
+
+
+@tag("commands")
+class DeleteDuplicatedAndObsoleteTokensTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.command_name = "delete_duplicated_static_tokens"
+
+    def test_delete_duplicated_tokens_for_aidant(self):
+        aidant = AidantFactory()
+        for _ in range(5):
+            add_static_token(aidant.username, 123456)
+        self.assertEqual(StaticToken.objects.count(), 5)
+        call_command(self.command_name)
+        self.assertEqual(StaticToken.objects.count(), 1)
+
+    def test_keep_one_token_of_every_value_for_aidant(self):
+        aidant = AidantFactory()
+        for _ in range(5):
+            add_static_token(aidant.username, 123456)
+            add_static_token(aidant.username, 789123)
+        self.assertEqual(StaticToken.objects.count(), 10)
+        call_command(self.command_name)
+        self.assertEqual(StaticToken.objects.count(), 2)
+
+    def test_delete_static_device_for_confirmed_simple_aidants(self):
+        aidants = [
+            AidantFactory(),
+            AidantFactory(is_staff=True),
+            AidantFactory(is_staff=True, is_superuser=True),
+        ]
+        for aidant in aidants:
+            add_static_token(aidant.username, 123456)
+            TOTPDevice(user=aidant, confirmed=True).save()
+
+        self.assertEqual(StaticToken.objects.count(), 3)
+        self.assertEqual(TOTPDevice.objects.count(), 3)
+
+        call_command(self.command_name)
+
+        # only the first aidant's static device was deleted
+        self.assertEqual(StaticToken.objects.count(), 2)
 
 
 @tag("commands")
