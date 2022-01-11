@@ -39,4 +39,4 @@ sentry-sdk==1.0.0
 sqlparse==0.3.1
 whitenoise==5.1.0
 
-git+git://github.com/betagouv/django-magicauth@0.7
+django-magicauth @ git+https://github.com/betagouv/django-magicauth.git@0.7
