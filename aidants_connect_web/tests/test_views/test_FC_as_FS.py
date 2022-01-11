@@ -8,7 +8,7 @@ from django.conf import settings
 from django.test import override_settings, tag, TestCase
 from django.test.client import Client
 
-from aidants_connect_web.constants import AuthorizationDurationChoices
+from aidants_connect.constants import AuthorizationDurationChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash

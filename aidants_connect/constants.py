@@ -1,8 +1,20 @@
 from datetime import date, timedelta
+from enum import unique, Enum
 
 from django.conf import settings
-from django.db.models import TextChoices
+from django.db.models import TextChoices, IntegerChoices
 from django.utils.timezone import now
+
+
+__all__ = [
+    "JournalActionKeywords",
+    "JOURNAL_ACTIONS",
+    "AuthorizationDurations",
+    "AuthorizationDurationChoices",
+    "RequestOriginConstants",
+    "RequestStatusConstants",
+    "MessageStakeholders",
+]
 
 
 class JournalActionKeywords:
@@ -115,3 +127,47 @@ class AuthorizationDurationChoices(TextChoices):
         AuthorizationDurations.EUS_03_20,
         "jusqu’à la fin de l’état d’urgence sanitaire ",
     )
+
+
+class ChoiceEnum(Enum):
+    @classmethod
+    def choices(cls):
+        return ((item.name, item.value) for item in cls)
+
+
+@unique
+class RequestOriginConstants(IntegerChoices):
+    FRANCE_SERVICE = (1, "France Services/MSAP")
+    CCAS = (2, "CCAS")
+    CENTRES_SOCIAUX = (3, "Centres sociaux")
+    SECRETARIATS_MAIRIE = (4, "Sécrétariats de mairie")
+    MAISONS_SOLIDARITE = (5, "Maisons départementales des solidarités")
+    MEDIATHEQUE = (6, "Médiathèque")
+    GUICHET_AUTRE = (7, "Autre guichet d’accueil de service public de proximité")
+    GUICHET_OPERATEUR = (
+        8,
+        "Guichet d’accueil d’opérateur de service public (CAF, Pôle Emploi, etc.)",
+    )
+    AUTRES_ASSOS = (
+        9,
+        "Autres associations d’accompagnement des publics ou de médiation numérique",
+    )
+    SMS = (10, "Structure médico-sociale (CSAPA, CHU, CMS)")
+    INDEP = (11, "Indépendant")
+    OTHER = (12, "Autre")
+
+
+@unique
+class RequestStatusConstants(ChoiceEnum):
+    NEW = "Nouvelle"
+    PROCESSING = "En cours"
+    VALIDATED = "Validée"
+    REFUSED = "Refusée"
+    CANCELLED = "Annulée"
+    CHANGES_REQUIRED = "Changements demandés"
+
+
+@unique
+class MessageStakeholders(ChoiceEnum):
+    AC = "Aidants Connect"
+    ISSUER = "Demandeur"
