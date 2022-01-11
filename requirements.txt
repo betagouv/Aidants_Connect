@@ -1,7 +1,7 @@
 Django==3.2.11
 
 django-admin-honeypot==1.1.0
-django-celery-beat==2.0.0
+django-celery-beat==2.2.1
 django-csp==3.6
 django-extensions==3.0.1
 django-nested-admin==3.3.2
@@ -15,7 +15,7 @@ phonenumberslite==8.12.21
 django-phonenumber-field==5.0.0
 
 black==20.8b1
-celery[redis]==4.4.6
+celery[redis]==5.2
 coverage==5.1
 entrypoints==0.3
 factory-boy==2.12.0
