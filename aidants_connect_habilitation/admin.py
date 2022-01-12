@@ -1,4 +1,5 @@
 from django.contrib.admin import ModelAdmin
+from django.conf import settings
 
 from aidants_connect.admin import admin_site, VisibleToAdminMetier
 from aidants_connect_habilitation.models import Issuer, OrganisationRequest
@@ -18,5 +19,6 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     raw_id_fields = ("issuer",)
 
 
-admin_site.register(Issuer, IssuerAdmin)
-admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
+if settings.AC_HABILITATION_FORM_ENABLED:
+    admin_site.register(Issuer, IssuerAdmin)
+    admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
