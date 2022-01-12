@@ -1,0 +1,55 @@
+{% load static form_extras %}
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <fieldset>
+    <legend>Informations générales</legend>
+
+    {% field_as_p form.type %}
+    {% field_as_p form.type_other %}
+    {% field_as_p form.name %}
+  </fieldset>
+  <fieldset>
+    <legend>Informations administratives</legend>
+
+    {% field_as_p form.address %}
+
+    {% with errors=form.zipcode.errors|add:form.city.errors %}
+      {{ errors }}
+    {% endwith %}
+    <p>
+      <label for="{{ form.zipcode.id_for_label }}">{{ form.zipcode.label }}</label>&nbsp;/&nbsp;
+      <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+      {{ form.zipcode }}{{ form.city }}
+    </p>
+
+    {% field_as_p form.siret %}
+
+    <label for="is_private_org">Cochez cette case si vous faites cette demande pour une structure privée (hors associations)</label>
+    <input id="is_private_org" type="checkbox">
+
+    <section class="partner-administration">
+      {% field_as_p form.partner_administration %}
+      {% field_as_p form.public_service_delegation_attestation %}
+    </section>
+  </fieldset>
+  <fieldset>
+    <legend>Informations descriptives</legend>
+
+    {% field_as_p form.web_site %}
+    {% field_as_p form.mission_description %}
+    {% field_as_p form.avg_nb_demarches %}
+  </fieldset>
+  <fieldset>
+    <legend>Responsable</legend>
+
+    {% field_as_p form.manager_first_name %}
+    {% field_as_p form.manager_last_name %}
+    {% field_as_p form.manager_email %}
+    {% field_as_p form.manager_profession %}
+    {% field_as_p form.manager_phone %}
+  </fieldset>
+
+  <input type="submit" value="Valider cette étape">
+</form>
