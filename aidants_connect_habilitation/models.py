@@ -166,3 +166,9 @@ class RequestMessage(models.Model):
         "Expéditeur", max_length=20, choices=MessageStakeholders.choices()
     )
     content = models.TextField("Message")
+
+    def __str__(self):
+        return f"Message {self.id}"
+
+    class Meta:
+        verbose_name = "message"

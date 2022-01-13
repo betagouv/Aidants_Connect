@@ -1,4 +1,4 @@
-from django.contrib.admin import ModelAdmin, TabularInline
+from django.contrib.admin import ModelAdmin, TabularInline, StackedInline
 
 from django.conf import settings
 
@@ -7,6 +7,7 @@ from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
     OrganisationRequest,
+    RequestMessage,
 )
 
 
@@ -22,12 +23,21 @@ class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
 
 class AidantRequestInline(VisibleToAdminMetier, TabularInline):
     model = AidantRequest
+    show_change_link = True
+
+
+class MessageInline(VisibleToAdminMetier, StackedInline):
+    model = RequestMessage
+    extra = 1
 
 
 class OrganisationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     raw_id_fields = ("issuer",)
     readonly_fields = ("public_service_delegation_attestation",)
-    inlines = (AidantRequestInline,)
+    inlines = (
+        AidantRequestInline,
+        MessageInline,
+    )
 
 
 if settings.AC_HABILITATION_FORM_ENABLED:
