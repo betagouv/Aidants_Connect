@@ -1,8 +1,13 @@
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, TabularInline
+
 from django.conf import settings
 
 from aidants_connect.admin import admin_site, VisibleToAdminMetier
-from aidants_connect_habilitation.models import Issuer, OrganisationRequest
+from aidants_connect_habilitation.models import (
+    AidantRequest,
+    Issuer,
+    OrganisationRequest,
+)
 
 
 class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
@@ -15,8 +20,14 @@ class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
     )
 
 
+class AidantRequestInline(VisibleToAdminMetier, TabularInline):
+    model = AidantRequest
+
+
 class OrganisationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     raw_id_fields = ("issuer",)
+    readonly_fields = ("public_service_delegation_attestation",)
+    inlines = (AidantRequestInline,)
 
 
 if settings.AC_HABILITATION_FORM_ENABLED:
