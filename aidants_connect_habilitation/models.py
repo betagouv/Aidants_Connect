@@ -18,7 +18,13 @@ class Issuer(models.Model):
     last_name = models.CharField("Nom", max_length=150)
     email = models.EmailField(max_length=150)
     profession = models.CharField("Intitulé du poste", blank=False, max_length=150)
-    phone = PhoneNumberField(blank=True)
+    phone = PhoneNumberField("Téléphone", blank=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+    class Meta:
+        verbose_name = "Demandeur"
 
 
 class OrganisationRequest(models.Model):
@@ -26,6 +32,7 @@ class OrganisationRequest(models.Model):
         Issuer,
         on_delete=models.CASCADE,
         related_name="organisation_requests",
+        verbose_name="Demandeur",
     )
 
     status = models.CharField(
@@ -115,6 +122,8 @@ class OrganisationRequest(models.Model):
                 check=Q(without_elected=True), name="without_elected_checked"
             ),
         ]
+        verbose_name = "Demande d’habilitation"
+        verbose_name_plural = "Demandes d’habilitation"
 
 
 class AidantRequest(models.Model):
