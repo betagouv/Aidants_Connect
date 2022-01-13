@@ -451,8 +451,8 @@ class HabilitationRequest(models.Model):
                 fields=("email", "organisation"), name="unique_email_per_orga"
             ),
         )
-        verbose_name = "demande d’habilitation"
-        verbose_name_plural = "demandes d’habilitation"
+        verbose_name = "aidant à former"
+        verbose_name_plural = "aidants à former"
 
     def __str__(self):
         return f"{self.email}"

@@ -152,7 +152,7 @@ def notify_new_habilitation_requests():
         recipient_list=recipient_list,
         subject=(
             f"[Aidants Connect] {habilitation_requests_count} "
-            "nouvelles demandes d’habilitation"
+            "nouveaux aidants à former"
         ),
         message=text_message,
         html_message=html_message,

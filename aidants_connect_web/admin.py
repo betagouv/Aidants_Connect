@@ -276,7 +276,7 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             + "</td></tr></table>"
         )
 
-    display_habilitation_requests.short_description = "Demandes d'habilitation"
+    display_habilitation_requests.short_description = "Aidants à former"
 
     def find_zipcode_in_address(self, request, queryset):
         for organisation in queryset:
@@ -681,13 +681,9 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
             for habilitation_request in queryset
             if habilitation_request.validate_and_create_aidant()
         )
-        self.message_user(
-            request, f"{rows_updated} demandes d'habilitation ont été validées."
-        )
+        self.message_user(request, f"{rows_updated} demandes ont été validées.")
 
-    mark_validated.short_description = (
-        "Valider les demandes d’habilitation sélectionnées"
-    )
+    mark_validated.short_description = "Créer les comptes aidants sélectionnés"
 
     def mark_refused(self, request, queryset):
         rows_updated = queryset.filter(
@@ -696,23 +692,17 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
                 HabilitationRequest.STATUS_NEW,
             )
         ).update(status=HabilitationRequest.STATUS_REFUSED)
-        self.message_user(
-            request, f"{rows_updated} demandes d’habilitation ont été refusées."
-        )
+        self.message_user(request, f"{rows_updated} demandes ont été refusées.")
 
-    mark_refused.short_description = "Refuser les demandes d’habilitation sélectionnées"
+    mark_refused.short_description = "Refuser les demandes sélectionnées"
 
     def mark_processing(self, request, queryset):
         rows_updated = queryset.filter(status=HabilitationRequest.STATUS_NEW).update(
             status=HabilitationRequest.STATUS_PROCESSING
         )
-        self.message_user(
-            request, f"{rows_updated} demandes d’habilitation sont maintenant en cours."
-        )
+        self.message_user(request, f"{rows_updated} demandes sont maintenant en cours.")
 
-    mark_processing.short_description = (
-        "Passer « en cours » les demandes d'habilitation sélectionnées"
-    )
+    mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
 
     def get_urls(self):
         return [
