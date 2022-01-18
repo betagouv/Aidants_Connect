@@ -1328,6 +1328,9 @@ class DatavizDepartment(models.Model):
         "Nom de département", max_length=50, null=False, blank=False
     )
 
+    def normalize_zipcode(self):
+        return "".join(x if x.isdigit() else "0" for x in self.zipcode)
+
     class Meta:
         db_table = "dataviz_department"
         verbose_name = "Département"

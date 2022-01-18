@@ -14,9 +14,7 @@ from django_celery_beat.models import (
 )
 from django_otp.admin import OTPAdminSite
 from magicauth.models import MagicToken
-from aidants_connect_web.models import (
-    DatavizRegion,
-)
+from aidants_connect_web.models import DatavizRegion, DatavizDepartment
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
 admin_site.login_template = "aidants_connect_web/admin/login.html"
@@ -75,6 +73,33 @@ class RegionFilter(SimpleListFilter):
         return [(r.id, r.name) for r in DatavizRegion.objects.all()] + [
             ("other", "Autre")
         ]
+
+
+class DepartmentFilter(SimpleListFilter):
+    title = "Département"
+
+    parameter_name = "department"
+    filter_parameter_name = "zipcode"
+
+    @classmethod
+    def generate_filter_list(cls):
+        return [
+            (d.normalize_zipcode(), f"{d.dep_name} ({d.normalize_zipcode()})")
+            for d in DatavizDepartment.objects.all().order_by("dep_name")
+        ] + [("other", "Autre")]
+
+    def lookups(self, request, model_admin):
+        return self.generate_filter_list()
+
+    def queryset(self, request, queryset):
+        department_value = self.value()
+        if not department_value:
+            return
+        if department_value == "other":
+            return queryset.filter(**{f"{self.filter_parameter_name}": 0})
+        return queryset.filter(
+            **{f"{self.filter_parameter_name}__startswith": department_value}
+        )
 
 
 # Also register the Django Celery Beat models
