@@ -115,14 +115,28 @@ class DepartmentFilter(SimpleListFilter):
     filter_parameter_name = "zipcode"
 
     @classmethod
-    def generate_filter_list(cls):
+    def generate_filter_list(cls, region=None):
+        if not region:
+            return [
+                (d.normalize_zipcode(), f"{d.dep_name} ({d.normalize_zipcode()})")
+                for d in DatavizDepartment.objects.all().order_by("dep_name")
+            ] + [("other", "Autre")]
         return [
-            (d.normalize_zipcode(), f"{d.dep_name} ({d.normalize_zipcode()})")
-            for d in DatavizDepartment.objects.all().order_by("dep_name")
-        ] + [("other", "Autre")]
+            (
+                d2r.department.normalize_zipcode(),
+                f"{d2r.department.dep_name} ({d2r.department.normalize_zipcode()})",
+            )
+            for d2r in DatavizDepartmentsToRegion.objects.filter(
+                region=region
+            ).order_by("department__dep_name")
+        ]
 
     def lookups(self, request, model_admin):
-        return self.generate_filter_list()
+        region = None
+        region_id = request.GET.get("region", "other")
+        if region_id != "other":
+            region = DatavizRegion.objects.get(id=region_id)
+        return self.generate_filter_list(region=region)
 
     def queryset(self, request, queryset):
         department_value = self.value()
