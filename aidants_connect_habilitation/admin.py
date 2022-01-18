@@ -32,6 +32,8 @@ class MessageInline(VisibleToAdminMetier, StackedInline):
 
 
 class OrganisationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_filter = ("status",)
+    list_display = ("name", "issuer", "status")
     raw_id_fields = ("issuer",)
     readonly_fields = ("public_service_delegation_attestation",)
     inlines = (
