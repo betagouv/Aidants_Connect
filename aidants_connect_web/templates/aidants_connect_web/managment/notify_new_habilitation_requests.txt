@@ -1,7 +1,7 @@
 Bonjour,
 
 Durant les {{ interval }} derniers jours, il y a eu sur Aidants Connect
-{{ total_requests }} nouvelles demandes d'habilitation
+{{ total_requests }} nouveaux aidants à former
 dans {{ organisations.count }} structures différentes :
 
 {% for org in organisations %}
@@ -9,7 +9,7 @@ dans {{ organisations.count }} structures différentes :
 {% endfor %}
 
 Afin de les traiter, vous pouvez les retrouver dans l'administration Django,
-dans la rubrique « demandes d’habilitation ».
+dans la rubrique « aidants à former ».
 
 Bonne journée,
 

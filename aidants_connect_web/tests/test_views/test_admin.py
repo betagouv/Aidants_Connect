@@ -586,6 +586,10 @@ class HabilitationRequestAdminPageTests(TestCase):
             )
             self.assertTrue(Aidant.objects.filter(email=email).exists())
         self.assertContains(
-            response, "Les demandes d'habilitation suivantes ont été validées"
+            response,
+            (
+                "Les demandes suivantes ont été validées, les comptes aidant "
+                "ont été créés"
+            ),
         )
         self.assertContains(response, "Nous n'avons pas pu traiter les")

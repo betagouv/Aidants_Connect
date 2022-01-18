@@ -14,14 +14,18 @@
                       <p>Bonjour,</p>
                       <p>
                         Durant les {{ interval }} derniers jours, il y a eu sur Aidants Connect
-                        {{ total_requests }} nouvelles demandes d'habilitation
+                        {{ total_requests }} nouveaux aidants à former
                         dans {{ organisations.count }} structures différentes :
                       </p>
                       <ul>
                         {% for org in organisations %}
-                          <li>{{ org.name }} : {{ org.num_requests }} demandes</li>
+                          <li>{{ org.name }} : {{ org.num_requests }} aidants</li>
                         {% endfor %}
                       </ul>
+                      <p>
+                        Afin de les traiter, vous pouvez les retrouver dans l'administration Django,
+                        dans la rubrique « aidants à former ».
+                      </p>
                       <p>Bonne journée,</p>
                       <p>Le robot Aidants Connect</p>
                     </td>

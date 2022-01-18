@@ -268,8 +268,8 @@ class NewHabilitationRequestsTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         mail_content = mail.outbox[0].body
         mail_subject = mail.outbox[0].subject
-        self.assertIn("3 nouvelles demandes d’habilitation", mail_subject)
-        self.assertIn("3 nouvelles demandes d'habilitation", mail_content)
+        self.assertIn("3 nouveaux aidants à former", mail_subject)
+        self.assertIn("3 nouveaux aidants à former", mail_content)
         self.assertIn("dans 3 structures différentes", mail_content)
 
     def test_counting_of_habilitation_requests(self):
@@ -278,8 +278,8 @@ class NewHabilitationRequestsTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         mail_content = mail.outbox[0].body
         mail_subject = mail.outbox[0].subject
-        self.assertIn("4 nouvelles demandes d’habilitation", mail_subject)
-        self.assertIn("4 nouvelles demandes d'habilitation", mail_content)
+        self.assertIn("4 nouveaux aidants à former", mail_subject)
+        self.assertIn("4 nouveaux aidants à former", mail_content)
         self.assertIn("dans 2 structures différentes", mail_content)
 
 
