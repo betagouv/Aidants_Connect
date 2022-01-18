@@ -29,6 +29,7 @@ from aidants_connect.admin import (
     admin_site,
     VisibleToAdminMetier,
     VisibleToTechAdmin,
+    DepartmentFilter,
     RegionFilter,
 )
 from aidants_connect_web.forms import (
@@ -139,6 +140,10 @@ class OrganisationResource(resources.ModelResource):
         model = Organisation
 
 
+class OrgansationDepartmentFilter(DepartmentFilter):
+    pass
+
+
 class OrganisationRegionFilter(RegionFilter):
     def queryset(self, request, queryset):
         region_id = self.value()
@@ -153,7 +158,10 @@ class OrganisationRegionFilter(RegionFilter):
         d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
         qgroup = reduce(
             operator.or_,
-            (Q(zipcode__startswith=d.department.zipcode) for d in d2r.all()),
+            (
+                Q(zipcode__startswith=d.department.normalize_zipcode())
+                for d in d2r.all()
+            ),
         )
         return queryset.filter(qgroup)
 
@@ -195,7 +203,12 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "display_habilitation_requests",
     )
     search_fields = ("name", "siret", "data_pass_id")
-    list_filter = ("is_active", WithoutDatapassIdFilter, OrganisationRegionFilter)
+    list_filter = (
+        "is_active",
+        WithoutDatapassIdFilter,
+        OrganisationRegionFilter,
+        OrgansationDepartmentFilter,
+    )
 
     # For bulk import
     resource_class = OrganisationResource
@@ -371,6 +384,10 @@ class AidantResource(resources.ModelResource):
             totp_device.save()
 
 
+class AidantDepartmentFilter(DepartmentFilter):
+    filter_parameter_name = "organisations__zipcode"
+
+
 class AidantRegionFilter(RegionFilter):
     def queryset(self, request, queryset):
         region_id = self.value()
@@ -441,7 +458,13 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_staff",
         "is_superuser",
     )
-    list_filter = ("is_active", AidantRegionFilter, "is_staff", "is_superuser")
+    list_filter = (
+        "is_active",
+        AidantRegionFilter,
+        AidantDepartmentFilter,
+        "is_staff",
+        "is_superuser",
+    )
     search_fields = ("first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
 
@@ -583,6 +606,10 @@ class HabilitationRequestResource(resources.ModelResource):
         fields = set()
 
 
+class HabilitationDepartmentFilter(DepartmentFilter):
+    filter_parameter_name = "organisation__zipcode"
+
+
 class HabilitationRequestRegionFilter(RegionFilter):
     def queryset(self, request, queryset):
         region_id = self.value()
@@ -619,7 +646,12 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused", "mark_processing")
-    list_filter = ("status", "origin", HabilitationRequestRegionFilter)
+    list_filter = (
+        "status",
+        "origin",
+        HabilitationRequestRegionFilter,
+        HabilitationDepartmentFilter,
+    )
     search_fields = (
         "first_name",
         "last_name",
