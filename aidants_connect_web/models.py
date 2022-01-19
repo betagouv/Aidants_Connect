@@ -601,6 +601,12 @@ class Usager(models.Model):
         )
         entries.delete()
 
+    def all_revoked_mandats(self):
+        for mandat in self.mandats.all():
+            if not mandat.was_explicitly_revoked:
+                return False
+        return True
+
 
 def get_staff_organisation_name_id() -> int:
     try:

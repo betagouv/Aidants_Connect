@@ -60,7 +60,7 @@
             </thead>
             <tbody>
             {% for usager in usagers_dict.without_valid_mandate %}
-              {% include "aidants_connect_web/usagers/usager_row.html" with usager=usager with_valid_mandate=False %}
+              {% include "aidants_connect_web/usagers/usager_row.html" with usager=usager with_valid_mandate=False%}
             {% endfor %}
             </tbody>
           </table>
