@@ -1,13 +1,13 @@
 from django.test import tag, TestCase
 
-from aidants_connect.admin import DepartmentFilter
+from aidants_connect.admin import DepartmentFilter, RegionFilter
 from aidants_connect_web.admin import OrganisationAdmin
 from aidants_connect_web.models import Organisation
 from aidants_connect_web.tests.factories import OrganisationFactory
 
 
 @tag("admin")
-class DeparmentFilterTests(TestCase):
+class DepartmentFilterTests(TestCase):
     def test_generate_filter_list(self):
         result = DepartmentFilter.generate_filter_list()
         self.assertEqual(len(result), 102)
@@ -39,6 +39,35 @@ class DeparmentFilterTests(TestCase):
 
         other_filter = DepartmentFilter(
             None, {"department": "other"}, Organisation, OrganisationAdmin
+        )
+        queryset_other = other_filter.queryset(None, Organisation.objects.all())
+        self.assertEqual(1, queryset_other.count())
+        self.assertEqual("0", queryset_other[0].zipcode)
+
+
+@tag("admin")
+class RegionFilterTests(TestCase):
+    def test_queryset(self):
+        OrganisationFactory(zipcode="13013")
+        OrganisationFactory(zipcode="13013")
+        OrganisationFactory(zipcode="20000")
+        OrganisationFactory(zipcode="0")
+        corse_filter = RegionFilter(
+            None, {"region": "5"}, Organisation, OrganisationAdmin
+        )
+        queryset_corse = corse_filter.queryset(None, Organisation.objects.all())
+        self.assertEqual(1, queryset_corse.count())
+        self.assertEqual("20000", queryset_corse[0].zipcode)
+
+        paca_filter = RegionFilter(
+            None, {"region": "17"}, Organisation, OrganisationAdmin
+        )
+        queryset_paca = paca_filter.queryset(None, Organisation.objects.all())
+        self.assertEqual(2, queryset_paca.count())
+        self.assertEqual("13013", queryset_paca[0].zipcode)
+
+        other_filter = RegionFilter(
+            None, {"region": "other"}, Organisation, OrganisationAdmin
         )
         queryset_other = other_filter.queryset(None, Organisation.objects.all())
         self.assertEqual(1, queryset_other.count())

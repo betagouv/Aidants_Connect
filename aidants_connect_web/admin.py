@@ -1,12 +1,10 @@
 import logging
-import operator
 from collections.abc import Collection
-from functools import reduce
 
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, TabularInline, SimpleListFilter
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 from django.http import HttpResponseRedirect, HttpResponseNotAllowed, HttpRequest
 from django.shortcuts import render
 from django.urls import reverse, path
@@ -47,8 +45,6 @@ from aidants_connect_web.models import (
     Organisation,
     Usager,
     CarteTOTP,
-    DatavizRegion,
-    DatavizDepartmentsToRegion,
 )
 
 logger = logging.getLogger()
@@ -140,32 +136,6 @@ class OrganisationResource(resources.ModelResource):
         model = Organisation
 
 
-class OrgansationDepartmentFilter(DepartmentFilter):
-    pass
-
-
-class OrganisationRegionFilter(RegionFilter):
-    def queryset(self, request, queryset):
-        region_id = self.value()
-
-        if not region_id:
-            return
-
-        if region_id == "other":
-            return queryset.filter(zipcode=0)
-
-        region = DatavizRegion.objects.get(id=region_id)
-        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
-        qgroup = reduce(
-            operator.or_,
-            (
-                Q(zipcode__startswith=d.department.normalize_zipcode())
-                for d in d2r.all()
-            ),
-        )
-        return queryset.filter(qgroup)
-
-
 class WithoutDatapassIdFilter(SimpleListFilter):
     title = "Numéro de demande Datapass"
 
@@ -206,8 +176,8 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     list_filter = (
         "is_active",
         WithoutDatapassIdFilter,
-        OrganisationRegionFilter,
-        OrgansationDepartmentFilter,
+        RegionFilter,
+        DepartmentFilter,
     )
 
     # For bulk import
@@ -389,25 +359,7 @@ class AidantDepartmentFilter(DepartmentFilter):
 
 
 class AidantRegionFilter(RegionFilter):
-    def queryset(self, request, queryset):
-        region_id = self.value()
-
-        if not region_id:
-            return
-
-        if region_id == "other":
-            return queryset.filter(organisations__zipcode=0)
-
-        region = DatavizRegion.objects.get(id=region_id)
-        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
-        qgroup = reduce(
-            operator.or_,
-            (
-                Q(organisations__zipcode__startswith=d.department.zipcode)
-                for d in d2r.all()
-            ),
-        )
-        return queryset.filter(qgroup)
+    filter_parameter_name = "organisations__zipcode"
 
 
 class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
@@ -611,25 +563,7 @@ class HabilitationDepartmentFilter(DepartmentFilter):
 
 
 class HabilitationRequestRegionFilter(RegionFilter):
-    def queryset(self, request, queryset):
-        region_id = self.value()
-
-        if not region_id:
-            return
-
-        if region_id == "other":
-            return queryset.filter(organisation__zipcode=0)
-
-        region = DatavizRegion.objects.get(id=region_id)
-        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
-        qgroup = reduce(
-            operator.or_,
-            (
-                Q(organisation__zipcode__startswith=d.department.zipcode)
-                for d in d2r.all()
-            ),
-        )
-        return queryset.filter(qgroup)
+    filter_parameter_name = "organisation__zipcode"
 
 
 class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):

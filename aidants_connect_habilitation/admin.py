@@ -2,7 +2,12 @@ from django.contrib.admin import ModelAdmin, TabularInline, StackedInline
 
 from django.conf import settings
 
-from aidants_connect.admin import admin_site, VisibleToAdminMetier
+from aidants_connect.admin import (
+    admin_site,
+    VisibleToAdminMetier,
+    RegionFilter,
+    DepartmentFilter,
+)
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
@@ -32,6 +37,8 @@ class MessageInline(VisibleToAdminMetier, StackedInline):
 
 
 class OrganisationRequestAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_filter = ("status", RegionFilter, DepartmentFilter)
+    list_display = ("name", "issuer", "status")
     raw_id_fields = ("issuer",)
     readonly_fields = ("public_service_delegation_attestation",)
     inlines = (
