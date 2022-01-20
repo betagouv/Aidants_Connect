@@ -1,0 +1,15 @@
+{% load static form_extras %}
+
+<fieldset>
+  <legend>Identité</legend>
+
+  {% field_as_p form.first_name %}
+  {% field_as_p form.last_name %}
+  {% field_as_p form.profession %}
+</fieldset>
+<fieldset>
+  <legend>Contact</legend>
+
+  {% field_as_p form.phone %}
+  {% field_as_p form.email %}
+</fieldset>

@@ -14,7 +14,8 @@ from django.contrib.staticfiles import finders
 
 from aidants_connect.constants import AuthorizationDurations
 from aidants_connect_web.decorators import activity_required, user_is_aidant
-from aidants_connect_web.forms import MandatForm, RecapMandatForm, PatchedErrorList
+from aidants_connect_web.forms import MandatForm, RecapMandatForm
+from aidants_connect.forms import PatchedErrorList
 from aidants_connect_web.models import (
     Autorisation,
     Connection,

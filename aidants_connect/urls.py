@@ -9,6 +9,7 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin_site.urls),
     path("admin/", include("admin_honeypot.urls", namespace="admin_honeypot")),
     path("", include("aidants_connect_web.urls")),
+    path("habilitation/", include("aidants_connect_habilitation.urls")),
 ]
 
 if settings.DEBUG:
