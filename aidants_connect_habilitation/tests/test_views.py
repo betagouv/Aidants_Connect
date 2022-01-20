@@ -1,10 +1,12 @@
 from unittest.mock import patch
 from uuid import UUID, uuid4
 
+from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import reverse
+from factory import Faker
 
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
@@ -33,7 +35,7 @@ class NewHabilitationViewTests(TestCase):
 
 
 @tag("habilitation")
-class IssuerFormViewTests(TestCase):
+class NewIssuerFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -63,7 +65,56 @@ class IssuerFormViewTests(TestCase):
 
 
 @tag("habilitation")
-class OrganisationRequestFormViewTests(TestCase):
+class ModifyIssuerFormViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_modify_issuer"
+
+    def test_404_on_bad_issuer_id(self):
+        response = self.client.get(
+            reverse(self.pattern_name, kwargs={"issuer_id": uuid4()})
+        )
+        self.assertEqual(response.status_code, 404)
+
+        form = utils.get_form(IssuerForm)
+        response = self.client.post(
+            reverse(self.pattern_name, kwargs={"issuer_id": uuid4()}),
+            form.clean(),
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_on_correct_issuer_id_post_updates_model(self):
+        model: Issuer = IssuerFactory()
+        new_name = Faker("first_name").generate()
+        form = IssuerForm(data={**model_to_dict(model), "first_name": new_name})
+
+        if not form.is_valid():
+            raise ValueError(str(form.errors))
+
+        self.assertNotEqual(model.first_name, new_name)
+
+        response = self.client.post(
+            reverse(self.pattern_name, kwargs={"issuer_id": model.issuer_id}),
+            form.clean(),
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_new_organisation",
+                kwargs={"issuer_id": model.issuer_id},
+            ),
+        )
+
+        model.refresh_from_db()
+        self.assertEqual(
+            model.first_name, new_name, "The model's first_name field wasn't modified"
+        )
+
+
+@tag("habilitation")
+class NewOrganisationRequestFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -112,6 +163,78 @@ class OrganisationRequestFormViewTests(TestCase):
 
 
 @tag("habilitation")
+class ModifyOrganisationRequestFormViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_modify_organisation"
+        cls.issuer: Issuer = IssuerFactory()
+
+    def test_404_on_bad_draft_id(self):
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={"issuer_id": self.issuer.issuer_id, "draft_id": uuid4()},
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        cleaned_data = utils.get_form(OrganisationRequestForm).clean()
+        cleaned_data["public_service_delegation_attestation"] = ""
+        cleaned_data["type"] = cleaned_data["type"].id
+
+        response = self.client.post(
+            reverse(
+                self.pattern_name,
+                kwargs={"issuer_id": self.issuer.issuer_id, "draft_id": uuid4()},
+            ),
+            cleaned_data,
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_on_correct_issuer_id_post_updates_model(self):
+        model: OrganisationRequest = OrganisationRequestFactory(
+            issuer=self.issuer, draft_id=uuid4()
+        )
+        new_name = Faker("company").generate()
+        form = OrganisationRequestForm(data={**model_to_dict(model), "name": new_name})
+
+        if not form.is_valid():
+            raise ValueError(str(form.errors))
+
+        cleaned_data = form.clean()
+        cleaned_data["public_service_delegation_attestation"] = ""
+        cleaned_data["type"] = cleaned_data["type"].id
+
+        self.assertNotEqual(model.name, new_name)
+
+        response = self.client.post(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": model.issuer.issuer_id,
+                    "draft_id": model.draft_id,
+                },
+            ),
+            cleaned_data,
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_new_aidants",
+                kwargs={
+                    "issuer_id": model.issuer.issuer_id,
+                    "draft_id": model.draft_id,
+                },
+            ),
+        )
+
+        model.refresh_from_db()
+        self.assertEqual(model.name, new_name, "The model's name field wasn't modified")
+
+
+@tag("habilitation")
 class AidantsRequestFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -132,15 +255,16 @@ class AidantsRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         draft_id = uuid4()
-        while OrganisationRequest.objects.filter(draft_id=draft_id).exists():
-            draft_id = uuid4()
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
         cleaned_data["public_service_delegation_attestation"] = ""
-        response: HttpResponse = self.client.post(
+        response = self.client.post(
             reverse(
                 self.pattern_name,
-                kwargs={"issuer_id": organisation.issuer_id, "draft_id": draft_id},
+                kwargs={
+                    "issuer_id": organisation.issuer.issuer_id,
+                    "draft_id": draft_id,
+                },
             ),
             cleaned_data,
         )

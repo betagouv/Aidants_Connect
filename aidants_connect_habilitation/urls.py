@@ -1,28 +1,30 @@
 from django.urls import path
 
 from aidants_connect_habilitation.views import (
-    IssuerFormView,
+    ModifyIssuerFormView,
+    ModifyOrganisationRequestFormView,
+    NewIssuerFormView,
     NewHabilitationView,
-    OrganisationRequestFormView,
+    NewOrganisationRequestFormView,
     AidantsRequestFormView,
 )
 
 urlpatterns = [
     path("nouvelle/", NewHabilitationView.as_view(), name="habilitation_new"),
-    path("demandeur/", IssuerFormView.as_view(), name="habilitation_new_issuer"),
+    path("demandeur/", NewIssuerFormView.as_view(), name="habilitation_new_issuer"),
     path(
         "demandeur/<str:issuer_id>/",
-        IssuerFormView.as_view(),
+        ModifyIssuerFormView.as_view(),
         name="habilitation_modify_issuer",
     ),
     path(
         "demandeur/<str:issuer_id>/organisation/nouvelle/",
-        OrganisationRequestFormView.as_view(),
+        NewOrganisationRequestFormView.as_view(),
         name="habilitation_new_organisation",
     ),
     path(
         "demandeur/<str:issuer_id>/organisation/<str:draft_id>/",
-        OrganisationRequestFormView.as_view(),
+        ModifyOrganisationRequestFormView.as_view(),
         name="habilitation_modify_organisation",
     ),
     path(
