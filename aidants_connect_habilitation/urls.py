@@ -10,20 +10,18 @@ from aidants_connect_habilitation.views import (
 urlpatterns = [
     path("nouvelle/", NewHabilitationView.as_view(), name="habilitation_new"),
     path("demandeur/", IssuerFormView.as_view(), name="habilitation_new_issuer"),
-    # TODO: Future implémentation de la modification du demandeur
     path(
-        "demandeur/<str:issuer_id>",
+        "demandeur/<str:issuer_id>/",
         IssuerFormView.as_view(),
         name="habilitation_modify_issuer",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/nouvelle",
+        "demandeur/<str:issuer_id>/organisation/nouvelle/",
         OrganisationRequestFormView.as_view(),
         name="habilitation_new_organisation",
     ),
-    # TODO: Future implémentation de la modification de l'organisation
     path(
-        "demandeur/<str:issuer_id>/organisation/<str:draft_id>",
+        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/",
         OrganisationRequestFormView.as_view(),
         name="habilitation_modify_organisation",
     ),

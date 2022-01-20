@@ -23,11 +23,25 @@ class IssuerFormView(FormView):
 
     def __init__(self):
         super().__init__()
-        self.saved_model: Union[Issuer, None] = None
+        self.saved_model: Issuer = None
+        self.initial_issuer: Union[Issuer, None] = None
 
     def form_valid(self, form):
         self.saved_model = form.save()
         return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method.lower() == "get":
+            issuer_id = self.kwargs.get("issuer_id")
+            if issuer_id:
+                self.initial_issuer = get_object_or_404(Issuer, issuer_id=issuer_id)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.initial_issuer:
+            kwargs.update({"instance": self.initial_issuer})
+        return kwargs
 
     def get_success_url(self):
         return reverse(
@@ -39,7 +53,7 @@ class IssuerFormView(FormView):
 class IssuerDraftView(FormView):
     def __init__(self):
         super().__init__()
-        self.issuer: Union[Issuer, None] = None
+        self.issuer: Issuer = None
 
     def dispatch(self, request, *args, **kwargs):
         self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
@@ -52,12 +66,28 @@ class OrganisationRequestFormView(IssuerDraftView):
 
     def __init__(self):
         super().__init__()
-        self.saved_model: Union[OrganisationRequest, None] = None
+        self.saved_model: OrganisationRequest = None
+        self.initial_org_request: Union[OrganisationRequest, None] = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method.lower() == "get":
+            draft_id = self.kwargs.get("draft_id")
+            if draft_id:
+                self.initial_org_request = get_object_or_404(
+                    OrganisationRequest, draft_id=draft_id
+                )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.issuer = self.issuer
         self.saved_model = form.save()
         return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.initial_org_request:
+            kwargs.update({"instance": self.initial_org_request})
+        return kwargs
 
     def get_success_url(self):
         return reverse(
