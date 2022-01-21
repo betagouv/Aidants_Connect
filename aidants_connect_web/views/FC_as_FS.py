@@ -60,6 +60,16 @@ def fc_authorize(request):
 
 
 def fc_callback(request):
+    def fc_error(log_msg):
+        log.error(log_msg)
+        django_messages.error(
+            request,
+            "Nous avons rencontré une erreur en tentant d'interagir avec "
+            "France Connect. C'est probabablement temporaire. Pouvez-vous réessayer "
+            "votre requête ?",
+        )
+        return redirect(reverse("new_mandat"))
+
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
     fc_callback_uri_logout = f"{settings.FC_AS_FS_CALLBACK_URL}/logout-callback"
@@ -73,6 +83,12 @@ def fc_callback(request):
         log.info("FC as FS - This state does not seem to exist")
         log.info(state)
         return HttpResponseForbidden()
+
+    if request.GET.get("error"):
+        return fc_error(
+            f"FranceConnect returned an error: "
+            f"{request.GET.get('error_description')}"
+        )
 
     if connection.is_expired:
         log.info("408: FC connection has expired.")
@@ -94,17 +110,6 @@ def fc_callback(request):
     headers = {"Accept": "application/json"}
 
     request_for_token = python_request.post(token_url, data=payload, headers=headers)
-
-    def fc_error(log_msg):
-        log.error(log_msg)
-        django_messages.error(
-            request,
-            "Nous avons rencontré une erreur en tentant d'interagir avec "
-            "France Connect. C'est probabablement temporaire. Pouvez-vous réessayer "
-            "votre requête ?",
-        )
-
-        return redirect(reverse("new_mandat"))
 
     try:
         content = request_for_token.json()
