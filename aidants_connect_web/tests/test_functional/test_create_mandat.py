@@ -25,6 +25,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         device.token_set.create(token="123456")
         device.token_set.create(token="123455")
 
+    @skip("Reactivate when FC public key can be used again")
     def test_create_new_mandat(self):
         wait = WebDriverWait(self.selenium, 10)
 
