@@ -5,7 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
-from django.db.models import Q, QuerySet, SET_NULL, CASCADE
+from django.db.models import Q, QuerySet, SET_NULL, CASCADE, Value
+from django.db.models.functions import Concat
 from django.dispatch import Signal
 from django.template import loader, defaultfilters
 from django.urls import reverse
@@ -566,6 +567,39 @@ class Usager(models.Model):
             self.save(update_fields=["birthplace"])
 
         return self.birthplace
+
+    def clean_journal_entries_and_delete_mandats(self):
+        today = timezone.now()
+        str_today = today.strftime("%d/%m/%Y à %Hh%M")
+        for mandat in self.mandats.all():
+            entries = Journal.objects.filter(mandat=mandat)
+            manda_str_add_inf = (
+                f"Added by clean_journal_entries_and_delete_mandats :"
+                f"\n Relatif au mandat supprimé {mandat} le {str_today}"
+            )
+            entries.update(
+                mandat=None,
+                additional_information=Concat(
+                    "additional_information", Value(manda_str_add_inf)
+                ),
+            )
+            mandat.delete()
+
+        entries = Journal.objects.filter(usager=self)
+
+        usager_str_add_inf = (
+            f"Add by clean_journal_entries_and_delete_mandats :"
+            f"\n Relatif à l'usager supprimé {self.family_name} "
+            f"{self.given_name}  {self.preferred_username} "
+            f"{self.email} le {str_today}"
+        )
+        entries.update(
+            usager=None,
+            additional_information=Concat(
+                "additional_information", Value(usager_str_add_inf)
+            ),
+        )
+        entries.delete()
 
 
 def get_staff_organisation_name_id() -> int:

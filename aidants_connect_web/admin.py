@@ -743,6 +743,22 @@ class UsagerAdmin(VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin):
     tab_mandats = (UsagerMandatInline,)
 
     tabs = [("Informations", tab_infos), ("Mandats", tab_mandats)]
+    actions = ("specific_deleted_action",)
+
+    def get_actions(self, request):
+        actions = super(UsagerAdmin, self).get_actions(request)
+        try:
+            del actions["delete_selected"]
+        except KeyError:
+            pass
+        return actions
+
+    def specific_deleted_action(self, request, queryset):
+        for usager in queryset:
+            usager.clean_journal_entries_and_delete_mandats()
+            usager.delete()
+
+    specific_deleted_action.short_description = "Supprimer les usagers sélectionnés"
 
 
 class MandatAutorisationInline(VisibleToTechAdmin, TabularInline):
@@ -905,13 +921,25 @@ class ConnectionAdmin(ModelAdmin):
 
 
 class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
-    list_display = ("id", "action", "aidant", "creation_date")
+    list_display = (
+        "creation_date",
+        "action",
+        "aidant",
+        "usager",
+        "additional_information",
+        "id",
+    )
     list_filter = ("action",)
+
     search_fields = (
         "action",
         "aidant__first_name",
         "aidant__last_name",
         "aidant__email",
+        "usager__family_name",
+        "usager__given_name",
+        "usager__email",
+        "additional_information",
     )
     ordering = ("-creation_date",)
 
