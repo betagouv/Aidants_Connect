@@ -259,16 +259,12 @@ Si vous avez créé votre propre _superuser_ :
 Il faut d'abord avoir correctement installé l'application.
 
 Installez les _git hooks_ :
+
 ```
 pre-commit install
 ```
 
-## Annexes
-
-### Documentation de FranceConnect
-
-- Fournisseur d'Identité (FI): [ici](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-identite)
-- Fournisseur de Service (FS): [ici](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service)
+## Travailler sur le côté client (CSS et JavaScript)
 
 ### CSP et JavaScript inline
 
@@ -278,6 +274,25 @@ Si vous devez modifier ou ajouter un bout de JavaScript inline, mettez à jour l
 
 Pour calculer le hash à mettre, le plus simple est d'ouvrir la page sur Chrome et de dans la console le message commençant par "Refused to execute inline script".
 Il mentionne le hash (commençant par `'sha256-`) à ajouter à la CSP.
+
+### CSS et SCSS
+
+Pour compiler les fichiers SCSS en CSS, vous devez avoir installé sass sur votre poste, la commande `sass` doit être disponible dans votre `$PATH`.
+
+Ensuite, utilisez une des deux commandes suivantes :
+
+```
+python manage.py scss # compilation one-shot
+# ou bien :
+python manage.py scss --watch # compilation automatique à chaque modification de SCSS
+```
+
+## Annexes
+
+### Documentation de FranceConnect
+
+- Fournisseur d'Identité (FI): [ici](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-identite)
+- Fournisseur de Service (FS): [ici](https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service)
 
 ### Ré-initialiser la base de données
 
