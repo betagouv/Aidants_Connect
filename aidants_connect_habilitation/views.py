@@ -1,13 +1,11 @@
-from typing import Union
-
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import FormView, RedirectView
 
 from aidants_connect_habilitation.forms import (
-    OrganisationRequestForm,
     AidantRequestFormSet,
     IssuerForm,
+    OrganisationRequestForm,
 )
 from aidants_connect_habilitation.models import Issuer, OrganisationRequest
 
@@ -17,16 +15,12 @@ class NewHabilitationView(RedirectView):
     pattern_name = "habilitation_new_issuer"
 
 
-class IssuerFormView(FormView):
+class NewIssuerFormView(FormView):
     template_name = "issuer_form.html"
     form_class = IssuerForm
 
-    def __init__(self):
-        super().__init__()
-        self.saved_model: Union[Issuer, None] = None
-
     def form_valid(self, form):
-        self.saved_model = form.save()
+        self.saved_model: Issuer = form.save()
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -36,27 +30,30 @@ class IssuerFormView(FormView):
         )
 
 
-class IssuerDraftView(FormView):
-    def __init__(self):
-        super().__init__()
-        self.issuer: Union[Issuer, None] = None
+class ModifyIssuerFormView(NewIssuerFormView):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.initial_issuer = get_object_or_404(
+            Issuer, issuer_id=self.kwargs.get("issuer_id")
+        )
 
-    def dispatch(self, request, *args, **kwargs):
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "instance": self.initial_issuer}
+
+
+class RequestDraftView(FormView):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
         self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
-        return super().dispatch(request, *args, **kwargs)
 
 
-class OrganisationRequestFormView(IssuerDraftView):
+class NewOrganisationRequestFormView(RequestDraftView):
     template_name = "organisation_form.html"
     form_class = OrganisationRequestForm
 
-    def __init__(self):
-        super().__init__()
-        self.saved_model: Union[OrganisationRequest, None] = None
-
     def form_valid(self, form):
         form.instance.issuer = self.issuer
-        self.saved_model = form.save()
+        self.saved_model: OrganisationRequest = form.save()
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -69,19 +66,26 @@ class OrganisationRequestFormView(IssuerDraftView):
         )
 
 
-class AidantsRequestFormView(IssuerDraftView):
+class ModifyOrganisationRequestFormView(NewOrganisationRequestFormView):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.initial_org_request = get_object_or_404(
+            OrganisationRequest, draft_id=self.kwargs.get("draft_id")
+        )
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "instance": self.initial_org_request}
+
+
+class AidantsRequestFormView(RequestDraftView):
     template_name = "aidants_form.html"
     form_class = AidantRequestFormSet
 
-    def __init__(self):
-        super().__init__()
-        self.organisation: Union[OrganisationRequest, None] = None
-
-    def dispatch(self, request, *args, **kwargs):
-        self.organisation = get_object_or_404(
-            OrganisationRequest, draft_id=kwargs.get("draft_id")
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.organisation: OrganisationRequest = get_object_or_404(
+            OrganisationRequest, draft_id=self.kwargs.get("draft_id")
         )
-        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         for sub_form in form.forms:
@@ -91,9 +95,7 @@ class AidantsRequestFormView(IssuerDraftView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({"issuer": self.issuer})
-        return context
+        return {**super().get_context_data(**kwargs), "issuer": self.issuer}
 
     def get_success_url(self):
         return reverse("habilitation_new_issuer")
