@@ -272,7 +272,7 @@ La CSP (content security policy) de Aidants Connect fonctionne en liste blanche 
 
 Si vous devez modifier ou ajouter un bout de JavaScript inline, mettez à jour la constante `CSP_SCRIPT_SRC` dans le fichier `settings.py`.
 
-Pour calculer le hash à mettre, le plus simple est d'ouvrir la page sur Chrome et de dans la console le message commençant par "Refused to execute inline script".
+Pour calculer le hash à mettre, le plus simple est d'ouvrir la page sur Chrome et de chercher dans la console le message commençant par "Refused to execute inline script".
 Il mentionne le hash (commençant par `'sha256-`) à ajouter à la CSP.
 
 ### CSS et SCSS
