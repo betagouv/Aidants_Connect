@@ -167,7 +167,6 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "data_pass_id",
     )
     readonly_fields = (
-        "data_pass_id",
         "display_responsables",
         "display_aidants",
         "display_habilitation_requests",
@@ -194,6 +193,12 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "deactivate_organisations",
         "activate_organisations",
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(self.readonly_fields)
+        if obj and obj.data_pass_id:
+            readonly_fields.append("data_pass_id")
+        return readonly_fields
 
     def display_responsables(self, obj):
         return self.format_list_of_aidants(obj.responsables.order_by("last_name").all())
