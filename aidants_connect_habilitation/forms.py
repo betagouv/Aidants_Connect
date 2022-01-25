@@ -21,6 +21,55 @@ class IssuerForm(PatchedErrorListForm):
         required=False,
     )
 
+    def __init__(
+        self,
+        data=None,
+        files=None,
+        auto_id="id_%s",
+        prefix=None,
+        initial=None,
+        error_class=PatchedErrorList,
+        label_suffix=None,
+        empty_permitted=False,
+        instance=None,
+        use_required_attribute=None,
+        renderer=None,
+        render_non_editable=False,
+    ):
+        super().__init__(
+            data,
+            files,
+            auto_id,
+            prefix,
+            initial,
+            error_class,
+            label_suffix,
+            empty_permitted,
+            instance,
+            use_required_attribute,
+            renderer,
+        )
+        self.render_non_editable = render_non_editable
+        if self.render_non_editable:
+            self.auto_id = False
+            for name, field in self.fields.items():
+                field.disabled = True
+                field.widget.attrs.update({"id": f"id_{name}"})
+
+    def add_prefix(self, field_name):
+        """
+        Return empty ``name`` HTML attribute when ``self.render_non_editable is True``
+        """
+        return "" if self.render_non_editable else super().add_prefix(field_name)
+
+    def add_initial_prefix(self, field_name):
+        """
+        Return empty ``name`` HTML attribute when ``self.render_non_editable is True``
+        """
+        return (
+            "" if self.render_non_editable else super().add_initial_prefix(field_name)
+        )
+
     class Meta:
         model = models.Issuer
         exclude = ["issuer_id"]
