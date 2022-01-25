@@ -125,6 +125,21 @@ class MandatFactory(factory.DjangoModelFactory):
             )
 
 
+class RevokedMandatFactory(MandatFactory):
+    @factory.post_generation
+    def post(self, create, _, **kwargs):
+        authorisations = kwargs.get("create_authorisations", None)
+        if not create or not isinstance(authorisations, Iterable):
+            return
+
+        for auth in authorisations:
+            Autorisation.objects.create(
+                mandat=self,
+                demarche=str(auth),
+                revocation_date=(now() - timedelta(days=5)),
+            )
+
+
 class ExpiredMandatFactory(MandatFactory):
     expiration_date = factory.LazyAttribute(lambda f: now() - timedelta(days=365))
 

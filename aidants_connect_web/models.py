@@ -601,6 +601,15 @@ class Usager(models.Model):
         )
         entries.delete()
 
+    def has_all_mandats_revoked_or_expired_over_a_year(self):
+        for mandat in self.mandats.all():
+            if (
+                not mandat.was_explicitly_revoked
+                and timezone.now() < mandat.expiration_date + timedelta(days=365)
+            ):
+                return False
+        return True
+
 
 def get_staff_organisation_name_id() -> int:
     try:
