@@ -42,7 +42,7 @@ jobs:
           name: run linting
           command: |
             . venv/bin/activate
-            black --check . --exclude aidants_connect_web/migrations/*
+            black --check .
             flake8
       - run:
           name: run unit tests
