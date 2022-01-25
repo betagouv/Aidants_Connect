@@ -1,5 +1,11 @@
+{% extends 'layouts/main-habilitation.html' %}
 {% load static form_extras %}
 
+{% block title %}
+  Aidants Connect - Nouveau demandeur
+{% endblock %}
+
+{% block content %}
 <form method="post">
   {% csrf_token %}
 
@@ -7,3 +13,5 @@
 
   <input type="submit" value="Valider cette étape">
 </form>
+
+{% endblock %}
