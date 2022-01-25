@@ -100,6 +100,9 @@ SECRET_KEY = os.getenv("APP_SECRET")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = getenv_bool("DEBUG", False)
 
+# Launch sass --watch alongside with the server
+WITH_SCSS_WATCH = getenv_bool("WITH_SCSS_WATCH", False)
+
 # We support a comma-separated list of allowed hosts.
 ENV_SEPARATOR = ","
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(ENV_SEPARATOR)
