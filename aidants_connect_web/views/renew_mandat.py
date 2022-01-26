@@ -11,7 +11,7 @@ from django.shortcuts import render, redirect
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Connection, Journal, Aidant, Usager
-from aidants_connect.constants import AuthorizationDurations
+from aidants_connect.common.constants import AuthorizationDurations
 
 
 @login_required

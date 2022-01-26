@@ -4,8 +4,8 @@ from django.forms import formset_factory, ChoiceField, CharField, BaseFormSet
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from aidants_connect.constants import RequestOriginConstants
-from aidants_connect.forms import PatchedErrorListForm, PatchedErrorList
+from aidants_connect.common.constants import RequestOriginConstants
+from aidants_connect.common.forms import PatchedErrorListForm, PatchedErrorList
 from aidants_connect_habilitation import models
 from aidants_connect_habilitation.models import AidantRequest
 from aidants_connect_web.models import OrganisationType
@@ -20,6 +20,29 @@ class IssuerForm(PatchedErrorListForm):
         ),
         required=False,
     )
+
+    def __init__(self, render_non_editable=False, **kwargs):
+        super().__init__(**kwargs)
+        self.render_non_editable = render_non_editable
+        if self.render_non_editable:
+            self.auto_id = False
+            for name, field in self.fields.items():
+                field.disabled = True
+                field.widget.attrs.update(id=f"id_{name}")
+
+    def add_prefix(self, field_name):
+        """
+        Return empty ``name`` HTML attribute when ``self.render_non_editable is True``
+        """
+        return "" if self.render_non_editable else super().add_prefix(field_name)
+
+    def add_initial_prefix(self, field_name):
+        """
+        Return empty ``name`` HTML attribute when ``self.render_non_editable is True``
+        """
+        return (
+            "" if self.render_non_editable else super().add_initial_prefix(field_name)
+        )
 
     class Meta:
         model = models.Issuer

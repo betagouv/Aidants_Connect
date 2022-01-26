@@ -11,7 +11,7 @@ from aidants_connect_web.tests.factories import (
     HabilitationRequestFactory,
     OrganisationFactory,
 )
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 
 
 class RegionFilterTestCase(FunctionalTestCase):

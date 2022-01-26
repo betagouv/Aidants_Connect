@@ -5,7 +5,7 @@ from factory import fuzzy
 
 from phonenumber_field.phonenumber import to_python
 
-from aidants_connect.constants import RequestOriginConstants
+from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect_habilitation.models import (
     AidantRequest,
     OrganisationRequest,

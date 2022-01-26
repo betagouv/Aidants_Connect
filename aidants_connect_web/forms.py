@@ -11,7 +11,7 @@ from django_otp import match_token
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from aidants_connect.constants import AuthorizationDurations as ADKW
+from aidants_connect.common.constants import AuthorizationDurations as ADKW
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,

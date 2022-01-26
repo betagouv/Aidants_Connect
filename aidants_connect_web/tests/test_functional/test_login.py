@@ -3,7 +3,7 @@ from django.test import tag
 from aidants_connect_web.tests.factories import (
     AidantFactory,
 )
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from django.core import mail
 
 from selenium.webdriver.support.ui import WebDriverWait

@@ -1,0 +1,20 @@
+{% load static form_extras %}
+
+{{ form.non_field_errors }}
+<fieldset>
+  <legend>Identité</legend>
+
+  {% field_as_p form.first_name %}
+  {% field_as_p form.last_name %}
+</fieldset>
+<fieldset>
+  <legend>Contact</legend>
+
+  {% field_as_p form.email %}
+  {% field_as_p form.phone %}
+</fieldset>
+<fieldset>
+  <legend>Autres informations</legend>
+
+  {% field_as_p form.profession %}
+</fieldset>

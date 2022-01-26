@@ -5,8 +5,14 @@
 
   {{ form.management_form }}
 
+  <section>
+    <h2>Demandeur</h2>
+    {% include "_issuer_form.html" with form=issuer %}
+  </section>
+
   {% for aidant_form in form %}
     <section>
+      <h2>Aidant</h2>
       {% include "aidant_form.html" with form=aidant_form %}
     </section>
   {% endfor %}

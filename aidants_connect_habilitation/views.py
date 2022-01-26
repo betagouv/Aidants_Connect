@@ -95,7 +95,10 @@ class AidantsRequestFormView(RequestDraftView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "issuer": self.issuer}
+        return {
+            **super().get_context_data(**kwargs),
+            "issuer": IssuerForm(instance=self.issuer, render_non_editable=True),
+        }
 
     def get_success_url(self):
         return reverse("habilitation_new_issuer")
