@@ -21,34 +21,8 @@ class IssuerForm(PatchedErrorListForm):
         required=False,
     )
 
-    def __init__(
-        self,
-        data=None,
-        files=None,
-        auto_id="id_%s",
-        prefix=None,
-        initial=None,
-        error_class=PatchedErrorList,
-        label_suffix=None,
-        empty_permitted=False,
-        instance=None,
-        use_required_attribute=None,
-        renderer=None,
-        render_non_editable=False,
-    ):
-        super().__init__(
-            data,
-            files,
-            auto_id,
-            prefix,
-            initial,
-            error_class,
-            label_suffix,
-            empty_permitted,
-            instance,
-            use_required_attribute,
-            renderer,
-        )
+    def __init__(self, render_non_editable=False, **kwargs):
+        super().__init__(**kwargs)
         self.render_non_editable = render_non_editable
         if self.render_non_editable:
             self.auto_id = False
