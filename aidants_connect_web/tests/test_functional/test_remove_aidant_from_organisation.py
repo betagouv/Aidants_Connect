@@ -9,7 +9,7 @@ from aidants_connect_web.tests.factories import (
     AidantFactory,
     OrganisationFactory,
 )
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 

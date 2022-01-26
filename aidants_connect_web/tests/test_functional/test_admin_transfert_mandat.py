@@ -11,7 +11,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from aidants_connect_web.admin import MandatAdmin
 from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import AidantFactory, MandatFactory
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 
 
 @tag("functional")

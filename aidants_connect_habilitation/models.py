@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Q, SET_NULL
 from phonenumber_field.modelfields import PhoneNumberField
 
-from aidants_connect.constants import (
+from aidants_connect.common.constants import (
     RequestStatusConstants,
     MessageStakeholders,
     RequestOriginConstants,
