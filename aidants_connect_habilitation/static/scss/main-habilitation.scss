@@ -64,6 +64,32 @@ svg.previews {
   margin-right: 1em;
 }
 
+.header-links {
+  list-style: none;
+  text-align: right;
+
+  li {
+    display: inline-block;
+    margin-left: 2rem;
+  }
+
+  a {
+    text-decoration: none;
+    color: $dark-grey-aidants;
+    display: block;
+    padding: .25rem 0;
+
+    &.active {
+      color: $red-aidants;
+      font-weight: bold;
+    }
+
+    &:hover {
+      box-shadow: 0 8px 0 $off-yellow-aidants;
+    }
+  }
+}
+
 // footer ----------------------------------------------
 
 footer {
