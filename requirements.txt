@@ -31,7 +31,7 @@ ptpython==3.0.20
 pudb==2019.2
 PyJWT==1.7.1
 python-dotenv==0.13.0
-pytz==2020.1
+pytz==2021.3
 qrcode==6.1
 requests==2.27.1
 selenium==3.141.0
