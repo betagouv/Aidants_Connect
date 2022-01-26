@@ -54,7 +54,7 @@ class IssuerForm(PatchedErrorListForm):
             self.auto_id = False
             for name, field in self.fields.items():
                 field.disabled = True
-                field.widget.attrs.update({"id": f"id_{name}"})
+                field.widget.attrs.update(id=f"id_{name}")
 
     def add_prefix(self, field_name):
         """
