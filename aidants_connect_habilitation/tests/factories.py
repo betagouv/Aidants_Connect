@@ -1,7 +1,8 @@
-import factory
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from factory import fuzzy
+from factory import Faker, LazyFunction, SubFactory
+from factory.django import DjangoModelFactory
+from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
 from phonenumber_field.phonenumber import to_python
 
@@ -18,7 +19,7 @@ def _generate_valid_phone():
     does not consider valid which makes tests to randomly fail. This
     function always generate a valid french phone number for PhoneNumberField"""
     for try_attempt in range(10):
-        phone = factory.Faker("phone_number", locale="fr_FR").generate()
+        phone = Faker("phone_number").evaluate(None, None, {"locale": "fr_FR"})
         if to_python(phone, settings.PHONENUMBER_DEFAULT_REGION).is_valid():
             break
     else:
@@ -29,48 +30,48 @@ def _generate_valid_phone():
     return phone
 
 
-class IssuerFactory(factory.DjangoModelFactory):
-    first_name = factory.Faker("first_name")
-    last_name = factory.Faker("last_name")
-    email = factory.Faker("email")
-    profession = factory.Faker("job")
-    phone = factory.LazyFunction(_generate_valid_phone)
+class IssuerFactory(DjangoModelFactory):
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    email = Faker("email")
+    profession = Faker("job")
+    phone = LazyFunction(_generate_valid_phone)
 
     class Meta:
         model = Issuer
 
 
-class OrganisationRequestFactory(factory.DjangoModelFactory):
-    issuer = factory.SubFactory(IssuerFactory)
+class OrganisationRequestFactory(DjangoModelFactory):
+    issuer = SubFactory(IssuerFactory)
 
     draft_id = None
 
-    type_id = fuzzy.FuzzyChoice(
+    type_id = FuzzyChoice(
         [x.value for x in RequestOriginConstants if x != RequestOriginConstants.OTHER]
     )
-    name = factory.Faker("company")
-    siret = fuzzy.FuzzyInteger(111_111_111, 999_999_999)
-    address = factory.Faker("street_address")
-    zipcode = factory.Faker("postcode")
-    city = factory.Faker("city")
+    name = Faker("company")
+    siret = FuzzyInteger(111_111_111, 999_999_999)
+    address = Faker("street_address")
+    zipcode = Faker("postcode")
+    city = Faker("city")
 
-    partner_administration = factory.Faker("company")
+    partner_administration = Faker("company")
 
     public_service_delegation_attestation = ""
 
-    france_services_label = fuzzy.FuzzyChoice([True, False])
+    france_services_label = FuzzyChoice([True, False])
 
-    web_site = factory.Faker("url")
+    web_site = Faker("url")
 
-    mission_description = fuzzy.FuzzyText(length=12)
+    mission_description = FuzzyText(length=12)
 
-    avg_nb_demarches = fuzzy.FuzzyInteger(0)
+    avg_nb_demarches = FuzzyInteger(0)
 
-    manager_first_name = factory.Faker("first_name")
-    manager_last_name = factory.Faker("last_name")
-    manager_email = factory.Faker("email")
-    manager_profession = factory.Faker("job")
-    manager_phone = factory.LazyFunction(_generate_valid_phone)
+    manager_first_name = Faker("first_name")
+    manager_last_name = Faker("last_name")
+    manager_email = Faker("email")
+    manager_profession = Faker("job")
+    manager_phone = LazyFunction(_generate_valid_phone)
 
     cgu = True
     dpo = True
@@ -81,13 +82,13 @@ class OrganisationRequestFactory(factory.DjangoModelFactory):
         model = OrganisationRequest
 
 
-class AidantRequestFactory(factory.DjangoModelFactory):
-    organisation = factory.SubFactory(OrganisationRequestFactory)
+class AidantRequestFactory(DjangoModelFactory):
+    organisation = SubFactory(OrganisationRequestFactory)
 
-    first_name = factory.Faker("first_name")
-    last_name = factory.Faker("last_name")
-    email = factory.Faker("email")
-    profession = factory.Faker("job")
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    email = Faker("email")
+    profession = Faker("job")
 
     class Meta:
         model = AidantRequest

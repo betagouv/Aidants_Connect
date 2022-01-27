@@ -7,6 +7,7 @@ from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import reverse
 from factory import Faker
+from faker.config import DEFAULT_LOCALE
 
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
@@ -86,7 +87,7 @@ class ModifyIssuerFormViewTests(TestCase):
 
     def test_on_correct_issuer_id_post_updates_model(self):
         model: Issuer = IssuerFactory()
-        new_name = Faker("first_name").generate()
+        new_name = Faker("first_name").evaluate(None, None, {"locale": DEFAULT_LOCALE})
         form = IssuerForm(data={**model_to_dict(model), "first_name": new_name})
 
         if not form.is_valid():
@@ -196,7 +197,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         model: OrganisationRequest = OrganisationRequestFactory(
             issuer=self.issuer, draft_id=uuid4()
         )
-        new_name = Faker("company").generate()
+        new_name = Faker("company").evaluate(None, None, {"locale": DEFAULT_LOCALE})
         form = OrganisationRequestForm(data={**model_to_dict(model), "name": new_name})
 
         if not form.is_valid():
