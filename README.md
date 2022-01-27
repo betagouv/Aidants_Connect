@@ -6,16 +6,40 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 
 - créer un mandat de connexion via [FranceConnect](https://franceconnect.gouv.fr/) avec un ou plusieurs usagers sur un périmètre et une durée définis ;
 - connecter via FranceConnect un usager dans les conditions des mandats créés ;
-- accéder à des ressources sur l'accompagnement des usagers ;
+- accéder à des ressources sur l'accompagnement des usagers ;
 - accéder à un suivi de ses mandats.
 
-Aidants Connect est construit sur les éléments suivants :
+Aidants Connect est construit sur les éléments suivants :
 
 - Python 3.7
-- Django 3.1
+- Django 3.2
 - PostgreSQL
 
 ## Installer et lancer l'application
+
+Lancement rapide si vous avez déjà installé la base de données :
+
+```shell
+git clone git@github.com:betagouv/Aidants_Connect.git
+cd Aidants_Connect
+cp .env.example .env
+virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py collectstatic
+```
+
+Ensuite, vous devriez pouvoir faire tourner les tests :
+
+```shell
+python manage.py test
+```
+
+Et lancer le serveur :
+
+```shell
+python manage.py runserver 3000
+```
 
 ### Installer la base de données (pour Mac OSX)
 
@@ -51,7 +75,7 @@ psql
 Vous pouvez dès à présent visualiser :
 
 - la liste des bases de données existantes avec cette commande PostgreSQL `\list`
-- la liste des roles existants avec `\du`
+- la liste des rôles existants avec `\du`
 
 Ajoutez une base `aidants_connect` appartenant au nouvel utilisateur `aidants_connect_team` en poursuivant dans l'invite de commmande PostgreSQL :
 
