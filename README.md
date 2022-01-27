@@ -17,7 +17,7 @@ Aidants Connect est construit sur les éléments suivants :
 
 ## Installer et lancer l'application
 
-Lancement rapide si vous avez déjà installé la base de données :
+Lancement rapide si vous avez déjà installé la base de données et les dépendances de test :
 
 ```shell
 git clone git@github.com:betagouv/Aidants_Connect.git
@@ -27,6 +27,7 @@ virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
 python manage.py collectstatic
+pre-commit install
 ```
 
 Ensuite, vous devriez pouvoir faire tourner les tests :
@@ -41,7 +42,7 @@ Et lancer le serveur :
 python manage.py runserver 3000
 ```
 
-### Installer la base de données (pour Mac OSX)
+### Installer la base de données
 
 Utilisez votre gestionnaire de paquets préféré pour installer la base.
 L'exemple qui suit emploie le gestionnaire [Homebrew](https://brew.sh) via la commande `brew`.
@@ -58,7 +59,7 @@ Démarrez le service postgresql :
 brew services start postgresql
 ```
 
-> Ceci démarre le serveur de la base de données et active sa réexécution au login.
+Ceci démarre le serveur de la base de données et active sa réexécution au login.
 
 Dans le cas où ce serait votre première utilisation de PostgreSQL, créez une base d'essai à votre nom :
 
@@ -107,59 +108,17 @@ Installez les dépendances :
 pip install -r requirements.txt
 ```
 
-#### Troubleshooting
-
-Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayez :
-
-```shell
-export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
-```
-
-Si vous avez un Mac M1
-
-- Si, lors de l'installation de `psycopg2-binary`, vous avez le message d'erreur suivant :
-
-```
- ld: warning: directory not found for option '-L/usr/bin/openssl/lib/'
-    ld: library not found for -lssl
-    clang: error: linker command failed with exit code 1 (use -v to see invocation)
-    error: command 'clang' failed with exit status 1
-```
-
-- Si vous avez installé `openssl` via `brew`, vous pouvez essayer la commande suivante :
-
-```shell
-env LDFLAGS='-L/opt/homebrew/opt/openssl@1.1/lib -L/opt/homebrew/opt/readline/lib' pip install -r requirements.txt
-```
-
-> https://stackoverflow.com/a/42264168
-
-- Si, lors de l'installation de `pillow` vous avez le message d'erreur suivant :
-
-```shell
-The headers or library files could not be found for zlib,
-    a required dependency when compiling Pillow from source.
-
-```
-
-Vous pouvez essayer :
-
-```shell
-brew install libjpeg
-```
-
-> https://github.com/python-pillow/Pillow/issues/5042#issuecomment-746681171
+Si vous avez un Mac M1, ou si la commande précédente déclenche le message d'erreur `ld: library not found for -lssl`, référez-vous à la section [Troubleshooting](#troubleshooting).
 
 ### Configurer les variables d'environnement
 
-Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env`. En test en local, vous ne devriez pas avoir à modifier ce `.env`.
+Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env` :
 
-Vous pouvez, sur un serveur, ajouter vos informations :
+```shell
+cp .env.example .env
+```
 
-- Les champs obligatoires sont indiqués par le préfixe `<insert_`
-- Les informations de production `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
-- Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET` pour cela voir dans les annexes [la procédure](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret)
-- Les valeurs de sécurité sont issues de [la section "sécurité" de la documentation Django](https://docs.djangoproject.com/fr/2.2/topics/security/) et de [la conférence Django and Web Security Headers](https://www.youtube.com/watch?v=gvQW1vVNohg)
+En test en local, vous ne devriez pas avoir à modifier ce `.env`.
 
 Créez un répertoire `staticfiles` à la racine du projet :
 
@@ -177,7 +136,7 @@ python manage.py migrate
 
 Il existe plusieurs moyens de peupler la base de données.
 
-#### Installation en local pour test : utiliser les _fixtures_
+#### Utiliser les _fixtures_
 
 Des données de test qui créent un environnement complet :
 
@@ -186,22 +145,22 @@ Des données de test qui créent un environnement complet :
   python manage.py loaddata usager_autorisation.json
 ```
 
-Ce process créé automatiquement un _superuser_ `admin@email.com`. plus d'information sur comment se connecter avec ce compte sont disponible dans la section [Se connecter à l'application](#se-connecter-à-lapplication)
+Ce process crée automatiquement un _superuser_ `admin@email.com`. Plus d'information sur comment se connecter avec ce compte sont disponible dans la section [Se connecter à l'application](#se-connecter-à-lapplication)
 
-#### Installation sur un serveur : Créer un _superuser_
+#### Créer manuellement un _superuser_
 
-Créez un profil administrateur avec une organisation ar défaut :
+Créez un profil administrateur avec une organisation par défaut :
 
 ```shell
-python manage.py createsuperuser --username <insert_admin_name> --organisation-name <insert_organisation_name>
+python manage.py createsuperuser --username <insert_admin_email> --organisation-name <insert_organisation_name>
 ```
 
-Une organisation avec le nom que vous avez spécifié sera automatiquement créée pour ce profil.
+Une organisation avec l'email que vous avez spécifié sera automatiquement créée pour ce profil.
 Si vous avez déjà créé une organisation vous pouvez passer son numéro dans la base de donnée à la création du profil
 admin :
 
 ```shell
-python manage.py createsuperuser --username <insert_admin_name> --organisation <insert_organisation_pk>
+python manage.py createsuperuser --username <insert_admin_email> --organisation <insert_organisation_pk>
 ```
 
 Pour pouvoir vous connecter à votre instance locale, il faut apparier à votre `superuser` un dispositif TOTP (`TOTP device`).
@@ -209,7 +168,7 @@ Pour pouvoir vous connecter à votre instance locale, il faut apparier à votre 
 Pour cela, commencez par lui adjoindre un [jeton OTP](https://fr.wikipedia.org/wiki/Mot_de_passe_%C3%A0_usage_unique) [statique](https://django-otp-official.readthedocs.io/en/stable/overview.html#module-django_otp.plugins.otp_static) :
 
 ```shell
-python manage.py addstatictoken <insert_admin_name> -t <insert_6_numbers>
+python manage.py addstatictoken <insert_admin_email> -t <insert_6_numbers>
 ```
 
 Notez ce code, il vous permettra de vous connecter la première fois à l'interface d'administration.
@@ -265,7 +224,9 @@ Votre _superuser_ est créé et a un login, un mot de passe et un _static token_
 
 #### Trouver la page d'admin
 
-La page d'admin se trouve sur `/[Variable d'environnement ADMIN_URL]`
+La page d'admin se trouve sur `/[Variable d'environnement ADMIN_URL]`. En local, `/adm`.
+
+Attention, `/admin` n'est pas un vrai site d'admin… c'est un [pot de miel](https://pypi.org/project/django-admin-honeypot/).
 
 #### Se connecter à l'admin
 
@@ -275,7 +236,7 @@ La page d'admin se trouve sur `/[Variable d'environnement ADMIN_URL]`
   - Static OTP : `111111`
 - Sinon, utilisez le login, mot de passe et static token créés dans la section [Installation sur un serveur : Créer un _superuser_](#installation-sur-un-serveur--créer-un-superuser)
 
-#### Péréniser son authentification à double facteur (2FA)
+#### Pérenniser son authentification à double facteur (2FA)
 
 Une fois connecté à l'admin, cliquez sur **_TOTP devices_**
 
@@ -324,6 +285,32 @@ python manage.py scss # compilation one-shot
 # ou bien :
 python manage.py scss --watch # compilation automatique à chaque modification de SCSS
 ```
+
+## Installation sur un serveur
+
+### Variables d'environnement
+
+Sur un serveur, vous voudrez ajouter vos informations dans le fichier .env ou dans les variables d'environnement de votre hébergeur :
+
+- Les champs obligatoires sont indiqués par le préfixe `<insert_`.
+- Les informations de production `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires).
+- Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET` : pour cela voir dans les annexes [la procédure](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret).
+- Les valeurs de sécurité sont issues de [la section "sécurité" de la documentation Django](https://docs.djangoproject.com/fr/3.2/topics/security/) et de [la conférence Django and Web Security Headers](https://www.youtube.com/watch?v=gvQW1vVNohg).
+
+### Création d'un superuser sans accès à la console Django
+
+Il existe deux solutions.
+
+### Solution avant installation du code
+
+- déployer la branche de la [PR 473](https://github.com/betagouv/Aidants_Connect/pull/473) avant de déployer main (utilisé pour notre environnement sandbox).
+  - avant de déployer le code, insérer les variables d'environnement `INIT_*` mentionnées dans la PR ;
+  - installer l'application à partir de la branche de la PR 473 ;
+  - déployer ensuite l'application à partir de la branche `main`.
+
+### Solution après installation du code
+
+- insérer directement les données dans la base de données après l'installation de l'application.
 
 ## Annexes
 
@@ -408,3 +395,48 @@ Il faut utiliser `generate_sha256_hash`.
 from aidants_connect_web.utilities import generate_sha256_hash
 generate_sha256_hash("VALUE_FC_AS_FI_SECRET".encode("utf-8"))
 ```
+
+## Troubleshooting
+
+### Erreur `ld: library not found for -lssl`
+
+Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayez :
+
+```shell
+export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
+```
+
+### Si vous avez un Mac M1
+
+- Si, lors de l'installation de `psycopg2-binary`, vous avez le message d'erreur suivant :
+
+```
+ ld: warning: directory not found for option '-L/usr/bin/openssl/lib/'
+    ld: library not found for -lssl
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    error: command 'clang' failed with exit status 1
+```
+
+- Si vous avez installé `openssl` via `brew`, vous pouvez essayer la commande suivante :
+
+```shell
+env LDFLAGS='-L/opt/homebrew/opt/openssl@1.1/lib -L/opt/homebrew/opt/readline/lib' pip install -r requirements.txt
+```
+
+> https://stackoverflow.com/a/42264168
+
+- Si, lors de l'installation de `pillow` vous avez le message d'erreur suivant :
+
+```shell
+The headers or library files could not be found for zlib,
+    a required dependency when compiling Pillow from source.
+
+```
+
+Vous pouvez essayer :
+
+```shell
+brew install libjpeg
+```
+
+> https://github.com/python-pillow/Pillow/issues/5042#issuecomment-746681171
