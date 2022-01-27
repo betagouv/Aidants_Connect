@@ -178,33 +178,32 @@ Notez ce code, il vous permettra de vous connecter la première fois à l'interf
 Si vous ne les avez pas, installez les éléments suivants :
 
 - Navigateur Firefox en [téléchargement](https://www.mozilla.org/fr/firefox/download/thanks/)
-- [Gecko driver](https://github.com/mozilla/geckodriver/releases) avec cette commande :
-  `shell brew install geckodriver `
-  **_NOTE:_** Si vous êtes sous linux, vous pouvez télécharger [ici](https://github.com/mozilla/geckodriver/releases) la dernière
+- [Gecko driver](https://github.com/mozilla/geckodriver/releases)
+
+Installation de Gecko Driver :
+
+- Mac OS : `brew install geckodriver `
+- Linux : vous pouvez télécharger [ici](https://github.com/mozilla/geckodriver/releases) la dernière
   version du driver et déposer le fichier `geckodriver` dans `VOTRE_VENV/bin` (ou dans `/usr/local/bin` si vous voulez
   donner un accès global au driver).
-
-Avant de lancer les tests il faudra augmenter la valeur de la variable d'environnement `ACTIVITY_CHECK_THRESHOLD` qui
-est par défaut à 0 (ce qui fera échouer plein de tests).
 
 Puis lancez les commandes suivantes pour vérifier le style du code source et exécuter les tests de l'application :
 
 ```shell
 flake8
+black --check .
 python manage.py test
 ```
 
-Les tests fonctionnels sont lancés sur `http://localhost:3000`.
+Les tests fonctionnels (Selenium) sont lancés sur `http://localhost:3000`.
 Il faut s'assurer que rien d'autre n'occupe ce port pendant leur exécution.
 
-Par défaut, les tests d'intégration sont lancés en mode _headless_, c'est-à-dire sans ouverture de fenêtre de navigateur. Si vous souhaitez modifier ce comportement, vous pouvez modifier la valeur de la variable d'environnement `HEADLESS_FUNCTIONAL_TESTS` dans votre fichier `.env`.
-
-Dans de rares cas (comportement observé à ce jour sur une seule machine de dev), les tests d'intégration échouent car _la première connexion_ à une URL via l'API Selenium plante de manière inexpliquée. Un contournement empirique a été mis en place ; si vous rencontrez ce problème vous pouvez l'activer en passant à `True` la variable d'environnement `BYPASS_FIRST_LIVESERVER_CONNECTION` dans votre fichier `.env`.
+Par défaut, les tests Selenium sont lancés en mode _headless_, c'est-à-dire sans ouverture de fenêtre de navigateur. Pour modifier ce comportement, inversez la valeur de la variable d'environnement `HEADLESS_FUNCTIONAL_TESTS` dans votre fichier `.env`.
 
 Astuce : la plupart des cas de tests portent une directive `@tag` pour leur associer des tags décrivant des fonctionnalités ou des caractéristiques des tests. Par exemple, `functional` pour les tests fonctionnels, `create_mandat` pour ce qui implique une création de mandat, etc.
-Cela vous permet de lancer seulement certains tests, grâce à l'option --tag. Par exemple, pour lancer les tests portant le tag `parrot` :
+Cela vous permet de lancer seulement certains tests, grâce à l'option `--tag`. Par exemple, pour lancer les tests portant le tag `parrot` :
 
-```
+```shell
 python manage.py test --tag parrot
 ```
 
@@ -216,7 +215,7 @@ Pour lancer l'application sur le port `3000` :
 python manage.py runserver 3000
 ```
 
-L'application sera disponible à l'URL `http://localhost:3000/`
+L'application sera disponible à l'URL `http://localhost:3000/`.
 
 ### Se connecter à l'application
 
@@ -440,3 +439,9 @@ brew install libjpeg
 ```
 
 > https://github.com/python-pillow/Pillow/issues/5042#issuecomment-746681171
+
+## Les tests fonctionnels échouent de manière inexpliquée
+
+Dans de rares cas (comportement observé à ce jour sur une seule machine de dev), les tests d'intégration échouent car _la première connexion_ à une URL via l'API Selenium plante de manière inexpliquée.
+
+Un contournement empirique a été mis en place ; si vous rencontrez ce problème vous pouvez l'activer en passant à `True` la variable d'environnement `BYPASS_FIRST_LIVESERVER_CONNECTION` dans votre fichier `.env`.
