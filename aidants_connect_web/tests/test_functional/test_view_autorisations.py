@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.test import tag
 from django.utils import timezone
+from selenium.webdriver.common.by import By
 
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -72,11 +73,11 @@ class ViewAutorisationsTests(FunctionalTestCase):
         login_aidant(self)
 
         # Espace Aidant home
-        self.selenium.find_element_by_id("view_mandats").click()
+        self.selenium.find_element(By.ID, "view_mandats").click()
 
         results = []
-        for el in self.selenium.find_elements_by_tag_name("table"):
-            for tr in el.find_elements_by_css_selector("tbody tr"):
+        for el in self.selenium.find_elements(By.TAG_NAME, "table"):
+            for tr in el.find_elements(By.CSS_SELECTOR, "tbody tr"):
                 results.append(tr)
 
         # autorisation List

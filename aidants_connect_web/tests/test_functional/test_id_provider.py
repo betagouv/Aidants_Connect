@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
 from django.conf import settings
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_contains
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -65,20 +66,20 @@ class IdProviderTest(FunctionalTestCase):
         self.open_live_url(f"/authorize/?{self.url_parameters}")
         login_aidant(self)
 
-        users = self.selenium.find_elements_by_css_selector("#usagers .usager")
+        users = self.selenium.find_elements(By.CSS_SELECTOR, "#usagers .usager")
 
         self.assertEqual(len(users), 3)
 
-        self.selenium.find_element_by_id("filter-input").send_keys("Anne")
+        self.selenium.find_element(By.ID, "filter-input").send_keys("Anne")
 
-        anne_result = self.selenium.find_element_by_xpath(
-            "//*[contains(text(), 'Anne Cécile Gertrude EVALOUS')]"
+        anne_result = self.selenium.find_element(
+            By.XPATH, "//*[contains(text(), 'Anne Cécile Gertrude EVALOUS')]"
         )
-        josephine_result = self.selenium.find_element_by_xpath(
-            "//*[contains(text(), 'Joséphine ST-PIERRE')]"
+        josephine_result = self.selenium.find_element(
+            By.XPATH, "//*[contains(text(), 'Joséphine ST-PIERRE')]"
         )
-        corentin_result = self.selenium.find_element_by_xpath(
-            "//*[contains(text(), 'Corentin Anne')]"
+        corentin_result = self.selenium.find_element(
+            By.XPATH, "//*[contains(text(), 'Corentin Anne')]"
         )
 
         self.assertTrue(anne_result.is_displayed())
