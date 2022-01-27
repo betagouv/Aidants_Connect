@@ -23,7 +23,7 @@ svg.previews {
   display: none;
 }
 
-// transverse styles ------------------------------------
+// Accessibility ------------------------------------------------------
 
 :focus-visible {
   background: $off-yellow-aidants;
@@ -31,6 +31,25 @@ svg.previews {
   outline: 2px solid $off-yellow-aidants;
   border-radius: 2px;
 }
+
+// From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034
+
+.sr-only {
+  border: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  -webkit-clip-path: inset(50%) !important;
+  clip-path: inset(50%) !important;
+  height: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  width: 1px !important;
+  white-space: nowrap !important;
+}
+
+// transverse styles ------------------------------------
+
 
 .text-l {
   font-size: 1.5rem;
@@ -72,6 +91,23 @@ h2, .h2 {
 .more-info {
   font-style: italic;
   color: $light-blue-anct;
+}
+
+// forms -----------------------------------------------
+
+input[type=text], input[type=number], input[type=email], input[type=tel] {
+  border: 1px solid $light-blue-anct;
+  font-family: "Marianne", arial, sans-serif;
+  font-size: 1rem;
+
+  &:focus {
+    border-color: $off-yellow-aidants;
+    background: $off-yellow-aidants;
+  }
+}
+
+fieldset {
+  border: none;
 }
 
 // header ----------------------------------------------

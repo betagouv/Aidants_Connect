@@ -1,0 +1,18 @@
+<div class="fr-grid-row fr-grid-row--gutters {{ field.css_classes }}">
+  <div class="fr-col fr-col-md-5">{% if field.label %}{{ field.label_tag }}{% endif %}</div>
+  <div class="fr-col fr-col-md-7">
+    {{ field }}
+  </div>
+</div>
+
+{% if errors %}
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="errors fr-col-offset-5">{{ errors }}</div>
+  </div>
+{% endif %}
+
+{% if field.help_text %}
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="helptext fr-col-offset-5">{{ field.help_text|safe }}</div>
+  </div>
+{% endif %}

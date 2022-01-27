@@ -2,19 +2,16 @@
 
 {{ form.non_field_errors }}
 <fieldset>
-  <legend>Identité</legend>
+  <legend class="sr-only">Demandeur</legend>
 
-  {% field_as_p form.first_name %}
-  {% field_as_p form.last_name %}
-</fieldset>
-<fieldset>
-  <legend>Contact</legend>
+  <h3>Identité</h3>
+  {% field_as_fr_grid_row form.first_name %}
+  {% field_as_fr_grid_row form.last_name %}
 
-  {% field_as_p form.email %}
-  {% field_as_p form.phone %}
-</fieldset>
-<fieldset>
-  <legend>Autres informations</legend>
+  <h3>Contact</h3>
+  {% field_as_fr_grid_row form.email %}
+  {% field_as_fr_grid_row form.phone %}
 
-  {% field_as_p form.profession %}
+  <h3>Autres informations</h3>
+  {% field_as_fr_grid_row form.profession %}
 </fieldset>
