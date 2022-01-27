@@ -3,16 +3,18 @@
 [![CircleCI](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master.svg?style=svg)](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master)
 
 Aidants Connect est une application web qui propose à des aidants les fonctionnalités suivantes :
+
 - créer un mandat de connexion via [FranceConnect](https://franceconnect.gouv.fr/) avec un ou plusieurs usagers sur un périmètre et une durée définis ;
 - connecter via FranceConnect un usager dans les conditions des mandats créés ;
 - accéder à des ressources sur l'accompagnement des usagers ;
 - accéder à un suivi de ses mandats.
 
-Aidants Connect est construit sur les éléments suivants : 
+Aidants Connect est construit sur les éléments suivants :
+
 - Python 3.7
 - Django 3.1
 - PostgreSQL
-   
+
 ## Installer et lancer l'application
 
 ### Installer la base de données (pour Mac OSX)
@@ -47,8 +49,9 @@ psql
 ```
 
 Vous pouvez dès à présent visualiser :
-* la liste des bases de données existantes avec cette commande PostgreSQL `\list`
-* la liste des roles existants avec `\du`
+
+- la liste des bases de données existantes avec cette commande PostgreSQL `\list`
+- la liste des roles existants avec `\du`
 
 Ajoutez une base `aidants_connect` appartenant au nouvel utilisateur `aidants_connect_team` en poursuivant dans l'invite de commmande PostgreSQL :
 
@@ -79,15 +82,19 @@ Installez les dépendances :
 ```shell
 pip install -r requirements.txt
 ```
+
 #### Troubleshooting
+
 Si la commande précédente déclenche le message d'erreur suivant `ld: library not found for -lssl`, essayez :
 
- ```shell
+```shell
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/
- ```
+```
 
 Si vous avez un Mac M1
-* Si, lors de l'installation de `psycopg2-binary`, vous avez le message d'erreur suivant :
+
+- Si, lors de l'installation de `psycopg2-binary`, vous avez le message d'erreur suivant :
+
 ```
  ld: warning: directory not found for option '-L/usr/bin/openssl/lib/'
     ld: library not found for -lssl
@@ -95,34 +102,40 @@ Si vous avez un Mac M1
     error: command 'clang' failed with exit status 1
 ```
 
-* Si vous avez installé `openssl` via `brew`, vous pouvez essayer la commande suivante : 
+- Si vous avez installé `openssl` via `brew`, vous pouvez essayer la commande suivante :
+
 ```shell
 env LDFLAGS='-L/opt/homebrew/opt/openssl@1.1/lib -L/opt/homebrew/opt/readline/lib' pip install -r requirements.txt
 ```
+
 > https://stackoverflow.com/a/42264168
 
 - Si, lors de l'installation de `pillow` vous avez le message d'erreur suivant :
+
 ```shell
 The headers or library files could not be found for zlib,
     a required dependency when compiling Pillow from source.
 
 ```
+
 Vous pouvez essayer :
 
 ```shell
 brew install libjpeg
 ```
+
 > https://github.com/python-pillow/Pillow/issues/5042#issuecomment-746681171
 
 ### Configurer les variables d'environnement
 
-Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env`. En test en local, vous ne devriez pas avoir à modifier ce `.env`.  
+Dupliquez le fichier `.env.example` à la racine du projet en tant que `.env`. En test en local, vous ne devriez pas avoir à modifier ce `.env`.
 
 Vous pouvez, sur un serveur, ajouter vos informations :
-* Les champs obligatoires sont indiqués par le préfixe `<insert_`
-* Les informations de production `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
-* Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`  pour cela voir dans les annexes [la procédure](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret)
-* Les valeurs de sécurité sont issues de [la section "sécurité" de la documentation Django](https://docs.djangoproject.com/fr/2.2/topics/security/) et de [la conférence Django and Web Security Headers](https://www.youtube.com/watch?v=gvQW1vVNohg)
+
+- Les champs obligatoires sont indiqués par le préfixe `<insert_`
+- Les informations de production `FC_AS_FS` et `FC_AS_FI` sont à récupérer via des [habilitations FranceConnect](https://franceconnect.gouv.fr/partenaires)
+- Vous allez devoir calculer la valeur `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET` pour cela voir dans les annexes [la procédure](#calcul-de-hash_fc_as_fi_secret-à-partir-de-la-valeur-de-fc_as_fi_secret)
+- Les valeurs de sécurité sont issues de [la section "sécurité" de la documentation Django](https://docs.djangoproject.com/fr/2.2/topics/security/) et de [la conférence Django and Web Security Headers](https://www.youtube.com/watch?v=gvQW1vVNohg)
 
 Créez un répertoire `staticfiles` à la racine du projet :
 
@@ -142,11 +155,13 @@ Il existe plusieurs moyens de peupler la base de données.
 
 #### Installation en local pour test : utiliser les _fixtures_
 
-Des données de test qui créent un environnement complet : 
-  ```shell
-    python manage.py loaddata admin.json
-    python manage.py loaddata usager_autorisation.json
-  ```
+Des données de test qui créent un environnement complet :
+
+```shell
+  python manage.py loaddata admin.json
+  python manage.py loaddata usager_autorisation.json
+```
+
 Ce process créé automatiquement un _superuser_ `admin@email.com`. plus d'information sur comment se connecter avec ce compte sont disponible dans la section [Se connecter à l'application](#se-connecter-à-lapplication)
 
 #### Installation sur un serveur : Créer un _superuser_
@@ -157,8 +172,8 @@ Créez un profil administrateur avec une organisation ar défaut :
 python manage.py createsuperuser --username <insert_admin_name> --organisation-name <insert_organisation_name>
 ```
 
-Une organisation avec le nom que vous avez spécifié sera automatiquement créée pour ce profil. 
-Si vous avez déjà créé une organisation vous pouvez passer son numéro dans la base de donnée à la création du profil 
+Une organisation avec le nom que vous avez spécifié sera automatiquement créée pour ce profil.
+Si vous avez déjà créé une organisation vous pouvez passer son numéro dans la base de donnée à la création du profil
 admin :
 
 ```shell
@@ -175,20 +190,18 @@ python manage.py addstatictoken <insert_admin_name> -t <insert_6_numbers>
 
 Notez ce code, il vous permettra de vous connecter la première fois à l'interface d'administration.
 
-
 ### Lancer les tests
 
 Si vous ne les avez pas, installez les éléments suivants :
+
 - Navigateur Firefox en [téléchargement](https://www.mozilla.org/fr/firefox/download/thanks/)
 - [Gecko driver](https://github.com/mozilla/geckodriver/releases) avec cette commande :
-    ```shell
-    brew install geckodriver
-    ```
-**_NOTE:_** Si vous êtes sous linux, vous pouvez télécharger [ici](https://github.com/mozilla/geckodriver/releases) la dernière
-version du driver et déposer le fichier  `geckodriver` dans `VOTRE_VENV/bin` (ou dans `/usr/local/bin` si vous voulez
-donner un accès global au driver). 
+  `shell brew install geckodriver `
+  **_NOTE:_** Si vous êtes sous linux, vous pouvez télécharger [ici](https://github.com/mozilla/geckodriver/releases) la dernière
+  version du driver et déposer le fichier `geckodriver` dans `VOTRE_VENV/bin` (ou dans `/usr/local/bin` si vous voulez
+  donner un accès global au driver).
 
-Avant de lancer les tests il faudra augmenter la valeur de la variable d'environnement `ACTIVITY_CHECK_THRESHOLD` qui 
+Avant de lancer les tests il faudra augmenter la valeur de la variable d'environnement `ACTIVITY_CHECK_THRESHOLD` qui
 est par défaut à 0 (ce qui fera échouer plein de tests).
 
 Puis lancez les commandes suivantes pour vérifier le style du code source et exécuter les tests de l'application :
@@ -228,26 +241,27 @@ Votre _superuser_ est créé et a un login, un mot de passe et un _static token_
 
 #### Trouver la page d'admin
 
-La page d'admin se trouve sur `/[Variable d'environnement ADMIN_URL]` 
+La page d'admin se trouve sur `/[Variable d'environnement ADMIN_URL]`
 
-#### Se connecter à l'admin 
+#### Se connecter à l'admin
 
-* ⏩ Si vous avez utilisé les _fixtures_ pour peupler votre base de données, 
-	* identifiant : `admin@email.com`;
-	* mot de passe : `admin`;
-	* Static OTP : `111111`
-* Sinon, utilisez le login, mot de passe et static token créés dans la section [Installation sur un serveur : Créer un _superuser_](#installation-sur-un-serveur--créer-un-superuser)
+- ⏩ Si vous avez utilisé les _fixtures_ pour peupler votre base de données,
+  - identifiant : `admin@email.com`;
+  - mot de passe : `admin`;
+  - Static OTP : `111111`
+- Sinon, utilisez le login, mot de passe et static token créés dans la section [Installation sur un serveur : Créer un _superuser_](#installation-sur-un-serveur--créer-un-superuser)
 
 #### Péréniser son authentification à double facteur (2FA)
 
 Une fois connecté à l'admin, cliquez sur **_TOTP devices_**
 
-* ⏩ Si vous avez utilisé les _fixtures_ :
-	* Cliquez sur le lien `qr code` à droite de l'entrée pour Admin
-	* Scannez le QRcode dans une application TOTP telle que [Authy](https://authy.com/) ou [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2)
+- ⏩ Si vous avez utilisé les _fixtures_ :
+  - Cliquez sur le lien `qr code` à droite de l'entrée pour Admin
+  - Scannez le QRcode dans une application TOTP telle que [Authy](https://authy.com/) ou [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2)
 
 Si vous avez créé votre propre _superuser_ :
-1. Cliquez sur le bouton `Ajouter TOTP device +` 
+
+1. Cliquez sur le bouton `Ajouter TOTP device +`
 2. Choisissez votre _superuser_ grâce à l'icône "loupe" située à côté du champ _User_
 3. Saisissez un nom pour votre dispositif TOTP (par exemple : _Mon téléphone_) dans le champ `Name`
 4. Cliquez ensuite sur _Enregistrer et continuer les modifications_ tout en bas du formulaire
@@ -304,7 +318,7 @@ Pour simplifier le lancement de certaines commandes, un Makefile est disponible.
 make destroy-rebuild-dev-db
 ```
 
-Sur Windows, la commande `make` n'est pas disponible ; 
+Sur Windows, la commande `make` n'est pas disponible ;
 Il faut passer chaque commande du `Makefile` (fichier présent à la racine du projet) les unes après les autres.
 
 #### Avec des données existantes
@@ -319,18 +333,18 @@ Puis il vous faudra recréer la base de donnée PostgreSQL :
 
 - Dans le shell :
 
-    ```shell
-    psql
-    ```
+  ```shell
+  psql
+  ```
 
 - Puis, dans l'invite de commande `psql` :
 
-    ```sql
-    DROP DATABASE aidants_connect;
-    CREATE DATABASE aidants_connect OWNER aidants_connect_team;
-    ALTER USER aidants_connect_team CREATEDB;
-    \q
-    ```
+  ```sql
+  DROP DATABASE aidants_connect;
+  CREATE DATABASE aidants_connect OWNER aidants_connect_team;
+  ALTER USER aidants_connect_team CREATEDB;
+  \q
+  ```
 
 Ensuite, de retour dans le _shell_, pour lancer les migrations :
 
@@ -342,16 +356,16 @@ Enfin, chargez les données :
 
 - Soit des données sauvegardées précédement :
 
-    ```shell
-    python manage.py loaddata db.json
-    ```
+  ```shell
+  python manage.py loaddata db.json
+  ```
 
 - Soit repartir de zéro en recréant un _superuser_ (plus de détails dans la section [Installer l'application](#installer-lapplication)) :
 
-    ```shell
-    python manage.py createsuperuser
-    ```
-  
+  ```shell
+  python manage.py createsuperuser
+  ```
+
 ### Purger les connexions expirées
 
 Les objets Django de type `Connection` repésentent une forme de cache pendant l'établissement de la connexion FranceConnect.
@@ -362,7 +376,8 @@ Pour ce faire, il suffit d'exécuter ou de planifier la commande suivante :
 python manage.py delete_expired_connections
 ```
 
-### Calcul de `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`    
+### Calcul de `HASH_FC_AS_FI_SECRET` à partir de la valeur de `FC_AS_FI_SECRET`
+
 Il faut utiliser `generate_sha256_hash`.
 
 ```python
