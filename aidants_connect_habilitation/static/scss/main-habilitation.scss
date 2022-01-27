@@ -40,6 +40,38 @@ svg.previews {
   border: 1px solid $off-yellow-aidants;
   box-sizing: border-box;
   box-shadow: 10px 10px 0 $off-yellow-aidants;
+  padding: 2rem;
+}
+
+h1, .h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: $red-aidants;
+  margin: 2.5rem 0;
+  text-transform: uppercase;
+
+  + .subtitle {
+    font-size: 1.5rem;
+    color: $light-blue-anct;
+  }
+}
+
+h2, .h2 {
+  font-size: 2.25rem;
+  color: $blue-aidants;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 2rem 0;
+
+  + .subtitle {
+    margin-top: -1.5rem;
+    margin-bottom: 2rem;
+  }
+}
+
+.more-info {
+  font-style: italic;
+  color: $light-blue-anct;
 }
 
 // header ----------------------------------------------
@@ -67,6 +99,7 @@ svg.previews {
 .header-logo {
   display: flex;
   align-items: center;
+
   &:focus-visible {
     background: $light-aidants;
   }
@@ -143,6 +176,7 @@ footer {
     height: 1.5rem;
     vertical-align: -25%;
   }
+
   a:focus-visible .icon {
     fill: $dark-grey-aidants;
   }
