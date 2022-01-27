@@ -7,6 +7,7 @@ $off-yellow-aidants: #FAD776;
 $blue-green-aidants: #7FB7C0;
 $dark-green-anct: #108670;
 $red-aidants: #EF4056;
+$red-aidants-for-small-text: #e9133e;
 
 // basic layout -----------------------------------------
 
@@ -108,6 +109,34 @@ input[type=text], input[type=number], input[type=email], input[type=tel] {
 
 fieldset {
   border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.form-grid-row {
+  label, input {
+    display: block;
+    width: 100%;
+  }
+}
+
+.form-grid-row.form-grid-row-error {
+  input {
+    border-color: $red-aidants;
+  }
+}
+
+.fr-grid-row--gutters .errors {
+  padding-top: .25rem;
+  padding-bottom: 1.5rem;
+  font-size: .75rem;
+  line-height: 1.25;
+  color: $red-aidants-for-small-text;
+
+
+  > p {
+    margin: 0;
+  }
 }
 
 // header ----------------------------------------------

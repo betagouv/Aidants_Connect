@@ -1,4 +1,5 @@
-<div class="fr-grid-row fr-grid-row--gutters {{ field.css_classes }}">
+<div
+    class="form-grid-row fr-grid-row fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %} {{ field.css_classes }}">
   <div class="fr-col fr-col-md-5">{% if field.label %}{{ field.label_tag }}{% endif %}</div>
   <div class="fr-col fr-col-md-7">
     {{ field }}
