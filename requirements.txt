@@ -22,13 +22,11 @@ factory-boy==2.12.0
 flake8==3.8.3
 freezegun==0.3.15
 gunicorn==20.1.0
-ipython==7.16.3
 mock==4.0.3
 Pillow==9.0.0
 pre-commit==2.17.0
 psycopg2-binary==2.9.3
 ptpython==3.0.20
-pudb==2019.2
 PyJWT==1.7.1
 python-dotenv==0.13.0
 pytz==2021.3
