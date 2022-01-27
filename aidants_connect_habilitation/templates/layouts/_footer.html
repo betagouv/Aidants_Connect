@@ -1,0 +1,69 @@
+{% load static %}
+<svg aria-hidden="true" focusable="false" class="previews">
+  <defs>
+    <symbol viewBox="0 0 32 32" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
+            stroke-miterlimit="1.414" id="github" xmlns="http://www.w3.org/2000/svg">
+      <path
+          d="M16 1.371c-8.284 0-15 6.715-15 15 0 6.627 4.298 12.25 10.258 14.233.75.138 1.026-.326 1.026-.722 0-.357-.014-1.54-.021-2.793-4.174.907-5.054-1.77-5.054-1.77-.682-1.733-1.665-2.195-1.665-2.195-1.361-.931.103-.912.103-.912 1.506.106 2.299 1.546 2.299 1.546 1.338 2.293 3.509 1.63 4.365 1.247.134-.969.523-1.631.952-2.006-3.331-.379-6.834-1.666-6.834-7.413 0-1.638.586-2.976 1.546-4.027-.156-.378-.669-1.903.145-3.969 0 0 1.26-.403 4.126 1.537a14.453 14.453 0 0 1 3.755-.505c1.274.006 2.558.173 3.757.505 2.864-1.94 4.121-1.537 4.121-1.537.816 2.066.303 3.591.147 3.969.962 1.05 1.544 2.389 1.544 4.027 0 5.761-3.509 7.029-6.849 7.401.538.466 1.017 1.379 1.017 2.778 0 2.007-.018 3.623-.018 4.117 0 .399.27.867 1.03.72C26.707 28.616 31 22.996 31 16.371c0-8.285-6.716-15-15-15z"
+          fill-rule="nonzero"/>
+    </symbol>
+    <symbol viewBox="0 0 32 32" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
+            stroke-miterlimit="1.414" id="twitter" xmlns="http://www.w3.org/2000/svg">
+      <path
+          d="M31.003 6.695c-1.102.492-2.291.82-3.533.966a6.185 6.185 0 0 0 2.706-3.404 12.404 12.404 0 0 1-3.908 1.495 6.154 6.154 0 0 0-4.495-1.94 6.153 6.153 0 0 0-5.994 7.553A17.468 17.468 0 0 1 3.093 4.932a6.15 6.15 0 0 0-.831 3.094 6.147 6.147 0 0 0 2.736 5.122 6.16 6.16 0 0 1-2.789-.768v.076a6.154 6.154 0 0 0 4.94 6.034 6.149 6.149 0 0 1-2.783.106 6.177 6.177 0 0 0 5.748 4.277 12.347 12.347 0 0 1-9.117 2.549 17.4 17.4 0 0 0 9.44 2.766c11.32 0 17.513-9.381 17.513-17.514 0-.269-.005-.533-.017-.796a12.405 12.405 0 0 0 3.07-3.182v-.001z"
+          fill-rule="nonzero"/>
+    </symbol>
+  </defs>
+</svg>
+<footer id="footer" tabindex="-1">
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-4">
+        <a href="https://agence-cohesion-territoires.gouv.f r">
+          <img class="logo__anct" src="{% static 'images/logo_ANCT.svg' %}"
+               alt="Agence nationale de la cohésion des territoires"/>
+        </a>
+      </div>
+      <div class="fr-col-12 fr-col-md-5">
+        <ul class="footer-links">
+          <li aria-hidden="true" class="text-l">
+            aidantsconnect.beta.gouv.fr
+          </li>
+          <li><a href="https://incubateur.anct.gouv.fr/actions/startups-territoires/">Une startup d’État de l'Incubateur
+            des Territoires</a></li>
+          <li><a href="https://agence-cohesion-territoires.gouv.fr/">Agence Nationale de la Cohésion des Territoires</a>
+          </li>
+        </ul>
+        <ul class="footer-social">
+          <li>
+            <a href="https://twitter.com/IncubateurT">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#twitter"></use>
+              </svg>
+              Twitter
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/betagouv/aidants_connect">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#github"></use>
+              </svg>
+              Github
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="fr-col-12 fr-col-md-3">
+        <nav role="navigation" aria-label="Menu pied de page">
+          <ul class="footer-links">
+            <li><a href="/cgu">Conditions d’utilisation</a></li>
+            <li><a href="/mentions-legales">Mentions légales</a></li>
+            <li><a href="/faq">Foire aux questions</a></li>
+            <li><a href="/stats">Statistiques</a></li>
+            <li><a href="/accessibilite">Accessibilité&nbsp;: non conforme</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</footer>
