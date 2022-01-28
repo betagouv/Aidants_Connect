@@ -207,6 +207,14 @@ fieldset {
     text-align: center;
     position: relative;
     transform: translateY(.5rem);
+    a {
+      text-decoration: none;
+      color: $dark-grey-aidants;
+      &:hover {
+        box-shadow: 0 .5rem 0 $off-yellow-aidants;
+        color: $red-aidants;
+      }
+    }
 
     &:after {
       content: "";
@@ -303,7 +311,7 @@ fieldset {
     }
 
     &:hover {
-      box-shadow: 0 8px 0 $off-yellow-aidants;
+      box-shadow: 0 .5rem 0 $off-yellow-aidants;
     }
   }
 }
