@@ -25,8 +25,9 @@
             {% csrf_token %}
 
             {% include "_issuer_form.html" %}
-
-            <input type="submit" value="Valider cette étape">
+            <div class="button-box">
+              <button type="submit" class="primary">Valider cette étape</button>
+            </div>
           </div>
 
         </form>

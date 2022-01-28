@@ -9,6 +9,8 @@ $dark-green-anct: #108670;
 $red-aidants: #EF4056;
 $red-aidants-for-small-text: #e9133e;
 
+$font-stack: "Marianne", arial, sans-serif;
+
 // basic layout -----------------------------------------
 
 html, body {
@@ -92,18 +94,40 @@ h2, .h2 {
 .more-info {
   font-style: italic;
   color: $light-blue-anct;
+  margin-top: 4rem;
+
 }
 
 // forms -----------------------------------------------
 
 input[type=text], input[type=number], input[type=email], input[type=tel] {
   border: 1px solid $light-blue-anct;
-  font-family: "Marianne", arial, sans-serif;
+  font-family: $font-stack;
   font-size: 1rem;
 
   &:focus {
     border-color: $off-yellow-aidants;
     background: $off-yellow-aidants;
+  }
+}
+
+button, .button {
+  padding: .75rem;
+  border: 1px solid $red-aidants;
+  color: $red-aidants;
+  background: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  text-decoration: none;
+  line-height: 1.3;
+  display: inline-block;
+  vertical-align: baseline;
+  margin: 0;
+  font-family: $font-stack;
+
+  &.primary {
+    background: $red-aidants;
+    color: #fff;
   }
 }
 
@@ -133,11 +157,24 @@ fieldset {
   line-height: 1.25;
   color: $red-aidants-for-small-text;
 
-
   > p {
     margin: 0;
   }
 }
+
+.button-box {
+  display: flex;
+  justify-content: space-between;
+
+  > :only-child {
+    margin-left: auto;
+  }
+}
+
+.shadowed .button-box {
+  transform: translateY(4rem);
+}
+
 
 // header ----------------------------------------------
 
