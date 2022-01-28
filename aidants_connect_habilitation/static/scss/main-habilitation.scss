@@ -186,6 +186,65 @@ fieldset {
   transform: translateY(4rem);
 }
 
+// habilitation form breadcrumbs -----------------------
+
+.habilitation-breadcrumbs {
+  list-style: none;
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 1px solid $red-aidants;
+  padding: 0;
+  margin: 4rem 0;
+
+  > li {
+    margin: 0;
+    padding: 0 0 2rem;
+    text-align: center;
+    position: relative;
+    transform: translateY(.5rem);
+
+    &:after {
+      content: "";
+      background: #fff;
+      border: 1px solid $red-aidants;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 100%;
+      display: block;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      margin-left: -.5rem;
+    }
+
+    &.active {
+      font-weight: bold;
+      color: $red-aidants;
+
+      &:after {
+        background: $red-aidants;
+      }
+    }
+
+    &:first-child, &:last-child {
+      &:before {
+        content: "";
+        position: absolute;
+        background: white;
+        width: 10rem;
+        height: 1rem;
+        right: 50%;
+        bottom: 0;
+      }
+    }
+
+    &:last-child {
+      &:before {
+        left: 50%;
+      }
+    }
+  }
+}
 
 // header ----------------------------------------------
 
