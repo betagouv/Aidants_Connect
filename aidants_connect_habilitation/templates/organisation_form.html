@@ -7,70 +7,83 @@
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col">
-        <h1>Formulaire d’habilitation</h1>
-        <p class="subtitle">
-          Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
-          Faites votre demande en quelques étapes via le formulaire ci-dessous.
-        </p>
-      </div>
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col">
+      <h1>Formulaire d’habilitation</h1>
+      <p class="subtitle">
+        Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
+        Faites votre demande en quelques étapes via le formulaire ci-dessous.
+      </p>
     </div>
-    {% include '_breadcrumbs.html' with step=2 issuer=issuer %}
-    <div class="fr-grid-row fr-grid-row--gutters">
+  </div>
+  {% include '_breadcrumbs.html' with step=2 issuer=issuer %}
+  <div class="fr-grid-row fr-grid-row--gutters">
 
-      <div class="fr-col-12 fr-col-md-8">
-        <form method="post">
-          <h2>Structure d’accueil</h2>
-          <p class="subtitle">Vous pouvez faire autant de demandes qu’il existe de structures d’accueil.</p>
-          <div class="shadowed">
+    <div class="fr-col-12 fr-col-md-8">
+      <form method="post">
+        <h2>Structure d’accueil</h2>
+        <p class="subtitle">Vous pouvez faire autant de demandes qu’il existe de structures d’accueil.</p>
+        <div class="shadowed">
 
-            <h3>Informations générales</h3>
-            {% csrf_token %}
-            {{ form.non_field_errors }}
-            {% field_as_fr_grid_row form.type %}
-            {% field_as_fr_grid_row form.type_other %}
-            {% field_as_fr_grid_row form.name %}
-            <h3>Informations administratives</h3>
+          <h3>Informations générales</h3>
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          {% field_as_fr_grid_row form.type %}
+          {% field_as_fr_grid_row form.type_other %}
+          {% field_as_fr_grid_row form.name %}
+          <h3>Informations administratives</h3>
 
-            {% field_as_fr_grid_row form.address %}
+          {% field_as_fr_grid_row form.address %}
 
-            {% with errors=form.zipcode.errors|add:form.city.errors %}
-              {{ errors }}
-            {% endwith %}
-            <p>
-              <label for="{{ form.zipcode.id_for_label }}">{{ form.zipcode.label }}</label>&nbsp;/&nbsp;
-              <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
-              {{ form.zipcode }}{{ form.city }}
-            </p>
-
-            {% field_as_fr_grid_row form.siret %}
-
-            <label for="is_private_org">Cochez cette case si vous faites cette demande pour une structure privée (hors
-              associations)</label>
-            <input id="is_private_org" type="checkbox">
-
-            <section class="partner-administration">
-              {% field_as_fr_grid_row form.partner_administration %}
-              {% field_as_fr_grid_row form.public_service_delegation_attestation %}
-            </section>
-
-            <h3>Informations descriptives</h3>
-
-            {% field_as_fr_grid_row form.web_site %}
-            {% field_as_fr_grid_row form.mission_description %}
-            {% field_as_fr_grid_row form.avg_nb_demarches %}
-
-            <div class="button-box">
-              <a class="button" href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">
-                Revenir à l’étape précédente
-              </a>
-              <button type="submit" class="primary">Valider cette étape</button>
+          {% with errors=form.zipcode.errors|add:form.city.errors %}
+            <div
+                class="form-grid-row fr-grid-row fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}">
+              <div class="fr-col-12 fr-col-md-5">
+                <label for="{{ form.zipcode.id_for_label }}">{{ form.zipcode.label }}</label>&nbsp;/&nbsp;
+                <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+              </div>
+              <div class="fr-col-4 fr-col-md-2 zipcode-container">
+                {{ form.zipcode }}
+              </div>
+              <div class="fr-col-8 fr-col-md-5">
+                {{ form.city }}
+              </div>
             </div>
 
+            {% if errors %}
+              <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="errors fr-col-12 fr-col-md-7 fr-col-offset-md-5">{{ errors }}</div>
+              </div>
+            {% endif %}
+          {% endwith %}
+
+          {% field_as_fr_grid_row form.siret %}
+
+          <label for="is_private_org">Cochez cette case si vous faites cette demande pour une structure privée (hors
+            associations)</label>
+          <input id="is_private_org" type="checkbox">
+
+          <section class="partner-administration">
+            {% field_as_fr_grid_row form.partner_administration %}
+            {% field_as_fr_grid_row form.public_service_delegation_attestation %}
+          </section>
+
+          <h3>Informations descriptives</h3>
+
+          {% field_as_fr_grid_row form.web_site %}
+          {% field_as_fr_grid_row form.mission_description %}
+          {% field_as_fr_grid_row form.avg_nb_demarches %}
+
+          <div class="button-box">
+            <a class="button" href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">
+              Revenir à l’étape précédente
+            </a>
+            <button type="submit" class="primary">Valider cette étape</button>
           </div>
-        </form>
-      </div>
-      {% include "_more-info.html" %}
+
+        </div>
+      </form>
     </div>
+    {% include "_more-info.html" %}
+  </div>
 {% endblock %}
