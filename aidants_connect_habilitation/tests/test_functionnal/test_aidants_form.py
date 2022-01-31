@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.test import tag
 from django.urls import reverse
+from selenium.webdriver.common.by import By
 
 from aidants_connect_habilitation.forms import IssuerForm
 from aidants_connect_habilitation.models import OrganisationRequest
@@ -35,7 +36,7 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
 
         for name in IssuerForm().fields.keys():
             el_id = f"id_{name}"
-            el = self.selenium.find_element_by_id(el_id)
+            el = self.selenium.find_element(By.ID, el_id)
             el_name_attr = el.get_attribute("name")
             self.assertEqual(
                 el_name_attr,

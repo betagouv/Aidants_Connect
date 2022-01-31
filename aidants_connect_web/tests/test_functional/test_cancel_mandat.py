@@ -1,4 +1,5 @@
 from django.test import tag
+from selenium.webdriver.common.by import By
 
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -35,17 +36,17 @@ class CancelAutorisationTests(FunctionalTestCase):
         login_aidant(self)
 
         # See all mandats of usager page
-        active_mandats = self.selenium.find_elements_by_id("active-mandat-panel")
+        active_mandats = self.selenium.find_elements(By.ID, "active-mandat-panel")
         self.assertEqual(len(active_mandats), 1)
 
         # Cancel mandat
-        cancel_mandat_button = self.selenium.find_element_by_id("cancel_mandat")
+        cancel_mandat_button = self.selenium.find_element(By.ID, "cancel_mandat")
         cancel_mandat_button.click()
 
         remaining_autorisations = [
             it.text
-            for it in self.selenium.find_elements_by_css_selector(
-                ".remaining-autorisations strong"
+            for it in self.selenium.find_elements(
+                By.CSS_SELECTOR, ".remaining-autorisations strong"
             )
         ]
         self.assertEqual(
@@ -58,12 +59,13 @@ class CancelAutorisationTests(FunctionalTestCase):
         )
 
         # Confirm cancellation
-        submit_button = self.selenium.find_elements_by_tag_name("input")[1]
+        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[1]
         submit_button.click()
 
         # Display attestation
-        attestation_link = self.selenium.find_element_by_xpath(
-            f'.//a[@href="/mandats/{self.mandat.id}/attestation_de_revocation"]'
+        attestation_link = self.selenium.find_element(
+            By.XPATH,
+            f'.//a[@href="/mandats/{self.mandat.id}/attestation_de_revocation"]',
         )
         attestation_link.click()
 
@@ -71,7 +73,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         wait.until(lambda driver: len(driver.window_handles) == 2)
         self.selenium.switch_to.window(self.selenium.window_handles[1])
 
-        recap_title = self.selenium.find_element_by_tag_name("h1").text
+        recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(
             recap_title, "Révocation d'un mandat via le service « Aidants Connect »"
         )
@@ -81,17 +83,15 @@ class CancelAutorisationTests(FunctionalTestCase):
 
         # See again all mandats of usager page
 
-        user_link = self.selenium.find_element_by_xpath(
-            f'.//a[@href="/usagers/{self.mandat.usager.id}/"]'
+        user_link = self.selenium.find_element(
+            By.XPATH, f'.//a[@href="/usagers/{self.mandat.usager.id}/"]'
         )
         user_link.click()
 
-        inactive_mandats = self.selenium.find_elements_by_id("inactive-mandat-panel")
+        inactive_mandats = self.selenium.find_elements(By.ID, "inactive-mandat-panel")
         self.assertEqual(len(inactive_mandats), 1)
-        inactive_mandats_autorisations_after = (
-            self.selenium.find_elements_by_class_name(
-                "inactive-mandat-autorisation-row"
-            )
+        inactive_mandats_autorisations_after = self.selenium.find_elements(
+            By.CLASS_NAME, "inactive-mandat-autorisation-row"
         )
         self.assertEqual(len(inactive_mandats_autorisations_after), 2)
         self.assertIn("Révoqué", inactive_mandats_autorisations_after[0].text)
