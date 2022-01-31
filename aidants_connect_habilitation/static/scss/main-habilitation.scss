@@ -159,6 +159,34 @@ textarea {
   }
 }
 
+input[type=checkbox] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 1.5rem;
+  width: 1.5rem;
+  padding: 0;
+  position: relative;
+  border: 1px solid $light-blue-anct;
+
+  &:before {
+    transform: scale(0);
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: url('../img/x.svg') 50% no-repeat;
+  }
+
+  &:checked {
+    &:before {
+      transform: scale(1);
+    }
+  }
+}
+
 button, .button {
   padding: .75rem;
   border: 1px solid $red-aidants;
