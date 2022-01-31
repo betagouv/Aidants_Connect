@@ -116,7 +116,7 @@ h3, .h3 {
 
 // forms -----------------------------------------------
 
-input[type=text], input[type=number], input[type=email], input[type=tel] {
+input[type=text], input[type=number], input[type=email], input[type=tel], input[type=url] {
   border: 1px solid $light-blue-anct;
   font-family: $font-stack;
   font-size: 1rem;
@@ -137,6 +137,21 @@ select {
   background: #fff;
   max-width: 100%;
   height: 2.25rem;
+
+  &:focus {
+    border-color: $off-yellow-aidants;
+    background: $off-yellow-aidants;
+  }
+}
+
+textarea {
+  border: 1px solid $light-blue-anct;
+  background: #fff;
+  width: 100%;
+  resize: vertical;
+  font-family: $font-stack;
+  padding: .5rem;
+  line-height: 1.25;
 
   &:focus {
     border-color: $off-yellow-aidants;
