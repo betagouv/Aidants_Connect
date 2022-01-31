@@ -59,6 +59,10 @@ class IssuerForm(PatchedErrorListForm):
 class OrganisationRequestForm(PatchedErrorListForm):
     type = ChoiceField(required=True, choices=RequestOriginConstants.choices)
 
+    name = CharField(
+        label="Nom de la structure",
+    )
+
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
