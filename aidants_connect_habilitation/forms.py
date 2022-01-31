@@ -29,7 +29,6 @@ class IssuerForm(PatchedErrorListForm):
     )
 
     def __init__(self, render_non_editable=False, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(**kwargs)
         self.render_non_editable = render_non_editable
         if self.render_non_editable:
