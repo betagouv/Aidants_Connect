@@ -6,7 +6,8 @@ from aidants_connect_habilitation.views import (
     NewIssuerFormView,
     NewHabilitationView,
     NewOrganisationRequestFormView,
-    AidantsRequestFormView,
+    PersonnelRequestFormView,
+    ValidationRequestFormView,
 )
 
 urlpatterns = [
@@ -29,7 +30,12 @@ urlpatterns = [
     ),
     path(
         "demandeur/<str:issuer_id>/organisation/<str:draft_id>/aidants/",
-        AidantsRequestFormView.as_view(),
+        PersonnelRequestFormView.as_view(),
         name="habilitation_new_aidants",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/validation/",
+        ValidationRequestFormView.as_view(),
+        name="habilitation_validation",
     ),
 ]
