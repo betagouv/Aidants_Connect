@@ -12,6 +12,7 @@ from aidants_connect_habilitation.models import (
     DataPrivacyOfficer,
     Manager,
     OrganisationRequest,
+    PersonWithResponsibilities,
 )
 from aidants_connect_web.models import OrganisationType
 
@@ -97,7 +98,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
         exclude = ["issuer", "manager", "data_privacy_officer", "status", "draft_id"]
 
 
-class PersonForm(PatchedErrorListForm):
+class PersonWithResponsibilitiesForm(PatchedErrorListForm):
     phone = PhoneNumberField(
         initial="",
         region=settings.PHONENUMBER_DEFAULT_REGION,
@@ -107,14 +108,12 @@ class PersonForm(PatchedErrorListForm):
         required=False,
     )
 
-
-class AidantRequestForm(PersonForm):
     class Meta:
-        model = AidantRequest
-        exclude = ["organisation"]
+        model = PersonWithResponsibilities
+        exclude = ["id"]
 
 
-class ManagerForm(PersonForm):
+class ManagerForm(PatchedErrorListForm):
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
@@ -131,15 +130,19 @@ class ManagerForm(PersonForm):
         },
     )
 
-    class Meta:
+    class Meta(PersonWithResponsibilitiesForm.Meta):
         model = Manager
-        exclude = []
 
 
-class DataPrivacyOfficerForm(PersonForm):
-    class Meta:
+class DataPrivacyOfficerForm(PersonWithResponsibilitiesForm):
+    class Meta(PersonWithResponsibilitiesForm.Meta):
         model = DataPrivacyOfficer
-        exclude = []
+
+
+class AidantRequestForm(PatchedErrorListForm):
+    class Meta:
+        model = AidantRequest
+        exclude = ["organisation"]
 
 
 class BaseAidantRequestFormSet(BaseFormSet):

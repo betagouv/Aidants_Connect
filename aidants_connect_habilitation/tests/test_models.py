@@ -37,3 +37,13 @@ class OrganisationRequestTests(TestCase):
         with self.assertRaises(IntegrityError) as cm:
             OrganisationRequestFactory(without_elected=False, draft_id=None)
         self.assertIn("without_elected_checked", str(cm.exception))
+
+    def test_manager_set_constraint(self):
+        with self.assertRaises(IntegrityError) as cm:
+            OrganisationRequestFactory(manager=None, draft_id=None)
+        self.assertIn("manager_set", str(cm.exception))
+
+    def test_data_privacy_officer_set_constraint(self):
+        with self.assertRaises(IntegrityError) as cm:
+            OrganisationRequestFactory(data_privacy_officer=None, draft_id=None)
+        self.assertIn("data_privacy_officer_set", str(cm.exception))

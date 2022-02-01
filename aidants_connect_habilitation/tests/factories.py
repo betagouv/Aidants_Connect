@@ -9,6 +9,8 @@ from phonenumber_field.phonenumber import to_python
 from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect_habilitation.models import (
     AidantRequest,
+    DataPrivacyOfficer,
+    Manager,
     OrganisationRequest,
     Issuer,
 )
@@ -41,8 +43,38 @@ class IssuerFactory(DjangoModelFactory):
         model = Issuer
 
 
+class DataPrivacyOfficerFactory(DjangoModelFactory):
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    email = Faker("email")
+    profession = Faker("job")
+    phone = LazyFunction(_generate_valid_phone)
+
+    class Meta:
+        model = DataPrivacyOfficer
+
+
+class ManagerFactory(DjangoModelFactory):
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    email = Faker("email")
+    profession = Faker("job")
+    phone = LazyFunction(_generate_valid_phone)
+
+    address = Faker("street_address")
+    zipcode = Faker("postcode")
+    city = Faker("city")
+
+    is_aidant = FuzzyChoice([True, False])
+
+    class Meta:
+        model = Manager
+
+
 class OrganisationRequestFactory(DjangoModelFactory):
     issuer = SubFactory(IssuerFactory)
+    manager = SubFactory(ManagerFactory)
+    data_privacy_officer = SubFactory(DataPrivacyOfficerFactory)
 
     draft_id = None
 
@@ -67,12 +99,6 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
     avg_nb_demarches = FuzzyInteger(0)
 
-    manager_first_name = Faker("first_name")
-    manager_last_name = Faker("last_name")
-    manager_email = Faker("email")
-    manager_profession = Faker("job")
-    manager_phone = LazyFunction(_generate_valid_phone)
-
     cgu = True
     dpo = True
     professionals_only = True
@@ -83,12 +109,11 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
 
 class AidantRequestFactory(DjangoModelFactory):
-    organisation = SubFactory(OrganisationRequestFactory)
-
     first_name = Faker("first_name")
     last_name = Faker("last_name")
     email = Faker("email")
     profession = Faker("job")
+    organisation = SubFactory(OrganisationRequestFactory)
 
     class Meta:
         model = AidantRequest

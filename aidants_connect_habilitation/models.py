@@ -12,6 +12,7 @@ from aidants_connect.common.constants import (
 from aidants_connect_web.models import OrganisationType
 
 __all__ = [
+    "PersonWithResponsibilities",
     "Issuer",
     "DataPrivacyOfficer",
     "Manager",
