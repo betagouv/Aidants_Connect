@@ -7,6 +7,9 @@ $off-yellow-aidants: #FAD776;
 $blue-green-aidants: #7FB7C0;
 $dark-green-anct: #108670;
 $red-aidants: #EF4056;
+$red-aidants-for-small-text: #e9133e;
+
+$font-stack: "Marianne", arial, sans-serif;
 
 // basic layout -----------------------------------------
 
@@ -23,7 +26,11 @@ svg.previews {
   display: none;
 }
 
-// transverse styles ------------------------------------
+#main {
+  overflow: hidden;
+}
+
+// Accessibility ------------------------------------------------------
 
 :focus-visible {
   background: $off-yellow-aidants;
@@ -31,6 +38,25 @@ svg.previews {
   outline: 2px solid $off-yellow-aidants;
   border-radius: 2px;
 }
+
+// From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034
+
+.sr-only {
+  border: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  -webkit-clip-path: inset(50%) !important;
+  clip-path: inset(50%) !important;
+  height: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  width: 1px !important;
+  white-space: nowrap !important;
+}
+
+// transverse styles ------------------------------------
+
 
 .text-l {
   font-size: 1.5rem;
@@ -40,6 +66,189 @@ svg.previews {
   border: 1px solid $off-yellow-aidants;
   box-sizing: border-box;
   box-shadow: 10px 10px 0 $off-yellow-aidants;
+  padding: 2rem;
+}
+
+h1, .h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: $red-aidants;
+  margin: 2.5rem 0;
+  text-transform: uppercase;
+  line-height: 1.25;
+
+  + .subtitle {
+    font-size: 1.5rem;
+    color: $light-blue-anct;
+  }
+}
+
+h2, .h2 {
+  font-size: 2.25rem;
+  color: $blue-aidants;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 2rem 0;
+
+  + .subtitle {
+    margin-top: -1.5rem;
+    margin-bottom: 2rem;
+  }
+}
+
+h3, .h3 {
+  font-size: 1.5rem;
+  color: $light-blue-anct;
+  font-weight: normal;
+  margin: 2.5rem 0 1.5rem;
+
+  &:first-child, legend + & {
+    margin-top: 0;
+  }
+}
+
+.more-info {
+  font-style: italic;
+  color: $light-blue-anct;
+  margin-top: 4rem;
+
+}
+
+// forms -----------------------------------------------
+
+input[type=text], input[type=number], input[type=email], input[type=tel] {
+  border: 1px solid $light-blue-anct;
+  font-family: $font-stack;
+  font-size: 1rem;
+
+  &:focus {
+    border-color: $off-yellow-aidants;
+    background: $off-yellow-aidants;
+  }
+}
+
+button, .button {
+  padding: .75rem;
+  border: 1px solid $red-aidants;
+  color: $red-aidants;
+  background: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  text-decoration: none;
+  line-height: 1.3;
+  display: inline-block;
+  vertical-align: baseline;
+  margin: 0;
+  font-family: $font-stack;
+
+  &.primary {
+    background: $red-aidants;
+    color: #fff;
+  }
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.form-grid-row {
+  label, input {
+    display: block;
+    width: 100%;
+  }
+}
+
+.form-grid-row.form-grid-row-error {
+  input {
+    border-color: $red-aidants;
+  }
+}
+
+.fr-grid-row--gutters .errors {
+  padding-top: .25rem;
+  padding-bottom: 1.5rem;
+  font-size: .75rem;
+  line-height: 1.25;
+  color: $red-aidants-for-small-text;
+
+  > p {
+    margin: 0;
+  }
+}
+
+.button-box {
+  display: flex;
+  justify-content: space-between;
+
+  > :only-child {
+    margin-left: auto;
+  }
+}
+
+.shadowed .button-box {
+  transform: translateY(4rem);
+}
+
+// habilitation form breadcrumbs -----------------------
+
+.habilitation-breadcrumbs {
+  list-style: none;
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 1px solid $red-aidants;
+  padding: 0;
+  margin: 4rem 0;
+
+  > li {
+    margin: 0;
+    padding: 0 0 2rem;
+    text-align: center;
+    position: relative;
+    transform: translateY(.5rem);
+
+    &:after {
+      content: "";
+      background: #fff;
+      border: 1px solid $red-aidants;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 100%;
+      display: block;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      margin-left: -.5rem;
+    }
+
+    &.active {
+      font-weight: bold;
+      color: $red-aidants;
+
+      &:after {
+        background: $red-aidants;
+      }
+    }
+
+    &:first-child, &:last-child {
+      &:before {
+        content: "";
+        position: absolute;
+        background: white;
+        width: 10rem;
+        height: 1rem;
+        right: 50%;
+        bottom: 0;
+      }
+    }
+
+    &:last-child {
+      &:before {
+        left: 50%;
+      }
+    }
+  }
 }
 
 // header ----------------------------------------------
@@ -67,6 +276,7 @@ svg.previews {
 .header-logo {
   display: flex;
   align-items: center;
+
   &:focus-visible {
     background: $light-aidants;
   }
@@ -143,6 +353,7 @@ footer {
     height: 1.5rem;
     vertical-align: -25%;
   }
+
   a:focus-visible .icon {
     fill: $dark-grey-aidants;
   }

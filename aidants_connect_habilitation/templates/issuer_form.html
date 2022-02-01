@@ -6,12 +6,40 @@
 {% endblock %}
 
 {% block content %}
-<form method="post">
-  {% csrf_token %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Formulaire d’habilitation</h1>
+        <p class="subtitle">
+          Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
+          Faites votre demande en quelques étapes via le formulaire ci-dessous.
+        </p>
+      </div>
+    </div>
+    {% include '_breadcrumbs.html' with step=1 %}
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <form method="post">
+          <h2>Le demandeur</h2>
+          <p class="subtitle">Saisissez ici les détails concernant votre identité.</p>
+          <div class="shadowed">
+            {% csrf_token %}
 
-  {% include "_issuer_form.html" %}
+            {% include "_issuer_form.html" %}
+            <div class="button-box">
+              <button type="submit" class="primary">Valider cette étape</button>
+            </div>
+          </div>
 
-  <input type="submit" value="Valider cette étape">
-</form>
+        </form>
+      </div>
+    </div>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <p class="fr-col more-info">
+        Les informations saisies sont sauvegardées à chaque étape.<br>
+        Vous pouvez revenir plus tard en cliquant sur le lien reçu par e-mail.
+      </p>
+    </div>
+  </div>
 
 {% endblock %}
