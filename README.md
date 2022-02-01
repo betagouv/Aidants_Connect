@@ -1,6 +1,6 @@
 # Aidants Connect
 
-[![CircleCI](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master.svg?style=svg)](https://circleci.com/gh/betagouv/Aidants_Connect/tree/master)
+[![CircleCI](https://circleci.com/gh/betagouv/Aidants_Connect/tree/main.svg?style=svg)](https://circleci.com/gh/betagouv/Aidants_Connect/tree/main)
 
 Aidants Connect est une application web qui propose à des aidants les fonctionnalités suivantes :
 
