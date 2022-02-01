@@ -159,15 +159,17 @@ textarea {
   }
 }
 
-input[type=checkbox] {
+input[type=checkbox], input[type=radio] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   height: 1.5rem;
   width: 1.5rem;
   padding: 0;
+  margin: 0 1rem 0 0;
   position: relative;
   border: 1px solid $light-blue-anct;
+  vertical-align: middle;
 
   &:before {
     transform: scale(0);
@@ -183,6 +185,18 @@ input[type=checkbox] {
   &:checked {
     &:before {
       transform: scale(1);
+    }
+  }
+}
+
+input[type=radio] {
+  border-radius: 100%;
+
+  &:checked {
+    &:before {
+      background: $dark-grey-aidants;
+      border-radius: 100%;
+      border: 4px solid #fff;
     }
   }
 }
@@ -215,9 +229,17 @@ fieldset {
 
 .form-grid-row {
   label:only-child, input {
-    display: block;
     width: 100%;
   }
+
+  input[type=checkbox], input[type=radio] {
+    width: 1.5rem;
+  }
+}
+
+.checkbox-col {
+  display: flex;
+  align-items: center;
 }
 
 .fr-col-md-2.zipcode-container {

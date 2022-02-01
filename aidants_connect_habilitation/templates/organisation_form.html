@@ -59,9 +59,16 @@
 
           {% field_as_fr_grid_row form.siret %}
 
-          <label for="is_private_org">Cochez cette case si vous faites cette demande pour une structure privée (hors
-            associations)</label>
-          <input id="is_private_org" type="checkbox">
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <div class="fr-col-12 checkbox-col">
+              <input id="is_private_org" type="checkbox">
+              <label for="is_private_org">
+                Cochez cette case si vous faites cette demande pour une structure privée<br>
+                (hors associations)
+              </label>
+            </div>
+          </div>
+
 
           <section class="partner-administration">
             {% field_as_fr_grid_row form.partner_administration %}
@@ -76,7 +83,7 @@
 
           <h3>Autres caractéristiques de la structure</h3>
 
-          {% field_as_fr_grid_row form.france_services_label %}
+          {% checkbox_fr_grid_row form.france_services_label %}
 
           <div class="button-box">
             <a class="button" href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">
