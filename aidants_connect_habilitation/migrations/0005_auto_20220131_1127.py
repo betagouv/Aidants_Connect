@@ -43,6 +43,58 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name="organisationrequest",
+            name="manager_email",
+            field=models.EmailField(
+                default=None,
+                max_length=150,
+                null=True,
+                verbose_name="Email du responsable",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="organisationrequest",
+            name="manager_first_name",
+            field=models.CharField(
+                default=None,
+                max_length=150,
+                null=True,
+                verbose_name="Prénom du responsable",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="organisationrequest",
+            name="manager_last_name",
+            field=models.CharField(
+                default=None,
+                max_length=150,
+                null=True,
+                verbose_name="Nom du responsable",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="organisationrequest",
+            name="manager_phone",
+            field=phonenumber_field.modelfields.PhoneNumberField(
+                blank=True,
+                default=None,
+                max_length=128,
+                null=True,
+                region=None,
+                verbose_name="Téléphone du responsable",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="organisationrequest",
+            name="manager_profession",
+            field=models.CharField(
+                default=None,
+                max_length=150,
+                null=True,
+                verbose_name="Profession du responsable",
+            ),
+        ),
         migrations.CreateModel(
             name="DataPrivacyOfficer",
             fields=[
