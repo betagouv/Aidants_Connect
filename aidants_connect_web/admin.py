@@ -565,9 +565,10 @@ class HabilitationRequestResource(resources.ModelResource):
 
 
 class HabilitationRequestImportResource(resources.ModelResource):
-    datapass_id = Field(
+    organisation__data_pass_id = Field(
         attribute="organisation",
         widget=ForeignKeyWidget(Organisation, field="data_pass_id"),
+        column_name="data_pass_id",
     )
     last_name = Field(attribute="last_name")
     first_name = Field(attribute="first_name")
@@ -579,6 +580,7 @@ class HabilitationRequestImportResource(resources.ModelResource):
     class Meta:
         model = HabilitationRequest
         fields = set()
+        import_id_fields = ("email", "organisation__data_pass_id")
 
 
 class HabilitationDepartmentFilter(DepartmentFilter):
