@@ -11,30 +11,63 @@ from aidants_connect.common.constants import (
 )
 from aidants_connect_web.models import OrganisationType
 
+__all__ = [
+    "PersonWithResponsibilities",
+    "Issuer",
+    "DataPrivacyOfficer",
+    "Manager",
+    "OrganisationRequest",
+    "AidantRequest",
+    "RequestMessage",
+]
+
 
 def _new_uuid():
     return uuid4()
 
 
-class Issuer(models.Model):
-    """Model describing the issuer of a habilitation request. The French term is
-    'demandeur'."""
-
+class Person(models.Model):
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
-    email = models.EmailField(max_length=150)
+    email = models.EmailField("Email", max_length=150)
     profession = models.CharField("Profession", blank=False, max_length=150)
-    phone = PhoneNumberField("Téléphone", blank=True)
-
-    issuer_id = models.UUIDField(
-        "Identifiant de demandeur", default=_new_uuid, unique=True
-    )
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
     class Meta:
+        abstract = True
+
+
+class PersonWithResponsibilities(Person):
+    phone = PhoneNumberField("Téléphone", blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class Issuer(PersonWithResponsibilities):
+    """Model describing the issuer of a habilitation request. The French term is
+    'demandeur'."""
+
+    issuer_id = models.UUIDField(
+        "Identifiant de demandeur", default=_new_uuid, unique=True
+    )
+
+    class Meta:
         verbose_name = "Demandeur"
+
+
+class DataPrivacyOfficer(PersonWithResponsibilities):
+    pass
+
+
+class Manager(PersonWithResponsibilities):
+    address = models.TextField("Adresse")
+    zipcode = models.CharField("Code Postal", max_length=10)
+    city = models.CharField("Ville", max_length=255)
+
+    is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
 
 
 class OrganisationRequest(models.Model):
@@ -43,6 +76,24 @@ class OrganisationRequest(models.Model):
         on_delete=models.CASCADE,
         related_name="organisation_requests",
         verbose_name="Demandeur",
+    )
+
+    manager = models.OneToOneField(
+        Manager,
+        on_delete=models.CASCADE,
+        related_name="organisation",
+        verbose_name="Responsable",
+        default=None,
+        null=True,
+    )
+
+    data_privacy_officer = models.OneToOneField(
+        DataPrivacyOfficer,
+        on_delete=models.CASCADE,
+        related_name="organisation",
+        verbose_name="Délégué à la protection des données",
+        default=None,
+        null=True,
     )
 
     draft_id = models.UUIDField(
@@ -100,13 +151,6 @@ class OrganisationRequest(models.Model):
         "Nombre moyen de démarches ou de dossiers traités par semaine"
     )
 
-    # Manager
-    manager_first_name = models.CharField("Prénom du responsable", max_length=150)
-    manager_last_name = models.CharField("Nom du responsable", max_length=150)
-    manager_email = models.EmailField("Email du responsable", max_length=150)
-    manager_profession = models.CharField("Profession du responsable", max_length=150)
-    manager_phone = PhoneNumberField("Téléphone du responsable", blank=True)
-
     # Checkboxes
     cgu = models.BooleanField("J'accepte les CGU")
     dpo = models.BooleanField("Le DPO est informé")
@@ -161,22 +205,27 @@ class OrganisationRequest(models.Model):
                 | (Q(draft_id__isnull=True) & Q(without_elected=True)),
                 name="without_elected_checked",
             ),
+            models.CheckConstraint(
+                check=Q(draft_id__isnull=False)
+                | (Q(draft_id__isnull=True) & Q(manager__isnull=False)),
+                name="manager_set",
+            ),
+            models.CheckConstraint(
+                check=Q(draft_id__isnull=False)
+                | (Q(draft_id__isnull=True) & Q(data_privacy_officer__isnull=False)),
+                name="data_privacy_officer_set",
+            ),
         ]
         verbose_name = "Demande d’habilitation"
         verbose_name_plural = "Demandes d’habilitation"
 
 
-class AidantRequest(models.Model):
+class AidantRequest(Person):
     organisation = models.ForeignKey(
         OrganisationRequest,
         on_delete=models.CASCADE,
         related_name="aidant_requests",
     )
-
-    first_name = models.CharField("Prénom", max_length=150)
-    last_name = models.CharField("Nom", max_length=150)
-    email = models.EmailField("Email", max_length=150)
-    profession = models.CharField("Intitulé du poste", blank=False, max_length=150)
 
     @property
     def is_draft(self):
@@ -185,9 +234,6 @@ class AidantRequest(models.Model):
     @property
     def draft_id(self):
         return self.organisation.draft_id
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
 
     class Meta:
         verbose_name = "aidant à habiliter"

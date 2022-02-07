@@ -3,9 +3,10 @@ from django.urls import reverse
 from django.views.generic import FormView, RedirectView
 
 from aidants_connect_habilitation.forms import (
-    AidantRequestFormSet,
     IssuerForm,
     OrganisationRequestForm,
+    PersonnelForm,
+    ValidationForm,
 )
 from aidants_connect_habilitation.models import Issuer, OrganisationRequest
 
@@ -77,9 +78,9 @@ class ModifyOrganisationRequestFormView(NewOrganisationRequestFormView):
         return {**super().get_form_kwargs(), "instance": self.initial_org_request}
 
 
-class AidantsRequestFormView(RequestDraftView):
-    template_name = "aidants_form.html"
-    form_class = AidantRequestFormSet
+class PersonnelRequestFormView(RequestDraftView):
+    template_name = "personnel_form.html"
+    form_class = PersonnelForm
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -88,10 +89,10 @@ class AidantsRequestFormView(RequestDraftView):
         )
 
     def form_valid(self, form):
-        for sub_form in form.forms:
-            sub_form.instance.organisation = self.organisation
-        form.save()
-        self.organisation.confirm_request()
+        manager, data_privacy_officer, _ = form.save(self.organisation)
+        self.organisation.manager = manager
+        self.organisation.data_privacy_officer = data_privacy_officer
+        self.organisation.save()
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -99,6 +100,20 @@ class AidantsRequestFormView(RequestDraftView):
             **super().get_context_data(**kwargs),
             "issuer": IssuerForm(instance=self.issuer, render_non_editable=True),
         }
+
+    def get_success_url(self):
+        return reverse(
+            "habilitation_validation",
+            kwargs={
+                "issuer_id": str(self.issuer.issuer_id),
+                "draft_id": str(self.organisation.draft_id),
+            },
+        )
+
+
+class ValidationRequestFormView(RequestDraftView):
+    template_name = "validation_form.html"
+    form_class = ValidationForm
 
     def get_success_url(self):
         return reverse("habilitation_new_issuer")
