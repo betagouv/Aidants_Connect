@@ -1,6 +1,13 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.forms import Form, formset_factory, ChoiceField, CharField, BaseFormSet, FileField
+from django.forms import (
+    Form,
+    formset_factory,
+    ChoiceField,
+    CharField,
+    BaseFormSet,
+    FileField,
+)
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
