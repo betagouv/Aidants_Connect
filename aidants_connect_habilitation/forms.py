@@ -20,6 +20,7 @@ from aidants_connect_web.models import OrganisationType
 class IssuerForm(PatchedErrorListForm):
     phone = PhoneNumberField(
         initial="",
+        label="Téléphone",
         region=settings.PHONENUMBER_DEFAULT_REGION,
         widget=PhoneNumberInternationalFallbackWidget(
             region=settings.PHONENUMBER_DEFAULT_REGION
