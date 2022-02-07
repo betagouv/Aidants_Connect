@@ -8,7 +8,48 @@ from aidants_connect_habilitation.forms import (
     PersonnelForm,
     ValidationForm,
 )
-from aidants_connect_habilitation.models import Issuer, OrganisationRequest
+from aidants_connect_habilitation.models import (
+    AidantRequest,
+    Issuer,
+    OrganisationRequest,
+)
+
+
+__all__ = [
+    "NewHabilitationView",
+    "NewIssuerFormView",
+    "ModifyIssuerFormView",
+    "NewOrganisationRequestFormView",
+    "ModifyOrganisationRequestFormView",
+    "PersonnelRequestFormView",
+    "ValidationRequestFormView",
+]
+
+
+"""Mixins"""
+
+
+class RequestDraftView(FormView):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "issuer": self.issuer,
+        }
+
+
+class LateStageRequestDraftView(RequestDraftView):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.organisation = get_object_or_404(
+            OrganisationRequest, draft_id=self.kwargs.get("draft_id")
+        )
+
+
+"""Real views"""
 
 
 class NewHabilitationView(RedirectView):
@@ -42,18 +83,6 @@ class ModifyIssuerFormView(NewIssuerFormView):
         return {**super().get_form_kwargs(), "instance": self.initial_issuer}
 
 
-class RequestDraftView(FormView):
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "issuer": self.issuer,
-        }
-
-
 class NewOrganisationRequestFormView(RequestDraftView):
     template_name = "organisation_form.html"
     form_class = OrganisationRequestForm
@@ -73,26 +102,16 @@ class NewOrganisationRequestFormView(RequestDraftView):
         )
 
 
-class ModifyOrganisationRequestFormView(NewOrganisationRequestFormView):
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.initial_org_request = get_object_or_404(
-            OrganisationRequest, draft_id=self.kwargs.get("draft_id")
-        )
-
+class ModifyOrganisationRequestFormView(
+    LateStageRequestDraftView, NewOrganisationRequestFormView
+):
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "instance": self.initial_org_request}
+        return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(RequestDraftView):
+class PersonnelRequestFormView(LateStageRequestDraftView):
     template_name = "personnel_form.html"
     form_class = PersonnelForm
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.organisation: OrganisationRequest = get_object_or_404(
-            OrganisationRequest, draft_id=self.kwargs.get("draft_id")
-        )
 
     def form_valid(self, form):
         manager, data_privacy_officer, _ = form.save(self.organisation)
@@ -117,9 +136,17 @@ class PersonnelRequestFormView(RequestDraftView):
         )
 
 
-class ValidationRequestFormView(RequestDraftView):
+class ValidationRequestFormView(LateStageRequestDraftView):
     template_name = "validation_form.html"
     form_class = ValidationForm
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "issuer": self.issuer,
+            "organisation": self.organisation,
+            "aidants": AidantRequest.objects.get(organisation=self.organisation),
+        }
 
     def get_success_url(self):
         return reverse("habilitation_new_issuer")

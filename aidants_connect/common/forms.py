@@ -1,4 +1,4 @@
-from django.forms import ModelForm
+from django.forms import Form, ModelForm
 from django.forms.utils import ErrorList
 from django.utils.html import format_html
 
@@ -18,4 +18,11 @@ class PatchedErrorListForm(ModelForm):
     def __init__(self, **kwargs):
         kwargs.setdefault("label_suffix", "")
         kwargs.setdefault("error_class", PatchedErrorList)
+        super().__init__(**kwargs)
+
+
+class PatchedForm(Form):
+    def __init__(self, **kwargs):
+        kwargs.setdefault("error_class", PatchedErrorList)
+        kwargs.setdefault("label_suffix", "")
         super().__init__(**kwargs)
