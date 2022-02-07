@@ -122,6 +122,9 @@ input[type=text], input[type=number], input[type=email], input[type=tel], input[
   font-size: 1rem;
   line-height: 2.25;
   padding: 0 .5rem;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
 
   &:focus {
     border-color: $off-yellow-aidants;
@@ -131,16 +134,19 @@ input[type=text], input[type=number], input[type=email], input[type=tel], input[
 
 select {
   border: 1px solid $light-blue-anct;
+  border-radius: 0;
   font-family: $font-stack;
   font-size: 1rem;
   padding: 0 .5rem;
-  background: #fff;
+  background: #fff url(../img/dropdown.svg) no-repeat 98% 56%;
   max-width: 100%;
   height: 2.25rem;
+  -webkit-appearance: none;
+  appearance: none;
 
   &:focus {
     border-color: $off-yellow-aidants;
-    background: $off-yellow-aidants;
+    background-color: $off-yellow-aidants;
   }
 }
 
