@@ -270,6 +270,12 @@ fieldset {
   }
 }
 
+.help-text {
+  margin-top: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
 .button-box {
   display: flex;
   justify-content: space-between;
@@ -281,6 +287,12 @@ fieldset {
 
 .shadowed .button-box {
   transform: translateY(4rem);
+}
+
+.partner-administration {
+  background: #f2f2f2;
+  padding: 1rem;
+  margin: 1rem 0;
 }
 
 // habilitation form breadcrumbs -----------------------

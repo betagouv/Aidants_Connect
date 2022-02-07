@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.forms import Form, formset_factory, ChoiceField, CharField, BaseFormSet
+from django.forms import Form, formset_factory, ChoiceField, CharField, BaseFormSet, FileField
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
@@ -76,6 +76,17 @@ class OrganisationRequestForm(PatchedErrorListForm):
         error_messages={
             "required": "Le champ « ville » est obligatoire.",
         },
+    )
+
+    partner_administration = CharField(
+        label="Renseignez l’administration avec laquelle vous travaillez",
+        required=False,
+    )
+
+    public_service_delegation_attestation = FileField(
+        label="Téléversez ici une attestation de délégation de service public",
+        help_text="Taille maximale : 2 Mo. Formats supportés : PDF, JPG, PNG.",
+        required=False,
     )
 
     def clean_type(self):
