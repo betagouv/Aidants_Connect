@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Collection
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, TabularInline, SimpleListFilter
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
@@ -16,7 +17,7 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ImportMixin, ExportMixin, ImportExportMixin
+from import_export.admin import ImportMixin, ImportExportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
 from import_export.widgets import ManyToManyWidget, ForeignKeyWidget
@@ -563,6 +564,33 @@ class HabilitationRequestResource(resources.ModelResource):
         fields = set()
 
 
+class HabilitationRequestImportResource(resources.ModelResource):
+    organisation__data_pass_id = Field(
+        attribute="organisation",
+        widget=ForeignKeyWidget(Organisation, field="data_pass_id"),
+        column_name="data_pass_id",
+    )
+    last_name = Field(attribute="last_name")
+    first_name = Field(attribute="first_name")
+    email = Field(attribute="email")
+    profession = Field(attribute="profession")
+    status = Field(attribute="status")
+    origin = Field(attribute="origin")
+
+    def after_import_instance(self, instance, new, row_number=None, **kwargs):
+        if new:
+            instance.is_new = True
+
+    def skip_row(self, instance, original):
+        # do not change existing rows in database
+        return not getattr(instance, "is_new", False)
+
+    class Meta:
+        model = HabilitationRequest
+        fields = set()
+        import_id_fields = ("email", "organisation__data_pass_id")
+
+
 class HabilitationDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisation__zipcode"
 
@@ -571,7 +599,7 @@ class HabilitationRequestRegionFilter(RegionFilter):
     filter_parameter_name = "organisation__zipcode"
 
 
-class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
+class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "email",
         "first_name",
@@ -599,7 +627,12 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
         "organisation__data_pass_id",
     )
     ordering = ("email",)
+
+    # Change resource class if explicit setting is set
     resource_class = HabilitationRequestResource
+    if settings.AC_IMPORT_HABILITATION_REQUESTS:
+        resource_class = HabilitationRequestImportResource
+
     change_list_template = (
         "aidants_connect_web/admin/habilitation_request/change_list.html"
     )
