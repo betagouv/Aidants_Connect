@@ -577,6 +577,14 @@ class HabilitationRequestImportResource(resources.ModelResource):
     status = Field(attribute="status")
     origin = Field(attribute="origin")
 
+    def after_import_instance(self, instance, new, row_number=None, **kwargs):
+        if new:
+            instance.is_new = True
+
+    def skip_row(self, instance, original):
+        # do not change existing rows in database
+        return not getattr(instance, "is_new", False)
+
     class Meta:
         model = HabilitationRequest
         fields = set()
