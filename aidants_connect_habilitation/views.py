@@ -119,6 +119,7 @@ class PersonnelRequestFormView(LateStageRequestDraftView):
         return {
             **super().get_context_data(**kwargs),
             "issuer_form": IssuerForm(instance=self.issuer, render_non_editable=True),
+            "organisation": self.organisation,
         }
 
     def get_success_url(self):

@@ -1,72 +1,94 @@
+{% extends 'layouts/main-habilitation.html' %}
 {% load static form_extras %}
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
+{% block title %}
+  Aidants Connect - Personnes impliquées dans la structure {{ organisation }}
+{% endblock %}
 
-  {{ form.aidants_formset.management_form }}
+{% block content %}
+  <div class="fr-container">
 
-  <section>
-    <h2>Demandeur</h2>
-    {% include "_issuer_form.html" with form=issuer_form %}
-  </section>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Formulaire d’habilitation</h1>
+        <p class="subtitle">
+          Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
+          Faites votre demande en quelques étapes via le formulaire ci-dessous.
+        </p>
+      </div>
+    </div>
+    {% include '_breadcrumbs.html' with step=3 issuer=issuer organisation=organisation %}
 
-  <section>
-    <h2>Responsable Aidants Connect</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
 
-    <fieldset>
-      <legend>Identité</legend>
+      {{ form.aidants_formset.management_form }}
 
-      {% field_as_p form.manager_form.first_name %}
-      {% field_as_p form.manager_form.last_name %}
-      {% field_as_p form.manager_form.profession %}
-    </fieldset>
+      <section>
+        <h2>Demandeur</h2>
+        {% include "_issuer_form.html" with form=issuer_form %}
+      </section>
 
-    <fieldset>
-      <legend>Contact</legend>
+      <section>
+        <h2>Responsable Aidants Connect</h2>
 
-      {% field_as_p form.manager_form.phone %}
-      {% field_as_p form.manager_form.email %}
-      {% field_as_p form.manager_form.address %}
+        <fieldset>
+          <legend>Identité</legend>
 
-      {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
-        {{ errors }}
-      {% endwith %}
-      <p>
-        <label for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
-        <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
-        {{ form.manager_form.zipcode }}{{ form.manager_form.city }}
-      </p>
+          {% field_as_p form.manager_form.first_name %}
+          {% field_as_p form.manager_form.last_name %}
+          {% field_as_p form.manager_form.profession %}
+        </fieldset>
 
-      {% field_as_p form.manager_form.is_aidant %}
-    </fieldset>
-  </section>
+        <fieldset>
+          <legend>Contact</legend>
 
-  <section>
-    <h2>Délégué à la protection des données <span>— Facultatif</span></h2>
+          {% field_as_p form.manager_form.phone %}
+          {% field_as_p form.manager_form.email %}
+          {% field_as_p form.manager_form.address %}
 
-    <fieldset>
-      <legend>Identité</legend>
+          {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
+            {{ errors }}
+          {% endwith %}
+          <p>
+            <label for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
+            <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
+            {{ form.manager_form.zipcode }}{{ form.manager_form.city }}
+          </p>
 
-      {% field_as_p form.data_privacy_officer_form.first_name %}
-      {% field_as_p form.data_privacy_officer_form.last_name %}
-      {% field_as_p form.data_privacy_officer_form.profession %}
-    </fieldset>
+          {% field_as_p form.manager_form.is_aidant %}
+        </fieldset>
+      </section>
 
-    <fieldset>
-      <legend>Contact</legend>
+      <section>
+        <h2>Délégué à la protection des données <span>— Facultatif</span></h2>
 
-      {% field_as_p form.data_privacy_officer_form.phone %}
-      {% field_as_p form.data_privacy_officer_form.email %}
-    </fieldset>
-  </section>
+        <fieldset>
+          <legend>Identité</legend>
 
-  {% for aidant_form in form.aidants_formset %}
-    <section>
-      <h2>Aidant</h2>
-      {% include "aidant_form.html" with form=aidant_form %}
-    </section>
-  {% endfor %}
+          {% field_as_p form.data_privacy_officer_form.first_name %}
+          {% field_as_p form.data_privacy_officer_form.last_name %}
+          {% field_as_p form.data_privacy_officer_form.profession %}
+        </fieldset>
 
-  <input type="submit" value="Valider cette étape">
-</form>
+        <fieldset>
+          <legend>Contact</legend>
+
+          {% field_as_p form.data_privacy_officer_form.phone %}
+          {% field_as_p form.data_privacy_officer_form.email %}
+        </fieldset>
+      </section>
+
+      {% for aidant_form in form.aidants_formset %}
+        <section>
+          <h2>Aidant</h2>
+          {% include "aidant_form.html" with form=aidant_form %}
+        </section>
+      {% endfor %}
+
+      <input type="submit" value="Valider cette étape">
+    </form>
+
+  </div>
+{% endblock %}
