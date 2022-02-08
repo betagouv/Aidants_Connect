@@ -9,7 +9,7 @@ from django.forms import (
     FileField,
 )
 from django.urls import reverse
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
@@ -226,10 +226,8 @@ class PersonnelForm:
 class ValidationForm(PatchedForm):
     cgu = BooleanField(
         required=True,
-        label=mark_safe(
-            f"""J’ai pris connaissance des <a href="{reverse('cgu')}">conditions """
-            "générales d’utilisation</a> et je les valide."
-        ),
+        label='J’ai pris connaissance des <a href="{url}">'
+        "conditions générales d’utilisation</a> et je les valide.",
     )
     dpo = BooleanField(
         required=True,
@@ -248,3 +246,8 @@ class ValidationForm(PatchedForm):
         "Aidants Connect. Le responsable Aidants Connect ainsi que les aidants "
         "à habiliter ne sont pas des élus.",
     )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        cgu = self["cgu"]
+        cgu.label = format_html(cgu.label, url=reverse("cgu"))

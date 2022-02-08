@@ -9,7 +9,6 @@ from aidants_connect_habilitation.forms import (
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
-    AidantRequest,
     Issuer,
     OrganisationRequest,
 )
@@ -45,7 +44,7 @@ class LateStageRequestDraftView(RequestDraftView):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = get_object_or_404(
-            OrganisationRequest, draft_id=self.kwargs.get("draft_id")
+            OrganisationRequest, draft_id=kwargs.get("draft_id")
         )
 
 
