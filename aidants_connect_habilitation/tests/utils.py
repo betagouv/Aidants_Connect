@@ -49,7 +49,7 @@ def _(form_cls: Type[BaseFormSet], **kwargs) -> BaseFormSet:
         subdata = {f"form-{i}-{k}": v for (k, v) in subform.clean().items()}
         data.update(subdata)
 
-    form = formset_cls(data)
+    form = formset_cls(data=data)
 
     if not form.is_valid():
         raise ValueError(str(form.errors))

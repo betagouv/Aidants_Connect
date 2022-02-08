@@ -1,18 +1,24 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import (
-    Form,
     formset_factory,
     ChoiceField,
     CharField,
     BaseFormSet,
+    BooleanField,
     FileField,
 )
+from django.urls import reverse
+from django.utils.html import format_html
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from aidants_connect.common.constants import RequestOriginConstants
-from aidants_connect.common.forms import PatchedErrorListForm, PatchedErrorList
+from aidants_connect.common.forms import (
+    PatchedErrorListForm,
+    PatchedErrorList,
+    PatchedForm,
+)
 from aidants_connect_habilitation import models
 from aidants_connect_habilitation.models import (
     AidantRequest,
@@ -36,6 +42,7 @@ class IssuerForm(PatchedErrorListForm):
     )
 
     def __init__(self, render_non_editable=False, **kwargs):
+        kwargs.setdefault("label_suffix", "")
         super().__init__(**kwargs)
         self.render_non_editable = render_non_editable
         if self.render_non_editable:
@@ -168,19 +175,9 @@ class AidantRequestForm(PatchedErrorListForm):
 
 
 class BaseAidantRequestFormSet(BaseFormSet):
-    def __init__(
-        self,
-        data=None,
-        files=None,
-        auto_id="id_%s",
-        prefix=None,
-        initial=None,
-        error_class=PatchedErrorList,
-        form_kwargs=None,
-    ):
-        super().__init__(
-            data, files, auto_id, prefix, initial, error_class, form_kwargs
-        )
+    def __init__(self, **kwags):
+        kwags.setdefault("error_class", PatchedErrorList)
+        super().__init__(**kwags)
 
     def save(self, organisation: OrganisationRequest, commit=True):
         result = []
@@ -226,5 +223,31 @@ class PersonnelForm:
         )
 
 
-class ValidationForm(Form):
-    pass
+class ValidationForm(PatchedForm):
+    cgu = BooleanField(
+        required=True,
+        label='J’ai pris connaissance des <a href="{url}">'
+        "conditions générales d’utilisation</a> et je les valide.",
+    )
+    dpo = BooleanField(
+        required=True,
+        label="Je confirme que le délégué à la protection des données "
+        "de mon organisation est informé de ma demande.",
+    )
+    professionals_only = BooleanField(
+        required=True,
+        label="Je confirme que la liste des aidants à habiliter contient "
+        "exclusivement des aidants professionnels. Elle ne contient "
+        "donc ni service civique, ni bénévole, ni apprenti, ni stagiaire.",
+    )
+    without_elected = BooleanField(
+        required=True,
+        label="Je confirme qu’aucun élu n’est impliqué dans l’habilitation "
+        "Aidants Connect. Le responsable Aidants Connect ainsi que les aidants "
+        "à habiliter ne sont pas des élus.",
+    )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        cgu = self["cgu"]
+        cgu.label = format_html(cgu.label, url=reverse("cgu"))
