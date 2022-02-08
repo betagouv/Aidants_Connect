@@ -234,7 +234,7 @@ class ValidationForm(PatchedForm):
     dpo = BooleanField(
         required=True,
         label="Je confirme que le délégué à la protection des données "
-        "de mon organisation est informé de ma demande",
+        "de mon organisation est informé de ma demande.",
     )
     professionals_only = BooleanField(
         required=True,
@@ -245,5 +245,6 @@ class ValidationForm(PatchedForm):
     without_elected = BooleanField(
         required=True,
         label="Je confirme qu’aucun élu n’est impliqué dans l’habilitation "
-        "Aidants Connect ainsi que les aidants à habiliter de sont pas des élus.",
+        "Aidants Connect. Le responsable Aidants Connect ainsi que les aidants "
+        "à habiliter ne sont pas des élus.",
     )

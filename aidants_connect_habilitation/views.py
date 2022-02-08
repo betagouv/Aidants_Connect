@@ -145,7 +145,7 @@ class ValidationRequestFormView(LateStageRequestDraftView):
             **super().get_context_data(**kwargs),
             "issuer": self.issuer,
             "organisation": self.organisation,
-            "aidants": AidantRequest.objects.get(organisation=self.organisation),
+            "aidants": self.organisation.aidant_requests,
         }
 
     def get_success_url(self):
