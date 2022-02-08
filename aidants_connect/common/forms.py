@@ -15,30 +15,7 @@ class PatchedErrorList(ErrorList):
 
 
 class PatchedErrorListForm(ModelForm):
-    def __init__(
-        self,
-        data=None,
-        files=None,
-        auto_id="id_%s",
-        prefix=None,
-        initial=None,
-        error_class=PatchedErrorList,
-        label_suffix=None,
-        empty_permitted=False,
-        instance=None,
-        use_required_attribute=None,
-        renderer=None,
-    ):
-        super().__init__(
-            data,
-            files,
-            auto_id,
-            prefix,
-            initial,
-            error_class,
-            label_suffix,
-            empty_permitted,
-            instance,
-            use_required_attribute,
-            renderer,
-        )
+    def __init__(self, **kwargs):
+        kwargs.setdefault("label_suffix", "")
+        kwargs.setdefault("error_class", PatchedErrorList)
+        super().__init__(**kwargs)

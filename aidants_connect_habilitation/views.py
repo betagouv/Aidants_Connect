@@ -47,6 +47,12 @@ class RequestDraftView(FormView):
         super().setup(request, *args, **kwargs)
         self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
 
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "issuer": self.issuer,
+        }
+
 
 class NewOrganisationRequestFormView(RequestDraftView):
     template_name = "organisation_form.html"
@@ -98,7 +104,7 @@ class PersonnelRequestFormView(RequestDraftView):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            "issuer": IssuerForm(instance=self.issuer, render_non_editable=True),
+            "issuer_form": IssuerForm(instance=self.issuer, render_non_editable=True),
         }
 
     def get_success_url(self):

@@ -116,14 +116,94 @@ h3, .h3 {
 
 // forms -----------------------------------------------
 
-input[type=text], input[type=number], input[type=email], input[type=tel] {
+input[type=text], input[type=number], input[type=email], input[type=tel], input[type=url] {
   border: 1px solid $light-blue-anct;
   font-family: $font-stack;
   font-size: 1rem;
+  line-height: 2.25;
+  padding: 0 .5rem;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
 
   &:focus {
     border-color: $off-yellow-aidants;
     background: $off-yellow-aidants;
+  }
+}
+
+select {
+  border: 1px solid $light-blue-anct;
+  border-radius: 0;
+  font-family: $font-stack;
+  font-size: 1rem;
+  padding: 0 .5rem;
+  background: #fff url(../img/dropdown.svg) no-repeat 98% 56%;
+  max-width: 100%;
+  height: 2.25rem;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &:focus {
+    border-color: $off-yellow-aidants;
+    background-color: $off-yellow-aidants;
+  }
+}
+
+textarea {
+  border: 1px solid $light-blue-anct;
+  background: #fff;
+  width: 100%;
+  resize: vertical;
+  font-family: $font-stack;
+  padding: .5rem;
+  line-height: 1.25;
+
+  &:focus {
+    border-color: $off-yellow-aidants;
+    background: $off-yellow-aidants;
+  }
+}
+
+input[type=checkbox], input[type=radio] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 1.5rem;
+  width: 1.5rem;
+  padding: 0;
+  margin: 0 1rem 0 0;
+  position: relative;
+  border: 1px solid $light-blue-anct;
+  vertical-align: middle;
+
+  &:before {
+    transform: scale(0);
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: url('../img/x.svg') 50% no-repeat;
+  }
+
+  &:checked {
+    &:before {
+      transform: scale(1);
+    }
+  }
+}
+
+input[type=radio] {
+  border-radius: 100%;
+
+  &:checked {
+    &:before {
+      background: $dark-grey-aidants;
+      border-radius: 100%;
+      border: 4px solid #fff;
+    }
   }
 }
 
@@ -154,10 +234,22 @@ fieldset {
 }
 
 .form-grid-row {
-  label, input {
-    display: block;
+  label:only-child, input {
     width: 100%;
   }
+
+  input[type=checkbox], input[type=radio] {
+    width: 1.5rem;
+  }
+}
+
+.checkbox-col {
+  display: flex;
+  align-items: center;
+}
+
+.fr-col-md-2.zipcode-container {
+  padding-right: 0;
 }
 
 .form-grid-row.form-grid-row-error {
@@ -178,6 +270,12 @@ fieldset {
   }
 }
 
+.help-text {
+  margin-top: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
 .button-box {
   display: flex;
   justify-content: space-between;
@@ -189,6 +287,12 @@ fieldset {
 
 .shadowed .button-box {
   transform: translateY(4rem);
+}
+
+.partner-administration {
+  background: #f2f2f2;
+  padding: 1rem;
+  margin: 1rem 0;
 }
 
 // habilitation form breadcrumbs -----------------------
@@ -207,6 +311,16 @@ fieldset {
     text-align: center;
     position: relative;
     transform: translateY(.5rem);
+
+    a {
+      text-decoration: none;
+      color: $dark-grey-aidants;
+
+      &:hover {
+        box-shadow: 0 .5rem 0 $off-yellow-aidants;
+        color: $red-aidants;
+      }
+    }
 
     &:after {
       content: "";
@@ -303,7 +417,7 @@ fieldset {
     }
 
     &:hover {
-      box-shadow: 0 8px 0 $off-yellow-aidants;
+      box-shadow: 0 .5rem 0 $off-yellow-aidants;
     }
   }
 }

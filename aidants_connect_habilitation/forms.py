@@ -1,6 +1,13 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.forms import Form, formset_factory, ChoiceField, CharField, BaseFormSet
+from django.forms import (
+    Form,
+    formset_factory,
+    ChoiceField,
+    CharField,
+    BaseFormSet,
+    FileField,
+)
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
@@ -29,7 +36,6 @@ class IssuerForm(PatchedErrorListForm):
     )
 
     def __init__(self, render_non_editable=False, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(**kwargs)
         self.render_non_editable = render_non_editable
         if self.render_non_editable:
@@ -60,6 +66,10 @@ class IssuerForm(PatchedErrorListForm):
 class OrganisationRequestForm(PatchedErrorListForm):
     type = ChoiceField(required=True, choices=RequestOriginConstants.choices)
 
+    name = CharField(
+        label="Nom de la structure",
+    )
+
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
@@ -73,6 +83,17 @@ class OrganisationRequestForm(PatchedErrorListForm):
         error_messages={
             "required": "Le champ « ville » est obligatoire.",
         },
+    )
+
+    partner_administration = CharField(
+        label="Renseignez l’administration avec laquelle vous travaillez",
+        required=False,
+    )
+
+    public_service_delegation_attestation = FileField(
+        label="Téléversez ici une attestation de délégation de service public",
+        help_text="Taille maximale : 2 Mo. Formats supportés : PDF, JPG, PNG.",
+        required=False,
     )
 
     def clean_type(self):
