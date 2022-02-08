@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib import messages as django_messages
 from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
 from django.db.models import Q, QuerySet, SET_NULL, CASCADE, Value
@@ -32,6 +33,23 @@ from aidants_connect_web.utilities import (
 
 
 logger = logging.getLogger()
+
+
+def delete_mandats_and_clean_journal(item, str_today):
+
+    for mandat in item.mandats.all():
+        entries = Journal.objects.filter(mandat=mandat)
+        mandat_str_add_inf = (
+            f"Added by clean_journal_entries_and_delete_mandats :"
+            f"\n Relatif au mandat supprimé {mandat} le {str_today}"
+        )
+        entries.update(
+            mandat=None,
+            additional_information=Concat(
+                "additional_information", Value(mandat_str_add_inf)
+            ),
+        )
+        mandat.delete()
 
 
 class OrganisationType(models.Model):
@@ -116,6 +134,36 @@ class Organisation(models.Model):
     def activate_organisation(self):
         self.is_active = True
         self.save()
+
+    def clean_journal_entries_and_delete_mandats(self, request=None):
+        today = timezone.now()
+        str_today = today.strftime("%d/%m/%Y à %Hh%M")
+        delete_mandats_and_clean_journal(self, str_today)
+
+        # we need migrate aidants before delete organisations
+        if self.aidants.count() > 0:
+            if request:
+                django_messages.error(
+                    request,
+                    "Vous ne pouvez pas supprimer une organisation avec des aidants.",
+                )
+            return False
+
+        entries = Journal.objects.filter(organisation=self)
+
+        organisation_str_add_inf = (
+            f"Add by clean_journal_entries_and_delete_mandats :"
+            f"\n Relatif à l'organisation supprimée {self.name} "
+            f"{self.data_pass_id}  {self.type} "
+            f"{self.siret} le {str_today}"
+        )
+        entries.update(
+            organisation=None,
+            additional_information=Concat(
+                "additional_information", Value(organisation_str_add_inf)
+            ),
+        )
+        return True
 
 
 class AidantManager(UserManager):
@@ -568,22 +616,10 @@ class Usager(models.Model):
 
         return self.birthplace
 
-    def clean_journal_entries_and_delete_mandats(self):
+    def clean_journal_entries_and_delete_mandats(self, request=None):
         today = timezone.now()
         str_today = today.strftime("%d/%m/%Y à %Hh%M")
-        for mandat in self.mandats.all():
-            entries = Journal.objects.filter(mandat=mandat)
-            manda_str_add_inf = (
-                f"Added by clean_journal_entries_and_delete_mandats :"
-                f"\n Relatif au mandat supprimé {mandat} le {str_today}"
-            )
-            entries.update(
-                mandat=None,
-                additional_information=Concat(
-                    "additional_information", Value(manda_str_add_inf)
-                ),
-            )
-            mandat.delete()
+        delete_mandats_and_clean_journal(self, str_today)
 
         entries = Journal.objects.filter(usager=self)
 
@@ -599,7 +635,7 @@ class Usager(models.Model):
                 "additional_information", Value(usager_str_add_inf)
             ),
         )
-        entries.delete()
+        return True
 
     def has_all_mandats_revoked_or_expired_over_a_year(self):
         for mandat in self.mandats.all():
@@ -1075,7 +1111,10 @@ class Journal(models.Model):
     )
 
     organisation = models.ForeignKey(
-        Organisation, on_delete=models.PROTECT, related_name="journal_entries"
+        Organisation,
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="journal_entries",
     )
 
     objects = JournalQuerySet.as_manager()
