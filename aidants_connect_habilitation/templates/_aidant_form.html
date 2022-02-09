@@ -1,0 +1,15 @@
+{% load static form_extras %}
+
+<fieldset>
+  <legend>Identité</legend>
+
+  {% field_as_fr_grid_row form.first_name %}
+  {% field_as_fr_grid_row form.last_name %}
+  {% field_as_fr_grid_row form.profession %}
+</fieldset>
+<fieldset>
+  <legend>Contact</legend>
+
+  {% field_as_fr_grid_row form.phone %}
+  {% field_as_fr_grid_row form.email %}
+</fieldset>

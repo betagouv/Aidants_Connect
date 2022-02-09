@@ -18,77 +18,98 @@
       </div>
     </div>
     {% include '_breadcrumbs.html' with step=3 issuer=issuer organisation=organisation %}
+    <h2>Personnes impliquées</h2>
 
     <form method="post">
       {% csrf_token %}
       {{ form.non_field_errors }}
 
       {{ form.aidants_formset.management_form }}
+      <h3>Responsables</h3>
 
-      <section>
-        <h2>Demandeur</h2>
-        {% include "_issuer_form.html" with form=issuer_form %}
-      </section>
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <section class="shadowed">
+            <h4>Demandeur</h4>
+            {% include "_issuer_form.html" with form=issuer_form %}
+          </section>
+        </div>
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <section class="shadowed">
+            <h4>Responsable Aidants Connect</h4>
 
-      <section>
-        <h2>Responsable Aidants Connect</h2>
+            <fieldset>
+              <legend class="sr-only">Responsable Aidants Connect</legend>
+              <h5 class="h3">Identité</h5>
+              {% field_as_fr_grid_row form.manager_form.first_name %}
+              {% field_as_fr_grid_row form.manager_form.last_name %}
+              {% field_as_fr_grid_row form.manager_form.profession %}
 
-        <fieldset>
-          <legend>Identité</legend>
+              <h5 class="h3">Contact</h5>
 
-          {% field_as_p form.manager_form.first_name %}
-          {% field_as_p form.manager_form.last_name %}
-          {% field_as_p form.manager_form.profession %}
-        </fieldset>
+              {% field_as_fr_grid_row form.manager_form.phone %}
+              {% field_as_fr_grid_row form.manager_form.email %}
+              {% field_as_fr_grid_row form.manager_form.address %}
 
-        <fieldset>
-          <legend>Contact</legend>
+              {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
+                {{ errors }}
+              {% endwith %}
+              <p>
+                <label for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
+                <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
+                {{ form.manager_form.zipcode }}{{ form.manager_form.city }}
+              </p>
 
-          {% field_as_p form.manager_form.phone %}
-          {% field_as_p form.manager_form.email %}
-          {% field_as_p form.manager_form.address %}
+              {% field_as_fr_grid_row form.manager_form.is_aidant %}
+            </fieldset>
+          </section>
+        </div>
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <section class="shadowed">
+            <h4>Délégué à la protection des données <span>— Facultatif</span></h4>
 
-          {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
-            {{ errors }}
-          {% endwith %}
-          <p>
-            <label for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
-            <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
-            {{ form.manager_form.zipcode }}{{ form.manager_form.city }}
-          </p>
+            <fieldset>
+              <legend class="sr-only">Délégué à la protection des données - facultatif</legend>
+              <h5 class="h3">Identité</h5>
+              {% field_as_fr_grid_row form.data_privacy_officer_form.first_name %}
+              {% field_as_fr_grid_row form.data_privacy_officer_form.last_name %}
+              {% field_as_fr_grid_row form.data_privacy_officer_form.profession %}
+              <h5 class="h3">Contact</h5>
+              {% field_as_fr_grid_row form.data_privacy_officer_form.phone %}
+              {% field_as_fr_grid_row form.data_privacy_officer_form.email %}
+            </fieldset>
+          </section>
+        </div>
+      </div>
 
-          {% field_as_p form.manager_form.is_aidant %}
-        </fieldset>
-      </section>
 
-      <section>
-        <h2>Délégué à la protection des données <span>— Facultatif</span></h2>
+      <h3>Aidants</h3>
+      <div class="fr-grid-row fr-grid-row--gutters">
+        {% for aidant_form in form.aidants_formset %}
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <section class="shadowed">
+              <h4>Aidant</h4>
+              {% include "_aidant_form.html" with form=aidant_form %}
+            </section>
+          </div>
+        {% endfor %}
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <section class="shadowed grey">
+            Ajouter un aidant
+          </section>
+        </div>
+      </div>
 
-        <fieldset>
-          <legend>Identité</legend>
-
-          {% field_as_p form.data_privacy_officer_form.first_name %}
-          {% field_as_p form.data_privacy_officer_form.last_name %}
-          {% field_as_p form.data_privacy_officer_form.profession %}
-        </fieldset>
-
-        <fieldset>
-          <legend>Contact</legend>
-
-          {% field_as_p form.data_privacy_officer_form.phone %}
-          {% field_as_p form.data_privacy_officer_form.email %}
-        </fieldset>
-      </section>
-
-      {% for aidant_form in form.aidants_formset %}
-        <section>
-          <h2>Aidant</h2>
-          {% include "aidant_form.html" with form=aidant_form %}
-        </section>
-      {% endfor %}
-
-      <input type="submit" value="Valider cette étape">
+      <div class="button-box">
+        <a class="button"
+           href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+          Revenir à l’étape précédente
+        </a>
+        <button type="submit" class="primary">Valider cette étape</button>
+      </div>
     </form>
+
+    {% include "_more-info.html" %}
 
   </div>
 {% endblock %}
