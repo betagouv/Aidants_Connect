@@ -97,7 +97,13 @@ def new_mandat(request):
 @user_is_aidant
 @activity_required
 def new_mandat_recap(request):
-    connection = Connection.objects.get(pk=request.session["connection"])
+    connection_id = request.session.get("connection")
+    if not connection_id:
+        log.error("No connection id found in session")
+        return redirect("espace_aidant_home")
+
+    connection = Connection.objects.get(pk=connection_id)
+
     aidant = request.user
     usager = connection.usager
     demarches_description = [
@@ -209,7 +215,12 @@ def new_mandat_recap(request):
 @user_is_aidant
 @activity_required
 def new_mandat_success(request):
-    connection = Connection.objects.get(pk=request.session["connection"])
+    connection_id = request.session.get("connection")
+    if not connection_id:
+        log.error("No connection id found in session")
+        return redirect("espace_aidant_home")
+
+    connection = Connection.objects.get(pk=connection_id)
     aidant = request.user
     usager = connection.usager
 
@@ -224,7 +235,12 @@ def new_mandat_success(request):
 @user_is_aidant
 @activity_required
 def attestation_projet(request):
-    connection = Connection.objects.get(pk=request.session["connection"])
+    connection_id = request.session.get("connection")
+    if not connection_id:
+        log.error("No connection id found in session")
+        return redirect("espace_aidant_home")
+
+    connection = Connection.objects.get(pk=connection_id)
     aidant = request.user
     usager = connection.usager
     demarches = connection.demarches
@@ -251,7 +267,13 @@ def attestation_projet(request):
 @user_is_aidant
 @activity_required
 def attestation_final(request):
-    connection = Connection.objects.get(pk=request.session["connection"])
+    connection_id = request.session.get("connection")
+    if not connection_id:
+        log.error("No connection id found in session")
+        return redirect("espace_aidant_home")
+
+    connection = Connection.objects.get(pk=connection_id)
+
     aidant: Aidant = request.user
     usager = connection.usager
     demarches = connection.demarches
