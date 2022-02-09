@@ -41,15 +41,15 @@
             <fieldset>
               <legend class="sr-only">Responsable Aidants Connect</legend>
               <h5 class="h3">Identité</h5>
-              {% field_as_fr_grid_row form.manager_form.first_name %}
-              {% field_as_fr_grid_row form.manager_form.last_name %}
-              {% field_as_fr_grid_row form.manager_form.profession %}
+              {% field_as_narrow_fr_grid_row form.manager_form.first_name %}
+              {% field_as_narrow_fr_grid_row form.manager_form.last_name %}
+              {% field_as_narrow_fr_grid_row form.manager_form.profession %}
 
               <h5 class="h3">Contact</h5>
 
-              {% field_as_fr_grid_row form.manager_form.phone %}
-              {% field_as_fr_grid_row form.manager_form.email %}
-              {% field_as_fr_grid_row form.manager_form.address %}
+              {% field_as_narrow_fr_grid_row form.manager_form.phone %}
+              {% field_as_narrow_fr_grid_row form.manager_form.email %}
+              {% field_as_narrow_fr_grid_row form.manager_form.address %}
 
               {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
                 {{ errors }}
@@ -60,7 +60,7 @@
                 {{ form.manager_form.zipcode }}{{ form.manager_form.city }}
               </p>
 
-              {% field_as_fr_grid_row form.manager_form.is_aidant %}
+              {% field_as_narrow_fr_grid_row form.manager_form.is_aidant %}
             </fieldset>
           </section>
         </div>
@@ -71,12 +71,12 @@
             <fieldset>
               <legend class="sr-only">Délégué à la protection des données - facultatif</legend>
               <h5 class="h3">Identité</h5>
-              {% field_as_fr_grid_row form.data_privacy_officer_form.first_name %}
-              {% field_as_fr_grid_row form.data_privacy_officer_form.last_name %}
-              {% field_as_fr_grid_row form.data_privacy_officer_form.profession %}
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.first_name %}
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.last_name %}
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.profession %}
               <h5 class="h3">Contact</h5>
-              {% field_as_fr_grid_row form.data_privacy_officer_form.phone %}
-              {% field_as_fr_grid_row form.data_privacy_officer_form.email %}
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.phone %}
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.email %}
             </fieldset>
           </section>
         </div>

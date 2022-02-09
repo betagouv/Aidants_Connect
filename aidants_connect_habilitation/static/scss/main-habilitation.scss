@@ -333,6 +333,19 @@ fieldset {
   }
 }
 
+@media (min-width: $bp-lg) {
+  .form-grid-row-narrow {
+    .fr-col-md-5 {
+      padding-bottom: .25rem;
+    }
+
+    .fr-col-md-7 {
+      padding-top: 0;
+    }
+  }
+
+}
+
 // habilitation form breadcrumbs -----------------------
 
 .habilitation-breadcrumbs {
