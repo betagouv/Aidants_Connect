@@ -30,7 +30,7 @@ def _new_uuid():
 class Person(models.Model):
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
-    email = models.EmailField("Email", max_length=150)
+    email = models.EmailField("Email nominatif", max_length=150)
     profession = models.CharField("Profession", blank=False, max_length=150)
 
     def __str__(self):

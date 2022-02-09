@@ -20,7 +20,7 @@
     {% include '_breadcrumbs.html' with step=3 issuer=issuer organisation=organisation %}
     <h2>Personnes impliquées</h2>
 
-    <form method="post">
+    <form method="post" class="form-in-3-cols">
       {% csrf_token %}
       {{ form.non_field_errors }}
 
@@ -30,13 +30,13 @@
       <div class="fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <section class="shadowed">
-            <h4>Demandeur</h4>
+            <h4 class="h2">Demandeur</h4>
             {% include "_issuer_form.html" with form=issuer_form %}
           </section>
         </div>
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <section class="shadowed">
-            <h4>Responsable Aidants Connect</h4>
+            <h4 class="h2">Responsable Aidants Connect</h4>
 
             <fieldset>
               <legend class="sr-only">Responsable Aidants Connect</legend>
@@ -66,7 +66,7 @@
         </div>
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <section class="shadowed">
-            <h4>Délégué à la protection des données <span>— Facultatif</span></h4>
+            <h4 class="h2">Délégué à la protection des données <span>— Facultatif</span></h4>
 
             <fieldset>
               <legend class="sr-only">Délégué à la protection des données - facultatif</legend>
@@ -88,7 +88,7 @@
         {% for aidant_form in form.aidants_formset %}
           <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
             <section class="shadowed">
-              <h4>Aidant</h4>
+              <h4 class="h2">Aidant</h4>
               {% include "_aidant_form.html" with form=aidant_form %}
             </section>
           </div>

@@ -81,6 +81,10 @@ h1, .h1 {
     font-size: 1.5rem;
     color: $light-blue-anct;
   }
+
+  &:first-child, legend + & {
+    margin-top: 0;
+  }
 }
 
 h2, .h2 {
@@ -89,10 +93,15 @@ h2, .h2 {
   font-weight: bold;
   text-transform: uppercase;
   margin: 2rem 0;
+  line-height: 1.25;
 
   + .subtitle {
     margin-top: -1.5rem;
     margin-bottom: 2rem;
+  }
+
+  &:first-child, legend + & {
+    margin-top: 0;
   }
 }
 
@@ -101,6 +110,7 @@ h3, .h3 {
   color: $light-blue-anct;
   font-weight: normal;
   margin: 2.5rem 0 1.5rem;
+  line-height: 1.25;
 
   &:first-child, legend + & {
     margin-top: 0;
@@ -293,6 +303,14 @@ fieldset {
   background: #f2f2f2;
   padding: 1rem;
   margin: 1rem 0;
+}
+
+.form-in-3-cols {
+  .shadowed {
+    .h2, .h3 {
+      font-size: 1.125rem;
+    }
+  }
 }
 
 // habilitation form breadcrumbs -----------------------
