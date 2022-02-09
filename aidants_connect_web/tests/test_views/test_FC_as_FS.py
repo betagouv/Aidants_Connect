@@ -335,6 +335,18 @@ class GetUserInfoTests(TestCase):
         self.assertIn("The FranceConnect ID is not complete:", error)
 
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
+    def test_empty_response_does_not_fail_badly(self, mock_get):
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.content = "content"
+        mock_response.json = mock.Mock(return_value={})
+        mock_get.return_value = mock_response
+        usager, error = get_user_info(self.connection)
+
+        self.assertIsNone(usager)
+        self.assertIn("Unable to find sub in FC user info", error)
+
+    @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.get")
     def test_formatted_new_user_without_birthplace_outputs_usager(self, mock_get):
         mock_response = mock.Mock()
         mock_response.status_code = 200

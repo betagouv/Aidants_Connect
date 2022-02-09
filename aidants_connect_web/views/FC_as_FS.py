@@ -182,8 +182,12 @@ def get_user_info(connection: Connection) -> tuple:
     if user_info.get("birthplace") == "":
         user_info["birthplace"] = None
 
+    user_sub = user_info.get("sub")
+    if not user_sub:
+        return None, "Unable to find sub in FC user info"
+
     usager_sub = generate_sha256_hash(
-        f"{user_info['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
+        f"{user_sub}{settings.FC_AS_FI_HASH_SALT}".encode()
     )
 
     try:
