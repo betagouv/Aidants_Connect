@@ -11,6 +11,14 @@ $red-aidants-for-small-text: #e9133e;
 
 $font-stack: "Marianne", arial, sans-serif;
 
+// break points -----------------------------------------
+
+$bp-xs: 20em;
+$bp-sm: 36em;
+$bp-md: 48em;
+$bp-lg: 62em;
+$bp-xl: 78em;
+
 // basic layout -----------------------------------------
 
 html, body {
@@ -309,6 +317,18 @@ fieldset {
   .shadowed {
     .h2, .h3 {
       font-size: 1.125rem;
+    }
+  }
+}
+
+@media (max-width: $bp-md) {
+  .form-grid-row {
+    .fr-col-md-5 {
+      padding-bottom: .25rem;
+    }
+
+    .fr-col-md-7 {
+      padding-top: 0;
     }
   }
 }
