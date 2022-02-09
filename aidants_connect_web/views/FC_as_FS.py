@@ -4,17 +4,13 @@ import jwt
 from jwt.api_jwt import ExpiredSignatureError
 import requests as python_request
 
-
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.db import IntegrityError
-from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
-from django.urls import reverse
 
 from aidants_connect_web.models import Connection, Usager, Journal
 from aidants_connect_web.utilities import generate_sha256_hash
-
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -68,7 +64,7 @@ def fc_callback(request):
             "France Connect. C'est probabablement temporaire. Pouvez-vous réessayer "
             "votre requête ?",
         )
-        return redirect(reverse("new_mandat"))
+        return redirect("new_mandat")
 
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
@@ -80,9 +76,7 @@ def fc_callback(request):
     try:
         connection = Connection.objects.get(state=state)
     except Connection.DoesNotExist:
-        log.info("FC as FS - This state does not seem to exist")
-        log.info(state)
-        return HttpResponseForbidden()
+        return fc_error(f"FC as FS - This state does not seem to exist: {state}")
 
     if request.GET.get("error"):
         return fc_error(
@@ -91,13 +85,11 @@ def fc_callback(request):
         )
 
     if connection.is_expired:
-        log.info("408: FC connection has expired.")
-        return render(request, "408.html", status=408)
+        return fc_error("408: FC connection has expired.")
 
     code = request.GET.get("code")
     if not code:
-        log.info("403: No code has been provided.")
-        return HttpResponseForbidden()
+        return fc_error("FC AS FS: no code has been provided")
 
     token_url = f"{fc_base}/token"
     payload = {
@@ -137,12 +129,10 @@ def fc_callback(request):
             algorithm="HS256",
         )
     except ExpiredSignatureError:
-        log.info("403: token signature has expired.")
-        return HttpResponseForbidden()
+        return fc_error("403: token signature has expired.")
 
     if connection.nonce != decoded_token.get("nonce"):
-        log.info("403: The nonce is different than the one expected.")
-        return HttpResponseForbidden()
+        return fc_error("FC as FS: The nonce is different than the one expected")
 
     if connection.is_expired:
         log.info("408: FC connection has expired.")
@@ -150,8 +140,7 @@ def fc_callback(request):
 
     usager, error = get_user_info(connection)
     if error:
-        django_messages.error(request, error)
-        return redirect("espace_aidant_home")
+        return fc_error(error)
 
     connection.usager = usager
     connection.save()
@@ -182,8 +171,12 @@ def get_user_info(connection: Connection) -> tuple:
     if user_info.get("birthplace") == "":
         user_info["birthplace"] = None
 
+    user_sub = user_info.get("sub")
+    if not user_sub:
+        return None, "Unable to find sub in FC user info"
+
     usager_sub = generate_sha256_hash(
-        f"{user_info['sub']}{settings.FC_AS_FI_HASH_SALT}".encode()
+        f"{user_sub}{settings.FC_AS_FI_HASH_SALT}".encode()
     )
 
     try:
