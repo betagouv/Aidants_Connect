@@ -8,7 +8,6 @@ from django.conf import settings
 from django.contrib import messages as django_messages
 from django.db import IntegrityError
 from django.shortcuts import redirect, render
-from django.urls import reverse
 
 from aidants_connect_web.models import Connection, Usager, Journal
 from aidants_connect_web.utilities import generate_sha256_hash
@@ -65,7 +64,7 @@ def fc_callback(request):
             "France Connect. C'est probabablement temporaire. Pouvez-vous réessayer "
             "votre requête ?",
         )
-        return redirect(reverse("new_mandat"))
+        return redirect("new_mandat")
 
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
