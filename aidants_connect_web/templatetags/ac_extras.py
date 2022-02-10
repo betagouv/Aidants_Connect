@@ -1,10 +1,21 @@
+import json
 from re import sub as re_sub
 
 from django import template
 from django.template import Library
-from django.template.base import Node, NodeList, Parser, TextNode, Token
+from django.template.base import Node, Parser, NodeList, TextNode, Token
 
 register = template.Library()
+
+
+@register.filter
+def json_search_value(user: Usager):
+    return json.dumps(
+        [
+            user.preferred_username if user.preferred_username else user.family_name,
+            user.given_name,
+        ]
+    )
 
 
 @register.filter

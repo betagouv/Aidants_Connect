@@ -1,6 +1,6 @@
 {% extends 'layouts/main.html' %}
 
-{% load static %}
+{% load static ac_extras %}
 
 {% block title %}Aidants Connect - Sélectionnez l'usager{% endblock %}
 
@@ -15,7 +15,11 @@
     <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
   </div>
 </div>
-<section class="section section-grey mandat-select__section">
+<section
+  class="section section-grey mandat-select__section"
+  data-controller="search"
+  data-search-irrelevant-result-class="irrelevant-result"
+>
   <div class="container">
     <form method="post">
       <h2>Sélectionnez l'usager que vous souhaitez FranceConnecter</h2>
@@ -27,11 +31,8 @@
             {% for usager in usagers %}
               <div
                 class="tile usager"
-                data-controller="filter"
-                data-filter-firstname-value="{% if usager.preferred_username %}{{ usager.preferred_username }}&nbsp;{% endif %}{{ usager.family_name }}"
-                data-filter-familyname-value="{{ usager.given_name }}"
-                data-filter-search-value=""
-                data-filter-irrelevant-result-class="irrelevant-result"
+                data-search-target="item"
+                data-search-terms='{{ usager|json_search_value }}'
               >
                 <input
                   id="button-{{ usager.id }}"

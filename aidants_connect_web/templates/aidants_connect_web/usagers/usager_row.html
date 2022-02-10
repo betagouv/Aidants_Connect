@@ -1,10 +1,6 @@
-<tr
-  data-controller="filter"
-  data-filter-firstname-value="{% if usager.preferred_username %}{{ usager.preferred_username }}&nbsp;{% endif %}{{ usager.family_name }}"
-  data-filter-familyname-value="{{ usager.given_name }}"
-  data-filter-search-value=""
-  data-filter-irrelevant-result-class="irrelevant-result"
->
+{% load ac_extras %}
+
+<tr data-search-target="item" data-search-terms='{{ usager|json_search_value }}'>
   <td>
     <a href="{% url 'usager_details' usager_id=usager.id %}">
       {% if usager.preferred_username %}
