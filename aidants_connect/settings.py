@@ -478,7 +478,7 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
 )
 
 # Staff Organisation name
-STAFF_ORGANISATION_NAME = "Test"
+STAFF_ORGANISATION_NAME = "BetaGouv"
 
 # Tabbed Admin
 TABBED_ADMIN_USE_JQUERY_UI = True
