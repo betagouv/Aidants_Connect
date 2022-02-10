@@ -47,6 +47,7 @@ class OrganisationManager(models.Manager):
             self.filter(aidants__is_active=True)
             .filter(aidants__can_create_mandats=True)
             .filter(aidants__carte_totp__isnull=False)
+            .filter(is_active=True)
         )
 
     def not_yet_habilitated(self):
@@ -54,6 +55,7 @@ class OrganisationManager(models.Manager):
             self.filter(aidants__is_active=True)
             .filter(aidants__can_create_mandats=True)
             .filter(aidants__carte_totp__isnull=True)
+            .filter(is_active=True)
         )
 
 

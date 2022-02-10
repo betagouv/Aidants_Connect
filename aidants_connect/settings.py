@@ -401,14 +401,9 @@ CSP_SCRIPT_SRC = (
     "'sha256-FUfFEwUd+ObSebyGDfkxyV7KwtyvBBwsE/VxIOfPD68='",  # tabbed_admin
     "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
-    "https://code.jquery.com/jquery-3.4.1.min.js",
+    "https://code.jquery.com/jquery-3.6.0.min.js",
     "https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js",
-    "'sha256-zBbmyZbc/pcETv15w4K5wdeKFoPmeL5InSPiW2gBkpg='",
-    "'sha256-fKsSBn3RR/lfwdXHZOfYrITLIev4xdetSedeij7j+Hc='",
-    "'sha256-wUNcmtHkGhplWh+hr4Ml8xm0rQfFU9l/wJ42xQthz6A='",
-    "'sha256-AHT+XRsLAueqgecnZq0uyspfvYlwqfCRfWUmvWjpJL4='",
-    "'sha256-z7zcnw/4WalZqx+PrNaRnoeLz/G9WXuFqV1WCJ129sg='",
-    "'sha256-Al3IXhDY4oBH655bWlyhT8I+SDFd61U2NF3h3ZpKbtE='",
+    "'sha256-Al3IXhDY4oBH655bWlyhT8I+SDFd61U2NF3h3ZpKbtE='",  # statistiques.html
 )
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
@@ -478,7 +473,7 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
 )
 
 # Staff Organisation name
-STAFF_ORGANISATION_NAME = "BetaGouv"
+STAFF_ORGANISATION_NAME = "Test"
 
 # Tabbed Admin
 TABBED_ADMIN_USE_JQUERY_UI = True

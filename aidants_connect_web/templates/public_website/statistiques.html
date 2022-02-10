@@ -40,8 +40,21 @@
       <br>
 
       <h3>Par type de démarche</h3>
-      <div id="container" style="position: relative; height:40vh; width:80vw">
-        <canvas id="mandats-chart" data-url="{% url 'mandats-chart' %}"></canvas>
+      <div class="container">
+        <canvas id="mandats-chart" data-url="{% url 'mandats-chart' %}" aria-label="Les périmètres des mandats" role="img">
+          <table>
+            <tr>
+              <th>Type de mandat</th>
+              <th>Nombre des démarches</th>
+            </tr>
+            {% for demarche in demarches_count %}
+            <tr>
+              <td>{{ demarche.title }}</td>
+              <td>{{ demarche.value }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </canvas>
       </div>
 
       <br>
@@ -62,7 +75,7 @@
         </div>
         <div class="tile-box">
           <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Structures habilités</h3>
+            <h3 class="font-weight-normal">Structures habilitées</h3>
             <strong>{{ organisations_habilitated_count }}</strong>
           </div>
         </div>
@@ -78,7 +91,7 @@
   </div>
 </section>
 
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 <script>
     $(function () {

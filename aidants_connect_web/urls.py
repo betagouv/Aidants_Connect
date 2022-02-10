@@ -175,6 +175,7 @@ urlpatterns = [
     # public_website
     path("", service.home_page, name="home_page"),
     path("stats/", service.statistiques, name="statistiques"),
+    path("mandats-chart/", service.mandats_chart, name="mandats-chart"),
     path("cgu/", service.cgu, name="cgu"),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
@@ -205,7 +206,6 @@ urlpatterns = [
         datapass.habilitation_receiver,
         name="datapass_habilitation",
     ),
-    path("mandats-chart/", service.mandats_chart, name="mandats-chart"),
 ]
 
 urlpatterns.extend(magicauth_urls)

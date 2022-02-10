@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.http import JsonResponse
+from operator import itemgetter
 
 
 from aidants_connect_web.forms import OTPForm
@@ -56,22 +57,21 @@ def habilitation(request):
 
 
 def mandats_chart(request):
-    demarches_count = []
 
     autorisation_use = Journal.objects.excluding_staff().filter(
         action="use_autorisation"
     )
 
-    for demarche in settings.DEMARCHES.keys():
-        demarches_count.append(
-            {
-                "title": demarche,
-                "icon": settings.DEMARCHES[demarche]["icon"],
-                "value": autorisation_use.filter(demarche=demarche).count(),
-            }
-        )
+    demarches_count = [
+        {
+            "title": demarche,
+            "icon": settings.DEMARCHES[demarche]["icon"],
+            "value": autorisation_use.filter(demarche=demarche).count(),
+        }
+        for demarche in settings.DEMARCHES.keys()
+    ]
 
-    demarches_count.sort(key=lambda x: x["value"], reverse=True)
+    demarches_count.sort(key=itemgetter("value"), reverse=True)
     labels = [demarche["title"] for demarche in demarches_count]
     data = [demarche["value"] for demarche in demarches_count]
 
@@ -147,6 +147,19 @@ def statistiques(request):
         pk__in=get_usager_ids(autorisation_use_recent)
     ).count()
 
+    # # Démarches
+    demarches_count = []
+    for demarche in settings.DEMARCHES.keys():
+        demarches_count.append(
+            {
+                "title": demarche,
+                "icon": settings.DEMARCHES[demarche]["icon"],
+                "value": autorisation_use.filter(demarche=demarche).count(),
+            }
+        )
+
+    demarches_count.sort(key=lambda x: x["value"], reverse=True)
+
     return render(
         request,
         "public_website/statistiques.html",
@@ -163,6 +176,7 @@ def statistiques(request):
             "autorisation_use_recent_count": autorisation_use_recent_count,
             "usagers_helped_count": usagers_helped_count,
             "usagers_helped_recent_count": usagers_helped_recent_count,
+            "demarches_count": demarches_count,
         },
     )
 
