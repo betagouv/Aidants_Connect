@@ -147,6 +147,19 @@ def statistiques(request):
         pk__in=get_usager_ids(autorisation_use_recent)
     ).count()
 
+    # # Démarches
+    demarches_count = []
+    for demarche in settings.DEMARCHES.keys():
+        demarches_count.append(
+            {
+                "title": demarche,
+                "icon": settings.DEMARCHES[demarche]["icon"],
+                "value": autorisation_use.filter(demarche=demarche).count(),
+            }
+        )
+
+    demarches_count.sort(key=lambda x: x["value"], reverse=True)
+
     return render(
         request,
         "public_website/statistiques.html",
@@ -163,6 +176,7 @@ def statistiques(request):
             "autorisation_use_recent_count": autorisation_use_recent_count,
             "usagers_helped_count": usagers_helped_count,
             "usagers_helped_recent_count": usagers_helped_recent_count,
+            "demarches_count": demarches_count,
         },
     )
 
