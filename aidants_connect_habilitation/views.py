@@ -1,6 +1,7 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import FormView, RedirectView
+from django.views.generic import FormView, RedirectView, TemplateView
+from django.views.generic.base import ContextMixin
 
 from aidants_connect_habilitation.forms import (
     IssuerForm,
@@ -8,11 +9,18 @@ from aidants_connect_habilitation.forms import (
     PersonnelForm,
     ValidationForm,
 )
-from aidants_connect_habilitation.models import Issuer, OrganisationRequest
+from aidants_connect_habilitation.models import (
+    Issuer,
+    IssuerEmailConfirmation,
+    OrganisationRequest,
+)
+
 
 __all__ = [
     "NewHabilitationView",
     "NewIssuerFormView",
+    "IssuerEmailConfirmationWaitingView",
+    "IssuerEmailConfirmationView",
     "ModifyIssuerFormView",
     "NewOrganisationRequestFormView",
     "ModifyOrganisationRequestFormView",
@@ -24,7 +32,7 @@ __all__ = [
 """Mixins"""
 
 
-class RequestDraftView(FormView):
+class CheckIssuerMixin(ContextMixin):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
@@ -36,7 +44,18 @@ class RequestDraftView(FormView):
         }
 
 
-class LateStageRequestDraftView(RequestDraftView):
+class VerifiedEmailIssuerFormView(CheckIssuerMixin, FormView):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+
+        if not self.issuer.email_verified:
+            return redirect(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": self.issuer.issuer_id},
+            )
+
+
+class LateStageRequestFormView(VerifiedEmailIssuerFormView):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = get_object_or_404(
@@ -67,18 +86,45 @@ class NewIssuerFormView(FormView):
         )
 
 
-class ModifyIssuerFormView(NewIssuerFormView):
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.initial_issuer = get_object_or_404(
-            Issuer, issuer_id=self.kwargs.get("issuer_id")
+class IssuerEmailConfirmationWaitingView(CheckIssuerMixin, TemplateView):
+    template_name = "email_confirmation_confirm.html"
+
+    def post(self, request, *args, **kwargs):
+        IssuerEmailConfirmation.create(self.issuer).send(request)
+
+        return self.render_to_response(
+            {**self.get_context_data(**kwargs), "email_confirmation_sent": True}
         )
 
+
+class IssuerEmailConfirmationView(CheckIssuerMixin, TemplateView):
+    template_name = "email_confirmation_confirm.html"
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.email_confirmation = get_object_or_404(
+            IssuerEmailConfirmation, issuer=self.issuer, key=kwargs.get("key")
+        )
+
+    def post(self, request, *args, **kwargs):
+        if self.email_confirmation.key_expired:
+            return self.render_to_response(
+                {**self.get_context_data(**kwargs), "email_confirmation_expired": True}
+            )
+
+        self.email_confirmation.confirm(request)
+
+        return redirect(
+            "habilitation_modify_issuer", kwargs={"issuer_id": self.issuer.issuer_id}
+        )
+
+
+class ModifyIssuerFormView(VerifiedEmailIssuerFormView, NewIssuerFormView):
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "instance": self.initial_issuer}
+        return {**super().get_form_kwargs(), "instance": self.issuer}
 
 
-class NewOrganisationRequestFormView(RequestDraftView):
+class NewOrganisationRequestFormView(VerifiedEmailIssuerFormView):
     template_name = "organisation_form.html"
     form_class = OrganisationRequestForm
 
@@ -98,13 +144,13 @@ class NewOrganisationRequestFormView(RequestDraftView):
 
 
 class ModifyOrganisationRequestFormView(
-    LateStageRequestDraftView, NewOrganisationRequestFormView
+    LateStageRequestFormView, NewOrganisationRequestFormView
 ):
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(LateStageRequestDraftView):
+class PersonnelRequestFormView(LateStageRequestFormView):
     template_name = "personnel_form.html"
     form_class = PersonnelForm
 
@@ -132,7 +178,7 @@ class PersonnelRequestFormView(LateStageRequestDraftView):
         )
 
 
-class ValidationRequestFormView(LateStageRequestDraftView):
+class ValidationRequestFormView(LateStageRequestFormView):
     template_name = "validation_form.html"
     form_class = ValidationForm
 

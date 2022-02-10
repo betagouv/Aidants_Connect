@@ -1,6 +1,8 @@
 from django.urls import path
 
 from aidants_connect_habilitation.views import (
+    IssuerEmailConfirmationView,
+    IssuerEmailConfirmationWaitingView,
     ModifyIssuerFormView,
     ModifyOrganisationRequestFormView,
     NewHabilitationView,
@@ -13,6 +15,16 @@ from aidants_connect_habilitation.views import (
 urlpatterns = [
     path("nouvelle/", NewHabilitationView.as_view(), name="habilitation_new"),
     path("demandeur/", NewIssuerFormView.as_view(), name="habilitation_new_issuer"),
+    path(
+        "demandeur/<str:issuer_id>/confirmation-email/confirmer/<str:key>/",
+        IssuerEmailConfirmationView.as_view(),
+        name="habilitation_issuer_email_confirmation_confirm",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/confirmation-email/en-attente/",
+        IssuerEmailConfirmationWaitingView.as_view(),
+        name="habilitation_issuer_email_confirmation_waiting",
+    ),
     path(
         "demandeur/<str:issuer_id>/",
         ModifyIssuerFormView.as_view(),
