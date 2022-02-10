@@ -205,6 +205,7 @@ urlpatterns = [
         datapass.habilitation_receiver,
         name="datapass_habilitation",
     ),
+    path("mandats-chart/", service.mandats_chart, name="mandats-chart"),
 ]
 
 urlpatterns.extend(magicauth_urls)
