@@ -60,15 +60,29 @@
               {% field_as_narrow_fr_grid_row form.manager_form.address %}
 
               {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
-                {{ errors }}
-              {% endwith %}
-              <p>
-                <label for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
-                <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
-                {{ form.manager_form.zipcode }}{{ form.manager_form.city }}
-              </p>
+                <div
+                    class="form-grid-row fr-grid-row form-grid-row-narrow fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}">
+                  <div class="fr-col-12 fr-col-md-5 fr-col-lg-12">
+                    <label
+                        for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
+                    <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
+                  </div>
+                  <div class="fr-col-4 fr-col-md-2 fr-col-lg-4 zipcode-container">
+                    {{ form.manager_form.zipcode }}
+                  </div>
+                  <div class="fr-col-8 fr-col-md-5 fr-col-lg-8 city-container">
+                    {{ form.manager_form.city }}
+                  </div>
+                </div>
 
-              {% field_as_narrow_fr_grid_row form.manager_form.is_aidant %}
+                {% if errors %}
+                  <div class="fr-grid-row fr-grid-row--gutters">
+                    <div class="errors fr-col-12 fr-col-md-7 fr-col-offset-md-5">{{ errors }}</div>
+                  </div>
+                {% endif %}
+              {% endwith %}
+
+              {% checkbox_fr_grid_row form.manager_form.is_aidant %}
             </fieldset>
           </section>
         </div>
