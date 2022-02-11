@@ -24,8 +24,22 @@
           <p class="subtitle">Saisissez ici les détails concernant votre identité.</p>
           <div class="shadowed">
             {% csrf_token %}
+            {{ form.non_field_errors }}
+            <fieldset>
+              <legend class="sr-only">Demandeur</legend>
 
-            {% include "_issuer_form.html" %}
+              <h3>Identité</h3>
+              {% field_as_fr_grid_row form.first_name %}
+              {% field_as_fr_grid_row form.last_name %}
+
+              <h3>Contact</h3>
+              {% field_as_fr_grid_row form.email %}
+              {% field_as_fr_grid_row form.phone %}
+
+              <h3>Autres informations</h3>
+              {% field_as_fr_grid_row form.profession %}
+            </fieldset>
+
             <div class="button-box">
               <button type="submit" class="primary">Valider cette étape</button>
             </div>
