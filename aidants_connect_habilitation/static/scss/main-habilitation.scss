@@ -297,6 +297,10 @@ fieldset {
   > :only-child {
     margin-left: auto;
   }
+
+  &.standalone {
+    margin-top: 4rem;
+  }
 }
 
 .shadowed .button-box {
