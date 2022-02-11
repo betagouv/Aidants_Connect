@@ -75,6 +75,11 @@ svg.previews {
   box-sizing: border-box;
   box-shadow: 10px 10px 0 $off-yellow-aidants;
   padding: 2rem;
+
+  &.grey {
+    box-shadow: 10px 10px 0 #c5c5c5;
+    border-color: #c5c5c5;
+  }
 }
 
 h1, .h1 {
@@ -316,9 +321,23 @@ fieldset {
 .form-in-3-cols {
   .shadowed {
     padding: 1rem;
+    height: 100%;
 
     .h2, .h3 {
       font-size: 1.125rem;
+    }
+  }
+
+  button.shadowed {
+    width: 100%;
+    color: $blue-aidants;
+    text-transform: uppercase;
+
+    &:before {
+      content: "+";
+      display: block;
+      margin-bottom: .75rem;
+      font-size: 3rem;
     }
   }
 }
