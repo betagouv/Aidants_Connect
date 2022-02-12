@@ -19,6 +19,9 @@
     </div>
     {% include '_breadcrumbs.html' with step=3 issuer=issuer organisation=organisation %}
     <h2>Personnes impliquées</h2>
+    <p class="subtitle">Saisissez ici les informations relatives aux personnes qui utiliseront Aidants Connect</p>
+
+    {% include "edito/_renseigner_liste_des_contacts.html" %}
 
     <form method="post" class="form-in-3-cols">
       {% csrf_token %}

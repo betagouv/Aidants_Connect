@@ -133,6 +133,43 @@ h3, .h3 {
 
 }
 
+details {
+  border: 1px solid $blue-aidants;
+
+  summary {
+    background: $blue-aidants no-repeat url("../img/plus-w.svg") 98% 50%;
+    color: #fff;
+    cursor: pointer;
+    padding: 1rem 3rem 1rem 1rem;
+
+    &::marker {
+      content: "";
+    }
+
+    &:before {
+      background: $off-yellow-aidants;
+      border-radius: 100%;
+      color: $blue-aidants;
+      content: "!";
+      display: inline-block;
+      font-size: 1.7rem;
+      font-weight: bold;
+      height: 2rem;
+      margin-right: 1rem;
+      text-align: center;
+      width: 2rem;
+    }
+  }
+
+  &[open] summary {
+    background-image: url('../img/x.svg');
+  }
+
+  .details-content {
+    padding: 0 1rem;
+  }
+}
+
 // forms -----------------------------------------------
 
 input[type=text], input[type=number], input[type=email], input[type=tel], input[type=url] {
