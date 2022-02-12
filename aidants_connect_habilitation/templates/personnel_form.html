@@ -52,6 +52,9 @@
 
             <fieldset>
               <legend class="sr-only">Responsable Aidants Connect</legend>
+              <button class="primary" type="button">
+                <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
+              </button>
               <h5 class="h3">Identité</h5>
               {% field_as_narrow_fr_grid_row form.manager_form.last_name %}
               {% field_as_narrow_fr_grid_row form.manager_form.first_name %}
@@ -92,9 +95,11 @@
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <section class="shadowed">
             <h4 class="h2">Délégué à la protection des données <span>— Facultatif</span></h4>
-
             <fieldset>
               <legend class="sr-only">Délégué à la protection des données - facultatif</legend>
+              <button class="primary" type="button">
+                <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
+              </button>
               <h5 class="h3">Identité</h5>
               {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.last_name %}
               {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.first_name %}
