@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "admin_honeypot",
     "django_otp",
+    "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
@@ -139,6 +140,7 @@ INSTALLED_APPS = [
     "aidants_connect",
     "aidants_connect_web",
     "aidants_connect_habilitation",
+    "aidants_connect_sandbox",
 ]
 
 MIDDLEWARE = [
@@ -515,3 +517,8 @@ AIDANTS__ORGANISATIONS_CHANGED_EMAIL_SUBJECT = os.getenv(
 AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM = os.getenv(
     "AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM", SUPPORT_EMAIL
 )
+
+
+# ########################" SANDBOX SETTING ############################
+
+ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
