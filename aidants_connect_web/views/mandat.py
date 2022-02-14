@@ -5,29 +5,29 @@ from typing import Collection
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles import finders
 from django.db import IntegrityError
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
-from django.utils import timezone, formats
-from django.contrib.staticfiles import finders
+from django.utils import formats, timezone
 
 from aidants_connect.common.constants import AuthorizationDurations
+from aidants_connect.common.forms import PatchedErrorList
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
-from aidants_connect.common.forms import PatchedErrorList
 from aidants_connect_web.models import (
+    Aidant,
     Autorisation,
     Connection,
     Journal,
     Mandat,
     Usager,
-    Aidant,
 )
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
-    generate_qrcode_png,
     generate_mailto_link,
+    generate_qrcode_png,
 )
 from aidants_connect_web.views.service import humanize_demarche_names
 

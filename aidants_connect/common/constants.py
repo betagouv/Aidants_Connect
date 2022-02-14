@@ -1,10 +1,9 @@
 from datetime import date, timedelta
-from enum import unique, Enum
+from enum import Enum, unique
 
 from django.conf import settings
-from django.db.models import TextChoices, IntegerChoices
+from django.db.models import IntegerChoices, TextChoices
 from django.utils.timezone import now
-
 
 __all__ = [
     "JournalActionKeywords",

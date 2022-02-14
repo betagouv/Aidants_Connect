@@ -1,4 +1,5 @@
 from django.test import tag
+
 from selenium.webdriver.common.by import By
 
 from aidants_connect.common.tests.testcases import FunctionalTestCase

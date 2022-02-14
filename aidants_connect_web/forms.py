@@ -2,8 +2,8 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.core.validators import RegexValidator, EmailValidator
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.core.validators import EmailValidator, RegexValidator
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 

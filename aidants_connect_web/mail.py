@@ -2,7 +2,6 @@ import json
 from smtplib import SMTPException
 
 from django.conf import settings
-
 from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import EmailMessage, sanitize_address
 

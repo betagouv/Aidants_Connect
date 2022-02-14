@@ -44,6 +44,8 @@ jobs:
             . venv/bin/activate
             black --check .
             flake8
+            isort . --check
+
       - run:
           name: run unit tests
           command: |

@@ -1,20 +1,22 @@
 import os
-from os.path import dirname, join as path_join
+from os.path import dirname
+from os.path import join as path_join
 
 from django.conf import settings
 from django.test import tag
+
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
 
 import aidants_connect_web
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    OrganisationFactory,
     CarteTOTPFactory,
+    OrganisationFactory,
 )
-from aidants_connect.common.tests.testcases import FunctionalTestCase
 
 
 @tag("functional", "import")

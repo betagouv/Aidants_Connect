@@ -1,5 +1,5 @@
-from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
 from django.utils import timezone
 
 

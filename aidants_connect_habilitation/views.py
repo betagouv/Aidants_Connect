@@ -8,11 +8,7 @@ from aidants_connect_habilitation.forms import (
     PersonnelForm,
     ValidationForm,
 )
-from aidants_connect_habilitation.models import (
-    Issuer,
-    OrganisationRequest,
-)
-
+from aidants_connect_habilitation.models import Issuer, OrganisationRequest
 
 __all__ = [
     "NewHabilitationView",

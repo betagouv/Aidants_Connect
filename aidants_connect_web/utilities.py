@@ -1,14 +1,13 @@
-import io
 import hashlib
+import io
 from datetime import date, datetime
-from urllib.parse import urlencode, quote
-
-import qrcode
 from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Union
+from urllib.parse import quote, urlencode
 
 from django.conf import settings
 
-from typing import TYPE_CHECKING, Optional, Union
+import qrcode
 
 if TYPE_CHECKING:
     from aidants_connect_web.models import Aidant, Usager

@@ -1,11 +1,11 @@
 import os
 import sys
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 from django.contrib.auth.management.commands import createsuperuser
 from django.core.management import CommandError
 
-from aidants_connect_web.models import Organisation, Aidant
+from aidants_connect_web.models import Aidant, Organisation
 
 ORGANISATION_NAME_ARG = "--organisation-name"
 ORGANISATION_NAME_DEST = "organisation_name"

@@ -3,22 +3,23 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from django.core import mail
-from django.core.management import call_command, CommandError
-from django.test import tag, TestCase
-from freezegun import freeze_time
+from django.core.management import CommandError, call_command
+from django.test import TestCase, tag
+
 from django_otp.plugins.otp_static.lib import add_static_token
 from django_otp.plugins.otp_static.models import StaticToken
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from freezegun import freeze_time
 
+from aidants_connect import settings
 from aidants_connect_overrides.management.commands.createsuperuser import (
     ERROR_MSG,
     ORGANISATION_ID_ARG,
+    ORGANISATION_ID_ENV,
     ORGANISATION_NAME_ARG,
     ORGANISATION_NAME_ENV,
-    ORGANISATION_ID_ENV,
 )
-from aidants_connect import settings
-from aidants_connect_web.models import Connection, Aidant, HabilitationRequest
+from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     CarteTOTPFactory,

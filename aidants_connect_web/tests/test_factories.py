@@ -1,8 +1,6 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 
-from aidants_connect_web.models import (
-    Aidant,
-)
+from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     CarteTOTPFactory,

@@ -3,8 +3,8 @@ from django.urls import path
 from aidants_connect_habilitation.views import (
     ModifyIssuerFormView,
     ModifyOrganisationRequestFormView,
-    NewIssuerFormView,
     NewHabilitationView,
+    NewIssuerFormView,
     NewOrganisationRequestFormView,
     PersonnelRequestFormView,
     ValidationRequestFormView,

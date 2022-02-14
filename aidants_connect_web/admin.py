@@ -3,33 +3,34 @@ from collections.abc import Collection
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin, TabularInline, SimpleListFilter
+from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.db.models import QuerySet
-from django.http import HttpResponseRedirect, HttpResponseNotAllowed, HttpRequest
+from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse, path
+from django.urls import path, reverse
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
+
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.lib import add_static_token
 from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ImportMixin, ImportExportMixin
+from import_export.admin import ImportExportMixin, ImportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
-from import_export.widgets import ManyToManyWidget, ForeignKeyWidget
+from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
 
 from aidants_connect.admin import (
-    admin_site,
-    VisibleToAdminMetier,
-    VisibleToTechAdmin,
     DepartmentFilter,
     RegionFilter,
+    VisibleToAdminMetier,
+    VisibleToTechAdmin,
+    admin_site,
 )
 from aidants_connect_web.forms import (
     AidantChangeForm,
@@ -39,13 +40,13 @@ from aidants_connect_web.forms import (
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
+    CarteTOTP,
     Connection,
     HabilitationRequest,
     Journal,
     Mandat,
     Organisation,
     Usager,
-    CarteTOTP,
 )
 
 logger = logging.getLogger()

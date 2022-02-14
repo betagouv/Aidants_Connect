@@ -1,5 +1,5 @@
-from datetime import date, datetime, timedelta
 import json
+from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -12,12 +12,7 @@ from django.utils import timezone
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
 
-from aidants_connect_web.models import (
-    Aidant,
-    Connection,
-    Journal,
-    Usager,
-)
+from aidants_connect_web.models import Aidant, Connection, Journal, Usager
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,

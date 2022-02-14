@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from django.conf import settings
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
@@ -19,7 +19,6 @@ from aidants_connect_web.tests.factories import (
     UsagerFactory,
 )
 from aidants_connect_web.views import service
-
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 

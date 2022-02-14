@@ -1,36 +1,37 @@
 import logging
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
+from os import walk as os_walk
+from os.path import dirname
+from os.path import join as path_join
+from re import sub as regex_sub
+from typing import Collection, Optional, Union
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib import messages as django_messages
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
-from django.db.models import Q, QuerySet, SET_NULL, CASCADE, Value
+from django.db.models import CASCADE, SET_NULL, Q, QuerySet, Value
 from django.db.models.functions import Concat
 from django.dispatch import Signal
-from django.template import loader, defaultfilters
+from django.template import defaultfilters, loader
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
+
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from typing import Union, Optional, Collection
-from os import walk as os_walk
-from os.path import join as path_join, dirname
-from re import sub as regex_sub
 from phonenumber_field.modelfields import PhoneNumberField
 
 from aidants_connect.common.constants import (
     JOURNAL_ACTIONS,
-    JournalActionKeywords,
     AuthorizationDurationChoices,
     AuthorizationDurations,
+    JournalActionKeywords,
 )
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
     mandate_template_path,
 )
-
 
 logger = logging.getLogger()
 

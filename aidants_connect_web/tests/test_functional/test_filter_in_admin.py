@@ -1,18 +1,19 @@
 from django.conf import settings
 from django.test import tag
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.models import DatavizRegion
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    DatavizRegionFactory,
     DatavizDepartmentFactory,
     DatavizDepartmentsToRegionFactory,
+    DatavizRegionFactory,
     HabilitationRequestFactory,
     OrganisationFactory,
 )
-from aidants_connect.common.tests.testcases import FunctionalTestCase
 
 
 class RegionFilterTestCase(FunctionalTestCase):
