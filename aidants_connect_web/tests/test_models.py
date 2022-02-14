@@ -1,14 +1,14 @@
-from os.path import join as path_join
 from datetime import date, datetime, timedelta
+from os.path import join as path_join
 from unittest.mock import Mock
 
-import mock
-from django.db.utils import IntegrityError
-from django.test import tag, TestCase
-from django.utils import timezone
 from django.conf import settings
-from django_otp.plugins.otp_totp.models import TOTPDevice
+from django.db.utils import IntegrityError
+from django.test import TestCase, tag
+from django.utils import timezone
 
+import mock
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
 

@@ -1,20 +1,20 @@
 from datetime import datetime, timedelta
-from freezegun import freeze_time
-from pytz import timezone as pytz_timezone
-import mock
-import jwt
 
 from django.conf import settings
-from django.test import override_settings, tag, TestCase
+from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import reverse
+
+import jwt
+import mock
+from freezegun import freeze_time
+from pytz import timezone as pytz_timezone
 
 from aidants_connect.common.constants import AuthorizationDurationChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.views.FC_as_FS import get_user_info
-
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 

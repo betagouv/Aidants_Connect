@@ -1,4 +1,4 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 
 from aidants_connect_web.utilities import generate_sha256_hash
 

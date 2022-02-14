@@ -1,4 +1,4 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.test.client import RequestFactory
 
 from aidants_connect.admin import DepartmentFilter, RegionFilter

@@ -1,4 +1,4 @@
-from django.db.models import Lookup, CharField
+from django.db.models import CharField, Lookup
 
 
 @CharField.register_lookup

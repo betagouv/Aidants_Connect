@@ -1,13 +1,14 @@
 from uuid import uuid4
 
 from django.db import models
-from django.db.models import Q, SET_NULL
+from django.db.models import SET_NULL, Q
+
 from phonenumber_field.modelfields import PhoneNumberField
 
 from aidants_connect.common.constants import (
-    RequestStatusConstants,
     MessageStakeholders,
     RequestOriginConstants,
+    RequestStatusConstants,
 )
 from aidants_connect_web.models import OrganisationType
 

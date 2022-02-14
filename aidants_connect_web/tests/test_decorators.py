@@ -1,11 +1,10 @@
 from django.conf import settings
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.utils import timezone
 
 from freezegun import freeze_time
 
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
-
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 

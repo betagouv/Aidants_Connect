@@ -1,15 +1,16 @@
 import logging
 from secrets import token_urlsafe
-import jwt
-from jwt.api_jwt import ExpiredSignatureError
-import requests as python_request
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.db import IntegrityError
 from django.shortcuts import redirect, render
 
-from aidants_connect_web.models import Connection, Usager, Journal
+import jwt
+import requests as python_request
+from jwt.api_jwt import ExpiredSignatureError
+
+from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.utilities import generate_sha256_hash
 
 logging.basicConfig(level=logging.INFO)

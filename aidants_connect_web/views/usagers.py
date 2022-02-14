@@ -5,14 +5,13 @@ from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db.models.functions import Concat
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.utils.timezone import timedelta, now
+from django.utils.timezone import now, timedelta
 
 from aidants_connect_web.decorators import activity_required
 from aidants_connect_web.models import Aidant, Autorisation, Journal, Mandat
 from aidants_connect_web.views.service import humanize_demarche_names
-
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()

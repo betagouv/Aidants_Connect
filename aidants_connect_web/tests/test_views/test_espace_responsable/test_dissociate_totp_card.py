@@ -1,13 +1,10 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.test.client import Client
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.tests.factories import (
-    AidantFactory,
-    CarteTOTPFactory,
-)
 from aidants_connect_web.models import CarteTOTP, Journal
+from aidants_connect_web.tests.factories import AidantFactory, CarteTOTPFactory
 
 
 @tag("responsable-structure")

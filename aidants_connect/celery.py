@@ -6,7 +6,6 @@ import os
 
 from celery import Celery
 
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "aidants_connect.settings")
 
 app = Celery("aidants_connect")

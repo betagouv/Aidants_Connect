@@ -16,7 +16,7 @@ import re
 import sys
 from datetime import datetime, timedelta
 from distutils.util import strtobool
-from typing import Union, Optional
+from typing import Optional, Union
 
 import sentry_sdk
 from dotenv import load_dotenv

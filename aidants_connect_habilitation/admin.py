@@ -1,12 +1,11 @@
-from django.contrib.admin import ModelAdmin, TabularInline, StackedInline
-
 from django.conf import settings
+from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 
 from aidants_connect.admin import (
-    admin_site,
-    VisibleToAdminMetier,
-    RegionFilter,
     DepartmentFilter,
+    RegionFilter,
+    VisibleToAdminMetier,
+    admin_site,
 )
 from aidants_connect_habilitation.models import (
     AidantRequest,

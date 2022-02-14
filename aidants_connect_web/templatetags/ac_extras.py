@@ -2,7 +2,7 @@ from re import sub as re_sub
 
 from django import template
 from django.template import Library
-from django.template.base import Node, Parser, NodeList, TextNode, Token
+from django.template.base import Node, NodeList, Parser, TextNode, Token
 
 register = template.Library()
 

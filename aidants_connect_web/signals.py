@@ -1,7 +1,7 @@
+from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.core.mail import send_mail
 from django.dispatch import receiver
-from django.conf import settings
 from django.template import loader
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
