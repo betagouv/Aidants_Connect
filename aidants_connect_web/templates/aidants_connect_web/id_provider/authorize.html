@@ -32,7 +32,7 @@
               <div
                 class="tile usager"
                 data-search-target="item"
-                data-search-terms='{{ usager|json_search_value }}'
+                data-search-terms='{{ usager.search_terms|json_attribute }}'
               >
                 <input
                   id="button-{{ usager.id }}"

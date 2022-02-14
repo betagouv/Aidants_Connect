@@ -600,6 +600,14 @@ class Usager(models.Model):
     class Meta:
         ordering = ["family_name", "given_name"]
 
+    @property
+    def search_terms(self):
+        search_term = [self.family_name, self.given_name]
+        if self.preferred_username:
+            search_term.append(self.preferred_username)
+
+        return search_term
+
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
 

@@ -1,6 +1,6 @@
 {% load ac_extras %}
 
-<tr data-search-target="item" data-search-terms='{{ usager|json_search_value }}'>
+<tr data-search-target="item" data-search-terms='{{ usager.search_terms|json_attribute }}'>
   <td>
     <a href="{% url 'usager_details' usager_id=usager.id %}">
       {% if usager.preferred_username %}
