@@ -3,16 +3,16 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q, SET_NULL
+from django.db.models import SET_NULL, Q
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
 from phonenumber_field.modelfields import PhoneNumberField
 
 from aidants_connect.common.constants import (
-    RequestStatusConstants,
     MessageStakeholders,
     RequestOriginConstants,
+    RequestStatusConstants,
 )
 from aidants_connect_habilitation import signals
 from aidants_connect_web.models import OrganisationType

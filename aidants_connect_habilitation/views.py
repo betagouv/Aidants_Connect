@@ -15,7 +15,6 @@ from aidants_connect_habilitation.models import (
     OrganisationRequest,
 )
 
-
 __all__ = [
     "NewHabilitationView",
     "NewIssuerFormView",
@@ -45,14 +44,14 @@ class CheckIssuerMixin(ContextMixin):
 
 
 class VerifiedEmailIssuerFormView(CheckIssuerMixin, FormView):
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-
+    def dispatch(self, request, *args, **kwargs):
         if not self.issuer.email_verified:
             return redirect(
                 "habilitation_issuer_email_confirmation_waiting",
-                kwargs={"issuer_id": self.issuer.issuer_id},
+                issuer_id=self.issuer.issuer_id,
             )
+
+        return super().dispatch(request, *args, **kwargs)
 
 
 class LateStageRequestFormView(VerifiedEmailIssuerFormView):
@@ -81,7 +80,7 @@ class NewIssuerFormView(FormView):
 
     def get_success_url(self):
         return reverse(
-            "habilitation_new_organisation",
+            "habilitation_issuer_email_confirmation_waiting",
             kwargs={"issuer_id": self.saved_model.issuer_id},
         )
 
@@ -122,6 +121,12 @@ class IssuerEmailConfirmationView(CheckIssuerMixin, TemplateView):
 class ModifyIssuerFormView(VerifiedEmailIssuerFormView, NewIssuerFormView):
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "instance": self.issuer}
+
+    def get_success_url(self):
+        return reverse(
+            "habilitation_new_organisation",
+            kwargs={"issuer_id": self.saved_model.issuer_id},
+        )
 
 
 class NewOrganisationRequestFormView(VerifiedEmailIssuerFormView):

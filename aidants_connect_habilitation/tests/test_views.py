@@ -63,7 +63,7 @@ class NewIssuerFormViewTests(TestCase):
             self.assertRedirects(
                 response,
                 reverse(
-                    "habilitation_new_organisation",
+                    "habilitation_issuer_email_confirmation_waiting",
                     kwargs={"issuer_id": temp_uuid},
                 ),
             )
