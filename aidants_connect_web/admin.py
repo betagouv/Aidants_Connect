@@ -59,6 +59,21 @@ class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
     pass
 
 
+class SpecificDeleteActionsMixin:
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        try:
+            del actions["delete_selected"]
+        except KeyError:
+            pass
+        return actions
+
+    def _specific_delete_action(self, request, queryset):
+        for one_object in queryset:
+            if one_object.clean_journal_entries_and_delete_mandats(request):
+                one_object.delete()
+
+
 class OrganisationResource(resources.ModelResource):
     datapass_id = Field(attribute="data_pass_id", column_name="Numéro de demande")
     name = Field(attribute="name", column_name="Nom de la structure")
@@ -155,7 +170,9 @@ class WithoutDatapassIdFilter(SimpleListFilter):
             return queryset.filter(data_pass_id=None)
 
 
-class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
+class OrganisationAdmin(
+    SpecificDeleteActionsMixin, ImportMixin, VisibleToAdminMetier, ModelAdmin
+):
     list_display = (
         "name",
         "address",
@@ -193,6 +210,7 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "find_zipcode_in_address",
         "deactivate_organisations",
         "activate_organisations",
+        "specific_delete_action",
     )
 
     def get_readonly_fields(self, request, obj=None):
@@ -269,6 +287,13 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             organisation.activate_organisation()
 
     activate_organisations.short_description = "Activer les organisations"
+
+    def specific_delete_action(self, request, queryset):
+        self._specific_delete_action(request, queryset)
+
+    specific_delete_action.short_description = (
+        "Supprimer les organisations sélectionnées"
+    )
 
 
 class AidantResource(resources.ModelResource):
@@ -768,7 +793,9 @@ class UsagerMandatInline(VisibleToTechAdmin, NestedTabularInline):
     inlines = (UsagerAutorisationInline,)
 
 
-class UsagerAdmin(VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin):
+class UsagerAdmin(
+    SpecificDeleteActionsMixin, VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin
+):
     list_display = ("__str__", "email", "creation_date")
     search_fields = ("given_name", "family_name", "email")
 
@@ -776,22 +803,12 @@ class UsagerAdmin(VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin):
     tab_mandats = (UsagerMandatInline,)
 
     tabs = [("Informations", tab_infos), ("Mandats", tab_mandats)]
-    actions = ("specific_deleted_action",)
+    actions = ("specific_delete_action",)
 
-    def get_actions(self, request):
-        actions = super(UsagerAdmin, self).get_actions(request)
-        try:
-            del actions["delete_selected"]
-        except KeyError:
-            pass
-        return actions
+    def specific_delete_action(self, request, queryset):
+        self._specific_delete_action(request, queryset)
 
-    def specific_deleted_action(self, request, queryset):
-        for usager in queryset:
-            usager.clean_journal_entries_and_delete_mandats()
-            usager.delete()
-
-    specific_deleted_action.short_description = "Supprimer les usagers sélectionnés"
+    specific_delete_action.short_description = "Supprimer les usagers sélectionnés"
 
 
 class MandatAutorisationInline(VisibleToTechAdmin, TabularInline):

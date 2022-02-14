@@ -1634,3 +1634,51 @@ class UsagerDeleteTests(TestCase):
         self.assertEqual(len(Usager.objects.all()), 0)
         self.assertEqual(len(Mandat.objects.all()), 0)
         self.assertEqual(len(Journal.objects.all()), 3)
+
+
+@tag("models", "manndat", "organisation", "journal")
+class OrganisationDeleteTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory()
+        cls.organisation2 = OrganisationFactory()
+        cls.aidant_marge = AidantFactory(organisation=cls.organisation)
+        cls.usager_homer = UsagerFactory(given_name="Homer")
+        cls.mandat_marge_homer = MandatFactory(
+            organisation=cls.organisation,
+            usager=cls.usager_homer,
+            expiration_date=timezone.now() - timedelta(days=6),
+        )
+        cls.autorisation = AutorisationFactory(
+            mandat=cls.mandat_marge_homer,
+            demarche="Carte grise",
+        )
+        Journal.log_connection(aidant=cls.aidant_marge)
+        Journal.log_autorisation_creation(cls.autorisation, aidant=cls.aidant_marge)
+        Journal.log_franceconnection_usager(
+            aidant=cls.aidant_marge,
+            usager=cls.usager_homer,
+        )
+        Journal.log_mandat_cancel(
+            aidant=cls.aidant_marge, mandat=cls.mandat_marge_homer
+        )
+
+    def test_dont_delete_organisation_with_aidants(self):
+        result = self.organisation.clean_journal_entries_and_delete_mandats()
+        self.assertFalse(result)
+
+    def test_organisation_clean_journal_entries_and_delete_mandats(self):
+        self.aidant_marge.set_organisations([self.organisation2])
+        self.organisation.refresh_from_db()
+        self.assertEqual(len(Journal.objects.all()), 4)
+        testing = "Add by clean_journal_entries_and_delete_mandats"
+        self.assertTrue(self.organisation.clean_journal_entries_and_delete_mandats())
+        self.assertEqual(len(Journal.objects.all()), 4)
+        self.assertEqual(
+            len(Journal.objects.filter(additional_information__icontains=testing)),
+            4,
+        )
+        self.organisation.delete()
+        self.assertEqual(len(Organisation.objects.all()), 1)
+        self.assertEqual(len(Mandat.objects.all()), 0)
+        self.assertEqual(len(Journal.objects.all()), 4)
