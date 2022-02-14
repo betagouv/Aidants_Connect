@@ -42,7 +42,7 @@ class OrganisationType(models.Model):
 
 
 class OrganisationManager(models.Manager):
-    def habilitated(self):
+    def accredited(self):
         return (
             self.filter(aidants__is_active=True)
             .filter(aidants__can_create_mandats=True)
@@ -50,7 +50,7 @@ class OrganisationManager(models.Manager):
             .filter(is_active=True)
         )
 
-    def not_yet_habilitated(self):
+    def not_yet_accredited(self):
         return (
             self.filter(aidants__is_active=True)
             .filter(aidants__can_create_mandats=True)

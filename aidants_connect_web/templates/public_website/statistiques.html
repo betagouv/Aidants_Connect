@@ -41,15 +41,15 @@
 
       <h3>Par type de démarche</h3>
       <div class="container">
-        <canvas id="mandats-chart" data-url="{% url 'mandats-chart' %}" aria-label="Les périmètres des mandats" role="img">
+        <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
           <table>
             <tr>
-              <th>Type de mandat</th>
-              <th>Nombre des démarches</th>
+              <th scope="col">Type de mandat</th>
+              <th scope="col">Nombre des démarches</th>
             </tr>
             {% for demarche in demarches_count %}
             <tr>
-              <td>{{ demarche.title }}</td>
+              <th scope="row">{{ demarche.title }}</th>
               <td>{{ demarche.value }}</td>
             </tr>
             {% endfor %}
@@ -70,19 +70,19 @@
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">Aidants en cours d’habilitation</h3>
-            <strong>{{ aidants_habilitating_count }}</strong>
+            <strong>{{ aidants_accrediting_count }}</strong>
           </div>
         </div>
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">Structures habilitées</h3>
-            <strong>{{ organisations_habilitated_count }}</strong>
+            <strong>{{ organisations_accredited_count }}</strong>
           </div>
         </div>
         <div class="tile-box">
           <div class="tile tile-grey text-center">
             <h3 class="font-weight-normal">Structures en cours d’habilitation</h3>
-            <strong>{{ organisations_not_habilitated_count }}</strong>
+            <strong>{{ organisations_not_accredited_count }}</strong>
           </div>
         </div>
       </div>
@@ -90,52 +90,48 @@
     </div>
   </div>
 </section>
+{% endblock content %}
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+{% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+{{ data|json_script:"data" }}
+
 <script>
-    $(function () {
-      var $mandatsChart = $("#mandats-chart");
-      $.ajax({
-        url: $mandatsChart.data("url"),
-        success: function (data) {
+  const data = JSON.parse(document.getElementById('data').textContent);
 
-          var ctx = $mandatsChart[0].getContext("2d");
+  var ctx = document.getElementById('mandats-chart').getContext('2d');
 
-          new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: data.labels,
-              datasets: [{
-                label: 'Nombre de démarches',
-                backgroundColor: 'blue',
-                data: data.data
-              }]
-            },
-            options: {
-              responsive: true,
-              aspectRatio:2,
-              maintainAspectRatio: true,
-              legend: {
-                position: 'top',
-              },
-              title: {
-                display: true,
-                text: 'Les périmètres des mandats'
-              },
-              scales: {
-                xAxes: [{
-                  gridLines: {
-                      display:false
-                  }
-                }]
-              }
-            }
-          });
-
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Nombre de démarches',
+        backgroundColor: 'blue',
+        data: data.data
+      }]
+    },
+    options: {
+      responsive: true,
+      aspectRatio:2,
+      maintainAspectRatio: true,
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Les périmètres des mandats'
+      },
+      scales: {
+        x: {
+          grid: {
+              display:false
+          }
         }
-      });
-    });
+      }
+    }
+  });
 
 </script>
-{% endblock content %}
+
+{% endblock extrajs %}

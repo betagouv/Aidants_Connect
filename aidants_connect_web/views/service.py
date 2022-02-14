@@ -9,9 +9,7 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.http import JsonResponse
 from operator import itemgetter
-
 
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation, Usager
@@ -56,33 +54,6 @@ def habilitation(request):
     return render(request, "public_website/habilitation.html")
 
 
-def mandats_chart(request):
-
-    autorisation_use = Journal.objects.excluding_staff().filter(
-        action="use_autorisation"
-    )
-
-    demarches_count = [
-        {
-            "title": demarche,
-            "icon": settings.DEMARCHES[demarche]["icon"],
-            "value": autorisation_use.filter(demarche=demarche).count(),
-        }
-        for demarche in settings.DEMARCHES.keys()
-    ]
-
-    demarches_count.sort(key=itemgetter("value"), reverse=True)
-    labels = [demarche["title"] for demarche in demarches_count]
-    data = [demarche["value"] for demarche in demarches_count]
-
-    return JsonResponse(
-        data={
-            "labels": labels,
-            "data": data,
-        }
-    )
-
-
 def statistiques(request):
     last_30_days = timezone.now() - timedelta(days=30)
     stafforg = settings.STAFF_ORGANISATION_NAME
@@ -90,11 +61,11 @@ def statistiques(request):
     def get_usager_ids(query_set) -> list:
         return [query_set_item.usager_id for query_set_item in query_set]
 
-    organisations_habilitated_count = (
-        Organisation.objects.habilitated().exclude(name=stafforg).count()
+    organisations_accredited_count = (
+        Organisation.objects.accredited().exclude(name=stafforg).count()
     )
-    organisations_not_habilitated_count = (
-        Organisation.objects.not_yet_habilitated().exclude(name=stafforg).count()
+    organisations_not_accredited_count = (
+        Organisation.objects.not_yet_accredited().exclude(name=stafforg).count()
     )
 
     aidants_count = (
@@ -104,7 +75,7 @@ def statistiques(request):
         .filter(can_create_mandats=True)
         .count()
     )
-    aidants_not_habilitated_count = (
+    aidants_not_accredited_count = (
         Aidant.objects.exclude(organisation__name=stafforg)
         .filter(carte_totp__isnull=True)
         .filter(is_active=True)
@@ -148,26 +119,34 @@ def statistiques(request):
     ).count()
 
     # # Démarches
-    demarches_count = []
-    for demarche in settings.DEMARCHES.keys():
-        demarches_count.append(
-            {
-                "title": demarche,
-                "icon": settings.DEMARCHES[demarche]["icon"],
-                "value": autorisation_use.filter(demarche=demarche).count(),
-            }
-        )
+    demarches_count = [
+        {
+            "title": demarche,
+            "icon": settings.DEMARCHES[demarche]["icon"],
+            "value": autorisation_use.filter(demarche=demarche).count(),
+        }
+        for demarche in settings.DEMARCHES.keys()
+    ]
 
-    demarches_count.sort(key=lambda x: x["value"], reverse=True)
+    demarches_count.sort(key=itemgetter("value"), reverse=True)
+
+    chart_labels = [demarche["title"] for demarche in demarches_count]
+    chart_values = [demarche["value"] for demarche in demarches_count]
+
+    chart_data = {
+        "labels": chart_labels,
+        "data": chart_values,
+    }
 
     return render(
         request,
         "public_website/statistiques.html",
         {
-            "organisations_habilitated_count": organisations_habilitated_count,
-            "organisations_not_habilitated_count": organisations_not_habilitated_count,
+            "data": chart_data,
+            "organisations_accredited_count": organisations_accredited_count,
+            "organisations_not_accredited_count": organisations_not_accredited_count,
             "aidants_count": aidants_count,
-            "aidants_habilitating_count": aidants_not_habilitated_count,
+            "aidants_accrediting_count": aidants_not_accredited_count,
             "mandats_count": mandat_count,
             "active_mandats_count": active_mandat_count,
             "usagers_with_mandat_count": usagers_with_mandat_count,
