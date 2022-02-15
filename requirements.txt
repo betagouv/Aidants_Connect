@@ -8,7 +8,7 @@ django-nested-admin==3.4.0
 django-otp==0.9.3
 django-referrer-policy==1.0
 django-tabbed-admin==1.0.4
-django-import-export==2.5.0
+django-import-export==2.7.1
 django-debug-toolbar==3.2.4
 
 phonenumberslite==8.12.41
