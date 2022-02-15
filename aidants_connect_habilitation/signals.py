@@ -1,6 +1,10 @@
 from django.dispatch import Signal
 
-# Provides the arguments "request", "email_address"
+"""
+Both signals provide the arguments `request`: django.http.HttpRequest
+and `confirmation`: aidants_connect_habilitation.models.IssuerEmailConfirmation
+"""
+
+
 email_confirmed = Signal()
-# Provides the arguments "request", "confirmation", "signup"
 email_confirmation_sent = Signal()

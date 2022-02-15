@@ -76,6 +76,7 @@ class NewIssuerFormView(FormView):
 
     def form_valid(self, form):
         self.saved_model: Issuer = form.save()
+        IssuerEmailConfirmation.create(self.saved_model).send(self.request)
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -86,9 +87,10 @@ class NewIssuerFormView(FormView):
 
 
 class IssuerEmailConfirmationWaitingView(CheckIssuerMixin, TemplateView):
-    template_name = "email_confirmation_confirm.html"
+    template_name = "email_confirmation_waiting.html"
 
     def post(self, request, *args, **kwargs):
+        """Resend a confirmation link"""
         IssuerEmailConfirmation.create(self.issuer).send(request)
 
         return self.render_to_response(
@@ -106,15 +108,13 @@ class IssuerEmailConfirmationView(CheckIssuerMixin, TemplateView):
         )
 
     def post(self, request, *args, **kwargs):
-        if self.email_confirmation.key_expired:
-            return self.render_to_response(
-                {**self.get_context_data(**kwargs), "email_confirmation_expired": True}
+        if self.email_confirmation.confirm(request):
+            return redirect(
+                "habilitation_modify_issuer", issuer_id=self.issuer.issuer_id
             )
 
-        self.email_confirmation.confirm(request)
-
-        return redirect(
-            "habilitation_modify_issuer", kwargs={"issuer_id": self.issuer.issuer_id}
+        return self.render_to_response(
+            {**self.get_context_data(**kwargs), "email_confirmation_expired": True}
         )
 
 

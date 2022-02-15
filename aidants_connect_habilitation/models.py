@@ -1,9 +1,11 @@
 from datetime import timedelta
+from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
 from django.db.models import SET_NULL, Q
+from django.http import HttpRequest
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
@@ -57,9 +59,6 @@ class PersonWithResponsibilities(Person):
 
 
 class Issuer(PersonWithResponsibilities):
-    """Model describing the issuer of a habilitation request. The French term is
-    'demandeur'."""
-
     issuer_id = models.UUIDField(
         "Identifiant de demandeur", default=_new_uuid, unique=True
     )
@@ -101,9 +100,10 @@ class IssuerEmailConfirmation(models.Model):
         return "Confirmation for %s" % self.issuer.email
 
     @classmethod
-    def create(cls, issuer) -> "IssuerEmailConfirmation":
-        key = get_random_string(64).lower()
-        return cls._default_manager.create(issuer=issuer, key=key)
+    def create(cls, issuer, **kwargs) -> "IssuerEmailConfirmation":
+        kwargs["key"] = get_random_string(64).lower()
+        kwargs["issuer"] = issuer
+        return cls._default_manager.create(**kwargs)
 
     @property
     def key_expired(self) -> bool:
@@ -112,19 +112,24 @@ class IssuerEmailConfirmation(models.Model):
         )
         return expiration_date <= now()
 
-    def confirm(self, request):
-        if not self.key_expired and not self.issuer.email_verified:
-            email_address = self.issuer.email
-            self.issuer.email_verified = True
-            self.issuer.save()
-            signals.email_confirmed.send(
-                sender=self.__class__,
-                request=request,
-                email_address=email_address,
-            )
-            return email_address
+    def confirm(self, request: HttpRequest) -> Optional[str]:
+        if self.issuer.email_verified:
+            return self.issuer.email
 
-    def send(self, request):
+        if self.key_expired:
+            return None
+
+        self.issuer.email_verified = True
+        self.issuer.save()
+        signals.email_confirmed.send(
+            sender=self.__class__,
+            request=request,
+            confirmation=self,
+        )
+
+        return self.issuer.email
+
+    def send(self, request: HttpRequest):
         self.sent = now()
         self.save()
         signals.email_confirmation_sent.send(
