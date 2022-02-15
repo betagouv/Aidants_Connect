@@ -8,10 +8,10 @@ django-nested-admin==3.4.0
 django-otp==0.9.3
 django-referrer-policy==1.0
 django-tabbed-admin==1.0.4
-django-import-export==2.5.0
+django-import-export==2.7.1
 django-debug-toolbar==3.2.4
 
-phonenumberslite==8.12.41
+phonenumberslite==8.12.43
 django-phonenumber-field==6.0.0
 
 pre-commit==2.17.0
@@ -27,7 +27,7 @@ factory-boy==3.2.1
 freezegun==1.1.0
 gunicorn==20.1.0
 mock==4.0.3
-Pillow==9.0.0
+Pillow==9.0.1
 psycopg2-binary==2.9.3
 ptpython==3.0.20
 PyJWT==1.7.1
@@ -36,7 +36,7 @@ pytz==2021.3
 qrcode==7.3.1
 requests==2.27.1
 selenium==4.1.0
-sentry-sdk==1.5.3
+sentry-sdk==1.5.5
 sqlparse==0.3.1
 whitenoise==5.3.0
 

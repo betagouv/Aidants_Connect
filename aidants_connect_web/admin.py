@@ -85,7 +85,7 @@ class OrganisationResource(resources.ModelResource):
         column_name="Statut de la demande (send = à valider; pending = brouillon)"
     )
 
-    def import_field(self, field, obj, data, is_m2m=False):
+    def import_field(self, field, obj, data, is_m2m=False, **kwargs):
         """
         Calls :meth:`import_export.fields.Field.save` if ``Field.attribute``
         and ``Field.column_name`` are found in ``data``.
@@ -100,7 +100,7 @@ class OrganisationResource(resources.ModelResource):
             if not obj.data_pass_id or obj.data_pass_id == 0:
                 field.save(obj, data, is_m2m)
         else:
-            super().import_field(field, obj, data, is_m2m)
+            super().import_field(field, obj, data, is_m2m, **kwargs)
 
     def import_row(
         self,
