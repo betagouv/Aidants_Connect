@@ -127,7 +127,7 @@ def fc_callback(request):
             fc_id_token,
             settings.FC_AS_FS_SECRET,
             audience=settings.FC_AS_FS_ID,
-            algorithm="HS256",
+            algorithms=["HS256"],
         )
     except ExpiredSignatureError:
         return fc_error("403: token signature has expired.")
