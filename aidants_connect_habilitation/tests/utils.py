@@ -4,7 +4,8 @@ from inspect import getmembers, isclass
 from typing import Type, TypeVar
 
 from django.forms import BaseFormSet, ModelForm
-from factory import DjangoModelFactory
+
+from factory.django import DjangoModelFactory
 
 from aidants_connect_habilitation.tests import factories
 
@@ -49,7 +50,7 @@ def _(form_cls: Type[BaseFormSet], **kwargs) -> BaseFormSet:
         subdata = {f"form-{i}-{k}": v for (k, v) in subform.clean().items()}
         data.update(subdata)
 
-    form = formset_cls(data)
+    form = formset_cls(data=data)
 
     if not form.is_valid():
         raise ValueError(str(form.errors))

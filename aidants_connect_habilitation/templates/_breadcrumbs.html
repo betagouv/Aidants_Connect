@@ -1,0 +1,20 @@
+<div class="fr-col-12 fr-col-md-8">
+  <ol class="habilitation-breadcrumbs">
+    {# STEP 1 ======================================================================= #}
+    <li class="{% if step == 1 %}active{% endif %}">
+      {% if step > 1 and issuer %}
+        <a href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">
+          Le demandeur
+        </a>
+      {% else %}
+        Le demandeur
+      {% endif %}
+    </li>
+    {# STEP 2 ======================================================================= #}
+    <li class="{% if step == 2 %}active{% endif %}">La structure</li>
+    {# STEP 3 ======================================================================= #}
+    <li class="{% if step == 3 %}active{% endif %}">Les personnes<br>impliquées</li>
+    {# STEP 4 ======================================================================= #}
+    <li class="{% if step == 4 %}active{% endif %}">Récapitulatif<br>& validation</li>
+  </ol>
+</div>

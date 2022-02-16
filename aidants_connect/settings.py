@@ -16,7 +16,7 @@ import re
 import sys
 from datetime import datetime, timedelta
 from distutils.util import strtobool
-from typing import Union, Optional
+from typing import Optional, Union
 
 import sentry_sdk
 from dotenv import load_dotenv
@@ -489,6 +489,7 @@ DATAPASS_FROM_EMAIL = os.getenv("DATAPASS_FROM_EMAIL", None)
 DATAPASS_TO_EMAIL = os.getenv("DATAPASS_TO_EMAIL", None)
 
 AC_HABILITATION_FORM_ENABLED = getenv_bool("AC_HABILITATION_FORM_ENABLED", False)
+AC_IMPORT_HABILITATION_REQUESTS = getenv_bool("AC_IMPORT_HABILITATION_REQUESTS", False)
 
 SUPPORT_EMAIL = "support@aidantsconnect.beta.gouv.fr"
 

@@ -1,7 +1,7 @@
 # flake8: noqa
 from django.db import migrations
 
-from aidants_connect.constants import RequestOriginConstants
+from aidants_connect.common.constants import RequestOriginConstants
 
 
 def add_organisation_types(apps, schema_editor):

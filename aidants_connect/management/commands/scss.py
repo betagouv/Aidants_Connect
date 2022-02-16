@@ -1,5 +1,6 @@
 import os
 from shutil import which
+
 from django.core.management.base import BaseCommand, CommandError
 
 
@@ -14,9 +15,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        action = "update"
+        action = ""
         if options["watch"]:
-            action = "watch"
+            action = "--watch"
         self.check_sass_version()
         self.compile_stylesheets(action)
 
@@ -38,7 +39,7 @@ class Command(BaseCommand):
             "aidants_connect_web",
         )
         folders = " ".join(f"{app}/static/scss/:{app}/static/css/" for app in apps)
-        command = f"sass --{action} --style compressed {folders}"
+        command = f"sass {action} --style compressed {folders}"
         self.stdout.write(f"Running {command}")
         self.write_horizontal_line()
         os.system(command)

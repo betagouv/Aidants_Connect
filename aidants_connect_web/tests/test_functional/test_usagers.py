@@ -1,10 +1,12 @@
+from selenium.webdriver.common.by import By
+
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    UsagerFactory,
-    MandatFactory,
     ExpiredMandatFactory,
+    MandatFactory,
+    UsagerFactory,
 )
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
@@ -48,27 +50,27 @@ class UsagersTest(FunctionalTestCase):
         self.open_live_url("/usagers/")
         login_aidant(self)
 
-        user_with_valid_mandate = self.selenium.find_elements_by_css_selector(
-            ".table.with-valid-mandate tbody tr"
+        user_with_valid_mandate = self.selenium.find_elements(
+            By.CSS_SELECTOR, ".table.with-valid-mandate tbody tr"
         )
 
-        user_without_valid_mandate = self.selenium.find_elements_by_css_selector(
-            ".table.without-valid-mandate tbody tr"
+        user_without_valid_mandate = self.selenium.find_elements(
+            By.CSS_SELECTOR, ".table.without-valid-mandate tbody tr"
         )
 
         self.assertEqual(len(user_with_valid_mandate), 2)
         self.assertEqual(len(user_without_valid_mandate), 1)
 
-        self.selenium.find_element_by_id("filter-input").send_keys("Anne")
+        self.selenium.find_element(By.ID, "filter-input").send_keys("Anne")
 
-        anne_result = self.selenium.find_element_by_xpath(
-            "//*[normalize-space()='Anne Cécile Gertrude']"
+        anne_result = self.selenium.find_element(
+            By.XPATH, "//*[normalize-space()='Anne Cécile Gertrude']"
         )
-        josephine_result = self.selenium.find_element_by_xpath(
-            "//*[normalize-space()='Joséphine']"
+        josephine_result = self.selenium.find_element(
+            By.XPATH, "//*[normalize-space()='Joséphine']"
         )
-        corentin_result = self.selenium.find_element_by_xpath(
-            "//*[normalize-space()='Corentin']"
+        corentin_result = self.selenium.find_element(
+            By.XPATH, "//*[normalize-space()='Corentin']"
         )
 
         self.assertTrue(anne_result.is_displayed())

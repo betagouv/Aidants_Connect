@@ -19,55 +19,62 @@
         return _constructor;
     }
 
-    const FilterController = extend(Stimulus.Controller);
+    // We create the collator once because it is a costly operation
+    const collator = new Intl.Collator(navigator.language, {
+        usage: "search",
+        sensitivity: "base",
+    })
+
+    // Inspired by https://github.com/idmadj/locale-includes/blob/master/src/index.js
+    function localeIncludes(haystack, needle) {
+        const haystackLength = haystack.length
+        const needleLength = needle.length
+        const lengthDiff = haystackLength - needleLength
+
+        for (var i = 0; i <= lengthDiff; i++) {
+            const subHaystack = haystack.substring(i, i + needleLength)
+            if (collator.compare(subHaystack, needle) === 0) {
+                return true
+            }
+        }
+        return false
+    }
 
     /*
      * This was made with Stimulus framework
      * https://stimulus.hotwired.dev
      */
-    FilterController.prototype.onInputValueChanged = function (evt) {
-        this.searchValue = evt.target.value.trim();
+    const SearchController = extend(Stimulus.Controller)
+    SearchController.prototype.connect = function () {
+        this.searchBarTargets.forEach(function (searchBar) {
+            searchBar.removeAttribute("hidden")
+        })
     }
 
-    /** Returns true if the second string contians the first, case-agnostic */
-    FilterController.prototype.stringContains = function (first, second) {
-        return first.toLocaleLowerCase().indexOf(second.toLocaleLowerCase()) !== -1;
-    }
-
-    FilterController.prototype.searchValueChanged = function () {
-        if (this.searchValue.length === 0) {
-            this.element.classList.remove(this.irrelevantResultClass);
-            return;
-        }
-
-        var matchedResult = (
-            this.stringContains(this.familynameValue, this.searchValue) ||
-            this.stringContains(this.firstnameValue, this.searchValue)
-        );
-
-        if (!matchedResult) {
-            this.element.classList.add(this.irrelevantResultClass);
-        } else {
-            this.element.classList.remove(this.irrelevantResultClass);
-        }
-    }
-
-    FilterController.prototype.connect = function () {
+    SearchController.prototype.search = function (evt) {
         const self = this
-        document
-            .getElementById("filter-input")
-            .addEventListener("input", function (evt) {
-                self.onInputValueChanged(evt);
-            });
+        const searchQuery = evt.target.value.trim()
+        this.itemTargets.forEach(function (item) {
+            if (searchQuery.length === 0) {
+                item.classList.remove(self.irrelevantResultClass)
+                return
+            }
+
+            const searchTerms = JSON.parse(item.dataset.searchTerms)
+            const hasMatchingTerms = searchTerms.some(function (term) {
+                return localeIncludes(term, searchQuery)
+            })
+            if (hasMatchingTerms) {
+                item.classList.remove(self.irrelevantResultClass)
+            } else {
+                item.classList.add(self.irrelevantResultClass)
+            }
+        })
     }
 
     /* Static fields */
-    FilterController.classes = ["irrelevantResult"]
-    FilterController.values = {
-        firstname: String,
-        familyname: String,
-        search: String
-    }
+    SearchController.targets = ["searchBar", "item"]
+    SearchController.classes = ["irrelevantResult"]
 
     function init() {
         // Make search bar visible
@@ -77,7 +84,7 @@
         }
 
         const application = Stimulus.Application.start();
-        application.register("filter", FilterController);
+        application.register("search", SearchController);
     }
 
     window.addEventListener("load", init);

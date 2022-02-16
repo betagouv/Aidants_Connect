@@ -1,21 +1,25 @@
 import logging
 from datetime import timedelta
-
-from django.db.models import Count, Q
-from django.template.defaultfilters import pluralize
-from django.core.mail import send_mail
-from django.template import loader
-from django.urls import reverse
-from django.utils import timezone
-from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
-from celery import shared_task
-
-from aidants_connect_web.models import Connection
-from aidants_connect import settings
-from aidants_connect_web.models import Aidant, HabilitationRequest, Mandat, Organisation
-
 from typing import List
 
+from django.core.mail import send_mail
+from django.db.models import Count, Q
+from django.template import loader
+from django.template.defaultfilters import pluralize
+from django.urls import reverse
+from django.utils import timezone
+
+from celery import shared_task
+from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
+
+from aidants_connect import settings
+from aidants_connect_web.models import (
+    Aidant,
+    Connection,
+    HabilitationRequest,
+    Mandat,
+    Organisation,
+)
 
 logger = logging.getLogger()
 

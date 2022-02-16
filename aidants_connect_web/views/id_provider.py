@@ -1,7 +1,7 @@
 import logging
 import re
-from secrets import token_urlsafe
 import time
+from secrets import token_urlsafe
 
 from django.conf import settings
 from django.contrib.auth import logout
@@ -16,15 +16,14 @@ from django.http import (
     HttpResponseRedirect,
     JsonResponse,
 )
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 import jwt
 
 from aidants_connect_web.decorators import activity_required, user_is_aidant
-from aidants_connect_web.models import Connection, Journal, Usager, Aidant
-
+from aidants_connect_web.models import Aidant, Connection, Journal, Usager
 from aidants_connect_web.utilities import generate_sha256_hash
 
 logging.basicConfig(level=logging.INFO)

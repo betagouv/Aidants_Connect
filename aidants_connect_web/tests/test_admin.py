@@ -1,4 +1,4 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.test.client import RequestFactory
 
 from aidants_connect.admin import DepartmentFilter, RegionFilter
@@ -15,14 +15,14 @@ class DepartmentFilterTests(TestCase):
 
     def test_generate_filter_list(self):
         result = DepartmentFilter.generate_filter_list()
-        self.assertEqual(len(result), 102)
+        self.assertEqual(len(result), 101)
         self.assertEqual(("01", "Ain (01)"), result[0])
-        self.assertEqual(("20", "Corse-du-Sud (20)"), result[19])
+        self.assertEqual(("20", "Corse (20)"), result[19])
 
     def test_lookup(self):
         request = self.rf.get("/")
         dep_filter = DepartmentFilter(request, {}, Organisation, OrganisationAdmin)
-        self.assertEqual(len(dep_filter.lookups(request, {})), 102)
+        self.assertEqual(len(dep_filter.lookups(request, {})), 101)
 
     def test_lookups_with_selected_region(self):
         params = {"region": "6"}

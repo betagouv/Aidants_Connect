@@ -1,24 +1,40 @@
+{% extends 'layouts/main-habilitation.html' %}
 {% load static form_extras %}
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  <fieldset>
-    <legend>Identité</legend>
+{% block title %}
+  Aidants Connect - Nouveau demandeur
+{% endblock %}
 
-    {% field_as_p form.first_name %}
-    {% field_as_p form.last_name %}
-  </fieldset>
-  <fieldset>
-    <legend>Contact</legend>
+{% block content %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Formulaire d’habilitation</h1>
+        <p class="subtitle">
+          Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
+          Faites votre demande en quelques étapes via le formulaire ci-dessous.
+        </p>
+      </div>
+    </div>
+    {% include '_breadcrumbs.html' with step=1 %}
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <form method="post">
+          <h2>Le demandeur</h2>
+          <p class="subtitle">Saisissez ici les détails concernant votre identité.</p>
+          <div class="shadowed">
+            {% csrf_token %}
 
-    {% field_as_p form.email %}
-    {% field_as_p form.phone %}
-  </fieldset>
-  <fieldset>
-    <legend>Autres informations</legend>
+            {% include "_issuer_form.html" %}
+            <div class="button-box">
+              <button type="submit" class="primary">Valider cette étape</button>
+            </div>
+          </div>
 
-    {% field_as_p form.profession %}
-  </fieldset>
-  <input type="submit" value="Valider cette étape">
-</form>
+        </form>
+      </div>
+    </div>
+    {% include "_more-info.html" %}
+  </div>
+
+{% endblock %}

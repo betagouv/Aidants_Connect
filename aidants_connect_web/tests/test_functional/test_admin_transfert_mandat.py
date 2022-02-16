@@ -1,17 +1,19 @@
-from typing import Sequence, Collection
+from typing import Collection, Sequence
 from unittest import mock
 from unittest.mock import Mock
 
 from django.test import tag
 from django.urls import reverse
+
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.admin import MandatAdmin
 from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import AidantFactory, MandatFactory
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 
 
 @tag("functional")
@@ -72,8 +74,8 @@ class ViewAutorisationsTests(FunctionalTestCase):
         )
 
         self.assertEqual(
-            self.selenium.find_element_by_css_selector(
-                "ul.messagelist > li.error"
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "ul.messagelist > li.error"
             ).text.strip(),
             "L'organisation sélectionnée n'existe pas. Veuillez corriger votre requête",
         )
@@ -97,8 +99,8 @@ class ViewAutorisationsTests(FunctionalTestCase):
         )
 
         self.assertEqual(
-            self.selenium.find_element_by_css_selector(
-                "ul.messagelist > li.error"
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "ul.messagelist > li.error"
             ).text.strip(),
             "Les mandats n'ont pas pu être tansférés à cause d'une erreur.",
         )
@@ -125,12 +127,14 @@ class ViewAutorisationsTests(FunctionalTestCase):
         )
 
         self.assertEqual(
-            self.selenium.find_element_by_css_selector("#content h1").text.strip(),
+            self.selenium.find_element(By.CSS_SELECTOR, "#content h1").text.strip(),
             "⚠ Certains mandats n'ont pas pu être "
             "transférés vers la nouvelle organiation",
         )
 
-        mandates = [item.text for item in self.selenium.find_elements_by_tag_name("li")]
+        mandates = [
+            item.text for item in self.selenium.find_elements(By.TAG_NAME, "li")
+        ]
         self.assertEqual(
             mandates,
             [
@@ -144,14 +148,14 @@ class ViewAutorisationsTests(FunctionalTestCase):
 
         # Select mandates 1 & 2
         for mandate in mandates:
-            self.selenium.find_element_by_xpath(
-                f"//table//input[@value='{mandate.pk}']"
+            self.selenium.find_element(
+                By.XPATH, f"//table//input[@value='{mandate.pk}']"
             ).click()
 
         # Select action
         Select(
-            self.selenium.find_element_by_xpath(
-                "//form[@id='changelist-form']//select[@name='action']"
+            self.selenium.find_element(
+                By.XPATH, "//form[@id='changelist-form']//select[@name='action']"
             )
         ).select_by_visible_text(
             MandatAdmin.move_to_another_organisation.short_description
@@ -160,23 +164,23 @@ class ViewAutorisationsTests(FunctionalTestCase):
         # Submit form
         ids = sorted([str(mandate.pk) for mandate in mandates], key=int)
         path = reverse("otpadmin:aidants_connect_web_mandat_transfer")
-        self.selenium.find_element_by_xpath(
-            "//form[@id='changelist-form']//button[@type='submit']"
+        self.selenium.find_element(
+            By.XPATH, "//form[@id='changelist-form']//button[@type='submit']"
         ).click()
         wait.until(url_matches(f"^.+{path}\\?ids={','.join(ids)}$"))
 
         # Transfer to new organisation
-        field = self.selenium.find_element_by_xpath("//input[@name='organisation']")
+        field = self.selenium.find_element(By.XPATH, "//input[@name='organisation']")
         field.clear()
         field.send_keys(organisation)
-        self.selenium.find_element_by_xpath("//input[@type='submit']").click()
+        self.selenium.find_element(By.XPATH, "//input[@type='submit']").click()
 
     def __login(self):
-        field = self.selenium.find_element_by_id("id_username")
+        field = self.selenium.find_element(By.ID, "id_username")
         field.send_keys(self.aidant_thierry.username)
-        field = self.selenium.find_element_by_id("id_password")
+        field = self.selenium.find_element(By.ID, "id_password")
         field.send_keys("motdepassedethierry")
-        field = self.selenium.find_element_by_id("id_otp_token")
+        field = self.selenium.find_element(By.ID, "id_otp_token")
         field.send_keys("123456")
-        submit_button = self.selenium.find_element_by_xpath("//input[@type='submit']")
+        submit_button = self.selenium.find_element(By.XPATH, "//input[@type='submit']")
         submit_button.click()

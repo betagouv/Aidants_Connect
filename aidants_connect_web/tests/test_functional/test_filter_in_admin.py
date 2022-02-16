@@ -1,17 +1,19 @@
 from django.conf import settings
 from django.test import tag
+
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.models import DatavizRegion
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    DatavizRegionFactory,
     DatavizDepartmentFactory,
     DatavizDepartmentsToRegionFactory,
+    DatavizRegionFactory,
     HabilitationRequestFactory,
     OrganisationFactory,
 )
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 
 
 class RegionFilterTestCase(FunctionalTestCase):
@@ -56,16 +58,16 @@ class RegionFilterTestCase(FunctionalTestCase):
         WebDriverWait(self.selenium, 10)
 
         self.open_live_url(self.login_url)
-        login_field = self.selenium.find_element_by_id("id_username")
+        login_field = self.selenium.find_element(By.ID, "id_username")
         login_field.send_keys("thierry@thierry.com")
-        otp_field = self.selenium.find_element_by_id("id_otp_token")
+        otp_field = self.selenium.find_element(By.ID, "id_otp_token")
         otp_field.send_keys("123456")
-        pwd_field = self.selenium.find_element_by_id("id_password")
+        pwd_field = self.selenium.find_element(By.ID, "id_password")
         pwd_field.send_keys("laisser-passer-a38")
 
-        submit_button = self.selenium.find_element_by_xpath("//input[@type='submit']")
+        submit_button = self.selenium.find_element(By.XPATH, "//input[@type='submit']")
         submit_button.click()
-        django_admin_title = self.selenium.find_element_by_tag_name("h1").text
+        django_admin_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(django_admin_title, "Administration de Django")
 
 
@@ -90,7 +92,7 @@ class OrganisationFilterTests(RegionFilterTestCase):
         self.assertTrue("Orga des Yvelines" in self.selenium.page_source)
         self.assertTrue("Orga du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("Sans Code Postal" in self.selenium.page_source)
-        idf_link = self.selenium.find_element_by_link_text("Île-de-France")
+        idf_link = self.selenium.find_element(By.LINK_TEXT, "Île-de-France")
         idf_link.click()
 
         self.assertTrue(
@@ -100,7 +102,7 @@ class OrganisationFilterTests(RegionFilterTestCase):
             "Orga du Bas-Rhin" in self.selenium.page_source,
         )
         self.assertFalse("Sans Code Postal" in self.selenium.page_source)
-        grandest_link = self.selenium.find_element_by_link_text("Grand Est")
+        grandest_link = self.selenium.find_element(By.LINK_TEXT, "Grand Est")
         grandest_link.click()
         self.assertFalse(
             "Orga des Yvelines" in self.selenium.page_source,
@@ -114,7 +116,7 @@ class OrganisationFilterTests(RegionFilterTestCase):
             "Orga du Haut-Rhin" in self.selenium.page_source,
             "Orga du Haut-Rhin is not there, it should",
         )
-        other_link = self.selenium.find_element_by_link_text("Autre")
+        other_link = self.selenium.find_element(By.LINK_TEXT, "Autre")
         other_link.click()
         self.assertFalse("Orga du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("Sans Code Postal" in self.selenium.page_source)
@@ -123,7 +125,7 @@ class OrganisationFilterTests(RegionFilterTestCase):
         self.open_live_url(self.organisation_url)
         self.assertTrue("Avec ID Datapass" in self.selenium.page_source)
         self.assertTrue("Sans ID Datapass" in self.selenium.page_source)
-        idf_link = self.selenium.find_element_by_link_text("Sans n° Datapass")
+        idf_link = self.selenium.find_element(By.LINK_TEXT, "Sans n° Datapass")
         idf_link.click()
 
         self.assertFalse("Avec ID Datapass" in self.selenium.page_source)
@@ -149,11 +151,11 @@ class AidantFilterTestCase(RegionFilterTestCase):
         self.open_live_url(self.aidant_url)
         self.assertTrue("Du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
-        other_link = self.selenium.find_element_by_link_text("Autre")
+        other_link = self.selenium.find_element(By.LINK_TEXT, "Autre")
         other_link.click()
         self.assertFalse("Du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
-        grand_est_link = self.selenium.find_element_by_link_text("Grand Est")
+        grand_est_link = self.selenium.find_element(By.LINK_TEXT, "Grand Est")
         grand_est_link.click()
         self.assertTrue("Du Bas-Rhin" in self.selenium.page_source)
         self.assertFalse("D'on ne sait où" in self.selenium.page_source)
@@ -182,12 +184,12 @@ class HabilitationRequestTestCase(RegionFilterTestCase):
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
         # cannot simply click on "Autre" because there is another "Autre" option
         # (in "origin" filter)
-        other_link = self.selenium.find_element_by_xpath("//a[@href='?region=other']")
+        other_link = self.selenium.find_element(By.XPATH, "//a[@href='?region=other']")
         other_link.click()
 
         self.assertFalse("Du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
-        grand_est_link = self.selenium.find_element_by_link_text("Grand Est")
+        grand_est_link = self.selenium.find_element(By.LINK_TEXT, "Grand Est")
         grand_est_link.click()
 
         self.assertTrue("Du Bas-Rhin" in self.selenium.page_source)

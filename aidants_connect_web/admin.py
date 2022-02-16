@@ -1,34 +1,36 @@
 import logging
 from collections.abc import Collection
 
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin, TabularInline, SimpleListFilter
+from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.db.models import QuerySet
-from django.http import HttpResponseRedirect, HttpResponseNotAllowed, HttpRequest
+from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse, path
+from django.urls import path, reverse
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
+
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.lib import add_static_token
 from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ImportMixin, ExportMixin, ImportExportMixin
+from import_export.admin import ImportExportMixin, ImportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
-from import_export.widgets import ManyToManyWidget, ForeignKeyWidget
+from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from nested_admin import NestedModelAdmin, NestedTabularInline
 from tabbed_admin import TabbedModelAdmin
 
 from aidants_connect.admin import (
-    admin_site,
-    VisibleToAdminMetier,
-    VisibleToTechAdmin,
     DepartmentFilter,
     RegionFilter,
+    VisibleToAdminMetier,
+    VisibleToTechAdmin,
+    admin_site,
 )
 from aidants_connect_web.forms import (
     AidantChangeForm,
@@ -38,13 +40,13 @@ from aidants_connect_web.forms import (
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
+    CarteTOTP,
     Connection,
     HabilitationRequest,
     Journal,
     Mandat,
     Organisation,
     Usager,
-    CarteTOTP,
 )
 
 logger = logging.getLogger()
@@ -58,6 +60,21 @@ class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
     pass
 
 
+class SpecificDeleteActionsMixin:
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        try:
+            del actions["delete_selected"]
+        except KeyError:
+            pass
+        return actions
+
+    def _specific_delete_action(self, request, queryset):
+        for one_object in queryset:
+            if one_object.clean_journal_entries_and_delete_mandats(request):
+                one_object.delete()
+
+
 class OrganisationResource(resources.ModelResource):
     datapass_id = Field(attribute="data_pass_id", column_name="Numéro de demande")
     name = Field(attribute="name", column_name="Nom de la structure")
@@ -68,7 +85,7 @@ class OrganisationResource(resources.ModelResource):
         column_name="Statut de la demande (send = à valider; pending = brouillon)"
     )
 
-    def import_field(self, field, obj, data, is_m2m=False):
+    def import_field(self, field, obj, data, is_m2m=False, **kwargs):
         """
         Calls :meth:`import_export.fields.Field.save` if ``Field.attribute``
         and ``Field.column_name`` are found in ``data``.
@@ -83,7 +100,7 @@ class OrganisationResource(resources.ModelResource):
             if not obj.data_pass_id or obj.data_pass_id == 0:
                 field.save(obj, data, is_m2m)
         else:
-            super().import_field(field, obj, data, is_m2m)
+            super().import_field(field, obj, data, is_m2m, **kwargs)
 
     def import_row(
         self,
@@ -154,7 +171,9 @@ class WithoutDatapassIdFilter(SimpleListFilter):
             return queryset.filter(data_pass_id=None)
 
 
-class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
+class OrganisationAdmin(
+    SpecificDeleteActionsMixin, ImportMixin, VisibleToAdminMetier, ModelAdmin
+):
     list_display = (
         "name",
         "address",
@@ -192,6 +211,7 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "find_zipcode_in_address",
         "deactivate_organisations",
         "activate_organisations",
+        "specific_delete_action",
     )
 
     def get_readonly_fields(self, request, obj=None):
@@ -268,6 +288,13 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             organisation.activate_organisation()
 
     activate_organisations.short_description = "Activer les organisations"
+
+    def specific_delete_action(self, request, queryset):
+        self._specific_delete_action(request, queryset)
+
+    specific_delete_action.short_description = (
+        "Supprimer les organisations sélectionnées"
+    )
 
 
 class AidantResource(resources.ModelResource):
@@ -563,6 +590,33 @@ class HabilitationRequestResource(resources.ModelResource):
         fields = set()
 
 
+class HabilitationRequestImportResource(resources.ModelResource):
+    organisation__data_pass_id = Field(
+        attribute="organisation",
+        widget=ForeignKeyWidget(Organisation, field="data_pass_id"),
+        column_name="data_pass_id",
+    )
+    last_name = Field(attribute="last_name")
+    first_name = Field(attribute="first_name")
+    email = Field(attribute="email")
+    profession = Field(attribute="profession")
+    status = Field(attribute="status")
+    origin = Field(attribute="origin")
+
+    def after_import_instance(self, instance, new, row_number=None, **kwargs):
+        if new:
+            instance.is_new = True
+
+    def skip_row(self, instance, original):
+        # do not change existing rows in database
+        return not getattr(instance, "is_new", False)
+
+    class Meta:
+        model = HabilitationRequest
+        fields = set()
+        import_id_fields = ("email", "organisation__data_pass_id")
+
+
 class HabilitationDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisation__zipcode"
 
@@ -571,7 +625,7 @@ class HabilitationRequestRegionFilter(RegionFilter):
     filter_parameter_name = "organisation__zipcode"
 
 
-class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
+class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "email",
         "first_name",
@@ -599,7 +653,12 @@ class HabilitationRequestAdmin(ExportMixin, VisibleToAdminMetier, ModelAdmin):
         "organisation__data_pass_id",
     )
     ordering = ("email",)
+
+    # Change resource class if explicit setting is set
     resource_class = HabilitationRequestResource
+    if settings.AC_IMPORT_HABILITATION_REQUESTS:
+        resource_class = HabilitationRequestImportResource
+
     change_list_template = (
         "aidants_connect_web/admin/habilitation_request/change_list.html"
     )
@@ -735,7 +794,9 @@ class UsagerMandatInline(VisibleToTechAdmin, NestedTabularInline):
     inlines = (UsagerAutorisationInline,)
 
 
-class UsagerAdmin(VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin):
+class UsagerAdmin(
+    SpecificDeleteActionsMixin, VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin
+):
     list_display = ("__str__", "email", "creation_date")
     search_fields = ("given_name", "family_name", "email")
 
@@ -743,22 +804,12 @@ class UsagerAdmin(VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin):
     tab_mandats = (UsagerMandatInline,)
 
     tabs = [("Informations", tab_infos), ("Mandats", tab_mandats)]
-    actions = ("specific_deleted_action",)
+    actions = ("specific_delete_action",)
 
-    def get_actions(self, request):
-        actions = super(UsagerAdmin, self).get_actions(request)
-        try:
-            del actions["delete_selected"]
-        except KeyError:
-            pass
-        return actions
+    def specific_delete_action(self, request, queryset):
+        self._specific_delete_action(request, queryset)
 
-    def specific_deleted_action(self, request, queryset):
-        for usager in queryset:
-            usager.clean_journal_entries_and_delete_mandats()
-            usager.delete()
-
-    specific_deleted_action.short_description = "Supprimer les usagers sélectionnés"
+    specific_delete_action.short_description = "Supprimer les usagers sélectionnés"
 
 
 class MandatAutorisationInline(VisibleToTechAdmin, TabularInline):

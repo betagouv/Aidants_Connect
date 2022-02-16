@@ -1,10 +1,13 @@
-from datetime import timedelta
 import time
+from datetime import timedelta
 
 from django.conf import settings
 from django.test import tag
 from django.utils import timezone
 
+from selenium.webdriver.common.by import By
+
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -12,9 +15,7 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
-
 
 FC_URL_PARAMETERS = (
     f"state=34"
@@ -92,19 +93,19 @@ class UseAutorisationTests(FunctionalTestCase):
 
     def use_a_autorisation(self):
         # Select usager
-        welcome_aidant = self.selenium.find_element_by_tag_name("h1").text
+        welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(
             welcome_aidant, "Bienvenue sur votre Espace Aidants Connect, Thierry"
         )
-        usagers = self.selenium.find_elements_by_class_name("label-usager")
+        usagers = self.selenium.find_elements(By.CLASS_NAME, "label-usager")
         self.assertEqual(len(usagers), 1)
         self.assertEqual(usagers[0].text, "Joséphine ST-PIERRE")
         usagers[0].click()
 
         # Select Démarche
-        step2_title = self.selenium.find_element_by_id("instructions").text
+        step2_title = self.selenium.find_element(By.ID, "instructions").text
         self.assertIn("En selectionnant une démarche", step2_title)
-        demarches = self.selenium.find_elements_by_id("label_demarche")
+        demarches = self.selenium.find_elements(By.ID, "label_demarche")
         self.assertEqual(len(demarches), 2)
         last_demarche = demarches[-1]
         last_demarche.click()

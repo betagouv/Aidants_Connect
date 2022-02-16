@@ -1,17 +1,18 @@
 from django.conf import settings
 from django.core import mail
-from django.test import tag, TestCase
+from django.test import TestCase, tag
+from django.urls import resolve
+
 from aidants_connect_web.models import (
     HabilitationRequest,
     Organisation,
     OrganisationType,
 )
-from aidants_connect_web.views import datapass
 from aidants_connect_web.tests.factories import (
     HabilitationRequestFactory,
     OrganisationFactory,
 )
-from django.urls import resolve
+from aidants_connect_web.views import datapass
 
 
 class DatapassMixin:

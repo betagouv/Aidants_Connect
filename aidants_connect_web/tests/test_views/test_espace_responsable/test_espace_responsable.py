@@ -1,13 +1,10 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.tests.factories import (
-    AidantFactory,
-    OrganisationFactory,
-)
+from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from aidants_connect_web.views import espace_responsable
 
 

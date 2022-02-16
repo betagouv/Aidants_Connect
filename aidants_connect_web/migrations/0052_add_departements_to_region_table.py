@@ -7,7 +7,6 @@ from django.db import migrations, models, transaction
 import aidants_connect_web
 
 
-@transaction.atomic
 def populate_departements_to_region_table(apps, _):
     # noinspection PyPep8Naming
     DatavizRegion = apps.get_model("aidants_connect_web", "DatavizRegion")
@@ -41,8 +40,6 @@ def populate_departements_to_region_table(apps, _):
 
 
 class Migration(migrations.Migration):
-    atomic = False
-
     dependencies = [
         ("aidants_connect_web", "0051_mandat_template_path"),
     ]

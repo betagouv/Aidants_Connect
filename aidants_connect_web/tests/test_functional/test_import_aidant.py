@@ -1,19 +1,22 @@
 import os
-from os.path import dirname, join as path_join
+from os.path import dirname
+from os.path import join as path_join
 
 from django.conf import settings
 from django.test import tag
-from selenium.webdriver.support.wait import WebDriverWait
+
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 import aidants_connect_web
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    OrganisationFactory,
     CarteTOTPFactory,
+    OrganisationFactory,
 )
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
 
 
 @tag("functional", "import")
@@ -40,41 +43,41 @@ class ImportAidantTests(FunctionalTestCase):
 
     def login_admin(self):
         self.open_live_url(self.login_url)
-        login_field = self.selenium.find_element_by_id("id_username")
+        login_field = self.selenium.find_element(By.ID, "id_username")
         login_field.send_keys("thierry@thierry.com")
-        otp_field = self.selenium.find_element_by_id("id_otp_token")
+        otp_field = self.selenium.find_element(By.ID, "id_otp_token")
         otp_field.send_keys("123456")
-        pwd_field = self.selenium.find_element_by_id("id_password")
+        pwd_field = self.selenium.find_element(By.ID, "id_password")
         pwd_field.send_keys("laisser-passer-a38")
 
-        submit_button = self.selenium.find_element_by_xpath("//input[@type='submit']")
+        submit_button = self.selenium.find_element(By.XPATH, "//input[@type='submit']")
         submit_button.click()
-        django_admin_title = self.selenium.find_element_by_tag_name("h1").text
+        django_admin_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(django_admin_title, "Administration de Django")
 
     def import_file(self, path):
         self.open_live_url(self.import_url)
-        file_import_field = self.selenium.find_element_by_id("id_import_file")
+        file_import_field = self.selenium.find_element(By.ID, "id_import_file")
         file_import_field.send_keys(path)
-        xlsx_type_option = self.selenium.find_element_by_xpath(
-            "//select[@id='id_input_format']/option[text()='xlsx']"
+        xlsx_type_option = self.selenium.find_element(
+            By.XPATH, "//select[@id='id_input_format']/option[text()='xlsx']"
         )
         xlsx_type_option.click()
-        file_import_submit = self.selenium.find_element_by_xpath(
-            "//input[@type='submit']"
+        file_import_submit = self.selenium.find_element(
+            By.XPATH, "//input[@type='submit']"
         )
         file_import_submit.click()
         try:
-            self.selenium.find_element_by_xpath("//table[@class='import-preview']")
+            self.selenium.find_element(By.XPATH, "//table[@class='import-preview']")
         except NoSuchElementException:
-            first_error = self.selenium.find_element_by_xpath(
-                "//div[@class='errors']/details[1]/summary"
+            first_error = self.selenium.find_element(
+                By.XPATH, "//div[@class='errors']/details[1]/summary"
             )
             self.fail(
                 f"Import of following file failed: {path} "
                 f"with message: '{first_error.text}'"
             )
-        file_import_confirm = self.selenium.find_element_by_name("confirm")
+        file_import_confirm = self.selenium.find_element(By.NAME, "confirm")
         file_import_confirm.click()
 
     def test_import_correct_files(self):

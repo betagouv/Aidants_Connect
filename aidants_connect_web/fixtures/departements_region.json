@@ -95,6 +95,11 @@
     "region_name": "Nouvelle-Aquitaine"
   },
   {
+    "zipcode": 20,
+    "dep_name": "Corse",
+    "region_name": "Corse"
+  },
+  {
     "zipcode": 21,
     "dep_name": "Côte-d'Or",
     "region_name": "Bourgogne-Franche-Comté"
@@ -138,16 +143,6 @@
     "zipcode": 29,
     "dep_name": "Finistère",
     "region_name": "Bretagne"
-  },
-  {
-    "zipcode": "2A",
-    "dep_name": "Corse-du-Sud",
-    "region_name": "Corse"
-  },
-  {
-    "zipcode": "2B",
-    "dep_name": "Haute-Corse",
-    "region_name": "Corse"
   },
   {
     "zipcode": 30,

@@ -1,0 +1,40 @@
+{% load static %}
+
+{% include 'layouts/_skip-links.html' %}
+
+<header>
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+      <div class="fr-col-12 fr-col-md-5">
+        <a class="header-logo" href="{% url 'home_page' %}">
+          <img width="200" src="{% static 'images/Marianne_logo_1120.png' %}" alt=""/>
+          <img width="100" src="{% static 'images/aidants-connect_logo.png' %}"
+               alt="Aidants Connect"/>
+        </a>
+      </div>
+      <div class="fr-col-12 fr-col-md-7">
+        <nav role="navigation" aria-label="Menu principal">
+          <ul class="header-links">
+            {% with view_name=request.resolver_match.view_name %}
+              {# TODO : à quoi correspondent les liens de la maquette ? Accueil/Premiers pas/Outils/Aide #}
+              {# TODO : Réutiliser les liens existants pour l'instant ? #}
+              <li>
+                <a {% if view_name == 'home_page' %}class="active"{% endif %} href="{% url 'home_page' %}">
+                  Accueil
+                </a>
+              </li>
+              <li><a class="active" href="/">Premiers pas</a></li>
+              <li>
+                <a {% if view_name == 'ressources' %}class="active"{% endif %}
+                   href="{% url 'ressources' %}">
+                  Outils
+                </a>
+              </li>
+              <li><a href="/">Aide</a></li>
+            {% endwith %}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>

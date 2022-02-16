@@ -1,6 +1,8 @@
 from django.test import tag
 
-from aidants_connect_web.tests.test_functional.testcases import FunctionalTestCase
+from selenium.webdriver.common.by import By
+
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 
 
 @tag("functional")

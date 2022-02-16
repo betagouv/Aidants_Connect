@@ -1,19 +1,28 @@
 from collections.abc import Iterable
-
-import factory
 from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from factory import (
+    Faker,
+    LazyAttribute,
+    PostGenerationMethodCall,
+    SelfAttribute,
+    Sequence,
+    SubFactory,
+    post_generation,
+)
+from factory.django import DjangoModelFactory
 
 from aidants_connect_web.models import (
     Autorisation,
-    Connection,
     CarteTOTP,
-    DatavizRegion,
+    Connection,
     DatavizDepartment,
     DatavizDepartmentsToRegion,
+    DatavizRegion,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -23,7 +32,7 @@ from aidants_connect_web.models import (
 )
 
 
-class OrganisationFactory(factory.DjangoModelFactory):
+class OrganisationFactory(DjangoModelFactory):
     name = "COMMUNE D'HOULBEC COCHEREL"
     siret = 123
     address = "45 avenue du Général de Gaulle, 27120 HOULBEC COCHEREL"
@@ -32,39 +41,39 @@ class OrganisationFactory(factory.DjangoModelFactory):
         model = Organisation
 
 
-class CarteTOTPFactory(factory.DjangoModelFactory):
-    serial_number = factory.Sequence(lambda n: f"SN{n}")
-    seed = factory.Faker("hexify")
+class CarteTOTPFactory(DjangoModelFactory):
+    serial_number = Sequence(lambda n: f"SN{n}")
+    seed = Faker("hexify")
 
     class Meta:
         model = CarteTOTP
 
 
-class TOTPDeviceFactory(factory.DjangoModelFactory):
+class TOTPDeviceFactory(DjangoModelFactory):
     class Meta:
         model = TOTPDevice
 
 
-class OrganisationTypeFactory(factory.DjangoModelFactory):
+class OrganisationTypeFactory(DjangoModelFactory):
     name = "Type par défaut"
 
     class Meta:
         model = OrganisationType
 
 
-class AidantFactory(factory.DjangoModelFactory):
-    username = factory.Faker("email")
-    email = factory.SelfAttribute("username")
-    password = factory.PostGenerationMethodCall("set_password", "motdepassedethierry")
+class AidantFactory(DjangoModelFactory):
+    username = Faker("email")
+    email = SelfAttribute("username")
+    password = PostGenerationMethodCall("set_password", "motdepassedethierry")
     last_name = "Goneau"
     first_name = "Thierry"
     profession = "secrétaire"
-    organisation = factory.SubFactory(OrganisationFactory)
+    organisation = SubFactory(OrganisationFactory)
 
     class Meta:
         model = get_user_model()
 
-    @factory.post_generation
+    @post_generation
     def post(self, create, _, **kwargs):
         if not create:
             return
@@ -76,18 +85,18 @@ class AidantFactory(factory.DjangoModelFactory):
             self.responsable_de.add(self.organisation)
 
 
-class HabilitationRequestFactory(factory.DjangoModelFactory):
+class HabilitationRequestFactory(DjangoModelFactory):
     first_name = "Jean"
     last_name = "Dupont"
-    email = factory.Faker("email")
-    organisation = factory.SubFactory(OrganisationFactory)
+    email = Faker("email")
+    organisation = SubFactory(OrganisationFactory)
     profession = "Secrétaire"
 
     class Meta:
         model = HabilitationRequest
 
 
-class UsagerFactory(factory.DjangoModelFactory):
+class UsagerFactory(DjangoModelFactory):
     given_name = "Homer"
     family_name = "Simpson"
     birthdate = "1902-06-30"
@@ -95,23 +104,23 @@ class UsagerFactory(factory.DjangoModelFactory):
     birthplace = "27681"
     birthcountry = Usager.BIRTHCOUNTRY_FRANCE
     email = "homer@simpson.com"
-    sub = factory.Sequence(lambda n: f"avalidsub{n}")
+    sub = Sequence(lambda n: f"avalidsub{n}")
 
     class Meta:
         model = Usager
 
 
-class MandatFactory(factory.DjangoModelFactory):
-    organisation = factory.SubFactory(OrganisationFactory)
-    usager = factory.SubFactory(UsagerFactory)
-    creation_date = factory.LazyAttribute(lambda f: now())
+class MandatFactory(DjangoModelFactory):
+    organisation = SubFactory(OrganisationFactory)
+    usager = SubFactory(UsagerFactory)
+    creation_date = LazyAttribute(lambda f: now())
     duree_keyword = "SHORT"
-    expiration_date = factory.LazyAttribute(lambda f: now() + timedelta(days=1))
+    expiration_date = LazyAttribute(lambda f: now() + timedelta(days=1))
 
     class Meta:
         model = Mandat
 
-    @factory.post_generation
+    @post_generation
     def post(self, create, _, **kwargs):
         authorisations = kwargs.get("create_authorisations", None)
         if not create or not isinstance(authorisations, Iterable):
@@ -126,7 +135,7 @@ class MandatFactory(factory.DjangoModelFactory):
 
 
 class RevokedMandatFactory(MandatFactory):
-    @factory.post_generation
+    @post_generation
     def post(self, create, _, **kwargs):
         authorisations = kwargs.get("create_authorisations", None)
         if not create or not isinstance(authorisations, Iterable):
@@ -141,12 +150,12 @@ class RevokedMandatFactory(MandatFactory):
 
 
 class ExpiredMandatFactory(MandatFactory):
-    expiration_date = factory.LazyAttribute(lambda f: now() - timedelta(days=365))
+    expiration_date = LazyAttribute(lambda f: now() - timedelta(days=365))
 
 
-class AutorisationFactory(factory.DjangoModelFactory):
+class AutorisationFactory(DjangoModelFactory):
     demarche = "justice"
-    mandat = factory.SubFactory(MandatFactory)
+    mandat = SubFactory(MandatFactory)
     revocation_date = None
 
     class Meta:
@@ -161,12 +170,12 @@ class LegacyAutorisationFactory(AutorisationFactory):
         model = Autorisation
 
 
-class ConnectionFactory(factory.DjangoModelFactory):
+class ConnectionFactory(DjangoModelFactory):
     class Meta:
         model = Connection
 
 
-class JournalFactory(factory.DjangoModelFactory):
+class JournalFactory(DjangoModelFactory):
     class Meta:
         model = Journal
 
@@ -182,20 +191,20 @@ class JournalFactory(factory.DjangoModelFactory):
 class AttestationJournalFactory(JournalFactory):
     action = "create_attestation"
     is_remote_mandat = False
-    access_token = factory.Faker("md5")
+    access_token = Faker("md5")
     duree = 6
 
 
-class DatavizRegionFactory(factory.DjangoModelFactory):
+class DatavizRegionFactory(DjangoModelFactory):
     class Meta:
         model = DatavizRegion
 
 
-class DatavizDepartmentFactory(factory.DjangoModelFactory):
+class DatavizDepartmentFactory(DjangoModelFactory):
     class Meta:
         model = DatavizDepartment
 
 
-class DatavizDepartmentsToRegionFactory(factory.DjangoModelFactory):
+class DatavizDepartmentsToRegionFactory(DjangoModelFactory):
     class Meta:
         model = DatavizDepartmentsToRegion

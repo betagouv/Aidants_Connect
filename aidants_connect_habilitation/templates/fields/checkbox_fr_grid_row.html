@@ -1,0 +1,19 @@
+<div
+    class="form-grid-row fr-grid-row fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %} {{ field.css_classes }}">
+  <div class="fr-col-12 checkbox-col">
+    {{ field }}
+    {{ field.label_tag }}
+  </div>
+</div>
+
+{% if errors %}
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="errors fr-col-12">{{ errors }}</div>
+  </div>
+{% endif %}
+
+{% if field.help_text %}
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="helptext fr-col-12">{{ field.help_text|safe }}</div>
+  </div>
+{% endif %}

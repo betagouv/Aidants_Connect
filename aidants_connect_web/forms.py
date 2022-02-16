@@ -2,8 +2,8 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.core.validators import RegexValidator, EmailValidator
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.core.validators import EmailValidator, RegexValidator
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
@@ -11,7 +11,7 @@ from django_otp import match_token
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from aidants_connect.constants import AuthorizationDurations as ADKW
+from aidants_connect.common.constants import AuthorizationDurations as ADKW
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,

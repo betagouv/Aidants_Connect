@@ -1,19 +1,18 @@
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseNotFound
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from operator import itemgetter
 
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation, Usager
-
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()

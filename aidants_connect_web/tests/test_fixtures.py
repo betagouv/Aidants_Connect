@@ -1,4 +1,5 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
+
 from aidants_connect_web.models import Aidant, Autorisation, Usager
 
 
