@@ -402,6 +402,8 @@ CSP_SCRIPT_SRC = (
     "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
+    "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
+    "'sha256-wSJM0q2Hy/wlB2+4HmcFtjOB2K4H+MX73ixv1EwGfxw='",  # statistiques.html
 )
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)

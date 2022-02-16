@@ -60,6 +60,24 @@ class OrganisationType(models.Model):
         return f"{self.name}"
 
 
+class OrganisationManager(models.Manager):
+    def accredited(self):
+        return (
+            self.filter(aidants__is_active=True)
+            .filter(aidants__can_create_mandats=True)
+            .filter(aidants__carte_totp__isnull=False)
+            .filter(is_active=True)
+        )
+
+    def not_yet_accredited(self):
+        return (
+            self.filter(aidants__is_active=True)
+            .filter(aidants__can_create_mandats=True)
+            .filter(aidants__carte_totp__isnull=True)
+            .filter(is_active=True)
+        )
+
+
 class Organisation(models.Model):
     data_pass_id = models.PositiveIntegerField("Datapass ID", null=True)
     name = models.TextField("Nom", default="No name provided")
@@ -72,6 +90,8 @@ class Organisation(models.Model):
     city = models.CharField("Ville", max_length=255, null=True)
 
     is_active = models.BooleanField("Est active", default=True, editable=False)
+
+    objects = OrganisationManager()
 
     def __str__(self):
         return f"{self.name}"
