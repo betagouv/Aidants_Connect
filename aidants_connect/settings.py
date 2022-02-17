@@ -521,3 +521,13 @@ AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM = os.getenv(
 default = 3
 val = os.getenv("EMAIL_CONFIRMATION_EXPIRE_DAYS", f"{default}")
 EMAIL_CONFIRMATION_EXPIRE_DAYS = int(val) if val.isnumeric() else default
+
+EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_FROM = os.getenv(
+    "EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_FROM", SUPPORT_EMAIL
+)
+
+EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_SUBJECT = os.getenv(
+    "EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_SUBJECT",
+    "Merci de confirmer votre adresse email pour le processus "
+    "d'habilitation Aidant Connect d'une organisation.",
+)

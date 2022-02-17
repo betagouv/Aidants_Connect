@@ -5,7 +5,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.db import models
 from django.db.models import SET_NULL, Q
-from django.http import HttpRequest
+from django.dispatch import Signal
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
@@ -16,7 +16,6 @@ from aidants_connect.common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_habilitation import signals
 from aidants_connect_web.models import OrganisationType
 
 __all__ = [
@@ -28,6 +27,7 @@ __all__ = [
     "OrganisationRequest",
     "AidantRequest",
     "RequestMessage",
+    "email_confirmation_sent",
 ]
 
 
@@ -84,6 +84,9 @@ class EmailConfirmationManager(models.Manager):
         self.all_expired().delete()
 
 
+email_confirmation_sent = Signal()
+
+
 class IssuerEmailConfirmation(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE)
     created = models.DateTimeField(verbose_name="Créé le", default=now)
@@ -112,7 +115,7 @@ class IssuerEmailConfirmation(models.Model):
         )
         return expiration_date <= now()
 
-    def confirm(self, request: HttpRequest) -> Optional[str]:
+    def confirm(self) -> Optional[str]:
         if self.issuer.email_verified:
             return self.issuer.email
 
@@ -121,20 +124,13 @@ class IssuerEmailConfirmation(models.Model):
 
         self.issuer.email_verified = True
         self.issuer.save()
-        signals.email_confirmed.send(
-            sender=self.__class__,
-            request=request,
-            confirmation=self,
-        )
 
         return self.issuer.email
 
-    def send(self, request: HttpRequest):
+    def send(self):
         self.sent = now()
         self.save()
-        signals.email_confirmation_sent.send(
-            sender=self.__class__, request=request, confirmation=self
-        )
+        email_confirmation_sent.send(sender=self.__class__, confirmation=self)
 
 
 class DataPrivacyOfficer(PersonWithResponsibilities):

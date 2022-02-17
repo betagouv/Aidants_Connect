@@ -76,7 +76,7 @@ class NewIssuerFormView(FormView):
 
     def form_valid(self, form):
         self.saved_model: Issuer = form.save()
-        IssuerEmailConfirmation.create(self.saved_model).send(self.request)
+        IssuerEmailConfirmation.create(self.saved_model).send()
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -91,7 +91,7 @@ class IssuerEmailConfirmationWaitingView(CheckIssuerMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         """Resend a confirmation link"""
-        IssuerEmailConfirmation.create(self.issuer).send(request)
+        IssuerEmailConfirmation.create(self.issuer).send()
 
         return self.render_to_response(
             {**self.get_context_data(**kwargs), "email_confirmation_sent": True}
@@ -108,7 +108,7 @@ class IssuerEmailConfirmationView(CheckIssuerMixin, TemplateView):
         )
 
     def post(self, request, *args, **kwargs):
-        if self.email_confirmation.confirm(request):
+        if self.email_confirmation.confirm():
             return redirect(
                 "habilitation_modify_issuer", issuer_id=self.issuer.issuer_id
             )
