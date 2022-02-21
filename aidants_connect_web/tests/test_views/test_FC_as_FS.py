@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unittest import mock
 
 from django.conf import settings
 from django.test import TestCase, override_settings, tag
@@ -6,7 +7,6 @@ from django.test.client import Client
 from django.urls import reverse
 
 import jwt
-import mock
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
 

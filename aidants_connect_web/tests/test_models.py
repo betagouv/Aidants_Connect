@@ -1,13 +1,12 @@
 from datetime import date, datetime, timedelta
 from os.path import join as path_join
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
 from django.utils import timezone
 
-import mock
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
@@ -1283,7 +1282,7 @@ class AidantModelMethodsTests(TestCase):
 
         self.assertEqual(aidant.organisation, supplementary_organisation_1)
 
-    @mock.patch("aidants_connect_web.models.aidants__organisations_changed.send")
+    @patch("aidants_connect_web.models.aidants__organisations_changed.send")
     def test_remove_user_from_organisation_sends_signal(self, send: Mock):
         aidant: Aidant = AidantFactory()
         supplementary_organisation_1 = OrganisationFactory()
@@ -1367,7 +1366,7 @@ class AidantModelMethodsTests(TestCase):
 
         self.assertEqual(aidant.organisation, supplementary_organisation_1)
 
-    @mock.patch("aidants_connect_web.models.aidants__organisations_changed.send")
+    @patch("aidants_connect_web.models.aidants__organisations_changed.send")
     def test_set_organisations_sends_signal(self, send: Mock):
         aidant: Aidant = AidantFactory()
         previous_organisation = aidant.organisation
