@@ -3,7 +3,8 @@
     {# STEP 1 ======================================================================= #}
     <li class="{% if step == 1 %}active{% endif %}">
       {% if step > 1 and issuer %}
-        <a href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">
+        <a href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}"
+           title="Modifier mes informations demandeur">
           Le demandeur
         </a>
       {% else %}
@@ -11,7 +12,16 @@
       {% endif %}
     </li>
     {# STEP 2 ======================================================================= #}
-    <li class="{% if step == 2 %}active{% endif %}">La structure</li>
+    <li class="{% if step == 2 %}active{% endif %}">
+      {% if step > 2 and organisation %}
+        <a href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}"
+           title="Modifier la structure {{ organisation }}">
+          La structure
+        </a>
+      {% else %}
+        La structure
+      {% endif %}
+    </li>
     {# STEP 3 ======================================================================= #}
     <li class="{% if step == 3 %}active{% endif %}">Les personnes<br>impliquées</li>
     {# STEP 4 ======================================================================= #}
