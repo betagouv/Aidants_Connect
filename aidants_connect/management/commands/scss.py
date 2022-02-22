@@ -1,5 +1,6 @@
 import os
 from shutil import which
+
 from django.core.management.base import BaseCommand, CommandError
 
 

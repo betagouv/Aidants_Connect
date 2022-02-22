@@ -11,6 +11,14 @@ $red-aidants-for-small-text: #e9133e;
 
 $font-stack: "Marianne", arial, sans-serif;
 
+// break points -----------------------------------------
+
+$bp-xs: 20em;
+$bp-sm: 36em;
+$bp-md: 48em;
+$bp-lg: 62em;
+$bp-xl: 78em;
+
 // basic layout -----------------------------------------
 
 html, body {
@@ -67,6 +75,11 @@ svg.previews {
   box-sizing: border-box;
   box-shadow: 10px 10px 0 $off-yellow-aidants;
   padding: 2rem;
+
+  &.grey {
+    box-shadow: 10px 10px 0 #c5c5c5;
+    border-color: #c5c5c5;
+  }
 }
 
 h1, .h1 {
@@ -89,10 +102,15 @@ h2, .h2 {
   font-weight: bold;
   text-transform: uppercase;
   margin: 2rem 0;
+  line-height: 1.25;
 
   + .subtitle {
     margin-top: -1.5rem;
     margin-bottom: 2rem;
+  }
+
+  &:first-child, legend + & {
+    margin-top: 0;
   }
 }
 
@@ -101,6 +119,7 @@ h3, .h3 {
   color: $light-blue-anct;
   font-weight: normal;
   margin: 2.5rem 0 1.5rem;
+  line-height: 1.25;
 
   &:first-child, legend + & {
     margin-top: 0;
@@ -112,6 +131,43 @@ h3, .h3 {
   color: $light-blue-anct;
   margin-top: 4rem;
 
+}
+
+details {
+  border: 1px solid $blue-aidants;
+
+  summary {
+    background: $blue-aidants no-repeat url("../img/plus-w.svg") 98% 50%;
+    color: #fff;
+    cursor: pointer;
+    padding: 1rem 3rem 1rem 1rem;
+
+    &::marker {
+      content: "";
+    }
+
+    &:before {
+      background: $off-yellow-aidants;
+      border-radius: 100%;
+      color: $blue-aidants;
+      content: "!";
+      display: inline-block;
+      font-size: 1.7rem;
+      font-weight: bold;
+      height: 2rem;
+      margin-right: 1rem;
+      text-align: center;
+      width: 2rem;
+    }
+  }
+
+  &[open] summary {
+    background-image: url('../img/x.svg');
+  }
+
+  .details-content {
+    padding: 0 1rem;
+  }
 }
 
 // forms -----------------------------------------------
@@ -208,22 +264,28 @@ input[type=radio] {
 }
 
 button, .button {
-  padding: .75rem;
+  background: #fff;
   border: 1px solid $red-aidants;
   color: $red-aidants;
-  background: #fff;
-  font-weight: bold;
-  font-size: 1rem;
-  text-decoration: none;
-  line-height: 1.3;
+  cursor: pointer;
   display: inline-block;
-  vertical-align: baseline;
-  margin: 0;
   font-family: $font-stack;
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1.3;
+  margin: 0;
+  padding: .75rem;
+  text-decoration: none;
+  vertical-align: baseline;
 
   &.primary {
     background: $red-aidants;
     color: #fff;
+  }
+
+  &:focus-visible {
+    background: $off-yellow-aidants;
+    color: $dark-grey-aidants;
   }
 }
 
@@ -283,6 +345,10 @@ fieldset {
   > :only-child {
     margin-left: auto;
   }
+
+  &.standalone {
+    margin-top: 4rem;
+  }
 }
 
 .shadowed .button-box {
@@ -293,6 +359,59 @@ fieldset {
   background: #f2f2f2;
   padding: 1rem;
   margin: 1rem 0;
+}
+
+.form-in-3-cols {
+  .shadowed {
+    padding: 1rem;
+    height: 100%;
+
+    .h2, .h3 {
+      font-size: 1.125rem;
+    }
+  }
+
+  button.shadowed {
+    width: 100%;
+    color: $blue-aidants;
+    text-transform: uppercase;
+
+    &:before {
+      content: "+";
+      display: block;
+      margin-bottom: .75rem;
+      font-size: 3rem;
+    }
+  }
+}
+
+@media (max-width: $bp-md) {
+  .form-grid-row {
+    .fr-col-md-5 {
+      padding-bottom: .25rem;
+    }
+
+    .fr-col-md-7, .zipcode-container, .city-container {
+      padding-top: 0;
+    }
+  }
+}
+
+@media (min-width: $bp-lg) {
+  .form-grid-row-narrow {
+    .fr-col-md-5 {
+      padding-bottom: .25rem;
+    }
+
+    .fr-col-md-7, .zipcode-container, .city-container {
+      padding-top: 0;
+    }
+
+    button {
+      width: 100%;
+    }
+  }
+
 }
 
 // habilitation form breadcrumbs -----------------------

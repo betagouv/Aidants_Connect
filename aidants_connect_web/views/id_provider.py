@@ -1,7 +1,7 @@
 import logging
 import re
-from secrets import token_urlsafe
 import time
+from secrets import token_urlsafe
 
 from django.conf import settings
 from django.contrib.auth import logout
@@ -16,15 +16,15 @@ from django.http import (
     HttpResponseRedirect,
     JsonResponse,
 )
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
 
 import jwt
 
 from aidants_connect_web.decorators import activity_required, user_is_aidant
-from aidants_connect_web.models import Connection, Journal, Usager, Aidant
-
+from aidants_connect_web.models import Aidant, Connection, Journal, Usager
 from aidants_connect_web.utilities import generate_sha256_hash
 
 logging.basicConfig(level=logging.INFO)
@@ -238,6 +238,10 @@ def fi_select_demarche(request):
         )
 
 
+def _mock_refresh_token():
+    return get_random_string(18).lower()
+
+
 # Due to `no_referer` error
 # https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
 @csrf_exempt
@@ -309,8 +313,8 @@ def token(request):
     response = {
         "access_token": access_token,
         "expires_in": 3600,
-        "id_token": encoded_id_token.decode("utf-8"),
-        "refresh_token": "5ieq7Bg173y99tT6MA",
+        "id_token": encoded_id_token,
+        "refresh_token": _mock_refresh_token(),
         "token_type": "Bearer",
     }
 

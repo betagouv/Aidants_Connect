@@ -1,17 +1,15 @@
 from secrets import token_urlsafe
 
-
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 
-
+from aidants_connect.common.constants import AuthorizationDurations
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.models import Connection, Journal, Aidant, Usager
-from aidants_connect.common.constants import AuthorizationDurations
+from aidants_connect_web.models import Aidant, Connection, Journal, Usager
 
 
 @login_required

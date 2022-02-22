@@ -1,16 +1,17 @@
 from urllib.parse import urlencode
 
 from django.conf import settings
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_contains
 from selenium.webdriver.support.wait import WebDriverWait
 
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    UsagerFactory,
     MandatFactory,
+    UsagerFactory,
 )
-from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 

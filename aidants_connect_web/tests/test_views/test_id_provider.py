@@ -1,5 +1,6 @@
-from datetime import date, datetime, timedelta
 import json
+from datetime import date, datetime, timedelta
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -12,12 +13,7 @@ from django.utils import timezone
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
 
-from aidants_connect_web.models import (
-    Aidant,
-    Connection,
-    Journal,
-    Usager,
-)
+from aidants_connect_web.models import Aidant, Connection, Journal, Usager
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
@@ -434,7 +430,11 @@ class TokenTests(TestCase):
     date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
 
     @freeze_time(date)
-    def test_correct_info_triggers_200(self):
+    @mock.patch(
+        "aidants_connect_web.views.id_provider.get_random_string",
+        return_value="5ieq7Bg173y99tT6MA",
+    )
+    def test_correct_info_triggers_200(self, _):
 
         response = self.client.post("/token/", self.fc_request)
 
@@ -452,7 +452,7 @@ class TokenTests(TestCase):
             "dF9pZCIsImV4cCI6MTMyNjUxMDk5NCwiaWF0IjoxMzI2NTEwNjk0LCJpc3MiOiJsb2NhbGhvc"
             "3QiLCJzdWIiOiJhdmFsaWRzdWI3ODkiLCJub25jZSI6ImF2YWxpZG5vbmNlNDU2In0.a7nbGA"
             "-Ib9I1HaMb5iC9s4fDP1ZbIXUJpU-YbdYFcWA",
-            "refresh_token": "5ieq7Bg173y99tT6MA",
+            "refresh_token": "5ieq7bg173y99tt6ma",
             "token_type": "Bearer",
         }
 

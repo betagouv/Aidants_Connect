@@ -1,16 +1,16 @@
 from datetime import timedelta
 
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import reverse
 from django.utils import timezone
 
-from aidants_connect_web.models import Connection, Mandat, Journal
+from aidants_connect_web.models import Connection, Journal, Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     MandatFactory,
-    RevokedMandatFactory,
     OrganisationFactory,
+    RevokedMandatFactory,
     UsagerFactory,
 )
 

@@ -1,4 +1,4 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve
 

@@ -2,14 +2,14 @@ import logging
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 
-from aidants_connect_web.forms import DatapassHabilitationForm, DatapassForm
+from aidants_connect_web.forms import DatapassForm, DatapassHabilitationForm
 from aidants_connect_web.models import (
+    HabilitationRequest,
     Organisation,
     OrganisationType,
-    HabilitationRequest,
 )
 
 logging.basicConfig(level=logging.INFO)

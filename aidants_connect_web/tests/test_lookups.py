@@ -1,4 +1,4 @@
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import JournalFactory, OrganisationFactory

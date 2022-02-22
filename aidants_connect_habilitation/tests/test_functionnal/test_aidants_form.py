@@ -2,12 +2,13 @@ from uuid import uuid4
 
 from django.test import tag
 from django.urls import reverse
+
 from selenium.webdriver.common.by import By
 
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.forms import IssuerForm
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
-from aidants_connect.common.tests.testcases import FunctionalTestCase
 
 
 @tag("functional")

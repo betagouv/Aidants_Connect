@@ -1,18 +1,17 @@
 from datetime import timedelta
 
 from django.test import tag
-
 from django.utils import timezone
+
 from selenium.webdriver.common.by import By
 
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.models import Mandat
-
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 

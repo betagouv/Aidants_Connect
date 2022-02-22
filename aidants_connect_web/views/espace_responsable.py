@@ -4,20 +4,14 @@ from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import Http404, HttpRequest, HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_http_methods, require_GET, require_POST
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
+
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.models import (
-    Aidant,
-    CarteTOTP,
-    HabilitationRequest,
-    Journal,
-    Organisation,
-)
 from aidants_connect_web.decorators import (
-    user_is_responsable_structure,
     activity_required,
+    user_is_responsable_structure,
 )
 from aidants_connect_web.forms import (
     AddOrganisationResponsableForm,
@@ -26,6 +20,13 @@ from aidants_connect_web.forms import (
     ChangeAidantOrganisationsForm,
     HabilitationRequestCreationForm,
     RemoveCardFromAidantForm,
+)
+from aidants_connect_web.models import (
+    Aidant,
+    CarteTOTP,
+    HabilitationRequest,
+    Journal,
+    Organisation,
 )
 
 

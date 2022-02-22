@@ -1,6 +1,6 @@
 from collections.abc import Iterable
-
 from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
@@ -18,11 +18,11 @@ from factory.django import DjangoModelFactory
 
 from aidants_connect_web.models import (
     Autorisation,
-    Connection,
     CarteTOTP,
-    DatavizRegion,
+    Connection,
     DatavizDepartment,
     DatavizDepartmentsToRegion,
+    DatavizRegion,
     HabilitationRequest,
     Journal,
     Mandat,
