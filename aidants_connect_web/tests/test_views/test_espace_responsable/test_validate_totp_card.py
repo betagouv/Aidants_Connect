@@ -1,8 +1,9 @@
+from unittest import mock
+
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve
 
-import mock
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_web.models import Journal
