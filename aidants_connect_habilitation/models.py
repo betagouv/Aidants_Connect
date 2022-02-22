@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import SET_NULL, Q
 from django.dispatch import Signal
+from django.http import HttpRequest
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
@@ -100,7 +101,7 @@ class IssuerEmailConfirmation(models.Model):
         verbose_name_plural = "Confirmations d'email"
 
     def __str__(self):
-        return "Confirmation for %s" % self.issuer.email
+        return "Confirmation pour %s" % self.issuer.email
 
     @classmethod
     def create(cls, issuer, **kwargs) -> "IssuerEmailConfirmation":
@@ -127,10 +128,10 @@ class IssuerEmailConfirmation(models.Model):
 
         return self.issuer.email
 
-    def send(self):
+    def send(self, request: HttpRequest):
         self.sent = now()
         self.save()
-        email_confirmation_sent.send(sender=self.__class__, confirmation=self)
+        email_confirmation_sent.send(self.__class__, request=request, confirmation=self)
 
 
 class DataPrivacyOfficer(PersonWithResponsibilities):

@@ -43,7 +43,7 @@ class HabilitationStepMixin:
         return HabilitationFormStep
 
     @property
-    def setp_context(self):
+    def step_context(self):
         return {"step": self.step, "steps": self.steps}
 
 
@@ -59,7 +59,7 @@ class CheckIssuerMixin(HabilitationStepMixin, ContextMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            **super().setp_context,
+            **super().step_context,
             "issuer": self.issuer,
         }
 
@@ -109,7 +109,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
 
     def form_valid(self, form):
         self.saved_model: Issuer = form.save()
-        IssuerEmailConfirmation.create(self.saved_model).send()
+        IssuerEmailConfirmation.create(self.saved_model).send(self.request)
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -119,7 +119,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
         )
 
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), **super().setp_context}
+        return {**super().get_context_data(**kwargs), **super().step_context}
 
 
 class IssuerEmailConfirmationWaitingView(CheckIssuerMixin, TemplateView):
@@ -131,7 +131,7 @@ class IssuerEmailConfirmationWaitingView(CheckIssuerMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         """Resend a confirmation link"""
-        IssuerEmailConfirmation.create(self.issuer).send()
+        IssuerEmailConfirmation.create(self.issuer).send(self.request)
 
         return self.render_to_response(
             {
@@ -174,7 +174,9 @@ class IssuerEmailConfirmationView(CheckIssuerMixin, TemplateView):
         )
 
     def __continue(self):
-        return redirect("habilitation_modify_issuer", issuer_id=self.issuer.issuer_id)
+        return redirect(
+            "habilitation_new_organisation", issuer_id=self.issuer.issuer_id
+        )
 
 
 class ModifyIssuerFormView(VerifiedEmailIssuerFormView, NewIssuerFormView):

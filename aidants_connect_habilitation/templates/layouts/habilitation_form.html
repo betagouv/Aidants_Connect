@@ -13,9 +13,14 @@
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8">
         <form method="post">
-          {% block form_content %}{% endblock %}
-          <div class="button-box">
-            {% block button_box %}{% endblock %}
+          <div class="shadowed">
+            {% csrf_token %}
+
+            {% block form_content %}{% endblock %}
+
+            <div class="button-box">
+              {% block button_box %}{% endblock %}
+            </div>
           </div>
         </form>
       </div>

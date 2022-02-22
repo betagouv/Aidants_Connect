@@ -12,4 +12,4 @@ def mailto(link_text: str, recipient: str, subject: str, body: str):
         {"subject": subject, "body": body},
         quote_via=lambda x, _, enc, err: quote(x, "", enc, err),
     )
-    return mark_safe(f'<a href="mailto:{recipient}?{urlencoded}>{link_text}</a>')
+    return mark_safe(f'<a href="mailto:{recipient}?{urlencoded}">{link_text}</a>')

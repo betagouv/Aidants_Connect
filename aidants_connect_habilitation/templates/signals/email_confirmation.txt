@@ -1,6 +1,6 @@
 Madame, Monsieur,
 
-Afin de pouvoir vous contacter lors du processus d'habilitation, nous vous demandons de confirmer cette adresse email en cliquant sur lei lien suivant :
+Afin de pouvoir vous contacter lors du processus d'habilitation, nous vous demandons de confirmer cette adresse email en cliquant sur le lien suivant :
 
 {{ confirmation_link }}
 

@@ -218,7 +218,7 @@ class IssuerEmailConfirmationViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_modify_issuer",
+                "habilitation_new_organisation",
                 kwargs={"issuer_id": confirmed_issuer.issuer_id},
             ),
         )
@@ -236,7 +236,7 @@ class IssuerEmailConfirmationViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_modify_issuer",
+                "habilitation_new_organisation",
                 kwargs={"issuer_id": self.issuer.issuer_id},
             ),
         )
