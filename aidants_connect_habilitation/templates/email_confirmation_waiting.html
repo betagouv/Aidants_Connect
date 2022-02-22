@@ -1,0 +1,34 @@
+{% extends 'layouts/habilitation_form.html' %}
+{% load static form_extras ac_common %}
+
+{% block title %}
+  Aidants Connect - Confirmez votre email
+{% endblock %}
+
+{% block form_title %}
+  Confirmation de votre email
+{% endblock %}
+
+{% block form_content %}
+  {% if email_confirmation_sent %}
+    <p>Un email de confirmation vient de vous être renvoyé.</p>
+    <p>
+      Si vous ne le recevez toujours pas, vous pouvez
+      {% mailto link_text='tenter de nous contacter en suivant ce lien' recipient=support_email subject=support_subject body=support_body %}
+      ou nous envoyer un email à l'adresse <pre>{{ support_email }}</pre>.
+    </p>
+  {% else %}
+    <p>
+      Un email vous a été envoyé à l'adresse email que vous avez renseigné.
+      Merci de cliquer sur le lien inclut dans cet email pour la vérifier.
+    </p>
+    <p>
+      Si vous n'avez pas reçu cet email, vous pouvez utiliser le bouton ci-dessous pour renvoyer un email de
+      confirmation.
+    </p>
+  {% endif %}
+{% endblock %}
+
+{% block button_box %}
+  {% form_validation_button button_text="Renvoyer l'email de confirmation" %}
+{% endblock %}

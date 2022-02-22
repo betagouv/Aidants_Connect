@@ -1,0 +1,21 @@
+{% extends 'layouts/habilitation_form.html' %}
+{% load static form_extras %}
+
+{% block title %}
+  Aidants Connect - Confirmez votre email
+{% endblock %}
+
+{% block form_title %}
+  Confirmation de votre email
+{% endblock %}
+
+{% block form_content %}
+    <p>
+      Pour continuer votre demande, nous devons confirmer votre email.
+      Veuillez cliquer sur le lien reçu dans votre boîte de réception.
+    </p>
+{% endblock %}
+
+{% block button_box %}
+  {% form_validation_button button_text="Confirmer mon email" %}
+{% endblock %}

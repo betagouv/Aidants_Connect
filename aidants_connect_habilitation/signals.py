@@ -1,6 +1,7 @@
 from django.core.mail import send_mail
 from django.dispatch import receiver
 from django.template import loader
+from django.urls import reverse
 
 from aidants_connect import settings
 from aidants_connect_habilitation.models import (
@@ -11,7 +12,12 @@ from aidants_connect_habilitation.models import (
 
 @receiver(email_confirmation_sent, sender=IssuerEmailConfirmation)
 def send_email_confirmation(confirmation: IssuerEmailConfirmation, **_):
-    context = {"confirmation": confirmation}
+    confirmation_link = reverse(
+        "habilitation_issuer_email_confirmation_confirm",
+        kwargs={"issuer_id": confirmation.issuer.issuer_id, "key": confirmation.key},
+    )
+
+    context = {"confirmation_link": confirmation_link}
     text_message = loader.render_to_string("signals/email_confirmation.txt", context)
     html_message = loader.render_to_string("signals/email_confirmation.html", context)
 

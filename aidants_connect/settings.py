@@ -531,3 +531,21 @@ EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_SUBJECT = os.getenv(
     "Merci de confirmer votre adresse email pour le processus "
     "d'habilitation Aidant Connect d'une organisation.",
 )
+
+EMAIL_CONFIRMATION_SUPPORT_CONTACT_EMAIL = os.getenv(
+    "EMAIL_CONFIRMATION_SUPPORT_CONTACT_EMAIL", SUPPORT_EMAIL
+)
+
+EMAIL_CONFIRMATION_SUPPORT_CONTACT_SUBJECT = os.getenv(
+    "EMAIL_CONFIRMATION_SUPPORT_CONTACT_SUBJECT",
+    "Je ne reçois pas les emails de confirmation de mon adresse email",
+)
+
+EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY = os.getenv(
+    "EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY",
+    """
+    Bonjour,
+    
+    Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.
+    """,
+)

@@ -176,6 +176,19 @@ class IssuerEmailConfirmationViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+    def test_404_on_unrelated_issuer_confirmation(self):
+        unrelated_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": unrelated_issuer.issuer_id,
+                    "key": self.email_confirmation.key,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_template(self):
         response = self.client.get(
             reverse(
@@ -187,6 +200,28 @@ class IssuerEmailConfirmationViewTests(TestCase):
             )
         )
         self.assertTemplateUsed(response, self.template_name)
+
+    def test_get_redirect_on_previously_confirmed(self):
+        confirmed_issuer: Issuer = IssuerFactory(email_verified=True)
+        email_confirmation = IssuerEmailConfirmation.create(
+            confirmed_issuer, sent=now()
+        )
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": confirmed_issuer.issuer_id,
+                    "key": email_confirmation.key,
+                },
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_modify_issuer",
+                kwargs={"issuer_id": confirmed_issuer.issuer_id},
+            ),
+        )
 
     def test_post_confirms_email(self):
         response = self.client.post(

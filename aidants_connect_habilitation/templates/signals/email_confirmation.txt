@@ -1,0 +1,10 @@
+Madame, Monsieur,
+
+Afin de pouvoir vous contacter lors du processus d'habilitation, nous vous demandons de confirmer cette adresse email en cliquant sur lei lien suivant :
+
+{{ confirmation_link }}
+
+Vous pourrez ensuite reprendre le cours de votre demande.
+
+Merci, et à bientôt sur Aidants Connect !
+L’équipe Aidants Connect

@@ -1,0 +1,33 @@
+{% extends "layouts/email_base.html" %}
+{% block email_body %}
+  <table border="0" cellpadding="0" cellspacing="0" class="body">
+    <tr>
+      <td>&nbsp;</td>
+      <td class="container">
+        <div class="content">
+          <table class="main">
+            <tr>
+              <td class="wrapper">
+                <table border="0" cellpadding="6" cellspacing="0">
+                  <tr>
+                    <td>
+                      <p>Madame, Monsieur,</p>
+                      <p>
+                        Afin de pouvoir vous contacter lors du processus d'habilitation, nous vous demandons de
+                        <a href="{{ confirmation_link }}">confirmer cette adresse email en cliquant sur ce lien.</a>
+                      </p>
+                      <p>Vous pourrez ensuite reprendre le cours de votre demande.</p>
+
+                      <p>Merci, et à bientôt sur Aidants Connect !</p>
+                      <p>L’équipe Aidants Connect</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+  </table>
+{% endblock %}
