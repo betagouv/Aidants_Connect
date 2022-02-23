@@ -102,6 +102,13 @@ class IssuerEmailConfirmation(models.Model):
 
     objects = EmailConfirmationManager()
 
+    @property
+    def key_expired(self) -> bool:
+        expiration_date = self.sent + timedelta(
+            days=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS
+        )
+        return expiration_date <= now()
+
     class Meta:
         verbose_name = "Confirmation d'email"
         verbose_name_plural = "Confirmations d'email"
@@ -112,13 +119,6 @@ class IssuerEmailConfirmation(models.Model):
     @classmethod
     def for_issuer(cls, issuer) -> "IssuerEmailConfirmation":
         return cls._default_manager.create(issuer=issuer)
-
-    @property
-    def key_expired(self) -> bool:
-        expiration_date = self.sent + timedelta(
-            days=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS
-        )
-        return expiration_date <= now()
 
     def confirm(self) -> Optional[str]:
         if self.issuer.email_verified:
