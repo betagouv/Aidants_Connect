@@ -149,9 +149,11 @@ class IssuerEmailConfirmationViewTests(TestCase):
         cls.pattern_name = "habilitation_issuer_email_confirmation_confirm"
         cls.template_name = "email_confirmation_confirm.html"
         cls.issuer: Issuer = IssuerFactory(email_verified=False)
-        cls.email_confirmation = IssuerEmailConfirmation.create(cls.issuer, sent=now())
-        cls.expired_email_confirmation = IssuerEmailConfirmation.create(
-            cls.issuer,
+        cls.email_confirmation = IssuerEmailConfirmation.objects.create(
+            issuer=cls.issuer, sent=now()
+        )
+        cls.expired_email_confirmation = IssuerEmailConfirmation.objects.create(
+            issuer=cls.issuer,
             sent=now() - timedelta(days=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS + 2),
         )
 
@@ -203,8 +205,8 @@ class IssuerEmailConfirmationViewTests(TestCase):
 
     def test_get_redirect_on_previously_confirmed(self):
         confirmed_issuer: Issuer = IssuerFactory(email_verified=True)
-        email_confirmation = IssuerEmailConfirmation.create(
-            confirmed_issuer, sent=now()
+        email_confirmation = IssuerEmailConfirmation.objects.create(
+            issuer=confirmed_issuer, sent=now()
         )
         response = self.client.get(
             reverse(

@@ -88,11 +88,17 @@ class EmailConfirmationManager(models.Manager):
 email_confirmation_sent = Signal()
 
 
+def _get_default_email_key():
+    return get_random_string(64).lower()
+
+
 class IssuerEmailConfirmation(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE)
     created = models.DateTimeField(verbose_name="Créé le", default=now)
     sent = models.DateTimeField(verbose_name="Envoyée", null=True)
-    key = models.CharField(verbose_name="Clé", max_length=64, unique=True)
+    key = models.CharField(
+        verbose_name="Clé", max_length=64, unique=True, default=_get_default_email_key
+    )
 
     objects = EmailConfirmationManager()
 
@@ -104,10 +110,8 @@ class IssuerEmailConfirmation(models.Model):
         return "Confirmation pour %s" % self.issuer.email
 
     @classmethod
-    def create(cls, issuer, **kwargs) -> "IssuerEmailConfirmation":
-        kwargs["key"] = get_random_string(64).lower()
-        kwargs["issuer"] = issuer
-        return cls._default_manager.create(**kwargs)
+    def for_issuer(cls, issuer) -> "IssuerEmailConfirmation":
+        return cls._default_manager.create(issuer=issuer)
 
     @property
     def key_expired(self) -> bool:
