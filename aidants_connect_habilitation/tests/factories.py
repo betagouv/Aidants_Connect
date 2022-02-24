@@ -39,6 +39,8 @@ class IssuerFactory(DjangoModelFactory):
     profession = Faker("job")
     phone = LazyFunction(_generate_valid_phone)
 
+    email_verified = True
+
     class Meta:
         model = Issuer
 

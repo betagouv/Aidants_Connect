@@ -6,3 +6,4 @@ class AidantConnectHabilitationConfig(AppConfig):
 
     def ready(self):
         import aidants_connect.common.lookups  # noqa
+        import aidants_connect_habilitation.signals  # noqa

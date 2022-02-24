@@ -1,3 +1,4 @@
+from datetime import timedelta
 from unittest.mock import patch
 from uuid import UUID, uuid4
 
@@ -6,10 +7,13 @@ from django.http import HttpResponse
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import reverse
+from django.utils.crypto import get_random_string
+from django.utils.timezone import now
 
 from factory import Faker
 from faker.config import DEFAULT_LOCALE
 
+from aidants_connect import settings
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     DataPrivacyOfficerForm,
@@ -17,7 +21,11 @@ from aidants_connect_habilitation.forms import (
     ManagerForm,
     OrganisationRequestForm,
 )
-from aidants_connect_habilitation.models import Issuer, OrganisationRequest
+from aidants_connect_habilitation.models import (
+    Issuer,
+    IssuerEmailConfirmation,
+    OrganisationRequest,
+)
 from aidants_connect_habilitation.tests import utils
 from aidants_connect_habilitation.tests.factories import (
     IssuerFactory,
@@ -50,7 +58,7 @@ class NewIssuerFormViewTests(TestCase):
         response = self.client.get(reverse(self.pattern_name))
         self.assertTemplateUsed(response, self.template_name)
 
-    def test_redirect_valid_post_to_new_organisation(self):
+    def test_redirect_valid_post_to_email_confirmation_wait(self):
         temp_uuid = "d6cc0622-b525-41ee-a8dc-c65de9536dba"
 
         with patch(
@@ -63,10 +71,189 @@ class NewIssuerFormViewTests(TestCase):
             self.assertRedirects(
                 response,
                 reverse(
-                    "habilitation_new_organisation",
+                    "habilitation_issuer_email_confirmation_waiting",
                     kwargs={"issuer_id": temp_uuid},
                 ),
             )
+
+    def test_redirect_valid_post_creates_an_email_confirmation(self):
+        temp_uuid = "d6cc0622-b525-41ee-a8dc-c65de9536dba"
+
+        with patch(
+            "aidants_connect_habilitation.models.uuid4",
+            return_value=UUID(temp_uuid),
+        ):
+            with self.assertRaises(IssuerEmailConfirmation.DoesNotExist):
+                IssuerEmailConfirmation.objects.get(issuer__issuer_id=temp_uuid)
+
+            form = utils.get_form(IssuerForm)
+            self.client.post(reverse(self.pattern_name), form.clean())
+
+            try:
+                IssuerEmailConfirmation.objects.get(issuer__issuer_id=temp_uuid)
+            except IssuerEmailConfirmation.DoesNotExist:
+                self.fail(
+                    "Request should have created an instance of IssuerEmailConfirmation"
+                )
+
+
+@tag("habilitation")
+class IssuerEmailConfirmationWaitingViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_issuer_email_confirmation_waiting"
+        cls.template_name = "email_confirmation_waiting.html"
+        cls.issuer: Issuer = IssuerFactory(email_verified=False)
+
+    def test_404_on_bad_issuer_id(self):
+        response = self.client.get(
+            reverse(self.pattern_name, kwargs={"issuer_id": uuid4()})
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_template(self):
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={"issuer_id": self.issuer.issuer_id},
+            )
+        )
+        self.assertTemplateUsed(response, self.template_name)
+
+    def test_post_create_email_confirmation(self):
+        with self.assertRaises(IssuerEmailConfirmation.DoesNotExist):
+            IssuerEmailConfirmation.objects.get(issuer=self.issuer)
+
+        response = self.client.post(
+            reverse(
+                self.pattern_name,
+                kwargs={"issuer_id": self.issuer.issuer_id},
+            )
+        )
+        self.assertTemplateUsed(response, self.template_name)
+
+        try:
+            IssuerEmailConfirmation.objects.get(issuer=self.issuer)
+        except IssuerEmailConfirmation.DoesNotExist:
+            self.fail(
+                "Request should have created an instance of IssuerEmailConfirmation"
+            )
+
+
+@tag("habilitation")
+class IssuerEmailConfirmationViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_issuer_email_confirmation_confirm"
+        cls.template_name = "email_confirmation_confirm.html"
+        cls.issuer: Issuer = IssuerFactory(email_verified=False)
+        cls.email_confirmation = IssuerEmailConfirmation.objects.create(
+            issuer=cls.issuer, sent=now()
+        )
+        cls.expired_email_confirmation = IssuerEmailConfirmation.objects.create(
+            issuer=cls.issuer,
+            sent=now() - timedelta(days=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS + 2),
+        )
+
+    def test_404_on_bad_issuer_id(self):
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={"issuer_id": uuid4(), "key": get_random_string(64).lower()},
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_on_no_email_confirmation(self):
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": self.issuer.issuer_id,
+                    "key": get_random_string(64).lower(),
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_on_unrelated_issuer_confirmation(self):
+        unrelated_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": unrelated_issuer.issuer_id,
+                    "key": self.email_confirmation.key,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_template(self):
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": self.issuer.issuer_id,
+                    "key": self.email_confirmation.key,
+                },
+            )
+        )
+        self.assertTemplateUsed(response, self.template_name)
+
+    def test_get_redirect_on_previously_confirmed(self):
+        confirmed_issuer: Issuer = IssuerFactory(email_verified=True)
+        email_confirmation = IssuerEmailConfirmation.objects.create(
+            issuer=confirmed_issuer, sent=now()
+        )
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": confirmed_issuer.issuer_id,
+                    "key": email_confirmation.key,
+                },
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_new_organisation",
+                kwargs={"issuer_id": confirmed_issuer.issuer_id},
+            ),
+        )
+
+    def test_post_confirms_email(self):
+        response = self.client.post(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": self.issuer.issuer_id,
+                    "key": self.email_confirmation.key,
+                },
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_new_organisation",
+                kwargs={"issuer_id": self.issuer.issuer_id},
+            ),
+        )
+
+    def test_fails_on_expired_key(self):
+        response = self.client.post(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": self.issuer.issuer_id,
+                    "key": self.expired_email_confirmation.key,
+                },
+            )
+        )
+        self.assertTemplateUsed(response, self.template_name)
 
 
 @tag("habilitation")
@@ -90,6 +277,21 @@ class ModifyIssuerFormViewTests(TestCase):
             form.clean(),
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": unverified_issuer.issuer_id}
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
 
     def test_template(self):
         response = self.client.get(
@@ -153,6 +355,21 @@ class NewOrganisationRequestFormViewTests(TestCase):
             reverse(self.pattern_name, kwargs={"issuer_id": uuid}), cleaned_data
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": unverified_issuer.issuer_id}
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
 
     def test_template(self):
         response = self.client.get(
@@ -245,6 +462,25 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
             cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": unverified_issuer.issuer_id,
+                    "draft_id": self.organisation.draft_id,
+                },
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
 
     def test_template(self):
         response = self.client.get(
@@ -361,6 +597,25 @@ class AidantsRequestFormViewTests(TestCase):
             cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": unverified_issuer.issuer_id,
+                    "draft_id": self.organisation.draft_id,
+                },
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
 
     def test_template(self):
         response = self.client.get(
@@ -479,6 +734,25 @@ class ValidationRequestFormViewTests(TestCase):
             cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": unverified_issuer.issuer_id,
+                    "draft_id": self.organisation.draft_id,
+                },
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
 
     def test_template(self):
         response = self.client.get(

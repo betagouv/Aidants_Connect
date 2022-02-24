@@ -68,7 +68,7 @@ class IssuerForm(PatchedErrorListForm):
 
     class Meta:
         model = models.Issuer
-        exclude = ["issuer_id"]
+        exclude = ["issuer_id", "email_verified"]
 
 
 class OrganisationRequestForm(PatchedErrorListForm):

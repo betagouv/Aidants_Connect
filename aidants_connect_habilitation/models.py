@@ -1,7 +1,14 @@
+from datetime import timedelta
+from typing import Optional
 from uuid import uuid4
 
+from django.conf import settings
 from django.db import models
 from django.db.models import SET_NULL, Q
+from django.dispatch import Signal
+from django.http import HttpRequest
+from django.utils.crypto import get_random_string
+from django.utils.timezone import now
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -15,11 +22,13 @@ from aidants_connect_web.models import OrganisationType
 __all__ = [
     "PersonWithResponsibilities",
     "Issuer",
+    "IssuerEmailConfirmation",
     "DataPrivacyOfficer",
     "Manager",
     "OrganisationRequest",
     "AidantRequest",
     "RequestMessage",
+    "email_confirmation_sent",
 ]
 
 
@@ -51,15 +60,82 @@ class PersonWithResponsibilities(Person):
 
 
 class Issuer(PersonWithResponsibilities):
-    """Model describing the issuer of a habilitation request. The French term is
-    'demandeur'."""
-
     issuer_id = models.UUIDField(
         "Identifiant de demandeur", default=_new_uuid, unique=True
     )
 
+    email_verified = models.BooleanField(verbose_name="Email vérifié", default=False)
+
     class Meta:
         verbose_name = "Demandeur"
+
+
+class EmailConfirmationManager(models.Manager):
+    def all_expired(self):
+        return self.filter(self.expired_q())
+
+    def all_valid(self):
+        return self.exclude(self.expired_q())
+
+    def expired_q(self):
+        sent_threshold = now() - timedelta(days=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS)
+        return Q(sent__lt=sent_threshold)
+
+    def delete_expired_confirmations(self):
+        self.all_expired().delete()
+
+
+email_confirmation_sent = Signal()
+
+
+def _get_default_email_key():
+    return get_random_string(64).lower()
+
+
+class IssuerEmailConfirmation(models.Model):
+    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE)
+    created = models.DateTimeField(verbose_name="Créé le", default=now)
+    sent = models.DateTimeField(verbose_name="Envoyée", null=True)
+    key = models.CharField(
+        verbose_name="Clé", max_length=64, unique=True, default=_get_default_email_key
+    )
+
+    objects = EmailConfirmationManager()
+
+    @property
+    def key_expired(self) -> bool:
+        expiration_date = self.sent + timedelta(
+            days=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS
+        )
+        return expiration_date <= now()
+
+    class Meta:
+        verbose_name = "Confirmation d'email"
+        verbose_name_plural = "Confirmations d'email"
+
+    def __str__(self):
+        return "Confirmation pour %s" % self.issuer.email
+
+    @classmethod
+    def for_issuer(cls, issuer) -> "IssuerEmailConfirmation":
+        return cls._default_manager.create(issuer=issuer)
+
+    def confirm(self) -> Optional[str]:
+        if self.issuer.email_verified:
+            return self.issuer.email
+
+        if self.key_expired:
+            return None
+
+        self.issuer.email_verified = True
+        self.issuer.save()
+
+        return self.issuer.email
+
+    def send(self, request: HttpRequest):
+        self.sent = now()
+        self.save()
+        email_confirmation_sent.send(self.__class__, request=request, confirmation=self)
 
 
 class DataPrivacyOfficer(PersonWithResponsibilities):

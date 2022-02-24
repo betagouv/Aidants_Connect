@@ -1,0 +1,30 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
+
+{% block content %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>{% block form_title %}{% endblock %}</h1>
+        {% block subtitle %}{% endblock %}
+      </div>
+    </div>
+    {% include '_breadcrumbs.html' with step=2 issuer=issuer %}
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <form method="post">
+          <div class="shadowed">
+            {% csrf_token %}
+
+            {% block form_content %}{% endblock %}
+
+            <div class="button-box">
+              {% block button_box %}{% endblock %}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% include "_more-info.html" %}
+  </div>
+{% endblock %}
