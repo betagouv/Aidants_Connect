@@ -146,8 +146,8 @@ class LoginEmailForm(MagicAuthEmailForm):
         user_email = super().clean_email()
         if not Aidant.objects.filter(email=user_email, is_active=True).exists():
             raise ValidationError(
-                "Votre compte existe mais il n'est pas encore actif. "
-                "Si vous pensez que c'est une erreur, renez contact avec votre "
+                "Votre compte existe mais il n’est pas encore actif. "
+                "Si vous pensez que c’est une erreur, prenez contact avec votre "
                 "responsable ou avec Aidants Connect."
             )
         return user_email
