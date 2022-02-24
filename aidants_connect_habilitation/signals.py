@@ -1,10 +1,10 @@
+from django.conf import settings
 from django.core.mail import send_mail
 from django.dispatch import receiver
 from django.http import HttpRequest
 from django.template import loader
 from django.urls import reverse
 
-from aidants_connect import settings
 from aidants_connect_habilitation.models import (
     IssuerEmailConfirmation,
     email_confirmation_sent,

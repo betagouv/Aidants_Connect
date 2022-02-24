@@ -1,5 +1,5 @@
 from datetime import timedelta
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 from django.db import IntegrityError
 from django.http import HttpRequest
@@ -62,7 +62,9 @@ class OrganisationRequestTests(TestCase):
 
 class TestIssuerEmailConfirmation(TestCase):
     NOW = now()
-    EXPIRE_DAYS = 3
+    EXPIRE_DAYS = 6
+    EMAIL_FROM = "test@test.test"
+    EMAIL_SUBJECT = "Subject"
 
     @override_settings(EMAIL_CONFIRMATION_EXPIRE_DAYS=EXPIRE_DAYS)
     @freeze_time(NOW)
@@ -151,4 +153,26 @@ class TestIssuerEmailConfirmation(TestCase):
         self.assertEqual(email_confirmation.sent, self.NOW)
         send_mock.assert_called_with(
             IssuerEmailConfirmation, request=request, confirmation=email_confirmation
+        )
+
+    @override_settings(
+        EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_FROM=EMAIL_FROM,
+        EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_SUBJECT=EMAIL_SUBJECT,
+    )
+    @patch("aidants_connect_habilitation.signals.send_mail")
+    def test_signal_sends_mail(self, send_mail_mock: Mock):
+        email_confirmation = IssuerEmailConfirmation.for_issuer(
+            IssuerFactory(email_verified=False)
+        )
+        request = HttpRequest()
+        request.META["SERVER_NAME"] = "localhost"
+        request.META["SERVER_PORT"] = "3000"
+
+        email_confirmation.send(request)
+        send_mail_mock.assert_called_with(
+            from_email=self.EMAIL_FROM,
+            recipient_list=[email_confirmation.issuer.email],
+            subject=self.EMAIL_SUBJECT,
+            message=ANY,
+            html_message=ANY,
         )
