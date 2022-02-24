@@ -1,5 +1,5 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras %}
+{% load static form_extras ac_common %}
 
 {% block title %}
   Aidants Connect - Structure
@@ -20,7 +20,11 @@
     <div class="fr-grid-row fr-grid-row--gutters">
 
       <div class="fr-col-12 fr-col-md-8">
-        <form method="post">
+        <form
+          method="post"
+          data-controller="dynamic-form"
+          data-dynamic-form-type-input-container-class="type-input-container"
+        >
           <h2>Structure d’accueil</h2>
           <p class="subtitle">Vous pouvez faire autant de demandes qu’il existe de structures d’accueil.</p>
           <div class="shadowed">
@@ -29,7 +33,9 @@
             {% csrf_token %}
             {{ form.non_field_errors }}
             {% field_as_fr_grid_row form.type %}
-            {% field_as_fr_grid_row form.type_other %}
+            <div data-dynamic-form-target="typeOtherInputContainer">
+              {% field_as_fr_grid_row form.type_other %}
+            </div>
             {% field_as_fr_grid_row form.name %}
             <h3>Informations administratives</h3>
 
@@ -98,4 +104,10 @@
     </div>
     {% include "_more-info.html" %}
   </div>
+{% endblock %}
+
+{% block extrajs %}
+  {% stimulusjs %}
+  <script src="{% static 'js/utils.js' %}"></script>
+  <script src="{% static 'js/organisation_form.js' %}"></script>
 {% endblock %}

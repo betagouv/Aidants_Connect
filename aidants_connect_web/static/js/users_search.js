@@ -27,12 +27,12 @@
 
     // Inspired by https://github.com/idmadj/locale-includes/blob/master/src/index.js
     function localeIncludes(haystack, needle) {
-        const haystackLength = haystack.length
-        const needleLength = needle.length
-        const lengthDiff = haystackLength - needleLength
+        const haystackLength = haystack.length;
+        const needleLength = needle.length;
+        const lengthDiff = haystackLength - needleLength;
 
         for (var i = 0; i <= lengthDiff; i++) {
-            const subHaystack = haystack.substring(i, i + needleLength)
+            const subHaystack = haystack.substring(i, i + needleLength);
             if (collator.compare(subHaystack, needle) === 0) {
                 return true
             }
@@ -44,16 +44,16 @@
      * This was made with Stimulus framework
      * https://stimulus.hotwired.dev
      */
-    const SearchController = extend(Stimulus.Controller)
+    const SearchController = extend(Stimulus.Controller);
     SearchController.prototype.connect = function () {
         this.searchBarTargets.forEach(function (searchBar) {
-            searchBar.removeAttribute("hidden")
+            searchBar.removeAttribute("hidden");
         })
     }
 
     SearchController.prototype.search = function (evt) {
-        const self = this
-        const searchQuery = evt.target.value.trim()
+        const self = this;
+        const searchQuery = evt.target.value.trim();
         this.itemTargets.forEach(function (item) {
             if (searchQuery.length === 0) {
                 item.classList.remove(self.irrelevantResultClass)
@@ -65,20 +65,20 @@
                 return localeIncludes(term, searchQuery)
             })
             if (hasMatchingTerms) {
-                item.classList.remove(self.irrelevantResultClass)
+                item.classList.remove(self.irrelevantResultClass);
             } else {
-                item.classList.add(self.irrelevantResultClass)
+                item.classList.add(self.irrelevantResultClass);
             }
         })
     }
 
     /* Static fields */
-    SearchController.targets = ["searchBar", "item"]
-    SearchController.classes = ["irrelevantResult"]
+    SearchController.targets = ["searchBar", "item"];
+    SearchController.classes = ["irrelevantResult"];
 
     function init() {
         // Make search bar visible
-        const els = document.getElementsByClassName("user-search")
+        const els = document.getElementsByClassName("user-search");
         for (var i = 0; i < els.length; i++) {
             els.item(i).removeAttribute("hidden");
         }
