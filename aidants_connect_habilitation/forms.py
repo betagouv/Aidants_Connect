@@ -144,7 +144,21 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
     class Meta:
         model = models.OrganisationRequest
-        exclude = ["issuer", "manager", "data_privacy_officer", "status", "draft_id"]
+        fields = [
+            "type",
+            "type_other",
+            "name",
+            "siret",
+            "address",
+            "zipcode",
+            "city",
+            "partner_administration",
+            "public_service_delegation_attestation",
+            "france_services_label",
+            "web_site",
+            "mission_description",
+            "avg_nb_demarches",
+        ]
 
 
 class PersonWithResponsibilitiesForm(PatchedErrorListForm):

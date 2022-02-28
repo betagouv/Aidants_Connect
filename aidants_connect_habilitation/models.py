@@ -232,12 +232,14 @@ class OrganisationRequest(models.Model):
     )
 
     # Checkboxes
-    cgu = models.BooleanField("J'accepte les CGU")
-    dpo = models.BooleanField("Le DPO est informé")
+    cgu = models.BooleanField("J'accepte les CGU", default=False)
+    dpo = models.BooleanField("Le DPO est informé", default=False)
     professionals_only = models.BooleanField(
-        "La structure ne contient que des aidants professionnels"
+        "La structure ne contient que des aidants professionnels", default=False
     )
-    without_elected = models.BooleanField("Aucun élu n'est impliqué dans la structure")
+    without_elected = models.BooleanField(
+        "Aucun élu n'est impliqué dans la structure", default=False
+    )
 
     @property
     def is_draft(self):
