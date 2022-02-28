@@ -8,6 +8,7 @@ from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
+from magicauth.forms import EmailForm as MagicAuthEmailForm
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
@@ -136,6 +137,20 @@ class AidantChangeForm(forms.ModelForm):
                 cleaned_data["username"] = data_email
 
         return cleaned_data
+
+
+class LoginEmailForm(MagicAuthEmailForm):
+    email = forms.EmailField()
+
+    def clean_email(self):
+        user_email = super().clean_email()
+        if not Aidant.objects.filter(email=user_email, is_active=True).exists():
+            raise ValidationError(
+                "Votre compte existe mais il n’est pas encore actif. "
+                "Si vous pensez que c’est une erreur, prenez contact avec votre "
+                "responsable ou avec Aidants Connect."
+            )
+        return user_email
 
 
 class MandatForm(forms.Form):
