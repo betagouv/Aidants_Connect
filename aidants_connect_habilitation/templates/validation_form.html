@@ -6,41 +6,58 @@
 {% endblock %}
 
 {% block content %}
-  <h2>Récapitulatif de la demande</h2>
-  <p>
-    Vous trouverez ici les informations principales saisies dans le formulaire.
-    Il est possible de les éditer si besoin.
-  </p>
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Formulaire d’habilitation</h1>
+        <p class="subtitle">
+          Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
+          Faites votre demande en quelques étapes via le formulaire ci-dessous.
+        </p>
+      </div>
+    </div>
+    <h2>Récapitulatif de la demande</h2>
+    <p class="subtitle">
+      Vous retrouverez ici les informations principales saisies dans le formulaire.
+      Il est possible de les modifier si besoin.
+    </p>
+    <h3>Informations générales</h3>
+    <div class="form-in-3-cols">
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <div class="shadowed">
+            <h4 class="h2">Vous êtes :</h4>
+            <strong>{{ issuer.get_full_name }}</strong>
+            <p>{{ issuer.profession }}</p>
+            <a href="mailto:{{ issuer.email }}">{{ issuer.email }}</a>
+            <a href="tel:{{ issuer.phone }}">{{ issuer.phone }}</a>
+            <div class="button-box">
+              <a class="button primary"
+                 href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
 
-  <h3>Informations générales</h3>
-
-  <section>
-    <h4>Vous êtes :</h4>
-
-    <strong>{{ issuer.get_full_name }}</strong>
-    <p>{{ issuer.profession }}</p>
-
-    <a href="mailto:{{ issuer.email }}">{{ issuer.email }}</a>
-    <a href="tel:{{ issuer.phone }}">{{ issuer.phone }}</a>
-
-    <a href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
-  </section>
-
-  <section>
-    <h4>Vous faites cette demande pour :</h4>
-
-    <address>
-      {{ organisation.address }}<br/>
-      {{ organisation.zipcode }}<br/>
-      {{ organisation.city }}<br/>
-    </address>
-
-    <p>SIRET : {{ organisation.siret }}</p>
-
-    <a href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
-      Éditer
-    </a>
-  </section>
+            </div>
+          </div>
+        </div>
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <div class="shadowed">
+            <h4 class="h2">Vous faites cette demande pour :</h4>
+            <address>
+              {{ organisation.address }}<br/>
+              {{ organisation.zipcode }}<br/>
+              {{ organisation.city }}<br/>
+            </address>
+            <p>SIRET : {{ organisation.siret }}</p>
+            <div class="button-box">
+              <a class="button primary"
+                 href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                Éditer
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>{# fr-container #}
 
   <section>
     <h4>Responsable de structure</h4>
