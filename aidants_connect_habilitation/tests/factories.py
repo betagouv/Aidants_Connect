@@ -1,9 +1,11 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+import factory
 from factory import Faker, LazyFunction, SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
+from faker import Faker as RealFaker
 from phonenumber_field.phonenumber import to_python
 
 from aidants_connect.common.constants import RequestOriginConstants
@@ -80,9 +82,7 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
     draft_id = None
 
-    type_id = FuzzyChoice(
-        [x.value for x in RequestOriginConstants if x != RequestOriginConstants.OTHER]
-    )
+    type_id = FuzzyChoice(RequestOriginConstants.values)
     name = Faker("company")
     siret = FuzzyInteger(111_111_111, 999_999_999)
     address = Faker("street_address")
@@ -105,6 +105,14 @@ class OrganisationRequestFactory(DjangoModelFactory):
     dpo = True
     professionals_only = True
     without_elected = True
+
+    @factory.lazy_attribute
+    def type_other(self):
+        return (
+            RealFaker().company()
+            if self.type_id == RequestOriginConstants.OTHER.value
+            else None
+        )
 
     class Meta:
         model = OrganisationRequest

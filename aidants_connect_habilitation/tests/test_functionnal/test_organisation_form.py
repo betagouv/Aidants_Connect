@@ -33,24 +33,62 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
             kwargs.update(draft_id=organisation_request.draft_id)
         self.open_live_url(reverse(pattern, kwargs=kwargs))
 
-    def test_form(self):
+    def test_form_normal_organisation(self):
         issuer: Issuer = IssuerFactory()
-        request: OrganisationRequest = OrganisationRequestFactory()
+        request: OrganisationRequest = OrganisationRequestFactory.build(
+            type_id=RequestOriginConstants.MEDIATHEQUE.value,
+            public_service_delegation_attestation=False,
+        )
         self.open_url_from_pattern(issuer)
 
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
         )
 
-        if request.type.id == RequestOriginConstants.OTHER.value:
-            self.selenium.find_element(By.ID, "id_type_other").send_keys(
-                request.type_other
-            )
+        for field in [
+            "name",
+            "siret",
+            "address",
+            "zipcode",
+            "city",
+            "partner_administration",
+            "france_services_label",
+            "web_site",
+            "mission_description",
+            "avg_nb_demarches",
+        ]:
+            try:
+                self.selenium.find_element(By.ID, f"id_{field}").send_keys(
+                    getattr(request, field)
+                )
+            except Exception as e:
+                raise ValueError(f"Error when setting input 'id_{field}'") from e
 
-        if request.public_service_delegation_attestation:
-            self.selenium.find_element(
-                By.ID, "id_public_service_delegation_attestation"
-            ).click()
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        path = reverse(
+            "habilitation_new_aidants",
+            kwargs={
+                "issuer_id": str(issuer.issuer_id),
+                "draft_id": str(issuer.organisation_requests.first().draft_id),
+            },
+        )
+
+        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
+
+    def test_form_other_organisation(self):
+        issuer: Issuer = IssuerFactory()
+        request: OrganisationRequest = OrganisationRequestFactory.build(
+            type_id=RequestOriginConstants.OTHER.value,
+            public_service_delegation_attestation=False,
+        )
+        self.open_url_from_pattern(issuer)
+
+        Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
+            str(request.type.id)
+        )
+
+        self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
 
         for field in [
             "name",
@@ -100,7 +138,7 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
             "Veuillez préciser le type d’organisation",
         )
 
-        select.select_by_visible_text(RequestOriginConstants.GUICHET_AUTRE.label)
+        select.select_by_visible_text(RequestOriginConstants.MEDIATHEQUE.label)
         self.assertFalse(id_type_other_el.is_displayed())
 
     def test_modify_organisation_type_other_input_is_displayed(self):
