@@ -38,14 +38,6 @@ class HabilitationStepMixin:
     def step(self) -> HabilitationFormStep:
         raise NotImplementedError()
 
-    @property
-    def steps(self):
-        return HabilitationFormStep
-
-    @property
-    def step_context(self):
-        return {"step": self.step, "steps": self.steps}
-
 
 class CheckIssuerMixin(HabilitationStepMixin, ContextMixin):
     @property
@@ -59,7 +51,7 @@ class CheckIssuerMixin(HabilitationStepMixin, ContextMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            **super().step_context,
+            "step": self.step,
             "issuer": self.issuer,
         }
 
@@ -119,7 +111,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
         )
 
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), **super().step_context}
+        return {**super().get_context_data(**kwargs), "step": self.step}
 
 
 class IssuerEmailConfirmationWaitingView(CheckIssuerMixin, TemplateView):

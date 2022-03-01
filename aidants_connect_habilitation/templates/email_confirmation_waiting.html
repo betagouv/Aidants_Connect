@@ -1,34 +1,55 @@
-{% extends 'layouts/habilitation_form.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 {% load static form_extras ac_common %}
 
 {% block title %}
   Aidants Connect - Confirmez votre email
 {% endblock %}
 
-{% block form_title %}
-  Confirmation de votre email
-{% endblock %}
+{% block content %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Formulaire d’habilitation</h1>
+      </div>
+    </div>
 
-{% block form_content %}
-  {% if email_confirmation_sent %}
-    <p>Un email de confirmation vient de vous être renvoyé.</p>
-    <p>
-      Si vous ne le recevez toujours pas, vous pouvez
-      {% mailto link_text='tenter de nous contacter en suivant ce lien' recipient=support_email subject=support_subject body=support_body %}
-      ou nous envoyer un email à l'adresse <code>{{ support_email }}</code>.
-    </p>
-  {% else %}
-    <p>
-      Un email vous a été envoyé à l'adresse email que vous avez renseignée.
-      Merci de cliquer sur le lien inclus dans cet email pour la vérifier.
-    </p>
-    <p>
-      Si vous n'avez pas reçu cet email, vous pouvez utiliser le bouton ci-dessous pour renvoyer un email de
-      confirmation.
-    </p>
-  {% endif %}
-{% endblock %}
+    {% include "layouts/_breadcrumbs.html" %}
 
-{% block button_box %}
-  {% form_validation_button button_text="Renvoyer l'email de confirmation" %}
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <form method="post">
+          <h2>Confirmation de votre email</h2>
+          <div class="shadowed">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            {% if email_confirmation_sent %}
+              <p>Un email de confirmation vient de vous être renvoyé.</p>
+              <p>
+                Si vous ne le recevez toujours pas, vous pouvez
+                {% mailto link_text='tenter de nous contacter en suivant ce lien' recipient=support_email subject=support_subject body=support_body %}
+                ou nous envoyer un email à l'adresse <code>{{ support_email }}</code>.
+              </p>
+            {% else %}
+              <p>
+                Un email vous a été envoyé à l'adresse email que vous avez renseignée.
+                Merci de cliquer sur le lien inclus dans cet email pour la vérifier.
+              </p>
+              <p>
+                Si vous n'avez pas reçu cet email, vous pouvez utiliser le bouton ci-dessous pour renvoyer un email de
+                confirmation.
+              </p>
+            {% endif %}
+
+            <div class="button-box">
+              <button type="submit" class="primary">Renvoyer l'email de confirmation</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% include "_more-info.html" %}
+
+  </div>
 {% endblock %}
