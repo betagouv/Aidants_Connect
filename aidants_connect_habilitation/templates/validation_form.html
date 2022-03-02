@@ -7,15 +7,7 @@
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col">
-        <h1>Formulaire d’habilitation</h1>
-        <p class="subtitle">
-          Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
-          Faites votre demande en quelques étapes via le formulaire ci-dessous.
-        </p>
-      </div>
-    </div>
+    {% include 'edito/_titre_formulaire_habilitation.html' %}
     <h2>Récapitulatif de la demande</h2>
     <p class="subtitle">
       Vous retrouverez ici les informations principales saisies dans le formulaire.
@@ -34,7 +26,6 @@
             <div class="button-box">
               <a class="button primary"
                  href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
-
             </div>
           </div>
         </div>
