@@ -124,16 +124,13 @@ class OrganisationRequestForm(PatchedErrorListForm):
         )
 
     def clean_type(self):
-        try:
-            return OrganisationType.objects.get(pk=int(self.data["type"]))
-        except OrganisationType.DoesNotExist:
-            raise ValidationError("Mauvais type d'organisation soumis")
+        return OrganisationType.objects.get(pk=int(self.data["type"]))
 
     def clean_type_other(self):
-        if (
-            int(self.data["type"]) == RequestOriginConstants.OTHER.value
-            and not self.data["type_other"]
-        ):
+        if int(self.data["type"]) != RequestOriginConstants.OTHER.value:
+            return ""
+
+        if not self.data["type_other"]:
             label = self.fields["type_other"].label
             raise ValidationError(
                 f"Le champ « {label} » doit être rempli si la "
