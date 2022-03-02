@@ -20,10 +20,15 @@
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <div class="shadowed with-button-box">
             <h4 class="h2">Vous êtes :</h4>
-            <strong>{{ issuer.get_full_name }}</strong>
-            <p>{{ issuer.profession }}</p>
-            <a href="mailto:{{ issuer.email }}">{{ issuer.email }}</a>
-            <a href="tel:{{ issuer.phone }}">{{ issuer.phone }}</a>
+            <div>
+              <p>
+                <strong>{{ issuer.get_full_name }}</strong><br>
+                {{ issuer.profession }}
+              </p>
+              <p>
+                {{ issuer.email }}<br>{{ issuer.phone }}
+              </p>
+            </div>
             <div class="button-box">
               <a class="button primary"
                  href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
@@ -33,12 +38,15 @@
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <div class="shadowed with-button-box">
             <h4 class="h2">Vous faites cette demande pour :</h4>
-            <address>
-              {{ organisation.address }}<br/>
-              {{ organisation.zipcode }}<br/>
-              {{ organisation.city }}<br/>
-            </address>
-            <p>SIRET : {{ organisation.siret }}</p>
+            <div>
+              <p>
+                <strong>{{ organisation.name }}</strong><br>
+                {{ organisation.address|linebreaksbr }}<br/>
+                {{ organisation.zipcode }}
+                {{ organisation.city }}
+              </p>
+              <p>SIRET : {{ organisation.siret }}</p>
+            </div>
             <div class="button-box">
               <a class="button primary"
                  href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
@@ -57,20 +65,21 @@
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <div class="shadowed with-button-box">
             <h4 class="h2">Responsable de structure</h4>
-
-            <strong>{{ organisation.manager.get_full_name }}</strong>
-            <p>{{ organisation.manager.profession }}</p>
-
-            <a href="mailto:{{ organisation.manager.email }}">{{ organisation.manager.email }}</a>
-            <a href="tel:{{ organisation.manager.phone }}">{{ organisation.manager.phone }}</a>
-
-            <address>
-              {{ organisation.manager.address }}<br/>
-              {{ organisation.manager.zipcode }}<br/>
-              {{ organisation.manager.city }}<br/>
-            </address>
-
-            <p>Ce responsable est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
+            <div>
+              <p>
+                <strong>{{ organisation.manager.get_full_name }}</strong>
+                <br>{{ organisation.manager.profession }}
+              </p>
+              <p>
+                {{ organisation.manager.email }}<br>{{ organisation.manager.phone }}
+              </p>
+              <p>
+                {{ organisation.manager.address|linebreaksbr }}<br/>
+                {{ organisation.manager.zipcode }}
+                {{ organisation.manager.city }}
+              </p>
+              <p>Ce responsable est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
+            </div>
             <div class="button-box">
               <a class="button primary"
                  href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">Éditer</a>
@@ -81,10 +90,15 @@
           <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
             <div class="shadowed with-button-box">
               <h4 class="h2">Délégué à la protection des données</h4>
-              <strong>{{ organisation.data_privacy_officer.get_full_name }}</strong>
-              <p>{{ organisation.data_privacy_officer.profession }}</p>
-              <a href="mailto:{{ organisation.data_privacy_officer.email }}">{{ organisation.data_privacy_officer.email }}</a>
-              <a href="tel:{{ organisation.data_privacy_officer.phone }}">{{ organisation.data_privacy_officer.phone }}</a>
+              <div>
+                <p>
+                  <strong>{{ organisation.data_privacy_officer.get_full_name }}</strong><br>
+                  {{ organisation.data_privacy_officer.profession }}
+                </p>
+                <p>
+                  {{ organisation.data_privacy_officer.email }}<br>{{ organisation.data_privacy_officer.phone }}
+                </p>
+              </div>
               <div class="button-box">
                 <a class="button primary"
                    href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
