@@ -93,7 +93,9 @@ def _get_default_email_key():
 
 
 class IssuerEmailConfirmation(models.Model):
-    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE)
+    issuer = models.ForeignKey(
+        Issuer, on_delete=models.CASCADE, related_name="email_confirmations"
+    )
     created = models.DateTimeField(verbose_name="Créé le", default=now)
     sent = models.DateTimeField(verbose_name="Envoyée", null=True)
     key = models.CharField(
