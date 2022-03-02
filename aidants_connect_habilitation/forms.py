@@ -104,6 +104,25 @@ class OrganisationRequestForm(PatchedErrorListForm):
         required=False,
     )
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.widget_attrs(
+            "type_other",
+            {
+                "data-dynamic-form-target": "typeOtherInput",
+                "data-displayed-label": "Veuillez préciser le type d’organisation",
+            },
+        )
+        self.widget_attrs(
+            "type",
+            {
+                "data-action": "change->dynamic-form#onTypeChange",
+                "data-dynamic-form-target": "typeInput",
+                "data-other-value": RequestOriginConstants.OTHER.value,
+            },
+        )
+
     def clean_type(self):
         try:
             return OrganisationType.objects.get(pk=int(self.data["type"]))
@@ -125,7 +144,21 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
     class Meta:
         model = models.OrganisationRequest
-        exclude = ["issuer", "manager", "data_privacy_officer", "status", "draft_id"]
+        fields = [
+            "type",
+            "type_other",
+            "name",
+            "siret",
+            "address",
+            "zipcode",
+            "city",
+            "partner_administration",
+            "public_service_delegation_attestation",
+            "france_services_label",
+            "web_site",
+            "mission_description",
+            "avg_nb_demarches",
+        ]
 
 
 class PersonWithResponsibilitiesForm(PatchedErrorListForm):

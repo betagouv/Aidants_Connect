@@ -250,6 +250,10 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
 
 STATIC_ROOT = "staticfiles"
 STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "aidants_connect/common/static"),
+]
+
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"
@@ -389,6 +393,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
+STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
+
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_IMG_SRC = (
@@ -397,7 +403,7 @@ CSP_IMG_SRC = (
 )
 CSP_SCRIPT_SRC = (
     "'self'",
-    "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js",
+    STIMULUS_JS_URL,
     "'sha256-FUfFEwUd+ObSebyGDfkxyV7KwtyvBBwsE/VxIOfPD68='",  # tabbed_admin
     "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html

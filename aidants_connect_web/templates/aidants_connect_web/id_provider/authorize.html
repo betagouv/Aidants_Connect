@@ -1,6 +1,6 @@
 {% extends 'layouts/main.html' %}
 
-{% load static ac_extras %}
+{% load static ac_extras ac_common %}
 
 {% block title %}Aidants Connect - Sélectionnez l'usager{% endblock %}
 
@@ -66,6 +66,6 @@
 {% endblock content %}
 
 {% block extrajs %}
-  <script src="https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"></script>
+  {% stimulusjs %}
   <script src="{% static 'js/users_search.js' %}"></script>
 {% endblock %}

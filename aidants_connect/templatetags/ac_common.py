@@ -1,6 +1,7 @@
 from urllib.parse import quote, urlencode
 
 from django import template
+from django.conf import settings
 from django.utils.safestring import mark_safe
 
 register = template.Library()
@@ -22,3 +23,8 @@ def mailto(link_text: str, recipient: str, subject: str, body: str):
 
     urlencoded = urlencode({"subject": subject, "body": body}, quote_via=quote_via)
     return mark_safe(f'<a href="mailto:{recipient}?{urlencoded}">{link_text}</a>')
+
+
+@register.simple_tag
+def stimulusjs():
+    return mark_safe(f'<script src="{settings.STIMULUS_JS_URL}"></script>')
