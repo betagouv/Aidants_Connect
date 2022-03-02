@@ -119,12 +119,13 @@
           <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
             <div class="shadowed with-button-box">
               <h4 class="h2">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
-
-              <strong>{{ aidant_request.get_full_name }}</strong>
-              <p>{{ aidant_request.profession }}</p>
-
-              <a href="mailto:{{ aidant_request.email }}">{{ aidant_request.email }}</a>
-              <a href="tel:{{ aidant_request.phone }}">{{ aidant_request.phone }}</a>
+              <div>
+                <p>
+                  <strong>{{ aidant_request.get_full_name }}</strong><br>
+                  {{ aidant_request.profession }}
+                </p>
+                <p>{{ aidant_request.email }}</p>
+              </div>
               <div class="button-box">
                 <a class="button primary"
                    href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
