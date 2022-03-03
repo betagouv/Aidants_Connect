@@ -203,7 +203,7 @@ class OrganisationRequest(models.Model):
 
     # Organisation
     name = models.TextField("Nom de la structure")
-    siret = models.BigIntegerField("N° SIRET", default=1)
+    siret = models.BigIntegerField("N° SIRET")
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
