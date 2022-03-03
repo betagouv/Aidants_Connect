@@ -8,6 +8,7 @@ from django.forms import (
     FileField,
     formset_factory,
 )
+from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -218,6 +219,11 @@ class BaseAidantRequestFormSet(BaseFormSet):
 
         return result
 
+    def management_form_widget_attrs(self, widget_name: str, attrs: dict):
+        widget = self.management_form.fields[widget_name].widget
+        for attr_name, attr_value in attrs.items():
+            widget.attrs[attr_name] = attr_value
+
 
 AidantRequestFormSet = formset_factory(
     AidantRequestForm, formset=BaseAidantRequestFormSet
@@ -225,6 +231,10 @@ AidantRequestFormSet = formset_factory(
 
 
 class PersonnelForm:
+    MANAGER_FORM_PREFIX = "manager"
+    DPO_FORM_PREFIX = "dpo"
+    AIDANTS_FORMSET_PREFIX = "aidants"
+
     def __init__(self, **kwargs):
         def merge_kwargs(prefix):
             previous_prefix = kwargs.get("prefix")
@@ -235,9 +245,20 @@ class PersonnelForm:
                 else f"{prefix}_{previous_prefix}",
             }
 
-        self.manager_form = ManagerForm(**merge_kwargs("manager"))
-        self.data_privacy_officer_form = DataPrivacyOfficerForm(**merge_kwargs("dpo"))
-        self.aidants_formset = AidantRequestFormSet(**merge_kwargs("aidants"))
+        self.manager_form = ManagerForm(**merge_kwargs(self.MANAGER_FORM_PREFIX))
+        self.data_privacy_officer_form = DataPrivacyOfficerForm(
+            **merge_kwargs(self.DPO_FORM_PREFIX)
+        )
+        self.aidants_formset = AidantRequestFormSet(
+            **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
+        )
+
+        self.aidants_formset.management_form_widget_attrs(
+            TOTAL_FORM_COUNT, {"data-personnel-form-target": "managmentFormCount"}
+        )
+        self.aidants_formset.management_form_widget_attrs(
+            MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
+        )
 
     def is_valid(self):
         return (
