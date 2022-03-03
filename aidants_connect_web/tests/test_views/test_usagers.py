@@ -7,7 +7,9 @@ from django.utils import timezone
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
+    ExpiredOverYearMandatFactory,
     MandatFactory,
+    RevokedOverYearMandatFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views.usagers import (
@@ -33,6 +35,10 @@ class ViewAutorisationsTests(TestCase):
         )
         cls.usager_philomene = UsagerFactory(
             given_name="Philomène", family_name="Smith"
+        )
+
+        cls.usager_pierre = UsagerFactory(
+            given_name="Pierre", family_name="Etienne", preferred_username="PE"
         )
 
         cls.mandat_aidant_phillomene = MandatFactory(
@@ -108,6 +114,23 @@ class ViewAutorisationsTests(TestCase):
             expiration_date=timezone.now() + timedelta(days=366),
         )
 
+        cls.mandat_aidant_pierre_revoked_over_a_year = RevokedOverYearMandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_pierre,
+            expiration_date=timezone.now() + timedelta(days=5),
+            post__create_authorisations=["argent", "famille", "logement"],
+        )
+
+        cls.mandat_aidant_pierre_expired_over_a_year = ExpiredOverYearMandatFactory(
+            organisation=cls.aidant.organisation,
+            usager=cls.usager_pierre,
+        )
+
+        AutorisationFactory(
+            mandat=cls.mandat_aidant_pierre_expired_over_a_year,
+            demarche="famille",
+        )
+
     def test__get_mandats_for_usagers_index(self):
         mandats = _get_mandats_for_usagers_index(self.aidant)
         self.assertEqual(
@@ -119,6 +142,8 @@ class ViewAutorisationsTests(TestCase):
                 self.mandat_aidant_josephine_1,
                 self.mandat_aidant_josephine_6,
                 self.mandat_aidant_alice_no_autorisation,
+                self.mandat_aidant_pierre_expired_over_a_year,
+                self.mandat_aidant_pierre_revoked_over_a_year,
                 self.mandat_aidant_phillomene,
             ],
         )

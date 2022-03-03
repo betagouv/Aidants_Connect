@@ -692,10 +692,15 @@ class MandatQuerySet(models.QuerySet):
         )
 
     def inactive(self):
-        return self.filter(
-            Q(expiration_date__lt=timezone.now())
-            | ~Q(autorisations__revocation_date__isnull=True)
-        ).distinct()
+        return (
+            self.exclude(expiration_date__lt=timezone.now() - timedelta(365))
+            .exclude(autorisations__revocation_date__lt=timezone.now() - timedelta(365))
+            .filter(
+                Q(expiration_date__lt=timezone.now())
+                | ~Q(autorisations__revocation_date__isnull=True)
+            )
+            .distinct()
+        )
 
 
 class Mandat(models.Model):
@@ -746,7 +751,7 @@ class Mandat(models.Model):
         """
         return (
             self.autorisations.order_by("-revocation_date").first().revocation_date
-            if self.was_explicitly_revoked
+            if self.was_explicitly_revoked and self.autorisations.exists()
             else None
         )
 

@@ -75,6 +75,20 @@ def _get_usagers_dict_from_mandats(mandats: Mandat) -> dict:
     usagers_without_mandats = set()
     delta = settings.MANDAT_EXPIRED_SOON
     for mandat in mandats:
+        expired_over_a_year = mandat.expiration_date < now() - timedelta(365)
+
+        if expired_over_a_year:
+            continue
+
+        revoked_over_a_year = (
+            mandat.was_explicitly_revoked
+            and mandat.revocation_date is not None
+            and mandat.revocation_date < now() - timedelta(365)
+        )
+
+        if revoked_over_a_year:
+            continue
+
         expired = mandat.expiration_date if mandat.expiration_date < now() else False
         if expired:
             usagers_without_mandats.add(mandat.usager)
