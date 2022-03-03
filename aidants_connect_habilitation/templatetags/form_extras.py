@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django import template
 from django.forms import BoundField
 
@@ -32,10 +30,3 @@ def field_as_narrow_fr_grid_row(field: BoundField):
 @register.inclusion_tag("fields/checkbox_fr_grid_row.html")
 def checkbox_fr_grid_row(field: BoundField):
     return field_as_something(field)
-
-
-@register.inclusion_tag("fields/form_validation_button.html")
-def form_validation_button(
-    button_text: str = "Valider cette étape", href: Optional[str] = None
-):
-    return {"button_text": button_text, "href": href}

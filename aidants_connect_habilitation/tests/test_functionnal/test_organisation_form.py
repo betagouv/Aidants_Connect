@@ -19,27 +19,14 @@ from aidants_connect_habilitation.tests.factories import (
 
 
 @tag("functional")
-class AidantsRequestFormViewTests(FunctionalTestCase):
-    def open_url_from_pattern(
-        self, issuer: Issuer, organisation_request: Optional[OrganisationRequest] = None
-    ):
-        pattern = (
-            "habilitation_modify_organisation"
-            if organisation_request
-            else "habilitation_new_organisation"
-        )
-        kwargs = {"issuer_id": issuer.issuer_id}
-        if organisation_request:
-            kwargs.update(draft_id=organisation_request.draft_id)
-        self.open_live_url(reverse(pattern, kwargs=kwargs))
-
+class OrganisationRequestFormViewTests(FunctionalTestCase):
     def test_form_normal_organisation(self):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.MEDIATHEQUE.value,
             public_service_delegation_attestation=False,
         )
-        self.open_url_from_pattern(issuer)
+        self.__open_form_url(issuer)
 
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
@@ -82,7 +69,7 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
             type_id=RequestOriginConstants.OTHER.value,
             public_service_delegation_attestation=False,
         )
-        self.open_url_from_pattern(issuer)
+        self.__open_form_url(issuer)
 
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
@@ -123,7 +110,7 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
 
     def test_hide_type_other_input_when_org_type_is_other(self):
         issuer: Issuer = IssuerFactory()
-        self.open_url_from_pattern(issuer)
+        self.__open_form_url(issuer)
 
         id_type_other_el = self.selenium.find_element(By.ID, "id_type_other")
         self.assertFalse(id_type_other_el.is_displayed())
@@ -148,7 +135,7 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
             type_other="L'organisation des travailleurs",
             draft_id=uuid4(),
         )
-        self.open_url_from_pattern(issuer, organisation)
+        self.__open_form_url(issuer, organisation)
 
         id_type_other_el = self.selenium.find_element(By.ID, "id_type_other")
         self.assertTrue(id_type_other_el.is_displayed())
@@ -166,3 +153,18 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
             self.selenium.find_element(By.ID, "id_type").get_attribute("value"),
             str(RequestOriginConstants.OTHER.value),
         )
+
+    def __open_form_url(
+        self,
+        issuer: Issuer,
+        organisation_request: Optional[OrganisationRequest] = None,
+    ):
+        pattern = (
+            "habilitation_modify_organisation"
+            if organisation_request
+            else "habilitation_new_organisation"
+        )
+        kwargs = {"issuer_id": issuer.issuer_id}
+        if organisation_request:
+            kwargs.update(draft_id=organisation_request.draft_id)
+        self.open_live_url(reverse(pattern, kwargs=kwargs))
