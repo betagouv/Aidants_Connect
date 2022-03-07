@@ -6,106 +6,184 @@
 {% endblock %}
 
 {% block content %}
-  <h2>Récapitulatif de la demande</h2>
-  <p>
-    Vous trouverez ici les informations principales saisies dans le formulaire.
-    Il est possible de les éditer si besoin.
-  </p>
-
-  <h3>Informations générales</h3>
-
-  <section>
-    <h4>Vous êtes :</h4>
-
-    <strong>{{ issuer.get_full_name }}</strong>
-    <p>{{ issuer.profession }}</p>
-
-    <a href="mailto:{{ issuer.email }}">{{ issuer.email }}</a>
-    <a href="tel:{{ issuer.phone }}">{{ issuer.phone }}</a>
-
-    <a href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
-  </section>
-
-  <section>
-    <h4>Vous faites cette demande pour :</h4>
-
-    <address>
-      {{ organisation.address }}<br/>
-      {{ organisation.zipcode }}<br/>
-      {{ organisation.city }}<br/>
-    </address>
-
-    <p>SIRET : {{ organisation.siret }}</p>
-
-    <a href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
-      Éditer
-    </a>
-  </section>
-
-  <section>
-    <h4>Responsable de structure</h4>
-
-    <strong>{{ organisation.manager.get_full_name }}</strong>
-    <p>{{ organisation.manager.profession }}</p>
-
-    <a href="mailto:{{ organisation.manager.email }}">{{ organisation.manager.email }}</a>
-    <a href="tel:{{ organisation.manager.phone }}">{{ organisation.manager.phone }}</a>
-
-    <address>
-      {{ organisation.manager.address }}<br/>
-      {{ organisation.manager.zipcode }}<br/>
-      {{ organisation.manager.city }}<br/>
-    </address>
-
-    <p>Ce responsable est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
-
-    <a href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">Éditer</a>
-  </section>
-
-  {% if organisation.data_privacy_officer %}
-    <section>
-      <h4>Délégué à la protection des données</h4>
-
-      <strong>{{ organisation.data_privacy_officer.get_full_name }}</strong>
-      <p>{{ organisation.data_privacy_officer.profession }}</p>
-
-      <a href="mailto:{{ organisation.data_privacy_officer.email }}">{{ organisation.data_privacy_officer.email }}</a>
-      <a href="tel:{{ organisation.data_privacy_officer.phone }}">{{ organisation.data_privacy_officer.phone }}</a>
-
-      <a href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
-        Éditer
-      </a>
-    </section>
-  {% endif %}
-
-  {% for aidant_request in organisation.aidant_requests.all %}
-    <section>
-      <h4>Aidant</h4>
-
-      <strong>{{ aidant_request.get_full_name }}</strong>
-      <p>{{ aidant_request.profession }}</p>
-
-      <a href="mailto:{{ aidant_request.email }}">{{ aidant_request.email }}</a>
-      <a href="tel:{{ aidant_request.phone }}">{{ aidant_request.phone }}</a>
-
-      <a href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
-        Éditer
-      </a>
-    </section>
-  {% endfor %}
-
-  <form method="post">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-
-    {% field_as_p form.cgu %}
-    {% field_as_p form.dpo %}
-    {% field_as_p form.professionals_only %}
-    {% field_as_p form.without_elected %}
-
-    <a href="{% url 'habilitation_validation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
-      Revenir à l’étape précédente
-    </a>
-    <input type="submit" value="Soumettre la demande"/>
-  </form>
+  <div class="fr-container">
+    {% include 'edito/_titre_formulaire_habilitation.html' %}
+    {% include 'layouts/_breadcrumbs.html' %}
+    <h2>Récapitulatif de la demande</h2>
+    <p class="subtitle">
+      Vous retrouverez ici les informations principales saisies dans le formulaire.
+      Il est possible de les modifier si besoin.
+    </p>
+    <h3>Informations générales</h3>
+    <div class="form-in-3-cols">
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <div class="shadowed with-button-box">
+            <h4 class="h2">Vous êtes :</h4>
+            <div>
+              <p>
+                <strong>{{ issuer.get_full_name }}</strong><br>
+                {{ issuer.profession }}
+              </p>
+              <p>
+                {{ issuer.email }}<br>{{ issuer.phone }}
+              </p>
+            </div>
+            <div class="button-box">
+              <a class="button primary"
+                 href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
+            </div>
+          </div>
+        </div>
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <div class="shadowed with-button-box">
+            <h4 class="h2">Vous faites cette demande pour :</h4>
+            <div>
+              <p>
+                <strong>{{ organisation.name }}</strong><br>
+                {{ organisation.address|linebreaksbr }}<br/>
+                {{ organisation.zipcode }}
+                {{ organisation.city }}
+              </p>
+              <p>SIRET : {{ organisation.siret }}</p>
+            </div>
+            <div class="button-box">
+              <a class="button primary"
+                 href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                Éditer
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h3>Autres informations</h3>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <div class="shadowed">
+          <ul>
+            <li>
+              Type de structure : {{ organisation.type }}
+              {% if organisation.type_id == type_other %} — {{ organisation.type_other }}{% endif %}
+            </li>
+            <li>Site web : {{ organisation.web_site }}</li>
+            <li>Missions : {{ organisation.mission_description|linebreaksbr }}</li>
+            <li>Nombre de démarches traitées par semaine : {{ organisation.avg_nb_demarches }}</li>
+            <li>Label France Services : {{ organisation.france_services_label|yesno:"Oui,Non" }}</li>
+          </ul>
+          <div class="button-box">
+            <a class="button primary"
+               href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+              Éditer
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {# Infos générales #}
+    <h3>Personnes impliquées</h3>
+    <div class="form-in-3-cols">
+      {# first row: responsable + dpo #}
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <div class="shadowed with-button-box">
+            <h4 class="h2">Responsable de structure</h4>
+            <div>
+              <p>
+                <strong>{{ organisation.manager.get_full_name }}</strong>
+                <br>{{ organisation.manager.profession }}
+              </p>
+              <p>
+                {{ organisation.manager.email }}<br>{{ organisation.manager.phone }}
+              </p>
+              <p>
+                {{ organisation.manager.address|linebreaksbr }}<br/>
+                {{ organisation.manager.zipcode }}
+                {{ organisation.manager.city }}
+              </p>
+              <p>Ce responsable est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
+            </div>
+            <div class="button-box">
+              <a class="button primary"
+                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">Éditer</a>
+            </div>
+          </div>
+        </div>
+        {% if organisation.data_privacy_officer %}
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <div class="shadowed with-button-box">
+              <h4 class="h2">Délégué à la protection des données</h4>
+              <div>
+                <p>
+                  <strong>{{ organisation.data_privacy_officer.get_full_name }}</strong><br>
+                  {{ organisation.data_privacy_officer.profession }}
+                </p>
+                <p>
+                  {{ organisation.data_privacy_officer.email }}<br>{{ organisation.data_privacy_officer.phone }}
+                </p>
+              </div>
+              <div class="button-box">
+                <a class="button primary"
+                   href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                  Éditer
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      {# 2nd row and more: aidants #}
+      <div class="fr-grid-row fr-grid-row--gutters">
+        {% for aidant_request in organisation.aidant_requests.all %}
+          {% if not forloop.first and forloop.counter0|divisibleby:2 %}
+            </div>
+            <div class="fr-grid-row fr-grid-row--gutters">
+          {% endif %}
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <div class="shadowed with-button-box">
+              <h4 class="h2">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
+              <div>
+                <p>
+                  <strong>{{ aidant_request.get_full_name }}</strong><br>
+                  {{ aidant_request.profession }}
+                </p>
+                <p>{{ aidant_request.email }}</p>
+              </div>
+              <div class="button-box">
+                <a class="button primary"
+                   href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                  Éditer
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+        </div>
+    </div>
+    {# personnes impliquées #}
+    <h3>Validation de la demande</h3>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <div class="shadowed">
+          <h4 class="h2">Modalités d'utilisation</h4>
+          <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% checkbox_fr_grid_row form.cgu %}
+            {% checkbox_fr_grid_row form.dpo %}
+            {% checkbox_fr_grid_row form.professionals_only %}
+            {% checkbox_fr_grid_row form.without_elected %}
+            <div class="button-box">
+              <a class="button"
+                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                Revenir à l’étape précédente
+              </a>
+              <button class="primary" type="submit">Soumettre la demande</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% include "_more-info.html" %}
+  </div>{# fr-container #}
 {% endblock %}

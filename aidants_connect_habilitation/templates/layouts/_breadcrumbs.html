@@ -23,7 +23,15 @@
       {% endif %}
     </li>
     {# STEP 3 ======================================================================= #}
-    <li class="{% if step == step.PERSONNEL %}active{% endif %}">Les personnes<br>impliquées</li>
+    <li class="{% if step == step.PERSONNEL %}active{% endif %}">
+      {% if step > step.PERSONNEL.value and organisation %}
+        <a href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+          Les personnes<br>impliquées
+        </a>
+      {% else %}
+        Les personnes<br>impliquées
+      {% endif %}
+    </li>
     {# STEP 4 ======================================================================= #}
     <li class="{% if step == step.SUMMARY %}active{% endif %}">Récapitulatif<br>& validation</li>
   </ol>

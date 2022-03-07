@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView
 from django.views.generic.base import ContextMixin
 
+from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
     IssuerForm,
@@ -265,6 +266,7 @@ class ValidationRequestFormView(LateStageRequestFormView):
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
             "aidants": self.organisation.aidant_requests,
+            "type_other": RequestOriginConstants.OTHER.value,
         }
 
     def get_success_url(self):
