@@ -158,12 +158,13 @@ class RequestOriginConstants(IntegerChoices):
 
 @unique
 class RequestStatusConstants(ChoiceEnum):
-    NEW = "Nouvelle"
-    PROCESSING = "En cours"
+    NEW = "Brouillon"
+    AC_VALIDATION_PROCESSING = "En attente de validation par Aidants Connect"
     VALIDATED = "Validée"
     REFUSED = "Refusée"
-    CANCELLED = "Annulée"
-    CHANGES_REQUIRED = "Changements demandés"
+    CLOSED = "Clôturée"
+    CHANGES_REQUIRED = "Modifications demandées"
+    CHANGES_PROPOSED = "Modifications proposées par Aidants Connect"
 
 
 @unique
