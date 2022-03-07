@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import FormView, RedirectView, TemplateView
+from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
 
 from aidants_connect.common.constants import RequestOriginConstants
@@ -34,17 +34,19 @@ __all__ = [
 """Mixins"""
 
 
-class HabilitationStepMixin:
+class HabilitationStepMixin(ContextMixin):
     @property
     def step(self) -> HabilitationFormStep:
         raise NotImplementedError()
 
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "step": self.step,
+        }
 
-class CheckIssuerMixin(HabilitationStepMixin, ContextMixin):
-    @property
-    def step(self) -> HabilitationFormStep:
-        raise NotImplementedError()
 
+class CheckIssuerMixin(ContextMixin, View):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
@@ -52,16 +54,11 @@ class CheckIssuerMixin(HabilitationStepMixin, ContextMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            "step": self.step,
             "issuer": self.issuer,
         }
 
 
-class VerifiedEmailIssuerFormView(CheckIssuerMixin, FormView):
-    @property
-    def step(self) -> HabilitationFormStep:
-        raise NotImplementedError()
-
+class VerifiedEmailIssuerView(CheckIssuerMixin, View):
     def dispatch(self, request, *args, **kwargs):
         if not self.issuer.email_verified:
             return redirect(
@@ -72,7 +69,7 @@ class VerifiedEmailIssuerFormView(CheckIssuerMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class LateStageRequestFormView(VerifiedEmailIssuerFormView):
+class LateStageRequestView(VerifiedEmailIssuerView, View):
     @property
     def step(self) -> HabilitationFormStep:
         raise NotImplementedError()
@@ -115,7 +112,9 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
         return {**super().get_context_data(**kwargs), "step": self.step}
 
 
-class IssuerEmailConfirmationWaitingView(CheckIssuerMixin, TemplateView):
+class IssuerEmailConfirmationWaitingView(
+    HabilitationStepMixin, CheckIssuerMixin, TemplateView
+):
     template_name = "email_confirmation_waiting.html"
 
     @property
@@ -137,7 +136,9 @@ class IssuerEmailConfirmationWaitingView(CheckIssuerMixin, TemplateView):
         )
 
 
-class IssuerEmailConfirmationView(CheckIssuerMixin, TemplateView):
+class IssuerEmailConfirmationView(
+    HabilitationStepMixin, CheckIssuerMixin, TemplateView
+):
     template_name = "email_confirmation_confirm.html"
 
     @property
@@ -176,7 +177,7 @@ class IssuerPageView(TemplateView):
     template_name = "issuer_space.html"
 
 
-class ModifyIssuerFormView(VerifiedEmailIssuerFormView, NewIssuerFormView):
+class ModifyIssuerFormView(VerifiedEmailIssuerView, NewIssuerFormView):
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.ISSUER
@@ -191,7 +192,9 @@ class ModifyIssuerFormView(VerifiedEmailIssuerFormView, NewIssuerFormView):
         )
 
 
-class NewOrganisationRequestFormView(VerifiedEmailIssuerFormView):
+class NewOrganisationRequestFormView(
+    HabilitationStepMixin, VerifiedEmailIssuerView, FormView
+):
     template_name = "organisation_form.html"
     form_class = OrganisationRequestForm
 
@@ -215,7 +218,7 @@ class NewOrganisationRequestFormView(VerifiedEmailIssuerFormView):
 
 
 class ModifyOrganisationRequestFormView(
-    LateStageRequestFormView, NewOrganisationRequestFormView
+    LateStageRequestView, NewOrganisationRequestFormView
 ):
     @property
     def step(self) -> HabilitationFormStep:
@@ -225,7 +228,7 @@ class ModifyOrganisationRequestFormView(
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(LateStageRequestFormView):
+class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, FormView):
     template_name = "personnel_form.html"
     form_class = PersonnelForm
 
@@ -257,7 +260,7 @@ class PersonnelRequestFormView(LateStageRequestFormView):
         )
 
 
-class ValidationRequestFormView(LateStageRequestFormView):
+class ValidationRequestFormView(LateStageRequestView, HabilitationStepMixin, FormView):
     template_name = "validation_form.html"
     form_class = ValidationForm
 
