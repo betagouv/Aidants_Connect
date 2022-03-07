@@ -42,11 +42,11 @@
     </div>
     <h2>Vos demandes d'habilitation</h2>
     <p class="subtitle">Pour rappel, vous devez déposer une demande d'habilitation par lieu d'accueil.</p>
-    <div class="fr-grid-row fr-grid-row--gutters form-3-col">
+    <div class="fr-grid-row fr-grid-row--gutters form-in-3-cols">
       {% for organisation in issuer.organisation_requests.all %}
         <div class="fr-col-12 fr-col-md-4">
           <div class="shadowed">
-            <h3>{{ organisation.name }} - <i>{{ organisation.status }}</i></h3>
+            <h3 class="h2">{{ organisation.name }} - <i>{{ organisation.status_label }}</i></h3>
             <p>{{ organisation.address|linebreaksbr }}<br>{{ organisation.zipcode }} {{ organisation.city }}</p>
             <p>{{ organisation.aidant_requests.all|length }} aidants</p>
           </div>

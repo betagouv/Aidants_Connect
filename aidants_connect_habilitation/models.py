@@ -247,6 +247,10 @@ class OrganisationRequest(models.Model):
     def is_draft(self):
         return self.draft_id is not None
 
+    @property
+    def status_label(self):
+        return RequestStatusConstants[self.status].value
+
     def confirm_request(self):
         self.draft_id = None
         self.save()
