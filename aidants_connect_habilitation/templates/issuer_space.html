@@ -19,34 +19,39 @@
 
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8">
-        <form method="post">
-          <h2>Le demandeur</h2>
-          <p class="subtitle">Saisissez ici les détails concernant votre identité.</p>
-          <div class="shadowed">
-            {% csrf_token %}
-            {{ form.non_field_errors }}
-            <fieldset>
-              <legend class="sr-only">Demandeur</legend>
-
-              <h3>Identité</h3>
-              {% field_as_fr_grid_row form.last_name %}
-              {% field_as_fr_grid_row form.first_name %}
-
-              <h3>Contact</h3>
-              {% field_as_fr_grid_row form.email %}
-              {% field_as_fr_grid_row form.phone %}
-
-              <h3>Autres informations</h3>
-              {% field_as_fr_grid_row form.profession %}
-            </fieldset>
-
-            <div class="button-box">
-              <button type="submit" class="primary">Valider cette étape</button>
-            </div>
+        <h2>
+          Le demandeur
+        </h2>
+        <p class="subtitle">Vos informations personnelles, dont l'équipe Aidants Connect a besoin pour prendre contact
+          avec vous.</p>
+        <div class="shadowed">
+          <p>
+            <strong>{{ issuer.first_name }} {{ issuer.last_name }}</strong><br>
+            {{ issuer.profession }}
+          </p>
+          <p>
+            {{ issuer.email }}<br>
+            {{ issuer.phone }}
+          </p>
+          <div class="button-box">
+            <a href="{% url "habilitation_modify_issuer" issuer_id=issuer.issuer_id %}"
+               class="button primary">Modifier</a>
           </div>
-
-        </form>
+        </div>
       </div>
+    </div>
+    <h2>Vos demandes d'habilitation</h2>
+    <p class="subtitle">Pour rappel, vous devez déposer une demande d'habilitation par lieu d'accueil.</p>
+    <div class="fr-grid-row fr-grid-row--gutters form-3-col">
+      {% for organisation in issuer.organisation_requests.all %}
+        <div class="fr-col-12 fr-col-md-4">
+          <div class="shadowed">
+            <h3>{{ organisation.name }} - <i>{{ organisation.status }}</i></h3>
+            <p>{{ organisation.address|linebreaksbr }}<br>{{ organisation.zipcode }} {{ organisation.city }}</p>
+            <p>{{ organisation.aidant_requests.all|length }} aidants</p>
+          </div>
+        </div>
+      {% endfor %}
     </div>
     {% include "_more-info.html" %}
   </div>
