@@ -1,12 +1,12 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import (
-    BaseFormSet,
+    BaseModelFormSet,
     BooleanField,
     CharField,
     ChoiceField,
     FileField,
-    formset_factory,
+    modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
@@ -206,18 +206,10 @@ class AidantRequestForm(PatchedErrorListForm):
         exclude = ["organisation"]
 
 
-class BaseAidantRequestFormSet(BaseFormSet):
+class BaseAidantRequestFormSet(BaseModelFormSet):
     def __init__(self, **kwags):
         kwags.setdefault("error_class", PatchedErrorList)
         super().__init__(**kwags)
-
-    def save(self, organisation: OrganisationRequest, commit=True):
-        result = []
-        for sub_form in self:
-            sub_form.instance.organisation = organisation
-            result.append(sub_form.save(commit=commit))
-
-        return result
 
     def management_form_widget_attrs(self, widget_name: str, attrs: dict):
         widget = self.management_form.fields[widget_name].widget
@@ -225,8 +217,8 @@ class BaseAidantRequestFormSet(BaseFormSet):
             widget.attrs[attr_name] = attr_value
 
 
-AidantRequestFormSet = formset_factory(
-    AidantRequestForm, formset=BaseAidantRequestFormSet
+AidantRequestFormSet = modelformset_factory(
+    AidantRequestForm.Meta.model, AidantRequestForm, formset=BaseAidantRequestFormSet
 )
 
 
@@ -235,11 +227,45 @@ class PersonnelForm:
     DPO_FORM_PREFIX = "dpo"
     AIDANTS_FORMSET_PREFIX = "aidants"
 
+    @property
+    def non_field_errors(self):
+        errors = self.manager_form.non_field_errors().copy()
+
+        for error in self.data_privacy_officer_form.non_field_errors():
+            errors.append(error)
+
+        for error in self.aidants_formset.non_form_errors():
+            errors.append(error)
+
+        return errors
+
     def __init__(self, **kwargs):
         def merge_kwargs(prefix):
             previous_prefix = kwargs.get("prefix")
+            local_kwargs = {}
+
+            form_kwargs_prefixes = {
+                self.MANAGER_FORM_PREFIX,
+                self.DPO_FORM_PREFIX,
+                self.AIDANTS_FORMSET_PREFIX,
+            }
+
+            for k, v in kwargs.items():
+                """
+                Let us dispatch form kwargs to specific forms by using their prefixes.
+
+                For instance, PersonnelForm(dpo_instance=some_instance) will
+                disptach to DataPrivacyOfficerForm(instance=some_instance).
+                """
+                kwarg_prefix = k.split("_")
+                if len(kwarg_prefix) > 1 and kwarg_prefix[0] in form_kwargs_prefixes:
+                    if kwarg_prefix[0] == prefix:
+                        local_kwargs[k.removeprefix(f"{prefix}_")] = v
+                else:
+                    local_kwargs[k] = v
+
             return {
-                **kwargs,
+                **local_kwargs,
                 "prefix": prefix
                 if not previous_prefix
                 else f"{prefix}_{previous_prefix}",
@@ -268,10 +294,13 @@ class PersonnelForm:
         )
 
     def save(self, organisation: OrganisationRequest, commit=True):
+        for form in self.aidants_formset:
+            form["organisation"] = organisation
+
         return (
             self.manager_form.save(commit),
             self.data_privacy_officer_form.save(commit),
-            self.aidants_formset.save(organisation, commit),
+            self.aidants_formset.save(commit),
         )
 
 
