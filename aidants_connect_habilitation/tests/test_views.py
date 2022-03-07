@@ -14,6 +14,7 @@ from factory import Faker
 from faker.config import DEFAULT_LOCALE
 
 from aidants_connect import settings
+from aidants_connect.common.constants import RequestStatusConstants
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     DataPrivacyOfficerForm,
@@ -254,6 +255,52 @@ class IssuerEmailConfirmationViewTests(TestCase):
             )
         )
         self.assertTemplateUsed(response, self.template_name)
+
+
+@tag("habilitation")
+class IssuerPageViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_issuer_page"
+        cls.template_name = "issuer_space.html"
+        cls.issuer: Issuer = IssuerFactory()
+
+    def get_url(self, issuer_id):
+        return reverse(self.pattern_name, kwargs={"issuer_id": issuer_id})
+
+    def test_good_template_is_used(self):
+        response = self.client.get(self.get_url(self.issuer.issuer_id))
+        self.assertTemplateUsed(response, self.template_name)
+
+    def test_404_on_bad_issuer_id(self):
+        response = self.client.get(self.get_url(uuid4()))
+        self.assertEqual(response.status_code, 404)
+
+    def test_new_organisation_request_is_displayed_with_links(self):
+        organisation = OrganisationRequestFactory(
+            issuer=self.issuer, draft_id=uuid4(), status=RequestStatusConstants.NEW.name
+        )
+        response = self.client.get(self.get_url(self.issuer.issuer_id))
+        print(response.content)
+        self.assertContains(response, RequestStatusConstants.NEW.value)
+        self.assertContains(response, "Soumettre la demande")
+        self.assertContains(response, organisation.name)
+
+    def test_submitted_organisation_request_is_displayed_without_links(self):
+        organisation = OrganisationRequestFactory(
+            issuer=self.issuer,
+            draft_id=uuid4(),
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+        )
+        response = self.client.get(self.get_url(self.issuer.issuer_id))
+        print(response.content)
+        self.assertNotContains(response, RequestStatusConstants.NEW.value)
+        self.assertContains(
+            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
+        )
+        self.assertNotContains(response, "Soumettre la demande")
+        self.assertContains(response, organisation.name)
 
 
 @tag("habilitation")

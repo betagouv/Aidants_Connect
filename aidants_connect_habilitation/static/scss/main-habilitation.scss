@@ -38,6 +38,13 @@ svg.previews {
   overflow: hidden;
 }
 
+main {
+  a[href] {
+    color: $red-aidants;
+    font-weight: bold;
+  }
+}
+
 // Accessibility ------------------------------------------------------
 
 :focus-visible {
@@ -384,10 +391,14 @@ fieldset {
     }
   }
 
-  button.shadowed {
+  button.shadowed, .button.shadowed {
     width: 100%;
     color: $blue-aidants;
     text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 
     &:before {
       content: "+";
@@ -451,6 +462,7 @@ fieldset {
     a {
       text-decoration: none;
       color: $dark-grey-aidants;
+      font-weight: normal;
 
       &:hover {
         box-shadow: 0 .5rem 0 $off-yellow-aidants;

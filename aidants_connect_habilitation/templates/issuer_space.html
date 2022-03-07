@@ -1,0 +1,98 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
+
+{% block title %}
+  Aidants Connect - Mon espace habilitation
+{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Mon espace habilitation</h1>
+        <p class="subtitle">
+          Retrouvez ici vos demandes d'habilitation en cours,<br>
+          et modifiez vos informations personnelles.
+        </p>
+      </div>
+    </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <h2>
+          Le demandeur
+        </h2>
+        <p class="subtitle">Vos informations personnelles, dont l'équipe Aidants Connect a besoin pour prendre contact
+          avec vous.</p>
+        <div class="shadowed">
+          <p>
+            <strong>{{ issuer.first_name }} {{ issuer.last_name }}</strong><br>
+            {{ issuer.profession }}
+          </p>
+          <p>
+            {{ issuer.email }}<br>
+            {{ issuer.phone }}
+          </p>
+          <div class="button-box">
+            <a href="{% url "habilitation_modify_issuer" issuer_id=issuer.issuer_id %}"
+               class="button primary">Modifier</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h2>Vos demandes d'habilitation</h2>
+    <p class="subtitle">Pour rappel, vous devez déposer une demande d'habilitation par lieu d'accueil.</p>
+    <div class="form-in-3-cols">
+      <div class="fr-grid-row fr-grid-row--gutters">
+        {% for organisation in issuer.organisation_requests.all %}
+          <div class="fr-col-12 fr-col-md-4">
+            <div class="shadowed with-button-box">
+              <h3 class="h2">{{ organisation.name }} - <i>{{ organisation.status_label }}</i></h3>
+              <p>
+                {{ organisation.address|linebreaksbr }}<br>{{ organisation.zipcode }} {{ organisation.city }}
+                {% if organisation.status == "NEW" %}
+                  <br>
+                  <a href="{% url "habilitation_modify_organisation" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                    Voir / modifier les informations structure</a>
+                {% endif %}
+              </p>
+              <p>
+                {% with aidants_count=organisation.aidant_requests.all|length %}
+                  {% if aidants_count > 0 %}
+                    {{ aidants_count }} aidant{{ aidants_count|pluralize }}
+                  {% else %}
+                    Aucun aidant
+                  {% endif %}
+                {% endwith %}
+                {% if organisation.status == "NEW" %}
+                  <br>
+                  <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                    Ajouter / modifier des aidants</a>
+                {% endif %}
+              </p>
+              <div class="button-box">
+                {% if organisation.status == "NEW" %}
+                  <a href="{% url "habilitation_validation" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}"
+                     class="button primary">Soumettre la demande</a>
+                {% else %}
+                  <a class="button primary" href="#TODO">Voir</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% if forloop.counter|divisibleby:3 %}{# new line #}
+            </div>
+            <div class="fr-grid-row fr-grid-row--gutters">
+          {% endif %}
+        {% endfor %}
+        <div class="fr-col-12 fr-col-md-4">
+          <a href="{% url "habilitation_new_organisation" issuer_id=issuer.issuer_id %}" class="button shadowed grey">
+            Déposer une nouvelle demande
+          </a>
+        </div>
+        </div>
+    </div>
+    {% include "_more-info.html" %}
+  </div>
+
+{% endblock %}
