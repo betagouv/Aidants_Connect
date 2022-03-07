@@ -384,10 +384,14 @@ fieldset {
     }
   }
 
-  button.shadowed {
+  button.shadowed, .button.shadowed {
     width: 100%;
     color: $blue-aidants;
     text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 
     &:before {
       content: "+";

@@ -52,6 +52,11 @@
           </div>
         </div>
       {% endfor %}
+      <div class="fr-col-12 fr-col-md-4">
+        <a href="{% url "habilitation_new_organisation" issuer_id=issuer.issuer_id %}" class="button shadowed grey">
+          Déposer une nouvelle demande
+        </a>
+      </div>
     </div>
     {% include "_more-info.html" %}
   </div>
