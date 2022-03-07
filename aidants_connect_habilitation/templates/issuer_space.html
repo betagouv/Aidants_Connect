@@ -57,11 +57,17 @@
                 {% endif %}
               </p>
               <p>
-                {{ organisation.aidant_requests.all|length }} aidants
+                {% with aidants_count=organisation.aidant_requests.all|length %}
+                  {% if aidants_count > 0 %}
+                    {{ aidants_count }} aidant{{ aidants_count|pluralize }}
+                  {% else %}
+                    Aucun aidant
+                  {% endif %}
+                {% endwith %}
                 {% if organisation.status == "NEW" %}
                   <br>
-                  <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">Ajouter
-                    / modifier des aidants</a>
+                  <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                    Ajouter / modifier des aidants</a>
                 {% endif %}
               </p>
               <div class="button-box">
