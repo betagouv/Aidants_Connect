@@ -172,6 +172,10 @@ class IssuerEmailConfirmationView(CheckIssuerMixin, TemplateView):
         )
 
 
+class IssuerPageView(TemplateView):
+    template_name = "issuer_space.html"
+
+
 class ModifyIssuerFormView(VerifiedEmailIssuerFormView, NewIssuerFormView):
     @property
     def step(self) -> HabilitationFormStep:
