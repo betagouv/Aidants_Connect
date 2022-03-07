@@ -1,72 +1,145 @@
+{% extends 'layouts/main-habilitation.html' %}
 {% load static form_extras %}
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
+{% block title %}
+  Aidants Connect - Personnes impliquées dans la structure {{ organisation }}
+{% endblock %}
 
-  {{ form.aidants_formset.management_form }}
+{% block content %}
+  <div class="fr-container">
 
-  <section>
-    <h2>Demandeur</h2>
-    {% include "_issuer_form.html" with form=issuer_form %}
-  </section>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Formulaire d’habilitation</h1>
+        <p class="subtitle">
+          Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
+          Faites votre demande en quelques étapes via le formulaire ci-dessous.
+        </p>
+      </div>
+    </div>
+    {% include '_breadcrumbs.html' with step=3 issuer=issuer organisation=organisation %}
+    <h2>Personnes impliquées</h2>
+    <p class="subtitle">Saisissez ici les informations relatives aux personnes qui utiliseront Aidants Connect</p>
 
-  <section>
-    <h2>Responsable Aidants Connect</h2>
+    {% include "edito/_renseigner_liste_des_contacts.html" %}
 
-    <fieldset>
-      <legend>Identité</legend>
+    <form method="post" class="form-in-3-cols">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
 
-      {% field_as_p form.manager_form.first_name %}
-      {% field_as_p form.manager_form.last_name %}
-      {% field_as_p form.manager_form.profession %}
-    </fieldset>
+      {{ form.aidants_formset.management_form }}
+      <h3>Responsables</h3>
 
-    <fieldset>
-      <legend>Contact</legend>
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <section class="shadowed">
+            <h4 class="h2">Demandeur</h4>
+            <fieldset>
+              <legend class="sr-only">Demandeur</legend>
+              <h5 class="h3">Identité</h5>
+              {% field_as_narrow_fr_grid_row issuer_form.last_name %}
+              {% field_as_narrow_fr_grid_row issuer_form.first_name %}
+              {% field_as_narrow_fr_grid_row issuer_form.profession %}
+              <h5 class="h3">Contact</h5>
+              {% field_as_narrow_fr_grid_row issuer_form.email %}
+              {% field_as_narrow_fr_grid_row issuer_form.phone %}
+            </fieldset>
+          </section>
+        </div>
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <section class="shadowed">
+            <h4 class="h2">Responsable Aidants Connect</h4>
 
-      {% field_as_p form.manager_form.phone %}
-      {% field_as_p form.manager_form.email %}
-      {% field_as_p form.manager_form.address %}
+            <fieldset>
+              <legend class="sr-only">Responsable Aidants Connect</legend>
+              <button class="primary" type="button">
+                <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
+              </button>
+              <h5 class="h3">Identité</h5>
+              {% field_as_narrow_fr_grid_row form.manager_form.last_name %}
+              {% field_as_narrow_fr_grid_row form.manager_form.first_name %}
+              {% field_as_narrow_fr_grid_row form.manager_form.profession %}
 
-      {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
-        {{ errors }}
-      {% endwith %}
-      <p>
-        <label for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
-        <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
-        {{ form.manager_form.zipcode }}{{ form.manager_form.city }}
-      </p>
+              <h5 class="h3">Contact</h5>
+              {% field_as_narrow_fr_grid_row form.manager_form.phone %}
+              {% field_as_narrow_fr_grid_row form.manager_form.email %}
+              {% field_as_narrow_fr_grid_row form.manager_form.address %}
 
-      {% field_as_p form.manager_form.is_aidant %}
-    </fieldset>
-  </section>
+              {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
+                <div
+                    class="form-grid-row fr-grid-row form-grid-row-narrow fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}">
+                  <div class="fr-col-12 fr-col-md-5 fr-col-lg-12">
+                    <label
+                        for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
+                    <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
+                  </div>
+                  <div class="fr-col-4 fr-col-md-2 fr-col-lg-4 zipcode-container">
+                    {{ form.manager_form.zipcode }}
+                  </div>
+                  <div class="fr-col-8 fr-col-md-5 fr-col-lg-8 city-container">
+                    {{ form.manager_form.city }}
+                  </div>
+                </div>
 
-  <section>
-    <h2>Délégué à la protection des données <span>— Facultatif</span></h2>
+                {% if errors %}
+                  <div class="fr-grid-row fr-grid-row--gutters">
+                    <div class="errors fr-col-12 fr-col-md-7 fr-col-offset-md-5">{{ errors }}</div>
+                  </div>
+                {% endif %}
+              {% endwith %}
 
-    <fieldset>
-      <legend>Identité</legend>
+              {% checkbox_fr_grid_row form.manager_form.is_aidant %}
+            </fieldset>
+          </section>
+        </div>
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <section class="shadowed">
+            <h4 class="h2">Délégué à la protection des données <span>— Facultatif</span></h4>
+            <fieldset>
+              <legend class="sr-only">Délégué à la protection des données - facultatif</legend>
+              <button class="primary" type="button">
+                <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
+              </button>
+              <h5 class="h3">Identité</h5>
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.last_name %}
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.first_name %}
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.profession %}
+              <h5 class="h3">Contact</h5>
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.phone %}
+              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.email %}
+            </fieldset>
+          </section>
+        </div>
+      </div>
 
-      {% field_as_p form.data_privacy_officer_form.first_name %}
-      {% field_as_p form.data_privacy_officer_form.last_name %}
-      {% field_as_p form.data_privacy_officer_form.profession %}
-    </fieldset>
 
-    <fieldset>
-      <legend>Contact</legend>
+      <h3>Aidants</h3>
+      <div class="fr-grid-row fr-grid-row--gutters">
+        {% for aidant_form in form.aidants_formset %}
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <section class="shadowed">
+              <h4 class="h2">Aidant</h4>
+              {% include "_aidant_form.html" with form=aidant_form %}
+            </section>
+          </div>
+        {% endfor %}
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <button class="shadowed grey" type="button">
+            Ajouter un aidant
+          </button>
+        </div>
+      </div>
 
-      {% field_as_p form.data_privacy_officer_form.phone %}
-      {% field_as_p form.data_privacy_officer_form.email %}
-    </fieldset>
-  </section>
+      <div class="button-box standalone">
+        <a class="button"
+           href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+          Revenir à l’étape précédente
+        </a>
+        <button type="submit" class="primary">Valider cette étape</button>
+      </div>
+    </form>
 
-  {% for aidant_form in form.aidants_formset %}
-    <section>
-      <h2>Aidant</h2>
-      {% include "aidant_form.html" with form=aidant_form %}
-    </section>
-  {% endfor %}
+    {% include "_more-info.html" %}
 
-  <input type="submit" value="Valider cette étape">
-</form>
+  </div>
+{% endblock %}

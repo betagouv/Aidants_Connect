@@ -1,14 +1,12 @@
 import operator
 from functools import reduce
 
-from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
-from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Q
-from django_celery_beat.admin import (
-    ClockedScheduleAdmin,
-    PeriodicTaskAdmin,
-)
+
+from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
+from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
+from django_celery_beat.admin import ClockedScheduleAdmin, PeriodicTaskAdmin
 from django_celery_beat.models import (
     ClockedSchedule,
     CrontabSchedule,
@@ -18,10 +16,11 @@ from django_celery_beat.models import (
 )
 from django_otp.admin import OTPAdminSite
 from magicauth.models import MagicToken
+
 from aidants_connect_web.models import (
-    DatavizRegion,
     DatavizDepartment,
     DatavizDepartmentsToRegion,
+    DatavizRegion,
 )
 
 admin_site = OTPAdminSite(OTPAdminSite.name)

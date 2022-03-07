@@ -1,11 +1,8 @@
-from django.test import tag, TestCase
-from django.test.client import Client
 from django.core import mail
+from django.test import TestCase, tag
+from django.test.client import Client
 
-from aidants_connect_web.tests.factories import (
-    AidantFactory,
-    OrganisationFactory,
-)
+from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 
 
 @tag("responsable-structure")

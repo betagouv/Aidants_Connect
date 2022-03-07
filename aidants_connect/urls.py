@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.urls import path, include
+from django.urls import include, path
 
 from aidants_connect import views
 from aidants_connect_web.admin import admin_site

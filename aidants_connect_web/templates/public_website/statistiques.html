@@ -15,110 +15,123 @@
     <h1 class="section__title">Statistiques d’Aidants Connect</h1>
     <div class="tiles">
 
-      <h2>Déploiement</h2>
+      <h2>Utilisation</h2>
       <div class="grid">
         <div class="tile-box stretch">
           <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Structures</h3>
-            <strong>{{ organisations_count }}</strong>
-          </div>
-        </div>
-        <div class="tile-box stretch">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Aidants</h3>
-            <strong>{{ aidants_count }}</strong>
+            <h3 class="font-weight-normal">Démarches administratives réalisés</h3>
+            <strong>{{ autorisation_use_count }}</strong>
           </div>
         </div>
         <div class="tile-box stretch">
           <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Aidants en cours d’habilitation</h3>
-            <strong>{{ aidants_habilitating_count }}</strong>
-          </div>
-        </div>
-      </div>
-
-      <br>
-
-      <h2>Mandats</h2>
-      <div class="grid">
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Mandats créés</h3>
-            <strong>{{ mandats_count }}</strong>
-          </div>
-          <p class="tile-subtitle">
-            depuis le 18 mars 2020
-          </p>
-        </div>
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Mandats actifs</h3>
-            <strong>{{ active_mandats_count }}</strong>
-          </div>
-        </div>
-      </div>
-
-      <br>
-
-      <h2>Usagers</h2>
-      <div class="grid">
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Usagers</h3>
+            <h3 class="font-weight-normal">Personnes accompagnées</h3>
             <strong>{{ usagers_with_mandat_count }}</strong>
           </div>
         </div>
-        <div class="tile-box">
+        <div class="tile-box stretch">
           <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Usagers actifs</h3>
-            <strong>{{ usagers_with_active_mandat_count }}</strong>
+            <h3 class="font-weight-normal">Mandats crées</h3>
+            <strong>{{ mandats_count }}</strong>
           </div>
         </div>
       </div>
 
       <br>
 
-      <h2>Démarches France Connect accompagnées</h2>
+      <h3>Par type de démarche</h3>
+      <div class="container">
+        <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
+          <table>
+            <tr>
+              <th scope="col">Type de mandat</th>
+              <th scope="col">Nombre des démarches</th>
+            </tr>
+            {% for demarche in demarches_count %}
+            <tr>
+              <th scope="row">{{ demarche.title }}</th>
+              <td>{{ demarche.value }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </canvas>
+      </div>
+
+      <br>
+
+      <h2>Déploiement</h2>
       <div class="grid">
         <div class="tile-box">
-            <div class="tile tile-grey text-center">
-              <h3 class="font-weight-normal">Depuis le lancement</h3>
-              <strong>
-                Usagers accompagnés : {{ usagers_helped_count }}
-                <br>
-                Connexions effectuées : {{ autorisation_use_count }}
-                <br>
-              </strong>
-            </div>
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Aidants habilités</h3>
+            <strong>{{ aidants_count }}</strong>
           </div>
+        </div>
         <div class="tile-box">
           <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">30 derniers jours</h3>
-            <strong>
-              Usagers accompagnés : {{ usagers_helped_recent_count }}
-              <br>
-              Connexions effectuées : {{ autorisation_use_recent_count }}
-              <br>
-            </strong>
+            <h3 class="font-weight-normal">Aidants en cours d’habilitation</h3>
+            <strong>{{ aidants_accrediting_count }}</strong>
+          </div>
+        </div>
+        <div class="tile-box">
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Structures habilitées</h3>
+            <strong>{{ organisations_accredited_count }}</strong>
+          </div>
+        </div>
+        <div class="tile-box">
+          <div class="tile tile-grey text-center">
+            <h3 class="font-weight-normal">Structures en cours d’habilitation</h3>
+            <strong>{{ organisations_not_accredited_count }}</strong>
           </div>
         </div>
       </div>
-      
-      <h3>Par type de démarche</h3>
-      <div class="grid small-grid">
-        {% for stat_item in demarches_count %}
-          <div class="tile-box">
-            <div class="tile tile-grey text-center">
-              <h4 class="font-weight-normal">
-                <img class="icon-inline" src="{{ stat_item.icon }}" alt="" />
-                {{ stat_item.title }}
-              </h4>
-              <strong>{{ stat_item.value }}</strong>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
+
     </div>
   </div>
 </section>
 {% endblock content %}
+
+{% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+{{ data|json_script:"data" }}
+
+<script>
+  const data = JSON.parse(document.getElementById('data').textContent);
+
+  var ctx = document.getElementById('mandats-chart').getContext('2d');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Nombre de démarches',
+        backgroundColor: 'blue',
+        data: data.data
+      }]
+    },
+    options: {
+      responsive: true,
+      aspectRatio:2,
+      maintainAspectRatio: true,
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Les périmètres des mandats'
+      },
+      scales: {
+        x: {
+          grid: {
+              display:false
+          }
+        }
+      }
+    }
+  });
+
+</script>
+
+{% endblock extrajs %}

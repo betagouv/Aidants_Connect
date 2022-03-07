@@ -1,8 +1,9 @@
 from django.test import tag
+
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from aidants_connect.common.tests.testcases import FunctionalTestCase
-from selenium.common.exceptions import NoSuchElementException
 
 
 @tag("functional", "a11y")  # nb: a11y stands for "accessibility"

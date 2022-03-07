@@ -1,18 +1,19 @@
-from typing import Sequence, Collection
+from typing import Collection, Sequence
 from unittest import mock
 from unittest.mock import Mock
 
 from django.test import tag
 from django.urls import reverse
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
+from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.admin import MandatAdmin
 from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import AidantFactory, MandatFactory
-from aidants_connect.common.tests.testcases import FunctionalTestCase
 
 
 @tag("functional")

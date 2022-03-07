@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.urls import reverse
 from django.utils import timezone
 
@@ -10,9 +10,10 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-
-from aidants_connect_web.views.usagers import _get_mandats_for_usagers_index
-from aidants_connect_web.views.usagers import _get_usagers_dict_from_mandats
+from aidants_connect_web.views.usagers import (
+    _get_mandats_for_usagers_index,
+    _get_usagers_dict_from_mandats,
+)
 
 
 @tag("usagers")

@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import reverse
+
 from factory import Faker
 from faker.config import DEFAULT_LOCALE
 

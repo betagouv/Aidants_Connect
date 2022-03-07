@@ -1,5 +1,6 @@
+from django.test import TestCase, tag
+
 import tablib
-from django.test import tag, TestCase
 
 from aidants_connect_web.admin import OrganisationResource
 from aidants_connect_web.models import Organisation

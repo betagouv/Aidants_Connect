@@ -1,17 +1,18 @@
 from django.urls import path
+
 from magicauth import views as magicauth_views
 from magicauth.urls import urlpatterns as magicauth_urls
 
 from aidants_connect_web.views import (
     FC_as_FS,
+    datapass,
+    espace_aidant,
+    espace_responsable,
     id_provider,
     mandat,
     renew_mandat,
     service,
-    espace_aidant,
-    espace_responsable,
     usagers,
-    datapass,
 )
 
 urlpatterns = [

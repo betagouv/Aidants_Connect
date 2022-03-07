@@ -1,7 +1,6 @@
 from django.test import TestCase, override_settings
 
 from django_otp.forms import OTPAuthenticationForm
-
 from django_otp.plugins.otp_static.models import StaticToken
 
 from aidants_connect_web.tests.factories import AidantFactory

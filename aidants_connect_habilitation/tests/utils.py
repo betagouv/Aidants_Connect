@@ -4,6 +4,7 @@ from inspect import getmembers, isclass
 from typing import Type, TypeVar
 
 from django.forms import BaseFormSet, ModelForm
+
 from factory.django import DjangoModelFactory
 
 from aidants_connect_habilitation.tests import factories

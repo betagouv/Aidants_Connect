@@ -1,4 +1,5 @@
 from django.test import tag
+
 from selenium.webdriver.common.by import By
 
 from aidants_connect.common.tests.testcases import FunctionalTestCase
@@ -8,4 +9,4 @@ from aidants_connect.common.tests.testcases import FunctionalTestCase
 class StatistiquesPage(FunctionalTestCase):
     def test_page_loads(self):
         self.open_live_url("/stats/")
-        self.assertEqual(len(self.selenium.find_elements(By.CLASS_NAME, "tile")), 19)
+        self.assertEqual(len(self.selenium.find_elements(By.CLASS_NAME, "tile")), 7)

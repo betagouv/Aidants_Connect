@@ -1,16 +1,14 @@
 from django.test import tag
 from django.urls import reverse
+
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.wait import WebDriverWait
 
-from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import (
-    AidantFactory,
-    OrganisationFactory,
-)
 from aidants_connect.common.tests.testcases import FunctionalTestCase
+from aidants_connect_web.models import Aidant
+from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 

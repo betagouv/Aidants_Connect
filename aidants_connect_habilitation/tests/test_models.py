@@ -1,5 +1,5 @@
 from django.db import IntegrityError
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 
 from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory

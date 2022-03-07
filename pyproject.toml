@@ -1,22 +1,43 @@
 [tool.black]
-exclude = '''
-(
-    /(
-        \.direnv
-        | \.eggs
-        | \.git
-        | \.hg
-        | \.mypy_cache
-        | \.nox
-        | \.tox
-        | \.venv
-        | venv
-        | \.svn
-        | _build
-        | buck-out
-        | build
-        | dist
-        | aidants_connect_web/migrations/*
-    )/
-)
+force-exclude = '''
+/(
+    \.direnv
+    | \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.nox
+    | \.tox
+    | \.venv
+    | venv
+    | \.svn
+    | _build
+    | buck-out
+    | build
+    | dist
+    | (.+/migrations)
+)/
 '''
+
+[tool.isort]
+profile = "black"
+src_paths = "."
+known_django = "django"
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+skip_glob = [
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".tox",
+    ".venv",
+    "venv",
+    ".svn",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "**/migrations",
+]

@@ -1,18 +1,18 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
+
 from factory import Faker, LazyFunction, SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
-
 from phonenumber_field.phonenumber import to_python
 
 from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect_habilitation.models import (
     AidantRequest,
     DataPrivacyOfficer,
+    Issuer,
     Manager,
     OrganisationRequest,
-    Issuer,
 )
 
 

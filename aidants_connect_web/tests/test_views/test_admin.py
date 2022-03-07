@@ -1,9 +1,10 @@
-from admin_honeypot.models import LoginAttempt
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.test import RequestFactory, tag, TestCase
+from django.test import RequestFactory, TestCase, tag
 from django.test.client import Client
 from django.urls import reverse
+
+from admin_honeypot.models import LoginAttempt
 from django_otp import DEVICE_ID_SESSION_KEY
 from django_otp.admin import OTPAdminSite
 from django_otp.plugins.otp_static.models import StaticDevice
@@ -11,11 +12,10 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export.results import Result
 
 from aidants_connect_web.admin import (
+    CarteTOTPAdmin,
     VisibleToAdminMetier,
     VisibleToTechAdmin,
-    CarteTOTPAdmin,
 )
-
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,

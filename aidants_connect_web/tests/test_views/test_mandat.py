@@ -2,8 +2,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages as django_messages
-
-from django.test import override_settings, tag, TestCase
+from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
@@ -20,7 +19,6 @@ from aidants_connect_web.tests.factories import (
     UsagerFactory,
 )
 from aidants_connect_web.views import mandat
-
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 

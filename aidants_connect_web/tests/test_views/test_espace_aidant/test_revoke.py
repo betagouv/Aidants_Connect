@@ -1,20 +1,20 @@
-from datetime import timedelta
 import datetime
-import pytz
+from datetime import timedelta
 
-from django.test import tag, TestCase
+from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
 
+import pytz
+
 from aidants_connect import settings
 from aidants_connect_web.models import Autorisation, Mandat
-
 from aidants_connect_web.tests.factories import (
-    OrganisationFactory,
     AidantFactory,
     AutorisationFactory,
     MandatFactory,
+    OrganisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import usagers
