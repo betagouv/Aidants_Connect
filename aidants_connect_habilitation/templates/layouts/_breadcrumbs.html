@@ -3,7 +3,7 @@
     {# STEP 1 ======================================================================= #}
     <li class="{% if step and step == step.ISSUER %}active{% endif %}">
       {% if step.value > step.ISSUER.value and issuer %}
-        <a href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}"
+        <a href="{% url 'habilitation_issuer_page' issuer_id=issuer.issuer_id %}"
            title="Modifier mes informations demandeur">
           Le demandeur
         </a>
