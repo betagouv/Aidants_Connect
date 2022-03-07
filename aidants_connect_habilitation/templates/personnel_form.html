@@ -1,14 +1,18 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras %}
+{% load static form_extras ac_common %}
 
 {% block title %}
   Aidants Connect - Personnes impliquées dans la structure {{ organisation }}
 {% endblock %}
 
 {% block content %}
-  <div class="fr-container">
+  <div
+    class="fr-container"
+    data-controller="personnel-form"
+  >
     {% include 'edito/_titre_formulaire_habilitation.html' %}
     {% include "layouts/_breadcrumbs.html" %}
+
     <h2>Personnes impliquées</h2>
     <p class="subtitle">Saisissez ici les informations relatives aux personnes qui utiliseront Aidants Connect</p>
 
@@ -19,6 +23,7 @@
       {{ form.non_field_errors }}
 
       {{ form.aidants_formset.management_form }}
+
       <h3>Responsables</h3>
 
       <div class="fr-grid-row fr-grid-row--gutters">
@@ -58,11 +63,14 @@
 
               {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
                 <div
-                    class="form-grid-row fr-grid-row form-grid-row-narrow fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}">
+                  class="form-grid-row fr-grid-row form-grid-row-narrow fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}"
+                >
                   <div class="fr-col-12 fr-col-md-5 fr-col-lg-12">
-                    <label
-                        for="{{ form.manager_form.zipcode.id_for_label }}">{{ form.manager_form.zipcode.label }}</label>&nbsp;/&nbsp;
-                    <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
+                    <label for="{{ form.manager_form.zipcode.id_for_label }}">
+                      {{ form.manager_form.zipcode.label }}
+                    </label>&nbsp;/&nbsp;<label for="{{ form.manager_form.city.id_for_label }}">
+                      {{ form.manager_form.city.label }}
+                    </label>
                   </div>
                   <div class="fr-col-4 fr-col-md-2 fr-col-lg-4 zipcode-container">
                     {{ form.manager_form.zipcode }}
@@ -104,21 +112,24 @@
       </div>
 
 
-      <h3>Aidants</h3>
-      <div class="fr-grid-row fr-grid-row--gutters">
-        {% for aidant_form in form.aidants_formset %}
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <section class="shadowed">
-              <h4 class="h2">Aidant</h4>
-              {% include "_aidant_form.html" with form=aidant_form %}
-            </section>
-          </div>
-        {% endfor %}
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <button class="shadowed grey" type="button">
+      <h3>
+        Aidants
+        <span data-personnel-form-target="addAidantButtonContainer">
+          <button
+            id="add-aidant-btn"
+            class="primary"
+            type="button"
+            data-action="click->personnel-form#onAddAidantButtonClicked"
+          >
             Ajouter un aidant
           </button>
-        </div>
+        </span>
+      </h3>
+
+      <div class="fr-grid-row fr-grid-row--gutters" data-personnel-form-target="aidantFormset">
+        {% for aidant_form in form.aidants_formset %}
+          {% include "_aidant_form.html" with form=aidant_form %}
+        {% endfor %}
       </div>
 
       <div class="button-box standalone">
@@ -132,5 +143,14 @@
 
     {% include "_more-info.html" %}
 
+    <template data-personnel-form-target="aidantFormTemplate" hidden>
+      {% include "_aidant_form.html" with form=form.aidants_formset.empty_form %}
+    </template>
   </div>
+{% endblock %}
+
+{% block extrajs %}
+  {% stimulusjs %}
+  <script src="{% static 'js/utils.js' %}"></script>
+  <script src="{% static 'js/personnel_form.js' %}"></script>
 {% endblock %}

@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
@@ -117,6 +119,10 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
     class Meta:
         model = OrganisationRequest
+
+
+class DraftOrganisationRequestFactory(OrganisationRequestFactory):
+    draft_id = uuid4()
 
 
 class AidantRequestFactory(DjangoModelFactory):
