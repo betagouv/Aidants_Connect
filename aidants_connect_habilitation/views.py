@@ -23,6 +23,7 @@ __all__ = [
     "NewIssuerFormView",
     "IssuerEmailConfirmationWaitingView",
     "IssuerEmailConfirmationView",
+    "IssuerPageView",
     "ModifyIssuerFormView",
     "NewOrganisationRequestFormView",
     "ModifyOrganisationRequestFormView",
@@ -173,7 +174,7 @@ class IssuerEmailConfirmationView(
         )
 
 
-class IssuerPageView(TemplateView):
+class IssuerPageView(VerifiedEmailIssuerView, TemplateView):
     template_name = "issuer_space.html"
 
 
