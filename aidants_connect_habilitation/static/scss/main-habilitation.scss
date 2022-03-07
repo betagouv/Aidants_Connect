@@ -38,6 +38,13 @@ svg.previews {
   overflow: hidden;
 }
 
+main {
+  a[href] {
+    color: $red-aidants;
+    font-weight: bold;
+  }
+}
+
 // Accessibility ------------------------------------------------------
 
 :focus-visible {
@@ -455,6 +462,7 @@ fieldset {
     a {
       text-decoration: none;
       color: $dark-grey-aidants;
+      font-weight: normal;
 
       &:hover {
         box-shadow: 0 .5rem 0 $off-yellow-aidants;
