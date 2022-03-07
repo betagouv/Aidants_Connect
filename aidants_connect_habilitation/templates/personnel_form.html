@@ -68,8 +68,9 @@
                   <div class="fr-col-12 fr-col-md-5 fr-col-lg-12">
                     <label for="{{ form.manager_form.zipcode.id_for_label }}">
                       {{ form.manager_form.zipcode.label }}
-                    </label>&nbsp;/&nbsp;
-                    <label for="{{ form.manager_form.city.id_for_label }}">{{ form.manager_form.city.label }}</label>
+                    </label>&nbsp;/&nbsp;<label for="{{ form.manager_form.city.id_for_label }}">
+                      {{ form.manager_form.city.label }}
+                    </label>
                   </div>
                   <div class="fr-col-4 fr-col-md-2 fr-col-lg-4 zipcode-container">
                     {{ form.manager_form.zipcode }}
