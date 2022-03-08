@@ -851,3 +851,72 @@ class ValidationRequestFormViewTests(TestCase):
                 },
             ),
         )
+
+
+@tag("habilitation")
+class RequestReadOnlyViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_organisation_view"
+        cls.template_name = "view_organisation_request.html"
+        cls.issuer = IssuerFactory()
+        cls.organisation: OrganisationRequest = OrganisationRequestFactory(
+            draft_id=uuid4(),
+            issuer=cls.issuer,
+        )
+
+    def get_url(self, issuer_id, draft_id):
+        return reverse(
+            self.pattern_name,
+            kwargs={
+                "issuer_id": issuer_id,
+                "draft_id": draft_id,
+            },
+        )
+
+    def test_404_on_bad_issuer_id(self):
+        response: HttpResponse = self.client.get(
+            self.get_url(uuid4(), self.organisation.draft_id)
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_on_bad_draft_id(self):
+        response = self.client.get(self.get_url(self.issuer.issuer_id, uuid4()))
+        self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        organisation = OrganisationRequestFactory(
+            issuer=unverified_issuer, draft_id=uuid4()
+        )
+        response = self.client.get(
+            self.get_url(unverified_issuer.issuer_id, organisation.draft_id)
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
+
+    def test_right_template_is_used(self):
+        response = self.client.get(
+            self.get_url(self.organisation.issuer.issuer_id, self.organisation.draft_id)
+        )
+        self.assertTemplateUsed(response, self.template_name)
+
+    def test_no_redirect_on_confirmed_organisation_request(self):
+        organisation = OrganisationRequestFactory(
+            draft_id=uuid4(),
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+        )
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.draft_id)
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, organisation.name)
+        self.assertContains(
+            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
+        )
