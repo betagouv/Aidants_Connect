@@ -4,7 +4,10 @@ from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
 
-from aidants_connect.common.constants import RequestOriginConstants
+from aidants_connect.common.constants import (
+    RequestOriginConstants,
+    RequestStatusConstants,
+)
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
     IssuerForm,
@@ -79,6 +82,26 @@ class LateStageRequestView(VerifiedEmailIssuerView, View):
         self.organisation = get_object_or_404(
             OrganisationRequest, draft_id=kwargs.get("draft_id")
         )
+
+
+class OnlyNewRequestsView(LateStageRequestView):
+    def dispatch(self, request, *args, **kwargs):
+        if not self.issuer.email_verified:
+            # Duplicate logic of VerifiedEmailIssuerView
+            # because we want to check issuer email first.
+            return redirect(
+                "habilitation_issuer_email_confirmation_waiting",
+                issuer_id=self.issuer.issuer_id,
+            )
+
+        if self.organisation.status != RequestStatusConstants.NEW.name:
+            return redirect(
+                "habilitation_organisation_view",
+                issuer_id=self.issuer.issuer_id,
+                draft_id=self.organisation.draft_id,
+            )
+
+        return super().dispatch(request, *args, **kwargs)
 
 
 """Real views"""
@@ -218,7 +241,7 @@ class NewOrganisationRequestFormView(
 
 
 class ModifyOrganisationRequestFormView(
-    LateStageRequestView, NewOrganisationRequestFormView
+    OnlyNewRequestsView, NewOrganisationRequestFormView
 ):
     @property
     def step(self) -> HabilitationFormStep:
@@ -228,7 +251,7 @@ class ModifyOrganisationRequestFormView(
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, FormView):
+class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormView):
     template_name = "personnel_form.html"
     form_class = PersonnelForm
 
@@ -279,7 +302,7 @@ class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, Form
         )
 
 
-class ValidationRequestFormView(LateStageRequestView, HabilitationStepMixin, FormView):
+class ValidationRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormView):
     template_name = "validation_form.html"
     form_class = ValidationForm
 

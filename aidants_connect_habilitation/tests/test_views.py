@@ -458,17 +458,25 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         cls.template_name = "organisation_form.html"
         cls.issuer: Issuer = IssuerFactory()
         cls.organisation: OrganisationRequest = OrganisationRequestFactory(
-            draft_id=uuid4()
+            draft_id=uuid4(),
+            issuer=cls.issuer,
+            status=RequestStatusConstants.NEW.name,
+        )
+
+    def get_url(self, issuer_id, draft_id):
+        return reverse(
+            self.pattern_name,
+            kwargs={
+                "issuer_id": issuer_id,
+                "draft_id": draft_id,
+            },
         )
 
     def test_404_on_bad_issuer_id(self):
         issuer_id = uuid4()
 
         response: HttpResponse = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={"issuer_id": issuer_id, "draft_id": self.organisation.draft_id},
-            )
+            self.get_url(issuer_id, self.organisation.draft_id)
         )
         self.assertEqual(response.status_code, 404)
 
@@ -477,24 +485,13 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
         cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": self.organisation.issuer.issuer_id,
-                    "draft_id": draft_id,
-                },
-            ),
+            self.get_url(self.organisation.issuer.issuer_id, draft_id),
             cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
 
     def test_404_on_bad_draft_id(self):
-        response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={"issuer_id": self.issuer.issuer_id, "draft_id": uuid4()},
-            )
-        )
+        response = self.client.get(self.get_url(self.issuer.issuer_id, uuid4()))
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
@@ -502,10 +499,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         cleaned_data["type"] = cleaned_data["type"].id
 
         response = self.client.post(
-            reverse(
-                self.pattern_name,
-                kwargs={"issuer_id": self.issuer.issuer_id, "draft_id": uuid4()},
-            ),
+            self.get_url(self.issuer.issuer_id, uuid4()),
             cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
@@ -513,13 +507,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
         response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": unverified_issuer.issuer_id,
-                    "draft_id": self.organisation.draft_id,
-                },
-            )
+            self.get_url(unverified_issuer.issuer_id, self.organisation.draft_id)
         )
         self.assertRedirects(
             response,
@@ -529,21 +517,35 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
             ),
         )
 
+    def test_redirect_on_confirmed_organisation_request(self):
+        organisation = OrganisationRequestFactory(
+            draft_id=uuid4(),
+            issuer=self.issuer,
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+        )
+        response = self.client.get(
+            self.get_url(self.issuer.issuer_id, organisation.draft_id)
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": self.issuer.issuer_id,
+                    "draft_id": organisation.draft_id,
+                },
+            ),
+        )
+
     def test_template(self):
         response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": self.organisation.issuer.issuer_id,
-                    "draft_id": self.organisation.draft_id,
-                },
-            )
+            self.get_url(self.issuer.issuer_id, self.organisation.draft_id)
         )
         self.assertTemplateUsed(response, self.template_name)
 
     def test_on_correct_issuer_id_post_updates_model(self):
         model: OrganisationRequest = OrganisationRequestFactory(
-            issuer=self.issuer, draft_id=uuid4()
+            issuer=self.issuer, draft_id=uuid4(), status=RequestStatusConstants.NEW.name
         )
         new_name = Faker("company").evaluate(None, None, {"locale": DEFAULT_LOCALE})
         form = OrganisationRequestForm(data={**model_to_dict(model), "name": new_name})
@@ -558,13 +560,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         self.assertNotEqual(model.name, new_name)
 
         response = self.client.post(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": model.issuer.issuer_id,
-                    "draft_id": model.draft_id,
-                },
-            ),
+            self.get_url(model.issuer.issuer_id, model.draft_id),
             cleaned_data,
         )
 
@@ -591,17 +587,23 @@ class AidantsRequestFormViewTests(TestCase):
         cls.pattern_name = "habilitation_new_aidants"
         cls.template_name = "personnel_form.html"
         cls.organisation: OrganisationRequest = OrganisationRequestFactory(
-            draft_id=uuid4()
+            draft_id=uuid4(), status=RequestStatusConstants.NEW.name
+        )
+
+    def get_url(self, issuer_id, draft_id):
+        return reverse(
+            self.pattern_name,
+            kwargs={
+                "issuer_id": issuer_id,
+                "draft_id": draft_id,
+            },
         )
 
     def test_404_on_bad_issuer_id(self):
         issuer_id = uuid4()
 
         response: HttpResponse = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={"issuer_id": issuer_id, "draft_id": self.organisation.draft_id},
-            )
+            self.get_url(issuer_id, self.organisation.draft_id)
         )
         self.assertEqual(response.status_code, 404)
 
@@ -610,13 +612,7 @@ class AidantsRequestFormViewTests(TestCase):
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
         cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": self.organisation.issuer.issuer_id,
-                    "draft_id": draft_id,
-                },
-            ),
+            self.get_url(self.organisation.issuer.issuer_id, draft_id),
             cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
@@ -624,12 +620,7 @@ class AidantsRequestFormViewTests(TestCase):
     def test_404_on_bad_draft_id(self):
         issuer: Issuer = IssuerFactory()
 
-        response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={"issuer_id": issuer.issuer_id, "draft_id": uuid4()},
-            )
-        )
+        response = self.client.get(self.get_url(issuer.issuer_id, uuid4()))
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
@@ -637,10 +628,7 @@ class AidantsRequestFormViewTests(TestCase):
         cleaned_data["type"] = cleaned_data["type"].id
 
         response = self.client.post(
-            reverse(
-                self.pattern_name,
-                kwargs={"issuer_id": issuer.issuer_id, "draft_id": uuid4()},
-            ),
+            self.get_url(issuer.issuer_id, uuid4()),
             cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
@@ -648,13 +636,7 @@ class AidantsRequestFormViewTests(TestCase):
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
         response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": unverified_issuer.issuer_id,
-                    "draft_id": self.organisation.draft_id,
-                },
-            )
+            self.get_url(unverified_issuer.issuer_id, self.organisation.draft_id)
         )
         self.assertRedirects(
             response,
@@ -666,13 +648,7 @@ class AidantsRequestFormViewTests(TestCase):
 
     def test_template(self):
         response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": self.organisation.issuer.issuer_id,
-                    "draft_id": self.organisation.draft_id,
-                },
-            )
+            self.get_url(self.organisation.issuer.issuer_id, self.organisation.draft_id)
         )
         self.assertTemplateUsed(response, self.template_name)
 
@@ -692,13 +668,7 @@ class AidantsRequestFormViewTests(TestCase):
         }
 
         response = self.client.post(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": organisation.issuer.issuer_id,
-                    "draft_id": organisation.draft_id,
-                },
-            ),
+            self.get_url(organisation.issuer.issuer_id, organisation.draft_id),
             cleaned_data,
         )
 
@@ -709,6 +679,25 @@ class AidantsRequestFormViewTests(TestCase):
                 kwargs={
                     "issuer_id": str(organisation.issuer.issuer_id),
                     "draft_id": str(organisation.draft_id),
+                },
+            ),
+        )
+
+    def test_redirect_on_confirmed_organisation_request(self):
+        organisation = OrganisationRequestFactory(
+            draft_id=uuid4(),
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+        )
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.draft_id)
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": organisation.issuer.issuer_id,
+                    "draft_id": organisation.draft_id,
                 },
             ),
         )
@@ -725,16 +714,22 @@ class ValidationRequestFormViewTests(TestCase):
             draft_id=uuid4()
         )
 
+    def get_url(self, issuer_id, draft_id):
+        return reverse(
+            self.pattern_name,
+            kwargs={
+                "issuer_id": issuer_id,
+                "draft_id": draft_id,
+            },
+        )
+
     def test_404_on_bad_issuer_id(self):
         issuer_id = uuid4()
 
         organisation: OrganisationRequest = OrganisationRequestFactory(draft_id=uuid4())
 
         response: HttpResponse = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={"issuer_id": issuer_id, "draft_id": organisation.draft_id},
-            )
+            self.get_url(issuer_id, organisation.draft_id)
         )
         self.assertEqual(response.status_code, 404)
 
@@ -743,26 +738,14 @@ class ValidationRequestFormViewTests(TestCase):
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
         cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": organisation.issuer.issuer_id,
-                    "draft_id": draft_id,
-                },
-            ),
+            self.get_url(organisation.issuer.issuer_id, draft_id),
             cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
 
     def test_404_on_bad_draft_id(self):
         response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": self.organisation.issuer.issuer_id,
-                    "draft_id": uuid4(),
-                },
-            )
+            self.get_url(self.organisation.issuer.issuer_id, uuid4())
         )
         self.assertEqual(response.status_code, 404)
 
@@ -785,13 +768,7 @@ class ValidationRequestFormViewTests(TestCase):
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
         response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": unverified_issuer.issuer_id,
-                    "draft_id": self.organisation.draft_id,
-                },
-            )
+            self.get_url(unverified_issuer.issuer_id, self.organisation.draft_id)
         )
         self.assertRedirects(
             response,
@@ -822,12 +799,8 @@ class ValidationRequestFormViewTests(TestCase):
         }
 
         response = self.client.post(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": self.organisation.issuer.issuer_id,
-                    "draft_id": self.organisation.draft_id,
-                },
+            self.get_url(
+                self.organisation.issuer.issuer_id, self.organisation.draft_id
             ),
             cleaned_data,
         )
@@ -847,12 +820,8 @@ class ValidationRequestFormViewTests(TestCase):
             invalid_data[item] = False
 
             response = self.client.post(
-                reverse(
-                    self.pattern_name,
-                    kwargs={
-                        "issuer_id": self.organisation.issuer.issuer_id,
-                        "draft_id": self.organisation.draft_id,
-                    },
+                self.get_url(
+                    self.organisation.issuer.issuer_id, self.organisation.draft_id
                 ),
                 invalid_data,
             )
@@ -863,3 +832,22 @@ class ValidationRequestFormViewTests(TestCase):
                 "Ce champ est obligatoire",
                 str(response.context_data["form"].errors[item]),
             )
+
+    def test_redirect_on_confirmed_organisation_request(self):
+        organisation = OrganisationRequestFactory(
+            draft_id=uuid4(),
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+        )
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.draft_id)
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": organisation.issuer.issuer_id,
+                    "draft_id": organisation.draft_id,
+                },
+            ),
+        )
