@@ -62,20 +62,20 @@ class OrganisationType(models.Model):
 
 class OrganisationManager(models.Manager):
     def accredited(self):
-        return (
-            self.filter(aidants__is_active=True)
-            .filter(aidants__can_create_mandats=True)
-            .filter(aidants__carte_totp__isnull=False)
-            .filter(is_active=True)
-        )
+        return self.filter(
+            aidants__is_active=True,
+            aidants__can_create_mandats=True,
+            aidants__carte_totp__isnull=False,
+            is_active=True,
+        ).distinct()
 
     def not_yet_accredited(self):
-        return (
-            self.filter(aidants__is_active=True)
-            .filter(aidants__can_create_mandats=True)
-            .filter(aidants__carte_totp__isnull=True)
-            .filter(is_active=True)
-        )
+        return self.filter(
+            aidants__is_active=True,
+            aidants__can_create_mandats=True,
+            aidants__carte_totp__isnull=True,
+            is_active=True,
+        ).distinct()
 
 
 class Organisation(models.Model):
