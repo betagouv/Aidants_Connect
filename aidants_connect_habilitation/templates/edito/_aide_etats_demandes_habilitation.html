@@ -1,0 +1,14 @@
+{% if status == "NEW" %}{# Brouillon #}
+  Votre demande n'a pas encore été envoyée à Aidants Connect. Si elle est prête, vous pouvez la valider.
+  {% elif status == "AC_VALIDATION_PROCESSING" %}{# En attente de validation par AC #}
+  L’équipe Aidants Connect a bien reçu votre demande d’habilitation, et procède à son analyse.
+  {% elif status == "VALIDATED" %}{# Acceptée #}
+  Votre demande d'habilitation a été acceptée par Aidants Connect, félicitations !
+  L'espace "responsable structure" sera bientôt créé et les aidants seront bientôt contactés pour leur formation.
+  {% elif status == "REFUSED" %}{# Refusée #}
+  {% elif status == "CLOSED" %}{# Clôturée #}
+  {% elif status == "CHANGES_REQUIRED" %}{# Changements demandés par AC #}
+  {% elif status == "CHANGES_PROPOSED" %}{# Changements proposés par AC #}
+  L'équipe Aidants Connect a apporté des corrections à votre demande.
+  Si elles vous conviennent, votre demande pourra être acceptée.
+{% endif %}

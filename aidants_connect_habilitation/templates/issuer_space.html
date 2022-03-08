@@ -75,7 +75,10 @@
                   <a href="{% url "habilitation_validation" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}"
                      class="button primary">Soumettre la demande</a>
                 {% else %}
-                  <a class="button primary" href="#TODO">Voir</a>
+                  <a class="button primary"
+                     href="{% url "habilitation_organisation_view" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                    Voir
+                  </a>
                 {% endif %}
               </div>
             </div>
