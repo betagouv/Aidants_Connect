@@ -26,6 +26,7 @@ from aidants_connect_web.tests.factories import (
     AidantFactory,
     AttestationJournalFactory,
     AutorisationFactory,
+    CarteTOTPFactory,
     HabilitationRequestFactory,
     MandatFactory,
     OrganisationFactory,
@@ -657,6 +658,24 @@ class OrganisationModelTests(TestCase):
         self.assertEqual(organisation.name, "Girard S.A.R.L")
         self.assertEqual(organisation.type, o_type)
         self.assertEqual(organisation.address, "3 rue du chat, 27120 Houlbec-Cocherel")
+
+    def test_count_accredited_organisations_for_statistics(self):
+        self.assertEqual(Organisation.objects.accredited().count(), 0)
+        self.assertEqual(Organisation.objects.not_yet_accredited().count(), 0)
+
+        for _ in range(5):  # generate accredited organisations (with valid aidants)
+            orga = OrganisationFactory()
+            for _ in range(3):
+                aidant = AidantFactory(organisation=orga)
+                CarteTOTPFactory(aidant=aidant)
+
+        for _ in range(7):  # generate non-accredited organisations
+            orga = OrganisationFactory()
+            for _ in range(3):
+                AidantFactory(organisation=orga)
+
+        self.assertEqual(Organisation.objects.accredited().count(), 5)
+        self.assertEqual(Organisation.objects.not_yet_accredited().count(), 7)
 
     def test_display_address(self):
         organisation_no_address = Organisation(name="L'Internationale")
