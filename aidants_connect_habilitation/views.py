@@ -80,7 +80,7 @@ class LateStageRequestView(VerifiedEmailIssuerView, View):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = get_object_or_404(
-            OrganisationRequest, draft_id=kwargs.get("draft_id")
+            OrganisationRequest, draft_id=kwargs.get("draft_id"), issuer=self.issuer
         )
 
 

@@ -134,6 +134,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             type_id=RequestOriginConstants.OTHER.value,
             type_other="L'organisation des travailleurs",
             draft_id=uuid4(),
+            issuer=issuer,
         )
         self.__open_form_url(issuer, organisation)
 
