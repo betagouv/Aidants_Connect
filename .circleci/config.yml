@@ -6,12 +6,12 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.7.12-browsers
+      - image: cimg/python:3.7.12-browsers
 
-      - image: circleci/postgres:9.6.7
+      - image: cimg/postgres:9.6
         environment:
-            POSTGRES_USER: aidants_connect_team
-            POSTGRES_DB: aidants_connect
+          POSTGRES_USER: aidants_connect_team
+          POSTGRES_DB: aidants_connect
 
     working_directory: ~/repo
 
