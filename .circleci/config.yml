@@ -2,7 +2,9 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
-version: 2
+version: "2.1"
+orbs:
+  browser-tools: circleci/browser-tools@1.2.4
 jobs:
   build:
     docker:
@@ -17,6 +19,8 @@ jobs:
 
     steps:
       - checkout
+      - browser-tools/install-firefox
+      - browser-tools/install-geckodriver
 
       # Download and cache dependencies
       - restore_cache:
