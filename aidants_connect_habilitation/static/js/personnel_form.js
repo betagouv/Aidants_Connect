@@ -24,7 +24,7 @@
 
         "onAddAidantButtonClicked": function onAddAidantButtonClicked() {
             const template = this.aidantFormTemplateTarget.innerHTML.replace(
-                /__prefix__/gm, String(this.formCountValue + 1)
+                /__prefix__/gm, String(this.formCountValue)
             );
 
             this.aidantFormsetTarget.insertAdjacentHTML("beforeend", template);
