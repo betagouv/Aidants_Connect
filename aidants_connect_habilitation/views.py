@@ -237,10 +237,7 @@ class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, Form
         return HabilitationFormStep.PERSONNEL
 
     def form_valid(self, form):
-        manager, data_privacy_officer, _ = form.save(self.organisation)
-        self.organisation.manager = manager
-        self.organisation.data_privacy_officer = data_privacy_officer
-        self.organisation.save()
+        form.save(self.organisation)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):

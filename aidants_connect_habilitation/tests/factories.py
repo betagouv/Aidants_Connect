@@ -122,6 +122,9 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
 
 class DraftOrganisationRequestFactory(OrganisationRequestFactory):
+    manager = None
+    data_privacy_officer = None
+
     draft_id = uuid4()
 
 

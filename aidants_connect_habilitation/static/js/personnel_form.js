@@ -8,10 +8,18 @@
             this.formCountValue = this.managmentFormCountTarget.value;
             this.formMaxCountValue = this.managmentFormMaxCountTarget.value;
             this.mutateAddAidantButtonVisibility();
+            this.controllerInitializedValue = true;
         },
 
         "formCountValueChanged": function formCountValueChanged() {
-            this.managmentFormCountTarget.value = this.formCountValue;
+            // A bug in Stimulus makes change events to get fired
+            // before the controller's `initialize` method is called
+            // which makes the initial form value to get erased. We use
+            // the controllerInitializedValue as a flag that the value
+            // has not been initialized yet, here.
+            if (this.controllerInitializedValue) {
+                this.managmentFormCountTarget.value = this.formCountValue;
+            }
         },
 
         "onAddAidantButtonClicked": function onAddAidantButtonClicked() {
@@ -45,6 +53,7 @@
     PersonnelForm.values = {
         formCount: Number,
         formMaxCount: Number,
+        controllerInitialized: Boolean
     };
 
     function init() {

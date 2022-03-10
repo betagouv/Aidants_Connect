@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import (
@@ -207,9 +209,10 @@ class AidantRequestForm(PatchedErrorListForm):
 
 
 class BaseAidantRequestFormSet(BaseModelFormSet):
-    def __init__(self, **kwags):
-        kwags.setdefault("error_class", PatchedErrorList)
-        super().__init__(**kwags)
+    def __init__(self, **kwargs):
+        kwargs.setdefault("queryset", AidantRequest.objects.none())
+        kwargs.setdefault("error_class", PatchedErrorList)
+        super().__init__(**kwargs)
 
     def management_form_widget_attrs(self, widget_name: str, attrs: dict):
         widget = self.management_form.fields[widget_name].widget
@@ -293,15 +296,25 @@ class PersonnelForm:
             and self.aidants_formset.is_valid()
         )
 
-    def save(self, organisation: OrganisationRequest, commit=True):
+    def save(
+        self, organisation: OrganisationRequest, commit=True
+    ) -> Tuple[Manager, DataPrivacyOfficer, List[AidantRequest]]:
         for form in self.aidants_formset:
-            form["organisation"] = organisation
+            form.instance.organisation = organisation
 
-        return (
+        manager_instance, dpo_instance, aidants_instances = (
             self.manager_form.save(commit),
             self.data_privacy_officer_form.save(commit),
             self.aidants_formset.save(commit),
         )
+
+        organisation.manager = manager_instance
+        organisation.data_privacy_officer = dpo_instance
+        organisation.save()
+
+        return manager_instance, dpo_instance, aidants_instances
+
+    save.alters_data = True
 
 
 class ValidationForm(PatchedForm):
