@@ -141,7 +141,9 @@ class IssuerEmailConfirmation(models.Model):
 
 
 class DataPrivacyOfficer(PersonWithResponsibilities):
-    pass
+    class Meta:
+        verbose_name = "DPO"
+        verbose_name_plural = "DPOs"
 
 
 class Manager(PersonWithResponsibilities):
@@ -150,6 +152,10 @@ class Manager(PersonWithResponsibilities):
     city = models.CharField("Ville", max_length=255)
 
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
+
+    class Meta:
+        verbose_name = "Responsable structure"
+        verbose_name_plural = "Responsables structure"
 
 
 class OrganisationRequest(models.Model):
