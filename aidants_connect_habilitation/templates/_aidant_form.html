@@ -3,7 +3,15 @@
 <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
   <section class="shadowed aidant-form-container">
     <h4 class="h2">Aidant</h4>
+
+    {{ form.non_field_errors }}
+
     <fieldset>
+      {# id field is needed for formset #}
+      {% for field in form.hidden_fields %}
+        {% if field.name == "id" %}{{ field }}{% endif %}
+      {% endfor %}
+
       <legend class="sr-only">Aidant</legend>
       {% field_as_narrow_fr_grid_row form.email %}
       <h5 class="h3">Identité</h5>

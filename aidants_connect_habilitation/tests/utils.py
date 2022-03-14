@@ -3,7 +3,7 @@ from importlib import import_module
 from inspect import getmembers, isclass
 from typing import Type, TypeVar
 
-from django.forms import BaseFormSet, ModelForm
+from django.forms import BaseModelFormSet, ModelForm
 
 from factory.django import DjangoModelFactory
 
@@ -84,13 +84,22 @@ def _(form_cls: Type[T], ignore_errors=False, **kwargs) -> T:
     return form
 
 
-@get_form.register(type(BaseFormSet))
-def _(form_cls: Type[BaseFormSet], ignore_errors=False, **kwargs) -> BaseFormSet:
+@get_form.register(type(BaseModelFormSet))
+def _(
+    form_cls: Type[BaseModelFormSet], ignore_errors=False, **kwargs
+) -> BaseModelFormSet:
     formset_cls = form_cls
     form_cls = form_cls.form
-    form: BaseFormSet = formset_cls(
+
+    # BaseModelFormSet won't take `initial` in account unless
+    # `extra` class property matches initial data length.
+    # See https://docs.djangoproject.com/fr/4.0/topics/forms/modelforms/#s-id2 # noqa
+    old_extra = formset_cls.extra
+    formset_cls.extra = 10
+    form: BaseModelFormSet = formset_cls(
         initial=[__get_form_data(form_cls, **kwargs) for _ in range(10)]
     )
+
     data = {
         "form-TOTAL_FORMS": f"{len(form)}",
         "form-INITIAL_FORMS": "0",
@@ -108,6 +117,8 @@ def _(form_cls: Type[BaseFormSet], ignore_errors=False, **kwargs) -> BaseFormSet
 
     if not ignore_errors and not form.is_valid():
         raise ValueError(str(form.errors))
+
+    formset_cls.extra = old_extra
 
     return form
 
