@@ -36,10 +36,17 @@ def _new_uuid():
     return uuid4()
 
 
+class PersonEmailField(models.EmailField):
+    def __init__(self, **kwargs):
+        kwargs["max_length"] = 150
+        kwargs["verbose_name"] = "Email nominatif"
+        super().__init__(**kwargs)
+
+
 class Person(models.Model):
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
-    email = models.EmailField("Email nominatif", max_length=150)
+    email = PersonEmailField()
     profession = models.CharField("Profession", blank=False, max_length=150)
 
     def __str__(self):
@@ -60,6 +67,7 @@ class PersonWithResponsibilities(Person):
 
 
 class Issuer(PersonWithResponsibilities):
+    email = PersonEmailField(unique=True)
     issuer_id = models.UUIDField(
         "Identifiant de demandeur", default=_new_uuid, unique=True
     )
@@ -332,6 +340,7 @@ class AidantRequest(Person):
     class Meta:
         verbose_name = "aidant à habiliter"
         verbose_name_plural = "aidants à habiliter"
+        unique_together = (("email", "organisation"),)
 
 
 class RequestMessage(models.Model):
