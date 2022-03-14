@@ -263,7 +263,8 @@ class PersonnelForm:
                 kwarg_prefix = k.split("_")
                 if len(kwarg_prefix) > 1 and kwarg_prefix[0] in form_kwargs_prefixes:
                     if kwarg_prefix[0] == prefix:
-                        local_kwargs[k.removeprefix(f"{prefix}_")] = v
+                        k_prefix_removed = k[len(f"{prefix}_") :]
+                        local_kwargs[k_prefix_removed] = v
                 else:
                     local_kwargs[k] = v
 
