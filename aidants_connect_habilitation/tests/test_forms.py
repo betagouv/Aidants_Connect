@@ -73,7 +73,7 @@ class TestPersonnelForm(TestCase):
     @patch("aidants_connect_habilitation.forms.ManagerForm.is_valid")
     @patch("aidants_connect_habilitation.forms.DataPrivacyOfficerForm.is_valid")
     @patch("aidants_connect_habilitation.forms.AidantRequestFormSet.is_valid")
-    def test_is_valid(
+    def test_is_valid_only_if_all_subforms_are_valid(
         self,
         mock_manager_form_is_valid: Mock,
         mock_dpo_form_is_valid: Mock,

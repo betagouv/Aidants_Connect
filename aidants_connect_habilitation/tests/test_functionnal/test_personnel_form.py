@@ -134,7 +134,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
     def test_form_loads_manager_data(self):
         issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory()
+        manager: Manager = ManagerFactory(is_aidant=True)
         form = ManagerForm()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer, manager=manager
@@ -149,10 +149,11 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             By.CSS_SELECTOR,
             f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
         )
-        if manager.is_aidant:
-            self.assertIsNotNone(element.get_attribute("checked"), "")
-        else:
-            self.assertIsNone(element.get_attribute("checked"))
+
+        self.assertIsNotNone(
+            element.get_attribute("checked"),
+            "Manager is also an aidant, checkbox should have been checked",
+        )
 
         for field_name in field_names:
             element: WebElement = self.selenium.find_element(
@@ -164,11 +165,9 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 element.get_attribute("value"), getattr(manager, field_name)
             )
 
-        pass
-
     def test_form_modify_manager_data(self):
         issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory()
+        manager: Manager = ManagerFactory(is_aidant=False)
         form = ManagerForm()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer,
@@ -178,21 +177,31 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.__open_form_url(issuer, organisation)
 
-        new_manager: Manager = ManagerFactory.build()
+        new_manager: Manager = ManagerFactory.build(is_aidant=True)
 
         field_name = list(form.fields.keys())
         field_name.remove("is_aidant")
 
-        if new_manager.is_aidant:
-            self.selenium.execute_script(
-                f"""document.querySelector("#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant")"""  # noqa
-                """.setAttribute("checked", "checked")"""
-            )
-        else:
-            self.selenium.execute_script(
-                f"""document.querySelector("#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant")"""  # noqa
-                """.removeAttribute("checked")"""
-            )
+        self.assertIsNone(
+            self.selenium.find_element(
+                By.CSS_SELECTOR,
+                f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
+            ).get_attribute("checked"),
+            "Manager is not an aidant, checkbox should not have been checked",
+        )
+
+        self.selenium.execute_script(
+            f"""document.querySelector("#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant")"""  # noqa
+            """.setAttribute("checked", "checked")"""
+        )
+
+        self.assertIsNotNone(
+            self.selenium.find_element(
+                By.CSS_SELECTOR,
+                f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
+            ).get_attribute("checked"),
+            "New manager is an aidant, checkbox should be checked",
+        )
 
         for field_name in field_name:
             element: WebElement = self.selenium.find_element(
@@ -345,10 +354,8 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             data_privacy_officer=dpo,
         )
 
-        AidantRequestFactory(organisation=organisation)
-        AidantRequestFactory(organisation=organisation)
-        AidantRequestFactory(organisation=organisation)
-        AidantRequestFactory(organisation=organisation)
+        for _ in range(4):
+            AidantRequestFactory(organisation=organisation)
 
         self.__open_form_url(issuer, organisation)
 

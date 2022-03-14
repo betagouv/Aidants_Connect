@@ -91,8 +91,8 @@ def _(
     formset_cls = form_cls
     form_cls = form_cls.form
 
-    # BaseModelFormSet won't take `initial` in account unless `extr
-    # class property matches initial data length.
+    # BaseModelFormSet won't take `initial` in account unless
+    # `extra` class property matches initial data length.
     # See https://docs.djangoproject.com/fr/4.0/topics/forms/modelforms/#s-id2 # noqa
     old_extra = formset_cls.extra
     formset_cls.extra = 10
