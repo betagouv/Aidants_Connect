@@ -10,6 +10,7 @@ from aidants_connect_habilitation.views import (
     NewIssuerFormView,
     NewOrganisationRequestFormView,
     PersonnelRequestFormView,
+    ReadonlyRequestView,
     ValidationRequestFormView,
 )
 
@@ -42,7 +43,7 @@ urlpatterns = [
         name="habilitation_new_organisation",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/",
+        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/infos-generales/",
         ModifyOrganisationRequestFormView.as_view(),
         name="habilitation_modify_organisation",
     ),
@@ -55,5 +56,10 @@ urlpatterns = [
         "demandeur/<str:issuer_id>/organisation/<str:draft_id>/validation/",
         ValidationRequestFormView.as_view(),
         name="habilitation_validation",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/voir/",
+        ReadonlyRequestView.as_view(),
+        name="habilitation_organisation_view",
     ),
 ]
