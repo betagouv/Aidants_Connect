@@ -506,8 +506,11 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
 
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        organisation = OrganisationRequestFactory(
+            issuer=unverified_issuer, draft_id=uuid4()
+        )
         response = self.client.get(
-            self.get_url(unverified_issuer.issuer_id, self.organisation.draft_id)
+            self.get_url(unverified_issuer.issuer_id, organisation.draft_id)
         )
         self.assertRedirects(
             response,
@@ -617,6 +620,22 @@ class AidantsRequestFormViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+    def test_404_on_unrelated_issuer_id(self):
+        unrelated_issuer = IssuerFactory()
+
+        response: HttpResponse = self.client.get(
+            self.get_url(unrelated_issuer.issuer_id, self.organisation.draft_id)
+        )
+        self.assertEqual(response.status_code, 404)
+
+        cleaned_data = utils.get_form(OrganisationRequestForm).clean()
+        cleaned_data["public_service_delegation_attestation"] = ""
+        response = self.client.post(
+            self.get_url(unrelated_issuer.issuer_id, self.organisation.draft_id),
+            cleaned_data,
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_404_on_bad_draft_id(self):
         issuer: Issuer = IssuerFactory()
 
@@ -635,8 +654,11 @@ class AidantsRequestFormViewTests(TestCase):
 
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        organisation = OrganisationRequestFactory(
+            issuer=unverified_issuer, draft_id=uuid4()
+        )
         response = self.client.get(
-            self.get_url(unverified_issuer.issuer_id, self.organisation.draft_id)
+            self.get_url(unverified_issuer.issuer_id, organisation.draft_id)
         )
         self.assertRedirects(
             response,
@@ -767,8 +789,11 @@ class ValidationRequestFormViewTests(TestCase):
 
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        organisation_request = OrganisationRequestFactory(
+            issuer=unverified_issuer, draft_id=uuid4()
+        )
         response = self.client.get(
-            self.get_url(unverified_issuer.issuer_id, self.organisation.draft_id)
+            self.get_url(unverified_issuer.issuer_id, organisation_request.draft_id)
         )
         self.assertRedirects(
             response,
