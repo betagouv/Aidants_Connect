@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.forms import (
     BaseModelFormSet,
     BooleanField,
@@ -206,6 +206,15 @@ class AidantRequestForm(PatchedErrorListForm):
     class Meta:
         model = AidantRequest
         exclude = ["organisation"]
+        error_messages = {
+            NON_FIELD_ERRORS: {
+                "unique_together": (
+                    "Il y a déjà un aidant avec la même adresse e-mail dans "
+                    "cette organisation. Chaque aidant doit avoir son propre "
+                    "e-mail nominatif."
+                ),
+            }
+        }
 
 
 class BaseAidantRequestFormSet(BaseModelFormSet):
