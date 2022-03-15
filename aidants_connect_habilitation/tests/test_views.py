@@ -351,16 +351,12 @@ class ModifyIssuerFormViewTests(TestCase):
 
     def test_on_correct_issuer_id_post_updates_model(self):
         new_name = Faker("first_name").evaluate(None, None, {"locale": DEFAULT_LOCALE})
-        form = IssuerForm(data={**model_to_dict(self.issuer), "first_name": new_name})
-
-        if not form.is_valid():
-            raise ValueError(str(form.errors))
 
         self.assertNotEqual(self.issuer.first_name, new_name)
 
         response = self.client.post(
             reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id}),
-            form.clean(),
+            {**model_to_dict(self.issuer), "first_name": new_name},
         )
 
         self.assertRedirects(
