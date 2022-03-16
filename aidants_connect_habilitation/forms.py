@@ -1,13 +1,16 @@
+from typing import List, Tuple
+
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.forms import (
-    BaseFormSet,
+    BaseModelFormSet,
     BooleanField,
     CharField,
     ChoiceField,
     FileField,
-    formset_factory,
+    modelformset_factory,
 )
+from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -68,7 +71,7 @@ class IssuerForm(PatchedErrorListForm):
 
     class Meta:
         model = models.Issuer
-        exclude = ["issuer_id"]
+        exclude = ["issuer_id", "email_verified"]
 
 
 class OrganisationRequestForm(PatchedErrorListForm):
@@ -104,17 +107,33 @@ class OrganisationRequestForm(PatchedErrorListForm):
         required=False,
     )
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.widget_attrs(
+            "type_other",
+            {
+                "data-dynamic-form-target": "typeOtherInput",
+                "data-displayed-label": "Veuillez préciser le type d’organisation",
+            },
+        )
+        self.widget_attrs(
+            "type",
+            {
+                "data-action": "change->dynamic-form#onTypeChange",
+                "data-dynamic-form-target": "typeInput",
+                "data-other-value": RequestOriginConstants.OTHER.value,
+            },
+        )
+
     def clean_type(self):
-        try:
-            return OrganisationType.objects.get(pk=int(self.data["type"]))
-        except OrganisationType.DoesNotExist:
-            raise ValidationError("Mauvais type d'organisation soumis")
+        return OrganisationType.objects.get(pk=int(self.data["type"]))
 
     def clean_type_other(self):
-        if (
-            int(self.data["type"]) == RequestOriginConstants.OTHER.value
-            and not self.data["type_other"]
-        ):
+        if int(self.data["type"]) != RequestOriginConstants.OTHER.value:
+            return ""
+
+        if not self.data["type_other"]:
             label = self.fields["type_other"].label
             raise ValidationError(
                 f"Le champ « {label} » doit être rempli si la "
@@ -125,7 +144,21 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
     class Meta:
         model = models.OrganisationRequest
-        exclude = ["issuer", "manager", "data_privacy_officer", "status", "draft_id"]
+        fields = [
+            "type",
+            "type_other",
+            "name",
+            "siret",
+            "address",
+            "zipcode",
+            "city",
+            "partner_administration",
+            "public_service_delegation_attestation",
+            "france_services_label",
+            "web_site",
+            "mission_description",
+            "avg_nb_demarches",
+        ]
 
 
 class PersonWithResponsibilitiesForm(PatchedErrorListForm):
@@ -173,41 +206,98 @@ class AidantRequestForm(PatchedErrorListForm):
     class Meta:
         model = AidantRequest
         exclude = ["organisation"]
+        error_messages = {
+            NON_FIELD_ERRORS: {
+                "unique_together": (
+                    "Il y a déjà un aidant avec la même adresse e-mail dans "
+                    "cette organisation. Chaque aidant doit avoir son propre "
+                    "e-mail nominatif."
+                ),
+            }
+        }
 
 
-class BaseAidantRequestFormSet(BaseFormSet):
-    def __init__(self, **kwags):
-        kwags.setdefault("error_class", PatchedErrorList)
-        super().__init__(**kwags)
+class BaseAidantRequestFormSet(BaseModelFormSet):
+    def __init__(self, **kwargs):
+        kwargs.setdefault("queryset", AidantRequest.objects.none())
+        kwargs.setdefault("error_class", PatchedErrorList)
+        super().__init__(**kwargs)
 
-    def save(self, organisation: OrganisationRequest, commit=True):
-        result = []
-        for sub_form in self:
-            sub_form.instance.organisation = organisation
-            result.append(sub_form.save(commit=commit))
-
-        return result
+    def management_form_widget_attrs(self, widget_name: str, attrs: dict):
+        widget = self.management_form.fields[widget_name].widget
+        for attr_name, attr_value in attrs.items():
+            widget.attrs[attr_name] = attr_value
 
 
-AidantRequestFormSet = formset_factory(
-    AidantRequestForm, formset=BaseAidantRequestFormSet
+AidantRequestFormSet = modelformset_factory(
+    AidantRequestForm.Meta.model, AidantRequestForm, formset=BaseAidantRequestFormSet
 )
 
 
 class PersonnelForm:
+    MANAGER_FORM_PREFIX = "manager"
+    DPO_FORM_PREFIX = "dpo"
+    AIDANTS_FORMSET_PREFIX = "aidants"
+
+    @property
+    def non_field_errors(self):
+        errors = self.manager_form.non_field_errors().copy()
+
+        for error in self.data_privacy_officer_form.non_field_errors():
+            errors.append(error)
+
+        for error in self.aidants_formset.non_form_errors():
+            errors.append(error)
+
+        return errors
+
     def __init__(self, **kwargs):
         def merge_kwargs(prefix):
             previous_prefix = kwargs.get("prefix")
+            local_kwargs = {}
+
+            form_kwargs_prefixes = {
+                self.MANAGER_FORM_PREFIX,
+                self.DPO_FORM_PREFIX,
+                self.AIDANTS_FORMSET_PREFIX,
+            }
+
+            for k, v in kwargs.items():
+                """
+                Let us dispatch form kwargs to specific forms by using their prefixes.
+
+                For instance, PersonnelForm(dpo_instance=some_instance) will
+                disptach to DataPrivacyOfficerForm(instance=some_instance).
+                """
+                kwarg_prefix = k.split("_")
+                if len(kwarg_prefix) > 1 and kwarg_prefix[0] in form_kwargs_prefixes:
+                    if kwarg_prefix[0] == prefix:
+                        k_prefix_removed = k[len(f"{prefix}_") :]
+                        local_kwargs[k_prefix_removed] = v
+                else:
+                    local_kwargs[k] = v
+
             return {
-                **kwargs,
+                **local_kwargs,
                 "prefix": prefix
                 if not previous_prefix
                 else f"{prefix}_{previous_prefix}",
             }
 
-        self.manager_form = ManagerForm(**merge_kwargs("manager"))
-        self.data_privacy_officer_form = DataPrivacyOfficerForm(**merge_kwargs("dpo"))
-        self.aidants_formset = AidantRequestFormSet(**merge_kwargs("aidants"))
+        self.manager_form = ManagerForm(**merge_kwargs(self.MANAGER_FORM_PREFIX))
+        self.data_privacy_officer_form = DataPrivacyOfficerForm(
+            **merge_kwargs(self.DPO_FORM_PREFIX)
+        )
+        self.aidants_formset = AidantRequestFormSet(
+            **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
+        )
+
+        self.aidants_formset.management_form_widget_attrs(
+            TOTAL_FORM_COUNT, {"data-personnel-form-target": "managmentFormCount"}
+        )
+        self.aidants_formset.management_form_widget_attrs(
+            MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
+        )
 
     def is_valid(self):
         return (
@@ -216,12 +306,25 @@ class PersonnelForm:
             and self.aidants_formset.is_valid()
         )
 
-    def save(self, organisation: OrganisationRequest, commit=True):
-        return (
+    def save(
+        self, organisation: OrganisationRequest, commit=True
+    ) -> Tuple[Manager, DataPrivacyOfficer, List[AidantRequest]]:
+        for form in self.aidants_formset:
+            form.instance.organisation = organisation
+
+        manager_instance, dpo_instance, aidants_instances = (
             self.manager_form.save(commit),
             self.data_privacy_officer_form.save(commit),
-            self.aidants_formset.save(organisation, commit),
+            self.aidants_formset.save(commit),
         )
+
+        organisation.manager = manager_instance
+        organisation.data_privacy_officer = dpo_instance
+        organisation.save()
+
+        return manager_instance, dpo_instance, aidants_instances
+
+    save.alters_data = True
 
 
 class ValidationForm(PatchedForm):

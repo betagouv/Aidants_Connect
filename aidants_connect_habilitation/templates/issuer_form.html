@@ -7,16 +7,8 @@
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col">
-        <h1>Formulaire d’habilitation</h1>
-        <p class="subtitle">
-          Vous vous êtes informé sur l’habilitation ? Vous êtes prêt à utiliser Aidants Connect ?<br>
-          Faites votre demande en quelques étapes via le formulaire ci-dessous.
-        </p>
-      </div>
-    </div>
-    {% include '_breadcrumbs.html' with step=1 %}
+    {% include 'edito/_titre_formulaire_habilitation.html' %}
+    {% include "layouts/_breadcrumbs.html" %}
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8">
         <form method="post">

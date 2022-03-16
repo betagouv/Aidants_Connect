@@ -1,0 +1,42 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
+
+{% block title %}
+  Aidants Connect - Confirmez votre email
+{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Formulaire d’habilitation</h1>
+      </div>
+    </div>
+
+    {% include "layouts/_breadcrumbs.html" %}
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <form method="post">
+          <h2>Confirmation de votre email</h2>
+          <div class="shadowed">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <p>
+              Pour continuer votre demande, nous devons confirmer votre email.
+              Veuillez cliquer sur le lien reçu dans votre boîte de réception.
+            </p>
+
+            <div class="button-box">
+              <button type="submit" class="primary">Confirmer mon email</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% include "_more-info.html" %}
+
+  </div>
+{% endblock %}

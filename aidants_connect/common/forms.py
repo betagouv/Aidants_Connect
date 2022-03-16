@@ -20,6 +20,10 @@ class PatchedErrorListForm(ModelForm):
         kwargs.setdefault("error_class", PatchedErrorList)
         super().__init__(**kwargs)
 
+    def widget_attrs(self, widget_name: str, attrs: dict):
+        for attr_name, attr_value in attrs.items():
+            self.fields[widget_name].widget.attrs[attr_name] = attr_value
+
 
 class PatchedForm(Form):
     def __init__(self, **kwargs):

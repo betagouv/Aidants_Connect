@@ -1,9 +1,14 @@
+from uuid import uuid4
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from factory import Faker, LazyFunction, SubFactory
+from factory import Faker as FactoryFaker
+from factory import LazyFunction, SubFactory
+from factory import lazy_attribute as factory_lazy_attribute
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
+from faker import Faker
 from phonenumber_field.phonenumber import to_python
 
 from aidants_connect.common.constants import RequestOriginConstants
@@ -17,11 +22,11 @@ from aidants_connect_habilitation.models import (
 
 
 def _generate_valid_phone():
-    """Sometimes, Faker generates a phone number that PhoneNumberField
+    """Sometimes, FactoryFaker generates a phone number that PhoneNumberField
     does not consider valid which makes tests to randomly fail. This
     function always generate a valid french phone number for PhoneNumberField"""
     for try_attempt in range(10):
-        phone = Faker("phone_number").evaluate(None, None, {"locale": "fr_FR"})
+        phone = Faker("fr_FR").phone_number()
         if to_python(phone, settings.PHONENUMBER_DEFAULT_REGION).is_valid():
             break
     else:
@@ -33,21 +38,23 @@ def _generate_valid_phone():
 
 
 class IssuerFactory(DjangoModelFactory):
-    first_name = Faker("first_name")
-    last_name = Faker("last_name")
-    email = Faker("email")
-    profession = Faker("job")
+    first_name = FactoryFaker("first_name")
+    last_name = FactoryFaker("last_name")
+    email = FactoryFaker("email")
+    profession = FactoryFaker("job")
     phone = LazyFunction(_generate_valid_phone)
+
+    email_verified = True
 
     class Meta:
         model = Issuer
 
 
 class DataPrivacyOfficerFactory(DjangoModelFactory):
-    first_name = Faker("first_name")
-    last_name = Faker("last_name")
-    email = Faker("email")
-    profession = Faker("job")
+    first_name = FactoryFaker("first_name")
+    last_name = FactoryFaker("last_name")
+    email = FactoryFaker("email")
+    profession = FactoryFaker("job")
     phone = LazyFunction(_generate_valid_phone)
 
     class Meta:
@@ -55,15 +62,15 @@ class DataPrivacyOfficerFactory(DjangoModelFactory):
 
 
 class ManagerFactory(DjangoModelFactory):
-    first_name = Faker("first_name")
-    last_name = Faker("last_name")
-    email = Faker("email")
-    profession = Faker("job")
+    first_name = FactoryFaker("first_name")
+    last_name = FactoryFaker("last_name")
+    email = FactoryFaker("email")
+    profession = FactoryFaker("job")
     phone = LazyFunction(_generate_valid_phone)
 
-    address = Faker("street_address")
-    zipcode = Faker("postcode")
-    city = Faker("city")
+    address = FactoryFaker("street_address")
+    zipcode = FactoryFaker("postcode")
+    city = FactoryFaker("city")
 
     is_aidant = FuzzyChoice([True, False])
 
@@ -78,22 +85,20 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
     draft_id = None
 
-    type_id = FuzzyChoice(
-        [x.value for x in RequestOriginConstants if x != RequestOriginConstants.OTHER]
-    )
-    name = Faker("company")
+    type_id = FuzzyChoice(RequestOriginConstants.values)
+    name = FactoryFaker("company")
     siret = FuzzyInteger(111_111_111, 999_999_999)
-    address = Faker("street_address")
-    zipcode = Faker("postcode")
-    city = Faker("city")
+    address = FactoryFaker("street_address")
+    zipcode = FactoryFaker("postcode")
+    city = FactoryFaker("city")
 
-    partner_administration = Faker("company")
+    partner_administration = FactoryFaker("company")
 
     public_service_delegation_attestation = ""
 
     france_services_label = FuzzyChoice([True, False])
 
-    web_site = Faker("url")
+    web_site = FactoryFaker("url")
 
     mission_description = FuzzyText(length=12)
 
@@ -104,15 +109,30 @@ class OrganisationRequestFactory(DjangoModelFactory):
     professionals_only = True
     without_elected = True
 
+    @factory_lazy_attribute
+    def type_other(self):
+        return (
+            Faker().company()
+            if self.type_id == RequestOriginConstants.OTHER.value
+            else ""
+        )
+
     class Meta:
         model = OrganisationRequest
 
 
+class DraftOrganisationRequestFactory(OrganisationRequestFactory):
+    manager = None
+    data_privacy_officer = None
+
+    draft_id = uuid4()
+
+
 class AidantRequestFactory(DjangoModelFactory):
-    first_name = Faker("first_name")
-    last_name = Faker("last_name")
-    email = Faker("email")
-    profession = Faker("job")
+    first_name = FactoryFaker("first_name")
+    last_name = FactoryFaker("last_name")
+    email = FactoryFaker("email")
+    profession = FactoryFaker("job")
     organisation = SubFactory(OrganisationRequestFactory)
 
     class Meta:

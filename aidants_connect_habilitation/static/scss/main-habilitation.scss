@@ -38,6 +38,13 @@ svg.previews {
   overflow: hidden;
 }
 
+main {
+  a[href] {
+    color: $red-aidants;
+    font-weight: bold;
+  }
+}
+
 // Accessibility ------------------------------------------------------
 
 :focus-visible {
@@ -123,6 +130,12 @@ h3, .h3 {
 
   &:first-child, legend + & {
     margin-top: 0;
+  }
+}
+
+.shadowed {
+  .h2, .h3 {
+    font-size: 1.125rem;
   }
 }
 
@@ -227,6 +240,7 @@ input[type=checkbox], input[type=radio] {
   appearance: none;
   height: 1.5rem;
   width: 1.5rem;
+  min-width: 1.5rem;
   padding: 0;
   margin: 0 1rem 0 0;
   position: relative;
@@ -355,6 +369,10 @@ fieldset {
   transform: translateY(4rem);
 }
 
+.form-in-3-cols .shadowed .button-box {
+  transform: translateY(3rem);
+}
+
 .partner-administration {
   background: #f2f2f2;
   padding: 1rem;
@@ -366,15 +384,21 @@ fieldset {
     padding: 1rem;
     height: 100%;
 
-    .h2, .h3 {
-      font-size: 1.125rem;
+    &.with-button-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
   }
 
-  button.shadowed {
+  button.shadowed, .button.shadowed {
     width: 100%;
     color: $blue-aidants;
     text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 
     &:before {
       content: "+";
@@ -382,6 +406,10 @@ fieldset {
       margin-bottom: .75rem;
       font-size: 3rem;
     }
+  }
+
+  .fr-grid-row + .fr-grid-row {
+    margin-top: 2rem;
   }
 }
 
@@ -434,6 +462,7 @@ fieldset {
     a {
       text-decoration: none;
       color: $dark-grey-aidants;
+      font-weight: normal;
 
       &:hover {
         box-shadow: 0 .5rem 0 $off-yellow-aidants;

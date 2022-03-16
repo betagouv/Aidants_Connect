@@ -1,12 +1,16 @@
 from django.urls import path
 
 from aidants_connect_habilitation.views import (
+    IssuerEmailConfirmationView,
+    IssuerEmailConfirmationWaitingView,
+    IssuerPageView,
     ModifyIssuerFormView,
     ModifyOrganisationRequestFormView,
     NewHabilitationView,
     NewIssuerFormView,
     NewOrganisationRequestFormView,
     PersonnelRequestFormView,
+    ReadonlyRequestView,
     ValidationRequestFormView,
 )
 
@@ -14,7 +18,22 @@ urlpatterns = [
     path("nouvelle/", NewHabilitationView.as_view(), name="habilitation_new"),
     path("demandeur/", NewIssuerFormView.as_view(), name="habilitation_new_issuer"),
     path(
+        "demandeur/<str:issuer_id>/confirmation-email/confirmer/<str:key>/",
+        IssuerEmailConfirmationView.as_view(),
+        name="habilitation_issuer_email_confirmation_confirm",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/confirmation-email/en-attente/",
+        IssuerEmailConfirmationWaitingView.as_view(),
+        name="habilitation_issuer_email_confirmation_waiting",
+    ),
+    path(
         "demandeur/<str:issuer_id>/",
+        IssuerPageView.as_view(),
+        name="habilitation_issuer_page",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/modifier/",
         ModifyIssuerFormView.as_view(),
         name="habilitation_modify_issuer",
     ),
@@ -24,7 +43,7 @@ urlpatterns = [
         name="habilitation_new_organisation",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/",
+        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/infos-generales/",
         ModifyOrganisationRequestFormView.as_view(),
         name="habilitation_modify_organisation",
     ),
@@ -37,5 +56,10 @@ urlpatterns = [
         "demandeur/<str:issuer_id>/organisation/<str:draft_id>/validation/",
         ValidationRequestFormView.as_view(),
         name="habilitation_validation",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/voir/",
+        ReadonlyRequestView.as_view(),
+        name="habilitation_organisation_view",
     ),
 ]

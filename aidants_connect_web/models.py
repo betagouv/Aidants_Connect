@@ -62,20 +62,20 @@ class OrganisationType(models.Model):
 
 class OrganisationManager(models.Manager):
     def accredited(self):
-        return (
-            self.filter(aidants__is_active=True)
-            .filter(aidants__can_create_mandats=True)
-            .filter(aidants__carte_totp__isnull=False)
-            .filter(is_active=True)
-        )
+        return self.filter(
+            aidants__is_active=True,
+            aidants__can_create_mandats=True,
+            aidants__carte_totp__isnull=False,
+            is_active=True,
+        ).distinct()
 
     def not_yet_accredited(self):
-        return (
-            self.filter(aidants__is_active=True)
-            .filter(aidants__can_create_mandats=True)
-            .filter(aidants__carte_totp__isnull=True)
-            .filter(is_active=True)
-        )
+        return self.filter(
+            aidants__is_active=True,
+            aidants__can_create_mandats=True,
+            aidants__carte_totp__isnull=True,
+            is_active=True,
+        ).distinct()
 
 
 class Organisation(models.Model):
@@ -692,10 +692,15 @@ class MandatQuerySet(models.QuerySet):
         )
 
     def inactive(self):
-        return self.filter(
-            Q(expiration_date__lt=timezone.now())
-            | ~Q(autorisations__revocation_date__isnull=True)
-        ).distinct()
+        return (
+            self.exclude(expiration_date__lt=timezone.now() - timedelta(365))
+            .exclude(autorisations__revocation_date__lt=timezone.now() - timedelta(365))
+            .filter(
+                Q(expiration_date__lt=timezone.now())
+                | ~Q(autorisations__revocation_date__isnull=True)
+            )
+            .distinct()
+        )
 
 
 class Mandat(models.Model):
@@ -746,7 +751,7 @@ class Mandat(models.Model):
         """
         return (
             self.autorisations.order_by("-revocation_date").first().revocation_date
-            if self.was_explicitly_revoked
+            if self.was_explicitly_revoked and self.autorisations.exists()
             else None
         )
 

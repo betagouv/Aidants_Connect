@@ -252,6 +252,10 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
 
 STATIC_ROOT = "staticfiles"
 STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "aidants_connect/common/static"),
+]
+
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"
@@ -391,6 +395,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
+STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
+
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_IMG_SRC = (
@@ -399,7 +405,7 @@ CSP_IMG_SRC = (
 )
 CSP_SCRIPT_SRC = (
     "'self'",
-    "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js",
+    STIMULUS_JS_URL,
     "'sha256-FUfFEwUd+ObSebyGDfkxyV7KwtyvBBwsE/VxIOfPD68='",  # tabbed_admin
     "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
@@ -520,6 +526,36 @@ AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM = os.getenv(
     "AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM", SUPPORT_EMAIL
 )
 
+
+default = "3"
+val = os.getenv("EMAIL_CONFIRMATION_EXPIRE_DAYS", default)
+EMAIL_CONFIRMATION_EXPIRE_DAYS = int(val) if val.isnumeric() else default
+
+EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_FROM = os.getenv(
+    "EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_FROM", SUPPORT_EMAIL
+)
+
+EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_SUBJECT = os.getenv(
+    "EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_SUBJECT",
+    "Merci de confirmer votre adresse email pour le processus d'habilitation "
+    "Aidant Connect.",
+)
+
+EMAIL_CONFIRMATION_SUPPORT_CONTACT_EMAIL = os.getenv(
+    "EMAIL_CONFIRMATION_SUPPORT_CONTACT_EMAIL", SUPPORT_EMAIL
+)
+
+EMAIL_CONFIRMATION_SUPPORT_CONTACT_SUBJECT = os.getenv(
+    "EMAIL_CONFIRMATION_SUPPORT_CONTACT_SUBJECT",
+    "Je ne reçois pas les emails de confirmation de mon adresse email",
+)
+
+EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY = os.getenv(
+    "EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY",
+    """Bonjour,
+
+    Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.""",
+)
 
 # ########################" SANDBOX SETTING ############################
 

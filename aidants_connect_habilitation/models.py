@@ -1,7 +1,14 @@
+from datetime import timedelta
+from typing import Optional
 from uuid import uuid4
 
+from django.conf import settings
 from django.db import models
 from django.db.models import SET_NULL, Q
+from django.dispatch import Signal
+from django.http import HttpRequest
+from django.utils.crypto import get_random_string
+from django.utils.timezone import now
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -15,11 +22,13 @@ from aidants_connect_web.models import OrganisationType
 __all__ = [
     "PersonWithResponsibilities",
     "Issuer",
+    "IssuerEmailConfirmation",
     "DataPrivacyOfficer",
     "Manager",
     "OrganisationRequest",
     "AidantRequest",
     "RequestMessage",
+    "email_confirmation_sent",
 ]
 
 
@@ -27,10 +36,17 @@ def _new_uuid():
     return uuid4()
 
 
+class PersonEmailField(models.EmailField):
+    def __init__(self, **kwargs):
+        kwargs["max_length"] = 150
+        kwargs["verbose_name"] = "Email nominatif"
+        super().__init__(**kwargs)
+
+
 class Person(models.Model):
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
-    email = models.EmailField("Email nominatif", max_length=150)
+    email = PersonEmailField()
     profession = models.CharField("Profession", blank=False, max_length=150)
 
     def __str__(self):
@@ -51,19 +67,91 @@ class PersonWithResponsibilities(Person):
 
 
 class Issuer(PersonWithResponsibilities):
-    """Model describing the issuer of a habilitation request. The French term is
-    'demandeur'."""
-
+    email = PersonEmailField(unique=True)
     issuer_id = models.UUIDField(
         "Identifiant de demandeur", default=_new_uuid, unique=True
     )
+
+    email_verified = models.BooleanField(verbose_name="Email vérifié", default=False)
 
     class Meta:
         verbose_name = "Demandeur"
 
 
+class EmailConfirmationManager(models.Manager):
+    def all_expired(self):
+        return self.filter(self.expired_q())
+
+    def all_valid(self):
+        return self.exclude(self.expired_q())
+
+    def expired_q(self):
+        sent_threshold = now() - timedelta(days=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS)
+        return Q(sent__lt=sent_threshold)
+
+    def delete_expired_confirmations(self):
+        self.all_expired().delete()
+
+
+email_confirmation_sent = Signal()
+
+
+def _get_default_email_key():
+    return get_random_string(64).lower()
+
+
+class IssuerEmailConfirmation(models.Model):
+    issuer = models.ForeignKey(
+        Issuer, on_delete=models.CASCADE, related_name="email_confirmations"
+    )
+    created = models.DateTimeField(verbose_name="Créé le", default=now)
+    sent = models.DateTimeField(verbose_name="Envoyée", null=True)
+    key = models.CharField(
+        verbose_name="Clé", max_length=64, unique=True, default=_get_default_email_key
+    )
+
+    objects = EmailConfirmationManager()
+
+    @property
+    def key_expired(self) -> bool:
+        expiration_date = self.sent + timedelta(
+            days=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS
+        )
+        return expiration_date <= now()
+
+    class Meta:
+        verbose_name = "Confirmation d'email"
+        verbose_name_plural = "Confirmations d'email"
+
+    def __str__(self):
+        return "Confirmation pour %s" % self.issuer.email
+
+    @classmethod
+    def for_issuer(cls, issuer) -> "IssuerEmailConfirmation":
+        return cls._default_manager.create(issuer=issuer)
+
+    def confirm(self) -> Optional[str]:
+        if self.issuer.email_verified:
+            return self.issuer.email
+
+        if self.key_expired:
+            return None
+
+        self.issuer.email_verified = True
+        self.issuer.save()
+
+        return self.issuer.email
+
+    def send(self, request: HttpRequest):
+        self.sent = now()
+        self.save()
+        email_confirmation_sent.send(self.__class__, request=request, confirmation=self)
+
+
 class DataPrivacyOfficer(PersonWithResponsibilities):
-    pass
+    class Meta:
+        verbose_name = "DPO"
+        verbose_name_plural = "DPOs"
 
 
 class Manager(PersonWithResponsibilities):
@@ -72,6 +160,10 @@ class Manager(PersonWithResponsibilities):
     city = models.CharField("Ville", max_length=255)
 
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
+
+    class Meta:
+        verbose_name = "Responsable structure"
+        verbose_name_plural = "Responsables structure"
 
 
 class OrganisationRequest(models.Model):
@@ -125,7 +217,7 @@ class OrganisationRequest(models.Model):
 
     # Organisation
     name = models.TextField("Nom de la structure")
-    siret = models.BigIntegerField("N° SIRET", default=1)
+    siret = models.BigIntegerField("N° SIRET")
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
@@ -156,16 +248,22 @@ class OrganisationRequest(models.Model):
     )
 
     # Checkboxes
-    cgu = models.BooleanField("J'accepte les CGU")
-    dpo = models.BooleanField("Le DPO est informé")
+    cgu = models.BooleanField("J'accepte les CGU", default=False)
+    dpo = models.BooleanField("Le DPO est informé", default=False)
     professionals_only = models.BooleanField(
-        "La structure ne contient que des aidants professionnels"
+        "La structure ne contient que des aidants professionnels", default=False
     )
-    without_elected = models.BooleanField("Aucun élu n'est impliqué dans la structure")
+    without_elected = models.BooleanField(
+        "Aucun élu n'est impliqué dans la structure", default=False
+    )
 
     @property
     def is_draft(self):
         return self.draft_id is not None
+
+    @property
+    def status_label(self):
+        return RequestStatusConstants[self.status].value
 
     def confirm_request(self):
         self.draft_id = None
@@ -242,6 +340,7 @@ class AidantRequest(Person):
     class Meta:
         verbose_name = "aidant à habiliter"
         verbose_name_plural = "aidants à habiliter"
+        unique_together = (("email", "organisation"),)
 
 
 class RequestMessage(models.Model):
