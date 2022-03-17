@@ -96,6 +96,14 @@ class OrganisationRequestForm(PatchedErrorListForm):
         },
     )
 
+    is_private_org = BooleanField(
+        label=(
+            "Cochez cette case si vous faites cette demande pour une structure privée "
+            "(hors associations)"
+        ),
+        required=False,
+    )
+
     partner_administration = CharField(
         label="Renseignez l’administration avec laquelle vous travaillez",
         required=False,
@@ -152,6 +160,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
             "address",
             "zipcode",
             "city",
+            "is_private_org",
             "partner_administration",
             "public_service_delegation_attestation",
             "france_services_label",

@@ -222,13 +222,13 @@ class OrganisationRequest(models.Model):
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
 
+    is_private_org = models.BooleanField("Structure privée", default=False)
     partner_administration = models.CharField(
         "Administration partenaire",
         blank=True,
         default="",
         max_length=200,
     )
-
     public_service_delegation_attestation = models.FileField(
         "Attestation de délégation de service public",
         blank=True,
