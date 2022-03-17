@@ -58,7 +58,7 @@
 
             {% checkbox_fr_grid_row form.is_private_org %}
 
-            <section class="partner-administration">
+            <section class="partner-administration" data-dynamic-form-target="onlyShownIfPrivateOrg">
               {% field_as_fr_grid_row form.partner_administration %}
             </section>
 
