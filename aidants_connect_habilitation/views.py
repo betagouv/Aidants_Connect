@@ -352,7 +352,17 @@ class ValidationRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, Form
         }
 
     def get_success_url(self):
-        return reverse("habilitation_new_issuer")
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={
+                "issuer_id": str(self.issuer.issuer_id),
+                "uuid": str(self.organisation.uuid),
+            },
+        )
+
+    def form_valid(self, form):
+        form.save(self.organisation)
+        return super().form_valid(form)
 
 
 class ReadonlyRequestView(LateStageRequestView, TemplateView):

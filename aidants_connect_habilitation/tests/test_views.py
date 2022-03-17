@@ -33,6 +33,7 @@ from aidants_connect_habilitation.tests import utils
 from aidants_connect_habilitation.tests.factories import (
     DraftOrganisationRequestFactory,
     IssuerFactory,
+    ManagerFactory,
     OrganisationRequestFactory,
 )
 
@@ -743,7 +744,9 @@ class ValidationRequestFormViewTests(TestCase):
         cls.client = Client()
         cls.pattern_name = "habilitation_validation"
         cls.template_name = "validation_form.html"
-        cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory()
+        cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            manager=ManagerFactory()
+        )
 
     def get_url(self, issuer_id, uuid):
         return reverse(
@@ -820,7 +823,7 @@ class ValidationRequestFormViewTests(TestCase):
         )
         self.assertTemplateUsed(response, self.template_name)
 
-    def test_redirect_valid_post_to_new_issuer(self):
+    def test_do_the_job_and_redirect_valid_post_to_org_view(self):
         cleaned_data = {
             "cgu": True,
             "dpo": True,
@@ -833,7 +836,25 @@ class ValidationRequestFormViewTests(TestCase):
             cleaned_data,
         )
 
-        self.assertRedirects(response, reverse("habilitation_new_issuer"))
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                },
+            ),
+        )
+        self.organisation.refresh_from_db()
+        self.assertEqual(
+            self.organisation.status,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+        )
+        [
+            self.assertTrue(getattr(self.organisation, name))
+            for name in cleaned_data.keys()
+        ]
 
     def test_post_invalid_data(self):
         valid_data = {
