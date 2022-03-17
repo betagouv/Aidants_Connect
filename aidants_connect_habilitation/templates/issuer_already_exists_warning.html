@@ -1,0 +1,25 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
+
+{% block title %}
+  Aidants Connect - Un compte demandeur existe déjà
+{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+       <h2>Un profil demandeur avec cet email existe déjà !</h2>
+          <div class="shadowed">
+            <p>
+              Un profil avec cette adresse email existe déjà. Nous venons d'envoyer un email à cette adresse contenant
+              un lien où vous pourrez retrouver toutes les demandes faites avec ce profil.
+            </p>
+          </div>
+      </div>
+    </div>
+
+    {% include "_more-info.html" %}
+
+  </div>
+{% endblock %}

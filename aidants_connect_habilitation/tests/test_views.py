@@ -1,5 +1,5 @@
 from datetime import timedelta
-from unittest.mock import patch
+from unittest.mock import ANY, Mock, patch
 from uuid import UUID, uuid4
 
 from django.forms import model_to_dict
@@ -97,6 +97,33 @@ class NewIssuerFormViewTests(TestCase):
                 self.fail(
                     "Request should have created an instance of IssuerEmailConfirmation"
                 )
+
+    @patch("aidants_connect_habilitation.views.send_mail")
+    def test_send_email_when_issuer_already_exists(self, send_mail_mock: Mock):
+        issuer: Issuer = IssuerFactory()
+
+        data = utils.get_form(IssuerForm).clean()
+        data["email"] = issuer.email
+
+        self.client.post(reverse(self.pattern_name), data)
+
+        send_mail_mock.assert_called_with(
+            from_email=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM,
+            recipient_list=[issuer.email],
+            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
+            message=ANY,
+            html_message=ANY,
+        )
+
+    def test_render_warning_when_issuer_already_exists(self):
+        issuer: Issuer = IssuerFactory()
+
+        data = utils.get_form(IssuerForm).clean()
+        data["email"] = issuer.email
+
+        response = self.client.post(reverse(self.pattern_name), data)
+
+        self.assertTemplateUsed(response, "issuer_already_exists_warning.html")
 
 
 @tag("habilitation")

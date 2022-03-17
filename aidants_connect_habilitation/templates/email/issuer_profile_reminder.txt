@@ -1,0 +1,16 @@
+{% load ac_common %}
+
+Bonjour,
+
+{% linebreakless %}
+Vous venez de tenter de créer un nouveau profil demandeur sur la page d'habilitations Aidants
+Connect avec une adresse email qui existe déjà dans notre basse de données.{% keeplinebreak %}
+Notez que si vous souhaitez poduire une nouvelle demande d'habilitation pour une organisation,
+ou modifier une demande existante, vous pouvez visualiser toutes vos demandes en cours en copiant
+l'URL suivante dans votre navigateur :{% keeplinebreak %}
+{% keeplinebreak %}
+{{ url }}
+{% endlinebreakless %}
+
+Bonne journée,
+L'équipe Aidants Connect
