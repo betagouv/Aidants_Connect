@@ -58,7 +58,7 @@
 
             {% checkbox_fr_grid_row form.is_private_org %}
 
-            <section class="partner-administration" data-dynamic-form-target="onlyShownIfPrivateOrg">
+            <section class="grey-background shown-on-checkbox" data-dynamic-form-target="onlyShownIfPrivateOrg">
               {% field_as_fr_grid_row form.partner_administration %}
             </section>
 
@@ -72,13 +72,15 @@
 
             {% checkbox_fr_grid_row form.france_services_label %}
 
+            <section class="grey-background shown-on-checkbox">
+              {% field_as_fr_grid_row form.france_services_number %}
+            </section>
             <div class="button-box">
               <a class="button" href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">
                 Revenir à l’étape précédente
               </a>
               <button type="submit" class="primary">Valider cette étape</button>
             </div>
-
           </div>
         </form>
       </div>

@@ -238,6 +238,12 @@ class OrganisationRequest(models.Model):
     france_services_label = models.BooleanField(
         "Labellisation France Services", default=False
     )
+    france_services_number = models.CharField(
+        "Numéro d’immatriculation France Services",
+        blank=True,
+        default="",
+        max_length=200,
+    )
 
     web_site = models.URLField("Site web", blank=True, default="")
 

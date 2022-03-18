@@ -171,6 +171,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
             "partner_administration",
             "public_service_delegation_attestation",
             "france_services_label",
+            "france_services_number",
             "web_site",
             "mission_description",
             "avg_nb_demarches",
