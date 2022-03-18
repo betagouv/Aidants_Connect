@@ -140,6 +140,13 @@ class OrganisationRequestForm(PatchedErrorListForm):
                 "data-dynamic-form-target": "privateOrgInput",
             },
         )
+        self.widget_attrs(
+            "france_services_label",
+            {
+                "data-action": "change->dynamic-form#onFranceServicesChange",
+                "data-dynamic-form-target": "franceServicesInput",
+            },
+        )
 
     def clean_type(self):
         return OrganisationType.objects.get(pk=int(self.data["type"]))

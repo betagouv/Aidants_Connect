@@ -7,6 +7,7 @@
         "connect": function connect() {
             this.selectOrgType(this.typeInputTarget.value);
             this.showHide(this.onlyShownIfPrivateOrgTarget, this.privateOrgInputTarget.checked);
+            this.showHide(this.onlyShownIfFranceServicesTarget, this.franceServicesInputTarget.checked);
         },
 
         "onTypeChange": function onTypeChange(evt) {
@@ -15,6 +16,10 @@
 
         "onIsPrivateOrgChange": function onIsPrivateOrgChange(evt) {
             this.showHide(this.onlyShownIfPrivateOrgTarget, evt.target.checked);
+        },
+
+        "onFranceServicesChange": function truc(evt) {
+            this.showHide(this.onlyShownIfFranceServicesTarget, evt.target.checked)
         },
 
         "showHide": function showHide(element, show) {
@@ -45,7 +50,7 @@
     });
 
     /* Static fields */
-    DynamicForm.targets = ["typeOtherInputContainer", "typeOtherInput", "typeInput", "onlyShownIfPrivateOrg", "privateOrgInput"];
+    DynamicForm.targets = ["typeOtherInputContainer", "typeOtherInput", "typeInput", "onlyShownIfPrivateOrg", "privateOrgInput", "franceServicesInput", "onlyShownIfFranceServices"];
 
     function init() {
         const application = Stimulus.Application.start();
