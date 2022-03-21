@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from enum import Enum, unique
+from typing import Any, Iterable, Tuple
 
 from django.conf import settings
 from django.db.models import IntegerChoices, TextChoices
@@ -130,8 +131,16 @@ class AuthorizationDurationChoices(TextChoices):
 
 class ChoiceEnum(Enum):
     @classmethod
-    def choices(cls):
+    def choices(cls) -> Iterable[Tuple[Any, Any]]:
         return ((item.name, item.value) for item in cls)
+
+    @classmethod
+    def labels(cls):
+        return [label for _, label in cls.choices()]
+
+    @classmethod
+    def values(cls):
+        return [value for value, _ in cls.choices()]
 
 
 @unique

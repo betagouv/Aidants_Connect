@@ -86,12 +86,12 @@ class OrganisationRequestFactory(DjangoModelFactory):
     manager = SubFactory(ManagerFactory)
     data_privacy_officer = SubFactory(DataPrivacyOfficerFactory)
 
-    uuid = uuid4()
+    uuid = LazyFunction(uuid4)
 
     status = FuzzyChoice(
         [
             value
-            for value in RequestStatusConstants.values
+            for value in RequestStatusConstants.values()
             if value != RequestStatusConstants.NEW.value
         ]
     )
@@ -136,7 +136,7 @@ class DraftOrganisationRequestFactory(OrganisationRequestFactory):
     manager = None
     data_privacy_officer = None
 
-    status = RequestStatusConstants.NEW.value
+    status = RequestStatusConstants.NEW.name
 
 
 class AidantRequestFactory(DjangoModelFactory):

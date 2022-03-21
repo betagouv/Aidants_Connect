@@ -11,6 +11,7 @@ from freezegun import freeze_time
 from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect_habilitation.models import Issuer, IssuerEmailConfirmation
 from aidants_connect_habilitation.tests.factories import (
+    DraftOrganisationRequestFactory,
     IssuerFactory,
     OrganisationRequestFactory,
 )
@@ -31,32 +32,32 @@ class OrganisationRequestTests(TestCase):
 
     def test_cgu_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(cgu=False, uuid=None)
+            DraftOrganisationRequestFactory(cgu=False)
         self.assertIn("cgu_checked", str(cm.exception))
 
     def test_dpo_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(dpo=False, uuid=None)
+            OrganisationRequestFactory(dpo=False)
         self.assertIn("dpo_checked", str(cm.exception))
 
     def test_professionals_only_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(professionals_only=False, uuid=None)
+            OrganisationRequestFactory(professionals_only=False)
         self.assertIn("professionals_only_checked", str(cm.exception))
 
     def test_without_elected_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(without_elected=False, uuid=None)
+            OrganisationRequestFactory(without_elected=False)
         self.assertIn("without_elected_checked", str(cm.exception))
 
     def test_manager_set_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(manager=None, uuid=None)
+            OrganisationRequestFactory(manager=None)
         self.assertIn("manager_set", str(cm.exception))
 
     def test_data_privacy_officer_set_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(data_privacy_officer=None, uuid=None)
+            OrganisationRequestFactory(data_privacy_officer=None)
         self.assertIn("data_privacy_officer_set", str(cm.exception))
 
 

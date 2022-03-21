@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from django.test import tag
 from django.urls import reverse
 
@@ -8,7 +6,7 @@ from selenium.webdriver.common.by import By
 from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.forms import IssuerForm
 from aidants_connect_habilitation.models import OrganisationRequest
-from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
+from aidants_connect_habilitation.tests.factories import DraftOrganisationRequestFactory
 
 
 @tag("functional")
@@ -17,7 +15,7 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.pattern_name = "habilitation_new_aidants"
-        cls.organisation: OrganisationRequest = OrganisationRequestFactory(uuid=uuid4())
+        cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
     def open_url_from_pattern(self, org: OrganisationRequest):
         self.open_live_url(

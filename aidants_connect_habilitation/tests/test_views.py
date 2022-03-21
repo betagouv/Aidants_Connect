@@ -29,6 +29,7 @@ from aidants_connect_habilitation.models import (
 )
 from aidants_connect_habilitation.tests import utils
 from aidants_connect_habilitation.tests.factories import (
+    DraftOrganisationRequestFactory,
     IssuerFactory,
     OrganisationRequestFactory,
 )
@@ -278,9 +279,7 @@ class IssuerPageViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_new_organisation_request_is_displayed_with_links(self):
-        organisation = OrganisationRequestFactory(
-            issuer=self.issuer, uuid=uuid4(), status=RequestStatusConstants.NEW.name
-        )
+        organisation = DraftOrganisationRequestFactory(issuer=self.issuer)
         response = self.client.get(self.get_url(self.issuer.issuer_id))
         print(response.content)
         self.assertContains(response, RequestStatusConstants.NEW.value)
@@ -290,7 +289,6 @@ class IssuerPageViewTests(TestCase):
     def test_submitted_organisation_request_is_displayed_without_links(self):
         organisation = OrganisationRequestFactory(
             issuer=self.issuer,
-            uuid=uuid4(),
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
         )
         response = self.client.get(self.get_url(self.issuer.issuer_id))
@@ -453,10 +451,8 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         cls.pattern_name = "habilitation_modify_organisation"
         cls.template_name = "organisation_form.html"
         cls.issuer: Issuer = IssuerFactory()
-        cls.organisation: OrganisationRequest = OrganisationRequestFactory(
-            uuid=uuid4(),
-            issuer=cls.issuer,
-            status=RequestStatusConstants.NEW.name,
+        cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=cls.issuer
         )
 
     def get_url(self, issuer_id, uuid):
@@ -502,9 +498,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
 
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
-        organisation = OrganisationRequestFactory(
-            issuer=unverified_issuer, uuid=uuid4()
-        )
+        organisation = DraftOrganisationRequestFactory(issuer=unverified_issuer)
         response = self.client.get(
             self.get_url(unverified_issuer.issuer_id, organisation.uuid)
         )
@@ -518,7 +512,6 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
 
     def test_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
-            uuid=uuid4(),
             issuer=self.issuer,
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
         )
@@ -543,9 +536,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         self.assertTemplateUsed(response, self.template_name)
 
     def test_on_correct_issuer_id_post_updates_model(self):
-        model: OrganisationRequest = OrganisationRequestFactory(
-            issuer=self.issuer, uuid=uuid4(), status=RequestStatusConstants.NEW.name
-        )
+        model: OrganisationRequest = DraftOrganisationRequestFactory(issuer=self.issuer)
         new_name = Faker("company").evaluate(None, None, {"locale": DEFAULT_LOCALE})
         form = OrganisationRequestForm(data={**model_to_dict(model), "name": new_name})
 
@@ -585,9 +576,7 @@ class AidantsRequestFormViewTests(TestCase):
         cls.client = Client()
         cls.pattern_name = "habilitation_new_aidants"
         cls.template_name = "personnel_form.html"
-        cls.organisation: OrganisationRequest = OrganisationRequestFactory(
-            uuid=uuid4(), status=RequestStatusConstants.NEW.name
-        )
+        cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
     def get_url(self, issuer_id, uuid):
         return reverse(
@@ -650,9 +639,7 @@ class AidantsRequestFormViewTests(TestCase):
 
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
-        organisation = OrganisationRequestFactory(
-            issuer=unverified_issuer, uuid=uuid4()
-        )
+        organisation = OrganisationRequestFactory(issuer=unverified_issuer)
         response = self.client.get(
             self.get_url(unverified_issuer.issuer_id, organisation.uuid)
         )
@@ -671,7 +658,7 @@ class AidantsRequestFormViewTests(TestCase):
         self.assertTemplateUsed(response, self.template_name)
 
     def test_redirect_valid_post_to_validation(self):
-        organisation: OrganisationRequest = OrganisationRequestFactory(uuid=uuid4())
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
         manager_data = utils.get_form(ManagerForm).data
         dpo_data = utils.get_form(DataPrivacyOfficerForm).data
@@ -703,8 +690,7 @@ class AidantsRequestFormViewTests(TestCase):
 
     def test_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
-            uuid=uuid4(),
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
         response = self.client.get(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid)
@@ -728,7 +714,7 @@ class ValidationRequestFormViewTests(TestCase):
         cls.client = Client()
         cls.pattern_name = "habilitation_validation"
         cls.template_name = "validation_form.html"
-        cls.organisation: OrganisationRequest = OrganisationRequestFactory(uuid=uuid4())
+        cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
     def get_url(self, issuer_id, uuid):
         return reverse(
@@ -742,7 +728,7 @@ class ValidationRequestFormViewTests(TestCase):
     def test_404_on_bad_issuer_id(self):
         issuer_id = uuid4()
 
-        organisation: OrganisationRequest = OrganisationRequestFactory(uuid=uuid4())
+        organisation: OrganisationRequest = OrganisationRequestFactory()
 
         response: HttpResponse = self.client.get(
             self.get_url(issuer_id, organisation.uuid)
@@ -783,9 +769,7 @@ class ValidationRequestFormViewTests(TestCase):
 
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
-        organisation_request = OrganisationRequestFactory(
-            issuer=unverified_issuer, uuid=uuid4()
-        )
+        organisation_request = OrganisationRequestFactory(issuer=unverified_issuer)
         response = self.client.get(
             self.get_url(unverified_issuer.issuer_id, organisation_request.uuid)
         )
@@ -852,8 +836,7 @@ class ValidationRequestFormViewTests(TestCase):
 
     def test_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
-            uuid=uuid4(),
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
         response = self.client.get(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid)
@@ -879,8 +862,7 @@ class RequestReadOnlyViewTests(TestCase):
         cls.template_name = "view_organisation_request.html"
         cls.issuer = IssuerFactory()
         cls.organisation: OrganisationRequest = OrganisationRequestFactory(
-            uuid=uuid4(),
-            issuer=cls.issuer,
+            issuer=cls.issuer
         )
 
     def get_url(self, issuer_id, uuid):
@@ -904,9 +886,7 @@ class RequestReadOnlyViewTests(TestCase):
 
     def test_redirect_on_unverified_issuer_email(self):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
-        organisation = OrganisationRequestFactory(
-            issuer=unverified_issuer, uuid=uuid4()
-        )
+        organisation = OrganisationRequestFactory(issuer=unverified_issuer)
         response = self.client.get(
             self.get_url(unverified_issuer.issuer_id, organisation.uuid)
         )
@@ -926,8 +906,7 @@ class RequestReadOnlyViewTests(TestCase):
 
     def test_no_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
-            draft_id=uuid4(),
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
         response = self.client.get(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid)
