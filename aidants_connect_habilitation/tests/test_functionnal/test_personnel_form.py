@@ -217,7 +217,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             "habilitation_validation",
             kwargs={
                 "issuer_id": str(organisation.issuer.issuer_id),
-                "draft_id": str(organisation.draft_id),
+                "uuid": str(organisation.uuid),
             },
         )
 
@@ -259,7 +259,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             "habilitation_validation",
             kwargs={
                 "issuer_id": str(organisation.issuer.issuer_id),
-                "draft_id": str(organisation.draft_id),
+                "uuid": str(organisation.uuid),
             },
         )
 
@@ -291,7 +291,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             "habilitation_validation",
             kwargs={
                 "issuer_id": str(organisation.issuer.issuer_id),
-                "draft_id": str(organisation.draft_id),
+                "uuid": str(organisation.uuid),
             },
         )
 
@@ -335,7 +335,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             "habilitation_validation",
             kwargs={
                 "issuer_id": str(organisation.issuer.issuer_id),
-                "draft_id": str(organisation.draft_id),
+                "uuid": str(organisation.uuid),
             },
         )
 
@@ -383,7 +383,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             "habilitation_validation",
             kwargs={
                 "issuer_id": str(organisation.issuer.issuer_id),
-                "draft_id": str(organisation.draft_id),
+                "uuid": str(organisation.uuid),
             },
         )
 
@@ -409,7 +409,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 "habilitation_new_aidants",
                 kwargs={
                     "issuer_id": issuer.issuer_id,
-                    "draft_id": organisation_request.draft_id,
+                    "uuid": organisation_request.uuid,
                 },
             )
         )

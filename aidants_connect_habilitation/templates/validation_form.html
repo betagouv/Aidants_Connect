@@ -49,7 +49,7 @@
             </div>
             <div class="button-box">
               <a class="button primary"
-                 href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                 href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
                 Éditer
               </a>
             </div>
@@ -73,7 +73,7 @@
           </ul>
           <div class="button-box">
             <a class="button primary"
-               href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+               href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
               Éditer
             </a>
           </div>
@@ -105,7 +105,7 @@
             </div>
             <div class="button-box">
               <a class="button primary"
-                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">Éditer</a>
+                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">Éditer</a>
             </div>
           </div>
         </div>
@@ -124,7 +124,7 @@
               </div>
               <div class="button-box">
                 <a class="button primary"
-                   href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                   href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
                   Éditer
                 </a>
               </div>
@@ -151,7 +151,7 @@
               </div>
               <div class="button-box">
                 <a class="button primary"
-                   href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                   href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
                   Éditer
                 </a>
               </div>
@@ -175,7 +175,7 @@
             {% checkbox_fr_grid_row form.without_elected %}
             <div class="button-box">
               <a class="button"
-                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
                 Revenir à l’étape précédente
               </a>
               <button class="primary" type="submit">Soumettre la demande</button>

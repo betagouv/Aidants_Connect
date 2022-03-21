@@ -11,7 +11,10 @@ from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 from faker import Faker
 from phonenumber_field.phonenumber import to_python
 
-from aidants_connect.common.constants import RequestOriginConstants
+from aidants_connect.common.constants import (
+    RequestOriginConstants,
+    RequestStatusConstants,
+)
 from aidants_connect_habilitation.models import (
     AidantRequest,
     DataPrivacyOfficer,
@@ -83,7 +86,15 @@ class OrganisationRequestFactory(DjangoModelFactory):
     manager = SubFactory(ManagerFactory)
     data_privacy_officer = SubFactory(DataPrivacyOfficerFactory)
 
-    draft_id = None
+    uuid = LazyFunction(uuid4)
+
+    status = FuzzyChoice(
+        [
+            value
+            for value in RequestStatusConstants.values()
+            if value != RequestStatusConstants.NEW.value
+        ]
+    )
 
     type_id = FuzzyChoice(RequestOriginConstants.values)
     name = FactoryFaker("company")
@@ -125,7 +136,7 @@ class DraftOrganisationRequestFactory(OrganisationRequestFactory):
     manager = None
     data_privacy_officer = None
 
-    draft_id = uuid4()
+    status = RequestStatusConstants.NEW.name
 
 
 class AidantRequestFactory(DjangoModelFactory):

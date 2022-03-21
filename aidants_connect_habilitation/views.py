@@ -80,7 +80,7 @@ class LateStageRequestView(VerifiedEmailIssuerView, View):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = get_object_or_404(
-            OrganisationRequest, draft_id=kwargs.get("draft_id"), issuer=self.issuer
+            OrganisationRequest, uuid=kwargs.get("uuid"), issuer=self.issuer
         )
 
 
@@ -98,7 +98,7 @@ class OnlyNewRequestsView(LateStageRequestView):
             return redirect(
                 "habilitation_organisation_view",
                 issuer_id=self.issuer.issuer_id,
-                draft_id=self.organisation.draft_id,
+                uuid=self.organisation.uuid,
             )
 
         return super().dispatch(request, *args, **kwargs)
@@ -235,7 +235,7 @@ class NewOrganisationRequestFormView(
             "habilitation_new_aidants",
             kwargs={
                 "issuer_id": str(self.issuer.issuer_id),
-                "draft_id": str(self.saved_model.draft_id),
+                "uuid": str(self.saved_model.uuid),
             },
         )
 
@@ -297,7 +297,7 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
             "habilitation_validation",
             kwargs={
                 "issuer_id": str(self.issuer.issuer_id),
-                "draft_id": str(self.organisation.draft_id),
+                "uuid": str(self.organisation.uuid),
             },
         )
 

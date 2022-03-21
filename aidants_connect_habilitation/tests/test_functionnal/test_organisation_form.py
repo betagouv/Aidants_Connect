@@ -1,5 +1,4 @@
 from typing import Optional
-from uuid import uuid4
 
 from django.test import tag
 from django.urls import reverse
@@ -13,6 +12,7 @@ from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.models import Issuer, OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
+    DraftOrganisationRequestFactory,
     IssuerFactory,
     OrganisationRequestFactory,
 )
@@ -57,7 +57,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "habilitation_new_aidants",
             kwargs={
                 "issuer_id": str(issuer.issuer_id),
-                "draft_id": str(issuer.organisation_requests.first().draft_id),
+                "uuid": str(issuer.organisation_requests.first().uuid),
             },
         )
 
@@ -102,7 +102,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "habilitation_new_aidants",
             kwargs={
                 "issuer_id": str(issuer.issuer_id),
-                "draft_id": str(issuer.organisation_requests.first().draft_id),
+                "uuid": str(issuer.organisation_requests.first().uuid),
             },
         )
 
@@ -130,10 +130,9 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
 
     def test_modify_organisation_type_other_input_is_displayed(self):
         issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = OrganisationRequestFactory(
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             type_id=RequestOriginConstants.OTHER.value,
             type_other="L'organisation des travailleurs",
-            draft_id=uuid4(),
             issuer=issuer,
         )
         self.__open_form_url(issuer, organisation)
@@ -167,5 +166,5 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
         kwargs = {"issuer_id": issuer.issuer_id}
         if organisation_request:
-            kwargs.update(draft_id=organisation_request.draft_id)
+            kwargs.update(uuid=organisation_request.uuid)
         self.open_live_url(reverse(pattern, kwargs=kwargs))

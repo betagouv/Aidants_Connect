@@ -52,7 +52,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     list_filter = ("status", RegionFilter, DepartmentFilter)
     list_display = ("name", "issuer", "status")
     raw_id_fields = ("issuer",)
-    readonly_fields = ("public_service_delegation_attestation", "draft_id")
+    readonly_fields = ("public_service_delegation_attestation", "uuid")
     inlines = (
         AidantRequestInline,
         MessageInline,
