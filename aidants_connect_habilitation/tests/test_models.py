@@ -11,7 +11,6 @@ from freezegun import freeze_time
 from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect_habilitation.models import Issuer, IssuerEmailConfirmation
 from aidants_connect_habilitation.tests.factories import (
-    DraftOrganisationRequestFactory,
     IssuerFactory,
     OrganisationRequestFactory,
 )
@@ -32,7 +31,7 @@ class OrganisationRequestTests(TestCase):
 
     def test_cgu_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            DraftOrganisationRequestFactory(cgu=False)
+            OrganisationRequestFactory(cgu=False)
         self.assertIn("cgu_checked", str(cm.exception))
 
     def test_dpo_checked_constraint(self):

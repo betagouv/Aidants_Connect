@@ -283,31 +283,44 @@ class OrganisationRequest(models.Model):
                 name="type_other_correctly_set",
             ),
             models.CheckConstraint(
-                check=Q(uuid__isnull=False) | (Q(uuid__isnull=True) & Q(cgu=True)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (~Q(status=RequestStatusConstants.NEW.name) & Q(cgu=True)),
                 name="cgu_checked",
             ),
             models.CheckConstraint(
-                check=Q(uuid__isnull=False) | (Q(uuid__isnull=True) & Q(dpo=True)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (~Q(status=RequestStatusConstants.NEW.name) & Q(dpo=True)),
                 name="dpo_checked",
             ),
             models.CheckConstraint(
-                check=Q(uuid__isnull=False)
-                | (Q(uuid__isnull=True) & Q(professionals_only=True)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (
+                    ~Q(status=RequestStatusConstants.NEW.name)
+                    & Q(professionals_only=True)
+                ),
                 name="professionals_only_checked",
             ),
             models.CheckConstraint(
-                check=Q(uuid__isnull=False)
-                | (Q(uuid__isnull=True) & Q(without_elected=True)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (
+                    ~Q(status=RequestStatusConstants.NEW.name) & Q(without_elected=True)
+                ),
                 name="without_elected_checked",
             ),
             models.CheckConstraint(
-                check=Q(uuid__isnull=False)
-                | (Q(uuid__isnull=True) & Q(manager__isnull=False)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (
+                    ~Q(status=RequestStatusConstants.NEW.name)
+                    & Q(manager__isnull=False)
+                ),
                 name="manager_set",
             ),
             models.CheckConstraint(
-                check=Q(uuid__isnull=False)
-                | (Q(uuid__isnull=True) & Q(data_privacy_officer__isnull=False)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (
+                    ~Q(status=RequestStatusConstants.NEW.name)
+                    & Q(data_privacy_officer__isnull=False)
+                ),
                 name="data_privacy_officer_set",
             ),
         ]
