@@ -14,7 +14,7 @@
     {# STEP 2 ======================================================================= #}
     <li class="{% if step and step == step.ORGANISATION %}active{% endif %}">
       {% if step.value > step.ORGANISATION.value and organisation %}
-        <a href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}"
+        <a href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
            title="Modifier la structure {{ organisation }}">
           La structure
         </a>
@@ -25,7 +25,7 @@
     {# STEP 3 ======================================================================= #}
     <li class="{% if step and step == step.PERSONNEL %}active{% endif %}">
       {% if step > step.PERSONNEL.value and organisation %}
-        <a href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+        <a href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
           Les personnes<br>impliquées
         </a>
       {% else %}

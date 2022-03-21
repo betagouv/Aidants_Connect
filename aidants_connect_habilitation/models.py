@@ -192,9 +192,8 @@ class OrganisationRequest(models.Model):
         null=True,
     )
 
-    draft_id = models.UUIDField(
+    uuid = models.UUIDField(
         "Identifiant de brouillon",
-        null=True,
         default=_new_uuid,
         unique=True,
     )
@@ -259,15 +258,11 @@ class OrganisationRequest(models.Model):
 
     @property
     def is_draft(self):
-        return self.draft_id is not None
+        return RequestStatusConstants[self.status] == RequestStatusConstants.NEW
 
     @property
     def status_label(self):
         return RequestStatusConstants[self.status].value
-
-    def confirm_request(self):
-        self.draft_id = None
-        self.save()
 
     def __str__(self):
         return self.name
@@ -288,33 +283,31 @@ class OrganisationRequest(models.Model):
                 name="type_other_correctly_set",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(cgu=True)),
+                check=Q(uuid__isnull=False) | (Q(uuid__isnull=True) & Q(cgu=True)),
                 name="cgu_checked",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(dpo=True)),
+                check=Q(uuid__isnull=False) | (Q(uuid__isnull=True) & Q(dpo=True)),
                 name="dpo_checked",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(professionals_only=True)),
+                check=Q(uuid__isnull=False)
+                | (Q(uuid__isnull=True) & Q(professionals_only=True)),
                 name="professionals_only_checked",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(without_elected=True)),
+                check=Q(uuid__isnull=False)
+                | (Q(uuid__isnull=True) & Q(without_elected=True)),
                 name="without_elected_checked",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(manager__isnull=False)),
+                check=Q(uuid__isnull=False)
+                | (Q(uuid__isnull=True) & Q(manager__isnull=False)),
                 name="manager_set",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(data_privacy_officer__isnull=False)),
+                check=Q(uuid__isnull=False)
+                | (Q(uuid__isnull=True) & Q(data_privacy_officer__isnull=False)),
                 name="data_privacy_officer_set",
             ),
         ]
@@ -334,8 +327,8 @@ class AidantRequest(Person):
         return self.organisation.is_draft
 
     @property
-    def draft_id(self):
-        return self.organisation.draft_id
+    def uuid(self):
+        return self.organisation.uuid
 
     class Meta:
         verbose_name = "aidant à habiliter"

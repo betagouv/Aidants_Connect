@@ -57,7 +57,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "habilitation_new_aidants",
             kwargs={
                 "issuer_id": str(issuer.issuer_id),
-                "draft_id": str(issuer.organisation_requests.first().draft_id),
+                "uuid": str(issuer.organisation_requests.first().uuid),
             },
         )
 
@@ -102,7 +102,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "habilitation_new_aidants",
             kwargs={
                 "issuer_id": str(issuer.issuer_id),
-                "draft_id": str(issuer.organisation_requests.first().draft_id),
+                "uuid": str(issuer.organisation_requests.first().uuid),
             },
         )
 
@@ -133,7 +133,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         organisation: OrganisationRequest = OrganisationRequestFactory(
             type_id=RequestOriginConstants.OTHER.value,
             type_other="L'organisation des travailleurs",
-            draft_id=uuid4(),
+            uuid=uuid4(),
             issuer=issuer,
         )
         self.__open_form_url(issuer, organisation)
@@ -167,5 +167,5 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
         kwargs = {"issuer_id": issuer.issuer_id}
         if organisation_request:
-            kwargs.update(draft_id=organisation_request.draft_id)
+            kwargs.update(uuid=organisation_request.uuid)
         self.open_live_url(reverse(pattern, kwargs=kwargs))

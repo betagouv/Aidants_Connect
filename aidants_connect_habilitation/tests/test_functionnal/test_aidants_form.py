@@ -17,9 +17,7 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.pattern_name = "habilitation_new_aidants"
-        cls.organisation: OrganisationRequest = OrganisationRequestFactory(
-            draft_id=uuid4()
-        )
+        cls.organisation: OrganisationRequest = OrganisationRequestFactory(uuid=uuid4())
 
     def open_url_from_pattern(self, org: OrganisationRequest):
         self.open_live_url(
@@ -27,7 +25,7 @@ class AidantsRequestFormViewTests(FunctionalTestCase):
                 self.pattern_name,
                 kwargs={
                     "issuer_id": org.issuer.issuer_id,
-                    "draft_id": org.draft_id,
+                    "uuid": org.uuid,
                 },
             )
         )

@@ -31,32 +31,32 @@ class OrganisationRequestTests(TestCase):
 
     def test_cgu_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(cgu=False, draft_id=None)
+            OrganisationRequestFactory(cgu=False, uuid=None)
         self.assertIn("cgu_checked", str(cm.exception))
 
     def test_dpo_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(dpo=False, draft_id=None)
+            OrganisationRequestFactory(dpo=False, uuid=None)
         self.assertIn("dpo_checked", str(cm.exception))
 
     def test_professionals_only_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(professionals_only=False, draft_id=None)
+            OrganisationRequestFactory(professionals_only=False, uuid=None)
         self.assertIn("professionals_only_checked", str(cm.exception))
 
     def test_without_elected_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(without_elected=False, draft_id=None)
+            OrganisationRequestFactory(without_elected=False, uuid=None)
         self.assertIn("without_elected_checked", str(cm.exception))
 
     def test_manager_set_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(manager=None, draft_id=None)
+            OrganisationRequestFactory(manager=None, uuid=None)
         self.assertIn("manager_set", str(cm.exception))
 
     def test_data_privacy_officer_set_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(data_privacy_officer=None, draft_id=None)
+            OrganisationRequestFactory(data_privacy_officer=None, uuid=None)
         self.assertIn("data_privacy_officer_set", str(cm.exception))
 
 
