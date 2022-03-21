@@ -32,6 +32,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
         )
+        self.selenium.find_element(By.ID, "id_france_services_label").click()
 
         for field in [
             "name",
@@ -39,8 +40,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",
-            "france_services_label",
+            "france_services_number",  # only if france_service_label=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
@@ -77,6 +77,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
+        self.selenium.find_element(By.ID, "id_is_private_org").click()
 
         for field in [
             "name",
@@ -84,8 +85,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",
-            "france_services_label",
+            "partner_administration",  # only if is_private_org=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
