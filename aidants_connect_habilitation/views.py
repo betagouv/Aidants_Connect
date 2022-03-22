@@ -132,7 +132,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
         # See https://docs.djangoproject.com/en/dev/ref/forms/fields/#django.forms.Field.error_messages  # noqa
         error_codes = [error.code for error in form.errors["email"].as_data()]
         if "unique" in error_codes:
-            self.send_mail(form.data["email"])
+            self.send_issuer_profile_reminder_mail(form.data["email"])
             return render(self.request, "issuer_already_exists_warning.html")
         return super().form_invalid(form)
 
@@ -147,7 +147,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
             kwargs={"issuer_id": self.saved_model.issuer_id},
         )
 
-    def send_mail(self, email: str):
+    def send_issuer_profile_reminder_mail(self, email: str):
         path = reverse(
             "habilitation_issuer_page",
             kwargs={"issuer_id": str(Issuer.objects.get(email=email).issuer_id)},
