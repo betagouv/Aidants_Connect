@@ -22,7 +22,6 @@
 
         "hideTypeOtherInputContainer": function hideTypeOtherInputContainer() {
             this.typeOtherInputContainerTarget.setAttribute("hidden", "hidden");
-            this.typeOtherInputContainerTarget.value = "";
         },
 
         "showTypeOtherInputContainer": function showTypeOtherInputContainer() {

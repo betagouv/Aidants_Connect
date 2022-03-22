@@ -3,6 +3,7 @@ from typing import Optional
 from django.test import tag
 from django.urls import reverse
 
+from faker import Faker
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
@@ -153,6 +154,63 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             self.selenium.find_element(By.ID, "id_type").get_attribute("value"),
             str(RequestOriginConstants.OTHER.value),
         )
+
+    def test_submit_both_known_organisation_type_and_other_type(self):
+        issuer: Issuer = IssuerFactory()
+        request: OrganisationRequest = OrganisationRequestFactory.build(
+            type_id=RequestOriginConstants.MEDIATHEQUE.value,
+            public_service_delegation_attestation=False,
+        )
+        self.__open_form_url(issuer)
+
+        # Fill the `type_other` field
+        Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
+            str(RequestOriginConstants.OTHER.value)
+        )
+
+        self.selenium.find_element(By.ID, "id_type_other").send_keys(Faker().company())
+
+        self.assertNotEqual(
+            self.selenium.find_element(By.ID, "id_type_other").get_attribute("value"),
+            "",
+        )
+
+        Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
+            str(request.type.id)
+        )
+
+        for field in [
+            "name",
+            "siret",
+            "address",
+            "zipcode",
+            "city",
+            "partner_administration",
+            "france_services_label",
+            "web_site",
+            "mission_description",
+            "avg_nb_demarches",
+        ]:
+            try:
+                self.selenium.find_element(By.ID, f"id_{field}").send_keys(
+                    getattr(request, field)
+                )
+            except Exception as e:
+                raise ValueError(f"Error when setting input 'id_{field}'") from e
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        path = reverse(
+            "habilitation_new_aidants",
+            kwargs={
+                "issuer_id": str(issuer.issuer_id),
+                "uuid": str(issuer.organisation_requests.first().uuid),
+            },
+        )
+
+        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
+        self.assertEqual(issuer.organisation_requests.first().type, request.type)
+        self.assertEqual(issuer.organisation_requests.first().type_other, "")
 
     def __open_form_url(
         self,
