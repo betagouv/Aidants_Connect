@@ -46,9 +46,17 @@
           <section class="shadowed">
             <h4 class="h2">Responsable Aidants Connect</h4>
 
-            <fieldset>
+            <fieldset
+              id="manager-subform"
+              data-personnel-form-target="managerSubform"
+            >
               <legend class="sr-only">Responsable Aidants Connect</legend>
-              <button class="primary" type="button">
+              <button
+                id="its-me-manager"
+                class="primary"
+                type="button"
+                data-action="personnel-form#onManagerItsMeBtnClicked"
+              >
                 <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
               </button>
               <h5 class="h3">Identité</h5>
@@ -94,9 +102,17 @@
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <section class="shadowed">
             <h4 class="h2">Délégué à la protection des données <span>— Facultatif</span></h4>
-            <fieldset>
+            <fieldset
+              id="dpo-subform"
+              data-personnel-form-target="dpoSubform"
+            >
               <legend class="sr-only">Délégué à la protection des données - facultatif</legend>
-              <button class="primary" type="button">
+              <button
+                id="its-me-dpo"
+                class="primary"
+                type="button"
+                data-action="personnel-form#onDpoItsMeBtnClicked"
+              >
                 <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
               </button>
               <h5 class="h3">Identité</h5>
@@ -150,6 +166,7 @@
 {% endblock %}
 
 {% block extrajs %}
+  {{ issuer_data|json_script:"issuer-data" }}
   {% stimulusjs %}
   <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/personnel_form.js' %}"></script>
