@@ -11,6 +11,7 @@ from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.forms import (
     AidantRequestForm,
     DataPrivacyOfficerForm,
+    IssuerForm,
     ManagerForm,
     PersonnelForm,
 )
@@ -398,6 +399,56 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         saved_aidant = organisation.aidant_requests.get(email=aidant_data["email"])
         for field_name in new_aidant_form.fields:
             self.assertEqual(getattr(saved_aidant, field_name), aidant_data[field_name])
+
+    def test_its_me_button_fills_manager_form(self):
+        issuer: Issuer = IssuerFactory()
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer,
+        )
+
+        form = IssuerForm()
+
+        self.__open_form_url(issuer, organisation)
+
+        for field_name in form.fields:
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
+            )
+            self.assertEqual(element.get_attribute("value"), "")
+
+        self.selenium.find_element(By.CSS_SELECTOR, "#its-me-manager").click()
+
+        for field_name in form.fields:
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
+            )
+            field_value = getattr(issuer, field_name)
+            self.assertEqual(element.get_attribute("value"), field_value)
+
+    def test_its_me_button_fills_dpo_form(self):
+        issuer: Issuer = IssuerFactory()
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer,
+        )
+
+        form = IssuerForm()
+
+        self.__open_form_url(issuer, organisation)
+
+        for field_name in form.fields:
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#dpo-subform [name$='{field_name}']"
+            )
+            self.assertEqual(element.get_attribute("value"), "")
+
+        self.selenium.find_element(By.CSS_SELECTOR, "#its-me-dpo").click()
+
+        for field_name in form.fields:
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#dpo-subform [name$='{field_name}']"
+            )
+            field_value = getattr(issuer, field_name)
+            self.assertEqual(element.get_attribute("value"), field_value)
 
     def __open_form_url(
         self,

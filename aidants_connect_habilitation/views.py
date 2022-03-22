@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
@@ -85,6 +86,10 @@ class LateStageRequestView(VerifiedEmailIssuerView, View):
 
 
 class OnlyNewRequestsView(LateStageRequestView):
+    @property
+    def step(self) -> HabilitationFormStep:
+        raise NotImplementedError()
+
     def dispatch(self, request, *args, **kwargs):
         if not self.issuer.email_verified:
             # Duplicate logic of VerifiedEmailIssuerView
@@ -264,9 +269,15 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        issuer_data = model_to_dict(
+            self.issuer, exclude=[*IssuerForm.Meta.exclude, "id"]
+        )
+        # Fields of type PhoneNumberField are not natively JSON serializable
+        issuer_data["phone"] = str(issuer_data["phone"])
         return {
             **super().get_context_data(**kwargs),
             "issuer_form": IssuerForm(instance=self.issuer, render_non_editable=True),
+            "issuer_data": issuer_data,
             "organisation": self.organisation,
         }
 
