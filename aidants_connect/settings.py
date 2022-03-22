@@ -553,3 +553,12 @@ EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY = os.getenv(
 
     Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.""",
 )
+
+EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM = os.getenv(
+    "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM", SUPPORT_EMAIL
+)
+
+EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT = os.getenv(
+    "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT",
+    "Rappel de votre profil demandeur",
+)

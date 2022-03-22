@@ -1,0 +1,31 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
+
+{% block title %}
+  Aidants Connect - Un compte demandeur existe déjà
+{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col">
+        <h1>Formulaire d’habilitation</h1>
+      </div>
+    </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <h2>On se connaît !</h2>
+        <div class="shadowed">
+          <p>
+            Votre profil demandeur existe déjà. Nous vous avons renvoyé un e-mail
+            qui vous permettra de retrouver toutes vos données et toutes vos demandes.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {% include "_more-info.html" %}
+
+  </div>
+{% endblock %}

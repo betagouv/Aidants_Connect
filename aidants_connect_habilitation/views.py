@@ -1,6 +1,8 @@
 from django.conf import settings
+from django.core.mail import send_mail
 from django.forms.models import model_to_dict
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template import loader
 from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
@@ -118,14 +120,23 @@ class NewHabilitationView(RedirectView):
 
 
 class NewIssuerFormView(HabilitationStepMixin, FormView):
+    template_name = "issuer_form.html"
+    form_class = IssuerForm
+
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.ISSUER
 
-    template_name = "issuer_form.html"
-    form_class = IssuerForm
+    def form_invalid(self, form: IssuerForm):
+        # Gets the error code of all the errors for email, if any
+        # See https://docs.djangoproject.com/en/dev/ref/forms/fields/#django.forms.Field.error_messages  # noqa
+        error_codes = [error.code for error in form.errors["email"].as_data()]
+        if "unique" in error_codes:
+            self.send_issuer_profile_reminder_mail(form.data["email"])
+            return render(self.request, "issuer_already_exists_warning.html")
+        return super().form_invalid(form)
 
-    def form_valid(self, form):
+    def form_valid(self, form: IssuerForm):
         self.saved_model: Issuer = form.save()
         IssuerEmailConfirmation.for_issuer(self.saved_model).send(self.request)
         return super().form_valid(form)
@@ -136,8 +147,25 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
             kwargs={"issuer_id": self.saved_model.issuer_id},
         )
 
-    def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "step": self.step}
+    def send_issuer_profile_reminder_mail(self, email: str):
+        path = reverse(
+            "habilitation_issuer_page",
+            kwargs={"issuer_id": str(Issuer.objects.get(email=email).issuer_id)},
+        )
+        context = {"url": self.request.build_absolute_uri(path)}
+        text_message = loader.render_to_string(
+            "email/issuer_profile_reminder.txt", context
+        )
+        html_message = loader.render_to_string(
+            "email/issuer_profile_reminder.html", context
+        )
+        send_mail(
+            from_email=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM,
+            recipient_list=[email],
+            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
 
 
 class IssuerEmailConfirmationWaitingView(
