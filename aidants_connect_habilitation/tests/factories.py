@@ -92,7 +92,7 @@ class OrganisationRequestFactory(DjangoModelFactory):
         [
             value
             for value in RequestStatusConstants.values()
-            if value != RequestStatusConstants.NEW.value
+            if value != RequestStatusConstants.NEW.name
         ]
     )
 
