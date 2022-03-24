@@ -308,7 +308,6 @@ class IssuerPageViewTests(TestCase):
     def test_new_organisation_request_is_displayed_with_links(self):
         organisation = DraftOrganisationRequestFactory(issuer=self.issuer)
         response = self.client.get(self.get_url(self.issuer.issuer_id))
-        print(response.content)
         self.assertContains(response, RequestStatusConstants.NEW.value)
         self.assertContains(response, "Soumettre la demande")
         self.assertContains(response, organisation.name)
@@ -319,7 +318,6 @@ class IssuerPageViewTests(TestCase):
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
         )
         response = self.client.get(self.get_url(self.issuer.issuer_id))
-        print(response.content)
         self.assertNotContains(response, RequestStatusConstants.NEW.value)
         self.assertContains(
             response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
