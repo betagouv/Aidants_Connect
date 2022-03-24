@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import SET_NULL, Q
 from django.dispatch import Signal
 from django.http import HttpRequest
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
@@ -266,6 +267,12 @@ class OrganisationRequest(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={"issuer_id": self.issuer.issuer_id, "uuid": self.uuid},
+        )
 
     class Meta:
         constraints = [
