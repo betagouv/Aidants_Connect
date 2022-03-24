@@ -114,9 +114,15 @@ class Organisation(models.Model):
 
     @cached_property
     def num_active_mandats(self):
-        return Mandat.objects.filter(
-            expiration_date__gte=timezone.now(), organisation=self
-        ).count()
+        return (
+            Mandat.objects.filter(
+                expiration_date__gte=timezone.now(),
+                organisation=self,
+                autorisations__revocation_date__isnull=True,
+            )
+            .distinct()
+            .count()
+        )
 
     @cached_property
     def aidants_not_responsables(self):
