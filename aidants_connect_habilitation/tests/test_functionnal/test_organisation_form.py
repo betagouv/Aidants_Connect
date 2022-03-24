@@ -185,8 +185,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",
-            "france_services_label",
             "web_site",
             "mission_description",
             "avg_nb_demarches",
