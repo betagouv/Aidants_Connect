@@ -142,8 +142,6 @@ class ViewAutorisationsTests(TestCase):
                 self.mandat_aidant_josephine_1,
                 self.mandat_aidant_josephine_6,
                 self.mandat_aidant_alice_no_autorisation,
-                self.mandat_aidant_pierre_expired_over_a_year,
-                self.mandat_aidant_pierre_revoked_over_a_year,
                 self.mandat_aidant_phillomene,
             ],
         )
@@ -173,8 +171,9 @@ class ViewAutorisationsTests(TestCase):
             ],
         )
 
+        usagers_without_valid_mandate = set(usagers["without_valid_mandate"].keys())
         self.assertSetEqual(
-            usagers["without_valid_mandate"], {self.usager_alice, self.usager_philomene}
+            usagers_without_valid_mandate, {self.usager_alice, self.usager_philomene}
         )
 
 
