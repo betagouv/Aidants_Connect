@@ -124,7 +124,7 @@ class TestOrganisationRequestForm(TestCase):
             france_services_number=444666999,
         )
         self.assertTrue(form.is_valid())
-        self.assertIsNone(form.cleaned_data["france_services_number"])
+        self.assertEqual("", form.cleaned_data["france_services_number"])
 
 
 class TestPersonnelForm(TestCase):

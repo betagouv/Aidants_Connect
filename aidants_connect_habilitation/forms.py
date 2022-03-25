@@ -178,7 +178,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
     def clean_france_services_number(self):
         if not self.data["france_services_label"]:
-            return
+            return ""
 
         if not self.data["france_services_number"]:
             raise ValidationError(
