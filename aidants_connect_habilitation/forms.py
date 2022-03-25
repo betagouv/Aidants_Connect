@@ -7,7 +7,6 @@ from django.forms import (
     BooleanField,
     CharField,
     ChoiceField,
-    FileField,
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
@@ -109,12 +108,6 @@ class OrganisationRequestForm(PatchedErrorListForm):
         required=False,
     )
 
-    public_service_delegation_attestation = FileField(
-        label="Téléversez ici une attestation de délégation de service public",
-        help_text="Taille maximale : 2 Mo. Formats supportés : PDF, JPG, PNG.",
-        required=False,
-    )
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -200,7 +193,6 @@ class OrganisationRequestForm(PatchedErrorListForm):
             "city",
             "is_private_org",
             "partner_administration",
-            "public_service_delegation_attestation",
             "france_services_label",
             "france_services_number",
             "web_site",

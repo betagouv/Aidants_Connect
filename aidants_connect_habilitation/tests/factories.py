@@ -103,8 +103,6 @@ class OrganisationRequestFactory(DjangoModelFactory):
     zipcode = FactoryFaker("postcode")
     city = FactoryFaker("city")
 
-    public_service_delegation_attestation = ""
-
     france_services_label = False
 
     web_site = FactoryFaker("url")
