@@ -21,11 +21,12 @@ from aidants_connect_habilitation.tests.factories import (
 
 @tag("functional")
 class OrganisationRequestFormViewTests(FunctionalTestCase):
-    def test_form_normal_organisation(self):
+    def test_form_normal_organisation_with_fs_label(self):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.MEDIATHEQUE.value,
             public_service_delegation_attestation=False,
+            france_services_number=444888555,
         )
         self.__open_form_url(issuer)
 
@@ -40,7 +41,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "france_services_number",  # only if france_service_label=True
+            "france_services_number",  # only needed if france_service_label=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
@@ -64,11 +65,12 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
 
         WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
-    def test_form_other_organisation(self):
+    def test_form_other_type_and_private_organisation(self):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.OTHER.value,
             public_service_delegation_attestation=False,
+            partner_administration="Beta.Gouv",
         )
         self.__open_form_url(issuer)
 
@@ -85,7 +87,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",  # only if is_private_org=True
+            "partner_administration",  # needed only if is_private_org=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
