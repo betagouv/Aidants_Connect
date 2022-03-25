@@ -68,6 +68,34 @@ class TestOrganisationRequestForm(TestCase):
             ],
         )
 
+    def test_private_org_requires_partner_administration(self):
+        form = get_form(
+            OrganisationRequestForm,
+            ignore_errors=True,
+            is_private_org=True,
+            partner_administration="",
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("merci de renseigner", form.errors["partner_administration"][0])
+
+    def test_private_org_keeps_partner_administration(self):
+        form = get_form(
+            OrganisationRequestForm,
+            is_private_org=True,
+            partner_administration="Beta.Gouv",
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual("Beta.Gouv", form.cleaned_data["partner_administration"])
+
+    def test_non_private_org_clears_partner_administration(self):
+        form = get_form(
+            OrganisationRequestForm,
+            is_private_org=False,
+            partner_administration="Beta.Gouv",
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual("", form.cleaned_data["partner_administration"])
+
 
 class TestPersonnelForm(TestCase):
     @patch("aidants_connect_habilitation.forms.ManagerForm.is_valid")

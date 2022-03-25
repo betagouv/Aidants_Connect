@@ -164,6 +164,16 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
         return self.data["type_other"]
 
+    def clean_partner_administration(self):
+        if not self.data["is_private_org"]:
+            return ""
+
+        if not self.data["partner_administration"]:
+            raise ValidationError(
+                "Vous avez indiqué que la structure est privée : merci de renseigner "
+                "votre administration partenaire."
+            )
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
