@@ -96,6 +96,36 @@ class TestOrganisationRequestForm(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual("", form.cleaned_data["partner_administration"])
 
+    def test_france_services_label_requires_fs_number(self):
+        form = get_form(
+            OrganisationRequestForm,
+            france_services_label=True,
+            france_services_number=None,
+            ignore_errors=True,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            "merci de renseigner son numéro", form.errors["france_services_number"][0]
+        )
+
+    def test_france_services_label_keeps_fs_number(self):
+        form = get_form(
+            OrganisationRequestForm,
+            france_services_label=True,
+            france_services_number=444666999,
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["france_services_number"], 444666999)
+
+    def test_no_france_services_label_clears_fs_number(self):
+        form = get_form(
+            OrganisationRequestForm,
+            france_services_label=False,
+            france_services_number=444666999,
+        )
+        self.assertTrue(form.is_valid())
+        self.assertIsNone(form.cleaned_data["france_services_number"])
+
 
 class TestPersonnelForm(TestCase):
     @patch("aidants_connect_habilitation.forms.ManagerForm.is_valid")

@@ -174,6 +174,20 @@ class OrganisationRequestForm(PatchedErrorListForm):
                 "votre administration partenaire."
             )
 
+        return self.data["partner_administration"]
+
+    def clean_france_services_number(self):
+        if not self.data["france_services_label"]:
+            return
+
+        if not self.data["france_services_number"]:
+            raise ValidationError(
+                "Vous avez indiqué que la structure est labellisée France Services : "
+                "merci de renseigner son numéro d’immatriculation France Services."
+            )
+
+        return self.data["france_services_number"]
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
