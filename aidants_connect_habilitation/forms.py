@@ -165,7 +165,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
         return self.data["type_other"]
 
     def clean_partner_administration(self):
-        if not self.data["is_private_org"]:
+        if not self.data.get("is_private_org", False):
             return ""
 
         if not self.data["partner_administration"]:
@@ -177,7 +177,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
         return self.data["partner_administration"]
 
     def clean_france_services_number(self):
-        if not self.data["france_services_label"]:
+        if not self.data.get("france_services_label", False):
             return ""
 
         if not self.data["france_services_number"]:
