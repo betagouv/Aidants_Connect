@@ -419,7 +419,6 @@ class NewOrganisationRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response: HttpResponse = self.client.post(
             reverse(self.pattern_name, kwargs={"issuer_id": uuid}), cleaned_data
         )
@@ -510,7 +509,6 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         uuid = uuid4()
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
             self.get_url(self.organisation.issuer.issuer_id, uuid),
             cleaned_data,
@@ -522,7 +520,6 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         cleaned_data["type"] = cleaned_data["type"].id
 
         response = self.client.post(
@@ -636,7 +633,6 @@ class AidantsRequestFormViewTests(TestCase):
         uuid = uuid4()
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
             self.get_url(self.organisation.issuer.issuer_id, uuid),
             cleaned_data,
@@ -652,7 +648,6 @@ class AidantsRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
             self.get_url(unrelated_issuer.issuer_id, self.organisation.uuid),
             cleaned_data,
@@ -666,7 +661,6 @@ class AidantsRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         cleaned_data["type"] = cleaned_data["type"].id
 
         response = self.client.post(
@@ -776,7 +770,6 @@ class ValidationRequestFormViewTests(TestCase):
         uuid = uuid4()
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
             self.get_url(organisation.issuer.issuer_id, uuid),
             cleaned_data,
@@ -790,7 +783,6 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         cleaned_data["type"] = cleaned_data["type"].id
 
         response = self.client.post(

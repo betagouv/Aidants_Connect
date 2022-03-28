@@ -25,7 +25,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.MEDIATHEQUE.value,
-            public_service_delegation_attestation=False,
             france_services_number=444888555,
         )
         self.__open_form_url(issuer)
@@ -69,7 +68,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.OTHER.value,
-            public_service_delegation_attestation=False,
             partner_administration="Beta.Gouv",
         )
         self.__open_form_url(issuer)
@@ -161,7 +159,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.MEDIATHEQUE.value,
-            public_service_delegation_attestation=False,
         )
         self.__open_form_url(issuer)
 
