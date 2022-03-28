@@ -13,14 +13,13 @@
 
       <div class="fr-col-12 fr-col-md-8">
         <form
-          method="post"
-          data-controller="dynamic-form"
-          data-dynamic-form-type-input-container-class="type-input-container"
+            method="post"
+            data-controller="dynamic-form"
+            data-dynamic-form-type-input-container-class="type-input-container"
         >
           <h2>Structure d’accueil</h2>
           <p class="subtitle">Vous pouvez faire autant de demandes qu’il existe de structures d’accueil.</p>
           <div class="shadowed">
-
             <h3>Informations générales</h3>
             {% csrf_token %}
             {{ form.non_field_errors }}
@@ -57,20 +56,10 @@
 
             {% field_as_fr_grid_row form.siret %}
 
-            <div class="fr-grid-row fr-grid-row--gutters">
-              <div class="fr-col-12 checkbox-col">
-                <input id="is_private_org" type="checkbox">
-                <label for="is_private_org">
-                  Cochez cette case si vous faites cette demande pour une structure privée<br>
-                  (hors associations)
-                </label>
-              </div>
-            </div>
+            {% checkbox_fr_grid_row form.is_private_org %}
 
-
-            <section class="partner-administration">
+            <section class="grey-background shown-on-checkbox" data-dynamic-form-target="onlyShownIfPrivateOrg">
               {% field_as_fr_grid_row form.partner_administration %}
-              {% field_as_fr_grid_row form.public_service_delegation_attestation %}
             </section>
 
             <h3>Informations descriptives</h3>
@@ -83,13 +72,15 @@
 
             {% checkbox_fr_grid_row form.france_services_label %}
 
+            <section class="grey-background shown-on-checkbox" data-dynamic-form-target="onlyShownIfFranceServices">
+              {% field_as_fr_grid_row form.france_services_number %}
+            </section>
             <div class="button-box">
               <a class="button" href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">
                 Revenir à l’étape précédente
               </a>
               <button type="submit" class="primary">Valider cette étape</button>
             </div>
-
           </div>
         </form>
       </div>

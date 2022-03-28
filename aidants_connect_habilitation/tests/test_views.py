@@ -14,7 +14,10 @@ from factory import Faker
 from faker.config import DEFAULT_LOCALE
 
 from aidants_connect import settings
-from aidants_connect.common.constants import RequestStatusConstants
+from aidants_connect.common.constants import (
+    RequestOriginConstants,
+    RequestStatusConstants,
+)
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     DataPrivacyOfficerForm,
@@ -308,7 +311,6 @@ class IssuerPageViewTests(TestCase):
     def test_new_organisation_request_is_displayed_with_links(self):
         organisation = DraftOrganisationRequestFactory(issuer=self.issuer)
         response = self.client.get(self.get_url(self.issuer.issuer_id))
-        print(response.content)
         self.assertContains(response, RequestStatusConstants.NEW.value)
         self.assertContains(response, "Soumettre la demande")
         self.assertContains(response, organisation.name)
@@ -319,7 +321,6 @@ class IssuerPageViewTests(TestCase):
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
         )
         response = self.client.get(self.get_url(self.issuer.issuer_id))
-        print(response.content)
         self.assertNotContains(response, RequestStatusConstants.NEW.value)
         self.assertContains(
             response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
@@ -418,7 +419,6 @@ class NewOrganisationRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response: HttpResponse = self.client.post(
             reverse(self.pattern_name, kwargs={"issuer_id": uuid}), cleaned_data
         )
@@ -446,9 +446,12 @@ class NewOrganisationRequestFormViewTests(TestCase):
         self.assertTemplateUsed(response, self.template_name)
 
     def test_redirect_valid_post_to_new_aidants(self):
-        cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
+        cleaned_data = utils.get_form(
+            OrganisationRequestForm, type_id=RequestOriginConstants.MEDIATHEQUE.value
+        ).clean()
         cleaned_data["type"] = cleaned_data["type"].id
+        cleaned_data.pop("is_private_org")
+        cleaned_data.pop("france_services_label")
 
         response = self.client.post(
             reverse(
@@ -458,6 +461,10 @@ class NewOrganisationRequestFormViewTests(TestCase):
             cleaned_data,
         )
 
+        self.assertTrue(
+            OrganisationRequest.objects.filter(issuer=self.issuer).exists(),
+            "No organisationrequest was created in DB",
+        )
         self.assertRedirects(
             response,
             reverse(
@@ -502,7 +509,6 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         uuid = uuid4()
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
             self.get_url(self.organisation.issuer.issuer_id, uuid),
             cleaned_data,
@@ -514,7 +520,6 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         cleaned_data["type"] = cleaned_data["type"].id
 
         response = self.client.post(
@@ -571,8 +576,12 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
             raise ValueError(str(form.errors))
 
         cleaned_data = form.clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         cleaned_data["type"] = cleaned_data["type"].id
+
+        # it is not enough to set these keys to False,
+        # we need to unset them from the POST as they are checkboxes in the form.
+        cleaned_data.pop("is_private_org")
+        cleaned_data.pop("france_services_label")
 
         self.assertNotEqual(model.name, new_name)
 
@@ -580,7 +589,6 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
             self.get_url(model.issuer.issuer_id, model.uuid),
             cleaned_data,
         )
-
         self.assertRedirects(
             response,
             reverse(
@@ -625,7 +633,6 @@ class AidantsRequestFormViewTests(TestCase):
         uuid = uuid4()
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
             self.get_url(self.organisation.issuer.issuer_id, uuid),
             cleaned_data,
@@ -641,7 +648,6 @@ class AidantsRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
             self.get_url(unrelated_issuer.issuer_id, self.organisation.uuid),
             cleaned_data,
@@ -655,7 +661,6 @@ class AidantsRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         cleaned_data["type"] = cleaned_data["type"].id
 
         response = self.client.post(
@@ -765,7 +770,6 @@ class ValidationRequestFormViewTests(TestCase):
         uuid = uuid4()
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         response = self.client.post(
             self.get_url(organisation.issuer.issuer_id, uuid),
             cleaned_data,
@@ -779,7 +783,6 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
-        cleaned_data["public_service_delegation_attestation"] = ""
         cleaned_data["type"] = cleaned_data["type"].id
 
         response = self.client.post(

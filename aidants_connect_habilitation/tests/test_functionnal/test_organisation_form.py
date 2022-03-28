@@ -21,17 +21,18 @@ from aidants_connect_habilitation.tests.factories import (
 
 @tag("functional")
 class OrganisationRequestFormViewTests(FunctionalTestCase):
-    def test_form_normal_organisation(self):
+    def test_form_normal_organisation_with_fs_label(self):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.MEDIATHEQUE.value,
-            public_service_delegation_attestation=False,
+            france_services_number=444888555,
         )
         self.__open_form_url(issuer)
 
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
         )
+        self.selenium.find_element(By.ID, "id_france_services_label").click()
 
         for field in [
             "name",
@@ -39,8 +40,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",
-            "france_services_label",
+            "france_services_number",  # only needed if france_service_label=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
@@ -64,11 +64,11 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
 
         WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
-    def test_form_other_organisation(self):
+    def test_form_other_type_and_private_organisation(self):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.OTHER.value,
-            public_service_delegation_attestation=False,
+            partner_administration="Beta.Gouv",
         )
         self.__open_form_url(issuer)
 
@@ -77,6 +77,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
+        self.selenium.find_element(By.ID, "id_is_private_org").click()
 
         for field in [
             "name",
@@ -84,8 +85,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",
-            "france_services_label",
+            "partner_administration",  # needed only if is_private_org=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
@@ -159,7 +159,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.MEDIATHEQUE.value,
-            public_service_delegation_attestation=False,
         )
         self.__open_form_url(issuer)
 
@@ -185,8 +184,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",
-            "france_services_label",
             "web_site",
             "mission_description",
             "avg_nb_demarches",

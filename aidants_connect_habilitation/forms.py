@@ -7,7 +7,6 @@ from django.forms import (
     BooleanField,
     CharField,
     ChoiceField,
-    FileField,
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
@@ -96,14 +95,16 @@ class OrganisationRequestForm(PatchedErrorListForm):
         },
     )
 
-    partner_administration = CharField(
-        label="Renseignez l’administration avec laquelle vous travaillez",
+    is_private_org = BooleanField(
+        label=(
+            "Cochez cette case si vous faites cette demande pour une structure privée "
+            "(hors associations)"
+        ),
         required=False,
     )
 
-    public_service_delegation_attestation = FileField(
-        label="Téléversez ici une attestation de délégation de service public",
-        help_text="Taille maximale : 2 Mo. Formats supportés : PDF, JPG, PNG.",
+    partner_administration = CharField(
+        label="Renseignez l’administration avec laquelle vous travaillez",
         required=False,
     )
 
@@ -125,6 +126,20 @@ class OrganisationRequestForm(PatchedErrorListForm):
                 "data-other-value": RequestOriginConstants.OTHER.value,
             },
         )
+        self.widget_attrs(
+            "is_private_org",
+            {
+                "data-action": "change->dynamic-form#onIsPrivateOrgChange",
+                "data-dynamic-form-target": "privateOrgInput",
+            },
+        )
+        self.widget_attrs(
+            "france_services_label",
+            {
+                "data-action": "change->dynamic-form#onFranceServicesChange",
+                "data-dynamic-form-target": "franceServicesInput",
+            },
+        )
 
     def clean_type(self):
         return OrganisationType.objects.get(pk=int(self.data["type"]))
@@ -142,6 +157,30 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
         return self.data["type_other"]
 
+    def clean_partner_administration(self):
+        if not self.data.get("is_private_org", False):
+            return ""
+
+        if not self.data["partner_administration"]:
+            raise ValidationError(
+                "Vous avez indiqué que la structure est privée : merci de renseigner "
+                "votre administration partenaire."
+            )
+
+        return self.data["partner_administration"]
+
+    def clean_france_services_number(self):
+        if not self.data.get("france_services_label", False):
+            return ""
+
+        if not self.data["france_services_number"]:
+            raise ValidationError(
+                "Vous avez indiqué que la structure est labellisée France Services : "
+                "merci de renseigner son numéro d’immatriculation France Services."
+            )
+
+        return self.data["france_services_number"]
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
@@ -152,9 +191,10 @@ class OrganisationRequestForm(PatchedErrorListForm):
             "address",
             "zipcode",
             "city",
+            "is_private_org",
             "partner_administration",
-            "public_service_delegation_attestation",
             "france_services_label",
+            "france_services_number",
             "web_site",
             "mission_description",
             "avg_nb_demarches",

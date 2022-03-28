@@ -222,13 +222,13 @@ class OrganisationRequest(models.Model):
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
 
+    is_private_org = models.BooleanField("Structure privée", default=False)
     partner_administration = models.CharField(
         "Administration partenaire",
         blank=True,
         default="",
         max_length=200,
     )
-
     public_service_delegation_attestation = models.FileField(
         "Attestation de délégation de service public",
         blank=True,
@@ -237,6 +237,12 @@ class OrganisationRequest(models.Model):
 
     france_services_label = models.BooleanField(
         "Labellisation France Services", default=False
+    )
+    france_services_number = models.CharField(
+        "Numéro d’immatriculation France Services",
+        blank=True,
+        default="",
+        max_length=200,
     )
 
     web_site = models.URLField("Site web", blank=True, default="")
@@ -288,6 +294,32 @@ class OrganisationRequest(models.Model):
                     )
                 ),
                 name="type_other_correctly_set",
+            ),
+            models.CheckConstraint(
+                check=(
+                    (
+                        Q(is_private_org=True)
+                        & Q(partner_administration__isnull_or_blank=False)
+                    )
+                    | (
+                        Q(is_private_org=False)
+                        & Q(partner_administration__isnull_or_blank=True)
+                    )
+                ),
+                name="partner_administration_if_org_is_private",
+            ),
+            models.CheckConstraint(
+                check=(
+                    (
+                        Q(france_services_label=True)
+                        & Q(france_services_number__isnull_or_blank=False)
+                    )
+                    | (
+                        Q(france_services_label=False)
+                        & Q(france_services_number__isnull_or_blank=True)
+                    )
+                ),
+                name="immatriculation_number_if_france_services_label",
             ),
             models.CheckConstraint(
                 check=Q(status=RequestStatusConstants.NEW.name)

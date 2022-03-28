@@ -373,10 +373,26 @@ fieldset {
   transform: translateY(3rem);
 }
 
-.partner-administration {
+.grey-background {
   background: #f2f2f2;
   padding: 1rem;
   margin: 1rem 0;
+
+  &.shown-on-checkbox {
+    position: relative;
+
+    &::before {
+      position: absolute;
+      content: "";
+      width: 1.5rem;
+      height: 1.5rem;
+      background: #f2f2f2;
+      transform: rotate(45deg);
+      left: 0.2rem;
+      top: -.6rem;
+      border-radius: 0 0 100% 0;
+    }
+  }
 }
 
 .form-in-3-cols {
