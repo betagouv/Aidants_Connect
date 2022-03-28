@@ -60,6 +60,14 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     inline_type = "stacked"
     inline_reverse = ("manager",)
 
+    actions = ("accept_request",)
+
+    def accept_request(self, request, queryset):
+        for organisation_request in queryset:
+            organisation_request.accept_request_and_create_organisation()
+
+    accept_request.short_description = "Accepter la demande"
+
 
 if settings.AC_HABILITATION_FORM_ENABLED:
     admin_site.register(Issuer, IssuerAdmin)
