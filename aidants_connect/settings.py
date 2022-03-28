@@ -563,12 +563,11 @@ EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT = os.getenv(
     "Rappel de votre profil demandeur",
 )
 
-EMAIL_ORGANISATION_REQUEST_CRATION_FROM = os.getenv(
-    "EMAIL_ORGANISATION_REQUEST_CRATION_FROM", SUPPORT_EMAIL
+EMAIL_ORGANISATION_REQUEST_CREATION_FROM = os.getenv(
+    "EMAIL_ORGANISATION_REQUEST_CREATION_FROM", SUPPORT_EMAIL
 )
 
-EMAIL_ORGANISATION_REQUEST_CRATION_SUBJECT = os.getenv(
-    "EMAIL_ORGANISATION_REQUEST_CRATION_SUBJECT",
-    "Votre demande d’habilitation Aidants Connect a été soumise ; "
-    "voici comment la retrouver chez nous",
+EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT = os.getenv(
+    "EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT",
+    "Votre demande d’habilitation Aidants Connect a été créée",
 )

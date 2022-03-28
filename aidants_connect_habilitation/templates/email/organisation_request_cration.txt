@@ -4,7 +4,7 @@ Bonjour,
 
 Vous venez de créer une nouvelle demande d’habilitation à Aidants Connect pour l’organisation {{ organisation.name }}.
 {% linebreakless %}
-Vous pouvez retrouver toutes les détails de cette demande en cours</a> en copiant l’URL suivante
+Vous pouvez retrouver tous les détails de cette demande en cours</a> en copiant l’URL suivante
 dans votre navigateur :
 {% endlinebreakless %}
  {{ url }}

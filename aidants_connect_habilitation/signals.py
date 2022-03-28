@@ -53,9 +53,9 @@ def notify_issuer_request_submitted(instance: OrganisationRequest, created: bool
     )
 
     send_mail(
-        from_email=settings.EMAIL_ORGANISATION_REQUEST_CRATION_FROM,
+        from_email=settings.EMAIL_ORGANISATION_REQUEST_CREATION_FROM,
         recipient_list=[instance.issuer.email],
-        subject=settings.EMAIL_ORGANISATION_REQUEST_CRATION_SUBJECT,
+        subject=settings.EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT,
         message=text_message,
         html_message=html_message,
     )
