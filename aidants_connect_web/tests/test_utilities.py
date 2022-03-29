@@ -1,6 +1,8 @@
-from django.test import TestCase, tag
+from django.conf import settings
+from django.test import TestCase, TransactionTestCase, tag
 
-from aidants_connect_web.utilities import generate_sha256_hash
+from aidants_connect_web.models import IdGenerator
+from aidants_connect_web.utilities import generate_new_datapass_id, generate_sha256_hash
 
 
 @tag("utilities")
@@ -18,3 +20,13 @@ class UtilitiesTests(TestCase):
         )
         self.assertEqual(generate_sha256_hash("123salt".encode()), hash_123salt)
         self.assertEqual(len(generate_sha256_hash("123salt".encode())), 64)
+
+
+@tag("utilities")
+class GenerateDatapassIdTests(TransactionTestCase):
+    def test_generate_new_datapass_id(self):
+        IdGenerator.objects.get_or_create(
+            code=settings.DATAPASS_CODE_FOR_ID_GENERATOR, defaults={"last_id": 10000}
+        )
+        self.assertEqual(generate_new_datapass_id(), 10001)
+        self.assertEqual(generate_new_datapass_id(), 10002)

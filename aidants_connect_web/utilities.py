@@ -6,11 +6,27 @@ from typing import TYPE_CHECKING, Optional, Union
 from urllib.parse import quote, urlencode
 
 from django.conf import settings
+from django.db import transaction
+from django.db.models import F
 
 import qrcode
 
 if TYPE_CHECKING:
     from aidants_connect_web.models import Aidant, Usager
+
+
+@transaction.atomic
+def generate_new_datapass_id() -> int:
+    from .models import IdGenerator
+
+    id_datapass = IdGenerator.objects.select_for_update().get(
+        code=settings.DATAPASS_CODE_FOR_ID_GENERATOR
+    )
+
+    id_datapass.last_id = F("last_id") + 1
+    id_datapass.save()
+    id_datapass.refresh_from_db()
+    return id_datapass.last_id
 
 
 def generate_sha256_hash(value: bytes):
