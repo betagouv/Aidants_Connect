@@ -1440,6 +1440,11 @@ class CarteTOTP(models.Model):
         )
 
 
+class IdGenerator(models.Model):
+    code = models.CharField(max_length=100, unique=True)
+    last_id = models.PositiveIntegerField()
+
+
 # The Dataviz* models represent metadata that are used for data display in Metabase.
 # Do not remove even if they are not used directly in the code.
 class DatavizDepartment(models.Model):
