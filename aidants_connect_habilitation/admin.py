@@ -58,10 +58,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         MessageInline,
     )
     inline_type = "stacked"
-    inline_reverse = (
-        "manager",
-        "data_privacy_officer",
-    )
+    inline_reverse = ("manager",)
 
 
 if settings.AC_HABILITATION_FORM_ENABLED:

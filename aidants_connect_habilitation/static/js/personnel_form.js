@@ -33,19 +33,11 @@
             this.mutateAddAidantButtonVisibility();
         },
 
-        "onItsMeBtnClicked": function onItsMeBtnClicked(target) {
+        "onManagerItsMeBtnClicked": function onManagerItsMeBtnClicked() {
             const self = this;
             Object.keys(this.issuerDataValue).forEach(function (key) {
-                target.querySelector("[name$='" + key + "']").value = self.issuerDataValue[key];
+                self.managerSubformTarget.querySelector("[name$='" + key + "']").value = self.issuerDataValue[key];
             });
-        },
-
-        "onManagerItsMeBtnClicked": function onManagerItsMeBtnClicked() {
-            this.onItsMeBtnClicked(this.managerSubformTarget);
-        },
-
-        "onDpoItsMeBtnClicked": function onDpoItsMeBtnClicked() {
-            this.onItsMeBtnClicked(this.dpoSubformTarget);
         },
 
         "mutateAddAidantButtonVisibility": function mutateAddAidantButtonVisibility() {
@@ -65,7 +57,6 @@
         "aidantFormTemplate",
         "aidantFormset",
         "managerSubform",
-        "dpoSubform",
     ];
 
     PersonnelForm.values = {

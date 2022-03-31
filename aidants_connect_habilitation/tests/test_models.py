@@ -54,11 +54,6 @@ class OrganisationRequestTests(TestCase):
             OrganisationRequestFactory(manager=None)
         self.assertIn("manager_set", str(cm.exception))
 
-    def test_data_privacy_officer_set_constraint(self):
-        with self.assertRaises(IntegrityError) as cm:
-            OrganisationRequestFactory(data_privacy_officer=None)
-        self.assertIn("data_privacy_officer_set", str(cm.exception))
-
 
 class TestIssuerEmailConfirmation(TestCase):
     NOW = now()

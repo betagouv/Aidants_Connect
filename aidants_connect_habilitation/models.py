@@ -24,7 +24,6 @@ __all__ = [
     "PersonWithResponsibilities",
     "Issuer",
     "IssuerEmailConfirmation",
-    "DataPrivacyOfficer",
     "Manager",
     "OrganisationRequest",
     "AidantRequest",
@@ -149,12 +148,6 @@ class IssuerEmailConfirmation(models.Model):
         email_confirmation_sent.send(self.__class__, request=request, confirmation=self)
 
 
-class DataPrivacyOfficer(PersonWithResponsibilities):
-    class Meta:
-        verbose_name = "DPO"
-        verbose_name_plural = "DPOs"
-
-
 class Manager(PersonWithResponsibilities):
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
@@ -180,15 +173,6 @@ class OrganisationRequest(models.Model):
         on_delete=models.CASCADE,
         related_name="organisation",
         verbose_name="Responsable",
-        default=None,
-        null=True,
-    )
-
-    data_privacy_officer = models.OneToOneField(
-        DataPrivacyOfficer,
-        on_delete=models.CASCADE,
-        related_name="organisation",
-        verbose_name="Délégué à la protection des données",
         default=None,
         null=True,
     )
@@ -353,14 +337,6 @@ class OrganisationRequest(models.Model):
                     & Q(manager__isnull=False)
                 ),
                 name="manager_set",
-            ),
-            models.CheckConstraint(
-                check=Q(status=RequestStatusConstants.NEW.name)
-                | (
-                    ~Q(status=RequestStatusConstants.NEW.name)
-                    & Q(data_privacy_officer__isnull=False)
-                ),
-                name="data_privacy_officer_set",
             ),
         ]
         verbose_name = "Demande d’habilitation"

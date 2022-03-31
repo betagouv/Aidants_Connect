@@ -312,7 +312,6 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
     def get_form_kwargs(self):
         form_kwargs = super().get_form_kwargs()
 
-        data_privacy_officer = self.organisation.data_privacy_officer
         manager = self.organisation.manager
         aidant_qs = self.organisation.aidant_requests
 
@@ -320,11 +319,6 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
             form_kwargs[
                 f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}_queryset"
             ] = aidant_qs.all()
-
-        if data_privacy_officer:
-            form_kwargs[
-                f"{PersonnelForm.DPO_FORM_PREFIX}_instance"
-            ] = data_privacy_officer
 
         if manager:
             form_kwargs[f"{PersonnelForm.MANAGER_FORM_PREFIX}_instance"] = manager
