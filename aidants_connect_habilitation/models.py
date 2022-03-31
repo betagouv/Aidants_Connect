@@ -393,8 +393,13 @@ class RequestMessage(models.Model):
     )
     content = models.TextField("Message")
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return f"Message {self.id}"
 
     class Meta:
         verbose_name = "message"
+        ordering = ("created_at",)

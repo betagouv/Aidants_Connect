@@ -17,6 +17,26 @@
       <br>
       {% include "edito/_aide_etats_demandes_habilitation.html" with status=organisation.status %}
     </p>
+    <h2>Vos échanges avec Aidants Connect</h2>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8">
+        <div class="shadowed">
+            {% for message in organisation.messages.all %}
+              <p>
+              <div class="fr-grid-row">
+              {% if message.sender == "AC" %}
+              <div class="fr-col-4 text-blue"> <strong>Aidants Connect</strong></div>
+              <div class="fr-col-8">{{ message.content }}</div>
+              {% else %}
+              <div class="fr-col-4 text-red"><strong>{{ organisation.issuer.first_name }} {{ organisation.issuer.last_name }}</strong></div>
+              <div class="fr-col-8">{{ message.content }}</div>
+              {% endif %}
+              </div>
+              </p>
+            {% endfor %}
+        </div>
+      </div>
+    </div>
     <h2>Rappel de votre saisie</h2>
     {% include "_display_org_request.html" with organisation=organisation show_all_buttons=False %}
 
