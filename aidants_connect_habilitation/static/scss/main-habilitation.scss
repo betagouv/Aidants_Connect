@@ -554,9 +554,19 @@ fieldset {
 
 ol.messages-list {
   list-style: none;
+
   li {
     margin-bottom: 1rem;
   }
+}
+
+.message-form-container {
+  background: $blue-aidants;
+  margin: 1rem -2rem 0;
+  padding: 1rem 2rem;
+  color: #fff;
+  transform: translateY(2rem);
+  overflow: hidden;
 }
 
 // header ----------------------------------------------

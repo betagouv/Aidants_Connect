@@ -8,6 +8,7 @@ from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
 
 from aidants_connect.common.constants import (
+    MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
@@ -16,12 +17,14 @@ from aidants_connect_habilitation.forms import (
     IssuerForm,
     OrganisationRequestForm,
     PersonnelForm,
+    RequestMessageForm,
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
     Issuer,
     IssuerEmailConfirmation,
     OrganisationRequest,
+    RequestMessage,
 )
 
 __all__ = [
@@ -365,8 +368,9 @@ class ValidationRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, Form
         return super().form_valid(form)
 
 
-class ReadonlyRequestView(LateStageRequestView, TemplateView):
+class ReadonlyRequestView(LateStageRequestView, FormView):
     template_name = "view_organisation_request.html"
+    form_class = RequestMessageForm
 
     def get_context_data(self, **kwargs):
         return {
@@ -374,3 +378,14 @@ class ReadonlyRequestView(LateStageRequestView, TemplateView):
             "organisation": self.organisation,
             "aidants": self.organisation.aidant_requests,
         }
+
+    def get_success_url(self):
+        return self.organisation.get_absolute_url()
+
+    def form_valid(self, form):
+        message: RequestMessage = form.save(commit=False)
+        message.sender = MessageStakeholders.ISSUER.value
+        message.organisation = self.organisation
+        message.save()
+
+        return super().form_valid(form)
