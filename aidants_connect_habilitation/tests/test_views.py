@@ -952,11 +952,21 @@ class RequestReadOnlyViewTests(TestCase):
         organisation = OrganisationRequestFactory(
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
-        response = self.client.get(
-            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
-        )
+        response = self.client.get(organisation.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, organisation.name)
         self.assertContains(
             response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
         )
+
+    def test_issuer_can_post_a_message(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertNotContains(response, "Bonjour bonjour")
+        self.client.post(
+            organisation.get_absolute_url(), {"content": "Bonjour bonjour"}
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertContains(response, "Bonjour bonjour")
