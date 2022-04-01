@@ -550,6 +550,15 @@ fieldset {
   }
 }
 
+// messages -------------------------------------------
+
+ol.messages-list {
+  list-style: none;
+  li {
+    margin-bottom: 1rem;
+  }
+}
+
 // header ----------------------------------------------
 
 .skip-links {
