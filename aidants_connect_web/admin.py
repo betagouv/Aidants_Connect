@@ -820,6 +820,14 @@ class MandatAutorisationInline(VisibleToTechAdmin, TabularInline):
     max_num = 0
 
 
+class MandatRegionFilter(RegionFilter):
+    filter_parameter_name = "organisation__zipcode"
+
+
+class MandatDepartmentFilter(DepartmentFilter):
+    filter_parameter_name = "organisation__zipcode"
+
+
 class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
     list_display = (
         "id",
@@ -830,7 +838,7 @@ class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
         "admin_is_active",
         "is_remote",
     )
-    list_filter = ("organisation",)
+    list_filter = (MandatRegionFilter, MandatDepartmentFilter)
     search_fields = ("usager__given_name", "usager__family_name", "organisation__name")
 
     fields = (
