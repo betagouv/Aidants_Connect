@@ -150,11 +150,6 @@ h3, .h3 {
 
 }
 
-.more-info-messages {
-  font-style: italic;
-  color: $light-blue-anct;
-}
-
 details {
   border: 1px solid $blue-aidants;
 
@@ -552,6 +547,12 @@ fieldset {
 
 // messages -------------------------------------------
 
+.messages-list-container {
+  min-height: 350px;
+  max-height: 500px;
+  overflow: scroll;
+}
+
 ol.messages-list {
   list-style: none;
 
@@ -567,6 +568,12 @@ ol.messages-list {
   color: #fff;
   transform: translateY(2rem);
   overflow: hidden;
+}
+
+.more-info-messages {
+  margin-top: 0;
+  font-style: italic;
+  color: $light-blue-anct;
 }
 
 // header ----------------------------------------------
