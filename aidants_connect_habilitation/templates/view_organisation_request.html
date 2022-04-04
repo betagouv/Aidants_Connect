@@ -71,7 +71,7 @@
     {# Infos générales #}
     <h3>Personnes impliquées</h3>
     <div class="form-in-3-cols">
-      {# first row: responsable + dpo #}
+      {# first row: responsable #}
       <div class="fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <div class="shadowed with-button-box">
@@ -93,22 +93,6 @@
             </div>
           </div>
         </div>
-        {% if organisation.data_privacy_officer %}
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="shadowed with-button-box">
-              <h4 class="h2">Délégué à la protection des données</h4>
-              <div>
-                <p>
-                  <strong>{{ organisation.data_privacy_officer.get_full_name }}</strong><br>
-                  {{ organisation.data_privacy_officer.profession }}
-                </p>
-                <p>
-                  {{ organisation.data_privacy_officer.email }}<br>{{ organisation.data_privacy_officer.phone }}
-                </p>
-              </div>
-            </div>
-          </div>
-        {% endif %}
       </div>
       {# 2nd row and more: aidants #}
       <div class="fr-grid-row fr-grid-row--gutters">

@@ -20,7 +20,6 @@ from aidants_connect.common.constants import (
 )
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
-    DataPrivacyOfficerForm,
     IssuerForm,
     ManagerForm,
     OrganisationRequestForm,
@@ -693,14 +692,12 @@ class AidantsRequestFormViewTests(TestCase):
         organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
         manager_data = utils.get_form(ManagerForm).data
-        dpo_data = utils.get_form(DataPrivacyOfficerForm).data
         aidants_data = utils.get_form(AidantRequestFormSet).data
 
         # Logic to manually put prefix on form data
         # See https://docs.djangoproject.com/fr/4.0/ref/forms/api/#django.forms.Form.prefix # noqa:E501
         cleaned_data = {
             **{f"manager-{k}": v for k, v in manager_data.items()},
-            **{f"dpo-{k}": v for k, v in dpo_data.items()},
             **{k.replace("form-", "aidants-"): v for k, v in aidants_data.items()},
         }
 

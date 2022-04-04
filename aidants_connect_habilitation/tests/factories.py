@@ -17,7 +17,6 @@ from aidants_connect.common.constants import (
 )
 from aidants_connect_habilitation.models import (
     AidantRequest,
-    DataPrivacyOfficer,
     Issuer,
     Manager,
     OrganisationRequest,
@@ -53,17 +52,6 @@ class IssuerFactory(DjangoModelFactory):
         model = Issuer
 
 
-class DataPrivacyOfficerFactory(DjangoModelFactory):
-    first_name = FactoryFaker("first_name")
-    last_name = FactoryFaker("last_name")
-    email = FactoryFaker("email")
-    profession = FactoryFaker("job")
-    phone = LazyFunction(_generate_valid_phone)
-
-    class Meta:
-        model = DataPrivacyOfficer
-
-
 class ManagerFactory(DjangoModelFactory):
     first_name = FactoryFaker("first_name")
     last_name = FactoryFaker("last_name")
@@ -84,7 +72,6 @@ class ManagerFactory(DjangoModelFactory):
 class OrganisationRequestFactory(DjangoModelFactory):
     issuer = SubFactory(IssuerFactory)
     manager = SubFactory(ManagerFactory)
-    data_privacy_officer = SubFactory(DataPrivacyOfficerFactory)
 
     uuid = LazyFunction(uuid4)
 
@@ -130,7 +117,6 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
 class DraftOrganisationRequestFactory(OrganisationRequestFactory):
     manager = None
-    data_privacy_officer = None
 
     status = RequestStatusConstants.NEW.name
 

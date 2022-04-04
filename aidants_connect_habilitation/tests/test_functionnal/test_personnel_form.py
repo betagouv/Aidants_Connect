@@ -10,21 +10,18 @@ from selenium.webdriver.support.wait import WebDriverWait
 from aidants_connect.common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.forms import (
     AidantRequestForm,
-    DataPrivacyOfficerForm,
     IssuerForm,
     ManagerForm,
     PersonnelForm,
 )
 from aidants_connect_habilitation.models import (
     AidantRequest,
-    DataPrivacyOfficer,
     Issuer,
     Manager,
     OrganisationRequest,
 )
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
-    DataPrivacyOfficerFactory,
     DraftOrganisationRequestFactory,
     IssuerFactory,
     ManagerFactory,
@@ -173,7 +170,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer,
             manager=manager,
-            data_privacy_officer=DataPrivacyOfficerFactory(),
         )
 
         self.__open_form_url(issuer, organisation)
@@ -232,56 +228,12 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 getattr(saved_manager, field_name), getattr(new_manager, field_name)
             )
 
-    def test_form_modify_dpo_data(self):
-        issuer: Issuer = IssuerFactory()
-        dpo: DataPrivacyOfficer = DataPrivacyOfficerFactory()
-        form = DataPrivacyOfficerForm()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer,
-            manager=ManagerFactory(),
-            data_privacy_officer=dpo,
-        )
-
-        self.__open_form_url(issuer, organisation)
-
-        new_dpo: Manager = DataPrivacyOfficerFactory.build()
-
-        for field_name in list(form.fields.keys()):
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR,
-                f"#id_{PersonnelForm.DPO_FORM_PREFIX}-{field_name}",
-            )
-            element.clear()
-            element.send_keys(str(getattr(new_dpo, field_name)))
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
-        )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
-
-        organisation.refresh_from_db()
-        saved_dpo = organisation.data_privacy_officer
-
-        for field_name in form.fields:
-            self.assertEqual(
-                getattr(saved_dpo, field_name), getattr(new_dpo, field_name)
-            )
-
     def test_form_submit_no_aidants(self):
         issuer: Issuer = IssuerFactory()
-        dpo: DataPrivacyOfficer = DataPrivacyOfficerFactory()
         manager: Manager = ManagerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer,
             manager=manager,
-            data_privacy_officer=dpo,
         )
 
         self.__open_form_url(issuer, organisation)
@@ -303,12 +255,10 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
     def test_form_submit_multiple_aidants(self):
         issuer: Issuer = IssuerFactory()
-        dpo: DataPrivacyOfficer = DataPrivacyOfficerFactory()
         manager: Manager = ManagerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer,
             manager=manager,
-            data_privacy_officer=dpo,
         )
 
         # Setup 2 initial requests
@@ -347,12 +297,10 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
     def test_form_submit_modify_multiple_aidants(self):
         issuer: Issuer = IssuerFactory()
-        dpo: DataPrivacyOfficer = DataPrivacyOfficerFactory()
         manager: Manager = ManagerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer,
             manager=manager,
-            data_privacy_officer=dpo,
         )
 
         for _ in range(4):
@@ -421,31 +369,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         for field_name in form.fields:
             element: WebElement = self.selenium.find_element(
                 By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
-            )
-            field_value = getattr(issuer, field_name)
-            self.assertEqual(element.get_attribute("value"), field_value)
-
-    def test_its_me_button_fills_dpo_form(self):
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer,
-        )
-
-        form = IssuerForm()
-
-        self.__open_form_url(issuer, organisation)
-
-        for field_name in form.fields:
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR, f"#dpo-subform [name$='{field_name}']"
-            )
-            self.assertEqual(element.get_attribute("value"), "")
-
-        self.selenium.find_element(By.CSS_SELECTOR, "#its-me-dpo").click()
-
-        for field_name in form.fields:
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR, f"#dpo-subform [name$='{field_name}']"
             )
             field_value = getattr(issuer, field_name)
             self.assertEqual(element.get_attribute("value"), field_value)
