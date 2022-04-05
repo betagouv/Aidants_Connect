@@ -55,16 +55,35 @@
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8">
         <div class="shadowed">
-          <ul>
-            <li>
-              Type de structure : {{ organisation.type }}
-              {% if organisation.type_id == type_other %} — {{ organisation.type_other }}{% endif %}
-            </li>
-            <li>Site web : {{ organisation.web_site }}</li>
-            <li>Missions : {{ organisation.mission_description|linebreaksbr }}</li>
-            <li>Nombre de démarches traitées par semaine : {{ organisation.avg_nb_demarches }}</li>
-            <li>Label France Services : {{ organisation.france_services_label|yesno:"Oui,Non" }}</li>
-          </ul>
+          <dl class="fr-grid-row fr-grid-row--gutters">
+            <dt class="fr-col-12 fr-col-md-6">Type de structure</dt>
+            <dd class="fr-col-12 fr-col-md-6">
+              {% if organisation.type_other %}
+                {{ organisation.type_other }}
+              {% else %}
+                {{ organisation.type }}
+              {% endif %}
+            </dd>
+            <dt class="fr-col-12 fr-col-md-6">Structure privée</dt>
+            <dd class="fr-col-12 fr-col-md-6">{{ organisation.is_private_org|yesno:"Oui,Non" }}</dd>
+            {% if organisation.is_private_org %}
+              <dt class="fr-col-12 fr-col-md-6">Administration partenaire</dt>
+              <dd class="fr-col-12 fr-col-md-6">{{ organisation.partner_administration }}</dd>
+            {% endif %}
+            <dt class="fr-col-12 fr-col-md-6">Site web</dt>
+            <dd class="fr-col-12 fr-col-md-6">{{ organisation.web_site }}</dd>
+            <dt class="fr-col-12 fr-col-md-6">Missions</dt>
+            <dd class="fr-col-12 fr-col-md-6">{{ organisation.mission_description|linebreaksbr }}</dd>
+            <dt class="fr-col-12 fr-col-md-6">Nombre de démarches traitées par semaine</dt>
+            <dd class="fr-col-12 fr-col-md-6">{{ organisation.avg_nb_demarches }}</dd>
+            <dt class="fr-col-12 fr-col-md-6">Label France Services</dt>
+            <dd class="fr-col-12 fr-col-md-6">
+              {{ organisation.france_services_label|yesno:"Oui,Non" }}
+              {% if organisation.france_services_label %}
+                <br>N°{{ organisation.france_services_number }}
+              {% endif %}
+            </dd>
+          </dl>
         </div>
       </div>
     </div>
