@@ -81,6 +81,10 @@ main {
   color: $red-aidants;
 }
 
+.text-blue {
+  color: $blue-aidants;
+}
+
 .shadowed {
   border: 1px solid $off-yellow-aidants;
   box-sizing: border-box;
@@ -548,8 +552,8 @@ fieldset {
 // messages -------------------------------------------
 
 .messages-list-container {
-  min-height: 350px;
-  max-height: 500px;
+  min-height: 250px;
+  max-height: 400px;
   overflow: scroll;
 }
 
