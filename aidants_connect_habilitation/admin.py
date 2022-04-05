@@ -52,16 +52,13 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     list_filter = ("status", RegionFilter, DepartmentFilter)
     list_display = ("name", "issuer", "status")
     raw_id_fields = ("issuer",)
-    readonly_fields = ("public_service_delegation_attestation", "draft_id")
+    readonly_fields = ("public_service_delegation_attestation", "uuid")
     inlines = (
         AidantRequestInline,
         MessageInline,
     )
     inline_type = "stacked"
-    inline_reverse = (
-        "manager",
-        "data_privacy_officer",
-    )
+    inline_reverse = ("manager",)
 
 
 if settings.AC_HABILITATION_FORM_ENABLED:

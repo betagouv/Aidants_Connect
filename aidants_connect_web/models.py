@@ -79,7 +79,7 @@ class OrganisationManager(models.Manager):
 
 
 class Organisation(models.Model):
-    data_pass_id = models.PositiveIntegerField("Datapass ID", null=True)
+    data_pass_id = models.PositiveIntegerField("Datapass ID", null=True, unique=True)
     name = models.TextField("Nom", default="No name provided")
     type = models.ForeignKey(
         OrganisationType, null=True, blank=True, on_delete=SET_NULL
@@ -114,9 +114,15 @@ class Organisation(models.Model):
 
     @cached_property
     def num_active_mandats(self):
-        return Mandat.objects.filter(
-            expiration_date__gte=timezone.now(), organisation=self
-        ).count()
+        return (
+            Mandat.objects.filter(
+                expiration_date__gte=timezone.now(),
+                organisation=self,
+                autorisations__revocation_date__isnull=True,
+            )
+            .distinct()
+            .count()
+        )
 
     @cached_property
     def aidants_not_responsables(self):
@@ -1432,6 +1438,11 @@ class CarteTOTP(models.Model):
             tolerance=tolerance,
             name=f"Carte n° {self.serial_number}",
         )
+
+
+class IdGenerator(models.Model):
+    code = models.CharField(max_length=100, unique=True)
+    last_id = models.PositiveIntegerField()
 
 
 # The Dataviz* models represent metadata that are used for data display in Metabase.

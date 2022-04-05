@@ -1,4 +1,4 @@
-{% load ac_extras %}
+{% load ac_extras ac_common %}
 Bonjour,
 {% if not users  %}
 L’équipe Aidants Connect vous informe qu'aucune carte Aidants Connect n'est liée à votre compte.

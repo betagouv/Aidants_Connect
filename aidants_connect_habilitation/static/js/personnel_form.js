@@ -8,6 +8,7 @@
             this.formCountValue = this.managmentFormCountTarget.value;
             this.formMaxCountValue = this.managmentFormMaxCountTarget.value;
             this.mutateAddAidantButtonVisibility();
+            this.issuerDataValue = JSON.parse(document.getElementById("issuer-data").textContent)
             this.controllerInitializedValue = true;
         },
 
@@ -32,6 +33,13 @@
             this.mutateAddAidantButtonVisibility();
         },
 
+        "onManagerItsMeBtnClicked": function onManagerItsMeBtnClicked() {
+            const self = this;
+            Object.keys(this.issuerDataValue).forEach(function (key) {
+                self.managerSubformTarget.querySelector("[name$='" + key + "']").value = self.issuerDataValue[key];
+            });
+        },
+
         "mutateAddAidantButtonVisibility": function mutateAddAidantButtonVisibility() {
             if (this.formCountValue >= this.formMaxCountValue) {
                 this.addAidantButtonContainerTarget.setAttribute("hidden", "hidden");
@@ -48,12 +56,14 @@
         "addAidantButtonContainer",
         "aidantFormTemplate",
         "aidantFormset",
+        "managerSubform",
     ];
 
     PersonnelForm.values = {
         formCount: Number,
         formMaxCount: Number,
-        controllerInitialized: Boolean
+        controllerInitialized: Boolean,
+        issuerData: Object
     };
 
     function init() {

@@ -43,22 +43,22 @@ urlpatterns = [
         name="habilitation_new_organisation",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/infos-generales/",
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/infos-generales/",
         ModifyOrganisationRequestFormView.as_view(),
         name="habilitation_modify_organisation",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/aidants/",
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/aidants/",
         PersonnelRequestFormView.as_view(),
         name="habilitation_new_aidants",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/validation/",
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/validation/",
         ValidationRequestFormView.as_view(),
         name="habilitation_validation",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/<str:draft_id>/voir/",
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/voir/",
         ReadonlyRequestView.as_view(),
         name="habilitation_organisation_view",
     ),

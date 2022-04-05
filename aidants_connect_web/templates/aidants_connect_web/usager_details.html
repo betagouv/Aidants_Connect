@@ -113,11 +113,12 @@
               {% spaceless %}
               {% if mandat.was_explicitly_revoked %}
               <span aria-hidden="true">📝&nbsp;</span>Mandat révoqué depuis {{ mandat.revocation_date | timesince }}
+              <small title="{{ mandat.revocation_date }}">(le {{ mandat.revocation_date | date:"d F Y" }})</small>
               {% else %}
               <span aria-hidden="true">📝&nbsp;</span>Mandat expiré depuis {{ mandat.expiration_date | timesince }}
+              <small title="{{ mandat.expiration_date }}">(le {{ mandat.expiration_date | date:"d F Y" }})</small>
               {% endif %}
               {% endspaceless %}
-              <small title="{{ mandat.expiration_date }}">(le {{ mandat.expiration_date | date:"d F Y" }})</small>
             </h4>
             <div class="float-right">
               <a id="view_mandat_attestation" class="button" href="{% url 'mandat_visualisation' mandat_id=mandat.id %}"><span aria-hidden="true">🖨&nbsp;</span>Voir l’attestation</a>

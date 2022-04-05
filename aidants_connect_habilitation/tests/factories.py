@@ -11,10 +11,12 @@ from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 from faker import Faker
 from phonenumber_field.phonenumber import to_python
 
-from aidants_connect.common.constants import RequestOriginConstants
+from aidants_connect.common.constants import (
+    RequestOriginConstants,
+    RequestStatusConstants,
+)
 from aidants_connect_habilitation.models import (
     AidantRequest,
-    DataPrivacyOfficer,
     Issuer,
     Manager,
     OrganisationRequest,
@@ -50,17 +52,6 @@ class IssuerFactory(DjangoModelFactory):
         model = Issuer
 
 
-class DataPrivacyOfficerFactory(DjangoModelFactory):
-    first_name = FactoryFaker("first_name")
-    last_name = FactoryFaker("last_name")
-    email = FactoryFaker("email")
-    profession = FactoryFaker("job")
-    phone = LazyFunction(_generate_valid_phone)
-
-    class Meta:
-        model = DataPrivacyOfficer
-
-
 class ManagerFactory(DjangoModelFactory):
     first_name = FactoryFaker("first_name")
     last_name = FactoryFaker("last_name")
@@ -81,9 +72,16 @@ class ManagerFactory(DjangoModelFactory):
 class OrganisationRequestFactory(DjangoModelFactory):
     issuer = SubFactory(IssuerFactory)
     manager = SubFactory(ManagerFactory)
-    data_privacy_officer = SubFactory(DataPrivacyOfficerFactory)
 
-    draft_id = None
+    uuid = LazyFunction(uuid4)
+
+    status = FuzzyChoice(
+        [
+            value
+            for value in RequestStatusConstants.values()
+            if value != RequestStatusConstants.NEW.name
+        ]
+    )
 
     type_id = FuzzyChoice(RequestOriginConstants.values)
     name = FactoryFaker("company")
@@ -92,11 +90,7 @@ class OrganisationRequestFactory(DjangoModelFactory):
     zipcode = FactoryFaker("postcode")
     city = FactoryFaker("city")
 
-    partner_administration = FactoryFaker("company")
-
-    public_service_delegation_attestation = ""
-
-    france_services_label = FuzzyChoice([True, False])
+    france_services_label = False
 
     web_site = FactoryFaker("url")
 
@@ -123,9 +117,8 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
 class DraftOrganisationRequestFactory(OrganisationRequestFactory):
     manager = None
-    data_privacy_officer = None
 
-    draft_id = uuid4()
+    status = RequestStatusConstants.NEW.name
 
 
 class AidantRequestFactory(DjangoModelFactory):

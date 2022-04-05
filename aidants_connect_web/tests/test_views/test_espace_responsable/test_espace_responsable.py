@@ -136,6 +136,15 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.assertContains(response, aidant_a.first_name)
         self.assertContains(response, aidant_b.first_name)
 
+    def test_display_organisation_properly(self):
+        self.client.force_login(self.responsable_tom)
+        organisation = OrganisationFactory(city=None)
+        self.responsable_tom.responsable_de.add(organisation)
+        response = self.client.get(
+            f"/espace-responsable/organisation/{organisation.id}/"
+        )
+        self.assertNotContains(response, "None")
+
     def test_display_data_pass_id(self):
         self.client.force_login(self.responsable_tom)
         self.responsable_tom.organisation.data_pass_id = 4242

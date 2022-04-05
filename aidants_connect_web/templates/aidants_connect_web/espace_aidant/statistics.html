@@ -7,16 +7,16 @@
       </h3>
       <p>
         {{ organisation.address }}<br>
-        {{ organisation.zipcode }} {{ organisation.city }}
+        {{ organisation.zipcode }} {{ organisation.city|default_if_none:"" }}
       </p>
     </div>
     {% if organisation.data_pass_id %}
-    <div class="tile background-color-grey">
-      <h3>Numéro d’habilitation</h3>
-      <p>
-        {{ organisation.data_pass_id }}
-      </p>
-    </div>
+      <div class="tile background-color-grey">
+        <h3>Numéro d’habilitation</h3>
+        <p>
+          {{ organisation.data_pass_id }}
+        </p>
+      </div>
     {% endif %}
     <div class="tile background-color-grey">
       <h3>Aidants actifs</h3>
