@@ -822,6 +822,8 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertContains(response, "Éditer", 5)
 
     def test_do_the_job_and_redirect_valid_post_to_org_view(self):
+        self.assertIsNone(self.organisation.data_pass_id)
+
         cleaned_data = {
             "cgu": True,
             "dpo": True,
@@ -839,6 +841,7 @@ class ValidationRequestFormViewTests(TestCase):
             self.organisation.get_absolute_url(),
         )
         self.organisation.refresh_from_db()
+        self.assertIsNotNone(self.organisation.data_pass_id)
         self.assertEqual(
             self.organisation.status,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
