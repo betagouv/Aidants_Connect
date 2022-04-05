@@ -376,3 +376,11 @@ class ValidationForm(PatchedForm):
         super().__init__(**kwargs)
         cgu = self["cgu"]
         cgu.label = format_html(cgu.label, url=reverse("cgu"))
+
+    def save(
+        self, organisation: OrganisationRequest, commit=True
+    ) -> OrganisationRequest:
+        organisation.prepare_request_for_ac_validation(self.cleaned_data)
+        return organisation
+
+    save.alters_data = True

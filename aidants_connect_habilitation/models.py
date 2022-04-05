@@ -264,6 +264,14 @@ class OrganisationRequest(models.Model):
             kwargs={"issuer_id": self.issuer.issuer_id, "uuid": self.uuid},
         )
 
+    def prepare_request_for_ac_validation(self, form_data: dict):
+        self.cgu = form_data["cgu"]
+        self.dpo = form_data["dpo"]
+        self.professionals_only = form_data["professionals_only"]
+        self.without_elected = form_data["without_elected"]
+        self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        self.save()
+
     class Meta:
         constraints = [
             models.CheckConstraint(
