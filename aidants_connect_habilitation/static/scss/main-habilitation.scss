@@ -187,6 +187,18 @@ details {
   }
 }
 
+dl {
+  margin: 0;
+  padding: 0;
+  dd,dt {
+    margin: 0;
+    padding: 0;
+  }
+  dt {
+    font-weight: bold;
+  }
+}
+
 // forms -----------------------------------------------
 
 input[type=text], input[type=number], input[type=email], input[type=tel], input[type=url] {

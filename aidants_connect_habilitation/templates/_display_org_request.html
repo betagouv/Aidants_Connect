@@ -1,0 +1,153 @@
+<h3>Informations générales</h3>
+<div class="form-in-3-cols">
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+      <div class="shadowed with-button-box">
+        <h4 class="h2">Vous êtes :</h4>
+        <div>
+          <p>
+            <strong>{{ issuer.get_full_name }}</strong><br>
+            {{ issuer.profession }}
+          </p>
+          <p>
+            {{ issuer.email }}<br>{{ issuer.phone }}
+          </p>
+        </div>
+        {% if show_all_buttons %}
+          <div class="button-box">
+            <a class="button primary"
+               href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+      <div class="shadowed with-button-box">
+        <h4 class="h2">Vous faites cette demande pour :</h4>
+        <div>
+          <p>
+            <strong>{{ organisation.name }}</strong><br>
+            {{ organisation.address|linebreaksbr }}<br/>
+            {{ organisation.zipcode }}
+            {{ organisation.city }}
+          </p>
+          <p>SIRET : {{ organisation.siret }}</p>
+        </div>
+        {% if show_all_buttons %}
+          <div class="button-box">
+            <a class="button primary"
+               href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+              Éditer
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<h3>Autres informations</h3>
+<div class="fr-grid-row fr-grid-row--gutters">
+  <div class="fr-col-12 fr-col-md-8">
+    <div class="shadowed">
+      <dl class="fr-grid-row fr-grid-row--gutters">
+        <dt class="fr-col-12 fr-col-md-6">Type de structure</dt>
+        <dd class="fr-col-12 fr-col-md-6">
+          {% if organisation.type_other %}
+            {{ organisation.type_other }}
+          {% else %}
+            {{ organisation.type }}
+          {% endif %}
+        </dd>
+        <dt class="fr-col-12 fr-col-md-6">Structure privée</dt>
+        <dd class="fr-col-12 fr-col-md-6">{{ organisation.is_private_org|yesno:"Oui,Non" }}</dd>
+        {% if organisation.is_private_org %}
+          <dt class="fr-col-12 fr-col-md-6">Administration partenaire</dt>
+          <dd class="fr-col-12 fr-col-md-6">{{ organisation.partner_administration }}</dd>
+        {% endif %}
+        <dt class="fr-col-12 fr-col-md-6">Site web</dt>
+        <dd class="fr-col-12 fr-col-md-6">{{ organisation.web_site }}</dd>
+        <dt class="fr-col-12 fr-col-md-6">Missions</dt>
+        <dd class="fr-col-12 fr-col-md-6">{{ organisation.mission_description|linebreaksbr }}</dd>
+        <dt class="fr-col-12 fr-col-md-6">Nombre de démarches traitées par semaine</dt>
+        <dd class="fr-col-12 fr-col-md-6">{{ organisation.avg_nb_demarches }}</dd>
+        <dt class="fr-col-12 fr-col-md-6">Label France Services</dt>
+        <dd class="fr-col-12 fr-col-md-6">
+          {{ organisation.france_services_label|yesno:"Oui,Non" }}
+          {% if organisation.france_services_label %}
+            <br>N°{{ organisation.france_services_number }}
+          {% endif %}
+        </dd>
+      </dl>
+      {% if show_all_buttons %}
+        <div class="button-box">
+          <a class="button primary"
+             href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+            Éditer
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{# Infos générales #}
+<h3>Personnes impliquées</h3>
+<div class="form-in-3-cols">
+  {# first row: responsable #}
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+      <div class="shadowed with-button-box">
+        <h4 class="h2">Responsable de structure</h4>
+        <div>
+          <p>
+            <strong>{{ organisation.manager.get_full_name }}</strong>
+            <br>{{ organisation.manager.profession }}
+          </p>
+          <p>
+            {{ organisation.manager.email }}<br>{{ organisation.manager.phone }}
+          </p>
+          <p>
+            {{ organisation.manager.address|linebreaksbr }}<br/>
+            {{ organisation.manager.zipcode }}
+            {{ organisation.manager.city }}
+          </p>
+          <p>Ce responsable est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
+        </div>
+        {% if show_all_buttons %}
+          <div class="button-box">
+            <a class="button primary"
+               href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">Éditer</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {# 2nd row and more: aidants #}
+  <div class="fr-grid-row fr-grid-row--gutters">
+    {% for aidant_request in organisation.aidant_requests.all %}
+      {% if not forloop.first and forloop.counter0|divisibleby:2 %}
+        </div>
+        <div class="fr-grid-row fr-grid-row--gutters">
+      {% endif %}
+      <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+        <div class="shadowed with-button-box">
+          <h4 class="h2">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
+          <div>
+            <p>
+              <strong>{{ aidant_request.get_full_name }}</strong><br>
+              {{ aidant_request.profession }}
+            </p>
+            <p>{{ aidant_request.email }}</p>
+          </div>
+          {% if show_all_buttons %}
+            <div class="button-box">
+              <a class="button primary"
+                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+                Éditer
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+</div>

@@ -31,6 +31,7 @@ from aidants_connect_habilitation.models import (
 )
 from aidants_connect_habilitation.tests import utils
 from aidants_connect_habilitation.tests.factories import (
+    AidantRequestFactory,
     DraftOrganisationRequestFactory,
     IssuerFactory,
     ManagerFactory,
@@ -747,6 +748,7 @@ class ValidationRequestFormViewTests(TestCase):
         cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             manager=ManagerFactory()
         )
+        AidantRequestFactory(organisation=cls.organisation)
 
     def get_url(self, issuer_id, uuid):
         return reverse(
@@ -813,15 +815,11 @@ class ValidationRequestFormViewTests(TestCase):
 
     def test_template(self):
         response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": self.organisation.issuer.issuer_id,
-                    "uuid": self.organisation.uuid,
-                },
-            )
+            self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(response, self.template_name)
+        # expected button count = 5 -> issuer, org, more info, manager, aidant
+        self.assertContains(response, "Éditer", 5)
 
     def test_do_the_job_and_redirect_valid_post_to_org_view(self):
         cleaned_data = {
@@ -838,13 +836,7 @@ class ValidationRequestFormViewTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse(
-                "habilitation_organisation_view",
-                kwargs={
-                    "issuer_id": str(self.organisation.issuer.issuer_id),
-                    "uuid": str(self.organisation.uuid),
-                },
-            ),
+            self.organisation.get_absolute_url(),
         )
         self.organisation.refresh_from_db()
         self.assertEqual(
@@ -951,6 +943,7 @@ class RequestReadOnlyViewTests(TestCase):
             self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(response, self.template_name)
+        self.assertNotContains(response, "Éditer")
 
     def test_no_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
