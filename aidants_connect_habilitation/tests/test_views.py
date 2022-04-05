@@ -970,3 +970,15 @@ class RequestReadOnlyViewTests(TestCase):
         )
         response = self.client.get(organisation.get_absolute_url())
         self.assertContains(response, "Bonjour bonjour")
+
+    def test_correct_message_is_shown_when_empty_messages_history(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertContains(response, "Notre conversation démarre ici.")
+        self.client.post(
+            organisation.get_absolute_url(), {"content": "Bonjour bonjour"}
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertNotContains(response, "Notre conversation démarre ici.")
