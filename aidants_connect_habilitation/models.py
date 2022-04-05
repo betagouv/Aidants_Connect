@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import SET_NULL, Q
 from django.dispatch import Signal
 from django.http import HttpRequest
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
@@ -23,7 +24,6 @@ __all__ = [
     "PersonWithResponsibilities",
     "Issuer",
     "IssuerEmailConfirmation",
-    "DataPrivacyOfficer",
     "Manager",
     "OrganisationRequest",
     "AidantRequest",
@@ -148,12 +148,6 @@ class IssuerEmailConfirmation(models.Model):
         email_confirmation_sent.send(self.__class__, request=request, confirmation=self)
 
 
-class DataPrivacyOfficer(PersonWithResponsibilities):
-    class Meta:
-        verbose_name = "DPO"
-        verbose_name_plural = "DPOs"
-
-
 class Manager(PersonWithResponsibilities):
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
@@ -183,18 +177,8 @@ class OrganisationRequest(models.Model):
         null=True,
     )
 
-    data_privacy_officer = models.OneToOneField(
-        DataPrivacyOfficer,
-        on_delete=models.CASCADE,
-        related_name="organisation",
-        verbose_name="Délégué à la protection des données",
-        default=None,
-        null=True,
-    )
-
-    draft_id = models.UUIDField(
+    uuid = models.UUIDField(
         "Identifiant de brouillon",
-        null=True,
         default=_new_uuid,
         unique=True,
     )
@@ -222,13 +206,13 @@ class OrganisationRequest(models.Model):
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
 
+    is_private_org = models.BooleanField("Structure privée", default=False)
     partner_administration = models.CharField(
         "Administration partenaire",
         blank=True,
         default="",
         max_length=200,
     )
-
     public_service_delegation_attestation = models.FileField(
         "Attestation de délégation de service public",
         blank=True,
@@ -237,6 +221,12 @@ class OrganisationRequest(models.Model):
 
     france_services_label = models.BooleanField(
         "Labellisation France Services", default=False
+    )
+    france_services_number = models.CharField(
+        "Numéro d’immatriculation France Services",
+        blank=True,
+        default="",
+        max_length=200,
     )
 
     web_site = models.URLField("Site web", blank=True, default="")
@@ -259,18 +249,28 @@ class OrganisationRequest(models.Model):
 
     @property
     def is_draft(self):
-        return self.draft_id is not None
+        return RequestStatusConstants[self.status] == RequestStatusConstants.NEW
 
     @property
     def status_label(self):
         return RequestStatusConstants[self.status].value
 
-    def confirm_request(self):
-        self.draft_id = None
-        self.save()
-
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={"issuer_id": self.issuer.issuer_id, "uuid": self.uuid},
+        )
+
+    def prepare_request_for_ac_validation(self, form_data: dict):
+        self.cgu = form_data["cgu"]
+        self.dpo = form_data["dpo"]
+        self.professionals_only = form_data["professionals_only"]
+        self.without_elected = form_data["without_elected"]
+        self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        self.save()
 
     class Meta:
         constraints = [
@@ -288,34 +288,63 @@ class OrganisationRequest(models.Model):
                 name="type_other_correctly_set",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(cgu=True)),
+                check=(
+                    (
+                        Q(is_private_org=True)
+                        & Q(partner_administration__isnull_or_blank=False)
+                    )
+                    | (
+                        Q(is_private_org=False)
+                        & Q(partner_administration__isnull_or_blank=True)
+                    )
+                ),
+                name="partner_administration_if_org_is_private",
+            ),
+            models.CheckConstraint(
+                check=(
+                    (
+                        Q(france_services_label=True)
+                        & Q(france_services_number__isnull_or_blank=False)
+                    )
+                    | (
+                        Q(france_services_label=False)
+                        & Q(france_services_number__isnull_or_blank=True)
+                    )
+                ),
+                name="immatriculation_number_if_france_services_label",
+            ),
+            models.CheckConstraint(
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (~Q(status=RequestStatusConstants.NEW.name) & Q(cgu=True)),
                 name="cgu_checked",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(dpo=True)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (~Q(status=RequestStatusConstants.NEW.name) & Q(dpo=True)),
                 name="dpo_checked",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(professionals_only=True)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (
+                    ~Q(status=RequestStatusConstants.NEW.name)
+                    & Q(professionals_only=True)
+                ),
                 name="professionals_only_checked",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(without_elected=True)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (
+                    ~Q(status=RequestStatusConstants.NEW.name) & Q(without_elected=True)
+                ),
                 name="without_elected_checked",
             ),
             models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(manager__isnull=False)),
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (
+                    ~Q(status=RequestStatusConstants.NEW.name)
+                    & Q(manager__isnull=False)
+                ),
                 name="manager_set",
-            ),
-            models.CheckConstraint(
-                check=Q(draft_id__isnull=False)
-                | (Q(draft_id__isnull=True) & Q(data_privacy_officer__isnull=False)),
-                name="data_privacy_officer_set",
             ),
         ]
         verbose_name = "Demande d’habilitation"
@@ -334,8 +363,8 @@ class AidantRequest(Person):
         return self.organisation.is_draft
 
     @property
-    def draft_id(self):
-        return self.organisation.draft_id
+    def uuid(self):
+        return self.organisation.uuid
 
     class Meta:
         verbose_name = "aidant à habiliter"

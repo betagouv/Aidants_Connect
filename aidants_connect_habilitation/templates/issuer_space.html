@@ -52,7 +52,7 @@
                 {{ organisation.address|linebreaksbr }}<br>{{ organisation.zipcode }} {{ organisation.city }}
                 {% if organisation.status == "NEW" %}
                   <br>
-                  <a href="{% url "habilitation_modify_organisation" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                  <a href="{% url "habilitation_modify_organisation" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
                     Voir / modifier les informations structure</a>
                 {% endif %}
               </p>
@@ -66,17 +66,17 @@
                 {% endwith %}
                 {% if organisation.status == "NEW" %}
                   <br>
-                  <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                  <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
                     Ajouter / modifier des aidants</a>
                 {% endif %}
               </p>
               <div class="button-box">
                 {% if organisation.status == "NEW" %}
-                  <a href="{% url "habilitation_validation" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}"
+                  <a href="{% url "habilitation_validation" issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
                      class="button primary">Soumettre la demande</a>
                 {% else %}
                   <a class="button primary"
-                     href="{% url "habilitation_organisation_view" issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+                     href="{% url "habilitation_organisation_view" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
                     Voir
                   </a>
                 {% endif %}

@@ -59,5 +59,5 @@ def populate_db_for_tests(app_config: AppConfig, **_):
         OrganisationType = app_config.get_model("OrganisationType")
         for org_type in RequestOriginConstants:
             OrganisationType.objects.get_or_create(
-                id=org_type.value, name=org_type.label
+                id=org_type.value, defaults={"name": org_type.label}
             )

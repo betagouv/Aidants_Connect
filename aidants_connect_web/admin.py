@@ -18,7 +18,7 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ImportExportMixin, ImportMixin
+from import_export.admin import ExportActionModelAdmin, ImportExportMixin, ImportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
@@ -73,6 +73,33 @@ class SpecificDeleteActionsMixin:
         for one_object in queryset:
             if one_object.clean_journal_entries_and_delete_mandats(request):
                 one_object.delete()
+
+
+class ExportHabilitationRequestAndAidantAndOrganisationResource(
+    resources.ModelResource
+):
+    class Meta:
+        """We need a resources.ModelResource, so we define Aidant.
+        But we will use this resource for Aidant and HabilitationRequest.
+        We can do that because the fields we want to export are the same
+        and have the same names for both models
+        """
+
+        model = Aidant
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "organisation__data_pass_id",
+            "organisation__name",
+            "organisation__siret",
+            "organisation__address",
+            "organisation__city",
+            "organisation__zipcode",
+            "organisation__type__id",
+            "organisation__type__name",
+        )
 
 
 class OrganisationResource(resources.ModelResource):
@@ -172,7 +199,11 @@ class WithoutDatapassIdFilter(SimpleListFilter):
 
 
 class OrganisationAdmin(
-    SpecificDeleteActionsMixin, ImportMixin, VisibleToAdminMetier, ModelAdmin
+    SpecificDeleteActionsMixin,
+    ImportMixin,
+    ExportActionModelAdmin,
+    VisibleToAdminMetier,
+    ModelAdmin,
 ):
     list_display = (
         "name",
@@ -213,6 +244,25 @@ class OrganisationAdmin(
         "activate_organisations",
         "specific_delete_action",
     )
+
+    def get_export_resource_class(self):
+        return ExportHabilitationRequestAndAidantAndOrganisationResource
+
+    @classmethod
+    def get_list_for_export_sandbox(cls, queryset):
+        aidants = list(Aidant.objects.filter(organisation__in=queryset))
+        habilitations = list(
+            HabilitationRequest.objects.filter(organisation__in=queryset)
+        )
+        export_list = aidants + habilitations
+        return export_list
+
+    def get_data_for_export(self, request, queryset, *args, **kwargs):
+        export_list = self.get_list_for_export_sandbox(queryset)
+        resource_class = self.get_export_resource_class()
+        return resource_class(
+            **self.get_export_resource_kwargs(request, *args, **kwargs)
+        ).export(export_list, *args, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = list(self.readonly_fields)
@@ -820,6 +870,14 @@ class MandatAutorisationInline(VisibleToTechAdmin, TabularInline):
     max_num = 0
 
 
+class MandatRegionFilter(RegionFilter):
+    filter_parameter_name = "organisation__zipcode"
+
+
+class MandatDepartmentFilter(DepartmentFilter):
+    filter_parameter_name = "organisation__zipcode"
+
+
 class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
     list_display = (
         "id",
@@ -830,7 +888,7 @@ class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
         "admin_is_active",
         "is_remote",
     )
-    list_filter = ("organisation",)
+    list_filter = (MandatRegionFilter, MandatDepartmentFilter)
     search_fields = ("usager__given_name", "usager__family_name", "organisation__name")
 
     fields = (

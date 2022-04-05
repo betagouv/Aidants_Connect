@@ -1,5 +1,6 @@
 import logging
 from collections import OrderedDict
+from typing import Iterable
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -21,6 +22,8 @@ def _get_mandats_for_usagers_index(aidant):
     return (
         Mandat.objects.prefetch_related("autorisations")
         .filter(organisation=aidant.organisation)
+        .exclude(expiration_date__lt=timezone.now() - timedelta(365))
+        .exclude(autorisations__revocation_date__lt=timezone.now() - timedelta(365))
         .annotate(
             for_ordering=Concat("usager__preferred_username", "usager__family_name")
         )
@@ -28,7 +31,7 @@ def _get_mandats_for_usagers_index(aidant):
     )
 
 
-def _get_usagers_dict_from_mandats(mandats: Mandat) -> dict:
+def _get_usagers_dict_from_mandats(mandats: Iterable[Mandat]) -> dict:
     """
     :return: A dict containing data about the users from input mandates with attributes:
 
@@ -40,10 +43,11 @@ def _get_usagers_dict_from_mandats(mandats: Mandat) -> dict:
                 authorization (see aidants_aidants_connect_web.models.Autorisation) and
                 a boolean indication if the authorisation is soon to be expired.
 
-            without_valid_mandate -> set[Usager]
+            without_valid_mandate -> OrderedDict[Usager, bool]
 
-                dict associating users without an active mandate with the number of
-                expired mandates
+                dict associating users without an active mandate and the boolean
+                indicating if the user has no valid autorisations
+                (revoked or no autorisations).
 
             with_valid_mandate_count -> int
 
@@ -65,34 +69,22 @@ def _get_usagers_dict_from_mandats(mandats: Mandat) -> dict:
                         ("papiers", False), ("transports", False)
                     ]
                 },
-                "without_valid_mandate": {<Usager: Karl MARX>},
+                "without_valid_mandate": {<Usager: Karl MARX>: True},
                 "with_valid_mandate_count": 1,
                 "without_valid_mandate_count": 1,
                 "total"2
             }
     """
     usagers = OrderedDict()
-    usagers_without_mandats = set()
+    usagers_with_valid_mandate = OrderedDict()
+    usagers_without_valid_mandate = OrderedDict()
     delta = settings.MANDAT_EXPIRED_SOON
+
     for mandat in mandats:
-        expired_over_a_year = mandat.expiration_date < now() - timedelta(365)
-
-        if expired_over_a_year:
-            continue
-
-        revoked_over_a_year = (
-            mandat.was_explicitly_revoked
-            and mandat.revocation_date is not None
-            and mandat.revocation_date < now() - timedelta(365)
-        )
-
-        if revoked_over_a_year:
-            continue
+        if mandat.usager not in usagers:
+            usagers[mandat.usager] = {"active_mandats": [], "inactive_mandats": []}
 
         expired = mandat.expiration_date if mandat.expiration_date < now() else False
-        if expired:
-            usagers_without_mandats.add(mandat.usager)
-            continue
 
         expired_soon = (
             mandat.expiration_date
@@ -104,24 +96,35 @@ def _get_usagers_dict_from_mandats(mandats: Mandat) -> dict:
             mandat.autorisations.filter(revocation_date=None).all().order_by("pk")
         )
 
-        if autorisations.count() == 0:
-            if mandat.usager not in usagers:
-                usagers_without_mandats.add(mandat.usager)
-        else:
-            if mandat.usager not in usagers:
-                usagers[mandat.usager] = list()
-            if mandat.usager in usagers_without_mandats:
-                usagers_without_mandats.remove(mandat.usager)
+        has_no_autorisations = autorisations.count() == 0
 
+        if expired or has_no_autorisations:
+            usagers[mandat.usager]["inactive_mandats"].append(
+                (mandat, has_no_autorisations)
+            )
+
+        if not expired and not has_no_autorisations:
             for autorisation in autorisations:
-                usagers[mandat.usager].append((autorisation.demarche, expired_soon))
+                usagers[mandat.usager]["active_mandats"].append(
+                    (autorisation.demarche, expired_soon)
+                )
 
-    with_valid_mandate_count = len(usagers)
-    without_valid_mandate_count = len(usagers_without_mandats)
+    for usager, mandats in usagers.items():
+        if len(mandats["active_mandats"]) > 0:
+            usagers_with_valid_mandate[usager] = mandats["active_mandats"]
+        if len(mandats["inactive_mandats"]) > 0 and len(mandats["active_mandats"]) == 0:
+            usager_without_autorisations = True
+            for mandat, has_no_autorisations in mandats["inactive_mandats"]:
+                if not has_no_autorisations:
+                    usager_without_autorisations = False
+            usagers_without_valid_mandate[usager] = usager_without_autorisations
+
+    with_valid_mandate_count = len(usagers_with_valid_mandate)
+    without_valid_mandate_count = len(usagers_without_valid_mandate)
 
     return {
-        "with_valid_mandate": usagers,
-        "without_valid_mandate": usagers_without_mandats,
+        "with_valid_mandate": usagers_with_valid_mandate,
+        "without_valid_mandate": usagers_without_valid_mandate,
         "with_valid_mandate_count": with_valid_mandate_count,
         "without_valid_mandate_count": without_valid_mandate_count,
         "total": with_valid_mandate_count + without_valid_mandate_count,

@@ -14,7 +14,7 @@
     {% include "layouts/_breadcrumbs.html" %}
 
     <h2>Personnes impliquées</h2>
-    <p class="subtitle">Saisissez ici les informations relatives aux personnes qui utiliseront Aidants Connect</p>
+    <p class="subtitle">Saisissez ici les informations relatives aux personnes qui utiliseront Aidants Connect. Sauf mention contraire, tous les champs sont obligatoires.</p>
 
     {% include "edito/_renseigner_liste_des_contacts.html" %}
 
@@ -46,9 +46,17 @@
           <section class="shadowed">
             <h4 class="h2">Responsable Aidants Connect</h4>
 
-            <fieldset>
+            <fieldset
+              id="manager-subform"
+              data-personnel-form-target="managerSubform"
+            >
               <legend class="sr-only">Responsable Aidants Connect</legend>
-              <button class="primary" type="button">
+              <button
+                id="its-me-manager"
+                class="primary"
+                type="button"
+                data-action="personnel-form#onManagerItsMeBtnClicked"
+              >
                 <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
               </button>
               <h5 class="h3">Identité</h5>
@@ -91,24 +99,6 @@
             </fieldset>
           </section>
         </div>
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <section class="shadowed">
-            <h4 class="h2">Délégué à la protection des données <span>— Facultatif</span></h4>
-            <fieldset>
-              <legend class="sr-only">Délégué à la protection des données - facultatif</legend>
-              <button class="primary" type="button">
-                <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
-              </button>
-              <h5 class="h3">Identité</h5>
-              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.last_name %}
-              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.first_name %}
-              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.profession %}
-              <h5 class="h3">Contact</h5>
-              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.phone %}
-              {% field_as_narrow_fr_grid_row form.data_privacy_officer_form.email %}
-            </fieldset>
-          </section>
-        </div>
       </div>
 
 
@@ -134,7 +124,7 @@
 
       <div class="button-box standalone">
         <a class="button"
-           href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id draft_id=organisation.draft_id %}">
+           href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
           Revenir à l’étape précédente
         </a>
         <button type="submit" class="primary">Valider cette étape</button>
@@ -150,6 +140,7 @@
 {% endblock %}
 
 {% block extrajs %}
+  {{ issuer_data|json_script:"issuer-data" }}
   {% stimulusjs %}
   <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/personnel_form.js' %}"></script>

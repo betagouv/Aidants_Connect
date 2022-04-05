@@ -63,8 +63,8 @@
             </tr>
             </thead>
             <tbody>
-            {% for usager in usagers_dict.without_valid_mandate %}
-              {% include "aidants_connect_web/usagers/usager_row.html" with usager=usager with_valid_mandate=False %}
+            {% for usager, has_no_autorisations in usagers_dict.without_valid_mandate.items %}
+              {% include "aidants_connect_web/usagers/usager_row.html" with usager=usager with_valid_mandate=False has_no_autorisations=has_no_autorisations %}
             {% endfor %}
             </tbody>
           </table>

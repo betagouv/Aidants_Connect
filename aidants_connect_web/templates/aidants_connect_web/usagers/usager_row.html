@@ -26,7 +26,7 @@
       </ul>
     </td>
   {% endif %}
-  {% if usager.has_all_mandats_revoked_or_expired_over_a_year %}
+  {% if has_no_autorisations %}
   <td></td>
   {% else %}
   <td><a href="{% url 'renew_mandat' usager_id=usager.id %}">Renouveler le mandat</a></td>

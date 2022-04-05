@@ -7,7 +7,6 @@ from django.forms import (
     BooleanField,
     CharField,
     ChoiceField,
-    FileField,
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
@@ -26,7 +25,6 @@ from aidants_connect.common.forms import (
 from aidants_connect_habilitation import models
 from aidants_connect_habilitation.models import (
     AidantRequest,
-    DataPrivacyOfficer,
     Manager,
     OrganisationRequest,
     PersonWithResponsibilities,
@@ -96,14 +94,16 @@ class OrganisationRequestForm(PatchedErrorListForm):
         },
     )
 
-    partner_administration = CharField(
-        label="Renseignez l’administration avec laquelle vous travaillez",
+    is_private_org = BooleanField(
+        label=(
+            "Cochez cette case si vous faites cette demande pour une structure privée "
+            "(hors associations)"
+        ),
         required=False,
     )
 
-    public_service_delegation_attestation = FileField(
-        label="Téléversez ici une attestation de délégation de service public",
-        help_text="Taille maximale : 2 Mo. Formats supportés : PDF, JPG, PNG.",
+    partner_administration = CharField(
+        label="Renseignez l’administration avec laquelle vous travaillez",
         required=False,
     )
 
@@ -125,6 +125,20 @@ class OrganisationRequestForm(PatchedErrorListForm):
                 "data-other-value": RequestOriginConstants.OTHER.value,
             },
         )
+        self.widget_attrs(
+            "is_private_org",
+            {
+                "data-action": "change->dynamic-form#onIsPrivateOrgChange",
+                "data-dynamic-form-target": "privateOrgInput",
+            },
+        )
+        self.widget_attrs(
+            "france_services_label",
+            {
+                "data-action": "change->dynamic-form#onFranceServicesChange",
+                "data-dynamic-form-target": "franceServicesInput",
+            },
+        )
 
     def clean_type(self):
         return OrganisationType.objects.get(pk=int(self.data["type"]))
@@ -142,6 +156,30 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
         return self.data["type_other"]
 
+    def clean_partner_administration(self):
+        if not self.data.get("is_private_org", False):
+            return ""
+
+        if not self.data["partner_administration"]:
+            raise ValidationError(
+                "Vous avez indiqué que la structure est privée : merci de renseigner "
+                "votre administration partenaire."
+            )
+
+        return self.data["partner_administration"]
+
+    def clean_france_services_number(self):
+        if not self.data.get("france_services_label", False):
+            return ""
+
+        if not self.data["france_services_number"]:
+            raise ValidationError(
+                "Vous avez indiqué que la structure est labellisée France Services : "
+                "merci de renseigner son numéro d’immatriculation France Services."
+            )
+
+        return self.data["france_services_number"]
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
@@ -152,9 +190,10 @@ class OrganisationRequestForm(PatchedErrorListForm):
             "address",
             "zipcode",
             "city",
+            "is_private_org",
             "partner_administration",
-            "public_service_delegation_attestation",
             "france_services_label",
+            "france_services_number",
             "web_site",
             "mission_description",
             "avg_nb_demarches",
@@ -197,11 +236,6 @@ class ManagerForm(PatchedErrorListForm):
         model = Manager
 
 
-class DataPrivacyOfficerForm(PersonWithResponsibilitiesForm):
-    class Meta(PersonWithResponsibilitiesForm.Meta):
-        model = DataPrivacyOfficer
-
-
 class AidantRequestForm(PatchedErrorListForm):
     class Meta:
         model = AidantRequest
@@ -236,15 +270,11 @@ AidantRequestFormSet = modelformset_factory(
 
 class PersonnelForm:
     MANAGER_FORM_PREFIX = "manager"
-    DPO_FORM_PREFIX = "dpo"
     AIDANTS_FORMSET_PREFIX = "aidants"
 
     @property
     def non_field_errors(self):
         errors = self.manager_form.non_field_errors().copy()
-
-        for error in self.data_privacy_officer_form.non_field_errors():
-            errors.append(error)
 
         for error in self.aidants_formset.non_form_errors():
             errors.append(error)
@@ -258,7 +288,6 @@ class PersonnelForm:
 
             form_kwargs_prefixes = {
                 self.MANAGER_FORM_PREFIX,
-                self.DPO_FORM_PREFIX,
                 self.AIDANTS_FORMSET_PREFIX,
             }
 
@@ -266,8 +295,8 @@ class PersonnelForm:
                 """
                 Let us dispatch form kwargs to specific forms by using their prefixes.
 
-                For instance, PersonnelForm(dpo_instance=some_instance) will
-                disptach to DataPrivacyOfficerForm(instance=some_instance).
+                For instance, PersonnelForm(manager_instance=some_instance) will
+                disptach to ManagerForm(instance=some_instance).
                 """
                 kwarg_prefix = k.split("_")
                 if len(kwarg_prefix) > 1 and kwarg_prefix[0] in form_kwargs_prefixes:
@@ -285,9 +314,7 @@ class PersonnelForm:
             }
 
         self.manager_form = ManagerForm(**merge_kwargs(self.MANAGER_FORM_PREFIX))
-        self.data_privacy_officer_form = DataPrivacyOfficerForm(
-            **merge_kwargs(self.DPO_FORM_PREFIX)
-        )
+
         self.aidants_formset = AidantRequestFormSet(
             **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
         )
@@ -300,29 +327,23 @@ class PersonnelForm:
         )
 
     def is_valid(self):
-        return (
-            self.manager_form.is_valid()
-            and self.data_privacy_officer_form.is_valid()
-            and self.aidants_formset.is_valid()
-        )
+        return self.manager_form.is_valid() and self.aidants_formset.is_valid()
 
     def save(
         self, organisation: OrganisationRequest, commit=True
-    ) -> Tuple[Manager, DataPrivacyOfficer, List[AidantRequest]]:
+    ) -> Tuple[Manager, List[AidantRequest]]:
         for form in self.aidants_formset:
             form.instance.organisation = organisation
 
-        manager_instance, dpo_instance, aidants_instances = (
+        manager_instance, aidants_instances = (
             self.manager_form.save(commit),
-            self.data_privacy_officer_form.save(commit),
             self.aidants_formset.save(commit),
         )
 
         organisation.manager = manager_instance
-        organisation.data_privacy_officer = dpo_instance
         organisation.save()
 
-        return manager_instance, dpo_instance, aidants_instances
+        return manager_instance, aidants_instances
 
     save.alters_data = True
 
@@ -355,3 +376,11 @@ class ValidationForm(PatchedForm):
         super().__init__(**kwargs)
         cgu = self["cgu"]
         cgu.label = format_html(cgu.label, url=reverse("cgu"))
+
+    def save(
+        self, organisation: OrganisationRequest, commit=True
+    ) -> OrganisationRequest:
+        organisation.prepare_request_for_ac_validation(self.cleaned_data)
+        return organisation
+
+    save.alters_data = True

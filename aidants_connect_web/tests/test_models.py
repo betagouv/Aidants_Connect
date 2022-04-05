@@ -31,6 +31,7 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     OrganisationFactory,
     OrganisationTypeFactory,
+    RevokedMandatFactory,
     UsagerFactory,
 )
 from aidants_connect_web.utilities import (
@@ -785,6 +786,14 @@ class OrganisationModelTests(TestCase):
                     expiration_date=timezone.now() - timedelta(days=6),
                 )
 
+        def create_revoked_mandats(count, organisation):
+            for _ in range(count):
+                RevokedMandatFactory(
+                    organisation=organisation,
+                    expiration_date=timezone.now() + timedelta(days=5),
+                    post__create_authorisations=["argent", "famille", "logement"],
+                )
+
         org_without_mandats = OrganisationFactory(name="Licornes")
         self.assertEqual(0, org_without_mandats.num_mandats)
         self.assertEqual(0, org_without_mandats.num_active_mandats)
@@ -797,7 +806,8 @@ class OrganisationModelTests(TestCase):
         org_with_active_and_inactive_mandats = OrganisationFactory(name="Libellules")
         create_active_mandats(3, org_with_active_and_inactive_mandats)
         create_expired_mandats(4, org_with_active_and_inactive_mandats)
-        self.assertEqual(7, org_with_active_and_inactive_mandats.num_mandats)
+        create_revoked_mandats(2, org_with_active_and_inactive_mandats)
+        self.assertEqual(9, org_with_active_and_inactive_mandats.num_mandats)
         self.assertEqual(3, org_with_active_and_inactive_mandats.num_active_mandats)
 
     def test_count_usagers(self):

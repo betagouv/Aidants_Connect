@@ -1,5 +1,8 @@
 from django.conf import settings
-from django.shortcuts import get_object_or_404, redirect
+from django.core.mail import send_mail
+from django.forms.models import model_to_dict
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template import loader
 from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
@@ -80,11 +83,15 @@ class LateStageRequestView(VerifiedEmailIssuerView, View):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = get_object_or_404(
-            OrganisationRequest, draft_id=kwargs.get("draft_id"), issuer=self.issuer
+            OrganisationRequest, uuid=kwargs.get("uuid"), issuer=self.issuer
         )
 
 
 class OnlyNewRequestsView(LateStageRequestView):
+    @property
+    def step(self) -> HabilitationFormStep:
+        raise NotImplementedError()
+
     def dispatch(self, request, *args, **kwargs):
         if not self.issuer.email_verified:
             # Duplicate logic of VerifiedEmailIssuerView
@@ -98,7 +105,7 @@ class OnlyNewRequestsView(LateStageRequestView):
             return redirect(
                 "habilitation_organisation_view",
                 issuer_id=self.issuer.issuer_id,
-                draft_id=self.organisation.draft_id,
+                uuid=self.organisation.uuid,
             )
 
         return super().dispatch(request, *args, **kwargs)
@@ -113,14 +120,23 @@ class NewHabilitationView(RedirectView):
 
 
 class NewIssuerFormView(HabilitationStepMixin, FormView):
+    template_name = "issuer_form.html"
+    form_class = IssuerForm
+
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.ISSUER
 
-    template_name = "issuer_form.html"
-    form_class = IssuerForm
+    def form_invalid(self, form: IssuerForm):
+        # Gets the error code of all the errors for email, if any
+        # See https://docs.djangoproject.com/en/dev/ref/forms/fields/#django.forms.Field.error_messages  # noqa
+        error_codes = [error.code for error in form.errors["email"].as_data()]
+        if "unique" in error_codes:
+            self.send_issuer_profile_reminder_mail(form.data["email"])
+            return render(self.request, "issuer_already_exists_warning.html")
+        return super().form_invalid(form)
 
-    def form_valid(self, form):
+    def form_valid(self, form: IssuerForm):
         self.saved_model: Issuer = form.save()
         IssuerEmailConfirmation.for_issuer(self.saved_model).send(self.request)
         return super().form_valid(form)
@@ -131,8 +147,25 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
             kwargs={"issuer_id": self.saved_model.issuer_id},
         )
 
-    def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "step": self.step}
+    def send_issuer_profile_reminder_mail(self, email: str):
+        path = reverse(
+            "habilitation_issuer_page",
+            kwargs={"issuer_id": str(Issuer.objects.get(email=email).issuer_id)},
+        )
+        context = {"url": self.request.build_absolute_uri(path)}
+        text_message = loader.render_to_string(
+            "email/issuer_profile_reminder.txt", context
+        )
+        html_message = loader.render_to_string(
+            "email/issuer_profile_reminder.html", context
+        )
+        send_mail(
+            from_email=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM,
+            recipient_list=[email],
+            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
 
 
 class IssuerEmailConfirmationWaitingView(
@@ -235,7 +268,7 @@ class NewOrganisationRequestFormView(
             "habilitation_new_aidants",
             kwargs={
                 "issuer_id": str(self.issuer.issuer_id),
-                "draft_id": str(self.saved_model.draft_id),
+                "uuid": str(self.saved_model.uuid),
             },
         )
 
@@ -264,16 +297,21 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        issuer_data = model_to_dict(
+            self.issuer, exclude=[*IssuerForm.Meta.exclude, "id"]
+        )
+        # Fields of type PhoneNumberField are not natively JSON serializable
+        issuer_data["phone"] = str(issuer_data["phone"])
         return {
             **super().get_context_data(**kwargs),
             "issuer_form": IssuerForm(instance=self.issuer, render_non_editable=True),
+            "issuer_data": issuer_data,
             "organisation": self.organisation,
         }
 
     def get_form_kwargs(self):
         form_kwargs = super().get_form_kwargs()
 
-        data_privacy_officer = self.organisation.data_privacy_officer
         manager = self.organisation.manager
         aidant_qs = self.organisation.aidant_requests
 
@@ -281,11 +319,6 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
             form_kwargs[
                 f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}_queryset"
             ] = aidant_qs.all()
-
-        if data_privacy_officer:
-            form_kwargs[
-                f"{PersonnelForm.DPO_FORM_PREFIX}_instance"
-            ] = data_privacy_officer
 
         if manager:
             form_kwargs[f"{PersonnelForm.MANAGER_FORM_PREFIX}_instance"] = manager
@@ -297,7 +330,7 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
             "habilitation_validation",
             kwargs={
                 "issuer_id": str(self.issuer.issuer_id),
-                "draft_id": str(self.organisation.draft_id),
+                "uuid": str(self.organisation.uuid),
             },
         )
 
@@ -319,7 +352,17 @@ class ValidationRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, Form
         }
 
     def get_success_url(self):
-        return reverse("habilitation_new_issuer")
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={
+                "issuer_id": str(self.issuer.issuer_id),
+                "uuid": str(self.organisation.uuid),
+            },
+        )
+
+    def form_valid(self, form):
+        form.save(self.organisation)
+        return super().form_valid(form)
 
 
 class ReadonlyRequestView(LateStageRequestView, TemplateView):
