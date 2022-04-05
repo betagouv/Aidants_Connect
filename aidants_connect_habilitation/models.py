@@ -19,6 +19,7 @@ from aidants_connect.common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_web.models import OrganisationType
+from aidants_connect_web.utilities import generate_new_datapass_id
 
 __all__ = [
     "PersonWithResponsibilities",
@@ -183,6 +184,13 @@ class OrganisationRequest(models.Model):
         unique=True,
     )
 
+    data_pass_id = models.IntegerField(
+        "Numéro Datapass",
+        null=True,
+        default=None,
+        unique=True,
+    )
+
     status = models.CharField(
         "État",
         max_length=150,
@@ -270,6 +278,7 @@ class OrganisationRequest(models.Model):
         self.professionals_only = form_data["professionals_only"]
         self.without_elected = form_data["without_elected"]
         self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        self.data_pass_id = int(f"{self.zipcode[:3]}{generate_new_datapass_id()}")
         self.save()
 
     class Meta:

@@ -7,7 +7,7 @@
 
 {% block content %}
   <div class="fr-container">
-    <h1>Demande d’habilitation n° {{ organisation.id }}</h1>
+    <h1>Demande d’habilitation n° {{ organisation.data_pass_id }}</h1>
     <p class="subtitle">
 
     </p>
@@ -23,7 +23,7 @@
     <div class="fr-grid-row fr-grid-row--gutters">
       <p class="fr-col more-info">
         Pour modifier cette demande, envoyez un e-mail à l'équipe Aidants Connect : contact@aidantsconnect.beta.gouv.fr
-        en précisant le n° de votre demande d'habilitation : {{ organisation.id }}
+        en précisant le n° de votre demande d'habilitation : {{ organisation.data_pass_id }}
       </p>
     </div>
 
