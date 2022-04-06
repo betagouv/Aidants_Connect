@@ -803,6 +803,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             status__in=(
                 HabilitationRequest.STATUS_PROCESSING,
                 HabilitationRequest.STATUS_NEW,
+                HabilitationRequest.STATUS_VALIDATED,
             )
         )
         treated_emails = set()
