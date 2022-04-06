@@ -65,12 +65,12 @@
   {% if undefined_error_emails %}
     <div class="errornote">
       {% blocktranslate count counter=undefined_error_emails|length %}
-        Une erreur s'est produite pour l'adresse mail suivante, mais je ne sais pas
-        laquelle et j'espère que vous ne verrez jamais ce message. :s
+        Une erreur indéterminée s'est produite pour l'adresse mail suivante,
         {% plural %}
-        Une erreur s'est produite pour les adresses mails suivantes, mais je ne sais pas
-        laquelle et j'espère que vous ne verrez jamais ce message. :s
+        Une erreur indéterminée s'est produite pour les adresses mails suivantes,
       {% endblocktranslate %}
+      parlez-en à quelqu'un(e) de l'équipe technique pour voir ce qui aurait pu la causer.<br>
+      Aucun compte aidant n'a été créé.
       <ul>
         {% for email in undefined_error_emails %}
           <li>{{ email }}</li>
