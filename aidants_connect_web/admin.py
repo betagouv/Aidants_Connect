@@ -818,13 +818,38 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             return HttpResponseRedirect(
                 reverse("otpadmin:aidants_connect_web_habilitationrequest_changelist")
             )
+        ignored_emails = email_list - treated_emails
         context["treated_emails"] = treated_emails
-        context["ignored_emails"] = email_list - treated_emails
+        context["ignored_emails"] = ignored_emails
+        context.update(self.__extract_more_precise_errors(ignored_emails))
         return render(
             request,
             "aidants_connect_web/admin/habilitation_request/mass-habilitation.html",
             context,
         )
+
+    def __extract_more_precise_errors(self, ignored_emails):
+        existing_emails = set(
+            HabilitationRequest.objects.filter(email__in=ignored_emails).values_list(
+                "email", flat=True
+            )
+        )
+        non_existing_emails = ignored_emails - existing_emails
+        already_refused_emails = set(
+            HabilitationRequest.objects.filter(
+                email__in=existing_emails,
+                status__in=(
+                    HabilitationRequest.STATUS_REFUSED,
+                    HabilitationRequest.STATUS_CANCELLED,
+                ),
+            )
+        )
+        undefined_error_emails = existing_emails - already_refused_emails
+        return {
+            "non_existing_emails": non_existing_emails,
+            "already_refused_emails": already_refused_emails,
+            "undefined_error_emails": undefined_error_emails,
+        }
 
 
 class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):
