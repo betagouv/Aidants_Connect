@@ -835,7 +835,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 "email", flat=True
             )
         )
-        non_existing_emails = ignored_emails - existing_emails
+        non_existing_emails = set(ignored_emails - existing_emails)
         already_refused_emails = set(
             HabilitationRequest.objects.filter(
                 email__in=existing_emails,
@@ -843,7 +843,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                     HabilitationRequest.STATUS_REFUSED,
                     HabilitationRequest.STATUS_CANCELLED,
                 ),
-            )
+            ).values_list("email", flat=True)
         )
         undefined_error_emails = existing_emails - already_refused_emails
         return {
