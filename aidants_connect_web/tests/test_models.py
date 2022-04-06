@@ -1627,7 +1627,6 @@ class HabilitationRequestMethodTests(TestCase):
 
     def test_do_not_validate_if_invalid_status(self):
         for status in (
-            HabilitationRequest.STATUS_VALIDATED,
             HabilitationRequest.STATUS_REFUSED,
             HabilitationRequest.STATUS_CANCELLED,
         ):
