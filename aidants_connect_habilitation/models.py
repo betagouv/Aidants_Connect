@@ -311,7 +311,7 @@ class OrganisationRequest(models.Model):
             )
         except IntegrityError:
             raise Organisation.AlreadyExists(
-                "Il existe déjà une organisation portant le n° datapass"
+                "Il existe déjà une organisation portant le n° datapass "
                 f"{self.data_pass_id}."
             )
 
