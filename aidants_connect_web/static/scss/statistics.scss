@@ -1,0 +1,20 @@
+$blue-aidants: #1B4991;
+
+
+h1, .h1 {
+  font-size: 2rem;
+}
+
+.stats-number {
+  font-size: 2.25rem;
+  color: $blue-aidants;
+  font-weight: bold;
+  text-align: center;
+}
+
+.stats-text {
+  font-size: 1.125rem;
+  color: $blue-aidants;
+  font-weight: bold;
+  text-align: center;
+}

@@ -85,6 +85,10 @@ main {
   color: $blue-aidants;
 }
 
+.uppercase {
+  text-transform: uppercase;
+}
+
 .shadowed {
   border: 1px solid $off-yellow-aidants;
   box-sizing: border-box;

@@ -1,46 +1,55 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block title %}Aidants Connect - Statistiques{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+<link href="{% static 'css/statistics.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 
 {% block content %}
-<section class="section" id="statistics">
-  <div class="container">
-    <h1 class="section__title">Statistiques d’Aidants Connect</h1>
-    <div class="tiles">
+<div class="fr-container">
+  <h1>Statistiques: Aidants Connect en chiffres</h1>
+  <p><strong>Nous sommes ravis de constater l’utilisation grandissante d’Aidants Connect !
+      <br>Vous pouvez consulter ici toutes les statistiques concernant le projet, mises à jour en temps réel.</strong>
+  </p>
 
-      <h2>Utilisation</h2>
-      <div class="grid">
-        <div class="tile-box stretch">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Démarches administratives réalisés</h3>
-            <strong>{{ autorisation_use_count }}</strong>
+  <h2 class="h3 uppercase">Utilisation</h2>
+  <p>Texte sensé décrire ce qu’on constate en dessous, peut être expliquer ce qu’est une démarche administrative, mise
+    en contexte etc.
+    <br>enfin vous m’avez compris, j’essaie de faire une grande phrase pour voir ce que ça donne sur deux
+    lignes.
+  </p>
+
+  <div class="fr-grid-row">
+    <div class="fr-col-lg-10">
+      <div class="shadowed">
+        <div class="fr-grid-row fr-grid-row--gutters">
+          <div class="fr-col-12 fr-col-md-4">
+            <p class="stats-number">{{ autorisation_use_count }}</p>
+            <p class="stats-text">Démarches administratives réalisés</p>
           </div>
-        </div>
-        <div class="tile-box stretch">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Personnes accompagnées</h3>
-            <strong>{{ usagers_with_mandat_count }}</strong>
+          <div class="fr-col-12 fr-col-md-4">
+            <p class="stats-number">{{ usagers_with_mandat_count }}</p>
+            <p class="stats-text">Personnes accompagnées</p>
           </div>
-        </div>
-        <div class="tile-box stretch">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Mandats crées</h3>
-            <strong>{{ mandats_count }}</strong>
+          <div class="fr-col-12 fr-col-md-4">
+            <p class="stats-number">{{ mandats_count }}</p>
+            <p class="stats-text">Mandats crées</p>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <br>
+  <br>
 
-      <h3>Par type de démarche</h3>
-      <div class="container">
+  <h2 class="h3">Par type de démarche</h2>
+  <div class="fr-grid-row">
+    <div class="fr-col-lg-10">
+      <div class="shadowed">
         <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
           <table>
             <tr>
@@ -56,40 +65,48 @@
           </table>
         </canvas>
       </div>
+    </div>
+  </div>
 
-      <br>
+  <br>
 
-      <h2>Déploiement</h2>
-      <div class="grid">
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Aidants habilités</h3>
-            <strong>{{ aidants_count }}</strong>
+  <h2 class="h3">Déploiement</h2>
+  <p>Texte sensé décrire ce qu’on constate en dessous, faire un rappel de ce qu’est l’habilitation, pourquoi elle
+    existe, rediriger vers la page qui détaille les étapes ?</p>
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-md-6 fr-col-lg-5">
+      <div class="shadowed">
+        <div class="fr-grid-row">
+          <div class="fr-col-6">
+            <p class="stats-number">{{ aidants_count }}</p>
+            <p class="stats-text">Aidants habilités</p>
           </div>
-        </div>
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Aidants en cours d’habilitation</h3>
-            <strong>{{ aidants_accrediting_count }}</strong>
-          </div>
-        </div>
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Structures habilitées</h3>
-            <strong>{{ organisations_accredited_count }}</strong>
-          </div>
-        </div>
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Structures en cours d’habilitation</h3>
-            <strong>{{ organisations_not_accredited_count }}</strong>
+          <div class="fr-col-6">
+            <p class="stats-number">{{ aidants_accrediting_count }}</p>
+            <p class="stats-text">Aidants en cours d’habilitation</p>
           </div>
         </div>
       </div>
-
+    </div>
+    <div class="fr-col-md-6 fr-col-lg-5">
+      <div class="shadowed">
+        <div class="fr-grid-row">
+          <div class="fr-col-6">
+            <p class="stats-number">{{ organisations_accredited_count }}</p>
+            <p class="stats-text">Structures habilitées</p>
+          </div>
+          <div class="fr-col-6">
+            <p class="stats-number">{{ organisations_not_accredited_count }}</p>
+            <p class="stats-text">Structures en cours d’habilitation</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</section>
+
+
+</div>
+
 {% endblock content %}
 
 {% block extrajs %}
@@ -101,31 +118,46 @@
 
   var ctx = document.getElementById('mandats-chart').getContext('2d');
 
+  Chart.defaults.font.size = 16;
+  Chart.defaults.font.family = "Marianne";
+  Chart.defaults.color = "#5770BE";
+
   new Chart(ctx, {
     type: 'bar',
     data: {
       labels: data.labels,
       datasets: [{
         label: 'Nombre de démarches',
-        backgroundColor: 'blue',
+        backgroundColor: '#FAD776',
         data: data.data
       }]
     },
     options: {
       responsive: true,
-      aspectRatio:2,
+      aspectRatio: 3,
       maintainAspectRatio: true,
-      legend: {
-        position: 'top',
+      plugins : {
+        legend: {
+          display: false,
+        },
       },
       title: {
-        display: true,
-        text: 'Les périmètres des mandats'
-      },
+          display: false
+        },
       scales: {
         x: {
           grid: {
-              display:false
+            display: false,
+            drawBorder: false
+          }
+        },
+        y: {
+          grid: {
+            display: false,
+            drawBorder: false
+          },
+          ticks: {
+            display: false
           }
         }
       }
