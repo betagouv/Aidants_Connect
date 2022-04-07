@@ -592,4 +592,5 @@ class HabilitationRequestAdminPageTests(TestCase):
                 "ont été créés"
             ),
         )
-        self.assertContains(response, "Nous n'avons pas pu traiter les")
+        self.assertContains(response, "2 adresses e-mails ont été ignorées.")
+        self.assertContains(response, "Nous n'avons trouvé aucun")

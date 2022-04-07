@@ -23,14 +23,56 @@
   {% if ignored_emails %}
     <div class="errornote">
       {% blocktranslate count counter=ignored_emails|length %}
-        Nous n'avons pas pu traiter l'adress e-mail suivante : aucune demande
-        ne correspond, ou alors elle a déjà été annulée ou validée.
+        Une adresse e-mail a été ignorée. Veuillez retrouver le détail ci-dessous.
         {% plural %}
-        Nous n'avons pas pu traiter les {{ counter }} e-mails suivants : aucune demande ne correspond,
-        ou alors elles ont déjà été validées/annulées.
+        {{ counter }} adresses e-mails ont été ignorées. Veuillez retrouver le détail
+        ci-dessous.
+      {% endblocktranslate %}
+    </div>
+  {% endif %}
+  {% if non_existing_emails %}
+    <div class="errornote">
+      {% blocktranslate count counter=non_existing_emails|length %}
+        Nous n'avons trouvé aucun aidant à former portant l'e-mail suivant : aucun compte
+        aidant n'a été créé.
+        {% plural %}
+        Nous n'avons trouvé aucun aidant à former pour les {{ counter }} e-mails suivants :
+        aucun compte aidant n'a été créé.
       {% endblocktranslate %}
       <ul>
-        {% for email in ignored_emails %}
+        {% for email in non_existing_emails %}
+          <li>{{ email }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  {% if already_refused_emails %}
+    <div class="errornote">
+      {% blocktranslate count counter=already_refused_emails|length %}
+        Il existe bien un aidant à former portant l'adresse e-mail suivante, mais
+        la demande était déjà annulée ou refusée : aucun compte aidant n'a été créé.
+        {% plural %}
+        Il existe bien des aidants à former portant les adresses e-mail suivantes, mais
+        les demandes étaient déjà annulée ou refusée : aucun compte aidant n'a été créé.
+      {% endblocktranslate %}
+      <ul>
+        {% for email in already_refused_emails %}
+          <li>{{ email }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  {% if undefined_error_emails %}
+    <div class="errornote">
+      {% blocktranslate count counter=undefined_error_emails|length %}
+        Une erreur indéterminée s'est produite pour l'adresse mail suivante,
+        {% plural %}
+        Une erreur indéterminée s'est produite pour les adresses mails suivantes,
+      {% endblocktranslate %}
+      parlez-en à quelqu'un(e) de l'équipe technique pour voir ce qui aurait pu la causer.<br>
+      Aucun compte aidant n'a été créé.
+      <ul>
+        {% for email in undefined_error_emails %}
           <li>{{ email }}</li>
         {% endfor %}
       </ul>
@@ -38,7 +80,7 @@
   {% endif %}
   {% if treated_emails %}
     <div class="successnote">
-      <p>Les demandes suivantes ont été validées, les comptes aidant ont été créés :</p>
+      <p>Les demandes suivantes ont été validées, les comptes aidant ont été créés et/ou activés :</p>
       <ul>
         {% for email in treated_emails %}
           <li><span aria-hidden="true">✅ </span>{{ email }}</li>

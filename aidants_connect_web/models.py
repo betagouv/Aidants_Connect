@@ -533,18 +533,25 @@ class HabilitationRequest(models.Model):
     def __str__(self):
         return f"{self.email}"
 
+    @transaction.atomic
     def validate_and_create_aidant(self):
-        if self.status not in (self.STATUS_PROCESSING, self.STATUS_NEW):
+        if self.status not in (
+            self.STATUS_PROCESSING,
+            self.STATUS_NEW,
+            self.STATUS_VALIDATED,
+        ):
             return False
 
         if Aidant.objects.filter(username=self.email).count() > 0:
-            aidant = Aidant.objects.get(username=self.email)
+            aidant: Aidant = Aidant.objects.get(username=self.email)
             aidant.organisations.add(self.organisation)
+            aidant.is_active = True
+            aidant.save()
             self.status = self.STATUS_VALIDATED
             self.save()
             return True
 
-        aidant = Aidant(
+        aidant = Aidant.objects.create(
             last_name=self.last_name,
             first_name=self.first_name,
             profession=self.profession,
@@ -553,7 +560,6 @@ class HabilitationRequest(models.Model):
             username=self.email,
         )
         self.status = self.STATUS_VALIDATED
-        aidant.save()
         self.save()
         return True
 

@@ -1591,7 +1591,7 @@ class HabilitationRequestMethodTests(TestCase):
                 db_hab_request.status, HabilitationRequest.STATUS_VALIDATED
             )
 
-    def test_validate_if_aidant_already_exists(self):
+    def test_validate_if_active_aidant_already_exists(self):
         aidant = AidantFactory()
         habilitation_request = HabilitationRequestFactory(
             status=HabilitationRequest.STATUS_PROCESSING, email=aidant.email
@@ -1607,9 +1607,26 @@ class HabilitationRequestMethodTests(TestCase):
         aidant.refresh_from_db()
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
 
+    def test_validate_if_inactive_aidant_already_exists(self):
+        aidant = AidantFactory(is_active=False)
+        self.assertFalse(aidant.is_active)
+        habilitation_request = HabilitationRequestFactory(
+            status=HabilitationRequest.STATUS_PROCESSING, email=aidant.email
+        )
+        self.assertTrue(habilitation_request.validate_and_create_aidant())
+        self.assertEqual(
+            1, Aidant.objects.filter(email=habilitation_request.email).count()
+        )
+        habilitation_request.refresh_from_db()
+        self.assertEqual(
+            habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+        )
+        aidant.refresh_from_db()
+        self.assertTrue(aidant.is_active)
+        self.assertIn(habilitation_request.organisation, aidant.organisations.all())
+
     def test_do_not_validate_if_invalid_status(self):
         for status in (
-            HabilitationRequest.STATUS_VALIDATED,
             HabilitationRequest.STATUS_REFUSED,
             HabilitationRequest.STATUS_CANCELLED,
         ):
