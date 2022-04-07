@@ -7,6 +7,8 @@ from django.forms import (
     BooleanField,
     CharField,
     ChoiceField,
+    ModelForm,
+    Textarea,
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
@@ -384,3 +386,11 @@ class ValidationForm(PatchedForm):
         return organisation
 
     save.alters_data = True
+
+
+class RequestMessageForm(ModelForm):
+    content = CharField(label="Votre message", widget=Textarea(attrs={"rows": 2}))
+
+    class Meta:
+        model = models.RequestMessage
+        fields = ["content"]

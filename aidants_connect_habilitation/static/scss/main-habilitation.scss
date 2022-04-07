@@ -81,6 +81,10 @@ main {
   color: $red-aidants;
 }
 
+.text-blue {
+  color: $blue-aidants;
+}
+
 .shadowed {
   border: 1px solid $off-yellow-aidants;
   box-sizing: border-box;
@@ -543,6 +547,37 @@ fieldset {
       }
     }
   }
+}
+
+// messages -------------------------------------------
+
+.messages-list-container {
+  min-height: 15rem;
+  max-height: 25rem;
+  overflow: scroll;
+}
+
+ol.messages-list {
+  list-style: none;
+
+  li {
+    margin-bottom: 1rem;
+  }
+}
+
+.message-form-container {
+  background: $blue-aidants;
+  margin: 1rem -2rem 0;
+  padding: 1rem 2rem;
+  color: #fff;
+  transform: translateY(2rem);
+  overflow: hidden;
+}
+
+.more-info-messages {
+  margin-top: 0;
+  font-style: italic;
+  color: $light-blue-anct;
 }
 
 // header ----------------------------------------------
