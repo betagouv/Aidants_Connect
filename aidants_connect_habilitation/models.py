@@ -5,6 +5,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.db import models, transaction
 from django.db.models import SET_NULL, Q
+from django.db.utils import IntegrityError
 from django.dispatch import Signal
 from django.http import HttpRequest
 from django.urls import reverse
@@ -298,15 +299,21 @@ class OrganisationRequest(models.Model):
         if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.value:
             return False
 
-        organisation = Organisation.objects.create(
-            name=self.name,
-            type=(self.type_other if self.type_other else self.type),
-            siret=self.siret,
-            address=self.address,
-            zipcode=self.zipcode,
-            city=self.city,
-            data_pass_id=self.data_pass_id,
-        )
+        try:
+            organisation = Organisation.objects.create(
+                name=self.name,
+                type=(self.type_other if self.type_other else self.type),
+                siret=self.siret,
+                address=self.address,
+                zipcode=self.zipcode,
+                city=self.city,
+                data_pass_id=self.data_pass_id,
+            )
+        except IntegrityError:
+            raise Organisation.AlreadyExists(
+                "Il existe déjà une organisation portant le n° datapass"
+                f"{self.data_pass_id}."
+            )
 
         self.organisation = organisation
         self.status = RequestStatusConstants.VALIDATED.value
