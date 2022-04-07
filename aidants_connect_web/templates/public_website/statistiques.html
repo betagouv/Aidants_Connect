@@ -48,7 +48,7 @@
 
   <h2 class="h3">Par type de démarche</h2>
   <div class="fr-grid-row">
-    <div class="fr-col-lg-10">
+    <div class="fr-col-12 fr-col-lg-10">
       <div class="shadowed">
         <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
           <table>
@@ -123,6 +123,31 @@
   Chart.defaults.font.family = "Marianne";
   Chart.defaults.color = "#5770BE";
 
+  icons = [];
+  for (let i=0; i<=data.icons.length-1; i++){
+    var image = new Image();
+    image.src = data.icons[i];
+    icons.push(image);
+  }
+
+  console.log(icons[0]);
+  var img1 = new Image();
+
+  img1.src = 'https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/papiers.png';
+
+  const afterDraw = {
+    id: "afterDraw",
+    afterDraw(chart, args, options) {
+        const {ctx, chartArea : {top, bottom, left, right, width, height},
+          scales : {x, y}} = chart;
+          ctx.save();
+          for (let i=0; i<= data.labels.length - 1; i++) {
+            img = icons[i];
+            ctx.drawImage(img, x.getPixelForTick(i)-30, y.bottom+5, 60, 60);
+          }
+        }
+  };
+
   new Chart(ctx, {
     type: 'bar',
     data: {
@@ -130,13 +155,15 @@
       datasets: [{
         label: 'Nombre de démarches',
         backgroundColor: '#FAD776',
-        data: data.data,
+        data: [5000, 4500, 2000, 2000, 1000, 500, 400, 60, 50, 15],
       }]
     },
-    plugins : [ChartDataLabels],
+    plugins : [ChartDataLabels, afterDraw],
     options: {
       layout : {
-        padding : 20
+        padding : {
+          top : 20,
+        }
       },
       responsive: true,
       aspectRatio: 3,
@@ -163,6 +190,9 @@
           grid: {
             display: false,
             drawBorder: false
+          },
+          ticks : {
+            padding: 50
           }
         },
         y: {
