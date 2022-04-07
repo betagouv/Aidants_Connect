@@ -62,7 +62,7 @@ class OrganisationRequestTests(TestCase):
 
     def prepare_data_for_nominal_case(self):
         organisation_request = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
             data_pass_id=67255555,
         )
         organisation_request.manager.is_aidant = True
@@ -74,7 +74,7 @@ class OrganisationRequestTests(TestCase):
 
     def prepare_data_with_existing_responsable(self):
         organisation_request = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
             data_pass_id=69366666,
         )
         organisation_request.manager.is_aidant = True
@@ -125,7 +125,7 @@ class OrganisationRequestTests(TestCase):
 
             # verify status
             self.assertEqual(
-                organisation_request.status, RequestStatusConstants.VALIDATED.value
+                organisation_request.status, RequestStatusConstants.VALIDATED.name
             )
 
             # verify if aidants were created
@@ -149,7 +149,7 @@ class OrganisationRequestTests(TestCase):
                 data_pass_id=67245456,
             )
             organisation_request = OrganisationRequestFactory(
-                status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
+                status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
                 data_pass_id=67245456,
             )
             organisation_request.manager.is_aidant = True
@@ -166,7 +166,7 @@ class OrganisationRequestTests(TestCase):
         # verify status
         self.assertEqual(
             organisation_request.status,
-            RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
         )
 
 

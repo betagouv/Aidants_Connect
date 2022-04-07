@@ -296,7 +296,7 @@ class OrganisationRequest(models.Model):
 
     @transaction.atomic
     def accept_request_and_create_organisation(self):
-        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.value:
+        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
             return False
 
         try:
@@ -316,7 +316,7 @@ class OrganisationRequest(models.Model):
             )
 
         self.organisation = organisation
-        self.status = RequestStatusConstants.VALIDATED.value
+        self.status = RequestStatusConstants.VALIDATED.name
         self.save()
 
         responsable_query = Aidant.objects.filter(username=self.manager.email)
