@@ -54,8 +54,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     list_filter = ("status", RegionFilter, DepartmentFilter)
     list_display = ("name", "issuer", "status", "data_pass_id")
     search_fields = ("data_pass_id", "name")
-    raw_id_fields = ("issuer",)
-    readonly_fields = ("public_service_delegation_attestation", "uuid")
+    raw_id_fields = ("issuer", "organisation")
+    readonly_fields = ("public_service_delegation_attestation", "uuid", "organisation")
     inlines = (
         AidantRequestInline,
         MessageInline,
