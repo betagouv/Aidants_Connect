@@ -19,6 +19,7 @@ from aidants_connect_habilitation.tests.factories import (
     OrganisationRequestFactory,
 )
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
+from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 
 
 @tag("models")
@@ -59,8 +60,94 @@ class OrganisationRequestTests(TestCase):
             OrganisationRequestFactory(manager=None)
         self.assertIn("manager_set", str(cm.exception))
 
-    def test_accept_when_all_is_fine(self):
+    def prepare_data_for_nominal_case(self):
+        organisation_request = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
+            data_pass_id=67255555,
+        )
+        organisation_request.manager.is_aidant = True
+        organisation_request.manager.save()
+        for _ in range(3):
+            AidantRequestFactory(organisation=organisation_request)
+        organisation_request.save()
+        return organisation_request
+
+    def prepare_data_with_existing_responsable(self):
+        organisation_request = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
+            data_pass_id=69366666,
+        )
+        organisation_request.manager.is_aidant = True
+        organisation_request.manager.save()
+        # existing manager
+        AidantFactory(
+            email=organisation_request.manager.email,
+            username=organisation_request.manager.email,
+            can_create_mandats=False,
+        )
+        for _ in range(3):
+            AidantRequestFactory(organisation=organisation_request)
+        organisation_request.save()
+        return organisation_request
+
+    def test_accept_when_it_should_work_fine(self):
+        for organisation_request in (
+            self.prepare_data_for_nominal_case(),
+            self.prepare_data_with_existing_responsable(),
+        ):
+            result = organisation_request.accept_request_and_create_organisation()
+
+            # verify if organisation was created
+            self.assertTrue(result, "Result of method call should be True")
+            self.assertTrue(
+                Organisation.objects.filter(
+                    data_pass_id=organisation_request.data_pass_id
+                ).exists(),
+                "Organisation should have been created",
+            )
+            organisation = Organisation.objects.get(
+                data_pass_id=organisation_request.data_pass_id
+            )
+
+            # verify if organisation was added to organisation_request
+            self.assertEqual(organisation_request.organisation, organisation)
+
+            # verify if responsable aidant account was properly created and added to org
+            self.assertEqual(
+                1,
+                Aidant.objects.filter(email=organisation_request.manager.email).count(),
+            )
+            responsable = Aidant.objects.get(email=organisation_request.manager.email)
+
+            # verify if responsable was added to organisation
+            self.assertIn(responsable, organisation.responsables.all())
+            self.assertFalse(responsable.can_create_mandats)
+
+            # verify status
+            self.assertEqual(
+                organisation_request.status, RequestStatusConstants.VALIDATED.value
+            )
+
+            # verify if aidants were created
+            for aidant_request in organisation_request.aidant_requests.all():
+                self.assertTrue(
+                    HabilitationRequest.objects.filter(
+                        organisation=organisation, email=aidant_request.email
+                    ).exists(),
+                    f"Habilitation request was not created for {aidant_request.email}",
+                )
+            # check if responsable is on the list of aidants too
+            self.assertTrue(
+                HabilitationRequest.objects.filter(
+                    organisation=organisation, email=organisation_request.manager.email
+                ).exists()
+            )
+
+    def test_accept_fails_when_organisation_already_exists(self):
         def prepare_data():
+            OrganisationFactory(
+                data_pass_id=67245456,
+            )
             organisation_request = OrganisationRequestFactory(
                 status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
                 data_pass_id=67245456,
@@ -73,51 +160,13 @@ class OrganisationRequestTests(TestCase):
             return organisation_request
 
         organisation_request = prepare_data()
-        result = organisation_request.accept_request_and_create_organisation()
-
-        # verify if organisation was created
-        self.assertTrue(result, "Result of method call should be True")
-        self.assertTrue(
-            Organisation.objects.filter(
-                data_pass_id=organisation_request.data_pass_id
-            ).exists(),
-            "Organisation should have been created",
-        )
-        organisation = Organisation.objects.get(
-            data_pass_id=organisation_request.data_pass_id
-        )
-
-        # verify if organisation was added to organisation_request
-        self.assertEqual(organisation_request.organisation, organisation)
-
-        # verify if responsable aidant account was properly created and added to org
-        self.assertEqual(
-            1, Aidant.objects.filter(email=organisation_request.manager.email).count()
-        )
-        responsable = Aidant.objects.get(email=organisation_request.manager.email)
-
-        # verify if responsable was added to organisation
-        self.assertIn(responsable, organisation.responsables.all())
-        self.assertFalse(responsable.can_create_mandats)
+        with self.assertRaises(Organisation.AlreadyExists):
+            organisation_request.accept_request_and_create_organisation(),
 
         # verify status
         self.assertEqual(
-            organisation_request.status, RequestStatusConstants.VALIDATED.value
-        )
-
-        # verify if aidants were created
-        for aidant_request in organisation_request.aidant_requests.all():
-            self.assertTrue(
-                HabilitationRequest.objects.filter(
-                    organisation=organisation, email=aidant_request.email
-                ).exists(),
-                f"Habilitation request has not been created for {aidant_request.email}",
-            )
-        # check if responsable is on the list of aidants too
-        self.assertTrue(
-            HabilitationRequest.objects.filter(
-                organisation=organisation, email=organisation_request.manager.email
-            ).exists()
+            organisation_request.status,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
         )
 
 
