@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 
 from django_reverse_admin import ReverseModelAdmin
@@ -15,6 +16,7 @@ from aidants_connect_habilitation.models import (
     OrganisationRequest,
     RequestMessage,
 )
+from aidants_connect_web.models import Organisation
 
 
 class OrganisationRequestInline(VisibleToAdminMetier, TabularInline):
@@ -50,15 +52,42 @@ class MessageInline(VisibleToAdminMetier, StackedInline):
 
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     list_filter = ("status", RegionFilter, DepartmentFilter)
-    list_display = ("name", "issuer", "status")
-    raw_id_fields = ("issuer",)
-    readonly_fields = ("public_service_delegation_attestation", "uuid")
+    list_display = ("name", "issuer", "status", "data_pass_id")
+    search_fields = ("data_pass_id", "name")
+    raw_id_fields = ("issuer", "organisation")
+    readonly_fields = ("public_service_delegation_attestation", "uuid", "organisation")
     inlines = (
         AidantRequestInline,
         MessageInline,
     )
     inline_type = "stacked"
     inline_reverse = ("manager",)
+
+    actions = ("accept_request",)
+
+    def accept_request(self, request, queryset):
+        orgs_created = 0
+        for organisation_request in queryset:
+            try:
+                if organisation_request.accept_request_and_create_organisation():
+                    orgs_created += 1
+            except Organisation.AlreadyExists as e:
+                self.message_user(request, e, level=messages.ERROR)
+        if orgs_created > 1:
+            self.message_user(
+                request,
+                f"{orgs_created} organisations ont été créées.",
+                level=messages.SUCCESS,
+            )
+        elif orgs_created == 1:
+            self.message_user(
+                request, "Une organisation a été créée.", level=messages.SUCCESS
+            )
+
+    accept_request.short_description = (
+        "Accepter les demandes sélectionnées "
+        "(créer les organisations et les aidants à former)"
+    )
 
 
 if settings.AC_HABILITATION_FORM_ENABLED:

@@ -96,6 +96,9 @@ class Organisation(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    class AlreadyExists(Exception):
+        pass
+
     @cached_property
     def num_active_aidants(self):
         return self.aidants.active().count()

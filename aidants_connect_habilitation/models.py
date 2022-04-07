@@ -3,8 +3,9 @@ from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.db.models import SET_NULL, Q
+from django.db.utils import IntegrityError
 from django.dispatch import Signal
 from django.http import HttpRequest
 from django.urls import reverse
@@ -18,7 +19,12 @@ from aidants_connect.common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_web.models import OrganisationType
+from aidants_connect_web.models import (
+    Aidant,
+    HabilitationRequest,
+    Organisation,
+    OrganisationType,
+)
 from aidants_connect_web.utilities import generate_new_datapass_id
 
 __all__ = [
@@ -162,6 +168,13 @@ class Manager(PersonWithResponsibilities):
 
 
 class OrganisationRequest(models.Model):
+    organisation = models.ForeignKey(
+        Organisation,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+
     issuer = models.ForeignKey(
         Issuer,
         on_delete=models.CASCADE,
@@ -280,6 +293,70 @@ class OrganisationRequest(models.Model):
         self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         self.data_pass_id = int(f"{self.zipcode[:3]}{generate_new_datapass_id()}")
         self.save()
+
+    @transaction.atomic
+    def accept_request_and_create_organisation(self):
+        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
+            return False
+
+        try:
+            organisation = Organisation.objects.create(
+                name=self.name,
+                type=(self.type_other if self.type_other else self.type),
+                siret=self.siret,
+                address=self.address,
+                zipcode=self.zipcode,
+                city=self.city,
+                data_pass_id=self.data_pass_id,
+            )
+        except IntegrityError:
+            raise Organisation.AlreadyExists(
+                "Il existe déjà une organisation portant le n° datapass "
+                f"{self.data_pass_id}."
+            )
+
+        self.organisation = organisation
+        self.status = RequestStatusConstants.VALIDATED.name
+        self.save()
+
+        responsable_query = Aidant.objects.filter(username=self.manager.email)
+
+        if not responsable_query.exists():
+            responsable = Aidant.objects.create(
+                first_name=self.manager.first_name,
+                last_name=self.manager.last_name,
+                email=self.manager.email,
+                phone=self.manager.phone,
+                profession=self.manager.profession,
+                organisation=organisation,
+                can_create_mandats=False,
+            )
+
+            responsable.responsable_de.add(organisation)
+            responsable.save()
+        else:
+            responsable = responsable_query[0]
+            responsable.responsable_de.add(organisation)
+            responsable.save()
+
+        for aidant in self.aidant_requests.all():
+            HabilitationRequest.objects.create(
+                first_name=aidant.first_name,
+                last_name=aidant.last_name,
+                email=aidant.email,
+                profession=aidant.profession,
+                organisation=organisation,
+            )
+        if self.manager.is_aidant:
+            HabilitationRequest.objects.create(
+                first_name=self.manager.first_name,
+                last_name=self.manager.last_name,
+                email=self.manager.email,
+                profession=self.manager.profession,
+                organisation=organisation,
+            )
+
+        return True
 
     class Meta:
         constraints = [
