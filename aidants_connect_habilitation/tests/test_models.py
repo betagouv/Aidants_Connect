@@ -16,6 +16,7 @@ from aidants_connect_habilitation.models import Issuer, IssuerEmailConfirmation
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
     IssuerFactory,
+    ManagerFactory,
     OrganisationRequestFactory,
 )
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
@@ -143,6 +144,58 @@ class OrganisationRequestTests(TestCase):
                     organisation=organisation, email=organisation_request.manager.email
                 ).exists()
             )
+
+    def test_accept_with_a_non_aidant_responsable(self):
+        def prepare_data_with_new_responsable():
+            organisation_request = OrganisationRequestFactory(
+                manager=ManagerFactory(is_aidant=False)
+            )
+            for _ in range(2):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        organisation_request = prepare_data_with_new_responsable()
+        organisation_request.accept_request_and_create_organisation()
+        created_organisation = Organisation.objects.get(
+            data_pass_id=organisation_request.data_pass_id
+        )
+        created_manager = Aidant.objects.get(
+            username=organisation_request.manager.email
+        )
+        self.assertFalse(created_manager.can_create_mandats)
+        self.assertIn(created_manager, created_organisation.responsables.all())
+        self.assertFalse(
+            HabilitationRequest.objects.filter(
+                email=created_manager.email, organisation=created_organisation
+            ).exists()
+        )
+
+        def prepare_data_with_existing_aidant_responsable():
+            organisation_request = OrganisationRequestFactory(
+                manager=ManagerFactory(is_aidant=False, email="dave@lopeur.net")
+            )
+            AidantFactory(username="dave@lopeur.net", can_create_mandats=True)
+            for _ in range(2):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        organisation_request = prepare_data_with_existing_aidant_responsable()
+        organisation_request.accept_request_and_create_organisation()
+        created_organisation = Organisation.objects.get(
+            data_pass_id=organisation_request.data_pass_id
+        )
+        created_manager = Aidant.objects.get(
+            username=organisation_request.manager.email
+        )
+        self.assertTrue(created_manager.can_create_mandats)
+        self.assertIn(created_manager, created_organisation.responsables.all())
+        self.assertFalse(
+            HabilitationRequest.objects.filter(
+                email=created_manager.email, organisation=created_organisation
+            ).exists()
+        )
 
     def test_accept_fails_when_organisation_already_exists(self):
         def prepare_data():
