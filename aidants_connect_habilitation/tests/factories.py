@@ -114,6 +114,7 @@ class DraftOrganisationRequestFactory(OrganisationRequestFactory):
     manager = None
 
     status = RequestStatusConstants.NEW.name
+    data_pass_id = None
 
 
 class AidantRequestFactory(DjangoModelFactory):
