@@ -60,40 +60,41 @@ class OrganisationRequestTests(TestCase):
             OrganisationRequestFactory(manager=None)
         self.assertIn("manager_set", str(cm.exception))
 
-    def prepare_data_for_nominal_case(self):
-        organisation_request = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            data_pass_id=67255555,
-        )
-        organisation_request.manager.is_aidant = True
-        organisation_request.manager.save()
-        for _ in range(3):
-            AidantRequestFactory(organisation=organisation_request)
-        organisation_request.save()
-        return organisation_request
-
-    def prepare_data_with_existing_responsable(self):
-        organisation_request = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            data_pass_id=69366666,
-        )
-        organisation_request.manager.is_aidant = True
-        organisation_request.manager.save()
-        # existing manager
-        AidantFactory(
-            email=organisation_request.manager.email,
-            username=organisation_request.manager.email,
-            can_create_mandats=False,
-        )
-        for _ in range(3):
-            AidantRequestFactory(organisation=organisation_request)
-        organisation_request.save()
-        return organisation_request
-
     def test_accept_when_it_should_work_fine(self):
+        def prepare_data_for_nominal_case():
+            organisation_request = OrganisationRequestFactory()
+            for _ in range(3):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        def prepare_data_for_org_with_type_other():
+            organisation_request = OrganisationRequestFactory(
+                type_id=RequestOriginConstants.OTHER.value,
+                type_other="My other type value",
+            )
+            for _ in range(3):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        def prepare_data_with_existing_responsable():
+            organisation_request = OrganisationRequestFactory()
+            # existing manager
+            AidantFactory(
+                email=organisation_request.manager.email,
+                username=organisation_request.manager.email,
+                can_create_mandats=False,
+            )
+            for _ in range(3):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
         for organisation_request in (
-            self.prepare_data_for_nominal_case(),
-            self.prepare_data_with_existing_responsable(),
+            prepare_data_for_nominal_case(),
+            prepare_data_for_org_with_type_other(),
+            prepare_data_with_existing_responsable(),
         ):
             result = organisation_request.accept_request_and_create_organisation()
 

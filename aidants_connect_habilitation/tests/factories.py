@@ -74,6 +74,7 @@ class OrganisationRequestFactory(DjangoModelFactory):
     manager = SubFactory(ManagerFactory)
 
     uuid = LazyFunction(uuid4)
+    data_pass_id = FuzzyInteger(10000000, 99999999)
 
     status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
 

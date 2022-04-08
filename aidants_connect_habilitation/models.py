@@ -300,9 +300,12 @@ class OrganisationRequest(models.Model):
             return False
 
         try:
+            organisation_type, _ = OrganisationType.objects.get_or_create(
+                name=(self.type_other if self.type_other else self.type)
+            )
             organisation = Organisation.objects.create(
                 name=self.name,
-                type=(self.type_other if self.type_other else self.type),
+                type=organisation_type,
                 siret=self.siret,
                 address=self.address,
                 zipcode=self.zipcode,
@@ -326,6 +329,7 @@ class OrganisationRequest(models.Model):
                 first_name=self.manager.first_name,
                 last_name=self.manager.last_name,
                 email=self.manager.email,
+                username=self.manager.email,
                 phone=self.manager.phone,
                 profession=self.manager.profession,
                 organisation=organisation,
