@@ -7,7 +7,7 @@ from factory import Faker as FactoryFaker
 from factory import LazyFunction, SubFactory
 from factory import lazy_attribute as factory_lazy_attribute
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
+from factory.fuzzy import FuzzyInteger, FuzzyText
 from faker import Faker
 from phonenumber_field.phonenumber import to_python
 
@@ -63,7 +63,7 @@ class ManagerFactory(DjangoModelFactory):
     zipcode = FactoryFaker("postcode")
     city = FactoryFaker("city")
 
-    is_aidant = FuzzyChoice([True, False])
+    is_aidant = True
 
     class Meta:
         model = Manager
@@ -75,15 +75,9 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
     uuid = LazyFunction(uuid4)
 
-    status = FuzzyChoice(
-        [
-            value
-            for value in RequestStatusConstants.values()
-            if value != RequestStatusConstants.NEW.name
-        ]
-    )
+    status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
 
-    type_id = FuzzyChoice(RequestOriginConstants.values)
+    type_id = RequestOriginConstants.SECRETARIATS_MAIRIE.value
     name = FactoryFaker("company")
     siret = FuzzyInteger(111_111_111, 999_999_999)
     address = FactoryFaker("street_address")
