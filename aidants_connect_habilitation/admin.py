@@ -101,12 +101,12 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     inline_type = "stacked"
     inline_reverse = ("manager",)
 
-    actions = ("accept_request",)
+    actions = ("accept_selected_requests",)
     change_form_template = (
         "aidants_connect_habilitation/admin/organisation_request/change_form.html"
     )
 
-    def accept_request(self, request, queryset):
+    def accept_selected_requests(self, request, queryset):
         orgs_created = 0
         for organisation_request in queryset:
             try:
@@ -125,7 +125,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
                 request, "Une organisation a été créée.", level=messages.SUCCESS
             )
 
-    accept_request.short_description = (
+    accept_selected_requests.short_description = (
         "Accepter les demandes sélectionnées "
         "(créer les organisations et les aidants à former)"
     )
@@ -134,13 +134,13 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         return [
             path(
                 "<path:object_id>/accept/",
-                self.admin_site.admin_view(self.accept_request),
+                self.admin_site.admin_view(self.accept_one_request),
                 name="aidants_connect_habilitation_organisationrequest_accept",
             ),
             *super().get_urls(),
         ]
 
-    def accept_request(self, request, object_id):
+    def accept_one_request(self, request, object_id):
         if request.method not in ["GET", "POST"]:
             return HttpResponseNotAllowed(["GET", "POST"])
         elif request.method == "GET":
