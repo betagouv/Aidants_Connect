@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 from django.http import HttpResponseNotAllowed
+from django.shortcuts import render
 from django.urls import path
 
 from django_reverse_admin import ReverseModelAdmin
@@ -12,6 +13,7 @@ from aidants_connect.admin import (
     VisibleToAdminMetier,
     admin_site,
 )
+from aidants_connect_habilitation.forms import AdminAcceptationForm
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
@@ -149,7 +151,24 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             return self.__accept_request_post(request, object_id)
 
     def __accept_request_get(self, request, object_id):
-        pass
+        object = OrganisationRequest.objects.get(id=object_id)
+        initial = {
+            "email_subject": f"Votre demande d'habilitation n° {object.data_pass_id}",
+            "email_body": f"{object.name} est maintenant habilitée.",
+        }
+        view_context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "object_id": object_id,
+            "object": object,
+            "form": AdminAcceptationForm(object, initial=initial),
+        }
+
+        return render(
+            request,
+            "aidants_connect_habilitation/admin/organisation_request/accept_form.html",
+            view_context,
+        )
 
     def __accept_request_post(self, request, object_id):
         pass
