@@ -16,6 +16,7 @@ from aidants_connect_habilitation.models import Issuer, IssuerEmailConfirmation
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
     IssuerFactory,
+    ManagerFactory,
     OrganisationRequestFactory,
 )
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
@@ -60,40 +61,41 @@ class OrganisationRequestTests(TestCase):
             OrganisationRequestFactory(manager=None)
         self.assertIn("manager_set", str(cm.exception))
 
-    def prepare_data_for_nominal_case(self):
-        organisation_request = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            data_pass_id=67255555,
-        )
-        organisation_request.manager.is_aidant = True
-        organisation_request.manager.save()
-        for _ in range(3):
-            AidantRequestFactory(organisation=organisation_request)
-        organisation_request.save()
-        return organisation_request
-
-    def prepare_data_with_existing_responsable(self):
-        organisation_request = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            data_pass_id=69366666,
-        )
-        organisation_request.manager.is_aidant = True
-        organisation_request.manager.save()
-        # existing manager
-        AidantFactory(
-            email=organisation_request.manager.email,
-            username=organisation_request.manager.email,
-            can_create_mandats=False,
-        )
-        for _ in range(3):
-            AidantRequestFactory(organisation=organisation_request)
-        organisation_request.save()
-        return organisation_request
-
     def test_accept_when_it_should_work_fine(self):
+        def prepare_data_for_nominal_case():
+            organisation_request = OrganisationRequestFactory()
+            for _ in range(3):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        def prepare_data_for_org_with_type_other():
+            organisation_request = OrganisationRequestFactory(
+                type_id=RequestOriginConstants.OTHER.value,
+                type_other="My other type value",
+            )
+            for _ in range(3):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        def prepare_data_with_existing_responsable():
+            organisation_request = OrganisationRequestFactory()
+            # existing manager
+            AidantFactory(
+                email=organisation_request.manager.email,
+                username=organisation_request.manager.email,
+                can_create_mandats=False,
+            )
+            for _ in range(3):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
         for organisation_request in (
-            self.prepare_data_for_nominal_case(),
-            self.prepare_data_with_existing_responsable(),
+            prepare_data_for_nominal_case(),
+            prepare_data_for_org_with_type_other(),
+            prepare_data_with_existing_responsable(),
         ):
             result = organisation_request.accept_request_and_create_organisation()
 
@@ -142,6 +144,58 @@ class OrganisationRequestTests(TestCase):
                     organisation=organisation, email=organisation_request.manager.email
                 ).exists()
             )
+
+    def test_accept_with_a_non_aidant_responsable(self):
+        def prepare_data_with_new_responsable():
+            organisation_request = OrganisationRequestFactory(
+                manager=ManagerFactory(is_aidant=False)
+            )
+            for _ in range(2):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        organisation_request = prepare_data_with_new_responsable()
+        organisation_request.accept_request_and_create_organisation()
+        created_organisation = Organisation.objects.get(
+            data_pass_id=organisation_request.data_pass_id
+        )
+        created_manager = Aidant.objects.get(
+            username=organisation_request.manager.email
+        )
+        self.assertFalse(created_manager.can_create_mandats)
+        self.assertIn(created_manager, created_organisation.responsables.all())
+        self.assertFalse(
+            HabilitationRequest.objects.filter(
+                email=created_manager.email, organisation=created_organisation
+            ).exists()
+        )
+
+        def prepare_data_with_existing_aidant_responsable():
+            organisation_request = OrganisationRequestFactory(
+                manager=ManagerFactory(is_aidant=False, email="dave@lopeur.net")
+            )
+            AidantFactory(username="dave@lopeur.net", can_create_mandats=True)
+            for _ in range(2):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        organisation_request = prepare_data_with_existing_aidant_responsable()
+        organisation_request.accept_request_and_create_organisation()
+        created_organisation = Organisation.objects.get(
+            data_pass_id=organisation_request.data_pass_id
+        )
+        created_manager = Aidant.objects.get(
+            username=organisation_request.manager.email
+        )
+        self.assertTrue(created_manager.can_create_mandats)
+        self.assertIn(created_manager, created_organisation.responsables.all())
+        self.assertFalse(
+            HabilitationRequest.objects.filter(
+                email=created_manager.email, organisation=created_organisation
+            ).exists()
+        )
 
     def test_accept_fails_when_organisation_already_exists(self):
         def prepare_data():
