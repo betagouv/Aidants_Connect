@@ -372,6 +372,10 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
     template_name = "view_organisation_request.html"
     form_class = RequestMessageForm
 
+    @property
+    def step(self) -> HabilitationFormStep:
+        return HabilitationFormStep.SUMMARY
+
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
@@ -387,5 +391,17 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
         message.sender = MessageStakeholders.ISSUER.value
         message.organisation = self.organisation
         message.save()
+
+        if self.request.GET.get("http-api", False):
+            return self.response_class(
+                request=self.request,
+                template="request_messages/_message_item.html",
+                context={
+                    "message": message,
+                    "issuer": self.issuer,
+                },
+                using=self.template_engine,
+                content_type="text/html; charset=utf-8",
+            )
 
         return super().form_valid(form)

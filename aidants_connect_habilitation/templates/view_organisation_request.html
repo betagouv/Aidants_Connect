@@ -1,5 +1,5 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras %}
+{% load static form_extras ac_common %}
 
 {% block title %}
 Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
@@ -17,62 +17,7 @@ Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
     <br>
     {% include "edito/_aide_etats_demandes_habilitation.html" with status=organisation.status %}
   </p>
-  <h2>Vos échanges avec Aidants Connect</h2>
-  <div class="fr-grid-row fr-grid-row--gutters">
-    <div class="fr-col-12 fr-col-md-8">
-      <div class="shadowed">
-        <div class="messages-list-container">
-          <ol class="messages-list">
-            {% for message in organisation.messages.all %}
-            <li>
-              <div class="fr-grid-row fr-grid-row--gutters">
-                {% if message.sender == "AC" %}
-                <div class="fr-col-4 text-blue"><strong>Aidants Connect</strong>
-                  <p class="more-info-messages">{{ message.created_at }}</p>
-                </div>
-                {% else %}
-                <div class="fr-col-4 text-red">
-                  <strong>{{ organisation.issuer.first_name }} {{ organisation.issuer.last_name }}</strong>
-                  <p class="more-info-messages">{{ message.created_at }}</p>
-                </div>
-                {% endif %}
-                <div class="fr-col-8">{{ message.content|linebreaksbr }}</div>
-              </div>
-            </li>
-            {% empty %}
-            <li>
-              <div class="fr-grid-row fr-grid-row--gutters">
-                <div class="fr-col-4 text-blue"><strong>Aidants Connect</strong></div>
-                <div class="fr-col-8">
-                  <p class="more-info-messages"><strong>Notre conversation démarre ici.</strong></p>
-                  <p class="more-info-messages">
-                    Vous retrouverez ici vos échanges par écrit avec l’équipe d’Aidants Connect. Vous pouvez utiliser
-                    l’interface ci-dessous pour envoyer un message,
-                    une remarque ou une demande complémentaire.</p>
-                  <p class="more-info-messages">Nous vous répondrons dans les meilleurs délais.</p>
-                </div>
-              </div>
-            </li>
-            {% endfor %}
-          </ol>
-        </div>
-        <div class="message-form-container">
-          <form method="post">
-            {% csrf_token %}
-            <div class="fr-grid-row fr-grid-row--gutters">
-              <label class="fr-col-4" for="{{ form.content.id_for_label }}">Votre message</label>
-              <div class="fr-col-6">
-                {{ form.content }}
-              </div>
-              <div class="fr-col-2">
-                <button type="submit" class="button primary">Envoyer</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+  {% include "request_messages/_messages.html" with issuer=organisation.issuer messages=organisation.messages form=form %}
   <h2>Rappel de votre saisie</h2>
   {% include "_display_org_request.html" with organisation=organisation show_all_buttons=False %}
 
@@ -84,4 +29,10 @@ Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
   </div>
 
 </div>{# fr-container #}
+{% endblock %}
+
+
+{% block extrajs %}
+  {% stimulusjs %}
+  <script src="{% static 'js/message_form.js' %}"></script>
 {% endblock %}
