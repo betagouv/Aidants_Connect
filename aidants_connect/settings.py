@@ -269,42 +269,42 @@ DEMARCHES = {
         "titre_court": "Papiers",
         "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",
         "service_exemples": ["ANTS", "Défenseur des droits"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/papiers.png",
+        "icon": "/static/images/icons/papiers.svg",
     },
     "famille": {
         "titre": "Famille",
         "titre_court": "Famille",
         "description": "Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
         "service_exemples": ["CAF", "ameli.fr", "EduConnect"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/famille.png",
+        "icon": "/static/images/icons/famille.svg",
     },
     "social": {
         "titre": "Social - Santé",
         "titre_court": "Social",
         "description": "Carte vitale, Chômage, Handicap, RSA, Personnes âgées…",
         "service_exemples": ["ameli.fr", "MSA", "RSI"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/sante.png",
+        "icon": "/static/images/icons/social.svg",
     },
     "travail": {
         "titre": "Travail",
         "titre_court": "Travail",
         "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
         "service_exemples": ["Pôle emploi", "Mon compte formation", "info-retraite.fr"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/travail.png",
+        "icon": "/static/images/icons/travail.svg",
     },
     "logement": {
         "titre": "Logement",
         "titre_court": "Logement",
         "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",
         "service_exemples": ["CAF", "Enedis"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/logement.png",
+        "icon": "/static/images/icons/logement.svg",
     },
     "transports": {
         "titre": "Transports",
         "titre_court": "Transports",
         "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",
         "service_exemples": ["ANTS", "ANTAI", "Crit'air"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/transports.png",
+        "icon": "/static/images/icons/transports.svg",
     },
     "argent": {
         "titre": "Argent",
@@ -312,28 +312,28 @@ DEMARCHES = {
         "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
         "Surendettement…",
         "service_exemples": ["Impots.gouv", "Timbres fiscaux", "Banque"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/argent.png",
+        "icon": "/static/images/icons/argent.svg",
     },
     "justice": {
         "titre": "Justice",
         "titre_court": "Justice",
         "description": "Casier judiciaire, Plainte, Aide juridictionnelle, Saisie…",
         "service_exemples": ["Télérecours citoyens"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/justice.png",
+        "icon": "/static/images/icons/justice.svg",
     },
     "etranger": {
         "titre": "Étranger",
         "titre_court": "Étranger",
         "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",
         "service_exemples": ["OFPRA"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/etrangers.png",
+        "icon": "/static/images/icons/etranger.svg",
     },
     "loisirs": {
         "titre": "Loisirs",
         "titre_court": "Loisirs",
         "description": "Animaux, Permis bateau, Tourisme, Permis de chasser…",
         "service_exemples": ["Ariane"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/loisirs.png",
+        "icon": "/static/images/icons/loisirs.svg",
     },
 }
 
@@ -410,7 +410,7 @@ CSP_SCRIPT_SRC = (
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
-    "'sha256-DM0f186WlGtJV99jJNdmczhQNXxjeVwlm84IoOUIPOo='",  # statistiques.html
+    "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
 )
 CSP_STYLE_SRC = ("'self'",)

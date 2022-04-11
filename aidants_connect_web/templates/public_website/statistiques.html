@@ -11,13 +11,14 @@
 
 {% block content %}
 <div class="fr-container">
-  <h1>Statistiques: Aidants Connect en chiffres</h1>
-  <p><strong>Nous sommes ravis de constater l’utilisation grandissante d’Aidants Connect !
+  <h1>Statistiques&nbsp;:
+     <br>Aidants Connect en chiffres</h1>
+  <p class="subtitle">Nous sommes ravis de constater l’utilisation grandissante d’Aidants Connect !
       <br>Vous pouvez consulter ici toutes les statistiques concernant le projet, mises à jour en temps réel.</strong>
   </p>
 
-  <h2 class="h3 uppercase">Utilisation</h2>
-  <p>Texte sensé décrire ce qu’on constate en dessous, peut être expliquer ce qu’est une démarche administrative, mise
+  <h2 class="h3">Utilisation</h2>
+  <p>Texte censé décrire ce qu’on constate en dessous, peut être expliquer ce qu’est une démarche administrative, mise
     en contexte etc.
     <br>enfin vous m’avez compris, j’essaie de faire une grande phrase pour voir ce que ça donne sur deux
     lignes.
@@ -28,16 +29,16 @@
       <div class="shadowed">
         <div class="fr-grid-row fr-grid-row--gutters">
           <div class="fr-col-12 fr-col-md-4">
-            <p class="stats-number">{{ autorisation_use_count }}</p>
-            <p class="stats-text">Démarches administratives réalisés</p>
+            <h3 class="stats-number">{{ autorisation_use_count }}</h3>
+            <h3 class="stats-text">Démarches administratives réalisés</h3>
           </div>
           <div class="fr-col-12 fr-col-md-4">
-            <p class="stats-number">{{ usagers_with_mandat_count }}</p>
-            <p class="stats-text">Personnes accompagnées</p>
+            <h3 class="stats-number">{{ usagers_with_mandat_count }}</h3>
+            <h3 class="stats-text">Personnes accompagnées</h3>
           </div>
           <div class="fr-col-12 fr-col-md-4">
-            <p class="stats-number">{{ mandats_count }}</p>
-            <p class="stats-text">Mandats crées</p>
+            <h3 class="stats-number">{{ mandats_count }}</h3>
+            <h3 class="stats-text">Mandats crées</h3>
           </div>
         </div>
       </div>
@@ -47,9 +48,11 @@
   <br>
 
   <h2 class="h3">Par type de démarche</h2>
+  <p>Texte censé décrire ce qu’on constate en dessous, peut être expliquer ce qu’est une démarche administrative, mise en contexte etc.
+    <br>enfin vous m’avez compris, j’essaie de faire une grande phrase pour voir ce que ça donne sur deux lignes.</p>
   <div class="fr-grid-row">
     <div class="fr-col-12 fr-col-lg-10">
-      <div class="shadowed">
+      <div class="shadowed stats-shadowed">
         <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
           <table>
             <tr>
@@ -71,19 +74,19 @@
   <br>
 
   <h2 class="h3">Déploiement</h2>
-  <p>Texte sensé décrire ce qu’on constate en dessous, faire un rappel de ce qu’est l’habilitation, pourquoi elle
+  <p>Texte censé décrire ce qu’on constate en dessous, faire un rappel de ce qu’est l’habilitation, pourquoi elle
     existe, rediriger vers la page qui détaille les étapes ?</p>
   <div class="fr-grid-row fr-grid-row--gutters">
     <div class="fr-col-md-6 fr-col-lg-5">
       <div class="shadowed">
         <div class="fr-grid-row">
           <div class="fr-col-6">
-            <p class="stats-number">{{ aidants_count }}</p>
-            <p class="stats-text">Aidants habilités</p>
+            <h3 class="stats-number">{{ aidants_count }}</h3>
+            <h3 class="stats-text">Aidants habilités</h3>
           </div>
           <div class="fr-col-6">
-            <p class="stats-number">{{ aidants_accrediting_count }}</p>
-            <p class="stats-text">Aidants en cours d’habilitation</p>
+            <h3 class="stats-number">{{ aidants_accrediting_count }}</h3>
+            <h3 class="stats-text">Aidants en cours d’habilitation</h3>
           </div>
         </div>
       </div>
@@ -92,16 +95,20 @@
       <div class="shadowed">
         <div class="fr-grid-row">
           <div class="fr-col-6">
-            <p class="stats-number">{{ organisations_accredited_count }}</p>
-            <p class="stats-text">Structures habilitées</p>
+            <h3 class="stats-number">{{ organisations_accredited_count }}</h3>
+            <h3 class="stats-text">Structures habilitées</h3>
           </div>
           <div class="fr-col-6">
-            <p class="stats-number">{{ organisations_not_accredited_count }}</p>
-            <p class="stats-text">Structures en cours d’habilitation</p>
+            <h3 class="stats-number">{{ organisations_not_accredited_count }}</h3>
+            <h3 class="stats-text">Structures en cours d’habilitation</h3>
           </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <p></p>
   </div>
 
 
@@ -119,9 +126,16 @@
 
   var ctx = document.getElementById('mandats-chart').getContext('2d');
 
-  Chart.defaults.font.size = 16;
+
+  if (window.innerWidth > 600) {
+    Chart.defaults.font.size = 16;
+  }
+  if (window.innerWidth <= 600) {
+    Chart.defaults.font.size = 10;
+  }
   Chart.defaults.font.family = "Marianne";
   Chart.defaults.color = "#5770BE";
+  Chart.defaults.plugins.tooltip.enabled = false;
 
   icons = [];
   for (let i=0; i<=data.icons.length-1; i++){
@@ -130,20 +144,17 @@
     icons.push(image);
   }
 
-  console.log(icons[0]);
-  var img1 = new Image();
-
-  img1.src = 'https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/papiers.png';
-
   const afterDraw = {
     id: "afterDraw",
     afterDraw(chart, args, options) {
         const {ctx, chartArea : {top, bottom, left, right, width, height},
           scales : {x, y}} = chart;
           ctx.save();
-          for (let i=0; i<= data.labels.length - 1; i++) {
-            img = icons[i];
-            ctx.drawImage(img, x.getPixelForTick(i)-30, y.bottom+5, 60, 60);
+          if (window.innerWidth > 600) {
+            for (let i=0; i<= data.labels.length - 1; i++) {
+              img = icons[i];
+              ctx.drawImage(img, x.getPixelForTick(i)-42, y.bottom+10, 84, 60);
+            }
           }
         }
   };
@@ -155,14 +166,14 @@
       datasets: [{
         label: 'Nombre de démarches',
         backgroundColor: '#FAD776',
-        data: [5000, 4500, 2000, 2000, 1000, 500, 400, 60, 50, 15],
+        data: data.data,
       }]
     },
     plugins : [ChartDataLabels, afterDraw],
     options: {
       layout : {
         padding : {
-          top : 20,
+          top : window.innerWidth > 600 ? 20 : 5
         }
       },
       responsive: true,
@@ -192,7 +203,7 @@
             drawBorder: false
           },
           ticks : {
-            padding: 50
+            padding : window.innerWidth > 600 ? 60 : 0
           }
         },
         y: {
