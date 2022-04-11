@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
+from django.http import HttpResponseNotAllowed
+from django.urls import path
 
 from django_reverse_admin import ReverseModelAdmin
 
@@ -64,6 +66,9 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     inline_reverse = ("manager",)
 
     actions = ("accept_request",)
+    change_form_template = (
+        "aidants_connect_habilitation/admin/organisation_request/change_form.html"
+    )
 
     def accept_request(self, request, queryset):
         orgs_created = 0
@@ -88,6 +93,30 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "Accepter les demandes sélectionnées "
         "(créer les organisations et les aidants à former)"
     )
+
+    def get_urls(self):
+        return [
+            path(
+                "<path:object_id>/accept/",
+                self.admin_site.admin_view(self.accept_request),
+                name="aidants_connect_habilitation_organisationrequest_accept",
+            ),
+            *super().get_urls(),
+        ]
+
+    def accept_request(self, request, object_id):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__accept_request_get(request, object_id)
+        else:
+            return self.__accept_request_post(request, object_id)
+
+    def __accept_request_get(self, request, object_id):
+        pass
+
+    def __accept_request_post(self, request, object_id):
+        pass
 
 
 if settings.AC_HABILITATION_FORM_ENABLED:
