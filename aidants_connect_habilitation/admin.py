@@ -1,9 +1,13 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
+from django.core.mail import send_mail
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import render
+from django.template import loader
 from django.urls import path
+from django.utils.html import linebreaks
+from django.utils.safestring import mark_safe
 
 from django_reverse_admin import ReverseModelAdmin
 
@@ -171,7 +175,32 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
 
     def __accept_request_post(self, request, object_id):
-        pass
+        object = OrganisationRequest.objects.get(id=object_id)
+        form = AdminAcceptationForm(object, data=request.POST)
+        if not form.is_valid():
+            return HttpResponseNotAllowed()
+
+        object.accept_request_and_create_organisation()
+
+        subject = form.cleaned_data.get("email_subject")
+        body_text = form.cleaned_data.get("email_body")
+
+        text_message = body_text
+        html_message = loader.render_to_string(
+            "email/empty.html", {"content": mark_safe(linebreaks(body_text))}
+        )
+
+        recipients = set(object.aidant_requests.values_list("email", flat=True))
+        recipients.add(object.manager.email)
+        recipients.add(object.issuer.email)
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_ACCEPTANCE_FROM,
+            recipient_list=list(recipients),
+            subject=subject,
+            message=text_message,
+            html_message=html_message,
+        )
 
 
 if settings.AC_HABILITATION_FORM_ENABLED:
