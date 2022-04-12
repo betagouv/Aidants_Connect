@@ -118,6 +118,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             try:
                 if organisation_request.accept_request_and_create_organisation():
                     orgs_created += 1
+                    self.send_acceptance_email(organisation_request)
             except Organisation.AlreadyExists as e:
                 self.message_user(request, e, level=messages.ERROR)
         if orgs_created > 1:
@@ -212,10 +213,21 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
 
     def send_acceptance_email(self, object, body_text=None, subject=None):
-        text_message = body_text
+        if body_text:
+            text_message = body_text
+        else:
+            text_message = loader.render_to_string(
+                "email/demande_acceptee.txt", {"organisation": object}
+            )
         html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(body_text))}
+            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
         )
+
+        if subject is None:
+            subject = (
+                "Aidants Connect - la demande d'habilitation n° "
+                f"{object.data_pass_id} a été acceptée"
+            )
 
         recipients = set(object.aidant_requests.values_list("email", flat=True))
         recipients.add(object.manager.email)
