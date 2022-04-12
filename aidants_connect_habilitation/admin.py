@@ -2,10 +2,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 from django.core.mail import send_mail
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
-from django.urls import path
+from django.urls import path, reverse
 from django.utils.html import linebreaks
 from django.utils.safestring import mark_safe
 
@@ -181,10 +181,30 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             return HttpResponseNotAllowed()
 
         object.accept_request_and_create_organisation()
-
         subject = form.cleaned_data.get("email_subject")
         body_text = form.cleaned_data.get("email_body")
+        self.send_acceptance_email(object, body_text, subject)
 
+        aidant_count = object.aidant_requests.count()
+        if object.manager.is_aidant:
+            aidant_count += 1
+        self.message_user(
+            request,
+            (
+                f"Tout s'est bien passé. La demande {object.data_pass_id} a "
+                f"été acceptée. L'organisation {object.name} et le compte aidant "
+                f"du responsable ont été créés. Les {aidant_count} aidants à former "
+                "nécessaires ont été créés également."
+            ),
+        )
+
+        return HttpResponseRedirect(
+            reverse(
+                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
+            )
+        )
+
+    def send_acceptance_email(self, object, body_text=None, subject=None):
         text_message = body_text
         html_message = loader.render_to_string(
             "email/empty.html", {"content": mark_safe(linebreaks(body_text))}
