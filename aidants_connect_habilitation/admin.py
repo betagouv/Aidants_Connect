@@ -156,9 +156,16 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 
     def __accept_request_get(self, request, object_id):
         object = OrganisationRequest.objects.get(id=object_id)
+        email_body = loader.render_to_string(
+            "email/demande_acceptee.txt", {"organisation": object}
+        )
+        email_subject = (
+            "Aidants Connect - la demande d'habilitation n° "
+            f"{object.data_pass_id} a été acceptée"
+        )
         initial = {
-            "email_subject": f"Votre demande d'habilitation n° {object.data_pass_id}",
-            "email_body": f"{object.name} est maintenant habilitée.",
+            "email_subject": email_subject,
+            "email_body": email_body,
         }
         view_context = {
             **self.admin_site.each_context(request),
