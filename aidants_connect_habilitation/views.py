@@ -87,6 +87,10 @@ class LateStageRequestView(VerifiedEmailIssuerView, View):
 
 
 class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
+    @property
+    def step(self) -> HabilitationFormStep:
+        raise NotImplementedError()
+
     def dispatch(self, request, *args, **kwargs):
         if not self.issuer.email_verified:
             # Duplicate logic of VerifiedEmailIssuerView
