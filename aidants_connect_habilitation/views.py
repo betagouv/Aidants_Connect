@@ -372,10 +372,6 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
     template_name = "view_organisation_request.html"
     form_class = RequestMessageForm
 
-    @property
-    def step(self) -> HabilitationFormStep:
-        return HabilitationFormStep.SUMMARY
-
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),

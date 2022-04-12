@@ -7,7 +7,6 @@ from django.forms import (
     BooleanField,
     CharField,
     ChoiceField,
-    ModelForm,
     Textarea,
     modelformset_factory,
 )
@@ -388,8 +387,12 @@ class ValidationForm(PatchedForm):
     save.alters_data = True
 
 
-class RequestMessageForm(ModelForm):
+class RequestMessageForm(PatchedErrorListForm):
     content = CharField(label="Votre message", widget=Textarea(attrs={"rows": 2}))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.widget_attrs("content", {"data-message-form-target": "textarea"})
 
     class Meta:
         model = models.RequestMessage

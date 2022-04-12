@@ -21,16 +21,13 @@
 
             let dest = new URL(this.formTarget.action, location.origin);
             dest.searchParams.append("http-api", "true");
-            let formData = new FormData(this.formTarget);
 
             this.onGoingRequestValue = true;
 
             let response = await fetch(dest.toString(), {
                 method: this.formTarget.method.toUpperCase(),
-                body: formData,
-            }).finally(() => {
-                this.onGoingRequestValue = false;
-            });
+                body: new FormData(this.formTarget),
+            }).finally(() => {this.onGoingRequestValue = false});
 
             if (response.ok) {
                 let html = await response.text();
@@ -43,7 +40,17 @@
             }
         }
 
-        static targets = ["form", "emptyElement", "messagesList"]
+        onGoingRequestValueChanged(value, _) {
+            if (value) {
+                this.submitBtnTarget.setAttribute("disabled", "disabled");
+                this.textareaTarget.setAttribute("disabled", "disabled");
+            } else {
+                this.submitBtnTarget.removeAttribute("disabled");
+                this.textareaTarget.removeAttribute("disabled");
+            }
+        }
+
+        static targets = ["form", "emptyElement", "messagesList", "submitBtn", "textarea"]
         static values = {"onGoingRequest": Boolean}
     }
 
