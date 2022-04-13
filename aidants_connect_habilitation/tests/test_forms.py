@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 from django.test import TestCase
 
 from aidants_connect.common.constants import (
+    MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
@@ -217,6 +218,7 @@ class TestValidationFormForm(TestCase):
         form = ValidationForm(
             data={name: True for name in TestValidationFormForm.names_attr}
         )
+        form.data["message_content"] = "Bonjour"
         form.is_valid()
 
         orga = form.save(organisation=orga_request)
@@ -227,3 +229,5 @@ class TestValidationFormForm(TestCase):
             self.assertTrue(getattr(orga, name))
             for name in TestValidationFormForm.names_attr
         ]
+        self.assertEqual(orga.messages.all()[0].content, "Bonjour")
+        self.assertEqual(orga.messages.all()[0].sender, MessageStakeholders.ISSUER.name)

@@ -384,7 +384,7 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
 
     def form_valid(self, form):
         message: RequestMessage = form.save(commit=False)
-        message.sender = MessageStakeholders.ISSUER.value
+        message.sender = MessageStakeholders.ISSUER.name
         message.organisation = self.organisation
         message.save()
 
