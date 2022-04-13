@@ -1,0 +1,60 @@
+{% comment %}
+Context:
+{
+  "messages": List[RequestMessage],
+  "issuer": Issuer,
+  "form": RequestMessageForm,
+}
+{% endcomment %}
+<h2>Vos échanges avec Aidants Connect</h2>
+<div
+  class="fr-grid-row fr-grid-row--gutters"
+  data-controller="message-form"
+>
+  <div class="fr-col-12 fr-col-md-8">
+    <div class="shadowed">
+      <div class="messages-list-container">
+        <ol class="messages-list" data-message-form-target="messagesList">
+          {% for message in messages.all %}
+            {% include "request_messages/_message_item.html" with issuer=issuer message=message %}
+          {% empty %}
+            <li data-message-form-target="emptyElement">
+              <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-4 text-blue"><strong>Aidants Connect</strong></div>
+                <div class="fr-col-8">
+                  <p class="more-info-messages"><strong>Notre conversation démarre ici.</strong></p>
+                  <p class="more-info-messages">
+                    Vous retrouverez ici vos échanges par écrit avec l’équipe d’Aidants Connect. Vous pouvez utiliser
+                    l’interface ci-dessous pour envoyer un message,
+                    une remarque ou une demande complémentaire.</p>
+                  <p class="more-info-messages">Nous vous répondrons dans les meilleurs délais.</p>
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+      </div>
+      <div class="message-form-container">
+        <form method="post" data-message-form-target="form">
+          {% csrf_token %}
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <label class="fr-col-4" for="{{ form.content.id_for_label }}">Votre message</label>
+            <div class="fr-col-6">
+              {{ form.content }}
+            </div>
+            <div class="fr-col-2">
+              <button
+                type="submit"
+                class="button primary"
+                data-action="message-form#onSubmit"
+                data-message-form-target="submitBtn"
+              >
+                Envoyer
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

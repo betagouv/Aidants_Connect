@@ -1,0 +1,23 @@
+{% comment %}
+Context:
+{
+  "message": RequestMessage,
+  "issuer": Issuer,
+}
+{% endcomment %}
+<li>
+  <div class="fr-grid-row fr-grid-row--gutters">
+    {% if message.sender == "AC" %}
+      <div class="fr-col-4 text-blue">
+        <strong>"Aidant Connect</strong>
+        <p class="more-info-messages">{{ message.created_at }}</p>
+      </div>
+    {% else %}
+      <div class="fr-col-4 text-red">
+        <strong>{{ issuer.first_name }} {{ issuer.last_name }}</strong>
+        <p class="more-info-messages">{{ message.created_at }}</p>
+      </div>
+    {% endif %}
+    <div class="fr-col-8">{{ message.content|linebreaksbr }}</div>
+  </div>
+</li>
