@@ -17,7 +17,7 @@ from django.utils.html import format_html
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from aidants_connect.common.constants import RequestOriginConstants
+from aidants_connect.common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect.common.forms import (
     PatchedErrorList,
     PatchedErrorListForm,
@@ -29,6 +29,7 @@ from aidants_connect_habilitation.models import (
     Manager,
     OrganisationRequest,
     PersonWithResponsibilities,
+    RequestMessage,
 )
 from aidants_connect_web.models import OrganisationType
 
@@ -372,6 +373,9 @@ class ValidationForm(PatchedForm):
         "Aidants Connect. Le responsable Aidants Connect ainsi que les aidants "
         "à habiliter ne sont pas des élus.",
     )
+    message_content = CharField(
+        label="Votre message", required=False, widget=Textarea(attrs={"rows": 4})
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -382,6 +386,12 @@ class ValidationForm(PatchedForm):
         self, organisation: OrganisationRequest, commit=True
     ) -> OrganisationRequest:
         organisation.prepare_request_for_ac_validation(self.cleaned_data)
+        if self.cleaned_data["message_content"] != "":
+            RequestMessage.objects.create(
+                organisation=organisation,
+                sender=MessageStakeholders.ISSUER.name,
+                content=self.cleaned_data["message_content"],
+            )
         return organisation
 
     save.alters_data = True
