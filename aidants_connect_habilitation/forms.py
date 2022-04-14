@@ -397,3 +397,12 @@ class RequestMessageForm(PatchedErrorListForm):
     class Meta:
         model = models.RequestMessage
         fields = ["content"]
+
+
+class AdminAcceptationForm(PatchedForm):
+    email_subject = CharField(label="Sujet de l’email", required=True)
+    email_body = CharField(label="Contenu de l’email", widget=Textarea, required=True)
+
+    def __init__(self, organisation, **kwargs):
+        super().__init__(**kwargs)
+        self.organisation = organisation

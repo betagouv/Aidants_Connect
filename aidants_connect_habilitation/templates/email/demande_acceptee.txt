@@ -1,0 +1,23 @@
+Bonjour,
+
+Bienvenue sur Aidants Connect !
+
+La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}, a été acceptée.
+
+Bientôt, les aidantes et les aidants seront contacté(e)s pour suivre la formation nécessaire :
+
+{% for aidant in organisation.aidant_requests.all %}
+ - {{ aidant }}{% endfor %}
+{% if organisation.manager.is_aidant %} - {{ organisation.manager }}{% endif %}
+
+Le kit de bienvenue sera livré par voie postale au/à la responsable de la structure à l'adresse suivante :
+
+{{ organisation.manager }}
+{{ organisation.manager.address }}
+{{ organisation.manager.zipcode }} {{ organisation.manager.city }}
+
+
+À très bientôt,
+
+L'équipe Aidants Connect
+https://aidantsconnect.beta.gouv.fr
