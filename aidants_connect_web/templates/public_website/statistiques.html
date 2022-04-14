@@ -5,121 +5,119 @@
 {% block title %}Aidants Connect - Statistiques{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/statistics.css' %}" rel="stylesheet">
+  <link href="{% static 'css/statistics.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 
 {% block content %}
-<div class="fr-container">
-  <h1>Statistiques&nbsp;:
-     <br>Aidants Connect en chiffres</h1>
-  <p class="subtitle">Nous sommes ravis de constater l’utilisation grandissante d’Aidants Connect !
+  <div class="fr-container">
+    <h1>Statistiques&nbsp;:
+      <br>Aidants Connect en chiffres</h1>
+    <p class="subtitle">Nous sommes ravis de constater l’utilisation grandissante d’Aidants Connect !
       <br>Vous pouvez consulter ici toutes les statistiques concernant le projet, mises à jour en temps réel.</strong>
-  </p>
+    </p>
 
-  <h2 class="h3">Utilisation</h2>
-  <p>Texte censé décrire ce qu’on constate en dessous, peut être expliquer ce qu’est une démarche administrative, mise
-    en contexte etc.
-    <br>enfin vous m’avez compris, j’essaie de faire une grande phrase pour voir ce que ça donne sur deux
-    lignes.
-  </p>
+    <h2 class="h3">Utilisation</h2>
+    <p>Texte censé décrire ce qu’on constate en dessous, peut être expliquer ce qu’est une démarche administrative, mise
+      en contexte etc.
+      <br>enfin vous m’avez compris, j’essaie de faire une grande phrase pour voir ce que ça donne sur deux
+      lignes.
+    </p>
 
-  <div class="fr-grid-row">
-    <div class="fr-col-lg-10">
-      <div class="shadowed">
-        <div class="fr-grid-row fr-grid-row--gutters">
-          <div class="fr-col-12 fr-col-md-4">
-            <h3 class="stats-number">{{ autorisation_use_count }}</h3>
-            <h3 class="stats-text">Démarches administratives réalisés</h3>
-          </div>
-          <div class="fr-col-12 fr-col-md-4">
-            <h3 class="stats-number">{{ usagers_with_mandat_count }}</h3>
-            <h3 class="stats-text">Personnes accompagnées</h3>
-          </div>
-          <div class="fr-col-12 fr-col-md-4">
-            <h3 class="stats-number">{{ mandats_count }}</h3>
-            <h3 class="stats-text">Mandats crées</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <br>
-
-  <h2 class="h3">Par type de démarche</h2>
-  <p>Texte censé décrire ce qu’on constate en dessous, peut être expliquer ce qu’est une démarche administrative, mise en contexte etc.
-    <br>enfin vous m’avez compris, j’essaie de faire une grande phrase pour voir ce que ça donne sur deux lignes.</p>
-  <div class="fr-grid-row">
-    <div class="fr-col-12 fr-col-lg-10">
-      <div class="shadowed stats-shadowed">
-        <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
-          <table>
-            <tr>
-              <th scope="col">Type de mandat</th>
-              <th scope="col">Nombre des démarches</th>
-            </tr>
-            {% for demarche in demarches_count %}
-            <tr>
-              <th scope="row">{{ demarche.title }}</th>
-              <td>{{ demarche.value }}</td>
-            </tr>
-            {% endfor %}
-          </table>
-        </canvas>
-      </div>
-    </div>
-  </div>
-
-  <br>
-
-  <h2 class="h3">Déploiement</h2>
-  <p>Texte censé décrire ce qu’on constate en dessous, faire un rappel de ce qu’est l’habilitation, pourquoi elle
-    existe, rediriger vers la page qui détaille les étapes ?</p>
-  <div class="fr-grid-row fr-grid-row--gutters">
-    <div class="fr-col-md-6 fr-col-lg-5">
-      <div class="shadowed">
-        <div class="fr-grid-row">
-          <div class="fr-col-6">
-            <h3 class="stats-number">{{ aidants_count }}</h3>
-            <h3 class="stats-text">Aidants habilités</h3>
-          </div>
-          <div class="fr-col-6">
-            <h3 class="stats-number">{{ aidants_accrediting_count }}</h3>
-            <h3 class="stats-text">Aidants en cours d’habilitation</h3>
+    <div class="fr-grid-row">
+      <div class="fr-col-lg-10">
+        <div class="shadowed">
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <div class="fr-col-12 fr-col-md-4 stats-container">
+              <h3 class="stats-text">Démarches administratives réalisés</h3>
+              <p class="stats-number">{{ autorisation_use_count }}</p>
+            </div>
+            <div class="fr-col-12 fr-col-md-4 stats-container">
+              <h3 class="stats-text">Personnes accompagnées</h3>
+              <p class="stats-number">{{ usagers_with_mandat_count }}</p>
+            </div>
+            <div class="fr-col-12 fr-col-md-4 stats-container">
+              <h3 class="stats-text">Mandats crées</h3>
+              <p class="stats-number">{{ mandats_count }}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="fr-col-md-6 fr-col-lg-5">
-      <div class="shadowed">
-        <div class="fr-grid-row">
-          <div class="fr-col-6">
-            <h3 class="stats-number">{{ organisations_accredited_count }}</h3>
-            <h3 class="stats-text">Structures habilitées</h3>
+
+    <h2 class="h3">Par type de démarche</h2>
+    <p>Texte censé décrire ce qu’on constate en dessous, peut être expliquer ce qu’est une démarche administrative, mise
+      en contexte etc.
+      <br>enfin vous m’avez compris, j’essaie de faire une grande phrase pour voir ce que ça donne sur deux lignes.</p>
+    <div class="fr-grid-row">
+      <div class="fr-col-12 fr-col-lg-10">
+        <div class="shadowed stats-shadowed">
+          <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
+            <table>
+              <tr>
+                <th scope="col">Type de mandat</th>
+                <th scope="col">Nombre de démarches</th>
+              </tr>
+              {% for demarche in demarches_count %}
+                <tr>
+                  <th scope="row">{{ demarche.title }}</th>
+                  <td>{{ demarche.value }}</td>
+                </tr>
+              {% endfor %}
+            </table>
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="h3">Déploiement</h2>
+    <p>Texte censé décrire ce qu’on constate en dessous, faire un rappel de ce qu’est l’habilitation, pourquoi elle
+      existe, rediriger vers la page qui détaille les étapes ?</p>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-md-6 fr-col-lg-5">
+        <div class="shadowed">
+          <div class="fr-grid-row">
+            <div class="fr-col-6 stats-container">
+              <h3 class="stats-text">Aidants habilités</h3>
+              <p class="stats-number">{{ aidants_count }}</p>
+            </div>
+            <div class="fr-col-6 stats-container">
+              <h3 class="stats-text">Aidants en cours d’habilitation</h3>
+              <p class="stats-number">{{ aidants_accrediting_count }}</p>
+            </div>
           </div>
-          <div class="fr-col-6">
-            <h3 class="stats-number">{{ organisations_not_accredited_count }}</h3>
-            <h3 class="stats-text">Structures en cours d’habilitation</h3>
+        </div>
+      </div>
+      <div class="fr-col-md-6 fr-col-lg-5">
+        <div class="shadowed">
+          <div class="fr-grid-row">
+            <div class="fr-col-6 stats-container">
+              <h3 class="stats-text">Structures habilitées</h3>
+              <p class="stats-number">{{ organisations_accredited_count }}</p>
+            </div>
+            <div class="fr-col-6 stats-container">
+              <h3 class="stats-text">Structures en cours d’habilitation</h3>
+              <p class="stats-number">{{ organisations_not_accredited_count }}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters" aria-hidden="true">
+      <p></p>
+    </div>
+
   </div>
-
-  <div class="fr-grid-row fr-grid-row--gutters">
-    <p></p>
-  </div>
-
-
-</div>
 
 {% endblock content %}
 
 {% block extrajs %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js" integrity="sha512-R/QOHLpV1Ggq22vfDAWYOaMd5RopHrJNMxi8/lJu8Oihwi4Ho4BRFeiMiCefn9rasajKjnx9/fTQ/xkWnkDACg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-{{ data|json_script:"data" }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js"
+          integrity="sha512-R/QOHLpV1Ggq22vfDAWYOaMd5RopHrJNMxi8/lJu8Oihwi4Ho4BRFeiMiCefn9rasajKjnx9/fTQ/xkWnkDACg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  {{ data|json_script:"data" }}
 
 <script>
   const data = JSON.parse(document.getElementById('data').textContent);

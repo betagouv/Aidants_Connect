@@ -1,5 +1,11 @@
 $blue-aidants: #1B4991;
 
+.stats-container {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: left;
+}
+
 .stats-number {
   font-size: 2.25rem;
   color: $blue-aidants;
