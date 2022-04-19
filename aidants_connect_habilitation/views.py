@@ -79,10 +79,6 @@ class VerifiedEmailIssuerView(CheckIssuerMixin, View):
 
 
 class LateStageRequestView(VerifiedEmailIssuerView, View):
-    @property
-    def step(self) -> HabilitationFormStep:
-        raise NotImplementedError()
-
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = get_object_or_404(
@@ -90,7 +86,7 @@ class LateStageRequestView(VerifiedEmailIssuerView, View):
         )
 
 
-class OnlyNewRequestsView(LateStageRequestView):
+class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
     @property
     def step(self) -> HabilitationFormStep:
         raise NotImplementedError()
@@ -287,7 +283,7 @@ class ModifyOrganisationRequestFormView(
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormView):
+class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
     template_name = "personnel_form.html"
     form_class = PersonnelForm
 
@@ -338,7 +334,7 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
         )
 
 
-class ValidationRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormView):
+class ValidationRequestFormView(OnlyNewRequestsView, FormView):
     template_name = "validation_form.html"
     form_class = ValidationForm
 
