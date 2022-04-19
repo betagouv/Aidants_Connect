@@ -16,21 +16,24 @@
         <nav role="navigation" aria-label="Menu principal">
           <ul class="header-links">
             {% with view_name=request.resolver_match.view_name %}
-              {# TODO : à quoi correspondent les liens de la maquette ? Accueil/Premiers pas/Outils/Aide #}
-              {# TODO : Réutiliser les liens existants pour l'instant ? #}
               <li>
-                <a {% if view_name == 'home_page' %}class="active"{% endif %} href="{% url 'home_page' %}">
-                  Accueil
-                </a>
+                <a {% if view_name == 'home_page' %}class="active"{% endif %} href="{% url 'home_page' %}">Accueil</a>
               </li>
-              <li><a class="active" href="/">Premiers pas</a></li>
+              <li>
+                <a {% if 'habilitation' in view_name %}class="active"{% endif %}
+                   href="{% url 'habilitation' %}">Habilitation</a>
+              </li>
               <li>
                 <a {% if view_name == 'ressources' %}class="active"{% endif %}
-                   href="{% url 'ressources' %}">
-                  Outils
-                </a>
+                   href="{% url 'ressources' %}">Ressources</a>
               </li>
-              <li><a href="/">Aide</a></li>
+              <li>
+                <a {% if 'faq' in view_name %}class="active"{% endif %}
+                   href="{% url 'faq_generale' %}">FAQ</a>
+              </li>
+              <li>
+                <a class="button primary" href="{% url 'login' %}">Se connecter</a>
+              </li>
             {% endwith %}
           </ul>
         </nav>
