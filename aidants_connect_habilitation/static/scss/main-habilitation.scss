@@ -194,10 +194,12 @@ details {
 dl {
   margin: 0;
   padding: 0;
-  dd,dt {
+
+  dd, dt {
     margin: 0;
     padding: 0;
   }
+
   dt {
     font-weight: bold;
   }
@@ -634,6 +636,10 @@ ol.messages-list {
 
     &:hover {
       box-shadow: 0 .5rem 0 $off-yellow-aidants;
+    }
+
+    &.button {
+      padding: .25rem .5rem;
     }
   }
 }
