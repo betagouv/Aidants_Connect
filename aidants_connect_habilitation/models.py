@@ -168,6 +168,10 @@ class Manager(PersonWithResponsibilities):
 
 
 class OrganisationRequest(models.Model):
+    created_at = models.DateTimeField("Date création", auto_now_add=True)
+
+    updated_at = models.DateTimeField("Date modification", auto_now=True)
+
     organisation = models.ForeignKey(
         Organisation,
         null=True,
