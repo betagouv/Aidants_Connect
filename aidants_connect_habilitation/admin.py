@@ -60,11 +60,13 @@ class MessageInline(VisibleToAdminMetier, StackedInline):
 
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     list_filter = ("status", RegionFilter, DepartmentFilter)
-    list_display = ("name", "issuer", "status", "data_pass_id")
+    list_display = ("name", "issuer", "status", "data_pass_id", "created_at")
     search_fields = ("data_pass_id", "name")
     raw_id_fields = ("issuer", "organisation")
     fields = (
         "issuer",
+        "created_at",
+        "updated_at",
         "data_pass_id",
         "status",
         "organisation",
@@ -88,6 +90,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "professionals_only",
     )
     readonly_fields = (
+        "created_at",
+        "updated_at",
         "public_service_delegation_attestation",
         "uuid",
         "organisation",
