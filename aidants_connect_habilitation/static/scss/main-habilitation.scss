@@ -106,8 +106,9 @@ h1, .h1 {
   line-height: 1.25;
 
   + .subtitle {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: $light-blue-anct;
+    line-height: 2rem;
   }
 }
 
@@ -460,6 +461,9 @@ fieldset {
     .fr-col-md-7, .zipcode-container, .city-container {
       padding-top: 0;
     }
+  }
+  h1, .h1 {
+    font-size: 2.5rem;
   }
 }
 

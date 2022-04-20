@@ -120,7 +120,7 @@ def statistiques(request):
     # # Démarches
     demarches_count = [
         {
-            "title": demarche,
+            "title": settings.DEMARCHES[demarche]["titre_court"],
             "icon": settings.DEMARCHES[demarche]["icon"],
             "value": autorisation_use.filter(demarche=demarche).count(),
         }
@@ -131,11 +131,9 @@ def statistiques(request):
 
     chart_labels = [demarche["title"] for demarche in demarches_count]
     chart_values = [demarche["value"] for demarche in demarches_count]
+    chart_icons = [demarche["icon"] for demarche in demarches_count]
 
-    chart_data = {
-        "labels": chart_labels,
-        "data": chart_values,
-    }
+    chart_data = {"labels": chart_labels, "data": chart_values, "icons": chart_icons}
 
     return render(
         request,
