@@ -2,7 +2,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 from django.core.mail import send_mail
-from django.http import HttpResponseNotAllowed, HttpResponseRedirect
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
 from django.urls import path, reverse
@@ -21,6 +22,7 @@ from aidants_connect_habilitation.forms import AdminAcceptationForm
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
+    IssuerEmailConfirmation,
     OrganisationRequest,
     RequestMessage,
 )
@@ -45,6 +47,14 @@ class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
     )
     readonly_fields = ("issuer_id",)
     inlines = (OrganisationRequestInline,)
+    actions = ["resent_confirmation_emails"]
+
+    def resent_confirmation_emails(self, request: HttpRequest, queryset: QuerySet):
+        emails = IssuerEmailConfirmation.objects.filter(issuer__in=queryset)
+        for one_email in emails:
+            one_email.send(request)
+
+    resent_confirmation_emails.short_description = "Renvoyer les emails de confirmation"
 
 
 class AidantRequestInline(VisibleToAdminMetier, TabularInline):
