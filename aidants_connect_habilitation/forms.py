@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 from django.conf import settings
+from django.core import validators
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.forms import (
     BaseModelFormSet,
@@ -13,7 +14,6 @@ from django.forms import (
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.translation import gettext_lazy as _
 
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.phonenumber import to_python
@@ -36,32 +36,20 @@ from aidants_connect_habilitation.models import (
 from aidants_connect_web.models import OrganisationType
 
 
-def france_and_overseas_validator(value):
-    print("OH HAI")
-    for region in ("FR", "GP", "GF", "MQ", "RE", "KM", "PM"):
-        number = to_python(value, region)
-        if number and number.is_valid():
-            print(f"OK in region {region}")
-            return
-    raise ValidationError(
-        _("The phone number entered is not valid."), code="invalid_phone_number"
-    )
-
-
 class AcPhoneNumberField(PhoneNumberField):
-    default_validators = (france_and_overseas_validator,)
-
     regions = ("FR", "GP", "GF", "MQ", "RE", "KM", "PM")
 
-    def prepare_value(self, value):
-        return value
-
-    def validate(self, value):
+    def to_python(self, value):
         for region in self.regions:
-            number = to_python(value, region)
-            if number and number.is_valid():
-                print(f"OK in region {region}")
-                return True
+            phone_number = to_python(value, region=region)
+
+            if phone_number in validators.EMPTY_VALUES:
+                return self.empty_value
+
+            if phone_number and phone_number.is_valid():
+                return phone_number
+
+        raise ValidationError(self.error_messages["invalid"])
 
 
 class IssuerForm(PatchedErrorListForm):
@@ -73,7 +61,6 @@ class IssuerForm(PatchedErrorListForm):
             region=settings.PHONENUMBER_DEFAULT_REGION
         ),
         required=False,
-        validators=(france_and_overseas_validator,),
     )
 
     def __init__(self, render_non_editable=False, **kwargs):
