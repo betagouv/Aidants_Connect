@@ -13,8 +13,10 @@ from django.forms import (
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 
 from phonenumber_field.formfields import PhoneNumberField
+from phonenumber_field.phonenumber import to_python
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from aidants_connect.common.constants import MessageStakeholders, RequestOriginConstants
@@ -34,8 +36,36 @@ from aidants_connect_habilitation.models import (
 from aidants_connect_web.models import OrganisationType
 
 
+def france_and_overseas_validator(value):
+    print("OH HAI")
+    for region in ("FR", "GP", "GF", "MQ", "RE", "KM", "PM"):
+        number = to_python(value, region)
+        if number and number.is_valid():
+            print(f"OK in region {region}")
+            return
+    raise ValidationError(
+        _("The phone number entered is not valid."), code="invalid_phone_number"
+    )
+
+
+class AcPhoneNumberField(PhoneNumberField):
+    default_validators = (france_and_overseas_validator,)
+
+    regions = ("FR", "GP", "GF", "MQ", "RE", "KM", "PM")
+
+    def prepare_value(self, value):
+        return value
+
+    def validate(self, value):
+        for region in self.regions:
+            number = to_python(value, region)
+            if number and number.is_valid():
+                print(f"OK in region {region}")
+                return True
+
+
 class IssuerForm(PatchedErrorListForm):
-    phone = PhoneNumberField(
+    phone = AcPhoneNumberField(
         initial="",
         label="Téléphone",
         region=settings.PHONENUMBER_DEFAULT_REGION,
@@ -43,6 +73,7 @@ class IssuerForm(PatchedErrorListForm):
             region=settings.PHONENUMBER_DEFAULT_REGION
         ),
         required=False,
+        validators=(france_and_overseas_validator,),
     )
 
     def __init__(self, render_non_editable=False, **kwargs):
