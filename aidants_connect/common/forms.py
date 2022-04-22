@@ -1,6 +1,11 @@
+from django.core import validators
+from django.core.exceptions import ValidationError
 from django.forms import Form, ModelForm
 from django.forms.utils import ErrorList
 from django.utils.html import format_html
+
+from phonenumber_field.formfields import PhoneNumberField
+from phonenumber_field.phonenumber import to_python
 
 
 class PatchedErrorList(ErrorList):
@@ -30,3 +35,22 @@ class PatchedForm(Form):
         kwargs.setdefault("error_class", PatchedErrorList)
         kwargs.setdefault("label_suffix", "")
         super().__init__(**kwargs)
+
+
+class AcPhoneNumberField(PhoneNumberField):
+    """A PhoneNumberField which accepts any number from metropolitan France
+    and overseas"""
+
+    regions = ("FR", "GP", "GF", "MQ", "RE", "KM", "PM")
+
+    def to_python(self, value):
+        for region in self.regions:
+            phone_number = to_python(value, region=region)
+
+            if phone_number in validators.EMPTY_VALUES:
+                return self.empty_value
+
+            if phone_number and phone_number.is_valid():
+                return phone_number
+
+        raise ValidationError(self.error_messages["invalid"])

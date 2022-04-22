@@ -14,11 +14,11 @@ from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
 
-from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from aidants_connect.common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect.common.forms import (
+    AcPhoneNumberField,
     PatchedErrorList,
     PatchedErrorListForm,
     PatchedForm,
@@ -35,7 +35,7 @@ from aidants_connect_web.models import OrganisationType
 
 
 class IssuerForm(PatchedErrorListForm):
-    phone = PhoneNumberField(
+    phone = AcPhoneNumberField(
         initial="",
         label="Téléphone",
         region=settings.PHONENUMBER_DEFAULT_REGION,
@@ -203,7 +203,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
 
 class PersonWithResponsibilitiesForm(PatchedErrorListForm):
-    phone = PhoneNumberField(
+    phone = AcPhoneNumberField(
         initial="",
         region=settings.PHONENUMBER_DEFAULT_REGION,
         widget=PhoneNumberInternationalFallbackWidget(
@@ -217,7 +217,7 @@ class PersonWithResponsibilitiesForm(PatchedErrorListForm):
         exclude = ["id"]
 
 
-class ManagerForm(PatchedErrorListForm):
+class ManagerForm(PersonWithResponsibilitiesForm):
     zipcode = CharField(
         label="Code Postal",
         max_length=10,

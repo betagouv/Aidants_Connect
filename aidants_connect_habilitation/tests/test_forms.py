@@ -9,6 +9,7 @@ from aidants_connect.common.constants import (
 )
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
+    IssuerForm,
     ManagerForm,
     OrganisationRequestForm,
     PersonnelForm,
@@ -21,6 +22,21 @@ from aidants_connect_habilitation.tests.factories import (
 )
 from aidants_connect_habilitation.tests.utils import get_form
 from aidants_connect_web.models import OrganisationType
+
+
+class TestIssuerForm(TestCase):
+    def test_form_is_valid_with_dom_tom_phonenumber(self):
+        form = IssuerForm(
+            data={
+                "phone": "06 90 11 12 13",
+                "first_name": "Mary",
+                "last_name": "Read",
+                "profession": "Pirate",
+                "email": "mary_read@example.com",
+            }
+        )
+
+        self.assertTrue(form.is_valid())
 
 
 class TestOrganisationRequestForm(TestCase):
