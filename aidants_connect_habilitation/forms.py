@@ -217,7 +217,7 @@ class PersonWithResponsibilitiesForm(PatchedErrorListForm):
         exclude = ["id"]
 
 
-class ManagerForm(PatchedErrorListForm):
+class ManagerForm(PersonWithResponsibilitiesForm):
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
