@@ -1,7 +1,6 @@
 from typing import List, Tuple
 
 from django.conf import settings
-from django.core import validators
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.forms import (
     BaseModelFormSet,
@@ -15,12 +14,11 @@ from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
 
-from phonenumber_field.formfields import PhoneNumberField
-from phonenumber_field.phonenumber import to_python
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from aidants_connect.common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect.common.forms import (
+    AcPhoneNumberField,
     PatchedErrorList,
     PatchedErrorListForm,
     PatchedForm,
@@ -34,22 +32,6 @@ from aidants_connect_habilitation.models import (
     RequestMessage,
 )
 from aidants_connect_web.models import OrganisationType
-
-
-class AcPhoneNumberField(PhoneNumberField):
-    regions = ("FR", "GP", "GF", "MQ", "RE", "KM", "PM")
-
-    def to_python(self, value):
-        for region in self.regions:
-            phone_number = to_python(value, region=region)
-
-            if phone_number in validators.EMPTY_VALUES:
-                return self.empty_value
-
-            if phone_number and phone_number.is_valid():
-                return phone_number
-
-        raise ValidationError(self.error_messages["invalid"])
 
 
 class IssuerForm(PatchedErrorListForm):
@@ -221,7 +203,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
 
 class PersonWithResponsibilitiesForm(PatchedErrorListForm):
-    phone = PhoneNumberField(
+    phone = AcPhoneNumberField(
         initial="",
         region=settings.PHONENUMBER_DEFAULT_REGION,
         widget=PhoneNumberInternationalFallbackWidget(
