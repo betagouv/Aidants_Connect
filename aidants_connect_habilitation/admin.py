@@ -16,6 +16,7 @@ from aidants_connect.admin import (
     DepartmentFilter,
     RegionFilter,
     VisibleToAdminMetier,
+    VisibleToTechAdmin,
     admin_site,
 )
 from aidants_connect_habilitation.forms import AdminAcceptationForm
@@ -44,17 +45,24 @@ class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
         "last_name",
         "first_name",
         "phone",
+        "email_verified",
     )
     readonly_fields = ("issuer_id",)
     inlines = (OrganisationRequestInline,)
-    actions = ["resent_confirmation_emails"]
+    actions = ["resend_confirmation_emails"]
 
-    def resent_confirmation_emails(self, request: HttpRequest, queryset: QuerySet):
-        emails = IssuerEmailConfirmation.objects.filter(issuer__in=queryset)
+    def resend_confirmation_emails(self, request: HttpRequest, queryset: QuerySet):
+        emails = IssuerEmailConfirmation.objects.filter(
+            issuer__in=queryset, issuer__email_verified=False
+        )
         for one_email in emails:
             one_email.send(request)
 
-    resent_confirmation_emails.short_description = "Renvoyer les emails de confirmation"
+    resend_confirmation_emails.short_description = "Renvoyer les emails de confirmation"
+
+
+class EmailConfirmationAdmin(VisibleToTechAdmin, ModelAdmin):
+    pass
 
 
 class AidantRequestInline(VisibleToAdminMetier, TabularInline):
@@ -259,3 +267,4 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 if settings.AC_HABILITATION_FORM_ENABLED:
     admin_site.register(Issuer, IssuerAdmin)
     admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
+    admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)
