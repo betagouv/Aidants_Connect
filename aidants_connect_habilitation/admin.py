@@ -2,7 +2,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 from django.core.mail import send_mail
-from django.http import HttpResponseNotAllowed, HttpResponseRedirect
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
 from django.urls import path, reverse
@@ -15,12 +16,14 @@ from aidants_connect.admin import (
     DepartmentFilter,
     RegionFilter,
     VisibleToAdminMetier,
+    VisibleToTechAdmin,
     admin_site,
 )
 from aidants_connect_habilitation.forms import AdminAcceptationForm
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
+    IssuerEmailConfirmation,
     OrganisationRequest,
     RequestMessage,
 )
@@ -42,9 +45,24 @@ class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
         "last_name",
         "first_name",
         "phone",
+        "email_verified",
     )
     readonly_fields = ("issuer_id",)
     inlines = (OrganisationRequestInline,)
+    actions = ["resend_confirmation_emails"]
+
+    def resend_confirmation_emails(self, request: HttpRequest, queryset: QuerySet):
+        emails = IssuerEmailConfirmation.objects.filter(
+            issuer__in=queryset, issuer__email_verified=False
+        )
+        for one_email in emails:
+            one_email.send(request)
+
+    resend_confirmation_emails.short_description = "Renvoyer les emails de confirmation"
+
+
+class EmailConfirmationAdmin(VisibleToTechAdmin, ModelAdmin):
+    pass
 
 
 class AidantRequestInline(VisibleToAdminMetier, TabularInline):
@@ -249,3 +267,4 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 if settings.AC_HABILITATION_FORM_ENABLED:
     admin_site.register(Issuer, IssuerAdmin)
     admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
+    admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)
