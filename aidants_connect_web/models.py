@@ -1063,7 +1063,7 @@ class Connection(models.Model):
     )
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
     duree_keyword = models.CharField(
-        max_length=16, choices=AuthorizationDurationChoices.choices, null=True
+        "Durée", max_length=16, choices=AuthorizationDurationChoices.choices, null=True
     )
     mandat_is_remote = models.BooleanField(default=False)
     user_phone = PhoneNumberField(blank=True)
