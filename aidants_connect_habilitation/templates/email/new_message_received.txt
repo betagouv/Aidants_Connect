@@ -1,0 +1,11 @@
+{% load ac_common %}
+Bonjour,
+
+Vous avez reçu un nouveau message sur la demande d'habilitation Aidants Connect déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}.
+{{ message.content }}
+
+Vous pouvez retrouver tous les échanges en suivant ce lien :
+{{ url }}
+
+
+À bientôt sur Aidants Connect
