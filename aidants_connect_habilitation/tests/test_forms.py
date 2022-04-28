@@ -91,6 +91,30 @@ class TestOrganisationRequestForm(TestCase):
             ],
         )
 
+    def test_clean_type_zipcode_number_passes(self):
+        form = get_form(
+            OrganisationRequestForm,
+            ignore_errors=True,
+            type_id=RequestOriginConstants.OTHER.value,
+            zipcode="01700",
+        )
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.errors, {})
+
+    def test_clean_type_zipcode_not_number_raises_error(self):
+        form = get_form(
+            OrganisationRequestForm,
+            ignore_errors=True,
+            type_id=RequestOriginConstants.OTHER.value,
+            zipcode="La Commune",
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["zipcode"], ["Veuillez entrer un code postal valide"]
+        )
+
     def test_private_org_requires_partner_administration(self):
         form = get_form(
             OrganisationRequestForm,
@@ -207,7 +231,6 @@ class TestPersonnelForm(TestCase):
 
 
 class TestValidationFormForm(TestCase):
-
     names_attr = ["cgu", "dpo", "professionals_only", "without_elected"]
 
     def test_form_valid_only_with_four_enabled_choices(self):
@@ -247,3 +270,29 @@ class TestValidationFormForm(TestCase):
         ]
         self.assertEqual(orga.messages.all()[0].content, "Bonjour")
         self.assertEqual(orga.messages.all()[0].sender, MessageStakeholders.ISSUER.name)
+
+
+class TestManagerForm(TestCase):
+    def test_clean_type_zipcode_number_passes(self):
+        form = get_form(
+            OrganisationRequestForm,
+            ignore_errors=True,
+            type_id=RequestOriginConstants.OTHER.value,
+            zipcode="01700",
+        )
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.errors, {})
+
+    def test_clean_type_zipcode_not_number_raises_error(self):
+        form = get_form(
+            OrganisationRequestForm,
+            ignore_errors=True,
+            type_id=RequestOriginConstants.OTHER.value,
+            zipcode="La Commune",
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["zipcode"], ["Veuillez entrer un code postal valide"]
+        )
