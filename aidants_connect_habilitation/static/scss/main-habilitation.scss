@@ -484,6 +484,12 @@ fieldset {
 
 }
 
+.errorlist {
+  background: $red-aidants;
+  color: $light-aidants;
+  padding: 1rem;
+}
+
 // habilitation form breadcrumbs -----------------------
 
 .habilitation-breadcrumbs {
