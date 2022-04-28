@@ -365,6 +365,18 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
         form.save(self.organisation)
         return super().form_valid(form)
 
+    def post(self, request, *args, **kwargs):
+        form: ValidationForm = self.get_form()
+        if self.organisation.manager is None:
+            form.add_error(
+                None,
+                "Veuillez ajouter le responsable de la structure avant validation.",
+            )
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
 
 class ReadonlyRequestView(LateStageRequestView, FormView):
     template_name = "view_organisation_request.html"

@@ -97,6 +97,7 @@
     <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
       <div class="shadowed with-button-box">
         <h4 class="h2">Responsable de structure</h4>
+        {% if organisation.manager %}
         <div>
           <p>
             <strong>{{ organisation.manager.get_full_name }}</strong>
@@ -112,6 +113,10 @@
           </p>
           <p>Ce responsable est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
         </div>
+        {% else %}
+        <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+          Ajouter un responsable</a>
+        {% endif %}
         {% if show_all_buttons %}
           <div class="button-box">
             <a class="button primary"
