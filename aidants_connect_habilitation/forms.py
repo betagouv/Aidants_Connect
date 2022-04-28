@@ -182,6 +182,13 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
         return self.data["france_services_number"]
 
+    def clean_zipcode(self):
+        data: str = self.cleaned_data["zipcode"]
+        if not data.isnumeric():
+            raise ValidationError("Veuillez entrer un code postal valide")
+
+        return data
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
@@ -233,6 +240,13 @@ class ManagerForm(PersonWithResponsibilitiesForm):
             "required": "Le champ « ville » est obligatoire.",
         },
     )
+
+    def clean_zipcode(self):
+        data: str = self.cleaned_data["zipcode"]
+        if not data.isnumeric():
+            raise ValidationError("Veuillez entrer un code postal valide")
+
+        return data
 
     class Meta(PersonWithResponsibilitiesForm.Meta):
         model = Manager
