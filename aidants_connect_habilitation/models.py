@@ -511,3 +511,29 @@ class RequestMessage(models.Model):
     class Meta:
         verbose_name = "message"
         ordering = ("created_at",)
+
+    def send_message_email(self):
+        context = {
+            "url": f"https://{settings.HOST}{self.organisation.get_absolute_url()}",
+            "organisation": self.organisation,
+            "message": self,
+        }
+        text_message = loader.render_to_string(
+            "email/new_message_received.txt", context
+        )
+        html_message = loader.render_to_string(
+            "email/new_message_received.html", context
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_NEW_MESSAGE_RECEIVED_FROM,
+            recipient_list=[self.organisation.issuer.email],
+            subject=settings.EMAIL_NEW_MESSAGE_RECEIVED_FROM,
+            message=text_message,
+            html_message=html_message,
+        )
+
+    def save(self, *args, **kwargs):
+        if not self.pk and self.sender == "AC":
+            self.send_message_email()
+        return super(RequestMessage, self).save(*args, **kwargs)
