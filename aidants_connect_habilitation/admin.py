@@ -10,7 +10,7 @@ from django.urls import path, reverse
 from django.utils.html import linebreaks
 from django.utils.safestring import mark_safe
 
-from django_reverse_admin import ReverseModelAdmin
+from django_reverse_admin import ReverseInlineModelAdmin, ReverseModelAdmin
 
 from aidants_connect.admin import (
     DepartmentFilter,
@@ -24,6 +24,7 @@ from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
     IssuerEmailConfirmation,
+    Manager,
     OrganisationRequest,
     RequestMessage,
 )
@@ -74,6 +75,35 @@ class AidantRequestInline(VisibleToAdminMetier, TabularInline):
 class MessageInline(VisibleToAdminMetier, StackedInline):
     model = RequestMessage
     extra = 1
+
+
+class ManagerReverseInlineModelAdmin(VisibleToAdminMetier, ReverseInlineModelAdmin):
+    pass
+
+
+class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
+    fields = (
+        "organisation",
+        "first_name",
+        "last_name",
+        "email",
+        "profession",
+        "phone",
+        "address",
+        "zipcode",
+        "city",
+        "is_aidant",
+    )
+    readonly_fields = ("organisation",)
+
+    list_display = (
+        "first_name",
+        "last_name",
+        "email",
+        "is_aidant",
+        "organisation",
+        "zipcode",
+    )
 
 
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
@@ -127,7 +157,12 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         MessageInline,
     )
     inline_type = "stacked"
-    inline_reverse = ("manager",)
+    inline_reverse = [
+        {
+            "field_name": "manager",
+            "admin_class": ManagerReverseInlineModelAdmin,
+        }
+    ]
 
     actions = ("accept_selected_requests",)
     change_form_template = (
@@ -266,5 +301,6 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 
 if settings.AC_HABILITATION_FORM_ENABLED:
     admin_site.register(Issuer, IssuerAdmin)
+    admin_site.register(Manager, ManagerAdmin)
     admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
     admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)
