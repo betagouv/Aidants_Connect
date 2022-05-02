@@ -117,13 +117,15 @@
         </span>
       </h3>
 
-      {{ form.aidants_formset.non_form_errors }}
+      <section class="aidant-forms">
+        {{ form.aidants_formset.non_form_errors }}
 
-      <div class="fr-grid-row fr-grid-row--gutters" data-personnel-form-target="aidantFormset">
-        {% for aidant_form in form.aidants_formset %}
-          {% include "_aidant_form.html" with form=aidant_form %}
-        {% endfor %}
-      </div>
+        <div class="fr-grid-row fr-grid-row--gutters" data-personnel-form-target="aidantFormset">
+          {% for aidant_form in form.aidants_formset %}
+            {% include "_aidant_form.html" with form=aidant_form %}
+          {% endfor %}
+        </div>
+      </section>
 
       <div class="button-box standalone">
         <a class="button"
