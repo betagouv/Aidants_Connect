@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -278,6 +278,15 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
         for attr_name, attr_value in attrs.items():
             widget.attrs[attr_name] = attr_value
 
+    def add_non_form_error(self, error: Union[ValidationError, str]):
+        if not isinstance(error, ValidationError):
+            error = ValidationError(error)
+        self._non_form_errors.append(error)
+
+    def is_empty(self):
+        cleaned_data = [aidant for aidant in self.cleaned_data if len(aidant) != 0]
+        return len(cleaned_data) == 0
+
 
 AidantRequestFormSet = modelformset_factory(
     AidantRequestForm.Meta.model, AidantRequestForm, formset=BaseAidantRequestFormSet
@@ -289,13 +298,10 @@ class PersonnelForm:
     AIDANTS_FORMSET_PREFIX = "aidants"
 
     @property
-    def non_field_errors(self):
-        errors = self.manager_form.non_field_errors().copy()
-
-        for error in self.aidants_formset.non_form_errors():
-            errors.append(error)
-
-        return errors
+    def errors(self):
+        if self._errors is None:
+            self._clean()
+        return self._errors
 
     def __init__(self, **kwargs):
         def merge_kwargs(prefix):
@@ -329,6 +335,8 @@ class PersonnelForm:
                 else f"{prefix}_{previous_prefix}",
             }
 
+        self._errors = None
+
         self.manager_form = ManagerForm(**merge_kwargs(self.MANAGER_FORM_PREFIX))
 
         self.aidants_formset = AidantRequestFormSet(
@@ -342,8 +350,43 @@ class PersonnelForm:
             MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
         )
 
-    def is_valid(self):
-        return self.manager_form.is_valid() and self.aidants_formset.is_valid()
+    def _clean(self):
+        self._errors = PatchedErrorList()
+
+        if not self.manager_form.is_bound or not self.aidants_formset.is_bound:
+            # Stop processing if form does not have data
+            return
+
+        if (
+            not self.manager_form.cleaned_data["is_aidant"]
+            and self.aidants_formset.is_empty()
+        ):
+            self._errors.append(
+                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+                "l'organisation n'est pas elle-même déclarée comme aidante"
+            )
+            self.aidants_formset.add_non_form_error(
+                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+                "l'organisation n'est pas elle-même déclarée comme aidante"
+            )
+            self.manager_form.add_error(
+                "is_aidant",
+                "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
+            )
+
+    def add_error(self, error: Union[ValidationError, str]):
+        if not isinstance(error, ValidationError):
+            error = ValidationError(error)
+        self._errors.append(error)
+
+    def is_valid(self) -> bool:
+        # self.errors must be last called so that subforms are
+        # validated before performing a global validation
+        return (
+            self.manager_form.is_valid()
+            and self.aidants_formset.is_valid()
+            and not self.errors
+        )
 
     def save(
         self, organisation: OrganisationRequest, commit=True

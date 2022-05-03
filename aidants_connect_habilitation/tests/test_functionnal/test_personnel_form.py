@@ -373,6 +373,43 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             field_value = getattr(issuer, field_name)
             self.assertEqual(element.get_attribute("value"), field_value)
 
+    def test_cannot_submit_form_without_aidants_displays_errors(self):
+        issuer: Issuer = IssuerFactory()
+        manager: Manager = ManagerFactory(is_aidant=False)
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer, manager=manager
+        )
+        self.__open_form_url(issuer, organisation)
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        error_element = self.selenium.find_element(By.CSS_SELECTOR, "form p.errorlist")
+
+        self.assertEqual(
+            error_element.text,
+            "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+            "l'organisation n'est pas elle-même déclarée comme aidante",
+        )
+
+        error_element = self.selenium.find_element(
+            By.CSS_SELECTOR, "#manager-subform p.errorlist"
+        )
+
+        self.assertEqual(
+            error_element.text,
+            "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
+        )
+
+        error_element = self.selenium.find_element(
+            By.CSS_SELECTOR, ".aidant-forms p.errorlist"
+        )
+
+        self.assertEqual(
+            error_element.text,
+            "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+            "l'organisation n'est pas elle-même déclarée comme aidante",
+        )
+
     def __open_form_url(
         self,
         issuer: Issuer,

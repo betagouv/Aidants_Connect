@@ -20,7 +20,7 @@
 
     <form method="post" class="form-in-3-cols">
       {% csrf_token %}
-      {{ form.non_field_errors }}
+      {{ form.errors }}
 
       {{ form.aidants_formset.management_form }}
 
@@ -45,6 +45,8 @@
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <section class="shadowed">
             <h4 class="h2">Responsable Aidants Connect</h4>
+
+            {{ form.manager_form.non_field_errors }}
 
             <fieldset
               id="manager-subform"
@@ -101,7 +103,6 @@
         </div>
       </div>
 
-
       <h3>
         Aidants
         <span data-personnel-form-target="addAidantButtonContainer">
@@ -116,11 +117,15 @@
         </span>
       </h3>
 
-      <div class="fr-grid-row fr-grid-row--gutters" data-personnel-form-target="aidantFormset">
-        {% for aidant_form in form.aidants_formset %}
-          {% include "_aidant_form.html" with form=aidant_form %}
-        {% endfor %}
-      </div>
+      <section class="aidant-forms">
+        {{ form.aidants_formset.non_form_errors }}
+
+        <div class="fr-grid-row fr-grid-row--gutters" data-personnel-form-target="aidantFormset">
+          {% for aidant_form in form.aidants_formset %}
+            {% include "_aidant_form.html" with form=aidant_form %}
+          {% endfor %}
+        </div>
+      </section>
 
       <div class="button-box standalone">
         <a class="button"
