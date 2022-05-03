@@ -1,6 +1,11 @@
 from django.contrib.admin.sites import AdminSite
 from django.core import mail
 from django.test import TestCase, tag
+from django.test.client import Client
+from django.urls import reverse
+
+from django_otp import DEVICE_ID_SESSION_KEY
+from django_otp.plugins.otp_static.models import StaticDevice
 
 from aidants_connect.common.constants import RequestStatusConstants
 from aidants_connect_habilitation.admin import OrganisationRequestAdmin
@@ -9,12 +14,26 @@ from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
     OrganisationRequestFactory,
 )
+from aidants_connect_web.tests.factories import AidantFactory
 
 
 @tag("admin")
 class OrganisationRequestAdminTests(TestCase):
     @classmethod
     def setUpTestData(cls):
+        cls.amac_user = AidantFactory(
+            is_staff=True,
+        )
+        cls.amac_user.set_password("password")
+        cls.amac_user.save()
+        cls.amac_device = StaticDevice.objects.create(user=cls.amac_user, name="Device")
+
+        cls.amac_client = Client()
+        cls.amac_client.force_login(cls.amac_user)
+        amac_session = cls.amac_client.session
+        amac_session[DEVICE_ID_SESSION_KEY] = cls.amac_device.persistent_id
+        amac_session.save()
+
         cls.org_request_admin = OrganisationRequestAdmin(
             OrganisationRequest, AdminSite()
         )
@@ -94,3 +113,10 @@ class OrganisationRequestAdminTests(TestCase):
         )
         self.assertTrue(org_request.manager.email in acceptance_message.recipients())
         self.assertTrue(org_request.issuer.email in acceptance_message.recipients())
+
+    def test_metier_user_can_see_manager(self):
+        org_request = OrganisationRequestFactory()
+        url_root = f"admin:{OrganisationRequest._meta.app_label}_{OrganisationRequest.__name__.lower()}"  # noqa
+        url = reverse(url_root + "_change", args=(org_request.pk,))
+        response = self.amac_client.get(url)
+        self.assertContains(response, "<h2>Responsable</h2>")
