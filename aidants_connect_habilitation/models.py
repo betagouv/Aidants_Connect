@@ -371,21 +371,28 @@ class OrganisationRequest(models.Model):
             responsable.save()
 
         for aidant in self.aidant_requests.all():
-            HabilitationRequest.objects.create(
-                first_name=aidant.first_name,
-                last_name=aidant.last_name,
-                email=aidant.email,
-                profession=aidant.profession,
-                organisation=organisation,
-            )
+            if not HabilitationRequest.objects.filter(
+                email=self.manager.email, organisation=organisation
+            ).exists():
+                HabilitationRequest.objects.create(
+                    first_name=aidant.first_name,
+                    last_name=aidant.last_name,
+                    email=aidant.email,
+                    profession=aidant.profession,
+                    organisation=organisation,
+                )
+
         if self.manager.is_aidant:
-            HabilitationRequest.objects.create(
-                first_name=self.manager.first_name,
-                last_name=self.manager.last_name,
-                email=self.manager.email,
-                profession=self.manager.profession,
-                organisation=organisation,
-            )
+            if not HabilitationRequest.objects.filter(
+                email=self.manager.email, organisation=organisation
+            ).exists():
+                HabilitationRequest.objects.create(
+                    first_name=self.manager.first_name,
+                    last_name=self.manager.last_name,
+                    email=self.manager.email,
+                    profession=self.manager.profession,
+                    organisation=organisation,
+                )
 
         return True
 
