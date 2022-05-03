@@ -176,6 +176,13 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
                 if organisation_request.accept_request_and_create_organisation():
                     orgs_created += 1
                     self.send_acceptance_email(organisation_request)
+                else:
+                    self.message_user(
+                        request,
+                        f"""L'organisation {organisation_request.name} n'a pas été créée.
+                        Vérifiez si la demande est bien en attente de validation.""",
+                        level=messages.ERROR,
+                    )
             except Organisation.AlreadyExists as e:
                 self.message_user(request, e, level=messages.ERROR)
         if orgs_created > 1:
