@@ -750,7 +750,7 @@ class ValidationRequestFormViewTests(TestCase):
         )
         AidantRequestFactory(organisation=cls.organisation)
         cls.organisation_no_manager: OrganisationRequest = (
-            DraftOrganisationRequestFactory()
+            DraftOrganisationRequestFactory(manager=None)
         )
 
     def get_url(self, issuer_id, uuid):
