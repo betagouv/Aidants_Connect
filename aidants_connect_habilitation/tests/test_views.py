@@ -749,6 +749,9 @@ class ValidationRequestFormViewTests(TestCase):
             manager=ManagerFactory()
         )
         AidantRequestFactory(organisation=cls.organisation)
+        cls.organisation_no_manager: OrganisationRequest = (
+            DraftOrganisationRequestFactory()
+        )
 
     def get_url(self, issuer_id, uuid):
         return reverse(
@@ -850,6 +853,28 @@ class ValidationRequestFormViewTests(TestCase):
             self.assertTrue(getattr(self.organisation, name))
             for name in cleaned_data.keys()
         ]
+
+    def test_post_no_manager_raises_error(self):
+        valid_data = {
+            "cgu": True,
+            "dpo": True,
+            "professionals_only": True,
+            "without_elected": True,
+        }
+        response = self.client.post(
+            self.get_url(
+                self.organisation_no_manager.issuer.issuer_id,
+                self.organisation_no_manager.uuid,
+            ),
+            valid_data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.template_name)
+        self.assertIn(
+            "Veuillez ajouter le responsable de la structure avant validation.",
+            str(response.context_data["form"].errors),
+        )
 
     def test_post_invalid_data(self):
         valid_data = {
