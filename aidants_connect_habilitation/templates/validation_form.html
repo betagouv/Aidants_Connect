@@ -14,6 +14,8 @@
       Vous retrouverez ici les informations principales saisies dans le formulaire.
       Il est possible de les modifier si besoin.
     </p>
+
+    {{ form.non_field_errors }}
     {% include "_display_org_request.html" with organisation=organisation show_all_buttons=True %}
     <h3>Information complémentaire</h3>
     <form method="post">
@@ -37,8 +39,6 @@
       <div class="fr-col-12 fr-col-md-8">
         <div class="shadowed">
           <h4 class="h2">Modalités d'utilisation</h4>
-
-            {{ form.non_field_errors }}
             {% checkbox_fr_grid_row form.cgu %}
             {% checkbox_fr_grid_row form.dpo %}
             {% checkbox_fr_grid_row form.professionals_only %}
