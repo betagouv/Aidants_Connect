@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from factory import Faker as FactoryFaker
 from factory import LazyFunction, SubFactory
 from factory import lazy_attribute as factory_lazy_attribute
+from factory import post_generation
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyInteger, FuzzyText
 from faker import Faker
@@ -74,7 +75,7 @@ class OrganisationRequestFactory(DjangoModelFactory):
     manager = SubFactory(ManagerFactory)
 
     uuid = LazyFunction(uuid4)
-    data_pass_id = FuzzyInteger(10000000, 99999999)
+    data_pass_id = FuzzyInteger(10_000_000, 99_999_999)
 
     status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
 
@@ -105,6 +106,16 @@ class OrganisationRequestFactory(DjangoModelFactory):
             if self.type_id == RequestOriginConstants.OTHER.value
             else ""
         )
+
+    @post_generation
+    def post(self, create, _, **kwargs):
+        if not create:
+            return
+
+        aidants_count = kwargs.get("aidants_count", None)
+        if aidants_count:
+            for i in range(aidants_count):
+                AidantRequestFactory(organisation=self)
 
     class Meta:
         model = OrganisationRequest

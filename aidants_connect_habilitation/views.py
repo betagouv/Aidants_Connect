@@ -1,6 +1,8 @@
 from django.conf import settings
+from django.contrib import messages
 from django.core.mail import send_mail
 from django.forms.models import model_to_dict
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.urls import reverse
@@ -14,6 +16,7 @@ from aidants_connect.common.constants import (
 )
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
+    AidantRequestFormSet,
     IssuerForm,
     OrganisationRequestForm,
     PersonnelForm,
@@ -38,6 +41,8 @@ __all__ = [
     "ModifyOrganisationRequestFormView",
     "PersonnelRequestFormView",
     "ValidationRequestFormView",
+    "ReadonlyRequestView",
+    "ModifiyRequestView",
 ]
 
 """Mixins"""
@@ -387,6 +392,14 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
             "aidants": self.organisation.aidant_requests,
+            "display_add_aidants_button": (
+                self.organisation.status
+                in [
+                    RequestStatusConstants.NEW.name,
+                    RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+                    RequestStatusConstants.VALIDATED.name,
+                ]
+            ),
         }
 
     def get_success_url(self):
@@ -411,3 +424,52 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
             )
 
         return super().form_valid(form)
+
+
+class ModifiyRequestView(LateStageRequestView, FormView):
+    template_name = "modify_organisation_request.html"
+    form_class = AidantRequestFormSet
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.organisation.status not in [
+            RequestStatusConstants.NEW.name,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            RequestStatusConstants.VALIDATED.name,
+        ]:
+            messages.error(
+                request,
+                "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "habilitation_organisation_view",
+                    kwargs={
+                        "issuer_id": self.organisation.issuer.issuer_id,
+                        "uuid": self.organisation.uuid,
+                    },
+                )
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "organisation": self.organisation,
+        }
+
+    def get_success_url(self):
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={
+                "issuer_id": self.organisation.issuer.issuer_id,
+                "uuid": self.organisation.uuid,
+            },
+        )
+
+    def form_valid(self, formset: AidantRequestFormSet):
+        for form in formset:
+            form.instance.organisation = self.organisation
+
+        formset.save()
+
+        return super().form_valid(formset)

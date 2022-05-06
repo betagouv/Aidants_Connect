@@ -271,12 +271,15 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
     def __init__(self, **kwargs):
         kwargs.setdefault("queryset", AidantRequest.objects.none())
         kwargs.setdefault("error_class", PatchedErrorList)
+
         super().__init__(**kwargs)
 
-    def management_form_widget_attrs(self, widget_name: str, attrs: dict):
-        widget = self.management_form.fields[widget_name].widget
-        for attr_name, attr_value in attrs.items():
-            widget.attrs[attr_name] = attr_value
+        self.__management_form_widget_attrs(
+            TOTAL_FORM_COUNT, {"data-personnel-form-target": "managmentFormCount"}
+        )
+        self.__management_form_widget_attrs(
+            MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
+        )
 
     def add_non_form_error(self, error: Union[ValidationError, str]):
         if not isinstance(error, ValidationError):
@@ -290,6 +293,11 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
                 return False
 
         return True
+
+    def __management_form_widget_attrs(self, widget_name: str, attrs: dict):
+        widget = self.management_form.fields[widget_name].widget
+        for attr_name, attr_value in attrs.items():
+            widget.attrs[attr_name] = attr_value
 
 
 AidantRequestFormSet = modelformset_factory(
@@ -345,13 +353,6 @@ class PersonnelForm:
 
         self.aidants_formset = AidantRequestFormSet(
             **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
-        )
-
-        self.aidants_formset.management_form_widget_attrs(
-            TOTAL_FORM_COUNT, {"data-personnel-form-target": "managmentFormCount"}
-        )
-        self.aidants_formset.management_form_widget_attrs(
-            MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
         )
 
     def _clean(self):

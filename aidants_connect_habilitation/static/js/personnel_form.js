@@ -8,7 +8,8 @@
             this.formCountValue = this.managmentFormCountTarget.value;
             this.formMaxCountValue = this.managmentFormMaxCountTarget.value;
             this.mutateAddAidantButtonVisibility();
-            this.issuerDataValue = JSON.parse(document.getElementById("issuer-data").textContent)
+            const elt = document.getElementById("issuer-data");
+            this.issuerDataValue = elt ? JSON.parse(elt.textContent) : {};
             this.controllerInitializedValue = true;
         },
 
