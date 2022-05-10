@@ -22,6 +22,12 @@
                           <li>{{ org.name }} : {{ org.num_requests }} aidants</li>
                         {% endfor %}
                       </ul>
+                      <p>{{ nb_new_test_pix }} aidants à former ont passé le test PIX.</p>
+                      <ul>
+                        {% for aidant in aidants_with_test_pix %}
+                        <li>{{ aidant.email }}</li>
+                        {% endfor %}
+                      </ul>
                       <p>
                         Afin de les traiter, vous pouvez les retrouver dans l'administration Django,
                         dans la rubrique « aidants à former ».

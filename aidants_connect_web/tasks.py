@@ -117,12 +117,12 @@ def notify_new_habilitation_requests():
         )
     )
     created_from = timezone.now() + timedelta(days=-7)
+
+    # new aidants à former
     habilitation_requests_count = HabilitationRequest.objects.filter(
         created_at__gt=created_from,
         origin=HabilitationRequest.ORIGIN_RESPONSABLE,
     ).count()
-    if habilitation_requests_count == 0:
-        return
     organisations = Organisation.objects.filter(
         habilitation_requests__created_at__gte=created_from,
         habilitation_requests__origin=HabilitationRequest.ORIGIN_RESPONSABLE,
@@ -136,10 +136,24 @@ def notify_new_habilitation_requests():
         )
     )
 
+    # aidants à former test PIX
+    new_test_pix_count = HabilitationRequest.objects.filter(
+        date_test_pix__gt=created_from
+    ).count()
+
+    aidants_with_test_pix = HabilitationRequest.objects.filter(
+        date_test_pix__gt=created_from
+    )
+
+    if habilitation_requests_count == 0 and new_test_pix_count == 0:
+        return
+
     context = {
         "organisations": organisations,
         "total_requests": habilitation_requests_count,
         "interval": 7,
+        "nb_new_test_pix": new_test_pix_count,
+        "aidants_with_test_pix": aidants_with_test_pix,
     }
 
     text_message = loader.render_to_string(

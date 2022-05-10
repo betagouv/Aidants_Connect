@@ -1,0 +1,37 @@
+import logging
+from datetime import datetime
+
+from django.conf import settings
+
+from celery import shared_task
+from metabasepy import Client
+from pytz import timezone as pytz_timezone
+
+from aidants_connect_web.models import HabilitationRequest
+
+logger = logging.getLogger()
+
+
+@shared_task
+def import_pix_results():
+    username = settings.PIX_METABASE_USER
+    password = settings.PIX_METABASE_PASSWORD
+    card_id = settings.PIX_METABASE_CARD_ID
+    cli = Client(
+        username=username, password=password, base_url="https://metabase.pix.fr"
+    )
+    cli.authenticate()
+    logger.info("Sucessfully authenticated to PIX database.")
+    json_result = cli.cards.download(card_id=card_id, format="json")
+
+    for person in json_result:
+        date_test_pix = datetime.strptime(person["date d'envoi"], "%Y-%m-%d").replace(
+            tzinfo=pytz_timezone("Europe/Paris")
+        )
+        aidants = HabilitationRequest.objects.filter(email=person["email saisi"])
+        if aidants.exists():
+            aidant_a_former = aidants[0]
+            aidant_a_former.test_pix_passed = True
+            aidant_a_former.date_test_pix = date_test_pix
+            aidant_a_former.save()
+    logger.info("Sucessfully updated PIX results")

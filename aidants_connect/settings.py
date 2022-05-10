@@ -587,3 +587,7 @@ EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT = os.getenv(
     "EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT",
     "Vous avez reçu un nouveau message d'Aidants Connect",
 )
+
+PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
+PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
+PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")

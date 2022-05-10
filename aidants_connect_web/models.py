@@ -523,6 +523,8 @@ class HabilitationRequest(models.Model):
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
+    test_pix_passed = models.BooleanField("Test PIX", default=False)
+    date_test_pix = models.DateTimeField("Date test PIX", null=True, blank=True)
 
     class Meta:
         constraints = (
