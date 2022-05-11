@@ -1,0 +1,11 @@
+{% load ac_common %}
+
+Bonjour,
+
+Vous venez de créer une nouvelle demande d’habilitation à Aidants Connect pour l’organisation {{ organisation.name }}.
+{% linebreakless %}
+Vous pouvez suivre le lien pour retrouver toutes vos demandes en cours</a> en copiant l’URL suivante dans votre navigateur :
+{% endlinebreakless %}
+ {{ url }}
+
+À bientôt sur Aidants Connect

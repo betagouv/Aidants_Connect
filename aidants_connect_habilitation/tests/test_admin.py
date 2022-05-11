@@ -41,6 +41,7 @@ class OrganisationRequestAdminTests(TestCase):
     def test_send_default_email(self):
         self.assertEqual(len(mail.outbox), 0)
 
+        # this is supposed to one email:
         org_request = OrganisationRequestFactory(
             status=RequestStatusConstants.VALIDATED.name,
             data_pass_id=67245456,
@@ -48,12 +49,13 @@ class OrganisationRequestAdminTests(TestCase):
         for _ in range(3):
             AidantRequestFactory(organisation=org_request)
 
-        # this is supposed to send one email:
+        # this is supposed to send another email:
         self.org_request_admin.send_acceptance_email(org_request)
 
-        # so here we expect 1 email here in outbox:
-        self.assertEqual(len(mail.outbox), 1)
-        acceptance_message = mail.outbox[0]
+        # so here we expect 2 emails here in outbox:
+        self.assertEqual(len(mail.outbox), 2)
+
+        acceptance_message = mail.outbox[1]
 
         # check subject and email contents
         self.assertIn(str(org_request.data_pass_id), acceptance_message.subject)
@@ -79,6 +81,7 @@ class OrganisationRequestAdminTests(TestCase):
     def test_send_email_with_custom_body_and_subject(self):
         self.assertEqual(len(mail.outbox), 0)
 
+        # this is supposed to one email:
         org_request = OrganisationRequestFactory(
             status=RequestStatusConstants.VALIDATED.name,
             data_pass_id=67245456,
@@ -86,16 +89,16 @@ class OrganisationRequestAdminTests(TestCase):
         for _ in range(3):
             AidantRequestFactory(organisation=org_request)
 
-        # this is supposed to send one email:
+        # this is supposed to send another email:
         email_body = "Corps du mail iaculis, scelerisque felis non, rutrum purus."
         email_subject = "Objet du mail consequat nisl sed viverra laoreet."
         self.org_request_admin.send_acceptance_email(
             org_request, email_body, email_subject
         )
 
-        # so here we expect 1 email here in outbox:
-        self.assertEqual(len(mail.outbox), 1)
-        acceptance_message = mail.outbox[0]
+        # so here we expect 2 emails here in outbox:
+        self.assertEqual(len(mail.outbox), 2)
+        acceptance_message = mail.outbox[1]
 
         # check subject and email contents
         self.assertEqual(email_subject, acceptance_message.subject)
