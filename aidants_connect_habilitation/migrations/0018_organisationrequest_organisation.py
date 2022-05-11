@@ -7,7 +7,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aidants_connect_web', '0085_auto_20220329_0005'),
         ('aidants_connect_habilitation', '0017_auto_20220405_1655'),
     ]
 
