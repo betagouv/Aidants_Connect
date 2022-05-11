@@ -4,7 +4,7 @@ Bienvenue sur Aidants Connect !
 
 La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}, a été acceptée. Voici les prochaines étapes :
 
-Le responsable Aidants Connect est également invité à participer à un webinaire de 30min qui explique le détail son rôle dans l’habilitation. Pour s’inscrire, c’est ici : https://app.livestorm.co/incubateur-des-territoires/responsable-aidants-connect.
+Le responsable Aidants Connect est invité à participer à un webinaire de 30min qui explique en détail son rôle dans l’habilitation. Pour s’inscrire, c’est ici : https://app.livestorm.co/incubateur-des-territoires/responsable-aidants-connect.
 
 En parallèle, les aidantes et les aidants seront contacté(e)s pour suivre la formation nécessaire :
 
