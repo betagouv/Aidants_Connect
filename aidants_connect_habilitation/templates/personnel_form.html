@@ -73,6 +73,13 @@
                 <b>Attention :</b> Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et accessible par une seule personne.
                 Toute saisie d’email de contact générique entrainera un blocage de la demande d’habilitation.
               </h4>
+
+              {% if not form.manager_form.pristine %}
+                <section class="choice-fields">
+                  {% field_as_narrow_fr_grid_row form.manager_form.alternative_address %}
+                </section>
+              {% endif %}
+
               {% field_as_narrow_fr_grid_row form.manager_form.address %}
 
               {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
@@ -158,4 +165,8 @@
   {% stimulusjs %}
   <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/personnel_form.js' %}"></script>
+{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/personnel_form.css' %}" rel="stylesheet">
 {% endblock %}

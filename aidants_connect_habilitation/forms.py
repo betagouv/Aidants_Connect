@@ -7,12 +7,15 @@ from django.forms import (
     BooleanField,
     CharField,
     ChoiceField,
+    Form,
+    RadioSelect,
     Textarea,
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.http import quote, unquote
 
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
@@ -23,6 +26,7 @@ from aidants_connect.common.forms import (
     PatchedErrorListForm,
     PatchedForm,
 )
+from aidants_connect.common.gouv_address_api import Address, search_adresses
 from aidants_connect_habilitation import models
 from aidants_connect_habilitation.models import (
     AidantRequest,
@@ -32,6 +36,105 @@ from aidants_connect_habilitation.models import (
     RequestMessage,
 )
 from aidants_connect_web.models import OrganisationType
+
+
+class AddressValidatableMixin(Form):
+    DEFAULT_CHOICE = "DEFAULT"
+
+    # Necessary so dynamically setting properties
+    # in __init__ does not mess with original classes
+    class XChoiceField(ChoiceField):
+        def validate(self, value):
+            # Disable value validation, only keep value requirement
+            if value in self.empty_values and self.required:
+                raise ValidationError(self.error_messages["required"], code="required")
+
+    class XRadioSelect(RadioSelect):
+        pass
+
+    alternative_address = XChoiceField(
+        label="Veuillez sélectionner votre adresse dans les propositions ci-dessous :",
+        choices=((DEFAULT_CHOICE, "Laisser l'adresse inchangée"),),
+        widget=XRadioSelect(attrs={"class": "choice-field"}),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.pristine = True
+
+        # This code will toggle field requirement on or off depending on
+        # a specific condition
+        def display_widget(_) -> bool:
+            return not self.pristine
+
+        setattr(
+            AddressValidatableMixin.XChoiceField,
+            "required",
+            property(display_widget),
+        )
+        setattr(
+            AddressValidatableMixin.XRadioSelect,
+            "is_required",
+            property(display_widget),
+        )
+
+    def clean_alternative_address(self):
+        self.pristine = False
+
+        alternative_address = self.data.get(self.add_prefix("alternative_address"))
+
+        if alternative_address == self.DEFAULT_CHOICE:
+            return self.DEFAULT_CHOICE
+        elif alternative_address:
+            return Address.parse_raw(unquote(alternative_address))
+        else:
+            results = search_adresses(self.get_address_for_search())
+
+            # Case not result returned (most likely, HTTP request failed)
+            if len(results) == 0:
+                return self.DEFAULT_CHOICE
+
+            # There is 1 result and it almost 100% matches
+            if (
+                len(results) == 1
+                and results[0].label == self.get_address_for_search()
+                and results[0].score > 0.90
+            ):
+                return results[0]
+
+            for result in results:
+                self.fields["alternative_address"].choices = [
+                    (quote(result.json()), result.label),
+                    *self.fields["alternative_address"].choices,
+                ]
+
+            raise ValidationError("Plusieurs choix d'adresse sont possibles")
+
+    def post_clean(self):
+        """
+        Call this method at the end of your own Form's ``clean`` method to
+        prevent.
+        """
+        alternative_address = self.cleaned_data.pop("alternative_address", None)
+        if isinstance(alternative_address, Address):
+            self.autocomplete(alternative_address)
+
+    def get_address_for_search(self) -> str:
+        """
+        Implement this method to provide a string to search on the address
+        API. This method may, for instance, concatenate street name, zipcode
+        and city fields that may otherwise be seperated.
+        """
+        raise NotImplementedError()
+
+    def autocomplete(self, address: Address):
+        """
+        Implement this method to fill your Form with the address when the
+        API returns one result that matches with more than 90% probability.
+        """
+        raise NotImplementedError()
 
 
 class IssuerForm(PatchedErrorListForm):
@@ -224,7 +327,7 @@ class PersonWithResponsibilitiesForm(PatchedErrorListForm):
         exclude = ["id"]
 
 
-class ManagerForm(PersonWithResponsibilitiesForm):
+class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
@@ -241,12 +344,29 @@ class ManagerForm(PersonWithResponsibilitiesForm):
         },
     )
 
+    def get_address_for_search(self) -> str:
+        return (
+            f"{self.data[self.add_prefix('address')]} "
+            f"{self.data[self.add_prefix('zipcode')]} "
+            f"{self.data[self.add_prefix('city')]}"
+        )
+
+    def autocomplete(self, address: Address):
+        self.cleaned_data["address"] = address.name
+        self.cleaned_data["zipcode"] = address.postcode
+        self.cleaned_data["city"] = address.city
+
     def clean_zipcode(self):
         data: str = self.cleaned_data["zipcode"]
         if not data.isnumeric():
             raise ValidationError("Veuillez entrer un code postal valide")
 
         return data
+
+    def clean(self):
+        result = super().clean()
+        super().post_clean()
+        return result
 
     class Meta(PersonWithResponsibilitiesForm.Meta):
         model = Manager

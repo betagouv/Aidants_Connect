@@ -592,3 +592,12 @@ class RequestMessage(models.Model):
                 self.organisation.save()
             self.send_message_email()
         return super(RequestMessage, self).save(*args, **kwargs)
+
+
+def _default_expiraton_date():
+    return now() + timedelta(days=1)
+
+
+class AddressAPIResultQuerySet(models.QuerySet):
+    def expired(self):
+        return self.filter(expiraton_date__lt=now())

@@ -6,7 +6,7 @@ from django.contrib import messages as django_messages
 from django.core import mail
 from django.forms import model_to_dict
 from django.http import HttpResponse
-from django.test import TestCase, tag
+from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -608,6 +608,8 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
 
 
 @tag("habilitation")
+# Run test with address searching disabled
+@override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=True)
 class AidantsRequestFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):

@@ -1,12 +1,15 @@
 from functools import singledispatch
 from importlib import import_module
 from inspect import getmembers, isclass
+from json import loads
+from os.path import join as path_join
 from typing import Type, TypeVar
 
 from django.forms import BaseModelFormSet, ModelForm
 
 from factory.django import DjangoModelFactory
 
+from aidants_connect_habilitation import tests
 from aidants_connect_habilitation.tests import factories
 
 
@@ -138,3 +141,9 @@ def __get_form_data(form_cls: Type[T], **kwargs) -> T:
         )
 
     return form_cls(instance=factory_cls.build(**kwargs)).initial
+
+
+def load_json_fixture(name: str) -> dict:
+    path = path_join(tests.__path__[0], "fixtures", name)
+    with open(path) as f:
+        return loads(f.read())
