@@ -199,6 +199,73 @@ class TestPersonnelForm(TestCase):
 
         self.assertFalse(form.is_valid())
 
+    def test_is_not_valid_if_no_aidant_was_declared(self):
+        manager_data = get_form(ManagerForm, is_aidant=False).clean()
+        aidants_form = get_form(AidantRequestFormSet, formset_extra=0)
+        aidants_data = aidants_form.data
+
+        cleaned_data = {
+            **{
+                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
+                for k, v in manager_data.items()
+            },
+            **{
+                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
+                for k, v in aidants_data.items()
+            },
+        }
+
+        form = PersonnelForm(data=cleaned_data)
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors,
+            [
+                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+                "l'organisation n'est pas elle-même déclarée comme aidante"
+            ],
+        )
+
+        manager_data = get_form(ManagerForm, is_aidant=True).clean()
+        aidants_form = get_form(AidantRequestFormSet, formset_extra=0)
+        aidants_data = aidants_form.data
+
+        cleaned_data = {
+            **{
+                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
+                for k, v in manager_data.items()
+            },
+            **{
+                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
+                for k, v in aidants_data.items()
+            },
+        }
+
+        form = PersonnelForm(data=cleaned_data)
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.errors, [])
+
+        manager_data = get_form(ManagerForm, is_aidant=True).clean()
+        aidants_form = get_form(AidantRequestFormSet)
+        aidants_data = aidants_form.data
+
+        cleaned_data = {
+            **{
+                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
+                for k, v in manager_data.items()
+            },
+            **{
+                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
+                for k, v in aidants_data.items()
+            },
+        }
+
+        form = PersonnelForm(data=cleaned_data)
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.errors, [])
+
     def test_save(self):
         organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
@@ -296,3 +363,19 @@ class TestManagerForm(TestCase):
         self.assertEqual(
             form.errors["zipcode"], ["Veuillez entrer un code postal valide"]
         )
+
+
+class TestBaseAidantRequestFormSet(TestCase):
+    def test_is_empty(self):
+        form: AidantRequestFormSet = get_form(AidantRequestFormSet, formset_extra=0)
+        self.assertEqual(form.is_empty(), True)
+
+        form: AidantRequestFormSet = get_form(AidantRequestFormSet)
+        self.assertEqual(form.is_empty(), False)
+
+        # Correctly handle erroneous subform case
+        data = get_form(AidantRequestFormSet, formset_extra=1).data
+        data["form-0-email"] = "   "
+        form = AidantRequestFormSet(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.is_empty(), False)
