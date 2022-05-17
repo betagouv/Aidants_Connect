@@ -284,8 +284,12 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
         self._non_form_errors.append(error)
 
     def is_empty(self):
-        cleaned_data = [aidant for aidant in self.cleaned_data if len(aidant) != 0]
-        return len(cleaned_data) == 0
+        for form in self.forms:
+            # If the form is not valid, it has data to correct so it is not empty
+            if not form.is_valid() or form.is_valid() and len(form.cleaned_data) != 0:
+                return False
+
+        return True
 
 
 AidantRequestFormSet = modelformset_factory(
@@ -382,6 +386,7 @@ class PersonnelForm:
     def is_valid(self) -> bool:
         # self.errors must be last called so that subforms are
         # validated before performing a global validation
+
         return (
             self.manager_form.is_valid()
             and self.aidants_formset.is_valid()
