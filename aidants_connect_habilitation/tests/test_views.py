@@ -2,6 +2,7 @@ from datetime import timedelta
 from unittest.mock import ANY, Mock, patch
 from uuid import UUID, uuid4
 
+from django.contrib import messages as django_messages
 from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.test import TestCase, tag
@@ -1007,3 +1008,57 @@ class RequestReadOnlyViewTests(TestCase):
         )
         response = self.client.get(organisation.get_absolute_url())
         self.assertNotContains(response, "Notre conversation démarre ici.")
+
+
+class TestModifiyRequestView(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_organisation_modify"
+
+    def test_redirects_on_unauthorized_request_status(self):
+        unauthorized_statuses = set(RequestStatusConstants.values()) - {
+            RequestStatusConstants.NEW.name,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            RequestStatusConstants.VALIDATED.name,
+        }
+
+        for i, status in enumerate(unauthorized_statuses):
+            organisation: OrganisationRequest = OrganisationRequestFactory(
+                status=status
+            )
+
+            response = self.client.get(
+                self.__get_url(organisation.issuer.issuer_id, organisation.uuid)
+            )
+
+            self.assertRedirects(
+                response,
+                self.__get_redirect_url(
+                    organisation.issuer.issuer_id, organisation.uuid
+                ),
+            )
+            messages = list(django_messages.get_messages(response.wsgi_request))
+            self.assertEqual(len(messages), i + 1)
+            self.assertEqual(
+                messages[i].message,
+                "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
+            )
+
+    def __get_url(self, issuer_id, uuid):
+        return reverse(
+            self.pattern_name,
+            kwargs={
+                "issuer_id": issuer_id,
+                "uuid": uuid,
+            },
+        )
+
+    def __get_redirect_url(self, issuer_id, uuid):
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={
+                "issuer_id": issuer_id,
+                "uuid": uuid,
+            },
+        )

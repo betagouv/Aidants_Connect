@@ -4,6 +4,7 @@ from aidants_connect_habilitation.views import (
     IssuerEmailConfirmationView,
     IssuerEmailConfirmationWaitingView,
     IssuerPageView,
+    ModifiyRequestView,
     ModifyIssuerFormView,
     ModifyOrganisationRequestFormView,
     NewHabilitationView,
@@ -61,5 +62,10 @@ urlpatterns = [
         "demandeur/<str:issuer_id>/organisation/<str:uuid>/voir/",
         ReadonlyRequestView.as_view(),
         name="habilitation_organisation_view",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/modifier/",
+        ModifiyRequestView.as_view(),
+        name="habilitation_organisation_modify",
     ),
 ]
