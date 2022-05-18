@@ -8,6 +8,12 @@ dans {{ organisations.count }} structures différentes :
 - {{ org.name }} : {{ org.num_requests }} demandes
 {% endfor %}
 
+
+{{ nb_new_test_pix }} aidants à former ont passé le test PIX.
+{% for aidant in aidants_with_test_pix %}
+- {{ aidant.email }}
+{% endfor %}
+
 Afin de les traiter, vous pouvez les retrouver dans l'administration Django,
 dans la rubrique « aidants à former ».
 
