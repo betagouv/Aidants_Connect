@@ -368,6 +368,9 @@ class OrganisationRequest(models.Model):
         else:
             responsable = responsable_query[0]
             responsable.responsable_de.add(organisation)
+            if responsable.has_a_totp_device:
+                self.status = RequestStatusConstants.CLOSED.name
+                self.save()
             responsable.save()
 
         for aidant in self.aidant_requests.all():

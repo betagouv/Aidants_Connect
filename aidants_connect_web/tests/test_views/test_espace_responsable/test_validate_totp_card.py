@@ -6,6 +6,9 @@ from django.urls import resolve
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from aidants_connect.common.constants import RequestStatusConstants
+from aidants_connect_habilitation.models import OrganisationRequest
+from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import AidantFactory, CarteTOTPFactory
 from aidants_connect_web.views import espace_responsable
@@ -30,16 +33,34 @@ class ValidateCarteTOTPTests(TestCase):
         cls.carte = CarteTOTPFactory(
             serial_number="A123", seed="FA169F10A9", aidant=cls.aidant_tim
         )
+
+        cls.carte_resposable_tom = CarteTOTPFactory(
+            serial_number="A456", seed="FA169F10A9", aidant=cls.responsable_tom
+        )
+
         cls.org_id = cls.responsable_tom.organisation.id
         # Create one TOTP Device
         cls.device = TOTPDevice(
             tolerance=30, key=cls.carte.seed, user=cls.aidant_tim, step=60
         )
+
+        cls.device_responsable = TOTPDevice(
+            tolerance=30,
+            key=cls.carte_resposable_tom.seed,
+            user=cls.responsable_tom,
+            step=60,
+        )
+
         cls.device.save()
+        cls.device_responsable.save()
         cls.organisation_url = f"/espace-responsable/organisation/{cls.org_id}"
         cls.aidant_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
+        cls.responsable_url = f"/espace-responsable/aidant/{cls.responsable_tom.id}/"
         cls.validation_url = (
             f"/espace-responsable/aidant/{cls.aidant_tim.id}/valider-carte"
+        )
+        cls.validation_url_responsable = (
+            f"/espace-responsable/aidant/{cls.responsable_tom.id}/valider-carte"
         )
 
     def test_validation_page_triggers_the_right_view(self):
@@ -91,6 +112,34 @@ class ValidateCarteTOTPTests(TestCase):
             "Le fonctionnement de cette carte n'a pas été vérifié.",
             response_content,
             "Organization page should display a warning about activation.",
+        )
+
+    def test_validation_manager_totp_closes_open_requests(self):
+        self.client.force_login(self.responsable_tom)
+
+        # create validated request
+        OrganisationRequestFactory(
+            status=RequestStatusConstants.VALIDATED.name,
+            organisation=self.responsable_tom.organisation,
+        )
+
+        with mock.patch("django_otp.oath.TOTP.verify", return_value=True):
+            # Submit post and check redirection is correct
+            response = self.client.post(
+                self.validation_url_responsable,
+                data={"otp_token": str(888888)},
+            )
+            self.assertRedirects(
+                response, self.responsable_url, fetch_redirect_response=False
+            )
+
+        # verify if request was updated
+        valid_organisation_requests = OrganisationRequest.objects.filter(
+            organisation__in=self.responsable_tom.responsable_de.all()
+        )
+
+        self.assertEqual(
+            valid_organisation_requests[0].status, RequestStatusConstants.CLOSED.name
         )
 
     def test_validation_totp_with_invalid_token(self):
