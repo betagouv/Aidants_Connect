@@ -72,11 +72,12 @@ JOURNAL_ACTIONS = (
 
 class AuthorizationDurations:
     SHORT = "SHORT"
+    MONTH = "MONTH"
     SEMESTER = "SEMESTER"
     LONG = "LONG"
     EUS_03_20 = "EUS_03_20"
 
-    DAYS = {SHORT: 1, SEMESTER: 182, LONG: 365}
+    DAYS = {SHORT: 1, MONTH: 31, SEMESTER: 182, LONG: 365}
 
     @classmethod
     def duration(cls, value: str, fixed_date: date = None):
@@ -114,10 +115,15 @@ class AuthorizationDurationChoices(TextChoices):
         AuthorizationDurations.SHORT,
         "pour une durée de 1 jour",
     )
+    MONTH = (
+        AuthorizationDurations.MONTH,
+        "pour une durée d'un mois "
+        f"({AuthorizationDurations.DAYS[AuthorizationDurations.MONTH]} jours)",
+    )
     SEMESTER = (
         AuthorizationDurations.SEMESTER,
         "pour une durée de six mois "
-        f"({AuthorizationDurations.DAYS[AuthorizationDurations.SEMESTER]}) jours",
+        f"({AuthorizationDurations.DAYS[AuthorizationDurations.SEMESTER]} jours)",
     )
     LONG = (
         AuthorizationDurations.LONG,
