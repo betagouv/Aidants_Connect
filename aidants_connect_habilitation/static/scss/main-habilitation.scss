@@ -490,6 +490,17 @@ fieldset {
   padding: 1rem;
 }
 
+.warning {
+  background: white;
+  color: $red-aidants;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: normal;
+  border: 1px solid $red-aidants;
+  box-sizing: border-box;
+  box-shadow: 10px 10px 0 $red-aidants;
+}
+
 // habilitation form breadcrumbs -----------------------
 
 .habilitation-breadcrumbs {
