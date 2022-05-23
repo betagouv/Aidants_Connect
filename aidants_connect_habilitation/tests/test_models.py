@@ -6,13 +6,18 @@ from django.http import HttpRequest
 from django.test import TestCase, override_settings, tag
 from django.utils.timezone import now
 
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
 
 from aidants_connect.common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_habilitation.models import Issuer, IssuerEmailConfirmation
+from aidants_connect_habilitation.models import (
+    Issuer,
+    IssuerEmailConfirmation,
+    OrganisationRequest,
+)
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
     IssuerFactory,
@@ -20,7 +25,11 @@ from aidants_connect_habilitation.tests.factories import (
     OrganisationRequestFactory,
 )
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
-from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    CarteTOTPFactory,
+    OrganisationFactory,
+)
 
 
 @tag("models")
@@ -195,6 +204,34 @@ class OrganisationRequestTests(TestCase):
             HabilitationRequest.objects.filter(
                 email=created_manager.email, organisation=created_organisation
             ).exists()
+        )
+
+    def accept_when_responsable_already_has_totp_card_closes_request(self):
+        manager = AidantFactory(username="manager@email.com")
+        carte = CarteTOTPFactory(
+            serial_number="A456", seed="FA169F10A9", aidant=manager
+        )
+        device = TOTPDevice(
+            tolerance=30, key=carte.seed, user=manager, step=60, confirmed=True
+        )
+        device.save()
+        organisation = OrganisationFactory()
+        manager.responsable_de.add(organisation)
+        organisation_request = OrganisationRequestFactory(
+            manager=ManagerFactory(is_aidant=False, email="manager@email.com"),
+            organisation=organisation,
+        )
+        for _ in range(2):
+            AidantRequestFactory(organisation=organisation_request)
+        organisation_request.save()
+        organisation_request.accept_request_and_create_organisation()
+
+        valid_organisation_requests = OrganisationRequest.objects.filter(
+            organisation__in=manager.responsable_de.all()
+        )
+
+        self.assertEqual(
+            valid_organisation_requests[0].status, RequestStatusConstants.CLOSED.name
         )
 
     def test_accept_fails_when_organisation_already_exists(self):
