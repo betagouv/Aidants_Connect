@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
@@ -9,71 +9,75 @@
 {% block title %}Aidants Connect - Habilitation{% endblock %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
-      <h1 class="section__title">Comment être habilité Aidants Connect ?</h1>
-      <ul>
-        <li>Ma structure emploie des aidants professionnels ?</li>
-        <li>Les aidants accompagnent des usagers dans la réalisation de démarches administratives en ligne ?</li>
-      </ul>
-      <p class="so">Alors ma structure est éligible Aidants Connect !</p>
+  <div class="fr-container">
+    <h1 class="h1-habilitation">Comment être habilité Aidants Connect ?</h1>
+    <ul>
+      <li>Ma structure emploie des aidants professionnels ?</li>
+      <li>Les aidants accompagnent des usagers dans la réalisation de démarches administratives en ligne ?</li>
+    </ul>
+    <p class="so">Alors ma structure est éligible Aidants Connect !</p>
 
-      <h2>Comment se passe l’habilitation ?</h2>
-      <ol class="how">
-        <li class="how_1">
-          Le responsable de structure complète <a href="{% url 'habilitation_new' %}">le formulaire
-          d’habilitation Aidants Connect.</a>
-        </li>
-        <li class="how_2">L'équipe Aidants Connect valide la demande.</li>
-        <li class="how_3">Dans un délai de deux mois, les aidants suivent une formation d'une journée sur les
-          sujets suivants : accompagnement de l'usager, RGPD, France Connect, prise en main d'Aidants Connect.
-        </li>
-        <li class="how_4">Aidants Connect active les comptes des aidants et envoie un kit de bienvenue à la structure.
-        </li>
-        <li class="how_5"><strong>Dès lors, les aidants peuvent réaliser des démarches en ligne pour le compte
-          d’usager.e.s&nbsp;!</strong>
-        </li>
-      </ol>
-
-      <h2>Liste des structures éligibles à l’utilisation d’Aidants Connect</h2>
-      <div class="who">
-        <p><b>Toute personne morale de droit public ou privé</b> (administration, association, entreprise) qui :</p>
+    <h2 class="h2-habilitation">Comment se passe l’habilitation ?</h2>
+    <ol class="how">
+      <li class="how_1">
+        Le responsable de structure complète <a href="{% url 'habilitation_new' %}">le formulaire
+        d’habilitation Aidants Connect.</a>
+      </li>
+      <li class="how_2">Aidants Connect valide la demande.</li>
+      <li class="how_3">Dans un délai de deux mois, les aidants suivent gratuitement une formation en deux parties :
         <ul>
-          <li>
-            Intervient dans le cadre d’une mission de service public d’accompagnement à la réalisation de démarches pour
-            les usagers (les maisons de services au public (MSAP), les structures titulaires du label « France services
-            »,
-            les agents des collectivités au contact du public, les CCAS, les services publics de proximité, les PIMMS,
-            les
-            centres médico-sociaux et les EPN).
-          </li>
-
-          <li>
-            Est membre du Réseau national de la médiation numérique ou contient dans son objet social la médiation ou
-            l’inclusion numérique, le cas échéant les agents ou salariés sont titulaires des titres professionnels
-            adéquats et notamment, le titre professionnel « conseiller en médiation numérique ».
-          </li>
-
-          <li>
-            Participe à la politique d’animation de la vie sociale et développe des prestations de services,
-            individualisées et spécialisées au sens de la circulaire n°2012-013 de la CNAF.
-          </li>
-
-          <li>
-            Est titulaire d’un marché, d’une subvention ou d’une prestation d’accompagnement en matière d’accompagnement
-            des usagers pour la réalisation des démarches administratives ou d’inclusion numérique.<br>
-            Exemples : les écrivains publics.
-          </li>
-
-          <li>Intervient dans les pratiques professionnelles définies à l’article D. 142-1-1 du Code de l’action sociale
-            et des familles.<br>
-            Exemples : les travailleurs sociaux.
-          </li>
+          <li>Une journée dédiée aux sujets d'accompagnement de l'usager, RGPD et France Connect.</li>
+          <li>Une demi-journée pour la prise en main de l’outil.</li>
         </ul>
-        <p><strong>Les aidants familiaux, les bénévoles, les services civiques et les élus ne sont donc pas éligibles.
-          Pour plus d'informations, nous vous invitons à consulter
-          <a href="https://aidantsconnect.beta.gouv.fr/faq/mandat/">notre FAQ.</a></strong></p>
-      </div>
+      </li>
+      <li class="how_4">Les aidants certifient leur habilitation.</li>
+      <li class="how_5"><strong>Aidants Connect active les comptes des aidants et envoie
+        un kit de ressources à la structure.</strong>
+        <br>Dès lors, les aidants peuvent réaliser des démarches en ligne pour le compte d’usagers !
+      </li>
+    </ol>
+
+    <div class="btn-habilitation">
+    <a href="{% url 'habilitation_new' %}">Je souhaite formuler une demande d’habilitation pour ma structure</a></div>
+
+    <h2 class="h2-habilitation">Liste des structures éligibles à l’utilisation d’Aidants Connect</h2>
+    <div class="who">
+      <p><b>Toute personne morale de droit public ou privé</b> (administration, association, entreprise) qui :</p>
+      <ul>
+        <li>
+          Intervient dans le cadre d’une mission de service public d’accompagnement à la réalisation de démarches pour
+          les usagers (les maisons de services au public (MSAP), les structures titulaires du label « France services
+          »,
+          les agents des collectivités au contact du public, les CCAS, les services publics de proximité, les PIMMS,
+          les
+          centres médico-sociaux et les EPN).
+        </li>
+
+        <li>
+          Est membre du Réseau national de la médiation numérique ou contient dans son objet social la médiation ou
+          l’inclusion numérique, le cas échéant les agents ou salariés sont titulaires des titres professionnels
+          adéquats et notamment, le titre professionnel « conseiller en médiation numérique ».
+        </li>
+
+        <li>
+          Participe à la politique d’animation de la vie sociale et développe des prestations de services,
+          individualisées et spécialisées au sens de la circulaire n°2012-013 de la CNAF.
+        </li>
+
+        <li>
+          Est titulaire d’un marché, d’une subvention ou d’une prestation d’accompagnement en matière d’accompagnement
+          des usagers pour la réalisation des démarches administratives ou d’inclusion numérique.<br>
+          Exemples : les écrivains publics.
+        </li>
+
+        <li>Intervient dans les pratiques professionnelles définies à l’article D. 142-1-1 du Code de l’action sociale
+          et des familles.<br>
+          Exemples : les travailleurs sociaux.
+        </li>
+      </ul>
+      <p><strong>Les aidants familiaux, les bénévoles, les services civiques et les élus ne sont donc pas éligibles.
+        Pour plus d'informations, nous vous invitons à consulter
+        <a href="https://aidantsconnect.beta.gouv.fr/faq/mandat/">notre FAQ.</a></strong></p>
     </div>
-  </section>
+  </div>
 {% endblock %}
