@@ -538,12 +538,18 @@ class RequestMessage(models.Model):
         send_mail(
             from_email=settings.EMAIL_NEW_MESSAGE_RECEIVED_FROM,
             recipient_list=[self.organisation.issuer.email],
-            subject=settings.EMAIL_NEW_MESSAGE_RECEIVED_FROM,
+            subject=settings.EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT,
             message=text_message,
             html_message=html_message,
         )
 
     def save(self, *args, **kwargs):
         if not self.pk and self.sender == "AC":
+            if (
+                self.organisation.status
+                == RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            ):
+                self.organisation.status = RequestStatusConstants.CHANGES_REQUIRED.name
+                self.organisation.save()
             self.send_message_email()
         return super(RequestMessage, self).save(*args, **kwargs)
