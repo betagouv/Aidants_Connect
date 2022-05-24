@@ -692,6 +692,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     list_filter = (
         "status",
         "origin",
+        "test_pix_passed",
         HabilitationRequestRegionFilter,
         HabilitationDepartmentFilter,
     )
