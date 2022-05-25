@@ -1,6 +1,7 @@
 from datetime import timedelta
 from unittest.mock import ANY, Mock, patch
 
+from django.core import mail
 from django.db import IntegrityError
 from django.http import HttpRequest
 from django.test import TestCase, override_settings, tag
@@ -17,6 +18,7 @@ from aidants_connect_habilitation.models import (
     Issuer,
     IssuerEmailConfirmation,
     OrganisationRequest,
+    RequestMessage,
 )
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
@@ -259,6 +261,46 @@ class OrganisationRequestTests(TestCase):
             organisation_request.status,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
         )
+
+    def test_modifications_request(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        def prepare_data():
+            OrganisationFactory(
+                data_pass_id=67245456,
+            )
+            organisation_request = OrganisationRequestFactory(
+                status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+                data_pass_id=67245456,
+            )
+            organisation_request.manager.is_aidant = True
+            organisation_request.manager.save()
+            for _ in range(3):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        organisation_request = prepare_data()
+        # expect one email when creating one organisation request
+        self.assertEqual(len(mail.outbox), 1)
+
+        message = RequestMessage(
+            organisation=organisation_request,
+            sender="AC",
+            content="Pourriez-vous faire ces modifications ?",
+        )
+        message.save()
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(
+            organisation_request.status,
+            RequestStatusConstants.CHANGES_REQUIRED.name,
+        )
+
+        # expect another email when new message sent
+        self.assertEqual(len(mail.outbox), 2)
+        new_message = mail.outbox[1]
+        self.assertIn(message.content, new_message.body)
+        self.assertIn(organisation_request.issuer.email, new_message.recipients())
 
 
 class TestIssuerEmailConfirmation(TestCase):
