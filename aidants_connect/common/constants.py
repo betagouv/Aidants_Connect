@@ -180,6 +180,7 @@ class RequestStatusConstants(ChoiceEnum):
     CLOSED = "Clôturée"
     CHANGES_REQUIRED = "Modifications demandées"
     CHANGES_PROPOSED = "Modifications proposées par Aidants Connect"
+    CHANGES_DONE = "Modifications finalisées"
 
 
 @unique
