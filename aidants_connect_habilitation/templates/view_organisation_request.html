@@ -19,6 +19,15 @@ Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
   </p>
   {% include "request_messages/_messages.html" with issuer=organisation.issuer messages=organisation.messages form=form %}
   <h2>Rappel de votre saisie</h2>
+  {% if display_modify_button %}
+  <a
+  id="modify-btn"
+  class="button primary margin-bottom-1"
+  href="{% url 'habilitation_validation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+  >
+    Modifier votre demande
+  </a>
+  {% endif %}
   {% include "_display_org_request.html" with organisation=organisation show_all_buttons=False %}
 
   <div class="fr-grid-row fr-grid-row--gutters">

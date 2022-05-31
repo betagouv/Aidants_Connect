@@ -3,6 +3,7 @@ from unittest.mock import ANY, Mock, patch
 from uuid import UUID, uuid4
 
 from django.contrib import messages as django_messages
+from django.core import mail
 from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.test import TestCase, tag
@@ -827,6 +828,7 @@ class ValidationRequestFormViewTests(TestCase):
 
     def test_do_the_job_and_redirect_valid_post_to_org_view(self):
         self.assertIsNone(self.organisation.data_pass_id)
+        self.assertEqual(len(mail.outbox), 0)
 
         cleaned_data = {
             "cgu": True,
@@ -846,6 +848,7 @@ class ValidationRequestFormViewTests(TestCase):
         )
         self.organisation.refresh_from_db()
         self.assertIsNotNone(self.organisation.data_pass_id)
+
         self.assertEqual(
             self.organisation.status,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
@@ -854,6 +857,57 @@ class ValidationRequestFormViewTests(TestCase):
             self.assertTrue(getattr(self.organisation, name))
             for name in cleaned_data.keys()
         ]
+
+        self.assertEqual(len(mail.outbox), 1)
+        organisation_request_creation_message = mail.outbox[0]
+        self.assertIn(
+            "Votre demande d’habilitation Aidants Connect a été créée",
+            organisation_request_creation_message.subject,
+        )
+        self.assertIn(
+            str(self.organisation.name), organisation_request_creation_message.body
+        )
+
+    def test_do_the_job_when_changes_required(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.CHANGES_REQUIRED.name
+        )
+        data_pass_id = organisation.data_pass_id
+
+        cleaned_data = {
+            "cgu": True,
+            "dpo": True,
+            "professionals_only": True,
+            "without_elected": True,
+        }
+
+        response = self.client.post(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid),
+            cleaned_data,
+        )
+
+        self.assertRedirects(
+            response,
+            organisation.get_absolute_url(),
+        )
+        organisation.refresh_from_db()
+        self.assertEqual(data_pass_id, organisation.data_pass_id)
+        self.assertEqual(
+            organisation.status,
+            RequestStatusConstants.CHANGES_DONE.name,
+        )
+
+        self.assertEqual(len(mail.outbox), 2)
+        organisation_request_modification_message = mail.outbox[1]
+        self.assertIn(
+            "Votre demande d’habilitation Aidants Connect a été modifiée",
+            organisation_request_modification_message.subject,
+        )
+        self.assertIn(
+            str(organisation.name), organisation_request_modification_message.body
+        )
 
     def test_post_no_manager_raises_error(self):
         valid_data = {
@@ -906,6 +960,24 @@ class ValidationRequestFormViewTests(TestCase):
     def test_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        )
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": organisation.issuer.issuer_id,
+                    "uuid": organisation.uuid,
+                },
+            ),
+        )
+
+    def test_redirect_on_changes_done_organisation_request(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.CHANGES_DONE.name
         )
         response = self.client.get(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid)
@@ -1009,6 +1081,24 @@ class RequestReadOnlyViewTests(TestCase):
         response = self.client.get(organisation.get_absolute_url())
         self.assertNotContains(response, "Notre conversation démarre ici.")
 
+    def shows_mofication_button_when_changes_required(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.CHANGES_REQUIRED.name
+        )
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        self.assertContains(response, "modify-btn")
+
+    def not_show_mofication_button_when_other_status(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        )
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        self.assertNotContains(response, "modify-btn")
+
 
 class TestModifiyRequestView(TestCase):
     @classmethod
@@ -1021,6 +1111,7 @@ class TestModifiyRequestView(TestCase):
             RequestStatusConstants.NEW.name,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
             RequestStatusConstants.VALIDATED.name,
+            RequestStatusConstants.CHANGES_DONE.name,
         }
 
         for i, status in enumerate(unauthorized_statuses):

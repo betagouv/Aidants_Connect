@@ -311,15 +311,40 @@ class OrganisationRequest(models.Model):
             html_message=html_message,
         )
 
+    def notify_issuer_request_modified(self):
+        context = {
+            "url": f"https://{settings.HOST}{self.get_absolute_url()}",
+            "organisation": self,
+        }
+        text_message = loader.render_to_string(
+            "email/organisation_request_modifications_done.txt", context
+        )
+        html_message = loader.render_to_string(
+            "email/organisation_request_modifications_done.html", context
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_MODIFICATION_FROM,
+            recipient_list=[self.issuer.email],
+            subject=settings.EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
+
     def prepare_request_for_ac_validation(self, form_data: dict):
         self.cgu = form_data["cgu"]
         self.dpo = form_data["dpo"]
         self.professionals_only = form_data["professionals_only"]
         self.without_elected = form_data["without_elected"]
-        self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
-        self.data_pass_id = int(f"{self.zipcode[:3]}{generate_new_datapass_id()}")
-        self.save()
-        self.notify_issuer_request_submitted()
+        if self.status == RequestStatusConstants.NEW.name:
+            self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            self.data_pass_id = int(f"{self.zipcode[:3]}{generate_new_datapass_id()}")
+            self.save()
+            self.notify_issuer_request_submitted()
+        if self.status == RequestStatusConstants.CHANGES_REQUIRED.name:
+            self.status = RequestStatusConstants.CHANGES_DONE.name
+            self.save()
+            self.notify_issuer_request_modified()
 
     @transaction.atomic
     def accept_request_and_create_organisation(self):

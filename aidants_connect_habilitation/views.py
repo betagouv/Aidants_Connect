@@ -105,7 +105,10 @@ class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
                 issuer_id=self.issuer.issuer_id,
             )
 
-        if self.organisation.status != RequestStatusConstants.NEW.name:
+        if (
+            self.organisation.status != RequestStatusConstants.NEW.name
+            and self.organisation.status != RequestStatusConstants.CHANGES_REQUIRED.name
+        ):
             return redirect(
                 "habilitation_organisation_view",
                 issuer_id=self.issuer.issuer_id,
@@ -398,6 +401,13 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
                     RequestStatusConstants.NEW.name,
                     RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
                     RequestStatusConstants.VALIDATED.name,
+                    RequestStatusConstants.CHANGES_DONE.name,
+                ]
+            ),
+            "display_modify_button": (
+                self.organisation.status
+                in [
+                    RequestStatusConstants.CHANGES_REQUIRED.name,
                 ]
             ),
         }
@@ -435,6 +445,7 @@ class ModifiyRequestView(LateStageRequestView, FormView):
             RequestStatusConstants.NEW.name,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
             RequestStatusConstants.VALIDATED.name,
+            RequestStatusConstants.CHANGES_DONE.name,
         ]:
             messages.error(
                 request,

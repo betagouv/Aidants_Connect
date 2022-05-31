@@ -21,6 +21,7 @@ class ModifiyRequestViewTests(FunctionalTestCase):
             RequestStatusConstants.NEW.name,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
             RequestStatusConstants.VALIDATED.name,
+            RequestStatusConstants.CHANGES_DONE.name,
         }
 
         unauthorized_statuses = (
