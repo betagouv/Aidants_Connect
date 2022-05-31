@@ -1100,11 +1100,11 @@ class RequestReadOnlyViewTests(TestCase):
         self.assertNotContains(response, "modify-btn")
 
 
-class TestModifiyRequestView(TestCase):
+class TestAddAidantsRequestView(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.pattern_name = "habilitation_organisation_modify"
+        cls.pattern_name = "habilitation_organisation_add_aidants"
 
     def test_redirects_on_unauthorized_request_status(self):
         unauthorized_statuses = set(RequestStatusConstants.values()) - {

@@ -15,7 +15,7 @@ from aidants_connect_habilitation.tests.utils import get_form
 
 
 @tag("functional")
-class ModifiyRequestViewTests(FunctionalTestCase):
+class AddAidantsRequestViewTests(FunctionalTestCase):
     def test_add_aidant_button_shown_in_readonly_view_under_correct_conditions(self):
         authorized_statuses = {
             RequestStatusConstants.NEW.name,
@@ -53,7 +53,7 @@ class ModifiyRequestViewTests(FunctionalTestCase):
             self.selenium.find_element(By.CSS_SELECTOR, "#add-aidants-btn").click()
 
             path = reverse(
-                "habilitation_organisation_modify",
+                "habilitation_organisation_add_aidants",
                 kwargs={
                     "issuer_id": str(organisation.issuer.issuer_id),
                     "uuid": str(organisation.uuid),
@@ -116,7 +116,7 @@ class ModifiyRequestViewTests(FunctionalTestCase):
     def __open_form_url(self, organisation_request: OrganisationRequest):
         self.open_live_url(
             reverse(
-                "habilitation_organisation_modify",
+                "habilitation_organisation_add_aidants",
                 kwargs={
                     "issuer_id": organisation_request.issuer.issuer_id,
                     "uuid": organisation_request.uuid,
