@@ -42,7 +42,7 @@ __all__ = [
     "PersonnelRequestFormView",
     "ValidationRequestFormView",
     "ReadonlyRequestView",
-    "ModifiyRequestView",
+    "AddAidantsRequestView",
 ]
 
 """Mixins"""
@@ -436,8 +436,8 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
         return super().form_valid(form)
 
 
-class ModifiyRequestView(LateStageRequestView, FormView):
-    template_name = "modify_organisation_request.html"
+class AddAidantsRequestView(LateStageRequestView, FormView):
+    template_name = "add_aidants_request.html"
     form_class = AidantRequestFormSet
 
     def dispatch(self, request, *args, **kwargs):
