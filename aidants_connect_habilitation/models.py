@@ -348,7 +348,10 @@ class OrganisationRequest(models.Model):
 
     @transaction.atomic
     def accept_request_and_create_organisation(self):
-        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
+        if (
+            self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            and self.status != RequestStatusConstants.CHANGES_DONE.name
+        ):
             return False
 
         try:
@@ -573,6 +576,7 @@ class RequestMessage(models.Model):
             if (
                 self.organisation.status
                 == RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+                or self.organisation.status == RequestStatusConstants.CHANGES_DONE.name
             ):
                 self.organisation.status = RequestStatusConstants.CHANGES_REQUIRED.name
                 self.organisation.save()
