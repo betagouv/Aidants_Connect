@@ -427,6 +427,16 @@ class OrganisationRequest(models.Model):
 
         return True
 
+    def refuse_request(self):
+        if (
+            self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            and self.status != RequestStatusConstants.CHANGES_DONE.name
+        ):
+            return False
+        self.status = RequestStatusConstants.REFUSED.name
+        self.save()
+        return True
+
     class Meta:
         constraints = [
             models.CheckConstraint(
