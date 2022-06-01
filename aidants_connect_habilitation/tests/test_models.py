@@ -312,6 +312,35 @@ class OrganisationRequestTests(TestCase):
         self.assertIn(message.content, new_message.body)
         self.assertIn(organisation_request.issuer.email, new_message.recipients())
 
+    def test_refuse_request(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        def prepare_data():
+            OrganisationFactory(
+                data_pass_id=67245456,
+            )
+            organisation_request = OrganisationRequestFactory(
+                status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+                data_pass_id=67245456,
+            )
+            organisation_request.manager.is_aidant = True
+            organisation_request.manager.save()
+            for _ in range(3):
+                AidantRequestFactory(organisation=organisation_request)
+            organisation_request.save()
+            return organisation_request
+
+        organisation_request = prepare_data()
+        # expect one email when creating one organisation request
+        self.assertEqual(len(mail.outbox), 1)
+
+        organisation_request.refuse_request()
+
+        self.assertEqual(
+            organisation_request.status,
+            RequestStatusConstants.REFUSED.name,
+        )
+
 
 class TestIssuerEmailConfirmation(TestCase):
     NOW = now()

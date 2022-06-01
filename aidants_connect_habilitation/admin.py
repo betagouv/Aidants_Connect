@@ -19,7 +19,7 @@ from aidants_connect.admin import (
     VisibleToTechAdmin,
     admin_site,
 )
-from aidants_connect_habilitation.forms import AdminAcceptationForm
+from aidants_connect_habilitation.forms import AdminAcceptationOrRefusalForm
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
@@ -208,6 +208,11 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
                 self.admin_site.admin_view(self.accept_one_request),
                 name="aidants_connect_habilitation_organisationrequest_accept",
             ),
+            path(
+                "<path:object_id>/refuse/",
+                self.admin_site.admin_view(self.refuse_one_request),
+                name="aidants_connect_habilitation_organisationrequest_refuse",
+            ),
             *super().get_urls(),
         ]
 
@@ -218,6 +223,14 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             return self.__accept_request_get(request, object_id)
         else:
             return self.__accept_request_post(request, object_id)
+
+    def refuse_one_request(self, request, object_id):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__refuse_request_get(request, object_id)
+        else:
+            return self.__refuse_request_post(request, object_id)
 
     def __accept_request_get(self, request, object_id):
         object = OrganisationRequest.objects.get(id=object_id)
@@ -237,7 +250,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             "media": self.media,
             "object_id": object_id,
             "object": object,
-            "form": AdminAcceptationForm(object, initial=initial),
+            "form": AdminAcceptationOrRefusalForm(object, initial=initial),
         }
 
         return render(
@@ -248,7 +261,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 
     def __accept_request_post(self, request, object_id):
         object = OrganisationRequest.objects.get(id=object_id)
-        form = AdminAcceptationForm(object, data=request.POST)
+        form = AdminAcceptationOrRefusalForm(object, data=request.POST)
         if not form.is_valid():
             return HttpResponseNotAllowed()
 
@@ -291,6 +304,87 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             subject = (
                 "Aidants Connect - la demande d'habilitation n° "
                 f"{object.data_pass_id} a été acceptée"
+            )
+
+        recipients = set(object.aidant_requests.values_list("email", flat=True))
+        recipients.add(object.manager.email)
+        recipients.add(object.issuer.email)
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_ACCEPTANCE_FROM,
+            recipient_list=list(recipients),
+            subject=subject,
+            message=text_message,
+            html_message=html_message,
+        )
+
+    def __refuse_request_get(self, request, object_id):
+        object = OrganisationRequest.objects.get(id=object_id)
+        email_body = loader.render_to_string(
+            "email/demande_refusee.txt", {"organisation": object}
+        )
+        email_subject = (
+            "Aidants Connect - la demande d'habilitation n° "
+            f"{object.data_pass_id} a été réfusée"
+        )
+        initial = {
+            "email_subject": email_subject,
+            "email_body": email_body,
+        }
+        view_context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "object_id": object_id,
+            "object": object,
+            "form": AdminAcceptationOrRefusalForm(object, initial=initial),
+        }
+
+        return render(
+            request,
+            "aidants_connect_habilitation/admin/organisation_request/refusal_form.html",
+            view_context,
+        )
+
+    def __refuse_request_post(self, request, object_id):
+        object = OrganisationRequest.objects.get(id=object_id)
+        form = AdminAcceptationOrRefusalForm(object, data=request.POST)
+        if not form.is_valid():
+            return HttpResponseNotAllowed()
+
+        object.refuse_request()
+        subject = form.cleaned_data.get("email_subject")
+        body_text = form.cleaned_data.get("email_body")
+        self.send_refusal_email(object, body_text, subject)
+
+        self.message_user(
+            request,
+            (
+                f"Tout s'est bien passé. La demande {object.data_pass_id} a "
+                f"été refusée"
+            ),
+        )
+
+        return HttpResponseRedirect(
+            reverse(
+                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
+            )
+        )
+
+    def send_refusal_email(self, object, body_text=None, subject=None):
+        if body_text:
+            text_message = body_text
+        else:
+            text_message = loader.render_to_string(
+                "email/demande_refusee.txt", {"organisation": object}
+            )
+        html_message = loader.render_to_string(
+            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+        )
+
+        if subject is None:
+            subject = (
+                "Aidants Connect - la demande d'habilitation n° "
+                f"{object.data_pass_id} a été refusée"
             )
 
         recipients = set(object.aidant_requests.values_list("email", flat=True))

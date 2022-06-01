@@ -472,7 +472,7 @@ class RequestMessageForm(PatchedErrorListForm):
         fields = ["content"]
 
 
-class AdminAcceptationForm(PatchedForm):
+class AdminAcceptationOrRefusalForm(PatchedForm):
     email_subject = CharField(label="Sujet de l’email", required=True)
     email_body = CharField(label="Contenu de l’email", widget=Textarea, required=True)
 

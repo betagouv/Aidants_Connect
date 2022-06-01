@@ -117,6 +117,45 @@ class OrganisationRequestAdminTests(TestCase):
         self.assertTrue(org_request.manager.email in acceptance_message.recipients())
         self.assertTrue(org_request.issuer.email in acceptance_message.recipients())
 
+    def test_send_refusal_email(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        # this is supposed to one email:
+        org_request = OrganisationRequestFactory(
+            status=RequestStatusConstants.REFUSED.name,
+            data_pass_id=67245456,
+        )
+        for _ in range(3):
+            AidantRequestFactory(organisation=org_request)
+
+        # this is supposed to send another email:
+        email_body = "Corps du mail iaculis, scelerisque felis non, rutrum purus."
+        email_subject = "Objet du mail consequat nisl sed viverra laoreet."
+        self.org_request_admin.send_refusal_email(
+            org_request, email_body, email_subject
+        )
+
+        # so here we expect 2 emails here in outbox:
+        self.assertEqual(len(mail.outbox), 2)
+        refusal_message = mail.outbox[1]
+
+        # check subject and email contents
+        self.assertEqual(email_subject, refusal_message.subject)
+        self.assertEqual(email_body, refusal_message.body)
+
+        # check recipients are as expected
+        self.assertEqual(
+            len(refusal_message.recipients()), 5
+        )  # 3 aidants + 1 issuer + 1 manager
+        self.assertTrue(
+            all(
+                aidant.email in refusal_message.recipients()
+                for aidant in org_request.aidant_requests.all()
+            )
+        )
+        self.assertTrue(org_request.manager.email in refusal_message.recipients())
+        self.assertTrue(org_request.issuer.email in refusal_message.recipients())
+
     def test_metier_user_can_see_manager(self):
         org_request = OrganisationRequestFactory()
         url_root = f"admin:{OrganisationRequest._meta.app_label}_{OrganisationRequest.__name__.lower()}"  # noqa

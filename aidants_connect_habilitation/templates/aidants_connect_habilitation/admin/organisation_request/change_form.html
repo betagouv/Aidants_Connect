@@ -10,12 +10,12 @@
           Accepter
         </a>
       </li>
-      <!--<li>
-        <a href="{# url 'otpadmin:aidants_connect_habilitation_organisationrequest_reject' object_id=object_id #}">
+      <li>
+        <a href="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_refuse' object_id=object_id %}">
           <span aria-hidden="true">❌ </span>
           Refuser
         </a>
-      </li>-->
+      </li>
     {% endif %}
     {% if status in "AC_VALIDATION_PROCESSING" %}
       <!--<li>
