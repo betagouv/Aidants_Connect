@@ -24,12 +24,12 @@
           Proposer des modifications
         </a>
       </li>-->
-      <!--<li>
-        <a href="{# url 'otpadmin:aidants_connect_habilitation_organisationrequest_requirechanges' object_id=object_id #}">
+      <li>
+        <a href="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_requirechanges' object_id=object_id %}">
           <span aria-hidden="true">✨ </span>
           Demander des modifications
         </a>
-      </li>-->
+      </li>
     {% endif %}
     {% if status in "VALIDATED" %}
       <!--<li>

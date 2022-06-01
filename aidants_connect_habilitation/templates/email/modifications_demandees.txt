@@ -1,0 +1,6 @@
+Bonjour,
+
+Veuillez procéder avec les modifications demandées par l'équipe Aidants Connect pour la demande d'habilitation n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}.
+
+L'équipe Aidants Connect
+https://aidantsconnect.beta.gouv.fr
