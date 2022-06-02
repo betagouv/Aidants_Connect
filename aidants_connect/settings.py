@@ -171,6 +171,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "aidants_connect.common.context_processors.settings_variables",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
@@ -603,3 +604,6 @@ PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
 
 GOUV_ADDRESS_SEARCH_API_BASE_URL = "https://api-adresse.data.gouv.fr/search/"
 GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool("GOUV_ADDRESS_SEARCH_API_DISABLED", True)
+
+MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
+MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
