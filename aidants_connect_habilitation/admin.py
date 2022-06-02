@@ -327,7 +327,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         recipients.add(object.issuer.email)
 
         send_mail(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_ACCEPTANCE_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=list(recipients),
             subject=subject,
             message=text_message,
@@ -341,7 +341,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         email_subject = (
             "Aidants Connect - la demande d'habilitation n° "
-            f"{object.data_pass_id} a été réfusée"
+            f"{object.data_pass_id} a été refusée"
         )
         initial = {
             "email_subject": email_subject,
@@ -408,7 +408,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         recipients.add(object.issuer.email)
 
         send_mail(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_ACCEPTANCE_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=list(recipients),
             subject=subject,
             message=text_message,

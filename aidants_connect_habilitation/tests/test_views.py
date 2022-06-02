@@ -114,7 +114,7 @@ class NewIssuerFormViewTests(TestCase):
         self.client.post(reverse(self.pattern_name), data)
 
         send_mail_mock.assert_called_with(
-            from_email=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[issuer.email],
             subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
             message=ANY,
