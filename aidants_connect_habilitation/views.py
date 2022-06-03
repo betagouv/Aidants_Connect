@@ -312,7 +312,19 @@ class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.PERSONNEL
 
-    def form_valid(self, form):
+    def define_html_attributes(self, form: PersonnelForm):
+        form.manager_form.widget_attrs(
+            "address", {"data-address-autocomplete-target": "addressInput"}
+        )
+        form.manager_form.widget_attrs(
+            "zipcode", {"data-address-autocomplete-target": "zipcodeInput"}
+        )
+
+        form.manager_form.widget_attrs(
+            "city", {"data-address-autocomplete-target": "cityInput"}
+        )
+
+    def form_valid(self, form: PersonnelForm):
         form.save()
         return super().form_valid(form)
 
@@ -330,7 +342,9 @@ class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
         }
 
     def get_form(self, form_class=None):
-        return PersonnelForm(organisation=self.organisation, **self.get_form_kwargs())
+        form = PersonnelForm(organisation=self.organisation, **self.get_form_kwargs())
+        self.define_html_attributes(form)
+        return form
 
     def get_form_kwargs(self):
         form_kwargs = super().get_form_kwargs()

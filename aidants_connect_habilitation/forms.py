@@ -382,6 +382,7 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
 
     class Meta(PersonWithResponsibilitiesForm.Meta):
         model = Manager
+        widgets = {"address": TextInput}
 
 
 class EmailOrganisationValidationError(ValidationError):

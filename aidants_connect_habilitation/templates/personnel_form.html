@@ -43,7 +43,11 @@
           </section>
         </div>
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-8">
-          <section class="shadowed">
+          <section
+            class="shadowed"
+            data-controller="address-autocomplete"
+            data-address-autocomplete-api-base-url-value="{{ GOUV_ADDRESS_SEARCH_API_BASE_URL }}"
+          >
             <h4 class="h2">Responsable Aidants Connect</h4>
             {{ form.manager_form.non_field_errors }}
             <fieldset
@@ -108,7 +112,10 @@
                   {% endwith %}
                 </div>
               </div>
-            {% checkbox_fr_grid_row form.manager_form.is_aidant %}
+
+              {% checkbox_fr_grid_row form.manager_form.is_aidant %}
+
+              {% include "address_autocomplete/dropdown.html" %}
           </fieldset>
           </section>
         </div>
@@ -129,8 +136,9 @@
       </h3>
 
       <h4 class="warning">
-        <b>Attention :</b> Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et accessible par une seule personne.
-        Toute saisie d’email de contact générique entrainera un blocage de la demande d’habilitation.
+        <b>Attention :</b> Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et
+        accessible par une seule personne. Toute saisie d’email de contact générique entrainera un blocage de la
+        demande d’habilitation.
       </h4>
 
       <section class="aidant-forms">

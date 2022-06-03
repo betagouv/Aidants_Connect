@@ -1,0 +1,48 @@
+@use "colors";
+
+.address-autocomplete_wrapper {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+
+  ul {
+    background-color: colors.$light-aidants;
+    border: 1px solid colors.$blue-aidants;
+    border-radius: 6px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 6px colors.$dark-grey-aidants;
+    left: 0;
+    list-style: none;
+    margin: .5rem 0 0 0;
+    max-height: 226px;
+    overflow-y: scroll;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    z-index: 1;
+
+
+    li, .no-result {
+      border-radius: 2px;
+      margin: .3rem;
+      padding: .3rem .5rem;
+    }
+
+    li {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: all .2s ease;
+
+      &:hover {
+        cursor: pointer;
+        background-color: lighten(colors.$red-aidants, 30%);
+      }
+
+      mark {
+        background-color: transparent;
+        color: colors.$red-aidants;
+        font-weight: 700;
+      }
+    }
+  }
+}

@@ -255,7 +255,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "aidants_connect/common/static"),
 ]
 
-
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"
 ACTIVITY_CHECK_URL = "activity_check"
@@ -400,6 +399,7 @@ STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
 CSP_IMG_SRC = (
     "'self'",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
@@ -415,6 +415,7 @@ CSP_SCRIPT_SRC = (
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
 )
+
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
@@ -592,16 +593,17 @@ PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
 PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
 PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
 
-GOUV_ADDRESS_SEARCH_API_BASE_URL = "https://api-adresse.data.gouv.fr/search/"
+GOUV_ADDRESS_SEARCH_API_BASE_URL = os.getenv(
+    "GOUV_ADDRESS_SEARCH_API_BASE_URL", "https://api-adresse.data.gouv.fr/search/"
+)
 GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool("GOUV_ADDRESS_SEARCH_API_DISABLED", True)
 
-# Matomo
-MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
-MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
-
-if MATOMO_INSTANCE_SITE_ID and MATOMO_INSTANCE_URL:
+if not GOUV_ADDRESS_SEARCH_API_DISABLED:
+    CSP_CONNECT_SRC = (*CSP_CONNECT_SRC, GOUV_ADDRESS_SEARCH_API_BASE_URL)
     CSP_SCRIPT_SRC = (
         *CSP_SCRIPT_SRC,
-        "'sha256-kKsklEZ3MJfIKwxmvIbVAVSQM/J1k9axzIS0kOiYdzw='",
-        "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
+        "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js",
     )
+
+MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
+MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")

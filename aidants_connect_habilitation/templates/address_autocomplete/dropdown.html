@@ -1,0 +1,17 @@
+{% load static %}
+{% if not GOUV_ADDRESS_SEARCH_API_DISABLED %}
+  <template data-address-autocomplete-target="noResultTpl">
+    <div class="no-result">
+      <span>Aucun résultat trouvé pour la requête __query__</span>
+    </div>
+  </template>
+  <link
+    rel="stylesheet"
+    href="{% static 'css/address_autocomplete.css' %}"
+  >
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"
+  ></script>
+  <script defer src="{% static 'js/address_autocomplete.js' %}"></script>
+{% endif %}
