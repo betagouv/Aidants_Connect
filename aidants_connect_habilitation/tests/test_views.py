@@ -863,7 +863,7 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         organisation_request_creation_message = mail.outbox[0]
         self.assertIn(
-            "Votre demande d’habilitation Aidants Connect a été créée",
+            "Aidants Connect - Votre demande d’habilitation a été soumise",
             organisation_request_creation_message.subject,
         )
         self.assertIn(
@@ -904,7 +904,7 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertEqual(len(mail.outbox), 2)
         organisation_request_modification_message = mail.outbox[1]
         self.assertIn(
-            "Votre demande d’habilitation Aidants Connect a été modifiée",
+            "Aidants Connect - Votre demande d’habilitation a été modifiée",
             organisation_request_modification_message.subject,
         )
         self.assertIn(
