@@ -429,12 +429,6 @@ class PersonnelForm:
     MANAGER_FORM_PREFIX = "manager"
     AIDANTS_FORMSET_PREFIX = "aidants"
 
-    @property
-    def errors(self):
-        if self._errors is None:
-            self._clean()
-        return self._errors
-
     def __init__(self, **kwargs):
         def merge_kwargs(prefix):
             previous_prefix = kwargs.get("prefix")
@@ -467,7 +461,8 @@ class PersonnelForm:
                 else f"{prefix}_{previous_prefix}",
             }
 
-        self._errors = None
+        self.errors = PatchedErrorList()
+        self._cleaned = False
 
         self.manager_form = ManagerForm(**merge_kwargs(self.MANAGER_FORM_PREFIX))
 
@@ -475,18 +470,22 @@ class PersonnelForm:
             **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
         )
 
-    def _clean(self):
-        self._errors = PatchedErrorList()
-
-        if not self.manager_form.is_bound or not self.aidants_formset.is_bound:
+    def _clean(self) -> PatchedErrorList:
+        if (
+            not self.manager_form.is_bound
+            or not self.aidants_formset.is_bound
+            or self._cleaned
+        ):
             # Stop processing if form does not have data
-            return
+            return self.errors
+
+        self._cleaned = True
 
         if (
             not self.manager_form.cleaned_data["is_aidant"]
             and self.aidants_formset.is_empty()
         ):
-            self._errors.append(
+            self.errors.append(
                 "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
                 "l'organisation n'est pas elle-même déclarée comme aidante"
             )
@@ -499,10 +498,12 @@ class PersonnelForm:
                 "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
             )
 
+        return self.errors
+
     def add_error(self, error: Union[ValidationError, str]):
         if not isinstance(error, ValidationError):
             error = ValidationError(error)
-        self._errors.append(error)
+        self.errors.append(error)
 
     def is_valid(self) -> bool:
         # self.errors must be last called so that subforms are
@@ -511,7 +512,7 @@ class PersonnelForm:
         return (
             self.manager_form.is_valid()
             and self.aidants_formset.is_valid()
-            and not self.errors
+            and not self._clean()
         )
 
     def save(
