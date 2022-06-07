@@ -60,7 +60,7 @@ def notify_issuer_draft_request_saved(
     )
 
     send_mail(
-        from_email=settings.EMAIL_ORGANISATION_REQUEST_CREATION_FROM,
+        from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
         recipient_list=[instance.issuer.email],
         subject=settings.EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT,
         message=text_message,

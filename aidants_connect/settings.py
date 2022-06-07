@@ -370,6 +370,7 @@ LOWER_TOTP_TOLERANCE_ON_LOGIN = getenv_bool("LOWER_TOTP_TOLERANCE_ON_LOGIN", Tru
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
+
 ## if file based email backend is used (debug)
 EMAIL_FILE_PATH = os.path.dirname(os.path.abspath(__file__)) + "/tmp_email_as_file"
 ## if smtp backend is used
@@ -501,7 +502,7 @@ DATAPASS_CODE_FOR_ID_GENERATOR = "datapassid"
 AC_HABILITATION_FORM_ENABLED = getenv_bool("AC_HABILITATION_FORM_ENABLED", False)
 AC_IMPORT_HABILITATION_REQUESTS = getenv_bool("AC_IMPORT_HABILITATION_REQUESTS", False)
 
-SUPPORT_EMAIL = "support@aidantsconnect.beta.gouv.fr"
+SUPPORT_EMAIL = "connexion@aidantsconnect.beta.gouv.fr"
 
 MANDAT_EXPIRED_SOON = 30
 MANDAT_EXPIRED_SOON_EMAIL_SUBJECT = os.getenv(
@@ -558,44 +559,33 @@ EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY = os.getenv(
     Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.""",
 )
 
-EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM = os.getenv(
-    "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM", SUPPORT_EMAIL
+EMAIL_ORGANISATION_REQUEST_FROM = os.getenv(
+    "EMAIL_ORGANISATION_REQUEST_FROM", SUPPORT_EMAIL
 )
 
 EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT = os.getenv(
     "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT",
-    "Rappel de votre profil demandeur",
-)
-
-EMAIL_ORGANISATION_REQUEST_CREATION_FROM = os.getenv(
-    "EMAIL_ORGANISATION_REQUEST_CREATION_FROM", SUPPORT_EMAIL
+    "Aidants Connect - Rappel de votre profil demandeur",
 )
 
 EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT = os.getenv(
     "EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT",
-    "Votre demande d’habilitation Aidants Connect a été créée",
+    "Aidants Connect - Votre demande d’habilitation a été créée",
 )
 
-EMAIL_ORGANISATION_REQUEST_MODIFICATION_FROM = os.getenv(
-    "EMAIL_ORGANISATION_REQUEST_MODIFICATION_FROM", SUPPORT_EMAIL
+EMAIL_ORGANISATION_REQUEST_SUBMISSION_SUBJECT = os.getenv(
+    "EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT",
+    "Aidants Connect - Votre demande d’habilitation a été soumise",
 )
 
 EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT = os.getenv(
     "EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT",
-    "Votre demande d’habilitation Aidants Connect a été modifiée",
-)
-
-EMAIL_ORGANISATION_REQUEST_ACCEPTANCE_FROM = os.getenv(
-    "EMAIL_ORGANISATION_REQUEST_ACCEPTANCE_FROM", SUPPORT_EMAIL
-)
-
-EMAIL_NEW_MESSAGE_RECEIVED_FROM = os.getenv(
-    "EMAIL_NEW_MESSAGE_RECEIVED_FROM", SUPPORT_EMAIL
+    "Aidants Connect - Votre demande d’habilitation a été modifiée",
 )
 
 EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT = os.getenv(
     "EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT",
-    "Vous avez reçu un nouveau message d'Aidants Connect",
+    "Aidants Connect - Vous avez reçu un nouveau message de l’équipe Aidants Connect",
 )
 
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")

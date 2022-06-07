@@ -304,9 +304,9 @@ class OrganisationRequest(models.Model):
         )
 
         send_mail(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_CREATION_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[self.issuer.email],
-            subject=settings.EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT,
+            subject=settings.EMAIL_ORGANISATION_REQUEST_SUBMISSION_SUBJECT,
             message=text_message,
             html_message=html_message,
         )
@@ -324,7 +324,7 @@ class OrganisationRequest(models.Model):
         )
 
         send_mail(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_MODIFICATION_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[self.issuer.email],
             subject=settings.EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT,
             message=text_message,
@@ -584,7 +584,7 @@ class RequestMessage(models.Model):
         )
 
         send_mail(
-            from_email=settings.EMAIL_NEW_MESSAGE_RECEIVED_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[self.organisation.issuer.email],
             subject=settings.EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT,
             message=text_message,

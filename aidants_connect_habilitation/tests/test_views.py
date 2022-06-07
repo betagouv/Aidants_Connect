@@ -114,7 +114,7 @@ class NewIssuerFormViewTests(TestCase):
         self.client.post(reverse(self.pattern_name), data)
 
         send_mail_mock.assert_called_with(
-            from_email=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[issuer.email],
             subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
             message=ANY,
@@ -863,7 +863,7 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         organisation_request_creation_message = mail.outbox[0]
         self.assertIn(
-            "Votre demande d’habilitation Aidants Connect a été créée",
+            "Aidants Connect - Votre demande d’habilitation a été soumise",
             organisation_request_creation_message.subject,
         )
         self.assertIn(
@@ -904,7 +904,7 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertEqual(len(mail.outbox), 2)
         organisation_request_modification_message = mail.outbox[1]
         self.assertIn(
-            "Votre demande d’habilitation Aidants Connect a été modifiée",
+            "Aidants Connect - Votre demande d’habilitation a été modifiée",
             organisation_request_modification_message.subject,
         )
         self.assertIn(

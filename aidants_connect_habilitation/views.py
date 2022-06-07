@@ -169,7 +169,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
             "email/issuer_profile_reminder.html", context
         )
         send_mail(
-            from_email=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[email],
             subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
             message=text_message,
