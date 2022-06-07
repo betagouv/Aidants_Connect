@@ -5,10 +5,10 @@ Bonjour,
 Vous venez de créer une nouvelle demande d’habilitation à Aidants Connect pour l’organisation {{ organisation.name }}.
 
 {% linebreakless %}
-Vous pouvez suivre le lien pour retrouver toutes vos demandes en cours en copiant l’URL suivante dans votre navigateur :
+Vous pouvez suivre le lien pour retrouver toutes vos demandes en cours en copiant l’URL suivante dans votre navigateur :
 {% endlinebreakless %}
 
 {{ url }}
 
-À bientôt sur Aidants Connect !
+À bientôt sur Aidants Connect !
 https://aidantsconnect.beta.gouv.fr

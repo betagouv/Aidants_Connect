@@ -585,7 +585,7 @@ EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT = os.getenv(
 
 EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT = os.getenv(
     "EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT",
-    "Aidants Connect - Vous avez reçu un nouveau message de l'équipe Aidants Connect",
+    "Aidants Connect - Vous avez reçu un nouveau message de l’équipe Aidants Connect",
 )
 
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")

@@ -12,5 +12,5 @@ dans votre navigateur :
 
 {{ url }}
 
-À bientôt sur Aidants Connect !
+À bientôt sur Aidants Connect !
 https://aidantsconnect.beta.gouv.fr

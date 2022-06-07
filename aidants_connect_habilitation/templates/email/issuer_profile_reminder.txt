@@ -7,5 +7,5 @@ Vous pouvez suivre le lien suivant pour retrouver toutes vos demandes en cours e
 
 {{ url }}
 
-À bientôt sur Aidants Connect !
+À bientôt sur Aidants Connect !
 https://aidantsconnect.beta.gouv.fr
