@@ -42,6 +42,7 @@ from aidants_connect_web.models import (
     Autorisation,
     CarteTOTP,
     Connection,
+    DatavizDepartment,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -632,12 +633,33 @@ class HabilitationRequestResource(resources.ModelResource):
         attribute="organisation__zipcode", column_name="Code Postal"
     )
     organisation__city = Field(attribute="", column_name="Ville")
-    organisation__departement = Field(attribute="", column_name="Département")
-    organisation__region = Field(attribute="", column_name="Région")
+
+    organisation_departement = Field(column_name="Département")
+    organisation_region = Field(column_name="Région")
 
     class Meta:
         model = HabilitationRequest
         fields = set()
+
+    def _get_department_from_zipcode(self, habilitation_request):
+        zipcode = habilitation_request.organisation.zipcode
+        if not zipcode:
+            return None
+        departements = DatavizDepartment.objects.filter(zipcode=zipcode[:2])
+        if departements.exists():
+            return departements[0]
+
+    def dehydrate_organisation_region(self, habilitation_request):
+        department = self._get_department_from_zipcode(habilitation_request)
+        if not department:
+            return ""
+        return department.datavizdepartmentstoregion.region.name
+
+    def dehydrate_organisation_departement(self, habilitation_request):
+        department = self._get_department_from_zipcode(habilitation_request)
+        if not department:
+            return ""
+        return department.dep_name
 
 
 class HabilitationRequestImportResource(resources.ModelResource):
