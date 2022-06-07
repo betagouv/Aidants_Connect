@@ -19,7 +19,10 @@ from aidants_connect.admin import (
     VisibleToTechAdmin,
     admin_site,
 )
-from aidants_connect_habilitation.forms import AdminAcceptationOrRefusalForm
+from aidants_connect_habilitation.forms import (
+    AdminAcceptationOrRefusalForm,
+    RequestMessageForm,
+)
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
@@ -213,6 +216,11 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
                 self.admin_site.admin_view(self.refuse_one_request),
                 name="aidants_connect_habilitation_organisationrequest_refuse",
             ),
+            path(
+                "<path:object_id>/require-changes/",
+                self.admin_site.admin_view(self.require_changes_one_request),
+                name="aidants_connect_habilitation_organisationrequest_requirechanges",
+            ),
             *super().get_urls(),
         ]
 
@@ -231,6 +239,14 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             return self.__refuse_request_get(request, object_id)
         else:
             return self.__refuse_request_post(request, object_id)
+
+    def require_changes_one_request(self, request, object_id):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__require_changes_request_get(request, object_id)
+        else:
+            return self.__require_changes_request_post(request, object_id)
 
     def __accept_request_get(self, request, object_id):
         object = OrganisationRequest.objects.get(id=object_id)
@@ -398,6 +414,55 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             message=text_message,
             html_message=html_message,
         )
+
+    def __require_changes_request_get(self, request, object_id):
+        object = OrganisationRequest.objects.get(id=object_id)
+        content = loader.render_to_string(
+            "email/modifications_demandees.txt", {"organisation": object}
+        )
+        initial = {"content": content}
+        view_context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "object_id": object_id,
+            "object": object,
+            "form": RequestMessageForm(initial=initial),
+        }
+
+        return render(
+            request,
+            "aidants_connect_habilitation/admin/organisation_request/require_changes.html",  # noqa
+            view_context,
+        )
+
+    def __require_changes_request_post(self, request, object_id):
+        object = OrganisationRequest.objects.get(id=object_id)
+        form = RequestMessageForm(data=request.POST)
+        if not form.is_valid():
+            return HttpResponseNotAllowed()
+
+        object.require_changes_request()
+        content = form.cleaned_data.get("content")
+
+        self.send_changes_required_message(object, content)
+
+        self.message_user(
+            request,
+            (
+                f"Tout s'est bien passé. La demande {object.data_pass_id} est "
+                f"passé en statut modifications demandées."
+            ),
+        )
+
+        return HttpResponseRedirect(
+            reverse(
+                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
+            )
+        )
+
+    def send_changes_required_message(self, object, content=None):
+        message = RequestMessage(organisation=object, sender="AC", content=content)
+        message.save()
 
 
 if settings.AC_HABILITATION_FORM_ENABLED:

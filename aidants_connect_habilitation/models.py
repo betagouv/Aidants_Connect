@@ -437,6 +437,16 @@ class OrganisationRequest(models.Model):
         self.save()
         return True
 
+    def require_changes_request(self):
+        if (
+            self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            and self.status != RequestStatusConstants.CHANGES_DONE.name
+        ):
+            return False
+        self.status = RequestStatusConstants.CHANGES_REQUIRED.name
+        self.save()
+        return True
+
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -583,13 +593,6 @@ class RequestMessage(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk and self.sender == "AC":
-            if (
-                self.organisation.status
-                == RequestStatusConstants.AC_VALIDATION_PROCESSING.name
-                or self.organisation.status == RequestStatusConstants.CHANGES_DONE.name
-            ):
-                self.organisation.status = RequestStatusConstants.CHANGES_REQUIRED.name
-                self.organisation.save()
             self.send_message_email()
         return super(RequestMessage, self).save(*args, **kwargs)
 

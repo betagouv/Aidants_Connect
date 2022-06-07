@@ -18,7 +18,6 @@ from aidants_connect_habilitation.models import (
     Issuer,
     IssuerEmailConfirmation,
     OrganisationRequest,
-    RequestMessage,
 )
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
@@ -294,23 +293,12 @@ class OrganisationRequestTests(TestCase):
         # expect one email when creating one organisation request
         self.assertEqual(len(mail.outbox), 1)
 
-        message = RequestMessage(
-            organisation=organisation_request,
-            sender="AC",
-            content="Pourriez-vous faire ces modifications ?",
-        )
-        message.save()
-        self.assertEqual(len(mail.outbox), 2)
+        organisation_request.require_changes_request()
+
         self.assertEqual(
             organisation_request.status,
             RequestStatusConstants.CHANGES_REQUIRED.name,
         )
-
-        # expect another email when new message sent
-        self.assertEqual(len(mail.outbox), 2)
-        new_message = mail.outbox[1]
-        self.assertIn(message.content, new_message.body)
-        self.assertIn(organisation_request.issuer.email, new_message.recipients())
 
     def test_refuse_request(self):
         self.assertEqual(len(mail.outbox), 0)

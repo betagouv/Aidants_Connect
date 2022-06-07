@@ -156,6 +156,34 @@ class OrganisationRequestAdminTests(TestCase):
         self.assertTrue(org_request.manager.email in refusal_message.recipients())
         self.assertTrue(org_request.issuer.email in refusal_message.recipients())
 
+    def test_send_changes_required_email(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        # this is supposed to one email:
+        org_request = OrganisationRequestFactory(
+            status=RequestStatusConstants.REFUSED.name,
+            data_pass_id=67245456,
+        )
+        for _ in range(3):
+            AidantRequestFactory(organisation=org_request)
+
+        # this is supposed to send another email:
+        content = "Corps du mail iaculis, scelerisque felis non, rutrum purus."
+        self.org_request_admin.send_changes_required_message(org_request, content)
+
+        # so here we expect 2 emails here in outbox:
+        self.assertEqual(len(mail.outbox), 2)
+        changes_required_message = mail.outbox[1]
+
+        # check subject and email contents
+        self.assertIn(content, changes_required_message.body)
+
+        # check recipients are as expected
+        self.assertEqual(len(changes_required_message.recipients()), 1)
+        self.assertTrue(
+            org_request.issuer.email in changes_required_message.recipients()
+        )
+
     def test_metier_user_can_see_manager(self):
         org_request = OrganisationRequestFactory()
         url_root = f"admin:{OrganisationRequest._meta.app_label}_{OrganisationRequest.__name__.lower()}"  # noqa
