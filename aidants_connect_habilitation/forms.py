@@ -490,14 +490,37 @@ class PersonnelForm:
                 "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
                 "l'organisation n'est pas elle-même déclarée comme aidante"
             )
-            self.aidants_formset.add_non_form_error(
-                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
-                "l'organisation n'est pas elle-même déclarée comme aidante"
-            )
-            self.manager_form.add_error(
-                "is_aidant",
-                "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
-            )
+            try:
+                self.aidants_formset.add_non_form_error(
+                    "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+                    "l'organisation n'est pas elle-même déclarée comme aidante"
+                )
+                self.manager_form.add_error(
+                    "is_aidant",
+                    "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",  # noqa
+                )
+            except Exception as e:
+
+                def full_stack():
+                    import sys
+                    import traceback
+
+                    exc = sys.exc_info()[0]
+                    stack = traceback.extract_stack()[:-1]
+                    if exc is not None:
+                        del stack[-1]
+                    trc = "Traceback (most recent call last):\n"
+                    stackstr = trc + "".join(traceback.format_list(stack))
+                    if exc is not None:
+                        stackstr += "  " + traceback.format_exc().lstrip(trc)
+                    return stackstr
+
+                import logging
+
+                logger = logging.getLogger()
+                logger.error(full_stack())
+
+                raise e
 
     def add_error(self, error: Union[ValidationError, str]):
         if not isinstance(error, ValidationError):
