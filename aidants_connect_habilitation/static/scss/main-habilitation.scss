@@ -1,13 +1,4 @@
-$dark-grey-aidants: #333;
-$light-grey-aidants: #F2F2F2;
-$light-aidants: #fff;
-$blue-aidants: #1B4991;
-$light-blue-anct: #5770BE;
-$off-yellow-aidants: #FAD776;
-$blue-green-aidants: #7FB7C0;
-$dark-green-anct: #108670;
-$red-aidants: #EF4056;
-$red-aidants-for-small-text: #e9133e;
+@import "colors";
 
 $font-stack: "Marianne", arial, sans-serif;
 
@@ -721,5 +712,3 @@ footer {
 .margin-bottom-1 {
   margin-bottom: 1rem;
 }
-
-// ----------

@@ -16,6 +16,7 @@ from aidants_connect.common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
+from aidants_connect.common.gouv_address_api import Address, AddressType
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
@@ -137,3 +138,39 @@ class AidantRequestFactory(DjangoModelFactory):
 
     class Meta:
         model = AidantRequest
+
+
+def address_factory(
+    id: str = None,
+    name: str = None,
+    label: str = None,
+    score: float = None,
+    postcode: str = None,
+    city: str = None,
+    department_number: str = None,
+    department_name: str = None,
+    region: str = None,
+    type: AddressType = None,
+) -> Address:
+    fake = Faker("fr_FR")
+    _street = fake.street_address()
+    _zipcode = fake.postcode()
+    _city = fake.city()
+    _label = f"{_street} {_zipcode} {_city}"
+
+    context = {
+        "department_number": department_number or fake.department_number(),
+        "department_name": department_name or fake.department_name(),
+        "region": region or fake.region(),
+    }
+
+    return Address(
+        id=(id or fake.text(max_nb_chars=200)),
+        name=(name or _street),
+        label=(label or _label),
+        score=(score or fake.random.randint(0, 100) / 100),
+        postcode=(postcode or _zipcode),
+        city=(city or _city),
+        context=context,
+        type=(type or fake.random.choice(AddressType.values())),
+    )
