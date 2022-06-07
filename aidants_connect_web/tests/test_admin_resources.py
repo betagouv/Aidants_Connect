@@ -4,8 +4,12 @@ from django.test.client import RequestFactory
 
 import tablib
 
-from aidants_connect_web.admin import OrganisationAdmin, OrganisationResource
-from aidants_connect_web.models import Organisation
+from aidants_connect_web.admin import (
+    HabilitationRequestAdmin,
+    OrganisationAdmin,
+    OrganisationResource,
+)
+from aidants_connect_web.models import HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     HabilitationRequestFactory,
@@ -218,3 +222,36 @@ class OrganisationResourceExportForSandboxTestCase(TestCase):
         self.assertEqual(data[0][1], "Marge")
         self.assertEqual(data[0][3], self.aidant_marge.email)
         self.assertEqual(data[1][1], "Bowser")
+
+
+@tag("admin")
+class HabilitationRequestsResourceExportTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.rf = RequestFactory()
+        cls.organisation1 = OrganisationFactory(name="MAIRIE", siret="121212121")
+        cls.organisation2 = OrganisationFactory(
+            name="MAIRIE2", siret="121212122", zipcode="13013"
+        )
+
+        cls.habilit_homer = HabilitationRequestFactory(
+            first_name="Homer", organisation=cls.organisation1
+        )
+        cls.habilit_bowser = HabilitationRequestFactory(
+            first_name="Bowser", organisation=cls.organisation2
+        )
+
+    def test_export(self):
+        request = self.rf.get("/", {})
+        hrequests = HabilitationRequest.objects.filter(
+            pk__in=[self.habilit_homer.pk, self.habilit_bowser.pk]
+        )
+        hrequest_admin = HabilitationRequestAdmin(Organisation, AdminSite())
+        data = hrequest_admin.get_data_for_export(request, hrequests)
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0][10], "Homer")
+        self.assertEqual(data[0][16], "")
+        self.assertEqual(data[0][17], "")
+        self.assertEqual(data[1][10], "Bowser")
+        self.assertEqual(data[1][16], "Bouches-du-Rhône")
+        self.assertEqual(data[1][17], "Provence-Alpes-Côte d'Azur")
