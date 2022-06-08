@@ -59,30 +59,20 @@ class AddressValidatableMixin(Form):
         required=False,
     )
 
+    @property
+    def should_display_addresses_select(self):
+        return self.__required
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.pristine = True
+        self.__required = False
 
-        # This code will toggle field requirement on or off depending on
-        # a specific condition
-        def display_widget(_) -> bool:
-            return not self.pristine
-
-        setattr(
-            AddressValidatableMixin.XChoiceField,
-            "required",
-            property(display_widget),
-        )
-        setattr(
-            AddressValidatableMixin.XRadioSelect,
-            "is_required",
-            property(display_widget),
-        )
+        required = property(lambda _: self.__required)
+        setattr(AddressValidatableMixin.XChoiceField, "required", required)
+        setattr(AddressValidatableMixin.XRadioSelect, "is_required", required)
 
     def clean_alternative_address(self):
-        self.pristine = False
-
         alternative_address = self.data.get(self.add_prefix("alternative_address"))
 
         if alternative_address == self.DEFAULT_CHOICE:
@@ -103,6 +93,8 @@ class AddressValidatableMixin(Form):
                 and results[0].score > 0.90
             ):
                 return results[0]
+
+            self.__required = True
 
             for result in results:
                 self.fields["alternative_address"].choices = [

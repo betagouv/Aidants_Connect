@@ -390,10 +390,32 @@ class TestBaseAidantRequestFormSet(TestCase):
 @override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=False)
 class TestAddressValidatableMixin(TestCase):
     @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_alternative_address_should_become_required_after_first_submission(self, _):
-        form = AddressValidatableMixin(
-            data={"alternative_address": AddressValidatableMixin.DEFAULT_CHOICE}
-        )
+    def test_alternative_address_becomes_required_after_submission_with_multiple_results(  # noqa
+        self, search_adresses_mock: Mock
+    ):
+        class TestForm(AddressValidatableMixin):
+            def get_address_for_search(self) -> str:
+                return ""
+
+            def autocomplete(self, address: Address):
+                pass
+
+        # First submission: address API returns empty result
+        search_adresses_mock.return_value = []
+        form = TestForm(data={})
+
+        self.assertFalse(form.fields["alternative_address"].required)
+        self.assertFalse(form.fields["alternative_address"].widget.is_required)
+
+        form.is_valid()
+
+        self.assertFalse(form.fields["alternative_address"].required)
+        self.assertFalse(form.fields["alternative_address"].widget.is_required)
+
+        # Second submission: address API returns 1 result
+        search_adresses_mock.reset_mock()
+        search_adresses_mock.return_value = [address_factory()]
+        form = TestForm(data={})
 
         self.assertFalse(form.fields["alternative_address"].required)
         self.assertFalse(form.fields["alternative_address"].widget.is_required)
