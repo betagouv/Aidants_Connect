@@ -490,13 +490,13 @@ class PersonnelForm:
                 "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
                 "l'organisation n'est pas elle-même déclarée comme aidante"
             )
-            self.aidants_formset.add_non_form_error(
-                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
-                "l'organisation n'est pas elle-même déclarée comme aidante"
-            )
             self.manager_form.add_error(
                 "is_aidant",
                 "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
+            )
+            self.aidants_formset.add_non_form_error(
+                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+                "l'organisation n'est pas elle-même déclarée comme aidante"
             )
 
     def add_error(self, error: Union[ValidationError, str]):
@@ -505,14 +505,18 @@ class PersonnelForm:
         self._errors.append(error)
 
     def is_valid(self) -> bool:
-        # self.errors must be last called so that subforms are
-        # validated before performing a global validation
+        # Eagerly compute the result of `is_valid` calls
+        # to prevent early return of the boolean computation.
 
-        return (
-            self.manager_form.is_valid()
-            and self.aidants_formset.is_valid()
-            and not self.errors
-        )
+        # 'self.errors' must be last called so that subforms are
+        # validated before performing a global validation
+        is_valid = [
+            self.manager_form.is_valid(),
+            self.aidants_formset.is_valid(),
+            not self.errors,
+        ]
+
+        return all(is_valid)
 
     def save(
         self, organisation: OrganisationRequest, commit=True
