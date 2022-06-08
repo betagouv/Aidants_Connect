@@ -1,8 +1,10 @@
+from uuid import UUID
+
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.forms.models import model_to_dict
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.urls import reverse
@@ -63,7 +65,11 @@ class HabilitationStepMixin(ContextMixin):
 class CheckIssuerMixin(ContextMixin, View):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
+        try:
+            uuid = UUID(kwargs.get("issuer_id"))
+        except ValueError:
+            raise Http404()
+        self.issuer = get_object_or_404(Issuer, issuer_id=uuid)
 
     def get_context_data(self, **kwargs):
         return {
@@ -86,8 +92,12 @@ class VerifiedEmailIssuerView(CheckIssuerMixin, View):
 class LateStageRequestView(VerifiedEmailIssuerView, View):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
+        try:
+            uuid = UUID(kwargs.get("uuid"))
+        except ValueError:
+            raise Http404()
         self.organisation = get_object_or_404(
-            OrganisationRequest, uuid=kwargs.get("uuid"), issuer=self.issuer
+            OrganisationRequest, uuid=uuid, issuer=self.issuer
         )
 
 
