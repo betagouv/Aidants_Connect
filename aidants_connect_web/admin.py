@@ -5,11 +5,13 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
+from django.template import loader
 from django.urls import path, reverse
-from django.utils.html import format_html_join
+from django.utils.html import format_html_join, linebreaks
 from django.utils.safestring import mark_safe
 
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
@@ -763,7 +765,35 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 HabilitationRequest.STATUS_NEW,
             )
         ).update(status=HabilitationRequest.STATUS_REFUSED)
+        for habilitation_request in queryset:
+            self.send_refusal_email(habilitation_request)
         self.message_user(request, f"{rows_updated} demandes ont été refusées.")
+
+    def send_refusal_email(self, object):
+
+        text_message = loader.render_to_string(
+            "email/aidant_a_former_refuse.txt", {"aidant": object}
+        )
+        html_message = loader.render_to_string(
+            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+        )
+
+        subject = (
+            "Aidants Connect - La demande d'ajout de l'aidant(e) "
+            f"{object.first_name} {object.last_name} a été refusée."
+        )
+
+        recipients = [
+            manager.email for manager in object.organisation.responsables.all()
+        ]
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=recipients,
+            subject=subject,
+            message=text_message,
+            html_message=html_message,
+        )
 
     mark_refused.short_description = "Refuser les demandes sélectionnées"
 
@@ -771,9 +801,38 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         rows_updated = queryset.filter(status=HabilitationRequest.STATUS_NEW).update(
             status=HabilitationRequest.STATUS_PROCESSING
         )
+        for habilitation_request in queryset:
+            self.send_validation_email(habilitation_request)
+
         self.message_user(request, f"{rows_updated} demandes sont maintenant en cours.")
 
     mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
+
+    def send_validation_email(self, object):
+
+        text_message = loader.render_to_string(
+            "email/aidant_a_former_valide.txt", {"aidant": object}
+        )
+        html_message = loader.render_to_string(
+            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+        )
+
+        subject = (
+            "Aidants Connect - La demande d'ajout de l'aidant(e) "
+            f"{object.first_name} {object.last_name} a été validée !"
+        )
+
+        recipients = [
+            manager.email for manager in object.organisation.responsables.all()
+        ]
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=recipients,
+            subject=subject,
+            message=text_message,
+            html_message=html_message,
+        )
 
     def get_urls(self):
         return [
