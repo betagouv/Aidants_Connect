@@ -79,15 +79,6 @@ class OrganisationRequestTests(TestCase):
             organisation_request.save()
             return organisation_request
 
-        def prepare_data_for_changes_done_status():
-            organisation_request = OrganisationRequestFactory(
-                status=RequestStatusConstants.CHANGES_DONE.name
-            )
-            for _ in range(3):
-                AidantRequestFactory(organisation=organisation_request)
-            organisation_request.save()
-            return organisation_request
-
         def prepare_data_for_org_with_type_other():
             organisation_request = OrganisationRequestFactory(
                 type_id=RequestOriginConstants.OTHER.value,
@@ -113,7 +104,6 @@ class OrganisationRequestTests(TestCase):
 
         for organisation_request in (
             prepare_data_for_nominal_case(),
-            prepare_data_for_changes_done_status(),
             prepare_data_for_org_with_type_other(),
             prepare_data_with_existing_responsable(),
         ):
