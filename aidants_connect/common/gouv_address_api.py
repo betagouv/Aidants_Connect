@@ -41,7 +41,8 @@ class Address(BaseModel):
     @validator("context", pre=True)
     def parse_context(cls, value: Union[str, dict]):
         if isinstance(value, str):
-            department_number, department_name, region = value.split(",")
+            department_number, department_name, *region = value.split(",")
+            region = region[0] if len(region) == 1 else department_name
         else:
             department_number, department_name, region = (
                 value["department_number"],
