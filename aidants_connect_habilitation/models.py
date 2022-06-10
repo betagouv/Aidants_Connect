@@ -342,16 +342,13 @@ class OrganisationRequest(models.Model):
             self.save()
             self.notify_issuer_request_submitted()
         if self.status == RequestStatusConstants.CHANGES_REQUIRED.name:
-            self.status = RequestStatusConstants.CHANGES_DONE.name
+            self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
             self.save()
             self.notify_issuer_request_modified()
 
     @transaction.atomic
     def accept_request_and_create_organisation(self):
-        if (
-            self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name
-            and self.status != RequestStatusConstants.CHANGES_DONE.name
-        ):
+        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
             return False
 
         try:
@@ -428,20 +425,14 @@ class OrganisationRequest(models.Model):
         return True
 
     def refuse_request(self):
-        if (
-            self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name
-            and self.status != RequestStatusConstants.CHANGES_DONE.name
-        ):
+        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
             return False
         self.status = RequestStatusConstants.REFUSED.name
         self.save()
         return True
 
     def require_changes_request(self):
-        if (
-            self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name
-            and self.status != RequestStatusConstants.CHANGES_DONE.name
-        ):
+        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
             return False
         self.status = RequestStatusConstants.CHANGES_REQUIRED.name
         self.save()

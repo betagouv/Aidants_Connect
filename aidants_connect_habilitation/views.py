@@ -411,7 +411,6 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
                     RequestStatusConstants.NEW.name,
                     RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
                     RequestStatusConstants.VALIDATED.name,
-                    RequestStatusConstants.CHANGES_DONE.name,
                 ]
             ),
             "display_modify_button": (
@@ -455,7 +454,6 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
             RequestStatusConstants.NEW.name,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
             RequestStatusConstants.VALIDATED.name,
-            RequestStatusConstants.CHANGES_DONE.name,
         ]:
             messages.error(
                 request,

@@ -3,7 +3,7 @@
 
 {% block object-tools-items %}
   {% with status=adminform.form.instance.status %}
-    {% if status in "AC_VALIDATION_PROCESSING,CHANGES_DONE,CHANGES_REQUESTED" %}
+    {% if status in "AC_VALIDATION_PROCESSING,CHANGES_REQUESTED" %}
       <li>
         <a href="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_accept' object_id=object_id %}">
           <span aria-hidden="true">✅️ </span>

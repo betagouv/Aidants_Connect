@@ -898,7 +898,7 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertEqual(data_pass_id, organisation.data_pass_id)
         self.assertEqual(
             organisation.status,
-            RequestStatusConstants.CHANGES_DONE.name,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
         )
 
         self.assertEqual(len(mail.outbox), 2)
@@ -962,24 +962,6 @@ class ValidationRequestFormViewTests(TestCase):
     def test_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
-        )
-        response = self.client.get(
-            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
-        )
-        self.assertRedirects(
-            response,
-            reverse(
-                "habilitation_organisation_view",
-                kwargs={
-                    "issuer_id": organisation.issuer.issuer_id,
-                    "uuid": organisation.uuid,
-                },
-            ),
-        )
-
-    def test_redirect_on_changes_done_organisation_request(self):
-        organisation = OrganisationRequestFactory(
-            status=RequestStatusConstants.CHANGES_DONE.name
         )
         response = self.client.get(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid)
@@ -1113,7 +1095,6 @@ class TestAddAidantsRequestView(TestCase):
             RequestStatusConstants.NEW.name,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
             RequestStatusConstants.VALIDATED.name,
-            RequestStatusConstants.CHANGES_DONE.name,
         }
 
         for i, status in enumerate(unauthorized_statuses):
