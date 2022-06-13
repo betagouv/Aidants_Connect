@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
+from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
@@ -299,11 +300,15 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             ),
         )
 
-        return HttpResponseRedirect(
-            reverse(
-                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
-            )
+        redirect_path = reverse(
+            "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
         )
+        preserved_filters = self.get_preserved_filters(request)
+        opts = self.model._meta
+        redirect_path = add_preserved_filters(
+            {"preserved_filters": preserved_filters, "opts": opts}, redirect_path
+        )
+        return HttpResponseRedirect(redirect_path)
 
     def send_acceptance_email(self, object, body_text=None, subject=None):
         if body_text:
@@ -380,11 +385,15 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             ),
         )
 
-        return HttpResponseRedirect(
-            reverse(
-                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
-            )
+        redirect_path = reverse(
+            "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
         )
+        preserved_filters = self.get_preserved_filters(request)
+        opts = self.model._meta
+        redirect_path = add_preserved_filters(
+            {"preserved_filters": preserved_filters, "opts": opts}, redirect_path
+        )
+        return HttpResponseRedirect(redirect_path)
 
     def send_refusal_email(self, object, body_text=None, subject=None):
         if body_text:
@@ -454,11 +463,15 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             ),
         )
 
-        return HttpResponseRedirect(
-            reverse(
-                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
-            )
+        redirect_path = reverse(
+            "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
         )
+        preserved_filters = self.get_preserved_filters(request)
+        opts = self.model._meta
+        redirect_path = add_preserved_filters(
+            {"preserved_filters": preserved_filters, "opts": opts}, redirect_path
+        )
+        return HttpResponseRedirect(redirect_path)
 
     def send_changes_required_message(self, object, content=None):
         message = RequestMessage(organisation=object, sender="AC", content=content)

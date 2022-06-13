@@ -1,17 +1,17 @@
 {% extends "admin/change_form.html" %}
-{% load i18n admin_urls %}
+{% load i18n admin_urls admin_extras %}
 
 {% block object-tools-items %}
   {% with status=adminform.form.instance.status %}
     {% if status in "AC_VALIDATION_PROCESSING,CHANGES_REQUESTED" %}
       <li>
-        <a href="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_accept' object_id=object_id %}">
+        <a href="{% qurl 'otpadmin:aidants_connect_habilitation_organisationrequest_accept' object_id=object_id %}">
           <span aria-hidden="true">✅️ </span>
           Accepter
         </a>
       </li>
       <li>
-        <a href="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_refuse' object_id=object_id %}">
+        <a href="{% qurl 'otpadmin:aidants_connect_habilitation_organisationrequest_refuse' object_id=object_id %}">
           <span aria-hidden="true">❌ </span>
           Refuser
         </a>
@@ -25,7 +25,7 @@
         </a>
       </li>-->
       <li>
-        <a href="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_requirechanges' object_id=object_id %}">
+        <a href="{% qurl 'otpadmin:aidants_connect_habilitation_organisationrequest_requirechanges' object_id=object_id %}">
           <span aria-hidden="true">✨ </span>
           Demander des modifications
         </a>
