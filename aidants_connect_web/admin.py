@@ -634,7 +634,7 @@ class HabilitationRequestResource(resources.ModelResource):
     organisation__zipcode = Field(
         attribute="organisation__zipcode", column_name="Code Postal"
     )
-    organisation__city = Field(attribute="", column_name="Ville")
+    organisation__city = Field(attribute="organisation__city", column_name="Ville")
 
     organisation_departement = Field(column_name="Département")
     organisation_region = Field(column_name="Région")
