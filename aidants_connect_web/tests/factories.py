@@ -8,7 +8,6 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from factory import (
     Faker,
     LazyAttribute,
-    PostGenerationMethodCall,
     SelfAttribute,
     Sequence,
     SubFactory,
@@ -64,7 +63,6 @@ class OrganisationTypeFactory(DjangoModelFactory):
 class AidantFactory(DjangoModelFactory):
     username = Faker("email")
     email = SelfAttribute("username")
-    password = PostGenerationMethodCall("set_password", "motdepassedethierry")
     last_name = "Goneau"
     first_name = "Thierry"
     profession = "secrétaire"
@@ -77,12 +75,29 @@ class AidantFactory(DjangoModelFactory):
     def post(self, create, _, **kwargs):
         if not create:
             return
-        if kwargs.get("with_otp_device", False):
+        with_otp_device = kwargs.get("with_otp_device", False)
+        if with_otp_device:
             device = self.staticdevice_set.create(id=self.id)
-            device.token_set.create(token="123456")
+            with_otp_device = str(with_otp_device)
+            value = with_otp_device if with_otp_device.isnumeric() else "123456"
+            device.token_set.create(token=value)
 
         if kwargs.get("is_organisation_manager", False):
             self.responsable_de.add(self.organisation)
+
+    @post_generation
+    def password(self, create, value, **_):
+        if not create:
+            return
+        if value:
+            self.set_password(value)
+        else:
+            self.set_password("motdepassedethierry")
+
+
+class AdminFactory(AidantFactory):
+    is_staff = True
+    is_active = True
 
 
 class HabilitationRequestFactory(DjangoModelFactory):
