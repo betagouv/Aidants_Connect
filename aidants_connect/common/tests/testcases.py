@@ -1,9 +1,13 @@
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.urls import reverse
 
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.support.expected_conditions import url_matches
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class FunctionalTestCase(StaticLiveServerTestCase):
@@ -36,3 +40,24 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         """Helper method to trigger a GET request on the Django live server."""
 
         self.selenium.get(f"{self.live_server_url}{url}")
+
+    def admin_login(self, user: str, password: str, otp: str):
+        selenium_wait = WebDriverWait(self.selenium, 10)
+
+        path = reverse("otpadmin:login")
+        self.open_live_url(path)
+        selenium_wait.until(url_matches(f"^.+{path}$"))
+
+        self.selenium.find_element(By.CSS_SELECTOR, 'input[name="username"]').send_keys(
+            user
+        )
+        self.selenium.find_element(By.CSS_SELECTOR, 'input[name="password"]').send_keys(
+            password
+        )
+        self.selenium.find_element(
+            By.CSS_SELECTOR, 'input[name="otp_token"]'
+        ).send_keys(otp)
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        selenium_wait.until(url_matches(f"^.+{reverse('otpadmin:index')}$"))

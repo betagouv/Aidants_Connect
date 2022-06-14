@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load static ac_extras i18n %}
+{% load static admin_extras ac_extras i18n %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -16,7 +16,7 @@
 {% block content %}
   <h1>Refuser la demande d'habilitation n° {{ object.data_pass_id }}</h1>
   <h2>Organisation {{ object.name }}</h2>
-  <form action="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_refuse' object_id=object_id %}"
+  <form action="{% qurl 'otpadmin:aidants_connect_habilitation_organisationrequest_refuse' object_id=object_id %}"
         method="POST">
     <fieldset class="module aligned">
       {{ form.as_p }}
