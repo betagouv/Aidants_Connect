@@ -229,7 +229,9 @@ class HabilitationRequestsResourceExportTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.rf = RequestFactory()
-        cls.organisation1 = OrganisationFactory(name="MAIRIE", siret="121212121")
+        cls.organisation1 = OrganisationFactory(
+            name="MAIRIE", siret="121212121", city="Marseille"
+        )
         cls.organisation2 = OrganisationFactory(
             name="MAIRIE2", siret="121212122", zipcode="13013"
         )
@@ -250,6 +252,7 @@ class HabilitationRequestsResourceExportTestCase(TestCase):
         data = hrequest_admin.get_data_for_export(request, hrequests)
         self.assertEqual(len(data), 2)
         self.assertEqual(data[0][10], "Homer")
+        self.assertEqual(data[0][15], "Marseille")
         self.assertEqual(data[0][16], "")
         self.assertEqual(data[0][17], "")
         self.assertEqual(data[1][10], "Bowser")
