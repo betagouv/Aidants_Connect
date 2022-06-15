@@ -11,7 +11,7 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 
 Aidants Connect est construit sur les éléments suivants :
 
-- Python 3.7
+- Python 3.10
 - Django 3.2
 - PostgreSQL
 
@@ -25,7 +25,8 @@ cd Aidants_Connect
 cp .env.example .env
 virtualenv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install --user pipenv
+pipenv install --dev
 python manage.py collectstatic
 pre-commit install
 ```
