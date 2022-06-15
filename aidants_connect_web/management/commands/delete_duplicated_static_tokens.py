@@ -1,6 +1,10 @@
+import logging
+
 from django.core.management.base import BaseCommand
 
 from aidants_connect_web.tasks import delete_duplicated_static_tokens
+
+logger = logging.getLogger()
 
 
 class Command(BaseCommand):
@@ -10,4 +14,4 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        delete_duplicated_static_tokens()
+        delete_duplicated_static_tokens(logger=logger)
