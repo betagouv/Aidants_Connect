@@ -1,19 +1,20 @@
-import logging
 from datetime import datetime
+from logging import Logger
 
 from django.conf import settings
 
 from celery import shared_task
+from celery.utils.log import get_task_logger
 from metabasepy import Client
 from pytz import timezone as pytz_timezone
 
 from aidants_connect_web.models import HabilitationRequest
 
-logger = logging.getLogger()
-
 
 @shared_task
-def import_pix_results():
+def import_pix_results(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
     username = settings.PIX_METABASE_USER
     password = settings.PIX_METABASE_PASSWORD
     card_id = settings.PIX_METABASE_CARD_ID

@@ -1,5 +1,5 @@
-import logging
 from datetime import timedelta
+from logging import Logger
 from typing import List
 
 from django.core.mail import send_mail
@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from celery import shared_task
+from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
 from aidants_connect import settings
@@ -21,11 +22,10 @@ from aidants_connect_web.models import (
     Organisation,
 )
 
-logger = logging.getLogger()
-
 
 @shared_task
-def delete_expired_connections():
+def delete_expired_connections(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
 
     logger.info("Deleting expired connections...")
 
@@ -44,7 +44,9 @@ def delete_expired_connections():
 
 
 @shared_task
-def delete_duplicated_static_tokens():
+def delete_duplicated_static_tokens(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
     logger.info("Deleting static devices for confirmed aidants...")
     obsolete_devices = (
         StaticDevice.objects.filter(user__is_staff=False)
@@ -74,6 +76,7 @@ def delete_duplicated_static_tokens():
 
 @shared_task
 def notify_soon_expired_mandates():
+
     mandates_qset = Mandat.find_soon_expired(settings.MANDAT_EXPIRED_SOON)
     organisations: List[Organisation] = list(
         Organisation.objects.filter(
@@ -109,7 +112,9 @@ def notify_soon_expired_mandates():
 
 
 @shared_task
-def notify_new_habilitation_requests():
+def notify_new_habilitation_requests(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
     logger.info("Checking new habilitation requests...")
     recipient_list = list(
         Aidant.objects.filter(is_staff=True, is_active=True).values_list(
