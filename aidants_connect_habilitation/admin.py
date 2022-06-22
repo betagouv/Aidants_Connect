@@ -4,6 +4,7 @@ from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.core.mail import send_mail
 from django.db.models import QuerySet
+from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
@@ -172,6 +173,19 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     change_form_template = (
         "aidants_connect_habilitation/admin/organisation_request/change_form.html"
     )
+
+    def save_model(self, request, obj, form, change):
+        try:
+            super().save_model(request, obj, form, change)
+        except IntegrityError as e:
+            messages.set_level(request, messages.ERROR)
+            if "partner_administration_if_org_is_private" in str(e):
+                self.message_user(
+                    request,
+                    f"""L'organisation {obj.name} n'a pas été modifiée.
+                        Merci de renseigner votre administration partenaire.""",
+                    level=messages.ERROR,
+                )
 
     def accept_selected_requests(self, request, queryset):
         orgs_created = 0
