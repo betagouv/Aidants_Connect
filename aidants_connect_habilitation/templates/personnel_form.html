@@ -42,12 +42,10 @@
             </fieldset>
           </section>
         </div>
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-8">
           <section class="shadowed">
             <h4 class="h2">Responsable Aidants Connect</h4>
-
             {{ form.manager_form.non_field_errors }}
-
             <fieldset
               id="manager-subform"
               data-personnel-form-target="managerSubform"
@@ -61,55 +59,61 @@
               >
                 <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
               </button>
-              <h5 class="h3">Identité</h5>
-              {% field_as_narrow_fr_grid_row form.manager_form.last_name %}
-              {% field_as_narrow_fr_grid_row form.manager_form.first_name %}
-              {% field_as_narrow_fr_grid_row form.manager_form.profession %}
-
-              <h5 class="h3">Contact</h5>
-              {% field_as_narrow_fr_grid_row form.manager_form.phone %}
-              {% field_as_narrow_fr_grid_row form.manager_form.email %}
-              <h4 class="warning">
-                <b>Attention :</b> Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et accessible par une seule personne.
-                Toute saisie d’email de contact générique entrainera un blocage de la demande d’habilitation.
-              </h4>
-
-              {% if form.manager_form.should_display_addresses_select %}
-                <section class="choice-fields">
-                  {% field_as_narrow_fr_grid_row form.manager_form.alternative_address %}
-                </section>
-              {% endif %}
-
-              {% field_as_narrow_fr_grid_row form.manager_form.address %}
-
-              {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
-                <div
-                  class="form-grid-row fr-grid-row form-grid-row-narrow fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}"
-                >
-                  <div class="fr-col-12 fr-col-md-5 fr-col-lg-12">
-                    <label for="{{ form.manager_form.zipcode.id_for_label }}">
-                      {{ form.manager_form.zipcode.label }}
-                    </label>&nbsp;/&nbsp;<label for="{{ form.manager_form.city.id_for_label }}">
-                      {{ form.manager_form.city.label }}
-                    </label>
-                  </div>
-                  <div class="fr-col-4 fr-col-md-2 fr-col-lg-4 zipcode-container">
-                    {{ form.manager_form.zipcode }}
-                  </div>
-                  <div class="fr-col-8 fr-col-md-5 fr-col-lg-8 city-container">
-                    {{ form.manager_form.city }}
-                  </div>
+              <div class="fr-grid-row"></div>
+              <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-12 fr-col-md-6 fr-col-lg-6">
+                  <h5 class="h3">Identité</h5>
+                  {% field_as_narrow_fr_grid_row form.manager_form.last_name %}
+                  {% field_as_narrow_fr_grid_row form.manager_form.first_name %}
+                  {% field_as_narrow_fr_grid_row form.manager_form.profession %}
                 </div>
+                <div class="fr-col-12 fr-col-md-6 fr-col-lg-6">
+                  <h5 class="h3">Contact</h5>
+                  {% field_as_narrow_fr_grid_row form.manager_form.phone %}
+                  {% field_as_narrow_fr_grid_row form.manager_form.email %}
+                  <h4 class="warning">
+                    <b>Attention :</b> Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et accessible par une seule personne.
+                    Toute saisie d’email de contact générique entrainera un blocage de la demande d’habilitation.
+                  </h4>
 
-                {% if errors %}
-                  <div class="fr-grid-row fr-grid-row--gutters">
-                    <div class="errors fr-col-12">{{ errors }}</div>
-                  </div>
-                {% endif %}
-              {% endwith %}
+                  {% if form.manager_form.should_display_addresses_select %}
+                    <section class="choice-fields">
+                      {% field_as_narrow_fr_grid_row form.manager_form.alternative_address %}
+                    </section>
+                  {% endif %}
 
-              {% checkbox_fr_grid_row form.manager_form.is_aidant %}
-            </fieldset>
+                  {% field_as_narrow_fr_grid_row form.manager_form.address %}
+
+                  {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
+                    <div
+                      class="form-grid-row fr-grid-row form-grid-row-narrow fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}"
+                    >
+                      <div class="fr-col-12 fr-col-md-5 fr-col-lg-12">
+                        <label for="{{ form.manager_form.zipcode.id_for_label }}">
+                          {{ form.manager_form.zipcode.label }}
+                        </label>&nbsp;/&nbsp;<label for="{{ form.manager_form.city.id_for_label }}">
+                          {{ form.manager_form.city.label }}
+                        </label>
+                      </div>
+                      <div class="fr-col-4 fr-col-md-2 fr-col-lg-4 zipcode-container">
+                        {{ form.manager_form.zipcode }}
+                      </div>
+                      <div class="fr-col-8 fr-col-md-5 fr-col-lg-8 city-container">
+                        {{ form.manager_form.city }}
+                      </div>
+                    </div>
+
+
+                    {% if errors %}
+                      <div class="fr-grid-row fr-grid-row--gutters">
+                        <div class="errors fr-col-12">{{ errors }}</div>
+                      </div>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+              </div>
+            {% checkbox_fr_grid_row form.manager_form.is_aidant %}
+          </fieldset>
           </section>
         </div>
       </div>
