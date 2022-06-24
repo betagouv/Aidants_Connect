@@ -228,15 +228,17 @@ class IssuerEmailConfirmationView(
 
     def get(self, request, *args, **kwargs):
         return (
-            self.__continue()
-            if self.issuer.email_verified
-            else super().get(request, *args, **kwargs)
+            super().get(request, *args, **kwargs)
+            if self.email_confirmation.confirm()
+            else self.render_to_response(
+                {**self.get_context_data(**kwargs), "email_confirmation_expired": True}
+            )
         )
 
     def post(self, request, *args, **kwargs):
         return (
             self.__continue()
-            if self.email_confirmation.confirm()
+            if self.issuer.email_verified
             else self.render_to_response(
                 {**self.get_context_data(**kwargs), "email_confirmation_expired": True}
             )

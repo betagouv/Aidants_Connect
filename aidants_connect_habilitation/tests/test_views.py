@@ -238,12 +238,12 @@ class IssuerEmailConfirmationViewTests(TestCase):
         )
         self.assertTemplateUsed(response, self.template_name)
 
-    def test_get_redirect_on_previously_confirmed(self):
+    def test_post_redirects_to_new_organisation(self):
         confirmed_issuer: Issuer = IssuerFactory(email_verified=True)
         email_confirmation = IssuerEmailConfirmation.objects.create(
             issuer=confirmed_issuer, sent=now()
         )
-        response = self.client.get(
+        response = self.client.post(
             reverse(
                 self.pattern_name,
                 kwargs={
@@ -260,8 +260,8 @@ class IssuerEmailConfirmationViewTests(TestCase):
             ),
         )
 
-    def test_post_confirms_email(self):
-        response = self.client.post(
+    def test_get_confirms_email(self):
+        self.client.get(
             reverse(
                 self.pattern_name,
                 kwargs={
@@ -270,16 +270,11 @@ class IssuerEmailConfirmationViewTests(TestCase):
                 },
             )
         )
-        self.assertRedirects(
-            response,
-            reverse(
-                "habilitation_new_organisation",
-                kwargs={"issuer_id": self.issuer.issuer_id},
-            ),
-        )
+        issuer = Issuer.objects.get(issuer_id=self.issuer.issuer_id)
+        self.assertTrue(issuer.email_verified)
 
     def test_fails_on_expired_key(self):
-        response = self.client.post(
+        response = self.client.get(
             reverse(
                 self.pattern_name,
                 kwargs={
