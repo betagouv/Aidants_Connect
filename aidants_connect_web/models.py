@@ -551,6 +551,7 @@ class HabilitationRequest(models.Model):
             aidant: Aidant = Aidant.objects.get(username=self.email)
             aidant.organisations.add(self.organisation)
             aidant.is_active = True
+            aidant.can_create_mandats = True
             aidant.save()
             self.status = self.STATUS_VALIDATED
             self.save()
