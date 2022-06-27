@@ -1,15 +1,40 @@
+.container-habilitation {
+  width: 55%;
+}
+
+.red {
+  color: #EF4056;
+}
+
 .so {
     color: #1B4991;
     background-color: #FAD776;
     border-radius: .3em;
-    padding: .5em 2em .5em 3em;
+    padding: .5em 1em .5em 5em;
     display: inline-block;
     font-weight: bold;
     position: relative;
     background-image: url(../images/habilitation/arrow.svg);
     background-repeat: no-repeat;
-    background-position: 0 50%;
     background-size: auto 2em;
+    margin-top: 2.5rem;
+}
+
+.question {
+  list-style: none;
+}
+
+.question > li {
+  font-size: 1.25rem;
+  color: #1B4991;
+  line-height: 2rem;
+}
+
+.question > li::before {
+  content: "\2022";
+  color: #EF4056;
+  font-weight: bold;
+  margin-right: .5em;
 }
 
 .how {
@@ -22,6 +47,7 @@
     position: relative;
     list-style-type: none;
     padding: 0 0 3em 2em;
+    color: #1B4991;
 }
 
 .how > li:before {
@@ -50,6 +76,24 @@
 
 .who > ul > li {
     margin-bottom: 2em;
+}
+
+.btn-habilitation {
+  box-sizing: border-box;
+  box-shadow: 10px 10px 0 #FAD776;
+  padding: .5rem;
+  background-color: #EF4056;
+  border-radius: .3rem;
+  width: 406px;
+  text-align: center;
+  margin: auto;
+  margin-bottom: 5rem;
+}
+
+.btn-habilitation a {
+  color: #fff !important;
+  text-decoration: none;
+  text-transform: uppercase;
 }
 
 @media screen and (min-width: 600px) {

@@ -146,10 +146,10 @@ h3, .h3 {
 
 }
 
-details {
+.details-form {
   border: 1px solid $blue-aidants;
 
-  summary {
+  .summary-form {
     background: $blue-aidants no-repeat url("../img/plus-w.svg") 98% 50%;
     color: #fff;
     cursor: pointer;

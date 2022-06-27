@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
@@ -9,35 +9,42 @@
 {% block title %}Aidants Connect - Habilitation{% endblock %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
-      <h1 class="section__title">Comment être habilité Aidants Connect ?</h1>
-      <ul>
-        <li>Ma structure emploie des aidants professionnels ?</li>
-        <li>Les aidants accompagnent des usagers dans la réalisation de démarches administratives en ligne ?</li>
-      </ul>
-      <p class="so">Alors ma structure est éligible Aidants Connect !</p>
+  <div class="fr-container container-habilitation">
+    <h1>Comment être habilité Aidants Connect ?</h1>
+    <ul class="question">
+      <li>Ma structure emploie des aidants professionnels ?</li>
+      <li>Les aidants accompagnent des usagers dans la réalisation de démarches administratives en ligne ?</li>
+    </ul>
+    <p class="so">Alors ma structure est éligible Aidants Connect !</p>
 
-      <h2>Comment se passe l’habilitation ?</h2>
-      <ol class="how">
-        <li class="how_1">
-          Le responsable de structure complète <a href="{% url 'habilitation_new' %}">le formulaire
-          d’habilitation Aidants Connect.</a>
-        </li>
-        <li class="how_2">L'équipe Aidants Connect valide la demande.</li>
-        <li class="how_3">Dans un délai de deux mois, les aidants suivent une formation d'une journée sur les
-          sujets suivants : accompagnement de l'usager, RGPD, France Connect, prise en main d'Aidants Connect.
-        </li>
-        <li class="how_4">Aidants Connect active les comptes des aidants et envoie un kit de bienvenue à la structure.
-        </li>
-        <li class="how_5"><strong>Dès lors, les aidants peuvent réaliser des démarches en ligne pour le compte
-          d’usager.e.s&nbsp;!</strong>
-        </li>
-      </ol>
+    <h2 class="h2-habilitation">Comment se passe l’habilitation ?</h2>
+    <ol class="how">
+      <li class="how_1">
+        <strong>Le responsable de structure complète <a href="{% url 'habilitation_new' %}">le formulaire
+        d’habilitation Aidants Connect.</a></strong>
+      </li>
+      <li class="how_2"><strong>Aidants Connect valide la demande.</b></strong>
+      <li class="how_3"><strong>Dans un délai de deux mois, les aidants suivent gratuitement une formation en deux parties :</strong>
+        <ul>
+          <li>Une journée dédiée aux sujets d'accompagnement de l'usager, RGPD et France Connect.</li>
+          <li>Une demi-journée pour la prise en main de l’outil.</li>
+        </ul>
+      </li>
+      <li class="how_4"><strong>Les aidants certifient leur habilitation.</strong></li>
+      <li class="how_5"><strong>Aidants Connect active les comptes des aidants et envoie
+        un kit de ressources à la structure.
+        <br><span class="red">Dès lors, les aidants peuvent réaliser des démarches en ligne pour le compte d’usagers !</span></strong>
+      </li>
+    </ol>
 
-      <h2>Liste des structures éligibles à l’utilisation d’Aidants Connect</h2>
+    <div class="btn-habilitation">
+      <a href="{% url 'habilitation_new' %}">Je souhaite formuler une demande d’habilitation pour ma structure</a>
+    </div>
+
+    <details class="details-habilitation">
+      <summary class="summary-habilitation h2">Liste des structures éligibles à l’utilisation d’Aidants Connect</summary>
       <div class="who">
-        <p><b>Toute personne morale de droit public ou privé</b> (administration, association, entreprise) qui :</p>
+        <p><b>Toute personne morale de droit public ou privé (administration, association, entreprise) qui :</b></p>
         <ul>
           <li>
             Intervient dans le cadre d’une mission de service public d’accompagnement à la réalisation de démarches pour
@@ -74,6 +81,6 @@
           Pour plus d'informations, nous vous invitons à consulter
           <a href="https://aidantsconnect.beta.gouv.fr/faq/mandat/">notre FAQ.</a></strong></p>
       </div>
-    </div>
-  </section>
+    </details>
+  </div>
 {% endblock %}
