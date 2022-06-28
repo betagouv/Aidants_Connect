@@ -1,0 +1,86 @@
+{% load static %}
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Aidants Connect</title>
+    <style>
+      img {
+        border: none;
+        -ms-interpolation-mode: bicubic;
+        max-width: 100%; }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Marianne",arial,sans-serif;
+        font-size: 1rem;
+        line-height: 1.5rem;
+        background: #fff;
+        color: #333;
+      }
+
+      .container {
+        display: block;
+        margin: 2rem auto !important;
+        max-width: 589px;
+      }
+
+      .content {
+        box-sizing: border-box;
+        display: block;
+        margin: 0 auto;
+        width: 100%;
+        padding: 2rem;
+      }
+
+      .email-header {
+        background-image: url(http://127.0.0.1:3000/static/images/habilitation/header-newsletter.png);
+        background-repeat: no-repeat;
+        height: 158px;
+        width: 100%;
+        background-position: center;
+      }
+
+      a {
+        color:#EF4056;
+      }
+
+      .shadowed {
+        border: 1px solid #FAD776;
+        box-sizing: border-box;
+        box-shadow: 10px 10px 0 #FAD776;
+      }
+      .center {
+        display: flex;
+        justify-content: center;
+      }
+
+      .btn {
+        background: #EF4056;
+        padding: 0.75rem;
+        color: #FFFFFF;
+        text-decoration: none;
+      }
+
+      .long-link {
+        word-break:break-all;
+      }
+    </style>
+  </head>
+
+  <body class="">
+    <div class="container shadowed">
+      <div class="email-header"></div>
+        <div class="content">
+          {% block email_body %}
+          {% endblock %}
+          <p><b>À bientôt sur Aidants Connect !</b></p>
+          <p><b>L’équipe Aidants Connect</b>
+          <br><i>Facilement « faire pour le compte de » en toute sécurité</i>
+          <br>Pour toute demande : <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a></p>
+        </div>
+    </div>
+  </body>
+</html>
