@@ -1,35 +1,15 @@
-{% extends "layouts/email_base.html" %}
+{% extends "layouts/email_habilitation_base.html" %}
 {% block email_body %}
-  <table border="0" cellpadding="0" cellspacing="0" class="body">
-    <tr>
-      <td>&nbsp;</td>
-      <td class="container">
-        <div class="content">
-          <table class="main">
-            <tr>
-              <td class="wrapper">
-                <table border="0" cellpadding="6" cellspacing="0">
-                  <tr>
-                    <td>
-                      <p>Bonjour,</p>
-                      <p>Bonne nouvelle ! Il existe déjà un espace demandeur associé à cet email chez nous.</p>
-                      <p>
-                        Vous pouvez <a href="{{ url }}">suivre le lien suivant pour retrouver toutes vos demandes en
-                        cours et en déposer de nouvelles</a> ou, si cela ne fonctionne pas, en copiant l’URL suivante
-                        dans votre navigateur :
-                      </p>
-                      <p>{{ url }}</p>
 
-                      <p>À bientôt sur Aidants Connect !</p>
-                      <p><a href="https://aidantsconnect.beta.gouv.fr">https://aidantsconnect.beta.gouv.fr</a></p>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </td>
-    </tr>
-  </table>
+<p>Bonjour,</p>
+<p>Bonne nouvelle ! Il existe déjà un espace demandeur associé à cet email chez nous.</p>
+<p>
+  Pour retrouver toutes vos demandes en cours et en déposer de nouvelles, vous pouvez suivre le lien ci-dessous :
+</p>
+<div class="center">
+  <a class="btn" href="{{ url }}">Mes demandes</a>
+</div>
+<p>Si cela ne fonctionne pas, en copiant l’URL suivante dans votre navigateur :<p>
+<p class="long-link">{{ url }}</p>
+
 {% endblock %}
