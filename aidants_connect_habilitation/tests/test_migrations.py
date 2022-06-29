@@ -10,38 +10,36 @@ from aidants_connect_habilitation.utils import real_fix_orga_request_status
 class OrganisationRequestMigrationTests(TestCase):
     def test_real_fix_orga_request_status(self):
         OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
-        OrganisationRequestFactory(status="Modifications finalisées")
-        OrganisationRequestFactory(status=RequestStatusConstants.NEW)
-        OrganisationRequestFactory(status=RequestStatusConstants.CHANGES_REQUIRED)
+        OrganisationRequestFactory(status="CHANGES_DONE")
+        OrganisationRequestFactory(status=RequestStatusConstants.NEW.name)
+        OrganisationRequestFactory(status=RequestStatusConstants.CHANGES_REQUIRED.name)
 
         self.assertEqual(
             1,
             OrganisationRequest.objects.filter(
-                status=RequestStatusConstants.AC_VALIDATION_PROCESSING
+                status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
             ).count(),
         )  # noqa
 
         self.assertEqual(
             1,
             OrganisationRequest.objects.filter(
-                status=RequestStatusConstants.NEW
+                status=RequestStatusConstants.NEW.name
             ).count(),
         )
 
         self.assertEqual(
             1,
             OrganisationRequest.objects.filter(
-                status=RequestStatusConstants.CHANGES_REQUIRED
+                status=RequestStatusConstants.CHANGES_REQUIRED.name
             ).count(),
         )
 
         self.assertEqual(
             1,
-            OrganisationRequest.objects.filter(
-                status="Modifications finalisées"
-            ).count(),
+            OrganisationRequest.objects.filter(status="CHANGES_DONE").count(),
         )
 
         real_fix_orga_request_status(OrganisationRequest)
@@ -49,27 +47,25 @@ class OrganisationRequestMigrationTests(TestCase):
         self.assertEqual(
             2,
             OrganisationRequest.objects.filter(
-                status=RequestStatusConstants.AC_VALIDATION_PROCESSING
+                status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
             ).count(),
         )  # noqa
 
         self.assertEqual(
             1,
             OrganisationRequest.objects.filter(
-                status=RequestStatusConstants.NEW
+                status=RequestStatusConstants.NEW.name
             ).count(),
         )
 
         self.assertEqual(
             1,
             OrganisationRequest.objects.filter(
-                status=RequestStatusConstants.CHANGES_REQUIRED
+                status=RequestStatusConstants.CHANGES_REQUIRED.name
             ).count(),
         )
 
         self.assertEqual(
             0,
-            OrganisationRequest.objects.filter(
-                status="Modifications finalisées"
-            ).count(),
+            OrganisationRequest.objects.filter(status="CHANGES_DONE").count(),
         )
