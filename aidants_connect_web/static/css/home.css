@@ -15,3 +15,33 @@
   font-style: italic;
   line-height: 1.3em;
 }
+
+.hero__container {
+  height: 37.5rem;
+  position: relative;
+  width: 100%;
+  background-image: url(../images/hero-background.png);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.hero__container .hero-logo {
+  height: 148px;
+  width: 374px;
+  background-image: url(../images/logo.png);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.hero__container p {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 33px;
+  color: #EF4056;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

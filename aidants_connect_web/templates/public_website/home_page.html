@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
@@ -7,101 +7,14 @@
 {% endblock extracss %}
 
 {% block content %}
-  <div class="notification full-width" role="alert">
-    Vous êtes une structure qui souhaite utiliser Aidants Connect ? Nous vous invitons à remplir
-    <a href="{% url 'habilitation' %}">notre formulaire d'habilitation</a>.
-  </div>
 {% if messages %}
   {% for message in messages %}
     <div class="notification {% if message.tags %}{{ message.tags }}{% endif %} full-width" role="alert">{{ message }}</div>
   {% endfor %}
 {% endif %}
-<div class="hero">
-  <div class="hero__container">
-   <h1>Bienvenue sur Aidants Connect</h1>
-    <p>Ce service sécurise et facilite le « faire pour le compte de »</p>
-  </div>
+<div class="hero__container">
+  <p>Facilement « faire pour le compte de » en toute sécurité</p>
 </div>
-<section class="section section-grey">
-  <div class="container">
-    <div class="row">
-      <div class="min-width-35">
-        <img src="{% static 'images/aidantsconnect-illustration.svg' %}" alt="" />
-      </div>
-      <div>
-        <h2>
-          Vous accompagnez régulièrement des personnes en difficulté avec le numérique dans la réalisation de démarches en ligne ?<br />
-          <small class="font-weight-normal margin-top-10"><span aria-hidden="true">→ </span>Aidants Connect est fait pour vous !</small>
-        </h2>
-        <p class="small__paragraph">
-          <strong>Aidants Connect s’adresse à une diversité d’aidants professionnels</strong>
-          Travailleurs sociaux, agents publics d’accueil, médiateurs numériques...
-        </p>
-        <a class="button primary" href="https://app.livestorm.co/incubateur-des-territoires/aidants-connect">Participer à une démo</a>
-        <a class="button" href="{% url 'habilitation' %}">Être habilité Aidants Connect</a>
-      </div>
-    </div>
-  </div>
-</section>
-<section class="section">
-  <div class="container">
-    <div class="row">
-      <div class="text-center">
-        <img class="tile__icon large__icon" src="{% static 'images/key.svg' %}" alt="" />
-        <p class="large__paragraph">
-          <strong>Aidants Connect sécurise juridiquement les aidants</strong>
-          qui accompagnent ces usagers sur les enjeux de confidentialité et de sécurité des données
-        </p>
-      </div>
-      <div class="text-center">
-        <img class="tile__icon large__icon" src="{% static 'images/help.svg' %}" alt="" />
-        <p class="large__paragraph">
-          <strong>Aidants Connect garantit un accompagnement humain</strong>
-          pour toutes les personnes qui, pour diverses raisons, ne peuvent pas faire leurs démarches en ligne
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-{% include 'public_website/section_link_faq_partial.html' %}
-<section class="section section-grey">
-  <div class="container">
-    <div class="row">
-      <div class="text-center">
-        <img class="tile__icon" src="{% static 'images/build.svg' %}" alt="" />
-        <p class="margin-top-0 small__paragraph">
-          <strong>Aidants Connect a été co-construit avec des aidants.</strong>
-          Des ateliers utilisateurs ont eu lieu dans une dizaine de territoires
-        </p>
-        <img class="tile__icon" src="{% static 'images/cycle.svg' %}" alt="" />
-        <p class="margin-top-0 small__paragraph">
-          <strong>Aidants Connect est évolutif.</strong>
-          Le service s’adapte aux réalités du terrain et aux besoins des aidants
-        </p>
-      </div>
-      <div class="form__container min-width-50">
-        <div class="card">
-          <div class="card__content">
-            <form method="post" action="https://app.mailjet.com/widget/iframe/4t3L/E8z" id="newsletter">
-              <h2>Vous souhaitez suivre notre actualité et l’évolution d’Aidants Connect ?</h2>
-              <br />
-              <input type="hidden" id="csrf_token" name="csrf_token" value="YWZhOWVmNGEwNzY4NjViZmQyMDk0ZjUxZjg0Y2Q2ZGU3NTVjN2NmNjFmY2JmYjZkZmI1MWEwZjkxZTIyNGMzNQ==" />
-              <label for="subscribe-email">Entrez votre adresse e-mail (exemple: votre@email.fr)</label>
-              <div class="form__group">
-                <div class="input__group">
-                  <input type="email" id="subscribe-email" name="w-field-field-154291-1000274-1065021-email" placeholder="votre@email.fr" autocomplete="on" required />
-                  <button class="button margin-left-1em" type="submit" name="subscribe" id="form-submit" title="Je m'abonne à l'infolettre">Je m'abonne</button>
-                </div>
-              </div>
-              <p>
-                Votre adresse email est uniquement utilisée pour vous envoyer les lettres d’informations d’Aidants Connect.
-                Vous pouvez à tout moment utiliser le lien de désabonnement intégré dans l’infolettre.
-              </p>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+
+
 {% endblock content %}
