@@ -61,23 +61,7 @@
   <link rel="mask-icon" href="{% static 'images/favicons/safari-pinned-tab.svg' %}" color="#5bbad5">
 
   <!-- Matomo -->
-  {% if MATOMO_INSTANCE_URL and MATOMO_INSTANCE_SITE_ID %}
-    <script>
-        var _paq = window._paq = window._paq || [];
-        /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-        _paq.push(['trackPageView']);
-        _paq.push(['enableLinkTracking']);
-        (function () {
-            var u = "{{ MATOMO_INSTANCE_URL }}";
-            _paq.push(['setTrackerUrl', u + 'matomo.php']);
-            _paq.push(['setSiteId', '{{ MATOMO_INSTANCE_SITE_ID }}']);
-            var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
-            g.async = true;
-            g.src = '//cdn.matomo.cloud/gouv.matomo.cloud/matomo.js';
-            s.parentNode.insertBefore(g, s);
-        })();
-    </script>
-  {% endif %}
+  {% include "layouts/matomo_script.html" %}
 </head>
 
 <body>

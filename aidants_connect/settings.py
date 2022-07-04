@@ -595,5 +595,13 @@ PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
 GOUV_ADDRESS_SEARCH_API_BASE_URL = "https://api-adresse.data.gouv.fr/search/"
 GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool("GOUV_ADDRESS_SEARCH_API_DISABLED", True)
 
+# Matomo
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+
+if MATOMO_INSTANCE_SITE_ID and MATOMO_INSTANCE_URL:
+    CSP_SCRIPT_SRC = (
+        *CSP_SCRIPT_SRC,
+        "'sha256-kKsklEZ3MJfIKwxmvIbVAVSQM/J1k9axzIS0kOiYdzw='",
+        "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
+    )
