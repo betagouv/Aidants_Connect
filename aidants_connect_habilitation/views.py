@@ -1,6 +1,10 @@
+from uuid import UUID
+
 from django.conf import settings
+from django.contrib import messages
 from django.core.mail import send_mail
 from django.forms.models import model_to_dict
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.urls import reverse
@@ -8,20 +12,24 @@ from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
 
 from aidants_connect.common.constants import (
+    MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
+    AidantRequestFormSet,
     IssuerForm,
     OrganisationRequestForm,
     PersonnelForm,
+    RequestMessageForm,
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
     Issuer,
     IssuerEmailConfirmation,
     OrganisationRequest,
+    RequestMessage,
 )
 
 __all__ = [
@@ -35,6 +43,8 @@ __all__ = [
     "ModifyOrganisationRequestFormView",
     "PersonnelRequestFormView",
     "ValidationRequestFormView",
+    "ReadonlyRequestView",
+    "AddAidantsRequestView",
 ]
 
 """Mixins"""
@@ -55,7 +65,11 @@ class HabilitationStepMixin(ContextMixin):
 class CheckIssuerMixin(ContextMixin, View):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.issuer = get_object_or_404(Issuer, issuer_id=kwargs.get("issuer_id"))
+        try:
+            uuid = UUID(kwargs.get("issuer_id"))
+        except ValueError:
+            raise Http404()
+        self.issuer = get_object_or_404(Issuer, issuer_id=uuid)
 
     def get_context_data(self, **kwargs):
         return {
@@ -76,18 +90,18 @@ class VerifiedEmailIssuerView(CheckIssuerMixin, View):
 
 
 class LateStageRequestView(VerifiedEmailIssuerView, View):
-    @property
-    def step(self) -> HabilitationFormStep:
-        raise NotImplementedError()
-
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
+        try:
+            uuid = UUID(kwargs.get("uuid"))
+        except ValueError:
+            raise Http404()
         self.organisation = get_object_or_404(
-            OrganisationRequest, uuid=kwargs.get("uuid"), issuer=self.issuer
+            OrganisationRequest, uuid=uuid, issuer=self.issuer
         )
 
 
-class OnlyNewRequestsView(LateStageRequestView):
+class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
     @property
     def step(self) -> HabilitationFormStep:
         raise NotImplementedError()
@@ -101,7 +115,10 @@ class OnlyNewRequestsView(LateStageRequestView):
                 issuer_id=self.issuer.issuer_id,
             )
 
-        if self.organisation.status != RequestStatusConstants.NEW.name:
+        if (
+            self.organisation.status != RequestStatusConstants.NEW.name
+            and self.organisation.status != RequestStatusConstants.CHANGES_REQUIRED.name
+        ):
             return redirect(
                 "habilitation_organisation_view",
                 issuer_id=self.issuer.issuer_id,
@@ -130,10 +147,12 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
     def form_invalid(self, form: IssuerForm):
         # Gets the error code of all the errors for email, if any
         # See https://docs.djangoproject.com/en/dev/ref/forms/fields/#django.forms.Field.error_messages  # noqa
-        error_codes = [error.code for error in form.errors["email"].as_data()]
-        if "unique" in error_codes:
-            self.send_issuer_profile_reminder_mail(form.data["email"])
-            return render(self.request, "issuer_already_exists_warning.html")
+        email_errors = form.errors.get("email")
+        if email_errors:
+            error_codes = [error.code for error in form.errors.get("email").as_data()]
+            if "unique" in error_codes:
+                self.send_issuer_profile_reminder_mail(form.data["email"])
+                return render(self.request, "issuer_already_exists_warning.html")
         return super().form_invalid(form)
 
     def form_valid(self, form: IssuerForm):
@@ -160,7 +179,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
             "email/issuer_profile_reminder.html", context
         )
         send_mail(
-            from_email=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[email],
             subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
             message=text_message,
@@ -209,15 +228,17 @@ class IssuerEmailConfirmationView(
 
     def get(self, request, *args, **kwargs):
         return (
-            self.__continue()
-            if self.issuer.email_verified
-            else super().get(request, *args, **kwargs)
+            super().get(request, *args, **kwargs)
+            if self.email_confirmation.confirm()
+            else self.render_to_response(
+                {**self.get_context_data(**kwargs), "email_confirmation_expired": True}
+            )
         )
 
     def post(self, request, *args, **kwargs):
         return (
             self.__continue()
-            if self.email_confirmation.confirm()
+            if self.issuer.email_verified
             else self.render_to_response(
                 {**self.get_context_data(**kwargs), "email_confirmation_expired": True}
             )
@@ -284,7 +305,7 @@ class ModifyOrganisationRequestFormView(
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormView):
+class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
     template_name = "personnel_form.html"
     form_class = PersonnelForm
 
@@ -335,7 +356,7 @@ class PersonnelRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormV
         )
 
 
-class ValidationRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, FormView):
+class ValidationRequestFormView(OnlyNewRequestsView, FormView):
     template_name = "validation_form.html"
     form_class = ValidationForm
 
@@ -364,13 +385,112 @@ class ValidationRequestFormView(OnlyNewRequestsView, HabilitationStepMixin, Form
         form.save(self.organisation)
         return super().form_valid(form)
 
+    def post(self, request, *args, **kwargs):
+        form: ValidationForm = self.get_form()
+        if self.organisation.manager is None:
+            form.add_error(
+                None,
+                "Veuillez ajouter le responsable de la structure avant validation.",
+            )
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
-class ReadonlyRequestView(LateStageRequestView, TemplateView):
+
+class ReadonlyRequestView(LateStageRequestView, FormView):
     template_name = "view_organisation_request.html"
+    form_class = RequestMessageForm
 
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
             "aidants": self.organisation.aidant_requests,
+            "display_add_aidants_button": (
+                self.organisation.status
+                in [
+                    RequestStatusConstants.NEW.name,
+                    RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+                    RequestStatusConstants.VALIDATED.name,
+                ]
+            ),
+            "display_modify_button": (
+                self.organisation.status
+                in [
+                    RequestStatusConstants.CHANGES_REQUIRED.name,
+                ]
+            ),
         }
+
+    def get_success_url(self):
+        return self.organisation.get_absolute_url()
+
+    def form_valid(self, form):
+        message: RequestMessage = form.save(commit=False)
+        message.sender = MessageStakeholders.ISSUER.name
+        message.organisation = self.organisation
+        message.save()
+
+        if self.request.GET.get("http-api", False):
+            return self.response_class(
+                request=self.request,
+                template="request_messages/_message_item.html",
+                context={
+                    "message": message,
+                    "issuer": self.issuer,
+                },
+                using=self.template_engine,
+                content_type="text/html; charset=utf-8",
+            )
+
+        return super().form_valid(form)
+
+
+class AddAidantsRequestView(LateStageRequestView, FormView):
+    template_name = "add_aidants_request.html"
+    form_class = AidantRequestFormSet
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.organisation.status not in [
+            RequestStatusConstants.NEW.name,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            RequestStatusConstants.VALIDATED.name,
+        ]:
+            messages.error(
+                request,
+                "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "habilitation_organisation_view",
+                    kwargs={
+                        "issuer_id": self.organisation.issuer.issuer_id,
+                        "uuid": self.organisation.uuid,
+                    },
+                )
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "organisation": self.organisation,
+        }
+
+    def get_success_url(self):
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={
+                "issuer_id": self.organisation.issuer.issuer_id,
+                "uuid": self.organisation.uuid,
+            },
+        )
+
+    def form_valid(self, formset: AidantRequestFormSet):
+        for form in formset:
+            form.instance.organisation = self.organisation
+
+        formset.save()
+
+        return super().form_valid(formset)

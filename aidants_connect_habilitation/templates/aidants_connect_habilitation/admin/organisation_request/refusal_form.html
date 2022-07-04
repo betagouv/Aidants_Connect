@@ -1,0 +1,59 @@
+{% extends "admin/base_site.html" %}
+{% load static admin_extras ac_extras i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media.js }}
+{% endblock %}
+
+{% block content %}
+  <h1>Refuser la demande d'habilitation n° {{ object.data_pass_id }}</h1>
+  <h2>Organisation {{ object.name }}</h2>
+  <form action="{% qurl 'otpadmin:aidants_connect_habilitation_organisationrequest_refuse' object_id=object_id %}"
+        method="POST">
+    <fieldset class="module aligned">
+      {{ form.as_p }}
+    </fieldset>
+    <p>Cet e-mail sera envoyé aux personnes suivantes :</p>
+    <ul>
+      <li>
+        {{ object.issuer }} {{ object.issuer.email }}
+        {% if object.issuer.email == object.manager.email %}
+          (Demandeur et responsable structure)
+        {% else %}
+          (Demandeur)
+        {% endif %}
+      </li>
+      {% if object.issuer.email != object.manager.email %}
+        <li>{{ object.manager }} {{ object.manager.email }} (Responsable structure)</li>
+      {% endif %}
+      {% if object.aidant_requests %}
+        <li>
+          Aidants :
+          <ul>
+            {% for aidant in object.aidant_requests.all %}
+              <li>{{ aidant }} {{ aidant.email }}</li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% endif %}
+    </ul>
+    <div class="submit-row">
+      <input type="submit" value="Refuser la demande" class="default" name="_save">
+      <p class="deletelink-box">
+        <a href="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_change' object_id=object_id %}"
+           class="closelink">Annuler</a>
+      </p>
+    </div>
+    {% csrf_token %}
+  </form>
+
+
+{% endblock %}

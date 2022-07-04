@@ -9,6 +9,8 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from aidants_connect.common.constants import RequestStatusConstants
+from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.decorators import (
     activity_required,
     user_is_responsable_structure,
@@ -406,6 +408,22 @@ def validate_aidant_carte_totp(request, aidant_id):
                 Journal.log_card_validation(
                     responsable, aidant, aidant.carte_totp.serial_number
                 )
+                # check if the validation request is for the responsable
+                if responsable.id == aidant.id:
+                    # get all organisations aidant is responsable
+                    valid_organisation_requests = OrganisationRequest.objects.filter(
+                        organisation__in=responsable.responsable_de.all()
+                    )
+                    # close all validated requests
+                    for organisation_request in valid_organisation_requests:
+                        if (
+                            organisation_request.status
+                            == RequestStatusConstants.VALIDATED.name
+                        ):
+                            organisation_request.status = (
+                                RequestStatusConstants.CLOSED.name
+                            )
+                            organisation_request.save()
             django_messages.success(
                 request,
                 (

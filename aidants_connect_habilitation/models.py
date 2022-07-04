@@ -3,10 +3,13 @@ from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
-from django.db import models
+from django.core.mail import send_mail
+from django.db import models, transaction
 from django.db.models import SET_NULL, Q
+from django.db.utils import IntegrityError
 from django.dispatch import Signal
 from django.http import HttpRequest
+from django.template import loader
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
@@ -18,7 +21,13 @@ from aidants_connect.common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_web.models import OrganisationType
+from aidants_connect_web.models import (
+    Aidant,
+    HabilitationRequest,
+    Organisation,
+    OrganisationType,
+)
+from aidants_connect_web.utilities import generate_new_datapass_id
 
 __all__ = [
     "PersonWithResponsibilities",
@@ -161,6 +170,17 @@ class Manager(PersonWithResponsibilities):
 
 
 class OrganisationRequest(models.Model):
+    created_at = models.DateTimeField("Date création", auto_now_add=True)
+
+    updated_at = models.DateTimeField("Date modification", auto_now=True)
+
+    organisation = models.ForeignKey(
+        Organisation,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+
     issuer = models.ForeignKey(
         Issuer,
         on_delete=models.CASCADE,
@@ -180,6 +200,13 @@ class OrganisationRequest(models.Model):
     uuid = models.UUIDField(
         "Identifiant de brouillon",
         default=_new_uuid,
+        unique=True,
+    )
+
+    data_pass_id = models.IntegerField(
+        "Numéro Datapass",
+        null=True,
+        default=None,
         unique=True,
     )
 
@@ -264,13 +291,152 @@ class OrganisationRequest(models.Model):
             kwargs={"issuer_id": self.issuer.issuer_id, "uuid": self.uuid},
         )
 
+    def notify_issuer_request_submitted(self):
+        context = {
+            "url": f"https://{settings.HOST}{self.get_absolute_url()}",
+            "organisation": self,
+        }
+        text_message = loader.render_to_string(
+            "email/organisation_request_creation.txt", context
+        )
+        html_message = loader.render_to_string(
+            "email/organisation_request_creation.html", context
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=[self.issuer.email],
+            subject=settings.EMAIL_ORGANISATION_REQUEST_SUBMISSION_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
+
+    def notify_issuer_request_modified(self):
+        context = {
+            "url": f"https://{settings.HOST}{self.get_absolute_url()}",
+            "organisation": self,
+        }
+        text_message = loader.render_to_string(
+            "email/organisation_request_modifications_done.txt", context
+        )
+        html_message = loader.render_to_string(
+            "email/organisation_request_modifications_done.html", context
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=[self.issuer.email],
+            subject=settings.EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
+
     def prepare_request_for_ac_validation(self, form_data: dict):
         self.cgu = form_data["cgu"]
         self.dpo = form_data["dpo"]
         self.professionals_only = form_data["professionals_only"]
         self.without_elected = form_data["without_elected"]
-        self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        if self.status == RequestStatusConstants.NEW.name:
+            self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            self.data_pass_id = int(f"{self.zipcode[:3]}{generate_new_datapass_id()}")
+            self.save()
+            self.notify_issuer_request_submitted()
+        if self.status == RequestStatusConstants.CHANGES_REQUIRED.name:
+            self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            self.save()
+            self.notify_issuer_request_modified()
+
+    @transaction.atomic
+    def accept_request_and_create_organisation(self):
+        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
+            return False
+
+        try:
+            organisation_type, _ = OrganisationType.objects.get_or_create(
+                name=(self.type_other if self.type_other else self.type)
+            )
+            organisation = Organisation.objects.create(
+                name=self.name,
+                type=organisation_type,
+                siret=self.siret,
+                address=self.address,
+                zipcode=self.zipcode,
+                city=self.city,
+                data_pass_id=self.data_pass_id,
+            )
+        except IntegrityError:
+            raise Organisation.AlreadyExists(
+                "Il existe déjà une organisation portant le n° datapass "
+                f"{self.data_pass_id}."
+            )
+
+        self.organisation = organisation
+        self.status = RequestStatusConstants.VALIDATED.name
         self.save()
+
+        responsable_query = Aidant.objects.filter(username=self.manager.email)
+
+        if not responsable_query.exists():
+            responsable = Aidant.objects.create(
+                first_name=self.manager.first_name,
+                last_name=self.manager.last_name,
+                email=self.manager.email,
+                username=self.manager.email,
+                phone=self.manager.phone,
+                profession=self.manager.profession,
+                organisation=organisation,
+                can_create_mandats=False,
+            )
+
+            responsable.responsable_de.add(organisation)
+            responsable.save()
+        else:
+            responsable = responsable_query[0]
+            responsable.responsable_de.add(organisation)
+            if responsable.has_a_totp_device:
+                self.status = RequestStatusConstants.CLOSED.name
+                self.save()
+            responsable.save()
+
+        for aidant in self.aidant_requests.all():
+            if not HabilitationRequest.objects.filter(
+                email=self.manager.email, organisation=organisation
+            ).exists():
+                HabilitationRequest.objects.create(
+                    first_name=aidant.first_name,
+                    last_name=aidant.last_name,
+                    email=aidant.email,
+                    profession=aidant.profession,
+                    organisation=organisation,
+                )
+
+        if self.manager.is_aidant:
+            if not HabilitationRequest.objects.filter(
+                email=self.manager.email, organisation=organisation
+            ).exists():
+                HabilitationRequest.objects.create(
+                    first_name=self.manager.first_name,
+                    last_name=self.manager.last_name,
+                    email=self.manager.email,
+                    profession=self.manager.profession,
+                    organisation=organisation,
+                )
+
+        return True
+
+    def refuse_request(self):
+        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
+            return False
+        self.status = RequestStatusConstants.REFUSED.name
+        self.save()
+        return True
+
+    def require_changes_request(self):
+        if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
+            return False
+        self.status = RequestStatusConstants.CHANGES_REQUIRED.name
+        self.save()
+        return True
 
     class Meta:
         constraints = [
@@ -384,8 +550,48 @@ class RequestMessage(models.Model):
     )
     content = models.TextField("Message")
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return f"Message {self.id}"
 
     class Meta:
         verbose_name = "message"
+        ordering = ("created_at",)
+
+    def send_message_email(self):
+        context = {
+            "url": f"https://{settings.HOST}{self.organisation.get_absolute_url()}",
+            "organisation": self.organisation,
+            "message": self,
+        }
+        text_message = loader.render_to_string(
+            "email/new_message_received.txt", context
+        )
+        html_message = loader.render_to_string(
+            "email/new_message_received.html", context
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=[self.organisation.issuer.email],
+            subject=settings.EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
+
+    def save(self, *args, **kwargs):
+        if not self.pk and self.sender == "AC":
+            self.send_message_email()
+        return super(RequestMessage, self).save(*args, **kwargs)
+
+
+def _default_expiraton_date():
+    return now() + timedelta(days=1)
+
+
+class AddressAPIResultQuerySet(models.QuerySet):
+    def expired(self):
+        return self.filter(expiraton_date__lt=now())

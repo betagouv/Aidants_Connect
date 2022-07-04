@@ -1,17 +1,20 @@
 from functools import singledispatch
 from importlib import import_module
 from inspect import getmembers, isclass
+from json import loads
+from os.path import join as path_join
 from typing import Type, TypeVar
 
 from django.forms import BaseModelFormSet, ModelForm
 
 from factory.django import DjangoModelFactory
 
+from aidants_connect_habilitation import tests
 from aidants_connect_habilitation.tests import factories
 
 
 @singledispatch
-def get_form(form_cls, ignore_errors=False, **kwargs):
+def get_form(form_cls, ignore_errors=False, formset_extra=10, **kwargs):
     """
     Generates a form ModelForm or FormSet[ModelForm] populated with data.
 
@@ -75,7 +78,7 @@ T = TypeVar("T", bound=ModelForm)
 
 
 @get_form.register(type(ModelForm))
-def _(form_cls: Type[T], ignore_errors=False, **kwargs) -> T:
+def _(form_cls: Type[T], ignore_errors=False, formset_extra=10, **kwargs) -> T:
     form = form_cls(data=__get_form_data(form_cls, **kwargs))
 
     if not ignore_errors and not form.is_valid():
@@ -86,7 +89,7 @@ def _(form_cls: Type[T], ignore_errors=False, **kwargs) -> T:
 
 @get_form.register(type(BaseModelFormSet))
 def _(
-    form_cls: Type[BaseModelFormSet], ignore_errors=False, **kwargs
+    form_cls: Type[BaseModelFormSet], ignore_errors=False, formset_extra=10, **kwargs
 ) -> BaseModelFormSet:
     formset_cls = form_cls
     form_cls = form_cls.form
@@ -95,9 +98,9 @@ def _(
     # `extra` class property matches initial data length.
     # See https://docs.djangoproject.com/fr/4.0/topics/forms/modelforms/#s-id2 # noqa
     old_extra = formset_cls.extra
-    formset_cls.extra = 10
+    formset_cls.extra = formset_extra
     form: BaseModelFormSet = formset_cls(
-        initial=[__get_form_data(form_cls, **kwargs) for _ in range(10)]
+        initial=[__get_form_data(form_cls, **kwargs) for _ in range(formset_extra)]
     )
 
     data = {
@@ -138,3 +141,9 @@ def __get_form_data(form_cls: Type[T], **kwargs) -> T:
         )
 
     return form_cls(instance=factory_cls.build(**kwargs)).initial
+
+
+def load_json_fixture(name: str) -> dict:
+    path = path_join(tests.__path__[0], "fixtures", name)
+    with open(path) as f:
+        return loads(f.read())

@@ -5,11 +5,13 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
+from django.template import loader
 from django.urls import path, reverse
-from django.utils.html import format_html_join
+from django.utils.html import format_html_join, linebreaks
 from django.utils.safestring import mark_safe
 
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
@@ -42,6 +44,7 @@ from aidants_connect_web.models import (
     Autorisation,
     CarteTOTP,
     Connection,
+    DatavizDepartment,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -631,13 +634,34 @@ class HabilitationRequestResource(resources.ModelResource):
     organisation__zipcode = Field(
         attribute="organisation__zipcode", column_name="Code Postal"
     )
-    organisation__city = Field(attribute="", column_name="Ville")
-    organisation__departement = Field(attribute="", column_name="Département")
-    organisation__region = Field(attribute="", column_name="Région")
+    organisation__city = Field(attribute="organisation__city", column_name="Ville")
+
+    organisation_departement = Field(column_name="Département")
+    organisation_region = Field(column_name="Région")
 
     class Meta:
         model = HabilitationRequest
         fields = set()
+
+    def _get_department_from_zipcode(self, habilitation_request):
+        zipcode = habilitation_request.organisation.zipcode
+        if not zipcode:
+            return None
+        departements = DatavizDepartment.objects.filter(zipcode=zipcode[:2])
+        if departements.exists():
+            return departements[0]
+
+    def dehydrate_organisation_region(self, habilitation_request):
+        department = self._get_department_from_zipcode(habilitation_request)
+        if not department:
+            return ""
+        return department.datavizdepartmentstoregion.region.name
+
+    def dehydrate_organisation_departement(self, habilitation_request):
+        department = self._get_department_from_zipcode(habilitation_request)
+        if not department:
+            return ""
+        return department.dep_name
 
 
 class HabilitationRequestImportResource(resources.ModelResource):
@@ -692,6 +716,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     list_filter = (
         "status",
         "origin",
+        "test_pix_passed",
         HabilitationRequestRegionFilter,
         HabilitationDepartmentFilter,
     )
@@ -740,7 +765,35 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 HabilitationRequest.STATUS_NEW,
             )
         ).update(status=HabilitationRequest.STATUS_REFUSED)
+        for habilitation_request in queryset:
+            self.send_refusal_email(habilitation_request)
         self.message_user(request, f"{rows_updated} demandes ont été refusées.")
+
+    def send_refusal_email(self, object):
+
+        text_message = loader.render_to_string(
+            "email/aidant_a_former_refuse.txt", {"aidant": object}
+        )
+        html_message = loader.render_to_string(
+            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+        )
+
+        subject = (
+            "Aidants Connect - La demande d'ajout de l'aidant(e) "
+            f"{object.first_name} {object.last_name} a été refusée."
+        )
+
+        recipients = [
+            manager.email for manager in object.organisation.responsables.all()
+        ]
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=recipients,
+            subject=subject,
+            message=text_message,
+            html_message=html_message,
+        )
 
     mark_refused.short_description = "Refuser les demandes sélectionnées"
 
@@ -748,9 +801,38 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         rows_updated = queryset.filter(status=HabilitationRequest.STATUS_NEW).update(
             status=HabilitationRequest.STATUS_PROCESSING
         )
+        for habilitation_request in queryset:
+            self.send_validation_email(habilitation_request)
+
         self.message_user(request, f"{rows_updated} demandes sont maintenant en cours.")
 
     mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
+
+    def send_validation_email(self, object):
+
+        text_message = loader.render_to_string(
+            "email/aidant_a_former_valide.txt", {"aidant": object}
+        )
+        html_message = loader.render_to_string(
+            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+        )
+
+        subject = (
+            "Aidants Connect - La demande d'ajout de l'aidant(e) "
+            f"{object.first_name} {object.last_name} a été validée !"
+        )
+
+        recipients = [
+            manager.email for manager in object.organisation.responsables.all()
+        ]
+
+        send_mail(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=recipients,
+            subject=subject,
+            message=text_message,
+            html_message=html_message,
+        )
 
     def get_urls(self):
         return [
@@ -803,6 +885,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             status__in=(
                 HabilitationRequest.STATUS_PROCESSING,
                 HabilitationRequest.STATUS_NEW,
+                HabilitationRequest.STATUS_VALIDATED,
             )
         )
         treated_emails = set()
@@ -818,13 +901,38 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             return HttpResponseRedirect(
                 reverse("otpadmin:aidants_connect_web_habilitationrequest_changelist")
             )
+        ignored_emails = email_list - treated_emails
         context["treated_emails"] = treated_emails
-        context["ignored_emails"] = email_list - treated_emails
+        context["ignored_emails"] = ignored_emails
+        context.update(self.__extract_more_precise_errors(ignored_emails))
         return render(
             request,
             "aidants_connect_web/admin/habilitation_request/mass-habilitation.html",
             context,
         )
+
+    def __extract_more_precise_errors(self, ignored_emails):
+        existing_emails = set(
+            HabilitationRequest.objects.filter(email__in=ignored_emails).values_list(
+                "email", flat=True
+            )
+        )
+        non_existing_emails = set(ignored_emails - existing_emails)
+        already_refused_emails = set(
+            HabilitationRequest.objects.filter(
+                email__in=existing_emails,
+                status__in=(
+                    HabilitationRequest.STATUS_REFUSED,
+                    HabilitationRequest.STATUS_CANCELLED,
+                ),
+            ).values_list("email", flat=True)
+        )
+        undefined_error_emails = existing_emails - already_refused_emails
+        return {
+            "non_existing_emails": non_existing_emails,
+            "already_refused_emails": already_refused_emails,
+            "undefined_error_emails": undefined_error_emails,
+        }
 
 
 class UsagerAutorisationInline(VisibleToTechAdmin, NestedTabularInline):

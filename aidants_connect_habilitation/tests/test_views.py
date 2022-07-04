@@ -2,9 +2,11 @@ from datetime import timedelta
 from unittest.mock import ANY, Mock, patch
 from uuid import UUID, uuid4
 
+from django.contrib import messages as django_messages
+from django.core import mail
 from django.forms import model_to_dict
 from django.http import HttpResponse
-from django.test import TestCase, tag
+from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -31,6 +33,7 @@ from aidants_connect_habilitation.models import (
 )
 from aidants_connect_habilitation.tests import utils
 from aidants_connect_habilitation.tests.factories import (
+    AidantRequestFactory,
     DraftOrganisationRequestFactory,
     IssuerFactory,
     ManagerFactory,
@@ -111,7 +114,7 @@ class NewIssuerFormViewTests(TestCase):
         self.client.post(reverse(self.pattern_name), data)
 
         send_mail_mock.assert_called_with(
-            from_email=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM,
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[issuer.email],
             subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
             message=ANY,
@@ -235,12 +238,12 @@ class IssuerEmailConfirmationViewTests(TestCase):
         )
         self.assertTemplateUsed(response, self.template_name)
 
-    def test_get_redirect_on_previously_confirmed(self):
+    def test_post_redirects_to_new_organisation(self):
         confirmed_issuer: Issuer = IssuerFactory(email_verified=True)
         email_confirmation = IssuerEmailConfirmation.objects.create(
             issuer=confirmed_issuer, sent=now()
         )
-        response = self.client.get(
+        response = self.client.post(
             reverse(
                 self.pattern_name,
                 kwargs={
@@ -257,8 +260,8 @@ class IssuerEmailConfirmationViewTests(TestCase):
             ),
         )
 
-    def test_post_confirms_email(self):
-        response = self.client.post(
+    def test_get_confirms_email(self):
+        self.client.get(
             reverse(
                 self.pattern_name,
                 kwargs={
@@ -267,16 +270,11 @@ class IssuerEmailConfirmationViewTests(TestCase):
                 },
             )
         )
-        self.assertRedirects(
-            response,
-            reverse(
-                "habilitation_new_organisation",
-                kwargs={"issuer_id": self.issuer.issuer_id},
-            ),
-        )
+        issuer = Issuer.objects.get(issuer_id=self.issuer.issuer_id)
+        self.assertTrue(issuer.email_verified)
 
     def test_fails_on_expired_key(self):
-        response = self.client.post(
+        response = self.client.get(
             reverse(
                 self.pattern_name,
                 kwargs={
@@ -605,6 +603,8 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
 
 
 @tag("habilitation")
+# Run test with address searching disabled
+@override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=True)
 class AidantsRequestFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -747,6 +747,10 @@ class ValidationRequestFormViewTests(TestCase):
         cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             manager=ManagerFactory()
         )
+        AidantRequestFactory(organisation=cls.organisation)
+        cls.organisation_no_manager: OrganisationRequest = (
+            DraftOrganisationRequestFactory(manager=None)
+        )
 
     def get_url(self, issuer_id, uuid):
         return reverse(
@@ -813,17 +817,16 @@ class ValidationRequestFormViewTests(TestCase):
 
     def test_template(self):
         response = self.client.get(
-            reverse(
-                self.pattern_name,
-                kwargs={
-                    "issuer_id": self.organisation.issuer.issuer_id,
-                    "uuid": self.organisation.uuid,
-                },
-            )
+            self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(response, self.template_name)
+        # expected button count = 5 -> issuer, org, more info, manager, aidant
+        self.assertContains(response, "Éditer", 5)
 
     def test_do_the_job_and_redirect_valid_post_to_org_view(self):
+        self.assertIsNone(self.organisation.data_pass_id)
+        self.assertEqual(len(mail.outbox), 0)
+
         cleaned_data = {
             "cgu": True,
             "dpo": True,
@@ -838,15 +841,11 @@ class ValidationRequestFormViewTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse(
-                "habilitation_organisation_view",
-                kwargs={
-                    "issuer_id": str(self.organisation.issuer.issuer_id),
-                    "uuid": str(self.organisation.uuid),
-                },
-            ),
+            self.organisation.get_absolute_url(),
         )
         self.organisation.refresh_from_db()
+        self.assertIsNotNone(self.organisation.data_pass_id)
+
         self.assertEqual(
             self.organisation.status,
             RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
@@ -855,6 +854,79 @@ class ValidationRequestFormViewTests(TestCase):
             self.assertTrue(getattr(self.organisation, name))
             for name in cleaned_data.keys()
         ]
+
+        self.assertEqual(len(mail.outbox), 1)
+        organisation_request_creation_message = mail.outbox[0]
+        self.assertIn(
+            "Aidants Connect - Votre demande d’habilitation a été soumise",
+            organisation_request_creation_message.subject,
+        )
+        self.assertIn(
+            str(self.organisation.name), organisation_request_creation_message.body
+        )
+
+    def test_do_the_job_when_changes_required(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.CHANGES_REQUIRED.name
+        )
+        data_pass_id = organisation.data_pass_id
+
+        cleaned_data = {
+            "cgu": True,
+            "dpo": True,
+            "professionals_only": True,
+            "without_elected": True,
+        }
+
+        response = self.client.post(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid),
+            cleaned_data,
+        )
+
+        self.assertRedirects(
+            response,
+            organisation.get_absolute_url(),
+        )
+        organisation.refresh_from_db()
+        self.assertEqual(data_pass_id, organisation.data_pass_id)
+        self.assertEqual(
+            organisation.status,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+        )
+
+        self.assertEqual(len(mail.outbox), 2)
+        organisation_request_modification_message = mail.outbox[1]
+        self.assertIn(
+            "Aidants Connect - Votre demande d’habilitation a été modifiée",
+            organisation_request_modification_message.subject,
+        )
+        self.assertIn(
+            str(organisation.name), organisation_request_modification_message.body
+        )
+
+    def test_post_no_manager_raises_error(self):
+        valid_data = {
+            "cgu": True,
+            "dpo": True,
+            "professionals_only": True,
+            "without_elected": True,
+        }
+        response = self.client.post(
+            self.get_url(
+                self.organisation_no_manager.issuer.issuer_id,
+                self.organisation_no_manager.uuid,
+            ),
+            valid_data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.template_name)
+        self.assertIn(
+            "Veuillez ajouter le responsable de la structure avant validation.",
+            str(response.context_data["form"].errors),
+        )
 
     def test_post_invalid_data(self):
         valid_data = {
@@ -951,16 +1023,111 @@ class RequestReadOnlyViewTests(TestCase):
             self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(response, self.template_name)
+        self.assertNotContains(response, "Éditer")
 
     def test_no_redirect_on_confirmed_organisation_request(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, organisation.name)
+        self.assertContains(
+            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
+        )
+
+    def test_issuer_can_post_a_message(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertNotContains(response, "Bonjour bonjour")
+        self.client.post(
+            organisation.get_absolute_url(), {"content": "Bonjour bonjour"}
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertContains(response, "Bonjour bonjour")
+
+    def test_correct_message_is_shown_when_empty_messages_history(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertContains(response, "Notre conversation démarre ici.")
+        self.client.post(
+            organisation.get_absolute_url(), {"content": "Bonjour bonjour"}
+        )
+        response = self.client.get(organisation.get_absolute_url())
+        self.assertNotContains(response, "Notre conversation démarre ici.")
+
+    def shows_mofication_button_when_changes_required(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.CHANGES_REQUIRED.name
+        )
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        self.assertContains(response, "modify-btn")
+
+    def not_show_mofication_button_when_other_status(self):
         organisation = OrganisationRequestFactory(
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
         response = self.client.get(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid)
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, organisation.name)
-        self.assertContains(
-            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
+        self.assertNotContains(response, "modify-btn")
+
+
+class TestAddAidantsRequestView(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_organisation_add_aidants"
+
+    def test_redirects_on_unauthorized_request_status(self):
+        unauthorized_statuses = set(RequestStatusConstants.values()) - {
+            RequestStatusConstants.NEW.name,
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            RequestStatusConstants.VALIDATED.name,
+        }
+
+        for i, status in enumerate(unauthorized_statuses):
+            organisation: OrganisationRequest = OrganisationRequestFactory(
+                status=status
+            )
+
+            response = self.client.get(
+                self.__get_url(organisation.issuer.issuer_id, organisation.uuid)
+            )
+
+            self.assertRedirects(
+                response,
+                self.__get_redirect_url(
+                    organisation.issuer.issuer_id, organisation.uuid
+                ),
+            )
+            messages = list(django_messages.get_messages(response.wsgi_request))
+            self.assertEqual(len(messages), i + 1)
+            self.assertEqual(
+                messages[i].message,
+                "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
+            )
+
+    def __get_url(self, issuer_id, uuid):
+        return reverse(
+            self.pattern_name,
+            kwargs={
+                "issuer_id": issuer_id,
+                "uuid": uuid,
+            },
+        )
+
+    def __get_redirect_url(self, issuer_id, uuid):
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={
+                "issuer_id": issuer_id,
+                "uuid": uuid,
+            },
         )

@@ -4,6 +4,8 @@ Bonjour,
 
 Bonne nouvelle ! Il existe déjà un espace demandeur associé à cet email chez nous.
 Vous pouvez suivre le lien suivant pour retrouver toutes vos demandes en cours et en déposer de nouvelles :
+
 {{ url }}
 
-À bientôt sur Aidants Connect
+À bientôt sur Aidants Connect !
+https://aidantsconnect.beta.gouv.fr

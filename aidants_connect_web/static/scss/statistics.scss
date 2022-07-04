@@ -1,0 +1,26 @@
+$blue-aidants: #1B4991;
+
+.stats-container {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: left;
+}
+
+.stats-number {
+  font-size: 2.25rem;
+  color: $blue-aidants;
+  font-weight: bold;
+  text-align: center;
+}
+
+.stats-text {
+  font-size: 1.125rem;
+  color: $blue-aidants;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}
+
+.stats-shadowed {
+  padding: 1rem 0 0 0;
+}

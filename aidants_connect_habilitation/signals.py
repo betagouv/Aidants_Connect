@@ -37,23 +37,30 @@ def send_email_confirmation(
 
 
 @receiver(post_save, sender=OrganisationRequest)
-def notify_issuer_request_submitted(instance: OrganisationRequest, created: bool, **_):
+def notify_issuer_draft_request_saved(
+    instance: OrganisationRequest, created: bool, **_
+):
     if not created:
         return
 
+    path = reverse(
+        "habilitation_issuer_page",
+        kwargs={"issuer_id": str(instance.issuer.issuer_id)},
+    )
+
     context = {
-        "url": f"https://{settings.HOST}{instance.get_absolute_url()}",
+        "url": f"https://{settings.HOST}{path}",
         "organisation": instance,
     }
     text_message = loader.render_to_string(
-        "email/organisation_request_cration.txt", context
+        "email/draft_organisation_request_saved.txt", context
     )
     html_message = loader.render_to_string(
-        "email/organisation_request_cration.html", context
+        "email/draft_organisation_request_saved.html", context
     )
 
     send_mail(
-        from_email=settings.EMAIL_ORGANISATION_REQUEST_CREATION_FROM,
+        from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
         recipient_list=[instance.issuer.email],
         subject=settings.EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT,
         message=text_message,

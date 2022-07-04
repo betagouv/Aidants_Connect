@@ -170,6 +170,13 @@ class MandatForm(forms.Form):
             {"title": "Mandat court", "description": "(expire demain)"},
         ),
         (
+            ADKW.MONTH,
+            {
+                "title": "Mandat d'un mois",
+                "description": f"({ADKW.DAYS[ADKW.MONTH]} jours)",
+            },
+        ),
+        (
             ADKW.LONG,
             {"title": "Mandat long", "description": "(12 mois)"},
         ),

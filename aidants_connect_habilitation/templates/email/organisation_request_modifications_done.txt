@@ -1,0 +1,16 @@
+{% load ac_common %}
+
+Bonjour,
+
+Vous venez de mettre à jour la demande d’habilitation à Aidants Connect pour l’organisation {{ organisation.name }}.
+L'équipe Aidants Connect va la traiter dans les meilleurs délais.
+
+{% linebreakless %}
+Vous pouvez retrouver tous les détails de cette demande en cours</a> en copiant l’URL suivante
+dans votre navigateur :
+{% endlinebreakless %}
+
+{{ url }}
+
+À bientôt sur Aidants Connect !
+https://aidantsconnect.beta.gouv.fr

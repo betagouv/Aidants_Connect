@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -7,33 +7,130 @@ from django.forms import (
     BooleanField,
     CharField,
     ChoiceField,
+    Form,
+    RadioSelect,
+    Textarea,
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.http import quote, unquote
 
-from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from aidants_connect.common.constants import RequestOriginConstants
+from aidants_connect.common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect.common.forms import (
+    AcPhoneNumberField,
     PatchedErrorList,
     PatchedErrorListForm,
     PatchedForm,
 )
+from aidants_connect.common.gouv_address_api import Address, search_adresses
 from aidants_connect_habilitation import models
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Manager,
     OrganisationRequest,
     PersonWithResponsibilities,
+    RequestMessage,
 )
 from aidants_connect_web.models import OrganisationType
 
 
+class AddressValidatableMixin(Form):
+    DEFAULT_CHOICE = "DEFAULT"
+
+    # Necessary so dynamically setting properties
+    # in __init__ does not mess with original classes
+    class XChoiceField(ChoiceField):
+        def validate(self, value):
+            # Disable value validation, only keep value requirement
+            if value in self.empty_values and self.required:
+                raise ValidationError(self.error_messages["required"], code="required")
+
+    class XRadioSelect(RadioSelect):
+        pass
+
+    alternative_address = XChoiceField(
+        label="Veuillez sélectionner votre adresse dans les propositions ci-dessous :",
+        choices=((DEFAULT_CHOICE, "Laisser l'adresse inchangée"),),
+        widget=XRadioSelect(attrs={"class": "choice-field"}),
+        required=False,
+    )
+
+    @property
+    def should_display_addresses_select(self):
+        return self.__required
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.__required = False
+
+        required = property(lambda _: self.__required)
+        setattr(AddressValidatableMixin.XChoiceField, "required", required)
+        setattr(AddressValidatableMixin.XRadioSelect, "is_required", required)
+
+    def clean_alternative_address(self):
+        alternative_address = self.data.get(self.add_prefix("alternative_address"))
+
+        if alternative_address == self.DEFAULT_CHOICE:
+            return self.DEFAULT_CHOICE
+        elif alternative_address:
+            return Address.parse_raw(unquote(alternative_address))
+        else:
+            results = search_adresses(self.get_address_for_search())
+
+            # Case not result returned (most likely, HTTP request failed)
+            if len(results) == 0:
+                return self.DEFAULT_CHOICE
+
+            # There is 1 result and it almost 100% matches
+            if (
+                len(results) == 1
+                and results[0].label == self.get_address_for_search()
+                and results[0].score > 0.90
+            ):
+                return results[0]
+
+            self.__required = True
+
+            for result in results:
+                self.fields["alternative_address"].choices = [
+                    (quote(result.json()), result.label),
+                    *self.fields["alternative_address"].choices,
+                ]
+
+            raise ValidationError("Plusieurs choix d'adresse sont possibles")
+
+    def post_clean(self):
+        """
+        Call this method at the end of your own Form's ``clean`` method to
+        prevent.
+        """
+        alternative_address = self.cleaned_data.pop("alternative_address", None)
+        if isinstance(alternative_address, Address):
+            self.autocomplete(alternative_address)
+
+    def get_address_for_search(self) -> str:
+        """
+        Implement this method to provide a string to search on the address
+        API. This method may, for instance, concatenate street name, zipcode
+        and city fields that may otherwise be seperated.
+        """
+        raise NotImplementedError()
+
+    def autocomplete(self, address: Address):
+        """
+        Implement this method to fill your Form with the address when the
+        API returns one result that matches with more than 90% probability.
+        """
+        raise NotImplementedError()
+
+
 class IssuerForm(PatchedErrorListForm):
-    phone = PhoneNumberField(
+    phone = AcPhoneNumberField(
         initial="",
         label="Téléphone",
         region=settings.PHONENUMBER_DEFAULT_REGION,
@@ -180,6 +277,13 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
         return self.data["france_services_number"]
 
+    def clean_zipcode(self):
+        data: str = self.cleaned_data["zipcode"]
+        if not data.isnumeric():
+            raise ValidationError("Veuillez entrer un code postal valide")
+
+        return data
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
@@ -201,7 +305,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
 
 class PersonWithResponsibilitiesForm(PatchedErrorListForm):
-    phone = PhoneNumberField(
+    phone = AcPhoneNumberField(
         initial="",
         region=settings.PHONENUMBER_DEFAULT_REGION,
         widget=PhoneNumberInternationalFallbackWidget(
@@ -215,7 +319,7 @@ class PersonWithResponsibilitiesForm(PatchedErrorListForm):
         exclude = ["id"]
 
 
-class ManagerForm(PatchedErrorListForm):
+class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
@@ -231,6 +335,30 @@ class ManagerForm(PatchedErrorListForm):
             "required": "Le champ « ville » est obligatoire.",
         },
     )
+
+    def get_address_for_search(self) -> str:
+        return (
+            f"{self.data[self.add_prefix('address')]} "
+            f"{self.data[self.add_prefix('zipcode')]} "
+            f"{self.data[self.add_prefix('city')]}"
+        )
+
+    def autocomplete(self, address: Address):
+        self.cleaned_data["address"] = address.name
+        self.cleaned_data["zipcode"] = address.postcode
+        self.cleaned_data["city"] = address.city
+
+    def clean_zipcode(self):
+        data: str = self.cleaned_data["zipcode"]
+        if not data.isnumeric():
+            raise ValidationError("Veuillez entrer un code postal valide")
+
+        return data
+
+    def clean(self):
+        result = super().clean()
+        super().post_clean()
+        return result
 
     class Meta(PersonWithResponsibilitiesForm.Meta):
         model = Manager
@@ -255,9 +383,30 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
     def __init__(self, **kwargs):
         kwargs.setdefault("queryset", AidantRequest.objects.none())
         kwargs.setdefault("error_class", PatchedErrorList)
+
         super().__init__(**kwargs)
 
-    def management_form_widget_attrs(self, widget_name: str, attrs: dict):
+        self.__management_form_widget_attrs(
+            TOTAL_FORM_COUNT, {"data-personnel-form-target": "managmentFormCount"}
+        )
+        self.__management_form_widget_attrs(
+            MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
+        )
+
+    def add_non_form_error(self, error: Union[ValidationError, str]):
+        if not isinstance(error, ValidationError):
+            error = ValidationError(error)
+        self._non_form_errors.append(error)
+
+    def is_empty(self):
+        for form in self.forms:
+            # If the form is not valid, it has data to correct so it is not empty
+            if not form.is_valid() or form.is_valid() and len(form.cleaned_data) != 0:
+                return False
+
+        return True
+
+    def __management_form_widget_attrs(self, widget_name: str, attrs: dict):
         widget = self.management_form.fields[widget_name].widget
         for attr_name, attr_value in attrs.items():
             widget.attrs[attr_name] = attr_value
@@ -273,13 +422,10 @@ class PersonnelForm:
     AIDANTS_FORMSET_PREFIX = "aidants"
 
     @property
-    def non_field_errors(self):
-        errors = self.manager_form.non_field_errors().copy()
-
-        for error in self.aidants_formset.non_form_errors():
-            errors.append(error)
-
-        return errors
+    def errors(self):
+        if self._errors is None:
+            self._clean()
+        return self._errors
 
     def __init__(self, **kwargs):
         def merge_kwargs(prefix):
@@ -313,21 +459,56 @@ class PersonnelForm:
                 else f"{prefix}_{previous_prefix}",
             }
 
+        self._errors = None
+
         self.manager_form = ManagerForm(**merge_kwargs(self.MANAGER_FORM_PREFIX))
 
         self.aidants_formset = AidantRequestFormSet(
             **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
         )
 
-        self.aidants_formset.management_form_widget_attrs(
-            TOTAL_FORM_COUNT, {"data-personnel-form-target": "managmentFormCount"}
-        )
-        self.aidants_formset.management_form_widget_attrs(
-            MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
-        )
+    def _clean(self):
+        self._errors = PatchedErrorList()
 
-    def is_valid(self):
-        return self.manager_form.is_valid() and self.aidants_formset.is_valid()
+        if not self.manager_form.is_bound or not self.aidants_formset.is_bound:
+            # Stop processing if form does not have data
+            return
+
+        if (
+            not self.manager_form.cleaned_data["is_aidant"]
+            and self.aidants_formset.is_empty()
+        ):
+            self._errors.append(
+                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+                "l'organisation n'est pas elle-même déclarée comme aidante"
+            )
+            self.manager_form.add_error(
+                "is_aidant",
+                "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
+            )
+            self.aidants_formset.add_non_form_error(
+                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+                "l'organisation n'est pas elle-même déclarée comme aidante"
+            )
+
+    def add_error(self, error: Union[ValidationError, str]):
+        if not isinstance(error, ValidationError):
+            error = ValidationError(error)
+        self._errors.append(error)
+
+    def is_valid(self) -> bool:
+        # Eagerly compute the result of `is_valid` calls
+        # to prevent early return of the boolean computation.
+
+        # 'self.errors' must be last called so that subforms are
+        # validated before performing a global validation
+        is_valid = [
+            self.manager_form.is_valid(),
+            self.aidants_formset.is_valid(),
+            not self.errors,
+        ]
+
+        return all(is_valid)
 
     def save(
         self, organisation: OrganisationRequest, commit=True
@@ -371,6 +552,9 @@ class ValidationForm(PatchedForm):
         "Aidants Connect. Le responsable Aidants Connect ainsi que les aidants "
         "à habiliter ne sont pas des élus.",
     )
+    message_content = CharField(
+        label="Votre message", required=False, widget=Textarea(attrs={"rows": 4})
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -381,6 +565,33 @@ class ValidationForm(PatchedForm):
         self, organisation: OrganisationRequest, commit=True
     ) -> OrganisationRequest:
         organisation.prepare_request_for_ac_validation(self.cleaned_data)
+        if self.cleaned_data["message_content"] != "":
+            RequestMessage.objects.create(
+                organisation=organisation,
+                sender=MessageStakeholders.ISSUER.name,
+                content=self.cleaned_data["message_content"],
+            )
         return organisation
 
     save.alters_data = True
+
+
+class RequestMessageForm(PatchedErrorListForm):
+    content = CharField(label="Votre message", widget=Textarea(attrs={"rows": 2}))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.widget_attrs("content", {"data-message-form-target": "textarea"})
+
+    class Meta:
+        model = models.RequestMessage
+        fields = ["content"]
+
+
+class AdminAcceptationOrRefusalForm(PatchedForm):
+    email_subject = CharField(label="Sujet de l’email", required=True)
+    email_body = CharField(label="Contenu de l’email", widget=Textarea, required=True)
+
+    def __init__(self, organisation, **kwargs):
+        super().__init__(**kwargs)
+        self.organisation = organisation

@@ -1,13 +1,4 @@
-$dark-grey-aidants: #333;
-$light-grey-aidants: #F2F2F2;
-$light-aidants: #fff;
-$blue-aidants: #1B4991;
-$light-blue-anct: #5770BE;
-$off-yellow-aidants: #FAD776;
-$blue-green-aidants: #7FB7C0;
-$dark-green-anct: #108670;
-$red-aidants: #EF4056;
-$red-aidants-for-small-text: #e9133e;
+@import "colors";
 
 $font-stack: "Marianne", arial, sans-serif;
 
@@ -81,6 +72,10 @@ main {
   color: $red-aidants;
 }
 
+.text-blue {
+  color: $blue-aidants;
+}
+
 .shadowed {
   border: 1px solid $off-yellow-aidants;
   box-sizing: border-box;
@@ -102,8 +97,9 @@ h1, .h1 {
   line-height: 1.25;
 
   + .subtitle {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: $light-blue-anct;
+    line-height: 2rem;
   }
 }
 
@@ -150,10 +146,10 @@ h3, .h3 {
 
 }
 
-details {
+.details-form {
   border: 1px solid $blue-aidants;
 
-  summary {
+  .summary-form {
     background: $blue-aidants no-repeat url("../img/plus-w.svg") 98% 50%;
     color: #fff;
     cursor: pointer;
@@ -184,6 +180,20 @@ details {
 
   .details-content {
     padding: 0 1rem;
+  }
+}
+
+dl {
+  margin: 0;
+  padding: 0;
+
+  dd, dt {
+    margin: 0;
+    padding: 0;
+  }
+
+  dt {
+    font-weight: bold;
   }
 }
 
@@ -443,6 +453,9 @@ fieldset {
       padding-top: 0;
     }
   }
+  h1, .h1 {
+    font-size: 2.5rem;
+  }
 }
 
 @media (min-width: $bp-lg) {
@@ -460,6 +473,23 @@ fieldset {
     }
   }
 
+}
+
+.errorlist {
+  background: $red-aidants;
+  color: $light-aidants;
+  padding: 1rem;
+}
+
+.warning {
+  background: white;
+  color: $red-aidants;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: normal;
+  border: 1px solid $red-aidants;
+  box-sizing: border-box;
+  box-shadow: 10px 10px 0 $red-aidants;
 }
 
 // habilitation form breadcrumbs -----------------------
@@ -533,6 +563,38 @@ fieldset {
   }
 }
 
+// messages -------------------------------------------
+
+.messages-list-container {
+  min-height: 15rem;
+  max-height: 25rem;
+  overflow-y: auto;
+}
+
+ol.messages-list {
+  list-style: none;
+
+  li {
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+}
+
+.message-form-container {
+  background: $blue-aidants;
+  margin: 1rem -2rem 0;
+  padding: 1rem 2rem;
+  color: #fff;
+  transform: translateY(2rem);
+  overflow: hidden;
+}
+
+.more-info-messages {
+  margin-top: 0;
+  font-style: italic;
+  color: $light-blue-anct;
+}
+
 // header ----------------------------------------------
 
 .skip-links {
@@ -586,6 +648,10 @@ fieldset {
 
     &:hover {
       box-shadow: 0 .5rem 0 $off-yellow-aidants;
+    }
+
+    &.button {
+      padding: .25rem .5rem;
     }
   }
 }
@@ -641,4 +707,8 @@ footer {
   }
 }
 
-// ----------
+// utilities ----------------------------------------------
+
+.margin-bottom-1 {
+  margin-bottom: 1rem;
+}
