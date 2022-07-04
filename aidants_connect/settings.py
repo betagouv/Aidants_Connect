@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "admin_honeypot",
     "django_otp",
+    "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
@@ -139,6 +140,7 @@ INSTALLED_APPS = [
     "aidants_connect",
     "aidants_connect_web",
     "aidants_connect_habilitation",
+    "aidants_connect_sandbox",
 ]
 
 MIDDLEWARE = [
@@ -597,3 +599,8 @@ GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool("GOUV_ADDRESS_SEARCH_API_DISABLED
 
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+
+
+# ########################" SANDBOX SETTING ############################
+
+ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
