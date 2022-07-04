@@ -1,0 +1,130 @@
+{
+  "type": "FeatureCollection",
+  "version": "draft",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.903904,
+          47.908836
+        ]
+      },
+      "properties": {
+        "label": "Avenue de Paris 45000 Orl\u00e9ans",
+        "score": 0.740285078369906,
+        "id": "45234_5020",
+        "name": "Avenue de Paris",
+        "postcode": "45000",
+        "citycode": "45234",
+        "x": 618115.62,
+        "y": 6757061.98,
+        "city": "Orl\u00e9ans",
+        "context": "45, Loiret, Centre-Val de Loire",
+        "type": "street",
+        "importance": 0.69486
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.894892,
+          47.912672
+        ]
+      },
+      "properties": {
+        "label": "Rue du Parc 45000 Orl\u00e9ans",
+        "score": 0.6345496865203761,
+        "id": "45234_5010",
+        "name": "Rue du Parc",
+        "postcode": "45000",
+        "citycode": "45234",
+        "x": 617448.39,
+        "y": 6757497.56,
+        "city": "Orl\u00e9ans",
+        "context": "45, Loiret, Centre-Val de Loire",
+        "type": "street",
+        "importance": 0.77315
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.906925,
+          47.900333
+        ]
+      },
+      "properties": {
+        "label": "Rue des Trois Maries 45000 Orl\u00e9ans",
+        "score": 0.5611609090909091,
+        "id": "45234_6670",
+        "name": "Rue des Trois Maries",
+        "postcode": "45000",
+        "citycode": "45234",
+        "x": 618328.22,
+        "y": 6756114.12,
+        "city": "Orl\u00e9ans",
+        "context": "45, Loiret, Centre-Val de Loire",
+        "type": "street",
+        "importance": 0.67277
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.886414,
+          47.90872
+        ]
+      },
+      "properties": {
+        "label": "Rue Marie Chassot 45000 Orl\u00e9ans",
+        "score": 0.48483454545454546,
+        "id": "45234_4485",
+        "name": "Rue Marie Chassot",
+        "postcode": "45000",
+        "citycode": "45234",
+        "x": 616808.93,
+        "y": 6757067.37,
+        "city": "Orl\u00e9ans",
+        "context": "45, Loiret, Centre-Val de Loire",
+        "type": "street",
+        "importance": 0.58318
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.929549,
+          47.909933
+        ]
+      },
+      "properties": {
+        "label": "Rue Pierre et Marie Curie 45000 Orl\u00e9ans",
+        "score": 0.44545241014799153,
+        "id": "45234_5270",
+        "name": "Rue Pierre et Marie Curie",
+        "postcode": "45000",
+        "citycode": "45234",
+        "x": 620032.98,
+        "y": 6757157.58,
+        "city": "Orl\u00e9ans",
+        "context": "45, Loiret, Centre-Val de Loire",
+        "type": "street",
+        "importance": 0.71393
+      }
+    }
+  ],
+  "attribution": "BAN",
+  "licence": "ETALAB-2.0",
+  "query": "Rue de Paris 45000 Orl\u00e9ans",
+  "limit": 5
+}

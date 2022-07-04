@@ -1,0 +1,7 @@
+Bonjour,
+
+La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}, a été refusée.
+
+
+L'équipe Aidants Connect
+https://aidantsconnect.beta.gouv.fr

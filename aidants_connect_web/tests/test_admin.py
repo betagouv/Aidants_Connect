@@ -1,10 +1,16 @@
+from django.contrib.admin.sites import AdminSite
+from django.core import mail
 from django.test import TestCase, tag
 from django.test.client import RequestFactory
 
 from aidants_connect.admin import DepartmentFilter, RegionFilter
-from aidants_connect_web.admin import OrganisationAdmin
-from aidants_connect_web.models import Organisation
-from aidants_connect_web.tests.factories import OrganisationFactory
+from aidants_connect_web.admin import HabilitationRequestAdmin, OrganisationAdmin
+from aidants_connect_web.models import HabilitationRequest, Organisation
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    HabilitationRequestFactory,
+    OrganisationFactory,
+)
 
 
 @tag("admin")
@@ -86,3 +92,61 @@ class RegionFilterTests(TestCase):
         queryset_other = other_filter.queryset(None, Organisation.objects.all())
         self.assertEqual(1, queryset_other.count())
         self.assertEqual("0", queryset_other[0].zipcode)
+
+
+@tag("admin")
+class HabilitationRequestAdminTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory()
+        cls.habilitation_request = HabilitationRequestFactory(
+            organisation=cls.organisation
+        )
+        cls.habilitation_request_admin = HabilitationRequestAdmin(
+            HabilitationRequest, AdminSite()
+        )
+        cls.manager = AidantFactory(
+            organisation=cls.organisation, post__is_organisation_manager=True
+        )
+
+    def test_send_validation_email(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        self.habilitation_request_admin.send_validation_email(self.habilitation_request)
+
+        self.assertEqual(len(mail.outbox), 1)
+
+        validation_message = mail.outbox[0]
+
+        self.assertIn(
+            str(self.habilitation_request.first_name), validation_message.subject
+        )
+
+        self.assertEqual(len(validation_message.recipients()), 1)
+        self.assertTrue(
+            all(
+                manager.email in validation_message.recipients()
+                for manager in self.habilitation_request.organisation.responsables.all()
+            )
+        )
+
+    def test_send_refusal_email(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        self.habilitation_request_admin.send_refusal_email(self.habilitation_request)
+
+        self.assertEqual(len(mail.outbox), 1)
+
+        refusal_message = mail.outbox[0]
+
+        self.assertIn(
+            str(self.habilitation_request.first_name), refusal_message.subject
+        )
+
+        self.assertEqual(len(refusal_message.recipients()), 1)
+        self.assertTrue(
+            all(
+                manager.email in refusal_message.recipients()
+                for manager in self.habilitation_request.organisation.responsables.all()
+            )
+        )

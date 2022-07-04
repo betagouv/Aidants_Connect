@@ -173,6 +173,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "aidants_connect.common.context_processors.settings_variables",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
@@ -268,73 +269,74 @@ AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 DEMARCHES = {
     "papiers": {
         "titre": "Papiers - Citoyenneté",
+        "titre_court": "Papiers",
         "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",
         "service_exemples": ["ANTS", "Défenseur des droits"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/papiers.png",
+        "icon": "/static/images/icons/papiers.svg",
     },
     "famille": {
         "titre": "Famille",
+        "titre_court": "Famille",
         "description": "Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
         "service_exemples": ["CAF", "ameli.fr", "EduConnect"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/famille.png",
+        "icon": "/static/images/icons/famille.svg",
     },
     "social": {
         "titre": "Social - Santé",
+        "titre_court": "Social",
         "description": "Carte vitale, Chômage, Handicap, RSA, Personnes âgées…",
         "service_exemples": ["ameli.fr", "MSA", "RSI"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/sante.png",
+        "icon": "/static/images/icons/social.svg",
     },
     "travail": {
         "titre": "Travail",
+        "titre_court": "Travail",
         "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
         "service_exemples": ["Pôle emploi", "Mon compte formation", "info-retraite.fr"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/travail.png",
+        "icon": "/static/images/icons/travail.svg",
     },
     "logement": {
         "titre": "Logement",
+        "titre_court": "Logement",
         "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",
         "service_exemples": ["CAF", "Enedis"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/logement.png",
+        "icon": "/static/images/icons/logement.svg",
     },
     "transports": {
         "titre": "Transports",
+        "titre_court": "Transports",
         "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",
         "service_exemples": ["ANTS", "ANTAI", "Crit'air"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/transports.png",
+        "icon": "/static/images/icons/transports.svg",
     },
     "argent": {
         "titre": "Argent",
+        "titre_court": "Argent",
         "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
         "Surendettement…",
         "service_exemples": ["Impots.gouv", "Timbres fiscaux", "Banque"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/argent.png",
+        "icon": "/static/images/icons/argent.svg",
     },
     "justice": {
         "titre": "Justice",
+        "titre_court": "Justice",
         "description": "Casier judiciaire, Plainte, Aide juridictionnelle, Saisie…",
         "service_exemples": ["Télérecours citoyens"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/justice.png",
+        "icon": "/static/images/icons/justice.svg",
     },
     "etranger": {
         "titre": "Étranger",
+        "titre_court": "Étranger",
         "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",
         "service_exemples": ["OFPRA"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/etrangers.png",
+        "icon": "/static/images/icons/etranger.svg",
     },
     "loisirs": {
         "titre": "Loisirs",
+        "titre_court": "Loisirs",
         "description": "Animaux, Permis bateau, Tourisme, Permis de chasser…",
         "service_exemples": ["Ariane"],
-        "icon": "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png"
-        "/loisirs.png",
+        "icon": "/static/images/icons/loisirs.svg",
     },
 }
 
@@ -370,6 +372,7 @@ LOWER_TOTP_TOLERANCE_ON_LOGIN = getenv_bool("LOWER_TOTP_TOLERANCE_ON_LOGIN", Tru
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
+
 ## if file based email backend is used (debug)
 EMAIL_FILE_PATH = os.path.dirname(os.path.abspath(__file__)) + "/tmp_email_as_file"
 ## if smtp backend is used
@@ -411,7 +414,8 @@ CSP_SCRIPT_SRC = (
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
-    "'sha256-wSJM0q2Hy/wlB2+4HmcFtjOB2K4H+MX73ixv1EwGfxw='",  # statistiques.html
+    "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
+    "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
 )
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
@@ -500,7 +504,7 @@ DATAPASS_CODE_FOR_ID_GENERATOR = "datapassid"
 AC_HABILITATION_FORM_ENABLED = getenv_bool("AC_HABILITATION_FORM_ENABLED", False)
 AC_IMPORT_HABILITATION_REQUESTS = getenv_bool("AC_IMPORT_HABILITATION_REQUESTS", False)
 
-SUPPORT_EMAIL = "support@aidantsconnect.beta.gouv.fr"
+SUPPORT_EMAIL = "connexion@aidantsconnect.beta.gouv.fr"
 
 MANDAT_EXPIRED_SOON = 30
 MANDAT_EXPIRED_SOON_EMAIL_SUBJECT = os.getenv(
@@ -526,7 +530,6 @@ AIDANTS__ORGANISATIONS_CHANGED_EMAIL_SUBJECT = os.getenv(
 AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM = os.getenv(
     "AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM", SUPPORT_EMAIL
 )
-
 
 default = "3"
 val = os.getenv("EMAIL_CONFIRMATION_EXPIRE_DAYS", default)
@@ -558,24 +561,44 @@ EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY = os.getenv(
     Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.""",
 )
 
-
-EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM = os.getenv(
-    "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM", SUPPORT_EMAIL
+EMAIL_ORGANISATION_REQUEST_FROM = os.getenv(
+    "EMAIL_ORGANISATION_REQUEST_FROM", SUPPORT_EMAIL
 )
 
 EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT = os.getenv(
     "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT",
-    "Rappel de votre profil demandeur",
-)
-
-EMAIL_ORGANISATION_REQUEST_CREATION_FROM = os.getenv(
-    "EMAIL_ORGANISATION_REQUEST_CREATION_FROM", SUPPORT_EMAIL
+    "Aidants Connect - Rappel de votre profil demandeur",
 )
 
 EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT = os.getenv(
     "EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT",
-    "Votre demande d’habilitation Aidants Connect a été créée",
+    "Aidants Connect - Votre demande d’habilitation a été créée",
 )
+
+EMAIL_ORGANISATION_REQUEST_SUBMISSION_SUBJECT = os.getenv(
+    "EMAIL_ORGANISATION_REQUEST_CREATION_SUBJECT",
+    "Aidants Connect - Votre demande d’habilitation a été soumise",
+)
+
+EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT = os.getenv(
+    "EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT",
+    "Aidants Connect - Votre demande d’habilitation a été modifiée",
+)
+
+EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT = os.getenv(
+    "EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT",
+    "Aidants Connect - Vous avez reçu un nouveau message de l’équipe Aidants Connect",
+)
+
+PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
+PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
+PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
+
+GOUV_ADDRESS_SEARCH_API_BASE_URL = "https://api-adresse.data.gouv.fr/search/"
+GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool("GOUV_ADDRESS_SEARCH_API_DISABLED", True)
+
+MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
+MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
 
 
 # ########################" SANDBOX SETTING ############################

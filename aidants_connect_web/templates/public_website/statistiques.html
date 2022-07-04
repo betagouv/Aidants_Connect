@@ -1,105 +1,150 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block title %}Aidants Connect - Statistiques{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+  <link href="{% static 'css/statistics.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 
 {% block content %}
-<section class="section" id="statistics">
-  <div class="container">
-    <h1 class="section__title">Statistiques d’Aidants Connect</h1>
-    <div class="tiles">
+  <div class="fr-container">
+    <h1>Statistiques&nbsp;:
+      <br>Aidants Connect en chiffres</h1>
+    <p class="subtitle">Nous sommes ravis de constater l’utilisation grandissante d’Aidants Connect !
+      <br>Vous pouvez consulter ici toutes les statistiques concernant le projet, mises à jour en temps réel.</strong>
+    </p>
 
-      <h2>Utilisation</h2>
-      <div class="grid">
-        <div class="tile-box stretch">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Démarches administratives réalisés</h3>
-            <strong>{{ autorisation_use_count }}</strong>
-          </div>
-        </div>
-        <div class="tile-box stretch">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Personnes accompagnées</h3>
-            <strong>{{ usagers_with_mandat_count }}</strong>
-          </div>
-        </div>
-        <div class="tile-box stretch">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Mandats crées</h3>
-            <strong>{{ mandats_count }}</strong>
+    <h2 class="h3">Utilisation</h2>
+    <div class="fr-grid-row">
+      <div class="fr-col-lg-10">
+        <div class="shadowed">
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <div class="fr-col-12 fr-col-md-4 stats-container">
+              <h3 class="stats-text">Démarches administratives réalisés</h3>
+              <p class="stats-number">{{ autorisation_use_count }}</p>
+            </div>
+            <div class="fr-col-12 fr-col-md-4 stats-container">
+              <h3 class="stats-text">Personnes accompagnées</h3>
+              <p class="stats-number">{{ usagers_with_mandat_count }}</p>
+            </div>
+            <div class="fr-col-12 fr-col-md-4 stats-container">
+              <h3 class="stats-text">Mandats crées</h3>
+              <p class="stats-number">{{ mandats_count }}</p>
+            </div>
           </div>
         </div>
       </div>
-
-      <br>
-
-      <h3>Par type de démarche</h3>
-      <div class="container">
-        <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
-          <table>
-            <tr>
-              <th scope="col">Type de mandat</th>
-              <th scope="col">Nombre des démarches</th>
-            </tr>
-            {% for demarche in demarches_count %}
-            <tr>
-              <th scope="row">{{ demarche.title }}</th>
-              <td>{{ demarche.value }}</td>
-            </tr>
-            {% endfor %}
-          </table>
-        </canvas>
-      </div>
-
-      <br>
-
-      <h2>Déploiement</h2>
-      <div class="grid">
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Aidants habilités</h3>
-            <strong>{{ aidants_count }}</strong>
-          </div>
-        </div>
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Aidants en cours d’habilitation</h3>
-            <strong>{{ aidants_accrediting_count }}</strong>
-          </div>
-        </div>
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Structures habilitées</h3>
-            <strong>{{ organisations_accredited_count }}</strong>
-          </div>
-        </div>
-        <div class="tile-box">
-          <div class="tile tile-grey text-center">
-            <h3 class="font-weight-normal">Structures en cours d’habilitation</h3>
-            <strong>{{ organisations_not_accredited_count }}</strong>
-          </div>
-        </div>
-      </div>
-
     </div>
+
+    <h2 class="h3">Par type de démarche</h2>
+    <div class="fr-grid-row">
+      <div class="fr-col-12 fr-col-lg-10">
+        <div class="shadowed stats-shadowed">
+          <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
+            <table>
+              <tr>
+                <th scope="col">Type de mandat</th>
+                <th scope="col">Nombre de démarches</th>
+              </tr>
+              {% for demarche in demarches_count %}
+                <tr>
+                  <th scope="row">{{ demarche.title }}</th>
+                  <td>{{ demarche.value }}</td>
+                </tr>
+              {% endfor %}
+            </table>
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="h3">Déploiement</h2>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-md-6 fr-col-lg-5">
+        <div class="shadowed">
+          <div class="fr-grid-row">
+            <div class="fr-col-6 stats-container">
+              <h3 class="stats-text">Aidants habilités</h3>
+              <p class="stats-number">{{ aidants_count }}</p>
+            </div>
+            <div class="fr-col-6 stats-container">
+              <h3 class="stats-text">Aidants en cours d’habilitation</h3>
+              <p class="stats-number">{{ aidants_accrediting_count }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fr-col-md-6 fr-col-lg-5">
+        <div class="shadowed">
+          <div class="fr-grid-row">
+            <div class="fr-col-6 stats-container">
+              <h3 class="stats-text">Structures habilitées</h3>
+              <p class="stats-number">{{ organisations_accredited_count }}</p>
+            </div>
+            <div class="fr-col-6 stats-container">
+              <h3 class="stats-text">Structures en cours d’habilitation</h3>
+              <p class="stats-number">{{ organisations_not_accredited_count }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters" aria-hidden="true">
+      <p></p>
+    </div>
+
   </div>
-</section>
+
 {% endblock content %}
 
 {% block extrajs %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-{{ data|json_script:"data" }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js"
+          integrity="sha512-R/QOHLpV1Ggq22vfDAWYOaMd5RopHrJNMxi8/lJu8Oihwi4Ho4BRFeiMiCefn9rasajKjnx9/fTQ/xkWnkDACg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  {{ data|json_script:"data" }}
 
 <script>
   const data = JSON.parse(document.getElementById('data').textContent);
 
   var ctx = document.getElementById('mandats-chart').getContext('2d');
+
+
+  if (window.innerWidth > 600) {
+    Chart.defaults.font.size = 16;
+  }
+  if (window.innerWidth <= 600) {
+    Chart.defaults.font.size = 10;
+  }
+  Chart.defaults.font.family = "Marianne";
+  Chart.defaults.color = "#5770BE";
+  Chart.defaults.plugins.tooltip.enabled = false;
+
+  icons = [];
+  for (let i=0; i<=data.icons.length-1; i++){
+    var image = new Image();
+    image.src = data.icons[i];
+    icons.push(image);
+  }
+
+  const afterDraw = {
+    id: "afterDraw",
+    afterDraw(chart, args, options) {
+        const {ctx, chartArea : {top, bottom, left, right, width, height},
+          scales : {x, y}} = chart;
+          ctx.save();
+          if (window.innerWidth > 600) {
+            for (let i=0; i<= data.labels.length - 1; i++) {
+              img = icons[i];
+              ctx.drawImage(img, x.getPixelForTick(i)-42, y.bottom+10, 84, 60);
+            }
+          }
+        }
+  };
 
   new Chart(ctx, {
     type: 'bar',
@@ -107,25 +152,54 @@
       labels: data.labels,
       datasets: [{
         label: 'Nombre de démarches',
-        backgroundColor: 'blue',
-        data: data.data
+        backgroundColor: '#FAD776',
+        data: data.data,
       }]
     },
+    plugins : [ChartDataLabels, afterDraw],
     options: {
+      layout : {
+        padding : {
+          top : window.innerWidth > 600 ? 20 : 5
+        }
+      },
       responsive: true,
-      aspectRatio:2,
+      aspectRatio: 3,
       maintainAspectRatio: true,
-      legend: {
-        position: 'top',
+      plugins : {
+        legend: {
+          display: false,
+        },
+        datalabels : {
+          color : '#1B4991',
+          font: {
+              weight: 'bold'
+          },
+          anchor : 'end',
+          align : 'top',
+          clamp : true,
+        }
       },
       title: {
-        display: true,
-        text: 'Les périmètres des mandats'
-      },
+          display: false
+        },
       scales: {
         x: {
           grid: {
-              display:false
+            display: false,
+            drawBorder: false
+          },
+          ticks : {
+            padding : window.innerWidth > 600 ? 60 : 0
+          }
+        },
+        y: {
+          grid: {
+            display: false,
+            drawBorder: false
+          },
+          ticks: {
+            display: false
           }
         }
       }

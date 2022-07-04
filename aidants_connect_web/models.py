@@ -96,6 +96,9 @@ class Organisation(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    class AlreadyExists(Exception):
+        pass
+
     @cached_property
     def num_active_aidants(self):
         return self.aidants.active().count()
@@ -520,6 +523,8 @@ class HabilitationRequest(models.Model):
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
+    test_pix_passed = models.BooleanField("Test PIX", default=False)
+    date_test_pix = models.DateTimeField("Date test PIX", null=True, blank=True)
 
     class Meta:
         constraints = (
@@ -533,18 +538,26 @@ class HabilitationRequest(models.Model):
     def __str__(self):
         return f"{self.email}"
 
+    @transaction.atomic
     def validate_and_create_aidant(self):
-        if self.status not in (self.STATUS_PROCESSING, self.STATUS_NEW):
+        if self.status not in (
+            self.STATUS_PROCESSING,
+            self.STATUS_NEW,
+            self.STATUS_VALIDATED,
+        ):
             return False
 
         if Aidant.objects.filter(username=self.email).count() > 0:
-            aidant = Aidant.objects.get(username=self.email)
+            aidant: Aidant = Aidant.objects.get(username=self.email)
             aidant.organisations.add(self.organisation)
+            aidant.is_active = True
+            aidant.can_create_mandats = True
+            aidant.save()
             self.status = self.STATUS_VALIDATED
             self.save()
             return True
 
-        aidant = Aidant(
+        aidant = Aidant.objects.create(
             last_name=self.last_name,
             first_name=self.first_name,
             profession=self.profession,
@@ -553,7 +566,6 @@ class HabilitationRequest(models.Model):
             username=self.email,
         )
         self.status = self.STATUS_VALIDATED
-        aidant.save()
         self.save()
         return True
 
@@ -1054,7 +1066,7 @@ class Connection(models.Model):
     )
     demarches = ArrayField(models.TextField(default="No démarche"), null=True)  # FS
     duree_keyword = models.CharField(
-        max_length=16, choices=AuthorizationDurationChoices.choices, null=True
+        "Durée", max_length=16, choices=AuthorizationDurationChoices.choices, null=True
     )
     mandat_is_remote = models.BooleanField(default=False)
     user_phone = PhoneNumberField(blank=True)

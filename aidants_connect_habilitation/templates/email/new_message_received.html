@@ -1,0 +1,38 @@
+{% extends "layouts/email_base.html" %}
+{% block email_body %}
+  <table border="0" cellpadding="0" cellspacing="0" class="body">
+    <tr>
+      <td>&nbsp;</td>
+      <td class="container">
+        <div class="content">
+          <table class="main">
+            <tr>
+              <td class="wrapper">
+                <table border="0" cellpadding="6" cellspacing="0">
+                  <tr>
+                    <td>
+                      <p>Bonjour,</p>
+                      <p>
+                        Vous avez reçu un nouveau message sur la demande d'habilitation Aidants Connect déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }} :
+                      </p>
+                      <p>{{ message.content }}</p>
+                      <p>
+                        Vous pouvez <a href="{{ url }}">retrouver tous les échanges en suivant ce lien
+                        </a> ou, si cela ne fonctionne pas, en copier l’URL suivante
+                        dans votre navigateur :
+                      </p>
+                      <p>{{ url }}</p>
+
+                      <p>À bientôt sur Aidants Connect !</p>
+                      <p><a href="https://aidantsconnect.beta.gouv.fr">https://aidantsconnect.beta.gouv.fr</a></p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+  </table>
+{% endblock %}
