@@ -157,7 +157,7 @@ MIDDLEWARE = [
 ]
 
 # Add debug toolbar
-if DEBUG:
+if DEBUG and "test" not in sys.argv:
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = ["127.0.0.1"] + ALLOWED_HOSTS

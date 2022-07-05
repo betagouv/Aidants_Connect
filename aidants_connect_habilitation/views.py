@@ -307,14 +307,13 @@ class ModifyOrganisationRequestFormView(
 
 class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
     template_name = "personnel_form.html"
-    form_class = PersonnelForm
 
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.PERSONNEL
 
     def form_valid(self, form):
-        form.save(self.organisation)
+        form.save()
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -329,6 +328,9 @@ class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
             "issuer_data": issuer_data,
             "organisation": self.organisation,
         }
+
+    def get_form(self, form_class=None):
+        return PersonnelForm(organisation=self.organisation, **self.get_form_kwargs())
 
     def get_form_kwargs(self):
         form_kwargs = super().get_form_kwargs()
@@ -449,7 +451,6 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
 
 class AddAidantsRequestView(LateStageRequestView, FormView):
     template_name = "add_aidants_request.html"
-    form_class = AidantRequestFormSet
 
     def dispatch(self, request, *args, **kwargs):
         if self.organisation.status not in [
@@ -471,6 +472,11 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
                 )
             )
         return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        return AidantRequestFormSet(
+            organisation=self.organisation, **self.get_form_kwargs()
+        )
 
     def get_context_data(self, **kwargs):
         return {

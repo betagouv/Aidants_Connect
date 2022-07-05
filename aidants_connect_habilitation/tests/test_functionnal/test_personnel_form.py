@@ -118,7 +118,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.assertEqual(len(form_elts), 4)
 
-        form = AidantRequestForm()
+        form = AidantRequestForm(organisation=organisation)
 
         for i, _ in enumerate(form_elts):
             for field_name, field in form.fields.items():
@@ -277,7 +277,9 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         self.__open_form_url(issuer, organisation)
 
         for i in range(2, 6):
-            aidant_form: AidantRequestForm = get_form(AidantRequestForm)
+            aidant_form: AidantRequestForm = get_form(
+                AidantRequestForm, form_init_kwargs={"organisation": organisation}
+            )
             aidant_data = aidant_form.cleaned_data
             for field_name in aidant_form.fields:
                 element: WebElement = self.selenium.find_element(
@@ -323,7 +325,9 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{modified_aidant_idx}-email",
         ).get_attribute("value")
 
-        new_aidant_form: AidantRequestForm = get_form(AidantRequestForm)
+        new_aidant_form: AidantRequestForm = get_form(
+            AidantRequestForm, form_init_kwargs={"organisation": organisation}
+        )
         aidant_data = new_aidant_form.cleaned_data
         for field_name in new_aidant_form.fields:
             element: WebElement = self.selenium.find_element(

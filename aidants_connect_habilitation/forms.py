@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 
 from django.conf import settings
-from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.core.exceptions import ValidationError
 from django.forms import (
     BaseModelFormSet,
     BooleanField,
@@ -16,6 +16,7 @@ from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.http import quote, unquote
+from django.utils.translation import gettext as _
 
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
@@ -364,23 +365,43 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
         model = Manager
 
 
+class EmailOrganisationValidationError(ValidationError):
+    def __init__(self, email):
+        super().__init__(
+            _(
+                "Il y a déjà un aidant ou une aidante avec l'adresse email '%(email)s' "
+                "dans cette organisation. Chaque aidant ou aidante doit avoir "
+                "son propre e-mail nominatif."
+            ),
+            code="unique_together",
+            params={"email": email},
+        )
+
+
 class AidantRequestForm(PatchedErrorListForm):
+    def __init__(self, organisation: OrganisationRequest, **kwargs):
+        self.organisation = organisation
+        super().__init__(**kwargs)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        # If self.instance is defined, se are modfiying an existing instance
+        # not creating a new one
+        if (not self.instance or not self.instance.pk) and AidantRequest.objects.filter(
+            organisation=self.organisation, email=email
+        ).exists():
+            raise EmailOrganisationValidationError(email)
+
+        return email
+
     class Meta:
         model = AidantRequest
         exclude = ["organisation"]
-        error_messages = {
-            NON_FIELD_ERRORS: {
-                "unique_together": (
-                    "Il y a déjà un aidant avec la même adresse e-mail dans "
-                    "cette organisation. Chaque aidant doit avoir son propre "
-                    "e-mail nominatif."
-                ),
-            }
-        }
 
 
 class BaseAidantRequestFormSet(BaseModelFormSet):
-    def __init__(self, **kwargs):
+    def __init__(self, organisation: OrganisationRequest, **kwargs):
+        self.organisation = organisation
         kwargs.setdefault("queryset", AidantRequest.objects.none())
         kwargs.setdefault("error_class", PatchedErrorList)
 
@@ -392,6 +413,34 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
         self.__management_form_widget_attrs(
             MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
         )
+
+    def clean(self):
+        emails = {}
+        for form in self.forms:
+            if self.can_delete and self._should_delete_form(form):
+                continue
+
+            email = form.cleaned_data.get("email")
+
+            # Do not test if email is empty: may be a legitimate empty form
+            if email:
+                emails.setdefault(email, [])
+                emails[email].append(form)
+
+        for email, grouped_forms in emails.items():
+            if len(grouped_forms) > 1:
+                for form in grouped_forms:
+                    form.add_error(
+                        "email",
+                        EmailOrganisationValidationError(email),
+                    )
+
+        super().clean()
+
+    def get_form_kwargs(self, index):
+        kwargs = super().get_form_kwargs(index)
+        kwargs["organisation"] = self.organisation
+        return kwargs
 
     def add_non_form_error(self, error: Union[ValidationError, str]):
         if not isinstance(error, ValidationError):
@@ -427,7 +476,9 @@ class PersonnelForm:
             self._clean()
         return self._errors
 
-    def __init__(self, **kwargs):
+    def __init__(self, organisation: OrganisationRequest, **kwargs):
+        self.organisation = organisation
+
         def merge_kwargs(prefix):
             previous_prefix = kwargs.get("prefix")
             local_kwargs = {}
@@ -464,7 +515,7 @@ class PersonnelForm:
         self.manager_form = ManagerForm(**merge_kwargs(self.MANAGER_FORM_PREFIX))
 
         self.aidants_formset = AidantRequestFormSet(
-            **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
+            organisation=self.organisation, **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
         )
 
     def _clean(self):
@@ -510,19 +561,17 @@ class PersonnelForm:
 
         return all(is_valid)
 
-    def save(
-        self, organisation: OrganisationRequest, commit=True
-    ) -> Tuple[Manager, List[AidantRequest]]:
+    def save(self, commit=True) -> Tuple[Manager, List[AidantRequest]]:
         for form in self.aidants_formset:
-            form.instance.organisation = organisation
+            form.instance.organisation = self.organisation
 
         manager_instance, aidants_instances = (
             self.manager_form.save(commit),
             self.aidants_formset.save(commit),
         )
 
-        organisation.manager = manager_instance
-        organisation.save()
+        self.organisation.manager = manager_instance
+        self.organisation.save()
 
         return manager_instance, aidants_instances
 

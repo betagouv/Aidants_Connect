@@ -1,3 +1,5 @@
+import sys
+
 from django.conf import settings
 from django.urls import include, path
 
@@ -12,7 +14,7 @@ urlpatterns = [
     path("habilitation/", include("aidants_connect_habilitation.urls")),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG and "test" not in sys.argv:
     import debug_toolbar
 
     urlpatterns.append(path("__debug__/", include(debug_toolbar.urls)))
