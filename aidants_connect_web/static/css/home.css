@@ -1,47 +1,289 @@
-#tel_solidarite_numerique {
-  color: #213a64;
-  background-color: #ffc107;
-  font-weight: bold;
-  padding: 0.5em;
-  margin: 1em;
-}
+/*-- general --*/
 
-#faq-content {
-  border-top: 1px solid #c9d3df;
-}
+/*-- hero --*/
 
-.lost-card {
-  font-size: .9em;
-  font-style: italic;
-  line-height: 1.3em;
-}
-
-.hero__container {
-  height: 37.5rem;
-  position: relative;
-  width: 100%;
-  background-image: url(../images/hero-background.png);
+.hero-container {
+  min-height: 37.5rem;
+  background-image: url(../images/hero-background.svg);
   background-repeat: no-repeat;
   background-position: center;
 }
 
-.hero__container .hero-logo {
-  height: 148px;
-  width: 374px;
-  background-image: url(../images/logo.png);
-  background-repeat: no-repeat;
-  background-position: center;
+.hero-row {
+  min-height: 37.5rem;
 }
 
-.hero__container p {
+.hero-logo {
+  height: 9.25rem;
+  width: 23.375rem;
+}
+
+.hero-subtitle {
   font-family: 'Marianne';
   font-style: normal;
   font-weight: 500;
-  font-size: 24px;
-  line-height: 33px;
+  font-size: 1.5rem;
+  line-height: 2rem;
   color: #EF4056;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  text-align: center;
+  margin-top: 1.75rem;
+  text-transform: none;
+}
+
+.btn-hero {
+  padding: 0.813rem 1.313rem;
+  height: 3.313rem;
+  background: #EF4056;
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 400 !important;
+  font-size: 1rem;
+  text-align: center;
+  color: #FFFFFF;
+  margin-top: 5.688rem;
+  display: flex;
+  text-decoration: none;
+}
+
+.img-play {
+  margin-right: 0.625rem;
+}
+
+/*-- aidants --*/
+
+.aidants-container {
+  min-height: 31rem;
+  background-image: url(../images/background.svg);
+  background-repeat: no-repeat;
+  background-position: top;
+}
+
+.aidants-img {
+  height: 15.688rem;
+}
+
+.aidants-question {
+  font-family: 'Marianne';
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  display: flex;
+  align-items: center;
+  color: #5770BE;
+}
+
+.aidants-title {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  display: flex;
+  align-items: center;
+  color: #EF4056;
+  margin-top: 1.75rem;
+}
+
+a.btn-homepage, a.btn-homepage:visited {
+  padding: 0.813rem 1.313rem;
+  height: 2.875rem;
+  background: #EF4056;
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 400 !important;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  text-align: center;
+  color: #FFFFFF !important;
+  margin: 0.188rem;
+  text-decoration: none;
+  display: flex;
+}
+
+.aidants-btn-container {
+  max-width: 41.5rem;
+  padding-right: 2rem;
+}
+
+.aidants-btn-col {
+  margin-top: 0rem;
+}
+
+.aidants-col {
+  margin-top: 6rem;
+}
+
+.aidants-row {
+  margin-bottom: 7.5rem;
+}
+
+.aidants-text {
+  max-width: 41.5rem;
+  background-color: white;
+  padding: 2rem;
+}
+
+/*-- info --*/
+
+.info-section {
+  background-color: #1B4991;
+  min-height: 28.75rem;
+}
+
+.info-container {
+  width: 80%;
+}
+
+.info-col {
+  text-align: center;
+  margin-top: 3.688rem;
+}
+
+.info-title {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  text-align: center;
+  color: #FFFFFF;
+}
+
+.info-text {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  text-align: center;
+  color: #FFFFFF;
+}
+
+/*-- contact --*/
+.contact-container {
+  min-height: 31.438rem;
+}
+
+.contact-row {
+  margin-bottom: 6.25rem;
+}
+
+.contact-col {
+  margin-top : 6rem;
+}
+
+.question-div {
+  max-width: 24rem;
+  min-height: 17.75rem;
+  border: 0.063rem solid #1B4991;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.question-title {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  display: flex;
+  align-items: center;
+  color: #EF4056;
+}
+
+.contact-div {
+  background-color: #1B4991;
+  max-width: 36.75rem;
+  min-height: 17.75rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.contact-title {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  display: flex;
+  align-items: center;
+  color: #FFFFFF;
+}
+
+.contact-text {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  color: #FFFFFF;
+}
+
+.btn-contact {
+  padding: 0.813rem 1.313rem;
+  height: 2.875rem;
+  background: #EF4056;
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 400 !important;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  text-align: center;
+  color: #FFFFFF !important;
+  margin: 0.188rem;
+}
+
+/*-- partenaires --*/
+
+.partenaires-container {
+  min-height: 11.75rem;
+  background: #E6E6E6;
+}
+
+.partenaires-row {
+  width: 60%;
+}
+
+.partenaires-col {
+  padding: 1.5rem;
+}
+
+.partenaires-logo-col {
+  padding: 4.125rem;
+}
+
+.partenaires-title {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+  color: #EF4056;
+}
+
+.partenaires-text {
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.25rem;
+  color: #333333
+}
+
+.partenaire-logo {
+  height: 3.875rem;
+}
+
+footer {
+  margin-top: 0;
+}
+
+@media only screen and (max-width: 768px) {
+  .aidants-btn-col {
+    margin-top: 2rem;
+  }
+  .hero-logo {
+    width: 18.75rem;
+  }
 }
