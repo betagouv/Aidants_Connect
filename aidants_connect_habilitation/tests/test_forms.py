@@ -188,7 +188,8 @@ class TestPersonnelForm(TestCase):
         mock_manager_form_is_valid: Mock,
         mock_aidants_form_is_valid: Mock,
     ):
-        form = PersonnelForm()
+        organisation = DraftOrganisationRequestFactory()
+        form = PersonnelForm(organisation=organisation)
 
         mock_manager_form_is_valid.return_value = True
         mock_aidants_form_is_valid.return_value = True
@@ -206,8 +207,12 @@ class TestPersonnelForm(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_is_not_valid_if_no_aidant_was_declared(self):
+        organisation = DraftOrganisationRequestFactory()
         manager_data = get_form(ManagerForm, is_aidant=False).clean()
-        aidants_form = get_form(AidantRequestFormSet, formset_extra=0)
+        aidants_form = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"initial": 0, "organisation": organisation},
+        )
         aidants_data = aidants_form.data
 
         cleaned_data = {
@@ -221,7 +226,7 @@ class TestPersonnelForm(TestCase):
             },
         }
 
-        form = PersonnelForm(data=cleaned_data)
+        form = PersonnelForm(data=cleaned_data, organisation=organisation)
 
         self.assertFalse(form.is_valid())
         self.assertEqual(
@@ -233,7 +238,10 @@ class TestPersonnelForm(TestCase):
         )
 
         manager_data = get_form(ManagerForm, is_aidant=True).clean()
-        aidants_form = get_form(AidantRequestFormSet, formset_extra=0)
+        aidants_form = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"initial": 0, "organisation": organisation},
+        )
         aidants_data = aidants_form.data
 
         cleaned_data = {
@@ -247,13 +255,15 @@ class TestPersonnelForm(TestCase):
             },
         }
 
-        form = PersonnelForm(data=cleaned_data)
+        form = PersonnelForm(data=cleaned_data, organisation=organisation)
 
         self.assertTrue(form.is_valid())
         self.assertEqual(form.errors, [])
 
         manager_data = get_form(ManagerForm, is_aidant=True).clean()
-        aidants_form = get_form(AidantRequestFormSet)
+        aidants_form = get_form(
+            AidantRequestFormSet, form_init_kwargs={"organisation": organisation}
+        )
         aidants_data = aidants_form.data
 
         cleaned_data = {
@@ -267,7 +277,7 @@ class TestPersonnelForm(TestCase):
             },
         }
 
-        form = PersonnelForm(data=cleaned_data)
+        form = PersonnelForm(data=cleaned_data, organisation=organisation)
 
         self.assertTrue(form.is_valid())
         self.assertEqual(form.errors, [])
@@ -276,7 +286,9 @@ class TestPersonnelForm(TestCase):
         organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
         manager_data = get_form(ManagerForm).clean()
-        aidants_form = get_form(AidantRequestFormSet)
+        aidants_form = get_form(
+            AidantRequestFormSet, form_init_kwargs={"organisation": organisation}
+        )
         aidants_data = aidants_form.data
 
         cleaned_data = {
@@ -290,7 +302,7 @@ class TestPersonnelForm(TestCase):
             },
         }
 
-        form = PersonnelForm(data=cleaned_data)
+        form = PersonnelForm(data=cleaned_data, organisation=organisation)
         self.assertTrue(form.is_valid())
 
         self.assertIs(organisation.manager, None)
@@ -373,16 +385,25 @@ class TestManagerForm(TestCase):
 
 class TestBaseAidantRequestFormSet(TestCase):
     def test_is_empty(self):
-        form: AidantRequestFormSet = get_form(AidantRequestFormSet, formset_extra=0)
+        organisation = DraftOrganisationRequestFactory()
+        form: AidantRequestFormSet = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"initial": 0, "organisation": organisation},
+        )
         self.assertEqual(form.is_empty(), True)
 
-        form: AidantRequestFormSet = get_form(AidantRequestFormSet)
+        form: AidantRequestFormSet = get_form(
+            AidantRequestFormSet, form_init_kwargs={"organisation": organisation}
+        )
         self.assertEqual(form.is_empty(), False)
 
         # Correctly handle erroneous subform case
-        data = get_form(AidantRequestFormSet, formset_extra=1).data
+        data = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"initial": 1, "organisation": organisation},
+        ).data
         data["form-0-email"] = "   "
-        form = AidantRequestFormSet(data=data)
+        form = AidantRequestFormSet(data=data, organisation=organisation)
         self.assertFalse(form.is_valid())
         self.assertEqual(form.is_empty(), False)
 
