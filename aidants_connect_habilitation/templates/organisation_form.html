@@ -30,6 +30,8 @@
             {% field_as_fr_grid_row form.name %}
             <h3>Informations administratives</h3>
 
+            {% include "_address_validatable_mixin.html" with form=form %}
+
             {% field_as_fr_grid_row form.address %}
 
             {% with errors=form.zipcode.errors|add:form.city.errors %}
@@ -93,4 +95,8 @@
   {% stimulusjs %}
   <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/organisation_form.js' %}"></script>
+{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/personnel_form.css' %}" rel="stylesheet">
 {% endblock %}
