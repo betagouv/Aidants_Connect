@@ -10,6 +10,7 @@ from django.forms import (
     Form,
     RadioSelect,
     Textarea,
+    TextInput,
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
@@ -170,7 +171,7 @@ class IssuerForm(PatchedErrorListForm):
         exclude = ["issuer_id", "email_verified"]
 
 
-class OrganisationRequestForm(PatchedErrorListForm):
+class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
     type = ChoiceField(required=True, choices=RequestOriginConstants.choices)
 
     name = CharField(
@@ -184,6 +185,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
             "required": "Le champ « code postal » est obligatoire.",
         },
     )
+
     city = CharField(
         label="Ville",
         max_length=255,
@@ -285,6 +287,20 @@ class OrganisationRequestForm(PatchedErrorListForm):
 
         return data
 
+    def get_address_for_search(self) -> str:
+        return " ".join(
+            [
+                self.data[self.add_prefix("address")],
+                self.data[self.add_prefix("zipcode")],
+                self.data[self.add_prefix("city")],
+            ]
+        )
+
+    def autocomplete(self, address: Address):
+        self.cleaned_data["address"] = address.name
+        self.cleaned_data["zipcode"] = address.postcode
+        self.cleaned_data["city"] = address.city
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
@@ -303,6 +319,7 @@ class OrganisationRequestForm(PatchedErrorListForm):
             "mission_description",
             "avg_nb_demarches",
         ]
+        widgets = {"address": TextInput}
 
 
 class PersonWithResponsibilitiesForm(PatchedErrorListForm):
@@ -338,10 +355,12 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
     )
 
     def get_address_for_search(self) -> str:
-        return (
-            f"{self.data[self.add_prefix('address')]} "
-            f"{self.data[self.add_prefix('zipcode')]} "
-            f"{self.data[self.add_prefix('city')]}"
+        return " ".join(
+            [
+                self.data[self.add_prefix("address")],
+                self.data[self.add_prefix("zipcode")],
+                self.data[self.add_prefix("city")],
+            ]
         )
 
     def autocomplete(self, address: Address):
@@ -529,7 +548,7 @@ class PersonnelForm:
             not self.manager_form.cleaned_data["is_aidant"]
             and self.aidants_formset.is_empty()
         ):
-            self._errors.append(
+            self.add_error(
                 "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
                 "l'organisation n'est pas elle-même déclarée comme aidante"
             )
