@@ -314,7 +314,11 @@ class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
 
     def define_html_attributes(self, form: PersonnelForm):
         form.manager_form.widget_attrs(
-            "address", {"data-address-autocomplete-target": "addressInput"}
+            "address",
+            {
+                "data-address-autocomplete-target": "addressInput",
+                "data-action": "focus->address-autocomplete#onAddressFocus",
+            },
         )
         form.manager_form.widget_attrs(
             "zipcode", {"data-address-autocomplete-target": "zipcodeInput"}

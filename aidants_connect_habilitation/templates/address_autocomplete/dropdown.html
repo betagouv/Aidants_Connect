@@ -5,6 +5,11 @@
       <span>Aucun résultat trouvé pour la requête __query__</span>
     </div>
   </template>
+  <template data-address-autocomplete-target="spinnerTpl">
+    <div class="spinner" role="status" data-address-autocomplete-target="spinner" hidden>
+      <span class="visually-hidden">Chargment des résultats...</span>
+    </div>
+  </template>
   <link
     rel="stylesheet"
     href="{% static 'css/address_autocomplete.css' %}"
