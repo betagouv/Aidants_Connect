@@ -141,6 +141,14 @@ INSTALLED_APPS = [
     "aidants_connect_habilitation",
 ]
 
+# Additionnal app to execute only during tests
+INSTALLED_TEST_APPS = [
+    "aidants_connect_habilitation.tests.third_party_service_mocks",
+]
+
+if "test" in sys.argv:
+    INSTALLED_APPS.append(*INSTALLED_TEST_APPS)
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -356,7 +364,8 @@ MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
 MAGICAUTH_WAIT_VIEW_TEMPLATE = "login/wait.html"
 MAGICAUTH_ENABLE_2FA = True
 
-# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py#L54  # noqa
+# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py
+# #L54  # noqa
 MAGICAUTH_TOKEN_DURATION_SECONDS = int(
     os.getenv("MAGICAUTH_TOKEN_DURATION_SECONDS", 5 * 60)
 )
@@ -593,16 +602,24 @@ PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
 PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
 PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
 
-GOUV_ADDRESS_SEARCH_API_BASE_URL = os.getenv(
-    "GOUV_ADDRESS_SEARCH_API_BASE_URL", "https://api-adresse.data.gouv.fr/search/"
-)
-GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool("GOUV_ADDRESS_SEARCH_API_DISABLED", True)
+if "test" in sys.argv:
+    GOUV_ADDRESS_SEARCH_API_DISABLED = True
+    GOUV_ADDRESS_SEARCH_API_BASE_URL = ""
+else:
+    GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool(
+        "GOUV_ADDRESS_SEARCH_API_DISABLED", True
+    )
+    GOUV_ADDRESS_SEARCH_API_BASE_URL = os.getenv(
+        "GOUV_ADDRESS_SEARCH_API_BASE_URL", "https://api-adresse.data.gouv.fr/search/"
+    )
+
+AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa
 
 if not GOUV_ADDRESS_SEARCH_API_DISABLED:
     CSP_CONNECT_SRC = (*CSP_CONNECT_SRC, GOUV_ADDRESS_SEARCH_API_BASE_URL)
     CSP_SCRIPT_SRC = (
         *CSP_SCRIPT_SRC,
-        "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js",
+        AUTOCOMPLETE_SCRIPT_SRC,
     )
 
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
