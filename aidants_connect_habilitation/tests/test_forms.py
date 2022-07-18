@@ -470,8 +470,7 @@ class TestAddressValidatableMixin(TestCase):
         autocomplete_mock.reset_mock()
 
     @patch(
-        "aidants_connect_habilitation.forms.AddressValidatableMixin"
-        ".get_address_for_search"
+        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
     )
     @patch("aidants_connect_habilitation.forms.search_adresses")
     def test_form_leaves_me_alone_if_API_id_down(
@@ -499,8 +498,7 @@ class TestAddressValidatableMixin(TestCase):
 
     @patch("aidants_connect_habilitation.forms.AddressValidatableMixin.autocomplete")
     @patch(
-        "aidants_connect_habilitation.forms.AddressValidatableMixin"
-        ".get_address_for_search"
+        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
     )
     @patch("aidants_connect_habilitation.forms.search_adresses")
     def test_form_leaves_me_alone_if_I_entered_a_correct_address(
@@ -527,17 +525,12 @@ class TestAddressValidatableMixin(TestCase):
         self.assertNotIn("alternative_address", form.cleaned_data)
         autocomplete_mock.assert_called_with(address)
 
-    @patch("aidants_connect_habilitation.forms.AddressValidatableMixin.autocomplete")
     @patch(
-        "aidants_connect_habilitation.forms.AddressValidatableMixin"
-        ".get_address_for_search"
+        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
     )
     @patch("aidants_connect_habilitation.forms.search_adresses")
     def test_form_raises_validation_error_on_multiple_results(
-        self,
-        search_adresses_mock: Mock,
-        get_address_for_search: Mock,
-        autocomplete_mock: Mock,
+        self, search_adresses_mock: Mock, get_address_for_search: Mock
     ):
         addresses = [address_factory(score=0.95) for _ in range(3)]
         get_address_for_search.return_value = "3, rue de la Marne 95000 Rennes"
@@ -551,3 +544,23 @@ class TestAddressValidatableMixin(TestCase):
             form.errors,
             {"alternative_address": ["Plusieurs choix d'adresse sont possibles"]},
         )
+
+    @patch("aidants_connect_habilitation.forms.AddressValidatableMixin.autocomplete")
+    @patch(
+        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
+    )
+    @patch("aidants_connect_habilitation.forms.search_adresses")
+    def test_disable_backend_validation(
+        self,
+        search_adresses_mock: Mock,
+        get_address_for_search: Mock,
+        autocomplete_mock: Mock,
+    ):
+        form = AddressValidatableMixin(data={"skip_backend_validation": True})
+
+        # Simulate POST
+        self.assertTrue(form.is_valid())
+
+        search_adresses_mock.assert_not_called()
+        get_address_for_search.assert_not_called()
+        autocomplete_mock.assert_not_called()

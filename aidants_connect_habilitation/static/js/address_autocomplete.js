@@ -29,6 +29,11 @@
 
             this.requestOngoingValue = false;
 
+            // Insert <input> to disable backend validation for address
+            this.addressInputTarget.insertAdjacentHTML(
+                "afterend", '<input name="skip_backend_validation" value="true" hidden>'
+            );
+
             this.autocomplete = new autoComplete({
                 name: "address-autocomplete",
                 selector: () => this.addressInputTarget,
@@ -165,7 +170,7 @@
             "dropdownContainer",
             "noResultTpl",
             "spinnerTpl",
-            "spinner"
+            "spinner",
         ]
         static values = {
             "apiBaseUrl": String,
