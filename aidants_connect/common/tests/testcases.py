@@ -11,12 +11,15 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 
 class FunctionalTestCase(StaticLiveServerTestCase):
+    js = True
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
 
         firefox_options = FirefoxOptions()
         firefox_options.headless = settings.HEADLESS_FUNCTIONAL_TESTS
+        firefox_options.set_preference("javascript.enabled", cls.js)
 
         cls.selenium = WebDriver(options=firefox_options)
         cls.selenium.implicitly_wait(10)

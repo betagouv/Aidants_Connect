@@ -156,6 +156,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         field_names = list(form.fields.keys())
         field_names.remove("is_aidant")
         field_names.remove("alternative_address")
+        field_names.remove("skip_address_validation")
 
         element: WebElement = self.selenium.find_element(
             By.CSS_SELECTOR,
@@ -193,6 +194,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         field_names = list(form.fields.keys())
         field_names.remove("is_aidant")
         field_names.remove("alternative_address")
+        field_names.remove("skip_address_validation")
 
         self.assertIsNone(
             self.selenium.find_element(
@@ -239,7 +241,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         saved_manager = organisation.manager
 
         for field_name in form.fields:
-            if field_name != "alternative_address":
+            if field_name not in ["alternative_address", "skip_address_validation"]:
                 self.assertEqual(
                     getattr(saved_manager, field_name), getattr(new_manager, field_name)
                 )
@@ -368,7 +370,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         for field_name in new_aidant_form.fields:
             self.assertEqual(getattr(saved_aidant, field_name), aidant_data[field_name])
 
-    def test_its_me_button_fills_manager_form(self):
+    def test_js_its_me_button_fills_manager_form(self):
         issuer: Issuer = IssuerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer,
@@ -430,59 +432,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             "l'organisation n'est pas elle-même déclarée comme aidante",
         )
 
-    @override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=False)
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_I_must_select_a_correct_address(self, search_adresses_mock: Mock):
-        expected_address = "Rue de Paris 45000 Orléans"
-        selected_address = "Rue du Parc 45000 Orléans"
-
-        def search_adresses(query_string: str) -> List[Address]:
-            if query_string == expected_address:
-                result = [
-                    Address(**item["properties"])
-                    for item in load_json_fixture("address_results.json")["features"]
-                ]
-                return result
-
-            self.fail(f"Expected manager with address '{expected_address}'")
-
-        search_adresses_mock.side_effect = search_adresses
-
-        issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory(
-            address="Rue de Paris", zipcode="45000", city="Orléans"
-        )
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer, manager=manager
-        )
-
-        self._open_form_url(issuer, organisation)
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        self.selenium.find_element(
-            By.XPATH,
-            "//*[@id='id_manager-alternative_address']"
-            f"//*[normalize-space(text())='{selected_address}']",
-        ).click()
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
-        )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
-
-        manager.refresh_from_db()
-        self.assertEqual(
-            selected_address, f"{manager.address} {manager.zipcode} {manager.city}"
-        )
-
     @override_settings(
         GOUV_ADDRESS_SEARCH_API_DISABLED=False,
         GOUV_ADDRESS_SEARCH_API_BASE_URL=_django_server_url(
@@ -493,7 +442,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         CSP_CONNECT_SRC={"append": _django_server_url(reverse("address_api_segur"))},
         CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
     )
-    def test_I_must_select_a_correct_address_in_JS(self):
+    def test_js_I_must_select_a_correct_address(self):
         issuer: Issuer = IssuerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer
@@ -549,6 +498,150 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         self.assertEqual(manager.address, "Avenue de Ségur")
         self.assertEqual(manager.zipcode, "75007")
         self.assertEqual(manager.city, "Paris")
+
+    @override_settings(
+        GOUV_ADDRESS_SEARCH_API_DISABLED=False,
+        GOUV_ADDRESS_SEARCH_API_BASE_URL=_django_server_url(
+            reverse("address_api_no_result")
+        ),
+    )
+    @modify_settings(
+        CSP_CONNECT_SRC={
+            "append": _django_server_url(reverse("address_api_no_result"))
+        },
+        CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
+    )
+    def test_js_I_can_submit_an_address_that_is_not_found(self):
+        address = "15 avenue de segur"
+        issuer: Issuer = IssuerFactory()
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer
+        )
+
+        manager: Manager = ManagerFactory.build(
+            address=address, zipcode="37000", city="Orléans"
+        )
+
+        self._open_form_url(issuer, organisation)
+
+        # Fill form
+        for item in [
+            "last_name",
+            "first_name",
+            "email",
+            "phone",
+            "address",
+            "profession",
+            "zipcode",
+            "city",
+        ]:
+            value = str(getattr(manager, item))
+            selector = f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{item}"
+            self.selenium.find_element(By.CSS_SELECTOR, selector).send_keys(value)
+
+        self.selenium.find_element(
+            By.CSS_SELECTOR,
+            f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
+        ).click()
+
+        # Open dropdown
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
+
+        self.assertEqual(
+            self.selenium.find_element(By.CSS_SELECTOR, ".no-result").text,
+            f'Aucun résultat trouvé pour la requête "{address}"',
+        )
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        path = reverse(
+            "habilitation_validation",
+            kwargs={
+                "issuer_id": str(organisation.issuer.issuer_id),
+                "uuid": str(organisation.uuid),
+            },
+        )
+
+        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
+
+        organisation.refresh_from_db()
+        manager = organisation.manager
+        self.assertEqual(manager.address, "15 avenue de segur")
+        self.assertEqual(manager.zipcode, "37000")
+        self.assertEqual(manager.city, "Orléans")
+
+    def _open_form_url(
+        self,
+        issuer: Issuer,
+        organisation_request: OrganisationRequest,
+    ):
+        self.open_live_url(
+            reverse(
+                "habilitation_new_aidants",
+                kwargs={
+                    "issuer_id": issuer.issuer_id,
+                    "uuid": organisation_request.uuid,
+                },
+            )
+        )
+
+
+@tag("functional")
+class PersonnelRequestFormViewNoJSTests(FunctionalTestCase):
+    js = False
+
+    @override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=False)
+    @patch("aidants_connect_habilitation.forms.search_adresses")
+    def test_I_must_select_a_correct_address(self, search_adresses_mock: Mock):
+        expected_address = "Rue de Paris 45000 Orléans"
+        selected_address = "Rue du Parc 45000 Orléans"
+
+        def search_adresses(query_string: str) -> List[Address]:
+            if query_string == expected_address:
+                result = [
+                    Address(**item["properties"])
+                    for item in load_json_fixture("address_results.json")["features"]
+                ]
+                return result
+
+            self.fail(f"Expected manager with address '{expected_address}'")
+
+        search_adresses_mock.side_effect = search_adresses
+
+        issuer: Issuer = IssuerFactory()
+        manager: Manager = ManagerFactory(
+            address="Rue de Paris", zipcode="45000", city="Orléans"
+        )
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer, manager=manager
+        )
+
+        self._open_form_url(issuer, organisation)
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        self.selenium.find_element(
+            By.XPATH,
+            "//*[@id='id_manager-alternative_address']"
+            f"//*[normalize-space(text())='{selected_address}']",
+        ).click()
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        path = reverse(
+            "habilitation_validation",
+            kwargs={
+                "issuer_id": str(organisation.issuer.issuer_id),
+                "uuid": str(organisation.uuid),
+            },
+        )
+
+        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
+
+        manager.refresh_from_db()
+        self.assertEqual(
+            selected_address, f"{manager.address} {manager.zipcode} {manager.city}"
+        )
 
     def _open_form_url(
         self,
