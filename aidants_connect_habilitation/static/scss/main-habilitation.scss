@@ -220,7 +220,8 @@ select {
   border-radius: 0;
   font-family: $font-stack;
   font-size: 1rem;
-  padding: 0 .5rem;
+  // Setting 1rem for right padding to leave space for caret
+  padding: 0 1rem 0 .5rem;
   background: #fff url(../img/dropdown.svg) no-repeat 98% 56%;
   max-width: 100%;
   height: 2.25rem;
