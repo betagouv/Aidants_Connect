@@ -78,7 +78,9 @@ urlpatterns = [
     ),
     # renew mandat
     path(
-        "renew_mandat/<int:usager_id>", renew_mandat.renew_mandat, name="renew_mandat"
+        "renew_mandat/<int:usager_id>",
+        renew_mandat.RenewMandat.as_view(),
+        name="renew_mandat",
     ),
     # new mandat
     path("creation_mandat/", mandat.new_mandat, name="new_mandat"),
