@@ -12,7 +12,7 @@ from django.views.generic import FormView
 from aidants_connect.common.constants import AuthorizationDurations
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.models import Aidant, Connection, Journal, Usager
+from aidants_connect_web.models import Aidant, Connection, Journal, Mandat, Usager
 
 
 class RenewMandat(FormView):
@@ -23,6 +23,10 @@ class RenewMandat(FormView):
     def dispatch(self, request, *args, **kwargs):
         self.aidant: Aidant = request.user
         self.usager: Usager = self.aidant.get_usager(kwargs.get("usager_id"))
+
+        if not Mandat.objects.for_usager(self.usager).renewable().exists():
+            django_messages.error(request, "Cet usager n'a aucun mandat renouvelable.")
+            return redirect("espace_aidant_home")
 
         if not self.usager:
             django_messages.error(
