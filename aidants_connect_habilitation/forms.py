@@ -1,3 +1,4 @@
+from distutils.util import strtobool
 from typing import List, Tuple, Union
 
 from django.conf import settings
@@ -11,6 +12,7 @@ from django.forms import (
     RadioSelect,
     Textarea,
     TextInput,
+    TypedChoiceField,
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
@@ -368,6 +370,13 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
         },
     )
 
+    is_aidant = TypedChoiceField(
+        label="C’est aussi un aidant",
+        label_suffix=" :",
+        choices=(("", ""), (True, "Oui"), (False, "Non")),
+        coerce=lambda value: bool(strtobool(value)),
+    )
+
     def get_address_for_search(self) -> str:
         return " ".join(
             [
@@ -559,10 +568,10 @@ class PersonnelForm:
             # Stop processing if form does not have data
             return
 
-        if (
-            not self.manager_form.cleaned_data["is_aidant"]
-            and self.aidants_formset.is_empty()
-        ):
+        is_aidant = self.manager_form.cleaned_data.get("is_aidant")
+        # If is_aidant is None, there was a ValidationError on this field
+        # so we don't bother validating
+        if is_aidant is not None and not is_aidant and self.aidants_formset.is_empty():
             self.add_error(
                 "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
                 "l'organisation n'est pas elle-même déclarée comme aidante"

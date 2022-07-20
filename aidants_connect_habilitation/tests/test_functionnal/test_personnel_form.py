@@ -9,6 +9,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.expected_conditions import url_matches
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect.common.gouv_address_api import Address
@@ -159,13 +160,14 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         field_names.remove("skip_address_validation")
 
         element: WebElement = self.selenium.find_element(
-            By.CSS_SELECTOR,
-            f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
+            By.XPATH,
+            f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
+            "//option[normalize-space(text())='Oui']",
         )
 
         self.assertIsNotNone(
-            element.get_attribute("checked"),
-            "Manager is also an aidant, checkbox should have been checked",
+            element.get_attribute("selected"),
+            "Manager is also an aidant, option should have been checked",
         )
 
         for field_name in field_names:
@@ -198,22 +200,25 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.assertIsNone(
             self.selenium.find_element(
-                By.CSS_SELECTOR,
-                f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
-            ).get_attribute("checked"),
+                By.XPATH,
+                f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
+                "//option[normalize-space(text())='Oui']",
+            ).get_attribute("selected"),
             "Manager is not an aidant, checkbox should not have been checked",
         )
 
-        self.selenium.execute_script(
-            f"""document.querySelector("#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant")"""  # noqa
-            """.setAttribute("checked", "checked")"""
-        )
+        Select(
+            self.selenium.find_element(
+                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant"
+            )
+        ).select_by_visible_text("Oui")
 
         self.assertIsNotNone(
             self.selenium.find_element(
-                By.CSS_SELECTOR,
-                f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
-            ).get_attribute("checked"),
+                By.XPATH,
+                f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
+                "//option[normalize-space(text())='Oui']",
+            ).get_attribute("selected"),
             "New manager is an aidant, checkbox should be checked",
         )
 
@@ -467,10 +472,11 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             selector = f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{item}"
             self.selenium.find_element(By.CSS_SELECTOR, selector).send_keys(value)
 
-        self.selenium.find_element(
-            By.CSS_SELECTOR,
-            f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
-        ).click()
+        Select(
+            self.selenium.find_element(
+                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant"
+            )
+        ).select_by_visible_text("Oui")
 
         # Open dropdown
         self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
@@ -539,10 +545,11 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             selector = f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{item}"
             self.selenium.find_element(By.CSS_SELECTOR, selector).send_keys(value)
 
-        self.selenium.find_element(
-            By.CSS_SELECTOR,
-            f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant",
-        ).click()
+        Select(
+            self.selenium.find_element(
+                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant"
+            )
+        ).select_by_visible_text("Oui")
 
         # Open dropdown
         self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
