@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.contrib import messages as django_messages
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import reverse
@@ -8,6 +9,7 @@ from django.utils import timezone
 from aidants_connect_web.models import Connection, Journal, Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    ExpiredOverYearMandatFactory,
     MandatFactory,
     OrganisationFactory,
     RevokedMandatFactory,
@@ -129,6 +131,81 @@ class RenewMandatTests(TestCase):
         self.assertRedirects(response, reverse("new_mandat_recap"))
         self.assertEqual(Connection.objects.count(), 1)
         self.assertEqual(Mandat.objects.count(), 1)
+        journals = Journal.objects.filter(action="init_renew_mandat")
+        self.assertEqual(journals.count(), 1)
+        self.assertEqual(journals[0].aidant, self.aidant_thierry)
+        self.assertEqual(journals[0].usager, self.usager)
+
+    def test_renew_mandat_expired_more_than_one_year_nok(self):
+        ExpiredOverYearMandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+        )
+        self.client.force_login(self.aidant_thierry)
+        self.assertEqual(Mandat.objects.count(), 1)
+        self.assertEqual(Connection.objects.count(), 0)
+        data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
+        response = self.client.post(
+            reverse("renew_mandat", args=(self.usager.pk,)), data=data
+        )
+        self.assertRedirects(response, reverse("espace_aidant_home"))
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            messages[0].message, "Cet usager n'a aucun mandat renouvelable."
+        )
+        self.assertEqual(Connection.objects.count(), 0)
+        self.assertEqual(Mandat.objects.count(), 1)
+        journals = Journal.objects.filter(action="init_renew_mandat")
+        self.assertEqual(journals.count(), 0)
+
+    def test_renew_revoked_mandat_nok(self):
+        RevokedMandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+            post__create_authorisations=["famille", "social", "justice", "etranger"],
+        )
+        self.client.force_login(self.aidant_thierry)
+        self.assertEqual(Mandat.objects.count(), 1)
+        self.assertEqual(Connection.objects.count(), 0)
+        data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
+        response = self.client.post(
+            reverse("renew_mandat", args=(self.usager.pk,)), data=data
+        )
+        self.assertRedirects(response, reverse("espace_aidant_home"))
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            messages[0].message, "Cet usager n'a aucun mandat renouvelable."
+        )
+        self.assertEqual(Connection.objects.count(), 0)
+        self.assertEqual(Mandat.objects.count(), 1)
+        journals = Journal.objects.filter(action="init_renew_mandat")
+        self.assertEqual(journals.count(), 0)
+
+    def test_renew_multiple_invalid_one_expired_ok(self):
+        MandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+            expiration_date=timezone.now() - timedelta(days=5),
+        )
+        RevokedMandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+            post__create_authorisations=["famille", "social", "justice", "etranger"],
+        )
+        ExpiredOverYearMandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+        )
+        self.client.force_login(self.aidant_thierry)
+        self.assertEqual(Mandat.objects.count(), 3)
+        self.assertEqual(Connection.objects.count(), 0)
+        data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
+        response = self.client.post(
+            reverse("renew_mandat", args=(self.usager.pk,)), data=data
+        )
+        self.assertRedirects(response, reverse("new_mandat_recap"))
+        self.assertEqual(Connection.objects.count(), 1)
+        self.assertEqual(Mandat.objects.count(), 3)
         journals = Journal.objects.filter(action="init_renew_mandat")
         self.assertEqual(journals.count(), 1)
         self.assertEqual(journals[0].aidant, self.aidant_thierry)

@@ -37,7 +37,6 @@ logger = logging.getLogger()
 
 
 def delete_mandats_and_clean_journal(item, str_today):
-
     for mandat in item.mandats.all():
         entries = Journal.objects.filter(mandat=mandat)
         mandat_str_add_inf = (
@@ -596,7 +595,6 @@ class UsagerQuerySet(models.QuerySet):
 
 
 class Usager(models.Model):
-
     GENDER_FEMALE = "female"
     GENDER_MALE = "male"
     GENDER_CHOICES = (
@@ -702,6 +700,12 @@ def get_staff_organisation_name_id() -> int:
 
 
 class MandatQuerySet(models.QuerySet):
+    def exclude_outdated(self):
+        return self.exclude(
+            Q(expiration_date__lt=timezone.now() - timedelta(365))
+            | Q(autorisations__revocation_date__lt=timezone.now() - timedelta(365))
+        )
+
     def active(self):
         return (
             self.exclude(expiration_date__lt=timezone.now())
@@ -711,13 +715,21 @@ class MandatQuerySet(models.QuerySet):
 
     def inactive(self):
         return (
-            self.exclude(expiration_date__lt=timezone.now() - timedelta(365))
-            .exclude(autorisations__revocation_date__lt=timezone.now() - timedelta(365))
+            self.exclude_outdated()
             .filter(
                 Q(expiration_date__lt=timezone.now())
                 | ~Q(autorisations__revocation_date__isnull=True)
             )
             .distinct()
+        )
+
+    def for_usager(self, usager):
+        return self.filter(usager=usager)
+
+    def renewable(self):
+        return self.exclude_outdated().filter(
+            ~Q(expiration_date__gt=timezone.now())
+            | Q(autorisations__revocation_date__isnull=True)
         )
 
 
@@ -760,6 +772,12 @@ class Mandat(models.Model):
         # A `mandat` is considered `active` if it contains
         # at least one active `autorisation`.
         return self.autorisations.active().exists()
+
+    @property
+    def can_renew(self):
+        return (
+            not self.is_expired or self.objects.renewable().filter(mandat=self).exists()
+        )
 
     @cached_property
     def revocation_date(self) -> Optional[datetime]:
@@ -967,7 +985,6 @@ class AutorisationQuerySet(models.QuerySet):
 
 
 class Autorisation(models.Model):
-
     DEMARCHE_CHOICES = [
         (name, attributes["titre"]) for name, attributes in settings.DEMARCHES.items()
     ]
