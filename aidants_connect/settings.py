@@ -141,6 +141,14 @@ INSTALLED_APPS = [
     "aidants_connect_habilitation",
 ]
 
+# Additionnal app to execute only during tests
+INSTALLED_TEST_APPS = [
+    "aidants_connect_habilitation.tests.third_party_service_mocks",
+]
+
+if "test" in sys.argv:
+    INSTALLED_APPS.append(*INSTALLED_TEST_APPS)
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -255,7 +263,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "aidants_connect/common/static"),
 ]
 
-
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"
 ACTIVITY_CHECK_URL = "activity_check"
@@ -357,7 +364,8 @@ MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
 MAGICAUTH_WAIT_VIEW_TEMPLATE = "login/wait.html"
 MAGICAUTH_ENABLE_2FA = True
 
-# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py#L54  # noqa
+# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py
+# #L54  # noqa
 MAGICAUTH_TOKEN_DURATION_SECONDS = int(
     os.getenv("MAGICAUTH_TOKEN_DURATION_SECONDS", 5 * 60)
 )
@@ -400,6 +408,7 @@ STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
 CSP_IMG_SRC = (
     "'self'",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
@@ -415,6 +424,7 @@ CSP_SCRIPT_SRC = (
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
 )
+
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
@@ -592,16 +602,25 @@ PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
 PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
 PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
 
-GOUV_ADDRESS_SEARCH_API_BASE_URL = "https://api-adresse.data.gouv.fr/search/"
-GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool("GOUV_ADDRESS_SEARCH_API_DISABLED", True)
+if "test" in sys.argv:
+    GOUV_ADDRESS_SEARCH_API_DISABLED = True
+    GOUV_ADDRESS_SEARCH_API_BASE_URL = ""
+else:
+    GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool(
+        "GOUV_ADDRESS_SEARCH_API_DISABLED", True
+    )
+    GOUV_ADDRESS_SEARCH_API_BASE_URL = os.getenv(
+        "GOUV_ADDRESS_SEARCH_API_BASE_URL", "https://api-adresse.data.gouv.fr/search/"
+    )
 
-# Matomo
-MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
-MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa
 
-if MATOMO_INSTANCE_SITE_ID and MATOMO_INSTANCE_URL:
+if not GOUV_ADDRESS_SEARCH_API_DISABLED:
+    CSP_CONNECT_SRC = (*CSP_CONNECT_SRC, GOUV_ADDRESS_SEARCH_API_BASE_URL)
     CSP_SCRIPT_SRC = (
         *CSP_SCRIPT_SRC,
-        "'sha256-kKsklEZ3MJfIKwxmvIbVAVSQM/J1k9axzIS0kOiYdzw='",
-        "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
+        AUTOCOMPLETE_SCRIPT_SRC,
     )
+
+MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
+MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")

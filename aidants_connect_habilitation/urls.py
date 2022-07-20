@@ -1,5 +1,8 @@
-from django.urls import path
+import sys
 
+from django.urls import include, path
+
+from aidants_connect_habilitation.tests import third_party_service_mocks
 from aidants_connect_habilitation.views import (
     AddAidantsRequestView,
     IssuerEmailConfirmationView,
@@ -69,3 +72,8 @@ urlpatterns = [
         name="habilitation_organisation_add_aidants",
     ),
 ]
+
+if "test" in sys.argv:
+    urlpatterns.append(
+        path("third_party_service_mocks/", include(third_party_service_mocks.urls))
+    )

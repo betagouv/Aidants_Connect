@@ -1,7 +1,7 @@
 from functools import singledispatch
 from importlib import import_module
 from inspect import getmembers, isclass
-from json import loads
+from json import dumps, loads
 from os.path import join as path_join
 from typing import Type, TypeVar, Union
 
@@ -199,7 +199,8 @@ def __get_form_data(form_cls: Type[MF], form_init_kwargs: dict, **kwargs) -> dic
     )
 
 
-def load_json_fixture(name: str) -> dict:
+def load_json_fixture(name: str, as_string=False) -> dict:
     path = path_join(tests.__path__[0], "fixtures", name)
     with open(path) as f:
-        return loads(f.read())
+        result = loads(f.read())
+        return dumps(result) if as_string else result

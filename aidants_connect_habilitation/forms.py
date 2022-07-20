@@ -54,6 +54,10 @@ class AddressValidatableMixin(Form):
     class XRadioSelect(RadioSelect):
         pass
 
+    # This field should not be rendered. It is just used by
+    # the JS front to disable backend validation
+    skip_address_validation = BooleanField(required=False)
+
     alternative_address = XChoiceField(
         label="Veuillez sélectionner votre adresse dans les propositions ci-dessous :",
         choices=((DEFAULT_CHOICE, "Laisser l'adresse inchangée"),),
@@ -74,7 +78,17 @@ class AddressValidatableMixin(Form):
         setattr(AddressValidatableMixin.XChoiceField, "required", required)
         setattr(AddressValidatableMixin.XRadioSelect, "is_required", required)
 
+    def clean_skip_address_validation(self):
+        # For expressiveness, the name transmitted byt the JS front
+        # will be ``skip_backend_validation`` whereas the name of the form
+        # field is ``skip_address_validation``.
+        return self.data.get("skip_backend_validation", False)
+
     def clean_alternative_address(self):
+        if self.cleaned_data["skip_address_validation"]:
+            self.__required = False
+            return None
+
         alternative_address = self.data.get(self.add_prefix("alternative_address"))
 
         if alternative_address == self.DEFAULT_CHOICE:
@@ -382,6 +396,7 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
 
     class Meta(PersonWithResponsibilitiesForm.Meta):
         model = Manager
+        widgets = {"address": TextInput}
 
 
 class EmailOrganisationValidationError(ValidationError):
