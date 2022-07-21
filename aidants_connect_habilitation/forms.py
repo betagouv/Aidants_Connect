@@ -91,7 +91,7 @@ class AddressValidatableMixin(Form):
             self.__required = False
             return None
 
-        alternative_address = self.data.get(self.add_prefix("alternative_address"))
+        alternative_address = self.cleaned_data.get("alternative_address")
 
         if alternative_address == self.DEFAULT_CHOICE:
             return self.DEFAULT_CHOICE
@@ -302,6 +302,11 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
             raise ValidationError("Veuillez entrer un code postal valide")
 
         return data
+
+    def clean(self):
+        result = super().clean()
+        super().post_clean()
+        return result
 
     def get_address_for_search(self) -> str:
         return " ".join(
