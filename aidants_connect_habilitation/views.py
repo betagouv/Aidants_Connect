@@ -16,6 +16,7 @@ from aidants_connect.common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
+from aidants_connect.common.forms import PatchedErrorListForm
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
@@ -126,6 +127,22 @@ class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
             )
 
         return super().dispatch(request, *args, **kwargs)
+
+
+class AdressAutocompleteJSMixin:
+    def define_html_attributes(self, form: PatchedErrorListForm):
+        form.widget_attrs(
+            "address",
+            {
+                "data-address-autocomplete-target": "addressInput",
+                "data-action": "focus->address-autocomplete#onAddressFocus",
+            },
+        )
+        form.widget_attrs(
+            "zipcode", {"data-address-autocomplete-target": "zipcodeInput"}
+        )
+
+        form.widget_attrs("city", {"data-address-autocomplete-target": "cityInput"})
 
 
 """Real views"""
@@ -270,10 +287,9 @@ class ModifyIssuerFormView(VerifiedEmailIssuerView, NewIssuerFormView):
 
 
 class NewOrganisationRequestFormView(
-    HabilitationStepMixin, VerifiedEmailIssuerView, FormView
+    HabilitationStepMixin, VerifiedEmailIssuerView, FormView, AdressAutocompleteJSMixin
 ):
     template_name = "organisation_form.html"
-    form_class = OrganisationRequestForm
 
     @property
     def step(self) -> HabilitationFormStep:
@@ -293,6 +309,11 @@ class NewOrganisationRequestFormView(
             },
         )
 
+    def get_form(self, form_class=None):
+        form = OrganisationRequestForm(**self.get_form_kwargs())
+        self.define_html_attributes(form)
+        return form
+
 
 class ModifyOrganisationRequestFormView(
     OnlyNewRequestsView, NewOrganisationRequestFormView
@@ -305,28 +326,14 @@ class ModifyOrganisationRequestFormView(
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
+class PersonnelRequestFormView(
+    OnlyNewRequestsView, FormView, AdressAutocompleteJSMixin
+):
     template_name = "personnel_form.html"
 
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.PERSONNEL
-
-    def define_html_attributes(self, form: PersonnelForm):
-        form.manager_form.widget_attrs(
-            "address",
-            {
-                "data-address-autocomplete-target": "addressInput",
-                "data-action": "focus->address-autocomplete#onAddressFocus",
-            },
-        )
-        form.manager_form.widget_attrs(
-            "zipcode", {"data-address-autocomplete-target": "zipcodeInput"}
-        )
-
-        form.manager_form.widget_attrs(
-            "city", {"data-address-autocomplete-target": "cityInput"}
-        )
 
     def form_valid(self, form: PersonnelForm):
         form.save()
@@ -347,7 +354,7 @@ class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
 
     def get_form(self, form_class=None):
         form = PersonnelForm(organisation=self.organisation, **self.get_form_kwargs())
-        self.define_html_attributes(form)
+        self.define_html_attributes(form.manager_form)
         return form
 
     def get_form_kwargs(self):
