@@ -16,6 +16,7 @@ import re
 import sys
 from datetime import datetime, timedelta
 from distutils.util import strtobool
+from pathlib import Path
 from typing import Optional, Union
 
 import sentry_sdk
@@ -379,8 +380,8 @@ EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
 
-## if file based email backend is used (debug)
-EMAIL_FILE_PATH = os.path.dirname(os.path.abspath(__file__)) + "/tmp_email_as_file"
+# if file based email backend is used (debug)
+EMAIL_FILE_PATH = Path(os.path.dirname(__file__)).parent / "tmp_email_as_file"
 ## if smtp backend is used
 EMAIL_HOST = os.getenv("EMAIL_HOST", None)
 EMAIL_PORT = os.getenv("EMAIL_PORT", None)
