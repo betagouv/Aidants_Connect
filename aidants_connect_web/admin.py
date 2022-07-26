@@ -487,6 +487,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # that references specific fields on `auth.User`.
     list_display = (
         "__str__",
+        "id",
         "email",
         "organisation",
         "carte_totp",
@@ -502,7 +503,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_staff",
         "is_superuser",
     )
-    search_fields = ("first_name", "last_name", "email", "organisation__name")
+    search_fields = ("id", "first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
 
     filter_horizontal = (
