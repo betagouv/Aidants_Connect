@@ -264,7 +264,8 @@ class Aidant(AbstractUser):
         verbose_name = "aidant"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        full_name = f"{self.first_name} {self.last_name}".strip()
+        return full_name if full_name else self.username
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
