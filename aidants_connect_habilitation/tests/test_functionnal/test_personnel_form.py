@@ -223,12 +223,13 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         )
 
         for field_name in field_names:
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR,
-                f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
-            )
-            element.clear()
-            element.send_keys(str(getattr(new_manager, field_name)))
+            if field_name != "codeinsee":
+                element: WebElement = self.selenium.find_element(
+                    By.CSS_SELECTOR,
+                    f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
+                )
+                element.clear()
+                element.send_keys(str(getattr(new_manager, field_name)))
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
@@ -504,6 +505,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         self.assertEqual(manager.address, "Avenue de Ségur")
         self.assertEqual(manager.zipcode, "75007")
         self.assertEqual(manager.city, "Paris")
+        self.assertEqual(manager.codeinsee, "75107")
 
     @override_settings(
         GOUV_ADDRESS_SEARCH_API_DISABLED=False,
