@@ -35,6 +35,7 @@ class Address(BaseModel):
     score: float
     postcode: str
     city: str
+    citycode: str
     context: Context
     type: AddressType
 

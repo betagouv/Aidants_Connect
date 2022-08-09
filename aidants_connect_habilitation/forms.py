@@ -9,6 +9,7 @@ from django.forms import (
     CharField,
     ChoiceField,
     Form,
+    HiddenInput,
     RadioSelect,
     Textarea,
     TextInput,
@@ -210,6 +211,8 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
         },
     )
 
+    codeinsee = CharField(widget=HiddenInput(), required=False)
+
     is_private_org = BooleanField(
         label=(
             "Cochez cette case si vous faites cette demande pour une structure privée "
@@ -321,6 +324,7 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
         self.cleaned_data["address"] = address.name
         self.cleaned_data["zipcode"] = address.postcode
         self.cleaned_data["city"] = address.city
+        self.cleaned_data["codeinsee"] = address.citycode
 
     class Meta:
         model = models.OrganisationRequest
@@ -332,6 +336,7 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
             "address",
             "zipcode",
             "city",
+            "codeinsee",
             "is_private_org",
             "partner_administration",
             "france_services_label",
@@ -375,6 +380,8 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
         },
     )
 
+    codeinsee = CharField(widget=HiddenInput(), required=False)
+
     is_aidant = TypedChoiceField(
         label="C’est aussi un aidant",
         label_suffix=" :",
@@ -395,6 +402,7 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
         self.cleaned_data["address"] = address.name
         self.cleaned_data["zipcode"] = address.postcode
         self.cleaned_data["city"] = address.city
+        self.cleaned_data["codeinsee"] = address.citycode
 
     def clean_zipcode(self):
         data: str = self.cleaned_data["zipcode"]

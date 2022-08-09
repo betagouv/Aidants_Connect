@@ -161,6 +161,7 @@ class Manager(PersonWithResponsibilities):
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255)
+    codeinsee = models.CharField("Code INSEE", max_length=5, null=True, blank=True)
 
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
 
@@ -232,6 +233,7 @@ class OrganisationRequest(models.Model):
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
+    codeinsee = models.CharField("Code INSEE", max_length=5, null=True, blank=True)
 
     is_private_org = models.BooleanField("Structure privée", default=False)
     partner_administration = models.CharField(
@@ -362,6 +364,7 @@ class OrganisationRequest(models.Model):
                 address=self.address,
                 zipcode=self.zipcode,
                 city=self.city,
+                codeinsee=self.codeinsee,
                 data_pass_id=self.data_pass_id,
             )
         except IntegrityError:

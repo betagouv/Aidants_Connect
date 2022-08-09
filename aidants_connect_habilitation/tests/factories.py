@@ -60,7 +60,7 @@ class ManagerFactory(DjangoModelFactory):
     email = FactoryFaker("email")
     profession = FactoryFaker("job")
     phone = LazyFunction(_generate_valid_phone)
-
+    codeinsee = ""
     address = FactoryFaker("street_address")
     zipcode = FactoryFaker("postcode")
     city = FactoryFaker("city")
@@ -147,6 +147,7 @@ def address_factory(
     score: float = None,
     postcode: str = None,
     city: str = None,
+    citycode: str = "",
     department_number: str = None,
     department_name: str = None,
     region: str = None,
@@ -171,6 +172,7 @@ def address_factory(
         score=(score or fake.random.randint(0, 100) / 100),
         postcode=(postcode or _zipcode),
         city=(city or _city),
+        citycode=citycode,
         context=context,
         type=(type or fake.random.choice(AddressType.values())),
     )

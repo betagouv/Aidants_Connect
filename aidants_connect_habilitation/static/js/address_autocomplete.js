@@ -3,17 +3,18 @@
 (function () {
     // This JS code won't be executed on IE11, so we can write ES6 code
     class Address extends Object {
-        constructor({id, name, score, postcode, city}) {
+        constructor({id, name, score, postcode, city, citycode}) {
             super();
             this.id = id;
             this.street = name;
             this.score = score;
             this.zipcode = postcode;
             this.city = city;
+            this.codeinsee = citycode;
         }
 
         toString() {
-            return `${this.street} ${this.zipcode} ${this.city}`
+            return `${this.street} ${this.zipcode} ${this.city} ${this.codeinsee}`
         }
     }
 
@@ -65,6 +66,7 @@
                                 this.addressInputTarget.value = result.street;
                                 this.zipcodeInputTarget.value = result.zipcode;
                                 this.cityInputTarget.value = result.city;
+                                this.codeinseeInputTarget.value = result.codeinsee;
                             }
                         }
                     }
@@ -167,6 +169,7 @@
             "addressInput",
             "zipcodeInput",
             "cityInput",
+            "codeinseeInput",
             "dropdownContainer",
             "noResultTpl",
             "spinnerTpl",
