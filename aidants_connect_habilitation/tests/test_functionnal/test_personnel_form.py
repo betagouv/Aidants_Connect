@@ -223,7 +223,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         )
 
         for field_name in field_names:
-            if field_name != "codeinsee":
+            if field_name != "codeinsee" and field_name != "dep_codeinsee":
                 element: WebElement = self.selenium.find_element(
                     By.CSS_SELECTOR,
                     f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
