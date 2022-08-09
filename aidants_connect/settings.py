@@ -424,6 +424,7 @@ CSP_SCRIPT_SRC = (
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
+    "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
 )
 
 CSP_STYLE_SRC = ("'self'",)

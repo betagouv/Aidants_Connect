@@ -73,7 +73,7 @@ class SwitchOrganisationTests(TestCase):
     def test_aidant_can_see_the_switch_if_they_can_change_orgs(self):
         self.aidant.organisations.set((self.aidant.organisation, OrganisationFactory()))
         self.client.force_login(self.aidant)
-        response = self.client.get("/")
+        response = self.client.get("/espace-aidant/")
         self.assertContains(response, "Changer d'organisation")
 
     def test_aidant_can_switch_to_an_org_they_belong_to(self):
