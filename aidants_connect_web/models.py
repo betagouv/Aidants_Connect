@@ -1524,3 +1524,28 @@ class DatavizDepartmentsToRegion(models.Model):
         db_table = "dataviz_departements_to_region"
         verbose_name = "Assocation départments/région"
         verbose_name_plural = "Assocations départments/région"
+
+
+class Region(models.Model):
+    name = models.CharField(
+        "Nom de région", max_length=50, null=False, blank=False, unique=True
+    )
+    codeinsee = models.CharField(
+        "Code INSEE", max_length=2, null=False, blank=False, unique=True
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class Departement(models.Model):
+    name = models.CharField(
+        "Nom du département", max_length=50, null=False, blank=False, unique=True
+    )
+    codeinsee = models.CharField(
+        "Code INSEE", max_length=3, null=False, blank=False, unique=True
+    )
+    region = models.ForeignKey(Region, null=False, blank=False, on_delete=CASCADE)
+
+    def __str__(self):
+        return self.name
