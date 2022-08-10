@@ -212,6 +212,7 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
     )
 
     codeinsee = CharField(widget=HiddenInput(), required=False)
+    dep_codeinsee = CharField(widget=HiddenInput(), required=False)
 
     is_private_org = BooleanField(
         label=(
@@ -325,6 +326,7 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
         self.cleaned_data["zipcode"] = address.postcode
         self.cleaned_data["city"] = address.city
         self.cleaned_data["codeinsee"] = address.citycode
+        self.cleaned_data["dep_codeinsee"] = address.context.department_number
 
     class Meta:
         model = models.OrganisationRequest
@@ -337,6 +339,7 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
             "zipcode",
             "city",
             "codeinsee",
+            "dep_codeinsee",
             "is_private_org",
             "partner_administration",
             "france_services_label",
@@ -381,6 +384,7 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
     )
 
     codeinsee = CharField(widget=HiddenInput(), required=False)
+    dep_codeinsee = CharField(widget=HiddenInput(), required=False)
 
     is_aidant = TypedChoiceField(
         label="C’est aussi un aidant",
@@ -403,6 +407,7 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
         self.cleaned_data["zipcode"] = address.postcode
         self.cleaned_data["city"] = address.city
         self.cleaned_data["codeinsee"] = address.citycode
+        self.cleaned_data["dep_codeinsee"] = address.context.department_number
 
     def clean_zipcode(self):
         data: str = self.cleaned_data["zipcode"]

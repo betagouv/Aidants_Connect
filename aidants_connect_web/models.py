@@ -87,7 +87,12 @@ class Organisation(models.Model):
     address = models.TextField("Adresse", default="No address provided")
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
     city = models.CharField("Ville", max_length=255, null=True)
-    codeinsee = models.CharField("Code INSEE", max_length=5, null=True, blank=True)
+    codeinsee = models.CharField(
+        "Commune Code INSEE", max_length=5, null=True, blank=True
+    )
+    dep_codeinsee = models.CharField(
+        "Département Code INSEE", max_length=5, null=True, blank=True
+    )
 
     is_active = models.BooleanField("Est active", default=True, editable=False)
 

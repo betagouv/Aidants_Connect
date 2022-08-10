@@ -61,6 +61,7 @@ class ManagerFactory(DjangoModelFactory):
     profession = FactoryFaker("job")
     phone = LazyFunction(_generate_valid_phone)
     codeinsee = ""
+    dep_codeinsee = ""
     address = FactoryFaker("street_address")
     zipcode = FactoryFaker("postcode")
     city = FactoryFaker("city")

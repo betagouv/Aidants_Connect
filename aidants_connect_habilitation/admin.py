@@ -98,6 +98,7 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "zipcode",
         "city",
         "codeinsee",
+        "dep_codeinsee",
         "is_aidant",
     )
     readonly_fields = ("organisation",)
@@ -132,6 +133,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "zipcode",
         "city",
         "codeinsee",
+        "dep_codeinsee",
         "is_private_org",
         "partner_administration",
         "france_services_label",

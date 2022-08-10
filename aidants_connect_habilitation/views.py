@@ -146,6 +146,9 @@ class AdressAutocompleteJSMixin:
         form.widget_attrs(
             "codeinsee", {"data-address-autocomplete-target": "codeinseeInput"}
         )
+        form.widget_attrs(
+            "dep_codeinsee", {"data-address-autocomplete-target": "dep_codeinseeInput"}
+        )
 
 
 """Real views"""
