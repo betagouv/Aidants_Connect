@@ -45,10 +45,12 @@ from aidants_connect_web.models import (
     CarteTOTP,
     Connection,
     DatavizDepartment,
+    Departement,
     HabilitationRequest,
     Journal,
     Mandat,
     Organisation,
+    Region,
     Usager,
 )
 
@@ -1486,3 +1488,5 @@ admin_site.register(Connection, ConnectionAdmin)
 admin_site.register(StaticDevice, StaticDeviceStaffAdmin)
 admin_site.register(TOTPDevice, TOTPDeviceStaffAdmin)
 admin_site.register(CarteTOTP, CarteTOTPAdmin)
+admin_site.register(Region)
+admin_site.register(Departement)
