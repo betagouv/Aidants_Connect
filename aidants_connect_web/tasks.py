@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import timedelta
 from logging import Logger
 from typing import List
@@ -17,6 +18,7 @@ from aidants_connect import settings
 from aidants_connect_web.models import (
     Aidant,
     Connection,
+    Departement,
     HabilitationRequest,
     Mandat,
     Organisation,
@@ -141,6 +143,16 @@ def notify_new_habilitation_requests(*, logger=None):
         )
     )
 
+    orga_per_region = defaultdict(list)
+    for org in organisations:
+        departement_query = Departement.objects.filter(codeinsee=org.dep_codeinsee)
+        if departement_query.exists():
+            dep = departement_query[0]
+            orga_per_region[dep.region.name] += [org]
+        else:
+            orga_per_region["Région non précisé"] += [org]
+    orga_per_region.default_factory = None
+
     # aidants à former test PIX
     new_test_pix_count = HabilitationRequest.objects.filter(
         date_test_pix__gt=created_from
@@ -155,6 +167,7 @@ def notify_new_habilitation_requests(*, logger=None):
 
     context = {
         "organisations": organisations,
+        "organisations_per_region": orga_per_region,
         "total_requests": habilitation_requests_count,
         "interval": 7,
         "nb_new_test_pix": new_test_pix_count,

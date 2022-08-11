@@ -18,8 +18,12 @@
                         dans {{ organisations.count }} structures différentes :
                       </p>
                       <ul>
-                        {% for org in organisations %}
-                          <li>{{ org.name }} : {{ org.num_requests }} aidants</li>
+                        {% for reg, orgs in organisations_per_region.items %}
+                          <p><b>{{ reg }}</b></p>
+                          {% for org in orgs %}
+                            <li>{{ org.name }} : {{ org.num_requests }} aidants</li>
+                          {% endfor %}
+                          <br>
                         {% endfor %}
                       </ul>
                       <p>{{ nb_new_test_pix }} aidants à former ont passé le test PIX.</p>
