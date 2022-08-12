@@ -7,7 +7,7 @@ name = "pypi"
 python_version = "3.10"
 
 [packages]
-django = "==3.2.14"
+django = "==3.2.15"
 django-admin-honeypot = "==1.1.0"
 django-celery-beat = "==2.3.0"
 django-csp = "==3.7"
