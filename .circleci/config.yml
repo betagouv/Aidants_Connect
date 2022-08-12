@@ -37,6 +37,7 @@ jobs:
             . venv/bin/activate
             pip install pipenv
             pipenv install --dev
+            python manage.py collectstatic --noinput
 
       - save_cache:
           paths:
