@@ -106,6 +106,10 @@ a.btn-homepage, a.btn-homepage:visited {
   padding-right: 2rem;
 }
 
+.questions-btn-container {
+  max-width: 41.5rem;
+}
+
 .aidants-btn-col {
   margin-top: 0rem;
 }

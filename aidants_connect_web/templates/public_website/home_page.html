@@ -66,17 +66,17 @@
       <div class="fr-col-md-4 info-col">
         <img alt="cadenas" src="{% static 'images/securisation.svg' %}"/>
         <p class="info-title">Sécurisation juridique</p>
-        <p class="info-text">Ceci est un topo sur pourquoi c’est sécurisé et pourquoi c’est génial Aidants Connect</p>
+        <!--<p class="info-text">Ceci est un topo sur pourquoi c’est sécurisé et pourquoi c’est génial Aidants Connect</p>-->
       </div>
       <div class="fr-col-md-4 info-col">
         <img alt="femme" src="{% static 'images/accompagnement.svg' %}"/>
         <p class="info-title">Accompagnement Humain</p>
-        <p class="info-text">Ceci est un topo sur pourquoi c’est accompagné et pourquoi c’est génial Aidants Connect</p>
+        <!--<p class="info-text">Ceci est un topo sur pourquoi c’est accompagné et pourquoi c’est génial Aidants Connect</p>-->
       </div>
       <div class="fr-col-md-4 info-col">
         <img alt="ordinateur" src="{% static 'images/outil.svg' %}"/>
         <p class="info-title">Un outil intuitif</p>
-        <p class="info-text">Ceci est un topo sur pourquoi c’est intuitif et pourquoi c’est génial Aidants Connect</p>
+        <!--<p class="info-text">Ceci est un topo sur pourquoi c’est intuitif et pourquoi c’est génial Aidants Connect</p>-->
       </div>
     </div>
   </div>
@@ -86,10 +86,21 @@
     <div class="fr-col-md-4 contact-col">
       <div class="fr-grid-row question-div">
         <div class="fr-col">
-          <p class="question-title">Toujours des questions ?</p>
-          <p>Consultez notre procédure d’habilitation ou encore notre aide si vous avez besoin de plus d’informations.</p>
+          <div class="fr-grid-row">
+            <p class="question-title">Toujours des questions ?</p>
+            <p>Consultez notre procédure d’habilitation ou encore notre aide si vous avez besoin de plus d’informations.</p>
+          </div>
+          <div class="fr-grid-row fr-grid-row--right fr-grid-row--bottom questions-btn-container">
+            <div class="fr-grid-col aidants-btn-col">
+              <a class="btn-homepage" href="{% url 'habilitation' %}">Premiers pas</a>
+            </div>
+            <div class="fr-grid-col aidants-btn-col">
+              <a class="btn-homepage" href="{% url 'faq_generale' %}">Aide</a>
+            </div>
+          </div>
         </div>
       </div>
+
     </div>
     <div class="fr-col-md-8 contact-col">
       <div class="fr-grid-row contact-div">
@@ -105,7 +116,7 @@
               </div>
             </div>
           </form>
-          <p class="contact-text">Besoin d’informations précises ou d’assistance ? Contactez-nous à l’adresse suivante : </p>
+          <p class="contact-text">Besoin d’informations précises ou d’assistance ? Contactez-nous à l’adresse suivante : <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a></p>
         </div>
       </div>
     </div>
