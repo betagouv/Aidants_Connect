@@ -134,8 +134,8 @@ class AdressAutocompleteJSMixin:
         form.widget_attrs(
             "address",
             {
-                "data-address-autocomplete-target": "addressInput",
-                "data-action": "focus->address-autocomplete#onAddressFocus",
+                "data-address-autocomplete-target": "autcompleteInput",
+                "data-action": "focus->address-autocomplete#onAutocompleteFocus",
             },
         )
         form.widget_attrs(
@@ -144,10 +144,10 @@ class AdressAutocompleteJSMixin:
 
         form.widget_attrs("city", {"data-address-autocomplete-target": "cityInput"})
         form.widget_attrs(
-            "codeinsee", {"data-address-autocomplete-target": "codeinseeInput"}
+            "codeinsee", {"data-address-autocomplete-target": "cityInseeCodeInput"}
         )
         form.widget_attrs(
-            "dep_codeinsee", {"data-address-autocomplete-target": "dep_codeinseeInput"}
+            "dep_codeinsee", {"data-address-autocomplete-target": "dptInseeCodeInput"}
         )
 
 
