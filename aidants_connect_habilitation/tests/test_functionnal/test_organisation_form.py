@@ -340,8 +340,8 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, "#id_address").click()
 
         self.assertEqual(
+            f"Aucun résultat trouvé pour la requête « {request.address} »",
             self.selenium.find_element(By.CSS_SELECTOR, ".no-result").text,
-            f'Aucun résultat trouvé pour la requête "{request.address}"',
         )
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
