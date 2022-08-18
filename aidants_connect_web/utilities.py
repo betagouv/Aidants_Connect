@@ -1,6 +1,5 @@
 import hashlib
 import io
-import os
 from datetime import date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
@@ -10,7 +9,6 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 
-import pandas as pd
 import qrcode
 
 if TYPE_CHECKING:
@@ -118,20 +116,3 @@ def generate_mailto_link(recipient: str, subject: str, body: str):
 
 def mandate_template_path():
     return settings.MANDAT_TEMPLATE_PATH
-
-
-def real_populate_region_table(Region):
-    file_path = os.path.join(settings.STATIC_ROOT, "insee_files/region_2022.csv")
-    df = pd.read_csv(file_path)
-    for i, region in df.iterrows():
-        Region.objects.get_or_create(name=region["LIBELLE"], codeinsee=region["REG"])
-
-
-def real_populate_department_table(Departement, Region):
-    file_path = os.path.join(settings.STATIC_ROOT, "insee_files/departement_2022.csv")
-    df = pd.read_csv(file_path)
-    for i, departement in df.iterrows():
-        region = Region.objects.get(codeinsee=departement["REG"])
-        Departement.objects.get_or_create(
-            name=departement["LIBELLE"], codeinsee=departement["DEP"], region=region
-        )

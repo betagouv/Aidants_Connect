@@ -223,7 +223,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         )
 
         for field_name in field_names:
-            if field_name != "codeinsee" and field_name != "dep_codeinsee":
+            if field_name not in ["city_insee_code", "department_insee_code"]:
                 element: WebElement = self.selenium.find_element(
                     By.CSS_SELECTOR,
                     f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
@@ -505,7 +505,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         self.assertEqual(manager.address, "Avenue de Ségur")
         self.assertEqual(manager.zipcode, "75007")
         self.assertEqual(manager.city, "Paris")
-        self.assertEqual(manager.codeinsee, "75107")
+        self.assertEqual(manager.city_insee_code, "75107")
 
     @override_settings(
         GOUV_ADDRESS_SEARCH_API_DISABLED=False,

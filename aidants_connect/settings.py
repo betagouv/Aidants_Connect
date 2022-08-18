@@ -138,6 +138,7 @@ INSTALLED_APPS = [
     "import_export",
     "phonenumber_field",
     "aidants_connect",
+    "aidants_connect_common",
     "aidants_connect_web",
     "aidants_connect_habilitation",
 ]
