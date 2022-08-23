@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from datetime import datetime, timedelta
 from os import walk as os_walk
@@ -87,11 +89,13 @@ class Organisation(models.Model):
     address = models.TextField("Adresse", default="No address provided")
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
     city = models.CharField("Ville", max_length=255, null=True)
-    codeinsee = models.CharField(
-        "Commune Code INSEE", max_length=5, null=True, blank=True
+
+    city_insee_code = models.CharField(
+        "Code INSEE de la ville", max_length=5, null=True, blank=True
     )
-    dep_codeinsee = models.CharField(
-        "Département Code INSEE", max_length=5, null=True, blank=True
+
+    department_insee_code = models.CharField(
+        "Code INSEE du département", max_length=5, null=True, blank=True
     )
 
     is_active = models.BooleanField("Est active", default=True, editable=False)
@@ -1524,28 +1528,3 @@ class DatavizDepartmentsToRegion(models.Model):
         db_table = "dataviz_departements_to_region"
         verbose_name = "Assocation départments/région"
         verbose_name_plural = "Assocations départments/région"
-
-
-class Region(models.Model):
-    name = models.CharField(
-        "Nom de région", max_length=50, null=False, blank=False, unique=True
-    )
-    codeinsee = models.CharField(
-        "Code INSEE", max_length=2, null=False, blank=False, unique=True
-    )
-
-    def __str__(self):
-        return self.name
-
-
-class Departement(models.Model):
-    name = models.CharField(
-        "Nom du département", max_length=50, null=False, blank=False, unique=True
-    )
-    codeinsee = models.CharField(
-        "Code INSEE", max_length=3, null=False, blank=False, unique=True
-    )
-    region = models.ForeignKey(Region, null=False, blank=False, on_delete=CASCADE)
-
-    def __str__(self):
-        return self.name

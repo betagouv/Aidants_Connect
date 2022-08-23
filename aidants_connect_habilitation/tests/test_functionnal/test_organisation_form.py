@@ -289,7 +289,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         self.assertEqual(organisation.address, "Avenue de Ségur")
         self.assertEqual(organisation.zipcode, "75007")
         self.assertEqual(organisation.city, "Paris")
-        self.assertEqual(organisation.codeinsee, "75107")
+        self.assertEqual(organisation.city_insee_code, "75107")
 
     @override_settings(
         GOUV_ADDRESS_SEARCH_API_DISABLED=False,
@@ -469,7 +469,7 @@ class PersonnelRequestFormViewNoJSTests(FunctionalTestCase):
         )
 
         # assert code INSEE
-        self.assertEqual("45234", organisation.codeinsee)
+        self.assertEqual("45234", organisation.city_insee_code)
 
     def _open_form_url(
         self,

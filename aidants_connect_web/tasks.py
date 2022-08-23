@@ -15,10 +15,10 @@ from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
 from aidants_connect import settings
+from aidants_connect_common.models import Department
 from aidants_connect_web.models import (
     Aidant,
     Connection,
-    Departement,
     HabilitationRequest,
     Mandat,
     Organisation,
@@ -145,7 +145,9 @@ def notify_new_habilitation_requests(*, logger=None):
 
     orga_per_region = defaultdict(list)
     for org in organisations:
-        departement_query = Departement.objects.filter(codeinsee=org.dep_codeinsee)
+        departement_query = Department.objects.filter(
+            insee_code=org.department_insee_code
+        )
         if departement_query.exists():
             dep = departement_query[0]
             orga_per_region[dep.region.name] += [org]
