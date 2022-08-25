@@ -34,6 +34,7 @@ from aidants_connect.admin import (
     VisibleToTechAdmin,
     admin_site,
 )
+from aidants_connect_common.models import Department
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
@@ -44,7 +45,6 @@ from aidants_connect_web.models import (
     Autorisation,
     CarteTOTP,
     Connection,
-    DatavizDepartment,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -645,24 +645,23 @@ class HabilitationRequestResource(resources.ModelResource):
         fields = set()
 
     def _get_department_from_zipcode(self, habilitation_request):
-        zipcode = habilitation_request.organisation.zipcode
-        if not zipcode:
-            return None
-        departements = DatavizDepartment.objects.filter(zipcode=zipcode[:2])
-        if departements.exists():
-            return departements[0]
+        zipcode = habilitation_request.organisation.zipcode or ""
+        departements = Department.objects.filter(
+            zipcode=Department.extract_dept_zipcode(zipcode)
+        )
+        return departements[0] if departements.exists() else None
 
     def dehydrate_organisation_region(self, habilitation_request):
-        department = self._get_department_from_zipcode(habilitation_request)
+        department: Department = self._get_department_from_zipcode(habilitation_request)
         if not department:
             return ""
-        return department.datavizdepartmentstoregion.region.name
+        return department.region.name
 
     def dehydrate_organisation_departement(self, habilitation_request):
-        department = self._get_department_from_zipcode(habilitation_request)
+        department: Department = self._get_department_from_zipcode(habilitation_request)
         if not department:
             return ""
-        return department.dep_name
+        return department.name
 
 
 class HabilitationRequestImportResource(resources.ModelResource):
@@ -771,7 +770,6 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         self.message_user(request, f"{rows_updated} demandes ont été refusées.")
 
     def send_refusal_email(self, object):
-
         text_message = loader.render_to_string(
             "email/aidant_a_former_refuse.txt", {"aidant": object}
         )
@@ -810,7 +808,6 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
 
     def send_validation_email(self, object):
-
         text_message = loader.render_to_string(
             "email/aidant_a_former_valide.txt", {"aidant": object}
         )

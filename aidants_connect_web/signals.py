@@ -1,7 +1,3 @@
-from json import loads as json_loads
-from os.path import dirname
-from os.path import join as path_join
-
 from django.apps import AppConfig
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
@@ -13,7 +9,6 @@ from django.template import loader
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-import aidants_connect_web
 from aidants_connect.common.constants import RequestOriginConstants
 from aidants_connect_web.models import Aidant, Journal, aidants__organisations_changed
 
@@ -78,38 +73,6 @@ def populate_organisation_type_table(app_config: AppConfig, **_):
                 f"""SELECT setval({regclass}, {bigint}, {boolean})
                     FROM "aidants_connect_web_organisationtype";"""
             )
-
-
-@receiver(post_migrate)
-def populate_dataviz_tables(app_config: AppConfig, **_):
-    if app_config.name == "aidants_connect_web":
-        DatavizRegion = app_config.get_model("DatavizRegion")
-        DatavizDepartment = app_config.get_model("DatavizDepartment")
-        DatavizDepartmentsToRegion = app_config.get_model("DatavizDepartmentsToRegion")
-
-        fixture = path_join(
-            dirname(aidants_connect_web.__file__),
-            "fixtures",
-            "departements_region.json",
-        )
-
-        with open(fixture) as f:
-            json = json_loads(f.read())
-            regions = sorted(set(item["region_name"] for item in json))
-
-            for region in regions:
-                DatavizRegion.objects.get_or_create(name=region)
-
-            for item in json:
-                department, _ = DatavizDepartment.objects.get_or_create(
-                    zipcode=item["zipcode"], defaults={"dep_name": item["dep_name"]}
-                )
-
-                region = DatavizRegion.objects.get(name=item["region_name"])
-
-                DatavizDepartmentsToRegion.objects.get_or_create(
-                    department=department, region=region
-                )
 
 
 @receiver(post_migrate)

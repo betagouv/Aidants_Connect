@@ -2,7 +2,8 @@ import operator
 from functools import reduce
 
 from django.contrib.admin import SimpleListFilter
-from django.db.models import Q
+from django.db.models import CharField, Q
+from django.db.models.functions import Length
 
 from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
 from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
@@ -17,16 +18,16 @@ from django_celery_beat.models import (
 from django_otp.admin import OTPAdminSite
 from magicauth.models import MagicToken
 
-from aidants_connect_web.models import (
-    DatavizDepartment,
-    DatavizDepartmentsToRegion,
-    DatavizRegion,
-)
+from aidants_connect.common.lookups import IsNullOrBlank
+from aidants_connect_common.models import Department, Region
 
 admin_site = OTPAdminSite(OTPAdminSite.name)
 admin_site.login_template = "aidants_connect_web/admin/login.html"
 
 admin_site.register(HoneypotLoginAttempt, HoneypotLoginAttemptAdmin)
+
+CharField.register_lookup(Length)
+CharField.register_lookup(IsNullOrBlank)
 
 
 class VisibleToAdminMetier:
@@ -78,30 +79,29 @@ class RegionFilter(SimpleListFilter):
     filter_parameter_name = "zipcode"
 
     def lookups(self, request, model_admin):
-        return [(r.id, r.name) for r in DatavizRegion.objects.all()] + [
+        return [(r.insee_code, r.name) for r in Region.objects.all()] + [
             ("other", "Autre")
         ]
 
     def queryset(self, request, queryset):
-        region_id = self.value()
+        region_pk = self.value()
 
-        if not region_id:
+        if not region_pk:
             return
 
-        if region_id == "other":
+        if region_pk == "other":
             return queryset.filter(**{self.filter_parameter_name: 0})
 
-        region = DatavizRegion.objects.get(id=region_id)
-        d2r = DatavizDepartmentsToRegion.objects.filter(region=region)
+        region = Region.objects.get(pk=region_pk)
         qgroup = reduce(
             operator.or_,
             (
                 Q(
                     **{
-                        f"{self.filter_parameter_name}__startswith": d.department.normalize_zipcode()  # noqa: E501
+                        f"{self.filter_parameter_name}__startswith": d.zipcode  # noqa: E501
                     }
                 )
-                for d in d2r.all()
+                for d in Department.objects.filter(region=region).all()
             ),
         )
         return queryset.filter(qgroup)
@@ -117,24 +117,22 @@ class DepartmentFilter(SimpleListFilter):
     def generate_filter_list(cls, region=None):
         if not region:
             return [
-                (d.normalize_zipcode(), f"{d.dep_name} ({d.normalize_zipcode()})")
-                for d in DatavizDepartment.objects.all().order_by("dep_name")
+                (d.insee_code, f"{d.name} ({d.zipcode})")
+                for d in Department.objects.all().order_by("name")
             ] + [("other", "Autre")]
         return [
             (
-                d2r.department.normalize_zipcode(),
-                f"{d2r.department.dep_name} ({d2r.department.normalize_zipcode()})",
+                dept.insee_code,
+                f"{dept.name} ({dept.zipcode})",
             )
-            for d2r in DatavizDepartmentsToRegion.objects.filter(
-                region=region
-            ).order_by("department__dep_name")
+            for dept in Department.objects.filter(region=region).order_by("name")
         ]
 
     def lookups(self, request, model_admin):
         region = None
-        region_id = request.GET.get("region", "other")
-        if region_id != "other":
-            region = DatavizRegion.objects.get(id=region_id)
+        region_pk = request.GET.get("region", "other")
+        if region_pk != "other":
+            region = Region.objects.get(pk=region_pk)
         return self.generate_filter_list(region=region)
 
     def queryset(self, request, queryset):
@@ -142,7 +140,10 @@ class DepartmentFilter(SimpleListFilter):
         if not department_value:
             return
         if department_value == "other":
-            return queryset.filter(**{f"{self.filter_parameter_name}": 0})
+            return queryset.filter(
+                Q(**{f"{self.filter_parameter_name}__isnull_or_blank": True})
+                | Q(**{f"{self.filter_parameter_name}__length__lt": 5})
+            )
         return queryset.filter(
             **{f"{self.filter_parameter_name}__startswith": department_value}
         )
