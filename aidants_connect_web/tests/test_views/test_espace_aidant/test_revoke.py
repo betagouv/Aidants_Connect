@@ -1,12 +1,11 @@
-import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve
 from django.utils import timezone
 
-import pytz
+from pytz import timezone as pytz_timezone
 
 from aidants_connect import settings
 from aidants_connect_web.models import Autorisation, Mandat
@@ -293,8 +292,8 @@ class MandatCancellationAttestationTests(TestCase):
         cls.valid_mandat = MandatFactory(
             organisation=cls.our_organisation,
             usager=cls.our_usager,
-            creation_date=datetime.datetime(
-                2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
+            creation_date=pytz_timezone("Europe/Paris").localize(
+                datetime(2021, 2, 1, 13, 12)
             ),
         )
         cls.valid_autorisation = AutorisationFactory(
@@ -304,8 +303,8 @@ class MandatCancellationAttestationTests(TestCase):
         cls.cancelled_mandat = MandatFactory(
             organisation=cls.our_organisation,
             usager=cls.our_usager,
-            creation_date=datetime.datetime(
-                2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
+            creation_date=pytz_timezone("Europe/Paris").localize(
+                datetime(2021, 2, 1, 13, 12)
             ),
         )
         AutorisationFactory(
@@ -317,8 +316,8 @@ class MandatCancellationAttestationTests(TestCase):
         cls.expired_mandat = MandatFactory(
             organisation=cls.our_organisation,
             usager=cls.our_usager,
-            creation_date=datetime.datetime(
-                2021, 2, 1, 13, 12, tzinfo=pytz.timezone("Europe/Paris")
+            creation_date=pytz_timezone("Europe/Paris").localize(
+                datetime(2021, 2, 1, 13, 12)
             ),
             expiration_date=timezone.now() - timedelta(minutes=5),
         )

@@ -68,8 +68,8 @@ class AuthorizeTests(TestCase):
             mandat=mandat_3,
             demarche="Logement",
         )
-        date_further_away_minus_one_hour = datetime(
-            2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
+        date_further_away_minus_one_hour = pytz_timezone("Europe/Paris").localize(
+            datetime(2019, 1, 9, 8)
         )
         cls.connection = Connection.objects.create(
             state="test_expiration_date_triggered",
@@ -217,7 +217,7 @@ class AuthorizeTests(TestCase):
         url = reverse("fi_select_demarche") + "?connection_id=" + str(connection.id)
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
-    date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
+    date_further_away = pytz_timezone("Europe/Paris").localize(datetime(2019, 1, 9, 9))
 
     @freeze_time(date_further_away)
     def test_post_to_authorize_with_expired_connection_triggers_connection_timeout(
@@ -254,8 +254,8 @@ class FISelectDemarcheTests(TestCase):
             nonce="avalidnonce456",
             usager=cls.usager,
         )
-        date_further_away_minus_one_hour = datetime(
-            2019, 1, 9, 8, tzinfo=pytz_timezone("Europe/Paris")
+        date_further_away_minus_one_hour = pytz_timezone("Europe/Paris").localize(
+            datetime(2019, 1, 9, 8)
         )
         cls.connection_2 = Connection.objects.create(
             state="test_expiration_date_triggered",
@@ -263,8 +263,8 @@ class FISelectDemarcheTests(TestCase):
             usager=cls.usager,
             expires_on=date_further_away_minus_one_hour,
         )
-        mandat_creation_date = datetime(
-            2019, 1, 5, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
+        mandat_creation_date = pytz_timezone("Europe/Paris").localize(
+            datetime(2019, 1, 5, 3, 20, 34, 0)
         )
 
         cls.mandat_thierry_usager_1 = MandatFactory(
@@ -307,7 +307,7 @@ class FISelectDemarcheTests(TestCase):
             response, "aidants_connect_web/id_provider/fi_select_demarche.html"
         )
 
-    date_close = datetime(2019, 1, 6, 9, tzinfo=pytz_timezone("Europe/Paris"))
+    date_close = pytz_timezone("Europe/Paris").localize(datetime(2019, 1, 6, 9))
 
     @freeze_time(date_close)
     def test_get_demarches_for_one_usager_and_two_autorisations(self):
@@ -340,7 +340,7 @@ class FISelectDemarcheTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
-    date_further_away = datetime(2019, 1, 9, 9, tzinfo=pytz_timezone("Europe/Paris"))
+    date_further_away = pytz_timezone("Europe/Paris").localize(datetime(2019, 1, 9, 9))
 
     @freeze_time(date_further_away)
     def test_expired_autorisation_does_not_appear(self):
@@ -411,8 +411,8 @@ class TokenTests(TestCase):
         cls.connection.code = cls.code_hash
         cls.connection.nonce = "avalidnonce456"
         cls.connection.usager = cls.usager
-        cls.connection.expires_on = datetime(
-            2012, 1, 14, 3, 21, 34, tzinfo=pytz_timezone("Europe/Paris")
+        cls.connection.expires_on = pytz_timezone("Europe/Paris").localize(
+            datetime(2012, 1, 14, 3, 21, 34)
         )
         cls.connection.save()
         cls.fc_request = {
@@ -427,7 +427,7 @@ class TokenTests(TestCase):
         found = resolve("/token/")
         self.assertEqual(found.func, id_provider.token)
 
-    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
+    date = pytz_timezone("Europe/Paris").localize(datetime(2012, 1, 14, 3, 20, 34, 0))
 
     @freeze_time(date)
     @mock.patch(
@@ -435,7 +435,7 @@ class TokenTests(TestCase):
         return_value="5ieq7Bg173y99tT6MA",
     )
     def test_correct_info_triggers_200(self, _):
-
+        self.maxDiff = None
         response = self.client.post("/token/", self.fc_request)
 
         response_content = response.content.decode("utf-8")
@@ -449,14 +449,14 @@ class TokenTests(TestCase):
             "access_token": connection.access_token,
             "expires_in": 3600,
             "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2NsaWVu"
-            "dF9pZCIsImV4cCI6MTMyNjUxMDk5NCwiaWF0IjoxMzI2NTEwNjk0LCJpc3MiOiJsb2NhbGhvc"
-            "3QiLCJzdWIiOiJhdmFsaWRzdWI3ODkiLCJub25jZSI6ImF2YWxpZG5vbmNlNDU2In0.a7nbGA"
-            "-Ib9I1HaMb5iC9s4fDP1ZbIXUJpU-YbdYFcWA",
+            "dF9pZCIsImV4cCI6MTMyNjUwNzkzNCwiaWF0IjoxMzI2NTA3NjM0LCJpc3MiOiJsb2NhbGhvc"
+            "3QiLCJzdWIiOiJhdmFsaWRzdWI3ODkiLCJub25jZSI6ImF2YWxpZG5vbmNlNDU2In0.HnXqpp"
+            "IwykH_7GJgmFCT8Lt119qQyygiKk6W-WSXVCU",
             "refresh_token": "5ieq7bg173y99tt6ma",
             "token_type": "Bearer",
         }
 
-        self.assertEqual(response_json, awaited_response)
+        self.assertEqual(awaited_response, response_json)
 
     def test_wrong_grant_type_triggers_403(self):
         fc_request = dict(self.fc_request)
@@ -548,8 +548,8 @@ class UserInfoTests(TestCase):
             nonce="avalidnonde456",
             usager=cls.usager,
             access_token=cls.access_token_hash,
-            expires_on=datetime(
-                2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
+            expires_on=pytz_timezone("Europe/Paris").localize(
+                datetime(2012, 1, 14, 3, 21, 34, 0)
             ),
             aidant=cls.aidant_thierry,
             organisation=cls.aidant_thierry.organisation,
@@ -560,11 +560,10 @@ class UserInfoTests(TestCase):
         found = resolve("/userinfo/")
         self.assertEqual(found.func, id_provider.user_info)
 
-    date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
+    date = pytz_timezone("Europe/Paris").localize(datetime(2012, 1, 14, 3, 20, 34, 0))
 
     @freeze_time(date)
     def test_well_formatted_access_token_returns_200(self):
-
         response = self.client.get(
             "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer {self.access_token}"}
         )
@@ -588,7 +587,6 @@ class UserInfoTests(TestCase):
 
     @freeze_time(date)
     def test_autorisation_use_triggers_journal_entry(self):
-
         self.client.get(
             "/userinfo/", **{"HTTP_AUTHORIZATION": f"Bearer {self.access_token}"}
         )
@@ -664,8 +662,8 @@ class EndSessionEndpointTests(TestCase):
             nonce="avalidnonde456",
             usager=cls.usager,
             access_token=cls.access_token_hash,
-            expires_on=datetime(
-                2012, 1, 14, 3, 21, 34, 0, tzinfo=pytz_timezone("Europe/Paris")
+            expires_on=pytz_timezone("Europe/Paris").localize(
+                datetime(2012, 1, 14, 3, 21, 34, 0)
             ),
             aidant=cls.aidant_thierry,
             organisation=cls.aidant_thierry.organisation,
