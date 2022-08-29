@@ -4,6 +4,7 @@ from django.test import TestCase, tag
 from django.test.client import RequestFactory
 
 from aidants_connect.admin import DepartmentFilter, RegionFilter
+from aidants_connect_common.models import Region
 from aidants_connect_web.admin import HabilitationRequestAdmin, OrganisationAdmin
 from aidants_connect_web.models import HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import (
@@ -21,20 +22,22 @@ class DepartmentFilterTests(TestCase):
 
     def test_generate_filter_list(self):
         result = DepartmentFilter.generate_filter_list()
-        self.assertEqual(len(result), 101)
+        self.assertEqual(len(result), 102)
         self.assertEqual(("01", "Ain (01)"), result[0])
-        self.assertEqual(("20", "Corse (20)"), result[19])
+        self.assertEqual(("2A", "Corse-du-Sud (20)"), result[19])
 
     def test_lookup(self):
         request = self.rf.get("/")
         dep_filter = DepartmentFilter(request, {}, Organisation, OrganisationAdmin)
-        self.assertEqual(len(dep_filter.lookups(request, {})), 101)
+        self.assertEqual(len(dep_filter.lookups(request, {})), 102)
 
     def test_lookups_with_selected_region(self):
-        params = {"region": "6"}
+        params = {
+            "region": Region.objects.get(name="Provence-Alpes-Côte d'Azur").insee_code
+        }
         request = self.rf.get("/", params)
         dep_filter = DepartmentFilter(request, params, Organisation, OrganisationAdmin)
-        self.assertEqual(len(dep_filter.lookups(request, {})), 10)
+        self.assertEqual(len(dep_filter.lookups(request, {})), 6)
 
     def test_queryset(self):
         OrganisationFactory(zipcode="13013")
@@ -73,14 +76,24 @@ class RegionFilterTests(TestCase):
         OrganisationFactory(zipcode="20000")
         OrganisationFactory(zipcode="0")
         corse_filter = RegionFilter(
-            None, {"region": "5"}, Organisation, OrganisationAdmin
+            None,
+            {"region": Region.objects.get(name="Corse").insee_code},
+            Organisation,
+            OrganisationAdmin,
         )
         queryset_corse = corse_filter.queryset(None, Organisation.objects.all())
         self.assertEqual(1, queryset_corse.count())
         self.assertEqual("20000", queryset_corse[0].zipcode)
 
         paca_filter = RegionFilter(
-            None, {"region": "17"}, Organisation, OrganisationAdmin
+            None,
+            {
+                "region": Region.objects.get(
+                    name="Provence-Alpes-Côte d'Azur"
+                ).insee_code
+            },
+            Organisation,
+            OrganisationAdmin,
         )
         queryset_paca = paca_filter.queryset(None, Organisation.objects.all())
         self.assertEqual(2, queryset_paca.count())

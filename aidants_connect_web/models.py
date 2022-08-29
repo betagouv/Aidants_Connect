@@ -13,7 +13,7 @@ from django.contrib import messages as django_messages
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
-from django.db.models import CASCADE, SET_NULL, Q, QuerySet, Value
+from django.db.models import SET_NULL, Q, QuerySet, Value
 from django.db.models.functions import Concat
 from django.dispatch import Signal
 from django.template import defaultfilters, loader
@@ -1483,48 +1483,3 @@ class CarteTOTP(models.Model):
 class IdGenerator(models.Model):
     code = models.CharField(max_length=100, unique=True)
     last_id = models.PositiveIntegerField()
-
-
-# The Dataviz* models represent metadata that are used for data display in Metabase.
-# Do not remove even if they are not used directly in the code.
-class DatavizDepartment(models.Model):
-    zipcode = models.CharField(
-        "Code Postal", max_length=10, null=False, blank=False, unique=True
-    )
-    dep_name = models.CharField(
-        "Nom de département", max_length=50, null=False, blank=False
-    )
-
-    def normalize_zipcode(self):
-        return "".join(x if x.isdigit() else "0" for x in self.zipcode)
-
-    class Meta:
-        db_table = "dataviz_department"
-        verbose_name = "Département"
-
-
-class DatavizRegion(models.Model):
-    name = models.CharField(
-        "Nom de région", max_length=50, null=False, blank=False, unique=True
-    )
-
-    class Meta:
-        db_table = "dataviz_region"
-        verbose_name = "Région"
-
-
-class DatavizDepartmentsToRegion(models.Model):
-    department = models.OneToOneField(
-        DatavizDepartment,
-        null=False,
-        blank=False,
-        on_delete=CASCADE,
-    )
-    region = models.ForeignKey(
-        DatavizRegion, null=False, blank=False, on_delete=CASCADE
-    )
-
-    class Meta:
-        db_table = "dataviz_departements_to_region"
-        verbose_name = "Assocation départments/région"
-        verbose_name_plural = "Assocations départments/région"

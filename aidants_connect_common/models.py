@@ -29,14 +29,14 @@ class Department(models.Model):
         return self.name
 
     @staticmethod
-    def extract_dept_zipcode(insee_code: Any):
-        insee_code = str(insee_code).upper()
-        if insee_code.startswith("2A") or insee_code.startswith("2B"):
+    def extract_dept_zipcode(code: Any):
+        code = str(code).upper()
+        if code.startswith("2A") or code.startswith("2B"):
             return "20"
-        elif insee_code.startswith("97"):
-            return insee_code[:3]
+        elif code.startswith("97"):
+            return code[:3]
 
-        return insee_code[:2]
+        return code[:2]
 
     class Meta:
         verbose_name = "Département"

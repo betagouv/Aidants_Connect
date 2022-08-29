@@ -5,12 +5,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect.common.tests.testcases import FunctionalTestCase
-from aidants_connect_web.models import DatavizRegion
+from aidants_connect_common.models import Region
+from aidants_connect_common.tests.factories import DepartmentFactory, RegionFactory
 from aidants_connect_web.tests.factories import (
     AidantFactory,
-    DatavizDepartmentFactory,
-    DatavizDepartmentsToRegionFactory,
-    DatavizRegionFactory,
     HabilitationRequestFactory,
     OrganisationFactory,
 )
@@ -24,25 +22,18 @@ class RegionFilterTestCase(FunctionalTestCase):
         )
         self.login_admin()
 
-        if DatavizRegion.objects.filter(name="Île-de-France").exists():
+        if Region.objects.filter(name="Île-de-France").exists():
             return
 
-        region_idf = DatavizRegionFactory(name="Île-de-France")
-        region_mayotte = DatavizRegionFactory(name="Mayotte")
-        region_grandest = DatavizRegionFactory(name="Grand Est")
+        region_idf = RegionFactory(name="Île-de-France")
+        region_mayotte = RegionFactory(name="Mayotte")
+        region_grandest = RegionFactory(name="Grand Est")
 
-        dep_yvelines = DatavizDepartmentFactory(dep_name="Yvelines", zipcode="78")
-        dep_mayotte = DatavizDepartmentFactory(dep_name="Mayotte", zipcode="976")
-        dep_basrhin = DatavizDepartmentFactory(dep_name="Bas-Rhin", zipcode="67")
-        dep_hautrhin = DatavizDepartmentFactory(dep_name="Haut-Rhin", zipcode="68")
-
-        DatavizDepartmentsToRegionFactory(region=region_idf, department=dep_yvelines)
-        DatavizDepartmentsToRegionFactory(department=dep_mayotte, region=region_mayotte)
-        DatavizDepartmentsToRegionFactory(
-            department=dep_basrhin, region=region_grandest
-        )
-        DatavizDepartmentsToRegionFactory(
-            department=dep_hautrhin, region=region_grandest
+        DepartmentFactory(name="Yvelines", zipcode="78", region=region_idf)
+        DepartmentFactory(name="Mayotte", zipcode="976", region=region_mayotte)
+        DepartmentFactory(name="Bas-Rhin", zipcode="67", region=region_grandest)
+        DepartmentFactory(
+            depname_name="Haut-Rhin", zipcode="68", region=region_grandest
         )
 
     def login_admin(self):
