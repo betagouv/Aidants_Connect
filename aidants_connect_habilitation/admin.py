@@ -193,16 +193,16 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 
     def accept_selected_requests(self, request, queryset):
         orgs_created = 0
-        for organisation_request in queryset:
+        for org_request in queryset:
             try:
-                if organisation_request.accept_request_and_create_organisation():
+                if org_request.accept_request_and_create_organisation():
                     orgs_created += 1
-                    self.send_acceptance_email(organisation_request)
+                    self.send_acceptance_email(org_request)
                 else:
                     self.message_user(
                         request,
-                        f"""L'organisation {organisation_request.name} n'a pas été créée.
-                        Vérifiez si la demande est bien en attente de validation.""",
+                        f"L'organisation {org_request.name} n'a pas été créée. "
+                        "Vérifiez si la demande est bien en attente de validation.",
                         level=messages.ERROR,
                     )
             except Organisation.AlreadyExists as e:
