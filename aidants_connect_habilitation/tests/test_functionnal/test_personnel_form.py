@@ -12,8 +12,8 @@ from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
-from aidants_connect.common.gouv_address_api import Address
-from aidants_connect.common.tests.testcases import FunctionalTestCase
+from aidants_connect_common.tests.testcases import FunctionalTestCase
+from aidants_connect_common.utils.gouv_address_api import Address
 from aidants_connect_habilitation.forms import (
     AidantRequestForm,
     IssuerForm,

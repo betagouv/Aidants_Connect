@@ -3,7 +3,7 @@ from urllib.parse import quote
 from django.template import Context, Template
 from django.test import TestCase
 
-from aidants_connect.templatetags.ac_common import mailto
+from aidants_connect_common.templatetags.ac_common import mailto
 
 
 class Test(TestCase):

@@ -11,7 +11,7 @@ from django.utils.timezone import now
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )

@@ -12,11 +12,11 @@ from factory.fuzzy import FuzzyInteger, FuzzyText
 from faker import Faker
 from phonenumber_field.phonenumber import to_python
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect.common.gouv_address_api import Address, AddressType
+from aidants_connect_common.utils.gouv_address_api import Address, AddressType
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,

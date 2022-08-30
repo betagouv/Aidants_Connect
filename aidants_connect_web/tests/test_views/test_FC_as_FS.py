@@ -10,7 +10,7 @@ import jwt
 from freezegun import freeze_time
 from pytz import timezone as pytz_timezone
 
-from aidants_connect.common.constants import AuthorizationDurationChoices
+from aidants_connect_common.utils.constants import AuthorizationDurationChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash

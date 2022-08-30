@@ -10,7 +10,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.wait import WebDriverWait
 
-from aidants_connect.common.tests.testcases import FunctionalTestCase
+from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.models import Issuer
 from aidants_connect_habilitation.tests.factories import IssuerFactory

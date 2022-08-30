@@ -6,7 +6,7 @@ from django.urls import resolve
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect.common.constants import RequestStatusConstants
+from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
 from aidants_connect_web.models import Journal

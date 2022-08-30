@@ -18,7 +18,7 @@ from django_celery_beat.models import (
 from django_otp.admin import OTPAdminSite
 from magicauth.models import MagicToken
 
-from aidants_connect.common.lookups import IsNullOrBlank
+from aidants_connect_common.lookups import IsNullOrBlank
 from aidants_connect_common.models import Department, Region
 
 admin_site = OTPAdminSite(OTPAdminSite.name)

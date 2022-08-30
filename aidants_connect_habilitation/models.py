@@ -16,7 +16,7 @@ from django.utils.timezone import now
 
 from phonenumber_field.modelfields import PhoneNumberField
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,

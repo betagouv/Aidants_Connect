@@ -1,4 +1,4 @@
-from aidants_connect.common.constants import RequestStatusConstants
+from aidants_connect_common.utils.constants import RequestStatusConstants
 
 
 def real_fix_orga_request_status(OrganisationRequest):
