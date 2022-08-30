@@ -552,7 +552,7 @@ class AutorisationModelTests(TestCase):
         self.assertEqual(first_autorisation.demarche, "Carte grise")
         self.assertEqual(second_autorisation.mandat.usager.family_name, "Flanders")
 
-    fake_date = datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris"))
+    fake_date = pytz_timezone("Europe/Paris").localize(datetime(2019, 1, 14))
 
     @freeze_time(fake_date)
     def test_autorisation_expiration_date_setting(self):
@@ -567,11 +567,11 @@ class AutorisationModelTests(TestCase):
         )
         self.assertEqual(
             autorisation.creation_date,
-            datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris")),
+            pytz_timezone("Europe/Paris").localize(datetime(2019, 1, 14)),
         )
         self.assertEqual(
             autorisation.mandat.expiration_date,
-            datetime(2019, 1, 17, tzinfo=pytz_timezone("Europe/Paris")),
+            pytz_timezone("Europe/Paris").localize(datetime(2019, 1, 17)),
         )
 
     def test_was_separately_revoked_auth_not_revoked(self):

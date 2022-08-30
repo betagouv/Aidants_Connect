@@ -613,7 +613,7 @@ class GenerateAttestationTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
 
     @freeze_time(
-        datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
+        pytz_timezone("Europe/Paris").localize(datetime(2020, 7, 18, 3, 20, 34, 0))
     )
     def test_attestation_contains_text(self):
         self.client.force_login(self.aidant_thierry)
