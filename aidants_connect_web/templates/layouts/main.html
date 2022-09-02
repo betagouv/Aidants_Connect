@@ -19,14 +19,15 @@
 
   {# Polyfills #}
   <script type="text/javascript">
-    if(/MSIE \d|Trident.*rv:/.test(navigator.userAgent)) {
-      {# ES2015+ polyfill (Promise, Array.from, Object.assign, generators) #}
-      {# https://www.npmjs.com/package/@babel/polyfill #}
-      document.write('<script src="https://unpkg.com/@babel/polyfill@7.12.1/dist/polyfill.js"><\/script>');
-      {# Polyfill URL and URLSearchParams to match last WHATWG specifications #}
-      {# https://www.npmjs.com/package/url-polyfill #}
-      document.write('<script src="https://unpkg.com/url-polyfill@1.1.12/url-polyfill.js"><\/script>');
-    }
+      if (/MSIE \d|Trident.*rv:/.test(navigator.userAgent)) {
+          {# ES2023+ polyfill (Promise, Array.from, Object.assign, generators) #}
+          {# https://github.com/zloirock/core-js #}
+          document.write(
+              '<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.25.0/minified.js" ' +
+              'integrity="sha512-Fx4zhNQxNeS/0IXsWj0GGbX5Y20ssWbrr2fioNdL2PvuKEhueF8tyownbHtHbbf3MzIVX7fZ4nx3JCIdrE9YJw==" ' +
+              'crossorigin="anonymous" referrerpolicy="no-referrer"><\/script>'
+          );
+      }
   </script>
   <!-- Search Engine -->
   <meta name="title" content="Aidants Connect - aidantsconnect.beta.gouv.fr">
