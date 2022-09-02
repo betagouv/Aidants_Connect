@@ -61,6 +61,13 @@ class Person(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if self.email:
+            self.email = self.email.lower()
+        super().save(force_insert, force_update, using, update_fields)
+
     def get_full_name(self):
         return str(self)
 

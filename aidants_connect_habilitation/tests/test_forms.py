@@ -42,6 +42,15 @@ class TestIssuerForm(TestCase):
 
         self.assertTrue(form.is_valid())
 
+    def test_email_lower(self):
+        form = get_form(
+            IssuerForm,
+            email="TEST@TEST.TEST",
+        )
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual("test@test.test", form.cleaned_data["email"])
+
 
 class TestOrganisationRequestForm(TestCase):
     def test_clean_type_passes(self):
@@ -360,9 +369,8 @@ class TestValidationFormForm(TestCase):
 class TestManagerForm(TestCase):
     def test_clean_type_zipcode_number_passes(self):
         form = get_form(
-            OrganisationRequestForm,
+            ManagerForm,
             ignore_errors=True,
-            type_id=RequestOriginConstants.OTHER.value,
             zipcode="01700",
         )
 
@@ -371,9 +379,8 @@ class TestManagerForm(TestCase):
 
     def test_clean_type_zipcode_not_number_raises_error(self):
         form = get_form(
-            OrganisationRequestForm,
+            ManagerForm,
             ignore_errors=True,
-            type_id=RequestOriginConstants.OTHER.value,
             zipcode="La Commune",
         )
 
@@ -381,6 +388,12 @@ class TestManagerForm(TestCase):
         self.assertEqual(
             form.errors["zipcode"], ["Veuillez entrer un code postal valide"]
         )
+
+    def test_email_lower(self):
+        form = get_form(ManagerForm, email="TEST@TEST.TEST")
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual("test@test.test", form.cleaned_data["email"])
 
 
 class TestBaseAidantRequestFormSet(TestCase):
