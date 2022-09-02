@@ -148,7 +148,12 @@ class AddressValidatableMixin(Form):
         raise NotImplementedError()
 
 
-class IssuerForm(PatchedErrorListForm):
+class CleanEmailMixin:
+    def clean_email(self):
+        return self.cleaned_data["email"].lower()
+
+
+class IssuerForm(PatchedErrorListForm, CleanEmailMixin):
     phone = AcPhoneNumberField(
         initial="",
         label="Téléphone",
@@ -351,7 +356,7 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
         widgets = {"address": TextInput}
 
 
-class PersonWithResponsibilitiesForm(PatchedErrorListForm):
+class PersonWithResponsibilitiesForm(PatchedErrorListForm, CleanEmailMixin):
     phone = AcPhoneNumberField(
         initial="",
         region=settings.PHONENUMBER_DEFAULT_REGION,
@@ -439,13 +444,13 @@ class EmailOrganisationValidationError(ValidationError):
         )
 
 
-class AidantRequestForm(PatchedErrorListForm):
+class AidantRequestForm(PatchedErrorListForm, CleanEmailMixin):
     def __init__(self, organisation: OrganisationRequest, **kwargs):
         self.organisation = organisation
         super().__init__(**kwargs)
 
     def clean_email(self):
-        email = self.cleaned_data["email"]
+        email = super().clean_email()
         # If self.instance is defined, se are modfiying an existing instance
         # not creating a new one
         if (not self.instance or not self.instance.pk) and AidantRequest.objects.filter(
