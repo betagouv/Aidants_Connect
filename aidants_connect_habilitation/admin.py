@@ -496,8 +496,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         message.save()
 
 
-if settings.AC_HABILITATION_FORM_ENABLED:
-    admin_site.register(Issuer, IssuerAdmin)
-    admin_site.register(Manager, ManagerAdmin)
-    admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
-    admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)
+admin_site.register(Issuer, IssuerAdmin)
+admin_site.register(Manager, ManagerAdmin)
+admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
+admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)
