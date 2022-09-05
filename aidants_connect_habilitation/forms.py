@@ -1,4 +1,5 @@
 from distutils.util import strtobool
+from re import sub as re_sub
 from typing import List, Tuple, Union
 
 from django.conf import settings
@@ -153,7 +154,16 @@ class AddressValidatableMixin(Form):
 
 class CleanEmailMixin:
     def clean_email(self):
-        return self.cleaned_data["email"].lower()
+        return self.cleaned_data["email"].lower().strip()
+
+
+class CleanZipCodeMixin:
+    def clean_zipcode(self):
+        data: str = re_sub(r"\s+", "", self.cleaned_data["zipcode"]).strip()
+        if not data.isdecimal():
+            raise ValidationError("Veuillez entrer un code postal valide")
+
+        return data
 
 
 class IssuerForm(PatchedErrorListForm, CleanEmailMixin):
@@ -196,7 +206,9 @@ class IssuerForm(PatchedErrorListForm, CleanEmailMixin):
         exclude = ["issuer_id", "email_verified"]
 
 
-class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
+class OrganisationRequestForm(
+    PatchedErrorListForm, AddressValidatableMixin, CleanZipCodeMixin
+):
     type = ChoiceField(required=True, choices=RequestOriginConstants.choices)
 
     name = CharField(
@@ -308,13 +320,6 @@ class OrganisationRequestForm(PatchedErrorListForm, AddressValidatableMixin):
 
         return self.data["france_services_number"]
 
-    def clean_zipcode(self):
-        data: str = self.cleaned_data["zipcode"]
-        if not data.isnumeric():
-            raise ValidationError("Veuillez entrer un code postal valide")
-
-        return data
-
     def clean(self):
         result = super().clean()
         super().post_clean()
@@ -374,7 +379,9 @@ class PersonWithResponsibilitiesForm(PatchedErrorListForm, CleanEmailMixin):
         exclude = ["id"]
 
 
-class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
+class ManagerForm(
+    PersonWithResponsibilitiesForm, AddressValidatableMixin, CleanZipCodeMixin
+):
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
@@ -416,13 +423,6 @@ class ManagerForm(PersonWithResponsibilitiesForm, AddressValidatableMixin):
         self.cleaned_data["city"] = address.city
         self.cleaned_data["city_insee_code"] = address.citycode
         self.cleaned_data["department_insee_code"] = address.context.department_number
-
-    def clean_zipcode(self):
-        data: str = self.cleaned_data["zipcode"]
-        if not data.isnumeric():
-            raise ValidationError("Veuillez entrer un code postal valide")
-
-        return data
 
     def clean(self):
         result = super().clean()
