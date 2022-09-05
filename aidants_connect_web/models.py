@@ -24,7 +24,7 @@ from django.utils.functional import cached_property
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from phonenumber_field.modelfields import PhoneNumberField
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     JOURNAL_ACTIONS,
     AuthorizationDurationChoices,
     AuthorizationDurations,

@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import FormView
 
-from aidants_connect.common.constants import AuthorizationDurations
+from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Aidant, Connection, Journal, Mandat, Usager

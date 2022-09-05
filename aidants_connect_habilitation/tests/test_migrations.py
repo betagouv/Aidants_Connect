@@ -1,6 +1,6 @@
 from django.test import TestCase, tag
 
-from aidants_connect.common.constants import RequestStatusConstants
+from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
 from aidants_connect_habilitation.utils import real_fix_orga_request_status

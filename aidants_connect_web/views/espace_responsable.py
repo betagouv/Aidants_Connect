@@ -9,7 +9,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect.common.constants import RequestStatusConstants
+from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.decorators import (
     activity_required,

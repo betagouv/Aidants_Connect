@@ -24,14 +24,17 @@ from django.utils.translation import gettext as _
 
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from aidants_connect.common.constants import MessageStakeholders, RequestOriginConstants
-from aidants_connect.common.forms import (
+from aidants_connect_common.forms import (
     AcPhoneNumberField,
     PatchedErrorList,
     PatchedErrorListForm,
     PatchedForm,
 )
-from aidants_connect.common.gouv_address_api import Address, search_adresses
+from aidants_connect_common.utils.constants import (
+    MessageStakeholders,
+    RequestOriginConstants,
+)
+from aidants_connect_common.utils.gouv_address_api import Address, search_adresses
 from aidants_connect_habilitation import models
 from aidants_connect_habilitation.models import (
     AidantRequest,

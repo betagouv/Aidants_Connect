@@ -6,4 +6,5 @@ class AidantsConnectCommonConfig(AppConfig):
     name = "aidants_connect_common"
 
     def ready(self):
+        import aidants_connect_common.lookups  # noqa
         import aidants_connect_common.signals  # noqa

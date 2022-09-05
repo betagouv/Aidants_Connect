@@ -181,7 +181,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "aidants_connect.common.context_processors.settings_variables",
+                "aidants_connect_common.context_processors.settings_variables",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
@@ -261,9 +261,6 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
 
 STATIC_ROOT = "staticfiles"
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "aidants_connect/common/static"),
-]
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"

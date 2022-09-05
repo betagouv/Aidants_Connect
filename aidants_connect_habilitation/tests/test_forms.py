@@ -3,12 +3,12 @@ from unittest.mock import Mock, patch
 from django.test import TestCase, override_settings
 from django.utils.http import quote, unquote
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect.common.gouv_address_api import Address
+from aidants_connect_common.utils.gouv_address_api import Address
 from aidants_connect_habilitation.forms import (
     AddressValidatableMixin,
     AidantRequestFormSet,

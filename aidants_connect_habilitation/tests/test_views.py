@@ -15,7 +15,7 @@ from django.utils.timezone import now
 from faker import Faker
 
 from aidants_connect import settings
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )

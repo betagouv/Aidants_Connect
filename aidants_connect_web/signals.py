@@ -9,7 +9,7 @@ from django.template import loader
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect.common.constants import RequestOriginConstants
+from aidants_connect_common.utils.constants import RequestOriginConstants
 from aidants_connect_web.models import Aidant, Journal, aidants__organisations_changed
 
 
