@@ -527,9 +527,5 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
         )
 
     def form_valid(self, formset: AidantRequestFormSet):
-        for form in formset:
-            form.instance.organisation = self.organisation
-
         formset.save()
-
         return super().form_valid(formset)
