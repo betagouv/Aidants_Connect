@@ -463,6 +463,10 @@ class AidantRequestForm(PatchedErrorListForm, CleanEmailMixin):
 
         return email
 
+    def save(self, commit=True):
+        self.instance.organisation = self.organisation
+        return super().save(commit)
+
     class Meta:
         model = AidantRequest
         exclude = ["organisation"]
