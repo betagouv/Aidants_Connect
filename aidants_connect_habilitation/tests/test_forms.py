@@ -291,6 +291,81 @@ class TestPersonnelForm(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(form.errors, [])
 
+    def test_is_valid_aidant_and_manager_same_email_manager_not_aidant(self):
+        email = "karl_marx@internationale.de"
+        organisation = DraftOrganisationRequestFactory()
+        manager_data = get_form(ManagerForm, is_aidant=False, email=email).clean()
+        aidants_form = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"initial": 1, "organisation": organisation},
+            email=email,
+        )
+
+        aidants_data = aidants_form.data
+
+        cleaned_data = {
+            **{
+                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
+                for k, v in manager_data.items()
+            },
+            **{
+                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
+                for k, v in aidants_data.items()
+            },
+        }
+
+        form = PersonnelForm(data=cleaned_data, organisation=organisation)
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual([], form.errors)
+
+    def test_is_not_valid_aidant_and_manager_same_email_manager_is_aidant(self):
+        email = "karl_marx@internationale.de"
+        organisation = DraftOrganisationRequestFactory()
+        manager_data = get_form(ManagerForm, is_aidant=True, email=email).clean()
+        aidants_form = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"initial": 1, "organisation": organisation},
+            email=email,
+        )
+
+        aidants_data = aidants_form.data
+
+        cleaned_data = {
+            **{
+                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
+                for k, v in manager_data.items()
+            },
+            **{
+                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
+                for k, v in aidants_data.items()
+            },
+        }
+
+        form = PersonnelForm(data=cleaned_data, organisation=organisation)
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            ["Vous avez déclaré plusieurs aidants avec la même addresse email"],
+            form.errors,
+        )
+        self.assertEqual(
+            [
+                "Vous avez déclaré cette personne comme aidante et déclaré un "
+                "autre aidant avec la même adresse email. Chaque aidant doit avoir "
+                "une adresse email unique."
+            ],
+            form.manager_form.errors["email"],
+        )
+        self.assertEqual(
+            [
+                "Cette personne a le même email que la personne que vous avez "
+                "déclarée comme responsable. Chaque aidant doit avoir "
+                "une adresse email unique."
+            ],
+            form.aidants_formset.forms[0].errors["email"],
+        )
+
     def test_save(self):
         organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 

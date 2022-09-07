@@ -594,22 +594,60 @@ class PersonnelForm:
             # Stop processing if form does not have data
             return
 
-        is_aidant = self.manager_form.cleaned_data.get("is_aidant")
+        self.clean_must_have_one_aidant()
+        self.clean_must_have_unique_emails()
+
+    def clean_must_have_unique_emails(self):
+        if not self.manager_form.cleaned_data.get("is_aidant"):
+            return
+        manager_email = self.manager_form.cleaned_data.get("email").strip()
+        bogus_aidants_forms = [
+            form
+            for form in self.aidants_formset.forms
+            if form.cleaned_data.get("email", "").strip() == manager_email
+        ]
+
+        if not bogus_aidants_forms:
+            return
+
+        self.add_error(
+            "Vous avez déclaré plusieurs aidants avec la même addresse email"
+        )
+
+        self.manager_form.add_error(
+            "email",
+            "Vous avez déclaré cette personne comme aidante et déclaré un "
+            "autre aidant avec la même adresse email. Chaque aidant doit avoir "
+            "une adresse email unique.",
+        )
+
+        for aidant_form in bogus_aidants_forms:
+            aidant_form.add_error(
+                "email",
+                "Cette personne a le même email que la personne que vous avez "
+                "déclarée comme responsable. Chaque aidant doit avoir "
+                "une adresse email unique.",
+            )
+
+    def clean_must_have_one_aidant(self):
+        manager_is_aidant = self.manager_form.cleaned_data.get("is_aidant")
         # If is_aidant is None, there was a ValidationError on this field
         # so we don't bother validating
-        if is_aidant is not None and not is_aidant and self.aidants_formset.is_empty():
-            self.add_error(
-                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
-                "l'organisation n'est pas elle-même déclarée comme aidante"
-            )
-            self.manager_form.add_error(
-                "is_aidant",
-                "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
-            )
-            self.aidants_formset.add_non_form_error(
-                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
-                "l'organisation n'est pas elle-même déclarée comme aidante"
-            )
+        if not self.aidants_formset.is_empty() or manager_is_aidant is True:
+            return
+
+        self.add_error(
+            "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+            "l'organisation n'est pas elle-même déclarée comme aidante"
+        )
+        self.manager_form.add_error(
+            "is_aidant",
+            "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
+        )
+        self.aidants_formset.add_non_form_error(
+            "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+            "l'organisation n'est pas elle-même déclarée comme aidante"
+        )
 
     def add_error(self, error: Union[ValidationError, str]):
         if not isinstance(error, ValidationError):
