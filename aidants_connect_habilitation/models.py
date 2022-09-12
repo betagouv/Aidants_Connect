@@ -423,31 +423,33 @@ class OrganisationRequest(models.Model):
                 self.save()
             responsable.save()
 
-        for aidant in self.aidant_requests.all():
-            if not HabilitationRequest.objects.filter(
-                email=self.manager.email, organisation=organisation
-            ).exists():
-                HabilitationRequest.objects.create(
-                    first_name=aidant.first_name,
-                    last_name=aidant.last_name,
-                    email=aidant.email,
-                    profession=aidant.profession,
-                    organisation=organisation,
-                )
+        self.create_aidants(organisation)
 
         if self.manager.is_aidant:
-            if not HabilitationRequest.objects.filter(
-                email=self.manager.email, organisation=organisation
-            ).exists():
-                HabilitationRequest.objects.create(
+            HabilitationRequest.objects.get_or_create(
+                email=self.manager.email,
+                organisation=organisation,
+                defaults=dict(
                     first_name=self.manager.first_name,
                     last_name=self.manager.last_name,
-                    email=self.manager.email,
                     profession=self.manager.profession,
-                    organisation=organisation,
-                )
+                ),
+            )
 
         return True
+
+    @transaction.atomic
+    def create_aidants(self, organisation: Organisation):
+        for aidant in self.aidant_requests.all():
+            HabilitationRequest.objects.get_or_create(
+                email=aidant.email,
+                organisation=organisation,
+                defaults=dict(
+                    first_name=aidant.first_name,
+                    last_name=aidant.last_name,
+                    profession=aidant.profession,
+                ),
+            )
 
     def refuse_request(self):
         if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
