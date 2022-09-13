@@ -41,6 +41,8 @@ from aidants_connect_habilitation.tests.factories import (
     ManagerFactory,
     OrganisationRequestFactory,
 )
+from aidants_connect_habilitation.tests.utils import get_form
+from aidants_connect_web.models import HabilitationRequest, Organisation
 
 
 @tag("habilitation")
@@ -1183,7 +1185,7 @@ class RequestReadOnlyViewTests(TestCase):
         self.assertNotContains(response, "modify-btn")
 
 
-class TestAddAidantsRequestView(TestCase):
+class AddAidantsRequestViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -1217,6 +1219,40 @@ class TestAddAidantsRequestView(TestCase):
                 messages[i].message,
                 "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
             )
+
+    def test_creates_aidants_when_request_is_validated(self):
+        org_req: OrganisationRequest = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            manager=ManagerFactory(is_aidant=False),
+        )
+        [AidantRequestFactory(organisation=org_req) for _ in range(3)]
+
+        # Create aidants_connect_web.models.Organisation &
+        # aidants_connect_web.models.HabilitationRequest objects
+        org_req.accept_request_and_create_organisation()
+        org_req.refresh_from_db()
+
+        organisation: Organisation = Organisation.objects.get(
+            data_pass_id=org_req.data_pass_id
+        )
+
+        self.assertEqual(RequestStatusConstants.VALIDATED.name, org_req.status)
+        self.assertEqual(
+            3, HabilitationRequest.objects.filter(organisation=organisation).count()
+        )
+
+        furthermore = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"organisation": org_req, "initial": 3},
+        ).data
+
+        self.client.post(
+            self.__get_url(org_req.issuer.issuer_id, org_req.uuid), furthermore
+        )
+
+        self.assertEqual(
+            6, HabilitationRequest.objects.filter(organisation=organisation).count()
+        )
 
     def __get_url(self, issuer_id, uuid):
         return reverse(

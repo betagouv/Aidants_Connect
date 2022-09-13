@@ -48,6 +48,8 @@ __all__ = [
     "AddAidantsRequestView",
 ]
 
+from aidants_connect_web.models import Organisation
+
 """Mixins"""
 
 
@@ -528,4 +530,8 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
 
     def form_valid(self, formset: AidantRequestFormSet):
         formset.save()
+        if self.organisation.status == RequestStatusConstants.VALIDATED.name:
+            self.organisation.create_aidants(
+                Organisation.objects.get(data_pass_id=self.organisation.data_pass_id)
+            )
         return super().form_valid(formset)
