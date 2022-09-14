@@ -454,7 +454,7 @@ class AidantWithMandatsFilter(SimpleListFilter):
 
         return queryset.filter(
             journal_entries__action=JournalActionKeywords.CREATE_ATTESTATION
-        )
+        ).distinct()
 
 
 class AidantDepartmentFilter(DepartmentFilter):
@@ -485,6 +485,13 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     display_totp_device_status.short_description = "Carte TOTP Activée"
     display_totp_device_status.boolean = True
 
+    def display_mandates_count(self, obj: Aidant):
+        return Journal.objects.filter(
+            action=JournalActionKeywords.CREATE_ATTESTATION, aidant=obj
+        ).count()
+
+    display_mandates_count.short_description = "Nombre de mandats créés"
+
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
@@ -494,6 +501,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "validated_cgu_version",
         "display_totp_device_status",
         "carte_totp",
+        "display_mandates_count",
     )
 
     # For bulk import
@@ -508,6 +516,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "id",
         "email",
         "organisation",
+        "display_mandates_count",
         "carte_totp",
         "is_active",
         "can_create_mandats",
@@ -552,6 +561,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "profession",
                     "organisation",
                     "organisations",
+                    "display_mandates_count",
                 )
             },
         ),
