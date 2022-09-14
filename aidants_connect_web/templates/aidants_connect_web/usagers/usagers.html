@@ -12,7 +12,6 @@
   <section
     class="section"
     data-controller="search"
-    data-search-irrelevant-result-class="irrelevant-result"
   >
     <div class="container">
       <div class="row">
@@ -78,5 +77,6 @@
 
 {% block extrajs %}
   {% stimulusjs %}
+  <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/users_search.js' %}"></script>
 {% endblock %}
