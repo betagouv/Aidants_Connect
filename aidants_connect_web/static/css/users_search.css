@@ -6,6 +6,6 @@
     align-self: center;
 }
 
-.irrelevant-result {
+[hidden] {
     display: none;
 }
