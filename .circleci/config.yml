@@ -56,7 +56,7 @@ jobs:
           name: run unit tests
           command: |
             . venv/bin/activate
-            coverage run manage.py test
+            coverage run manage.py test --parallel
       - run:
           name: coverage report
           command: |
