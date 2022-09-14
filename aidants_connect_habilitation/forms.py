@@ -4,6 +4,7 @@ from typing import List, Tuple, Union
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.forms import (
     BaseModelFormSet,
     BooleanField,
@@ -435,15 +436,29 @@ class ManagerForm(
 
 
 class EmailOrganisationValidationError(ValidationError):
-    def __init__(self, email):
+    _MESSAGE = _(
+        "Il y a déjà un aidant ou une aidante avec l'adresse email '%(email)s' "
+        "dans cette organisation. Chaque aidant ou aidante doit avoir "
+        "son propre e-mail nominatif."
+    )
+
+    def __init__(self, email, message=_MESSAGE):
         super().__init__(
-            _(
-                "Il y a déjà un aidant ou une aidante avec l'adresse email '%(email)s' "
-                "dans cette organisation. Chaque aidant ou aidante doit avoir "
-                "son propre e-mail nominatif."
-            ),
+            message,
             code="unique_together",
             params={"email": email},
+        )
+
+
+class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
+    def __init__(self, email):
+        super().__init__(
+            email,
+            _(
+                "Le ou la responsable de cette organisation est aussi déclarée"
+                "comme aidante avec l'email '%(email)s'. Chaque aidant ou aidante "
+                "doit avoir son propre e-mail nominatif."
+            ),
         )
 
 
@@ -454,12 +469,22 @@ class AidantRequestForm(PatchedErrorListForm, CleanEmailMixin):
 
     def clean_email(self):
         email = super().clean_email()
-        # If self.instance is defined, se are modfiying an existing instance
-        # not creating a new one
-        if (not self.instance or not self.instance.pk) and AidantRequest.objects.filter(
-            organisation=self.organisation, email=email
-        ).exists():
+
+        query = Q(organisation=self.organisation) & Q(email=email)
+        if getattr(self.instance, "pk"):
+            # This user already exists, and we need to verify that
+            # we are not trying to modify its email with the email
+            # of antoher aidant in the organisation
+            query = query & ~Q(pk=self.instance.pk)
+        if AidantRequest.objects.filter(query).exists():
             raise EmailOrganisationValidationError(email)
+
+        if (
+            self.organisation.manager
+            and self.organisation.manager.is_aidant
+            and self.organisation.manager.email == email
+        ):
+            raise ManagerEmailOrganisationValidationError(email)
 
         return email
 

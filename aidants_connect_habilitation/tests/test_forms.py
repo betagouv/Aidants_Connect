@@ -11,6 +11,7 @@ from aidants_connect_common.utils.constants import (
 from aidants_connect_common.utils.gouv_address_api import Address
 from aidants_connect_habilitation.forms import (
     AddressValidatableMixin,
+    AidantRequestForm,
     AidantRequestFormSet,
     IssuerForm,
     ManagerForm,
@@ -20,8 +21,10 @@ from aidants_connect_habilitation.forms import (
 )
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
+    AidantRequestFactory,
     DraftOrganisationRequestFactory,
     ManagerFactory,
+    OrganisationRequestFactory,
     address_factory,
 )
 from aidants_connect_habilitation.tests.utils import get_form
@@ -471,6 +474,96 @@ class TestManagerForm(TestCase):
         self.assertEqual("test@test.test", form.cleaned_data["email"])
 
 
+class TestAidantRequestForm(TestCase):
+    def test_clean_aidant_with_same_email_as_manager(self):
+        # Case manager is aidant: error
+        manager = ManagerFactory(is_aidant=True)
+        organisation = OrganisationRequestFactory(manager=manager)
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation},
+            email=organisation.manager.email,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            [
+                "Le ou la responsable de cette organisation est aussi déclarée"
+                f"comme aidante avec l'email '{organisation.manager.email}'. "
+                "Chaque aidant ou aidante doit avoir son propre e-mail nominatif."
+            ],
+            form.errors["email"],
+        )
+
+        # Case manager is not aidant: no error
+        manager = ManagerFactory(is_aidant=False)
+        organisation = OrganisationRequestFactory(manager=manager)
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation},
+            email=organisation.manager.email,
+        )
+
+        self.assertTrue(form.is_valid())
+
+    def test_clean_aidant_with_same_email_as_another_aidant(self):
+        organisation = OrganisationRequestFactory()
+        aidant = AidantRequestFactory(organisation=organisation)
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation},
+            email=aidant.email,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            [
+                f"Il y a déjà un aidant ou une aidante avec l'adresse email "
+                f"'{aidant.email}' dans cette organisation. Chaque aidant ou "
+                f"aidante doit avoir son propre e-mail nominatif."
+            ],
+            form.errors["email"],
+        )
+
+    def test_clean_aidant_modifying_email_of_an_existing_user(self):
+        organisation = OrganisationRequestFactory()
+        aidant = AidantRequestFactory(organisation=organisation)
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation, "instance": aidant},
+            email="test@test.test",
+        )
+
+        self.assertTrue(form.is_valid())
+
+    def test_clean_aidant_modifying_email_of_an_existing_user_with_already_existing_user(  # noqa
+        self,
+    ):
+        organisation = OrganisationRequestFactory()
+        aidant1 = AidantRequestFactory(organisation=organisation)
+        aidant2 = AidantRequestFactory(organisation=organisation)
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation, "instance": aidant1},
+            email=aidant2.email,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            [
+                f"Il y a déjà un aidant ou une aidante avec l'adresse email "
+                f"'{aidant2.email}' dans cette organisation. Chaque aidant ou "
+                f"aidante doit avoir son propre e-mail nominatif."
+            ],
+            form.errors["email"],
+        )
+
+
 class TestBaseAidantRequestFormSet(TestCase):
     def test_is_empty(self):
         organisation = DraftOrganisationRequestFactory()
@@ -494,6 +587,26 @@ class TestBaseAidantRequestFormSet(TestCase):
         form = AidantRequestFormSet(data=data, organisation=organisation)
         self.assertFalse(form.is_valid())
         self.assertEqual(form.is_empty(), False)
+
+    def test_clean_multiple_aidants_with_same_email(self):
+        organisation = DraftOrganisationRequestFactory()
+        form = get_form(
+            AidantRequestFormSet,
+            ignore_errors=True,
+            form_init_kwargs={"initial": 2, "organisation": organisation},
+            email="karl_marx@internationale.de",
+        )
+
+        self.assertFalse(form.is_valid())
+        error_message = (
+            "Il y a déjà un aidant ou une aidante avec l'adresse email "
+            "'karl_marx@internationale.de' dans cette organisation. "
+            "Chaque aidant ou aidante doit avoir son propre e-mail nominatif."
+        )
+        self.assertEqual(
+            [[error_message], [error_message]],
+            [subform.errors["email"] for subform in form.forms],
+        )
 
 
 @override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=False)
