@@ -2,16 +2,106 @@ from django.contrib.admin.sites import AdminSite
 from django.core import mail
 from django.test import TestCase, tag
 from django.test.client import RequestFactory
+from django.utils.timezone import now
 
 from aidants_connect.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.models import Region
-from aidants_connect_web.admin import HabilitationRequestAdmin, OrganisationAdmin
-from aidants_connect_web.models import HabilitationRequest, Organisation
+from aidants_connect_common.utils.constants import AuthorizationDurations
+from aidants_connect_web.admin import (
+    AidantAdmin,
+    AidantWithMandatsFilter,
+    HabilitationRequestAdmin,
+    OrganisationAdmin,
+)
+from aidants_connect_web.models import (
+    Aidant,
+    HabilitationRequest,
+    Journal,
+    Mandat,
+    Organisation,
+)
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     HabilitationRequestFactory,
+    MandatFactory,
     OrganisationFactory,
 )
+
+
+@tag("admin")
+class TestAidantWithMandatsFilter(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation1 = OrganisationFactory()
+        cls.organisation2 = OrganisationFactory()
+
+        cls.aidant_with_mandat1 = AidantFactory(organisation=cls.organisation1)
+        cls.mandat1: Mandat = MandatFactory()
+        Journal.log_attestation_creation(
+            aidant=cls.aidant_with_mandat1,
+            usager=cls.mandat1.usager,
+            demarches=list(
+                cls.mandat1.autorisations.values_list("demarche", flat=True)
+            ),
+            duree=AuthorizationDurations.duration(cls.mandat1.duree_keyword, now()),
+            is_remote_mandat=False,
+            access_token="",
+            attestation_hash="",
+            mandat=cls.mandat1,
+        )
+
+        cls.aidant_without_mandat1 = AidantFactory(organisation=cls.organisation1)
+        cls.aidant_with_mandat2 = AidantFactory(organisation=cls.organisation2)
+        cls.mandat2 = MandatFactory()
+        Journal.log_attestation_creation(
+            aidant=cls.aidant_with_mandat2,
+            usager=cls.mandat2.usager,
+            demarches=list(
+                cls.mandat2.autorisations.values_list("demarche", flat=True)
+            ),
+            duree=AuthorizationDurations.duration(cls.mandat2.duree_keyword, now()),
+            is_remote_mandat=False,
+            access_token="",
+            attestation_hash="",
+            mandat=cls.mandat2,
+        )
+        cls.aidant_without_mandat2 = AidantFactory(organisation=cls.organisation2)
+
+    def test_queryset(self):
+        all_filter = AidantWithMandatsFilter(
+            self.client.get("/"), {}, Aidant, AidantAdmin
+        )
+
+        self.assertEqual(
+            set(Aidant.objects.all()),
+            set(all_filter.queryset(self.client.get("/"), Aidant.objects.all())),
+        )
+
+        with_mandates_filter = AidantWithMandatsFilter(
+            self.client.get("/"),
+            {AidantWithMandatsFilter.parameter_name: "true"},
+            Aidant,
+            AidantAdmin,
+        )
+
+        self.assertEqual(
+            {self.aidant_with_mandat1, self.aidant_with_mandat2},
+            set(
+                with_mandates_filter.queryset(
+                    self.client.get("/"), Aidant.objects.all()
+                )
+            ),
+        )
+
+        self.assertEqual(
+            {self.aidant_with_mandat1},
+            set(
+                with_mandates_filter.queryset(
+                    self.client.get("/"),
+                    Aidant.objects.filter(organisation=self.organisation1),
+                ).order_by("pk")
+            ),
+        )
 
 
 @tag("admin")

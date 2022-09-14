@@ -35,6 +35,7 @@ from aidants_connect.admin import (
     admin_site,
 )
 from aidants_connect_common.models import Department
+from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
@@ -42,6 +43,7 @@ from aidants_connect_web.forms import (
 )
 from aidants_connect_web.models import (
     Aidant,
+    AidantManager,
     Autorisation,
     CarteTOTP,
     Connection,
@@ -439,6 +441,22 @@ class AidantResource(resources.ModelResource):
             totp_device.save()
 
 
+class AidantWithMandatsFilter(SimpleListFilter):
+    title = "Avec/sans mandats"
+    parameter_name = "with_mandates"
+
+    def lookups(self, request, model_admin):
+        return [("true", "Avec des mandats")]
+
+    def queryset(self, request, queryset: AidantManager):
+        if self.value() != "true":
+            return queryset
+
+        return queryset.filter(
+            journal_entries__action=JournalActionKeywords.CREATE_ATTESTATION
+        )
+
+
 class AidantDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisations__zipcode"
 
@@ -500,6 +518,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_active",
         AidantRegionFilter,
         AidantDepartmentFilter,
+        AidantWithMandatsFilter,
         "is_staff",
         "is_superuser",
     )
