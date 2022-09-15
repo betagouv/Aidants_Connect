@@ -122,7 +122,6 @@ INSTALLED_APPS = [
     "aidants_connect_overrides",
     "django.contrib.admin",
     "nested_admin",
-    "tabbed_admin",
     "magicauth",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -415,7 +414,6 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
-    "'sha256-FUfFEwUd+ObSebyGDfkxyV7KwtyvBBwsE/VxIOfPD68='",  # tabbed_admin
     "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
@@ -494,9 +492,6 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
 
 # Staff Organisation name
 STAFF_ORGANISATION_NAME = "BetaGouv"
-
-# Tabbed Admin
-TABBED_ADMIN_USE_JQUERY_UI = True
 
 # Shell Plus
 SHELL_PLUS_IMPORTS = [
