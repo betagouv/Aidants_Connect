@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from unittest import mock
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.test import TestCase, override_settings, tag
@@ -8,7 +9,6 @@ from django.urls import reverse
 
 import jwt
 from freezegun import freeze_time
-from pytz import timezone as pytz_timezone
 
 from aidants_connect_common.utils.constants import AuthorizationDurationChoices
 from aidants_connect_web.models import Connection, Journal, Usager
@@ -37,7 +37,7 @@ class FCAuthorize(TestCase):
         self.assertNotEqual(connection.state, "")
 
 
-DATE = pytz_timezone("Europe/Paris").localize(datetime(2019, 1, 14, 3, 20, 34, 0))
+DATE = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=ZoneInfo("Europe/Paris"))
 TEST_FC_CONNECTION_AGE = 300
 
 

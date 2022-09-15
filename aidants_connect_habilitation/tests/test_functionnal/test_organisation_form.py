@@ -1,3 +1,4 @@
+from random import randint
 from typing import List, Optional
 from unittest.mock import Mock, patch
 
@@ -22,7 +23,7 @@ from aidants_connect_habilitation.tests.factories import (
 )
 from aidants_connect_habilitation.tests.utils import load_json_fixture
 
-FIXED_PORT = 34567
+FIXED_PORT = randint(8081, 8179)
 
 
 def _django_server_url(path):

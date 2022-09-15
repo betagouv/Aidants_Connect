@@ -1,12 +1,12 @@
 from datetime import datetime
 from logging import Logger
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from metabasepy import Client
-from pytz import timezone as pytz_timezone
 
 from aidants_connect_web.models import HabilitationRequest
 
@@ -26,9 +26,9 @@ def import_pix_results(*, logger=None):
     json_result = cli.cards.download(card_id=card_id, format="json")
 
     for person in json_result:
-        date_test_pix = pytz_timezone("Europe/Paris").localize(
-            datetime.strptime(person["date d'envoi"], "%Y-%m-%d")
-        )
+        date_test_pix = datetime.strptime(
+            person["date d'envoi"], "%Y-%m-%d"
+        ).astimezone(ZoneInfo("Europe/Paris"))
         aidants = HabilitationRequest.objects.filter(email=person["email saisi"])
         if aidants.exists():
             aidant_a_former = aidants[0]
