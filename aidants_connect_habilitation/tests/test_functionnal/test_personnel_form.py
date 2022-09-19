@@ -412,7 +412,9 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        error_element = self.selenium.find_element(By.CSS_SELECTOR, "form p.errorlist")
+        error_element = self.selenium.find_element(
+            By.CSS_SELECTOR, ".aidant-forms p.errorlist"
+        )
 
         self.assertEqual(
             error_element.text,

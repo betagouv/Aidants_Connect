@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
 
-from aidants_connect_common.forms import PatchedErrorListForm
+from aidants_connect_common.forms import PatchedModelForm
 from aidants_connect_common.utils.constants import (
     MessageStakeholders,
     RequestOriginConstants,
@@ -132,7 +132,7 @@ class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
 
 
 class AdressAutocompleteJSMixin:
-    def define_html_attributes(self, form: PatchedErrorListForm):
+    def define_html_attributes(self, form: PatchedModelForm):
         form.widget_attrs(
             "address",
             {
