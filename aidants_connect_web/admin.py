@@ -25,7 +25,6 @@ from import_export.fields import Field
 from import_export.results import RowResult
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from nested_admin import NestedModelAdmin, NestedTabularInline
-from tabbed_admin import TabbedModelAdmin
 
 from aidants_connect.admin import (
     DepartmentFilter,
@@ -979,16 +978,16 @@ class UsagerMandatInline(VisibleToTechAdmin, NestedTabularInline):
     inlines = (UsagerAutorisationInline,)
 
 
-class UsagerAdmin(
-    SpecificDeleteActionsMixin, VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin
-):
+class UsagerAdmin(SpecificDeleteActionsMixin, VisibleToTechAdmin, NestedModelAdmin):
     list_display = ("__str__", "email", "creation_date")
     search_fields = ("given_name", "family_name", "email")
 
-    tab_infos = (("Info", {"fields": ("given_name", "family_name", "email", "phone")}),)
-    tab_mandats = (UsagerMandatInline,)
+    fieldsets = (
+        ("Informations", {"fields": ("given_name", "family_name", "email", "phone")}),
+    )
 
-    tabs = [("Informations", tab_infos), ("Mandats", tab_mandats)]
+    inlines = (UsagerMandatInline,)
+
     actions = ("specific_delete_action",)
 
     def specific_delete_action(self, request, queryset):
