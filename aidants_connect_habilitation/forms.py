@@ -3,7 +3,6 @@ from re import sub as re_sub
 from typing import List, Tuple, Union
 from urllib.parse import quote, unquote
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.forms import (
@@ -23,8 +22,6 @@ from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext as _
-
-from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
@@ -171,10 +168,6 @@ class IssuerForm(PatchedModelForm, CleanEmailMixin):
     phone = AcPhoneNumberField(
         initial="",
         label="Téléphone",
-        region=settings.PHONENUMBER_DEFAULT_REGION,
-        widget=PhoneNumberInternationalFallbackWidget(
-            region=settings.PHONENUMBER_DEFAULT_REGION
-        ),
         required=False,
     )
 
@@ -367,10 +360,6 @@ class OrganisationRequestForm(
 class PersonWithResponsibilitiesForm(PatchedModelForm, CleanEmailMixin):
     phone = AcPhoneNumberField(
         initial="",
-        region=settings.PHONENUMBER_DEFAULT_REGION,
-        widget=PhoneNumberInternationalFallbackWidget(
-            region=settings.PHONENUMBER_DEFAULT_REGION
-        ),
         required=False,
     )
 
