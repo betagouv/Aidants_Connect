@@ -12,6 +12,7 @@ from magicauth.forms import EmailForm as MagicAuthEmailForm
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
+from aidants_connect_common.forms import PatchedForm
 from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
 from aidants_connect_web.models import (
     Aidant,
@@ -153,7 +154,7 @@ class LoginEmailForm(MagicAuthEmailForm):
         return user_email
 
 
-class MandatForm(forms.Form):
+class MandatForm(PatchedForm):
     DEMARCHES = [(key, value) for key, value in settings.DEMARCHES.items()]
     demarche = forms.MultipleChoiceField(
         choices=DEMARCHES,

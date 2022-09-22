@@ -1,6 +1,7 @@
 from distutils.util import strtobool
 from re import sub as re_sub
 from typing import List, Tuple, Union
+from urllib.parse import quote, unquote
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -21,7 +22,6 @@ from django.forms import (
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.http import quote, unquote
 from django.utils.translation import gettext as _
 
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
@@ -29,8 +29,8 @@ from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
     PatchedErrorList,
-    PatchedErrorListForm,
     PatchedForm,
+    PatchedModelForm,
 )
 from aidants_connect_common.utils.constants import (
     MessageStakeholders,
@@ -167,7 +167,7 @@ class CleanZipCodeMixin:
         return data
 
 
-class IssuerForm(PatchedErrorListForm, CleanEmailMixin):
+class IssuerForm(PatchedModelForm, CleanEmailMixin):
     phone = AcPhoneNumberField(
         initial="",
         label="Téléphone",
@@ -178,9 +178,8 @@ class IssuerForm(PatchedErrorListForm, CleanEmailMixin):
         required=False,
     )
 
-    def __init__(self, render_non_editable=False, **kwargs):
-        kwargs.setdefault("label_suffix", "")
-        super().__init__(**kwargs)
+    def __init__(self, *args, render_non_editable=False, **kwargs):
+        super().__init__(*args, **kwargs)
         self.render_non_editable = render_non_editable
         if self.render_non_editable:
             self.auto_id = False
@@ -208,7 +207,7 @@ class IssuerForm(PatchedErrorListForm, CleanEmailMixin):
 
 
 class OrganisationRequestForm(
-    PatchedErrorListForm, AddressValidatableMixin, CleanZipCodeMixin
+    PatchedModelForm, AddressValidatableMixin, CleanZipCodeMixin
 ):
     type = ChoiceField(required=True, choices=RequestOriginConstants.choices)
 
@@ -248,8 +247,8 @@ class OrganisationRequestForm(
         required=False,
     )
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.widget_attrs(
             "type_other",
@@ -365,7 +364,7 @@ class OrganisationRequestForm(
         widgets = {"address": TextInput}
 
 
-class PersonWithResponsibilitiesForm(PatchedErrorListForm, CleanEmailMixin):
+class PersonWithResponsibilitiesForm(PatchedModelForm, CleanEmailMixin):
     phone = AcPhoneNumberField(
         initial="",
         region=settings.PHONENUMBER_DEFAULT_REGION,
@@ -462,10 +461,10 @@ class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
         )
 
 
-class AidantRequestForm(PatchedErrorListForm, CleanEmailMixin):
-    def __init__(self, organisation: OrganisationRequest, **kwargs):
+class AidantRequestForm(PatchedModelForm, CleanEmailMixin):
+    def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
         self.organisation = organisation
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean_email(self):
         email = super().clean_email()
@@ -500,8 +499,8 @@ class AidantRequestForm(PatchedErrorListForm, CleanEmailMixin):
 class BaseAidantRequestFormSet(BaseModelFormSet):
     def __init__(self, organisation: OrganisationRequest, **kwargs):
         self.organisation = organisation
-        kwargs.setdefault("queryset", AidantRequest.objects.none())
         kwargs.setdefault("error_class", PatchedErrorList)
+        kwargs.setdefault("queryset", AidantRequest.objects.none())
 
         super().__init__(**kwargs)
 
@@ -741,8 +740,8 @@ class ValidationForm(PatchedForm):
         label="Votre message", required=False, widget=Textarea(attrs={"rows": 4})
     )
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         cgu = self["cgu"]
         cgu.label = format_html(cgu.label, url=reverse("cgu"))
 
@@ -761,11 +760,11 @@ class ValidationForm(PatchedForm):
     save.alters_data = True
 
 
-class RequestMessageForm(PatchedErrorListForm):
+class RequestMessageForm(PatchedModelForm):
     content = CharField(label="Votre message", widget=Textarea(attrs={"rows": 2}))
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.widget_attrs("content", {"data-message-form-target": "textarea"})
 
     class Meta:
@@ -777,6 +776,6 @@ class AdminAcceptationOrRefusalForm(PatchedForm):
     email_subject = CharField(label="Sujet de l’email", required=True)
     email_body = CharField(label="Contenu de l’email", widget=Textarea, required=True)
 
-    def __init__(self, organisation, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, organisation, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.organisation = organisation

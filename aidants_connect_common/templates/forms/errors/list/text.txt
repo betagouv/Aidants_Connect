@@ -1,0 +1,9 @@
+{% load ac_common %}
+{% linebreakless %}
+{% if errors %}
+{% if errors|length == 1 %}{{ errors|first }}
+{% else %}{% for error in errors %}* {{ error }}{% list_term %}{% keeplinebreak %}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% endlinebreakless %}

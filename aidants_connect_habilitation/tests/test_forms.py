@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
+from urllib.parse import quote, unquote
 
 from django.test import TestCase, override_settings
-from django.utils.http import quote, unquote
 
 from aidants_connect_common.utils.constants import (
     MessageStakeholders,
