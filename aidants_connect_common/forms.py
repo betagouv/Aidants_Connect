@@ -7,6 +7,7 @@ from django.forms.utils import ErrorList
 
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.phonenumber import to_python
+from phonenumbers.phonenumber import PhoneNumber
 
 
 class PatchedErrorList(ErrorList):
@@ -44,9 +45,13 @@ class AcPhoneNumberField(PhoneNumberField):
 
     regions = ("FR", "GP", "GF", "MQ", "RE", "KM", "PM")
 
-    def to_python(self, value):
+    def to_python(self, value: PhoneNumber | str):
         for region in self.regions:
-            phone_number = to_python(value, region=region)
+            # value can be of type PhoneNumber in which case `to_python`
+            # does not convert it again using the new region. We need
+            # to force conversion of value to string here to ensure
+            # the correct region is used.
+            phone_number = to_python(f"{value}", region=region)
 
             if phone_number in validators.EMPTY_VALUES:
                 return self.empty_value

@@ -9,10 +9,8 @@ from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
 from magicauth.forms import EmailForm as MagicAuthEmailForm
-from phonenumber_field.formfields import PhoneNumberField
-from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from aidants_connect_common.forms import PatchedForm
+from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
 from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
 from aidants_connect_web.models import (
     Aidant,
@@ -198,12 +196,8 @@ class MandatForm(PatchedForm):
 
     is_remote = forms.BooleanField(required=False)
 
-    user_phone = PhoneNumberField(
+    user_phone = AcPhoneNumberField(
         initial="",
-        region=settings.PHONENUMBER_DEFAULT_REGION,
-        widget=PhoneNumberInternationalFallbackWidget(
-            region=settings.PHONENUMBER_DEFAULT_REGION
-        ),
         required=False,
     )
 
