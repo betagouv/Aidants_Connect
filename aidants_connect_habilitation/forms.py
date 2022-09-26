@@ -617,11 +617,14 @@ class PersonnelForm:
     def clean_must_have_unique_emails(self):
         if not self.manager_form.cleaned_data.get("is_aidant"):
             return
-        manager_email = self.manager_form.cleaned_data.get("email").strip()
+        if not (manager_email := self.manager_form.cleaned_data.get("email")):
+            # if manager's email is None, we don't need to perform
+            # that check since manager's email needs to be set
+            return
         bogus_aidants_forms = [
             form
             for form in self.aidants_formset.forms
-            if form.cleaned_data.get("email", "").strip() == manager_email
+            if form.cleaned_data.get("email", "") == manager_email
         ]
 
         if not bogus_aidants_forms:
