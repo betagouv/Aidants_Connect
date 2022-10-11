@@ -535,7 +535,6 @@ AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM = os.getenv(
     "AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM", SUPPORT_EMAIL
 )
 
-
 default = "3"
 val = os.getenv("EMAIL_CONFIRMATION_EXPIRE_DAYS", default)
 EMAIL_CONFIRMATION_EXPIRE_DAYS = int(val) if val.isnumeric() else default
