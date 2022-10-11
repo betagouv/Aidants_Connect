@@ -63,12 +63,25 @@ class ImportAidantTests(FunctionalTestCase):
             By.XPATH, "//select[@id='id_input_format']/option[text()='xlsx']"
         )
         xlsx_type_option.click()
+
+        import_type_option = self.selenium.find_element(
+            By.XPATH,
+            "//select[@id='id_import_choices']/option[text()='Importer des aidants classiquement']",  # noqa
+        )
+        import_type_option.click()
         file_import_submit = self.selenium.find_element(
             By.XPATH, "//input[@type='submit']"
         )
         file_import_submit.click()
         try:
             self.selenium.find_element(By.XPATH, "//table[@class='import-preview']")
+
+            import_type_option = self.selenium.find_element(
+                By.XPATH,
+                "//select[@id='id_import_choices']/option[text()='Importer des aidants classiquement']",  # noqa
+            )
+            import_type_option.click()
+
         except NoSuchElementException:
             first_error = self.selenium.find_element(
                 By.XPATH, "//div[@class='errors']/details[1]/summary"

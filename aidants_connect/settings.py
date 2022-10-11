@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "admin_honeypot",
     "django_otp",
+    "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
@@ -140,6 +141,7 @@ INSTALLED_APPS = [
     "aidants_connect_common",
     "aidants_connect_web",
     "aidants_connect_habilitation",
+    "aidants_connect_sandbox",
 ]
 
 # Additionnal app to execute only during tests
@@ -533,6 +535,7 @@ AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM = os.getenv(
     "AIDANTS__ORGANISATIONS_CHANGED_EMAIL_FROM", SUPPORT_EMAIL
 )
 
+
 default = "3"
 val = os.getenv("EMAIL_CONFIRMATION_EXPIRE_DAYS", default)
 EMAIL_CONFIRMATION_EXPIRE_DAYS = int(val) if val.isnumeric() else default
@@ -565,6 +568,10 @@ EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY = os.getenv(
 
 EMAIL_ORGANISATION_REQUEST_FROM = os.getenv(
     "EMAIL_ORGANISATION_REQUEST_FROM", SUPPORT_EMAIL
+)
+
+EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM = os.getenv(
+    "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM", SUPPORT_EMAIL
 )
 
 EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT = os.getenv(
@@ -618,3 +625,8 @@ if not GOUV_ADDRESS_SEARCH_API_DISABLED:
 
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+
+
+# ########################" SANDBOX SETTING ############################
+
+ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
