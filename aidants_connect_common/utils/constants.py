@@ -99,6 +99,9 @@ class JournalActionKeywords:
     INIT_RENEW_MANDAT = "init_renew_mandat"
     TRANSFER_MANDAT = "transfer_mandat"
     SWITCH_ORGANISATION = "switch_organisation"
+    REMOTE_MANDAT_CONSENT_RECEIVED = "remote_mandat_consent_received"
+    REMOTE_MANDAT_DENIAL_RECEIVED = "remote_mandat_denial_received"
+    REMOTE_MANDAT_CONSENT_SENT = "remote_mandat_consent_sent"
 
 
 JOURNAL_ACTIONS = (
@@ -131,6 +134,18 @@ JOURNAL_ACTIONS = (
         "Transférer un mandat à une autre organisation",
     ),
     (JournalActionKeywords.SWITCH_ORGANISATION, "Changement d'organisation"),
+    (
+        JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
+        "Consentement reçu pour un mandat conclu à distance",
+    ),
+    (
+        JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+        "Refus reçu pour un mandat conclu à distance",
+    ),
+    (
+        JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+        "Demande de consentement pour un mandat conclu à distance envoyé",
+    ),
 )
 
 

@@ -1,6 +1,6 @@
 {% extends 'layouts/main.html' %}
 
-{% load static %}
+{% load static form_extras ac_common %}
 
 {% block title %}Aidants Connect - Nouveau mandat{% endblock %}
 
@@ -67,7 +67,12 @@
       </p>
     </div>
   </section>
-  <section id="mandat_specifications" class="section section-grey">
+  <section
+    id="mandat_specifications"
+    class="section section-grey"
+    data-controller="new-mandat-form"
+    data-new-mandat-form-sms-method-value="{{ sms_method_value }}"
+  >
     <div class="container">
       <form method="post">
         {% if form.errors %}
@@ -81,7 +86,9 @@
               id="demarche_error_notification"
               class="notification error"
               role="alert"
-            >{{ form.errors.demarche }}</section>
+            >
+              {{ form.errors.demarche }}
+            </section>
           {% endif %}
           <fieldset id="demarches_list">
             <legend class="sr-only">Sélectionnez la ou les démarche(s)</legend>
@@ -153,23 +160,12 @@
             La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
             {{ form.is_remote }}
           </label>
-          <div id="phone_number_panel" class="card padding-1" hidden aria-hidden="true">
-            {% if form.errors.user_phone %}
-              <section class="notification error" role="alert">
-                {{ form.errors.user_phone }}
-              </section>
-            {% endif %}
-            <label for="id_user_phone">
-              Veuillez entrer le numéro de téléphone de l'usager ou de l'usagère :
-            </label>
-            <input
-              id="id_user_phone"
-              type="tel"
-              name="{{ form.user_phone.name }}"
-              value="{{ form.user_phone.value }}"
-              {% if form.errors.user_phone %}aria-describedby="phone_number_panel"{% endif %}
-            />
-          </div>
+          <section hidden aria-hidden="true" data-new-mandat-form-target="remoteContentSection">
+            {% field_as_p form.remote_constent_method %}
+            <div data-new-mandat-form-target="userPhoneInputSection">
+              {% field_as_p form.user_phone %}
+            </div>
+          </section>
         </div>
         {% block input_submit_form %}
           <div id="france_connection" class="tiles">
@@ -187,5 +183,7 @@
 {% endblock content %}
 
 {% block extrajs %}
+  {% stimulusjs %}
+  <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/new_mandat.js' %}"></script>
 {% endblock %}

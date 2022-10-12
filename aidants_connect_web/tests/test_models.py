@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta
 from os.path import join as path_join
 from unittest.mock import Mock, patch
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -11,6 +12,7 @@ from django.utils import timezone
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
 
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
@@ -67,6 +69,41 @@ class ConnectionModelTests(TestCase):
         self.assertEqual(first_saved_item.usager.given_name, "Joséphine")
         self.assertEqual(second_saved_item.state, "QsDfG")
         self.assertEqual(second_saved_item.usager.gender, Usager.GENDER_MALE)
+
+    def test_save_prevents_saving_invalid_number(self):
+        connection = Connection()
+        connection.state = "aZeRtY"
+        connection.code = "ert"
+        connection.nonce = "varg"
+        connection.usager = UsagerFactory(given_name="Joséphine")
+        connection.remote_constent_method = RemoteConsentMethodChoices.SMS
+        connection.consent_request_id = str(uuid4())
+        connection.user_phone = "665544"
+
+        with self.assertRaises(IntegrityError) as cm:
+            connection.save()
+
+        self.assertEqual(
+            "Phone number 665544 is not valid in any of "
+            f"the french region among {settings.FRENCH_REGION_CODES}",
+            str(cm.exception),
+        )
+
+    def test_save_lets_saving_valid_number(self):
+        connection = Connection()
+        connection.state = "aZeRtY"
+        connection.code = "ert"
+        connection.nonce = "varg"
+        connection.usager = UsagerFactory(given_name="Joséphine")
+        connection.remote_constent_method = RemoteConsentMethodChoices.SMS
+        connection.consent_request_id = str(uuid4())
+        # Valid Pierre-er-Miquelon number of Miquelon-Langlade's town hall
+        connection.user_phone = "41 05 60"
+
+        connection.save()
+        connection.refresh_from_db()
+
+        self.assertEqual("+508410560", str(connection.user_phone))
 
 
 @tag("models")
@@ -197,6 +234,23 @@ class MandatModelTests(TestCase):
 
     def test_saving_and_retrieving_mandats(self):
         self.assertEqual(Mandat.objects.count(), 2)
+
+    def test_save_prevents_saving_without_phone(self):
+        usager = UsagerFactory(phone="")
+        mandat = Mandat(
+            organisation=self.organisation_1,
+            usager=usager,
+            creation_date=timezone.now(),
+            duree_keyword="SHORT",
+            expiration_date=timezone.now() + timedelta(days=1),
+            remote_constent_method=RemoteConsentMethodChoices.SMS,
+        )
+        with self.assertRaises(IntegrityError) as cm:
+            mandat.save()
+
+        self.assertEqual(
+            "User phone must be set when remote consent is SMS", str(cm.exception)
+        )
 
     def test_mandat_can_have_one_autorisation(self):
         self.assertEqual(len(self.mandat_1.autorisations.all()), 1)
@@ -1557,6 +1611,9 @@ class JournalModelTests(TestCase):
                 self.aidant_thierry, self.usager_ned, demarches, expiration_date
             ),
             mandat=mandat,
+            remote_constent_method="",
+            user_phone="",
+            consent_request_id="",
         )
 
         self.assertEqual(len(Journal.objects.all()), 3)

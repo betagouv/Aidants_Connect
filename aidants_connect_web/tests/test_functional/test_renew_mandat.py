@@ -1,12 +1,20 @@
 from datetime import timedelta
+from distutils.util import strtobool
+from urllib.parse import urlencode
 
+from django.conf import settings
 from django.test import tag
+from django.urls import reverse
 from django.utils import timezone
 
+from phonenumbers import parse as parse_number
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.support.expected_conditions import url_matches
+from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_web.models import Mandat
+from aidants_connect_web.models import Journal, Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     MandatFactory,
@@ -84,3 +92,208 @@ class RenewMandatTests(FunctionalTestCase):
         go_to_usager_button.click()
 
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 2)
+
+    def test_renew_mandat_remote_mandat_with_legacy_consent(self):
+        wait = WebDriverWait(self.selenium, 10)
+
+        self.aidant = AidantFactory(email="thierry@thierry.com")
+        device = self.aidant.staticdevice_set.create(id=1)
+        device.token_set.create(token="123456")
+        device.token_set.create(token="123455")
+
+        self.usager = UsagerFactory(given_name="Fabrice")
+        MandatFactory(
+            organisation=self.aidant.organisation,
+            usager=self.usager,
+            expiration_date=timezone.now() + timedelta(days=5),
+        )
+        self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 1)
+
+        self.open_live_url(f"/renew_mandat/{self.usager.pk}")
+
+        login_aidant(self)
+
+        demarches_section = self.selenium.find_element(By.ID, "demarches")
+        demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
+        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
+
+        demarches_grid = self.selenium.find_element(By.ID, "demarches_list")
+        demarches = demarches_grid.find_elements(By.TAG_NAME, "input")
+        self.assertEqual(len(demarches), 10)
+
+        demarches_section.find_element(By.ID, "argent").find_element(
+            By.TAG_NAME, "label"
+        ).click()
+        demarches_section.find_element(By.ID, "famille").find_element(
+            By.TAG_NAME, "label"
+        ).click()
+
+        duree_section = self.selenium.find_element(By.ID, "duree")
+        duree_section.find_element(By.ID, "SHORT").find_element(
+            By.TAG_NAME, "label"
+        ).click()
+
+        # Select remote method
+        self.selenium.find_element(By.ID, "id_is_remote").click()
+
+        # Check that I must fill a remote consent method
+        # # wait for the execution of JS
+        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_0"))
+        for elt in self.selenium.find_elements(
+            By.CSS_SELECTOR, "#id_remote_constent_method input"
+        ):
+            self.assertTrue(elt.get_attribute("required"))
+
+        # # Select legacy consent method
+        self.selenium.find_element(By.CSS_SELECTOR, "[value='LEGACY']").click()
+
+        # Renew Mandat
+        fc_button = self.selenium.find_element(By.ID, "submit_renew_button")
+        fc_button.click()
+
+        # Recap all the information for the Mandat
+        recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
+        self.assertEqual(recap_title, "Récapitulatif du mandat")
+        recap_text = self.selenium.find_element(By.ID, "recap_text").text
+        self.assertIn("Fabrice Simpson ", recap_text)
+        checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
+        id_personal_data = checkboxes[1]
+        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
+        id_personal_data.click()
+        id_otp_token = checkboxes[2]
+        self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
+        id_otp_token.send_keys("123455")
+        submit_button = checkboxes[-1]
+        self.assertEqual(submit_button.get_attribute("type"), "submit")
+        submit_button.click()
+
+        # Success page
+        success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
+        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
+        go_to_usager_button = self.selenium.find_element(
+            By.CLASS_NAME, "tiles"
+        ).find_elements(By.TAG_NAME, "a")[1]
+        go_to_usager_button.click()
+
+        self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 2)
+
+    def test_renew_mandat_remote_mandat_with_sms_consent(self):
+        wait = WebDriverWait(self.selenium, 10)
+
+        self.aidant = AidantFactory(email="thierry@thierry.com")
+        device = self.aidant.staticdevice_set.create(id=1)
+        device.token_set.create(token="123456")
+        device.token_set.create(token="123455")
+
+        self.usager = UsagerFactory(given_name="Fabrice")
+        MandatFactory(
+            organisation=self.aidant.organisation,
+            usager=self.usager,
+            expiration_date=timezone.now() + timedelta(days=5),
+        )
+        self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 1)
+
+        self.open_live_url(f"/renew_mandat/{self.usager.pk}")
+
+        login_aidant(self)
+
+        demarches_section = self.selenium.find_element(By.ID, "demarches")
+        demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
+        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
+
+        demarches_grid = self.selenium.find_element(By.ID, "demarches_list")
+        demarches = demarches_grid.find_elements(By.TAG_NAME, "input")
+        self.assertEqual(len(demarches), 10)
+
+        demarches_section.find_element(By.ID, "argent").find_element(
+            By.TAG_NAME, "label"
+        ).click()
+        demarches_section.find_element(By.ID, "famille").find_element(
+            By.TAG_NAME, "label"
+        ).click()
+
+        duree_section = self.selenium.find_element(By.ID, "duree")
+        duree_section.find_element(By.ID, "SHORT").find_element(
+            By.TAG_NAME, "label"
+        ).click()
+
+        # Select remote method
+        self.selenium.find_element(By.ID, "id_is_remote").click()
+
+        # Check that I must fill a remote consent method
+        # # wait for the execution of JS
+        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_0"))
+        for elt in self.selenium.find_elements(
+            By.CSS_SELECTOR, "#id_remote_constent_method input"
+        ):
+            self.assertTrue(elt.get_attribute("required"))
+
+        # # Select legacy consent method
+        self.selenium.find_element(By.CSS_SELECTOR, "[value='SMS']").click()
+        wait.until(self._element_is_required(By.ID, "id_user_phone"))
+        self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
+
+        # Renew Mandat
+        fc_button = self.selenium.find_element(By.ID, "submit_renew_button")
+        fc_button.click()
+        wait.until(self._path_matches("renew_mandat_waiting_room"))
+
+        # Test that page blocks until user has consented
+        self.selenium.refresh()
+        wait.until(self._path_matches("renew_mandat_waiting_room"))
+
+        # Simulate user content
+        self._user_consents("0 800 840 800")
+        self.selenium.refresh()
+
+        # Recap all the information for the Mandat
+        recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
+        self.assertEqual(recap_title, "Récapitulatif du mandat")
+        recap_text = self.selenium.find_element(By.ID, "recap_text").text
+        self.assertIn("Fabrice Simpson ", recap_text)
+        checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
+        id_personal_data = checkboxes[1]
+        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
+        id_personal_data.click()
+        id_otp_token = checkboxes[2]
+        self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
+        id_otp_token.send_keys("123455")
+        submit_button = checkboxes[-1]
+        self.assertEqual(submit_button.get_attribute("type"), "submit")
+        submit_button.click()
+
+        # Success page
+        success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
+        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
+        go_to_usager_button = self.selenium.find_element(
+            By.CLASS_NAME, "tiles"
+        ).find_elements(By.TAG_NAME, "a")[1]
+        go_to_usager_button.click()
+
+        self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 2)
+
+    def _element_is_required(self, by: By, value: str):
+        def _predicate(driver: WebDriver):
+            attr = driver.find_element(by, value).get_attribute("required")
+            return strtobool(attr)
+
+        return _predicate
+
+    def _path_matches(self, route_name: str, query_params: dict = None):
+        query_part = urlencode(query_params or {}, quote_via=lambda s, _1, _2, _3: s)
+        query_part = rf"\?{query_part}" if query_part else ""
+        return url_matches(rf"http://localhost:\d+{reverse(route_name)}{query_part}")
+
+    def _user_consents(self, phone_number: str):
+        consent_requests = Journal.objects.find_sms_consent_requests(
+            parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION)
+        )
+        for req in consent_requests:
+            Journal.log_user_consents_sms(
+                aidant=req.aidant,
+                demarche=req.demarche,
+                duree=req.duree,
+                remote_constent_method=req.remote_constent_method,
+                user_phone=req.user_phone,
+                consent_request_id=req.consent_request_id,
+            )
