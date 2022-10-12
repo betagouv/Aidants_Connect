@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 
 
 def activity_required(view=None, redirect_field_name="next"):
@@ -61,3 +62,18 @@ def user_is_responsable_structure(view=None, redirect_field_name="next"):
         redirect_field_name=redirect_field_name,
     )
     return decorator if (view is None) else decorator(view)
+
+
+def aidant_logged_with_activity_required(view=None, *, method_name=""):
+    def decorator(decorated):
+        kwargs = {"name": method_name}
+        if isinstance(decorated, type) and not method_name:
+            kwargs["name"] = "dispatch"
+
+        fun = method_decorator(
+            [login_required, user_is_aidant, activity_required], **kwargs
+        )
+
+        return fun(decorated)
+
+    return decorator(view) if view else decorator

@@ -12,6 +12,7 @@ from aidants_connect_web.views import (
     mandat,
     renew_mandat,
     service,
+    sms,
     usagers,
 )
 
@@ -82,22 +83,42 @@ urlpatterns = [
         renew_mandat.RenewMandat.as_view(),
         name="renew_mandat",
     ),
+    path(
+        "renew_mandat/attente_consentement/",
+        renew_mandat.WaitingRoom.as_view(),
+        name="renew_mandat_waiting_room",
+    ),
+    path(
+        "renew_mandat/attente_consentement.json/",
+        mandat.WaitingRoomJson.as_view(),
+        name="renew_mandat_waiting_room_json",
+    ),
     # new mandat
-    path("creation_mandat/", mandat.new_mandat, name="new_mandat"),
+    path("creation_mandat/", mandat.NewMandat.as_view(), name="new_mandat"),
     path(
         "creation_mandat/recapitulatif/",
-        mandat.new_mandat_recap,
+        mandat.NewMandatRecap.as_view(),
         name="new_mandat_recap",
     ),
-    path("logout-callback/", mandat.new_mandat_recap, name="new_mandat_recap"),
+    path(
+        "creation_mandat/attente_consentement/",
+        mandat.WaitingRoom.as_view(),
+        name="new_mandat_waiting_room",
+    ),
+    path(
+        "creation_mandat/attente_consentement.json/",
+        mandat.WaitingRoomJson.as_view(),
+        name="new_mandat_waiting_room_json",
+    ),
+    path("logout-callback/", mandat.NewMandatRecap.as_view(), name="new_mandat_recap"),
     path(
         "creation_mandat/visualisation/projet/",
-        mandat.attestation_projet,
+        mandat.AttestationProject.as_view(),
         name="new_attestation_projet",
     ),
     path(
         "creation_mandat/succes/",
-        mandat.new_mandat_success,
+        mandat.NewMandateSuccess.as_view(),
         name="new_mandat_success",
     ),
     path(
@@ -208,6 +229,8 @@ urlpatterns = [
         datapass.habilitation_receiver,
         name="datapass_habilitation",
     ),
+    # # SMS
+    path("sms/callback/", sms.Callback.as_view(), name="sms_callback"),
 ]
 
 urlpatterns.extend(magicauth_urls)

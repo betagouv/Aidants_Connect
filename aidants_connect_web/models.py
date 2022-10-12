@@ -6,13 +6,13 @@ from os import walk as os_walk
 from os.path import dirname
 from os.path import join as path_join
 from re import sub as regex_sub
-from typing import Collection, Optional, Union
+from typing import Collection, Iterable, Optional, Union
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.db.models import SET_NULL, Q, QuerySet, Value
 from django.db.models.functions import Concat
 from django.dispatch import Signal
@@ -23,6 +23,9 @@ from django.utils.functional import cached_property
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from phonenumber_field.modelfields import PhoneNumberField
+from phonenumbers import PhoneNumber, PhoneNumberFormat, format_number, is_valid_number
+from phonenumbers import parse as parse_number
+from phonenumbers import region_code_for_country_code
 
 from aidants_connect_common.utils.constants import (
     JOURNAL_ACTIONS,
@@ -30,6 +33,7 @@ from aidants_connect_common.utils.constants import (
     AuthorizationDurations,
     JournalActionKeywords,
 )
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
     mandate_template_path,
@@ -762,7 +766,15 @@ class Mandat(models.Model):
     duree_keyword = models.CharField(
         "Durée", max_length=16, choices=AuthorizationDurationChoices.choices, null=True
     )
-    is_remote = models.BooleanField("Signé à distance ?", default=False)
+
+    is_remote = models.BooleanField("Signé à distance ?", default=False)
+    consent_request_id = models.CharField(max_length=36, blank=True, default="")
+    remote_constent_method = models.CharField(
+        "Méthode de consentement à distance",
+        choices=RemoteConsentMethodChoices.model_choices,
+        blank=True,
+        max_length=200,
+    )
 
     template_path = models.TextField(
         "Template utilisé",
@@ -895,6 +907,16 @@ class Mandat(models.Model):
     admin_is_active.boolean = True
     admin_is_active.short_description = "is active"
 
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if (
+            self.remote_constent_method == RemoteConsentMethodChoices.SMS
+            and not self.usager.phone
+        ):
+            raise IntegrityError("User phone must be set when remote consent is SMS")
+        super().save(force_insert, force_update, using, update_fields)
+
     @classmethod
     def get_attestation_or_none(cls, mandate_id):
         try:
@@ -964,6 +986,29 @@ class Mandat(models.Model):
                 )
 
         return len(failed_updates) != 0, failed_updates
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    Q(is_remote=False)
+                    | (Q(is_remote=True) & ~Q(remote_constent_method=""))
+                ),
+                name="mandat_remote_mandate_method_set",
+            ),
+            # fmt: off
+            models.CheckConstraint(
+                check=(
+                    ~Q(remote_constent_method__in=RemoteConsentMethodChoices.blocked_methods())  # noqa: E501
+                    | (
+                        Q(remote_constent_method__in=RemoteConsentMethodChoices.blocked_methods())  # noqa: E501
+                        & ~Q(consent_request_id="")
+                    )
+                ),
+                name="mandat_consent_request_id_set",
+            ),
+            # fmt: on
+        ]
 
 
 class AutorisationQuerySet(models.QuerySet):
@@ -1103,6 +1148,13 @@ class Connection(models.Model):
     )
     mandat_is_remote = models.BooleanField(default=False)
     user_phone = PhoneNumberField(blank=True)
+    consent_request_id = models.CharField(max_length=36, blank=True, default="")
+    remote_constent_method = models.CharField(
+        "Méthode de consentement à distance",
+        choices=RemoteConsentMethodChoices.model_choices,
+        blank=True,
+        max_length=200,
+    )
 
     usager = models.ForeignKey(
         Usager,
@@ -1111,6 +1163,7 @@ class Connection(models.Model):
         on_delete=models.CASCADE,
         related_name="connections",
     )  # FS
+
     expires_on = models.DateTimeField(default=default_connection_expiration_date)  # FS
     access_token = models.TextField(default="No token provided")  # FS
 
@@ -1143,6 +1196,30 @@ class Connection(models.Model):
 
     objects = ConnectionQuerySet.as_manager()
 
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if (user_phone := self.user_phone) and isinstance(user_phone, PhoneNumber):
+            # Test phone number is valid for provided region
+            if not is_valid_number(user_phone):
+                for region in set(settings.FRENCH_REGION_CODES) - {
+                    region_code_for_country_code(self.user_phone.country_code)
+                }:
+                    parsed = parse_number(str(self.user_phone), region)
+                    if is_valid_number(parsed):
+                        user_phone = parsed
+                        break
+                else:
+                    raise IntegrityError(
+                        f"Phone number {user_phone} is not valid in any of the "
+                        f"french region among {settings.FRENCH_REGION_CODES}"
+                    )
+
+            # Normalize phone number to international format
+            self.user_phone = format_number(user_phone, PhoneNumberFormat.E164)
+
+        super().save(force_insert, force_update, using, update_fields)
+
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -1151,7 +1228,36 @@ class Connection(models.Model):
                     | (Q(aidant__isnull=False) & Q(organisation__isnull=False))
                 ),
                 name="aidant_and_organisation_set_together",
-            )
+            ),
+            models.CheckConstraint(
+                check=(
+                    Q(mandat_is_remote=False)
+                    | (Q(mandat_is_remote=True) & ~Q(remote_constent_method=""))
+                ),
+                name="connection_remote_mandate_method_set",
+            ),
+            # fmt: off
+            models.CheckConstraint(
+                check=(
+                    ~Q(remote_constent_method=RemoteConsentMethodChoices.SMS.name)
+                    | (
+                        Q(remote_constent_method=RemoteConsentMethodChoices.SMS.name)  # noqa: E501
+                        & ~Q(user_phone="")
+                    )
+                ),
+                name="connection_user_phone_set",
+            ),
+            models.CheckConstraint(
+                check=(
+                    ~Q(remote_constent_method__in=RemoteConsentMethodChoices.blocked_methods())  # noqa: E501
+                    | (
+                        Q(remote_constent_method__in=RemoteConsentMethodChoices.blocked_methods())  # noqa: E501
+                        & ~Q(consent_request_id="")
+                    )
+                ),
+                name="connection_consent_request_id_set",
+            ),
+            # fmt: on
         ]
         verbose_name = "connexion"
 
@@ -1166,6 +1272,70 @@ class Connection(models.Model):
 class JournalQuerySet(models.QuerySet):
     def excluding_staff(self):
         return self.exclude(aidant__organisation__name=settings.STAFF_ORGANISATION_NAME)
+
+    def has_user_explicitly_consented(
+        self,
+        user: Usager,
+        aidant: Aidant,
+        remote_constent_method: RemoteConsentMethodChoices,
+        user_phone: str,
+        consent_request_id: str,
+    ) -> JournalQuerySet:
+        return self.filter(
+            action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+            usager=user,
+            aidant=aidant,
+            remote_constent_method=remote_constent_method,
+            is_remote_mandat=True,
+            user_phone=user_phone,
+            consent_request_id=consent_request_id,
+        ).exists()
+
+    def find_sms_consent_requests(
+        self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    ):
+        return self._find_consent_actions(
+            action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+            user_phone=user_phone,
+            consent_request_id=consent_request_id,
+        )
+
+    def find_sms_user_consent(
+        self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    ):
+        return self._find_consent_actions(
+            action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
+            user_phone=user_phone,
+            consent_request_id=consent_request_id,
+        )
+
+    def find_sms_user_consent_or_denial(
+        self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    ):
+        return self._find_consent_actions(
+            action=[
+                JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
+                JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+            ],
+            user_phone=user_phone,
+            consent_request_id=consent_request_id,
+        )
+
+    def _find_consent_actions(
+        self,
+        action: str | Collection,
+        user_phone: PhoneNumber,
+        consent_request_id: str | None = None,
+    ):
+        kwargs = {"user_phone": format_number(user_phone, PhoneNumberFormat.E164)}
+        if isinstance(action, str):
+            kwargs["action"] = action
+        else:
+            kwargs["action__in"] = list(action)
+        if consent_request_id:
+            kwargs["consent_request_id"] = consent_request_id
+
+        return self.filter(**kwargs)
 
 
 class Journal(models.Model):
@@ -1190,7 +1360,16 @@ class Journal(models.Model):
     autorisation = models.IntegerField(blank=True, null=True)
     attestation_hash = models.CharField(max_length=100, blank=True, null=True)
     additional_information = models.TextField(blank=True, null=True)
+
     is_remote_mandat = models.BooleanField(default=False)
+    user_phone = PhoneNumberField(blank=True)
+    consent_request_id = models.CharField(max_length=36, blank=True, default="")
+    remote_constent_method = models.CharField(
+        "Méthode de consentement à distance",
+        choices=RemoteConsentMethodChoices.model_choices,
+        blank=True,
+        max_length=200,
+    )
     mandat = models.ForeignKey(
         Mandat, null=True, on_delete=models.PROTECT, related_name="journal_entries"
     )
@@ -1303,7 +1482,34 @@ class Journal(models.Model):
         duree: int,
         is_remote_mandat: bool,
         access_token: str,
+        remote_constent_method: RemoteConsentMethodChoices | None = None,
+        user_phone: str = "",
+        consent_request_id: str = "",
     ):
+        remote_constent_method = remote_constent_method or ""
+
+        if is_remote_mandat and not remote_constent_method:
+            raise IntegrityError(
+                "remote_constent_method must be set when mandate is remote"
+            )
+
+        if (
+            remote_constent_method in RemoteConsentMethodChoices.blocked_methods()
+            and not consent_request_id
+        ):
+            raise IntegrityError(
+                "consent_request_id must be set when mandate uses one of the following "
+                f"consent methods {RemoteConsentMethodChoices.blocked_methods()}"
+            )
+
+        if (
+            remote_constent_method == RemoteConsentMethodChoices.SMS.name
+            and not user_phone
+        ):
+            raise IntegrityError(
+                "user_phone must be set when " "mandate uses SMS consent method"
+            )
+
         return cls.objects.create(
             aidant=aidant,
             organisation=aidant.organisation,
@@ -1313,6 +1519,9 @@ class Journal(models.Model):
             duree=duree,
             access_token=access_token,
             is_remote_mandat=is_remote_mandat,
+            remote_constent_method=remote_constent_method,
+            user_phone=user_phone,
+            consent_request_id=consent_request_id,
         )
 
     @classmethod
@@ -1326,7 +1535,34 @@ class Journal(models.Model):
         access_token: str,
         attestation_hash: str,
         mandat: Mandat,
+        remote_constent_method: RemoteConsentMethodChoices | None = None,
+        user_phone: str = "",
+        consent_request_id: str = "",
     ):
+        remote_constent_method = remote_constent_method or ""
+
+        if is_remote_mandat and not remote_constent_method:
+            raise IntegrityError(
+                "remote_constent_method must be set when mandate is remote"
+            )
+
+        if (
+            remote_constent_method in RemoteConsentMethodChoices.blocked_methods()
+            and not consent_request_id
+        ):
+            raise IntegrityError(
+                "consent_request_id must be set when mandate uses one of the following "
+                f"consent methods {RemoteConsentMethodChoices.blocked_methods()}"
+            )
+
+        if (
+            remote_constent_method == RemoteConsentMethodChoices.SMS.name
+            and not user_phone
+        ):
+            raise IntegrityError(
+                "user_phone must be set when " "mandate uses SMS consent method"
+            )
+
         return cls.objects.create(
             aidant=aidant,
             organisation=aidant.organisation,
@@ -1338,6 +1574,9 @@ class Journal(models.Model):
             attestation_hash=attestation_hash,
             mandat=mandat,
             is_remote_mandat=is_remote_mandat,
+            remote_constent_method=remote_constent_method,
+            user_phone=user_phone,
+            consent_request_id=consent_request_id,
         )
 
     @classmethod
@@ -1456,6 +1695,98 @@ class Journal(models.Model):
             organisation=aidant.organisation,
             action=JournalActionKeywords.SWITCH_ORGANISATION,
             additional_information=more_info,
+        )
+
+    @classmethod
+    def log_user_consents_sms(
+        cls,
+        aidant: Aidant,
+        demarche: str | Iterable,
+        duree: int | str,
+        remote_constent_method: RemoteConsentMethodChoices | str,
+        user_phone: PhoneNumber,
+        consent_request_id: str,
+    ) -> Journal:
+        return cls.__log_sms_event(
+            JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
+            aidant,
+            demarche,
+            duree,
+            remote_constent_method,
+            user_phone,
+            consent_request_id,
+        )
+
+    @classmethod
+    def log_user_denies_sms(
+        cls,
+        aidant: Aidant,
+        demarche: str | Iterable,
+        duree: int | str,
+        remote_constent_method: RemoteConsentMethodChoices | str,
+        user_phone: PhoneNumber,
+        consent_request_id: str,
+    ) -> Journal:
+        return cls.__log_sms_event(
+            JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+            aidant,
+            demarche,
+            duree,
+            remote_constent_method,
+            user_phone,
+            consent_request_id,
+        )
+
+    @classmethod
+    def log_request_user_consent_sms(
+        cls,
+        aidant: Aidant,
+        demarche: str | Iterable,
+        duree: int | str,
+        remote_constent_method: RemoteConsentMethodChoices | str,
+        user_phone: PhoneNumber,
+        consent_request_id: str,
+    ) -> Journal:
+        return cls.__log_sms_event(
+            JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+            aidant,
+            demarche,
+            duree,
+            remote_constent_method,
+            user_phone,
+            consent_request_id,
+        )
+
+    @classmethod
+    def __log_sms_event(
+        cls,
+        action: str,
+        aidant: Aidant,
+        demarche: str | Iterable,
+        duree: int | str,
+        remote_constent_method: RemoteConsentMethodChoices | str,
+        user_phone: PhoneNumber,
+        consent_request_id: str,
+    ) -> Journal:
+        remote_constent_method = (
+            RemoteConsentMethodChoices[remote_constent_method]
+            if isinstance(remote_constent_method, str)
+            else remote_constent_method
+        )
+        demarche = demarche if isinstance(demarche, str) else ",".join(demarche)
+        duree = (
+            AuthorizationDurations.duration(duree) if isinstance(duree, str) else duree
+        )
+
+        return cls.objects.create(
+            action=action,
+            aidant=aidant,
+            demarche=demarche,
+            duree=duree,
+            remote_constent_method=remote_constent_method,
+            is_remote_mandat=True,
+            user_phone=format_number(user_phone, PhoneNumberFormat.E164),
+            consent_request_id=consent_request_id,
         )
 
 

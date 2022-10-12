@@ -1,0 +1,30 @@
+{% extends 'layouts/main.html' %}
+{% load ac_common %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - En attente de consentement{% endblock %}
+
+{% block content %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endblock content %}
+<section class="section">
+  <div
+    class="container"
+    data-controller="remote-content-waiting-room"
+    data-remote-content-waiting-room-next-value="{{ next }}"
+    data-remote-content-waiting-room-poll-value="{{ poll }}"
+    data-remote-content-waiting-room-poll-timeout-value="5000"
+  >
+    <h1>Le mandat a distance est en attente du consentement de l’utilisateur ou l’utilisatrice.</h1>
+  </div>
+</section>
+{% block extrajs %}
+  {% stimulusjs %}
+  <script src="{% static 'js/utils.js' %}"></script>
+  <script src="{% static 'js/remote_pending.js' %}"></script>
+{% endblock %}

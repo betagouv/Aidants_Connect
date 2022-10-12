@@ -17,6 +17,8 @@ class FunctionalTestCase(StaticLiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
 
+        settings.DEBUG = True
+
         firefox_options = FirefoxOptions()
         firefox_options.headless = settings.HEADLESS_FUNCTIONAL_TESTS
         firefox_options.set_preference("javascript.enabled", cls.js)
