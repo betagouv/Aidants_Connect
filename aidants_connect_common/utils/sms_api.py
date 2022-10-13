@@ -251,3 +251,28 @@ class OAuthMiddleware(HTTPAdapter):
         request.headers["Content-Type"] = "application/json"
         request.headers["Authorization"] = f"Bearer {self._token.access_token}"
         return super().send(request, *args, **kwargs)
+
+
+if __name__ == "__main__":
+    import sys
+    from pathlib import Path
+
+    sys.path.extend([f"{Path(__file__).parent.parent.parent}"])
+
+    import os
+
+    os.environ["DJANGO_SETTINGS_MODULE"] = "aidants_connect.settings"
+
+    import django
+
+    django.setup()
+
+    from uuid import uuid4
+
+    from phonenumber_field.phonenumber import PhoneNumber as PhoneNumber2
+
+    SmsApi().send_sms(
+        PhoneNumber2.from_string(settings.TEST_SMS_NUMBER, "FR"),
+        str(uuid4()),
+        settings.TEST_SMS_TEXT,
+    )
