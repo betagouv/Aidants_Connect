@@ -719,6 +719,22 @@ class HabilitationRequestImportResource(resources.ModelResource):
         import_id_fields = ("email", "organisation__data_pass_id")
 
 
+class HabilitationRequestImportDateFormationResource(resources.ModelResource):
+    email = Field(attribute="email")
+    organisation__data_pass_id = Field(
+        attribute="organisation",
+        widget=ForeignKeyWidget(Organisation, field="data_pass_id"),
+        column_name="data_pass_id",
+    )
+    date_formation = Field(attribute="date_formation")
+
+    class Meta:
+        model = HabilitationRequest
+        fields = set()
+        import_id_fields = ("email", "organisation__data_pass_id")
+        skip_unchanged = True
+
+
 class HabilitationDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisation__zipcode"
 
@@ -758,13 +774,13 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     ordering = ("email",)
 
     # Change resource class if explicit setting is set
-    resource_class = HabilitationRequestResource
+    resource_class = HabilitationRequestImportDateFormationResource
     if settings.AC_IMPORT_HABILITATION_REQUESTS:
         resource_class = HabilitationRequestImportResource
 
-    change_list_template = (
-        "aidants_connect_web/admin/habilitation_request/change_list.html"
-    )
+    # change_list_template = (
+    #    "aidants_connect_web/admin/habilitation_request/change_list.html"
+    # )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
