@@ -742,6 +742,17 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
         if instance.test_pix_passed:
             instance.validate_and_create_aidant()
 
+    def after_save_instance(self, instance, using_transactions, dry_run):
+        aidants_a_former = HabilitationRequest.objects.filter(email=instance.email)
+        for aidant in aidants_a_former:
+            if not aidant.formation_done:
+                aidant.formation_done = True
+                aidant.date_formation = instance.date_formation
+                aidant.save()
+                if aidant.test_pix_passed:
+                    aidant.validate_and_create_aidant()
+        return super().after_save_instance(instance, using_transactions, dry_run)
+
     class Meta:
         model = HabilitationRequest
         fields = set()
