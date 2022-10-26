@@ -29,11 +29,17 @@ def import_pix_results(*, logger=None):
         date_test_pix = datetime.strptime(
             person["date d'envoi"], "%Y-%m-%d"
         ).astimezone(ZoneInfo("Europe/Paris"))
-        aidants = HabilitationRequest.objects.filter(email=person["email saisi"])
-        if aidants.exists():
-            aidant_a_former = aidants[0]
-            aidant_a_former.test_pix_passed = True
-            aidant_a_former.date_test_pix = date_test_pix
-            aidant_a_former.save()
+        aidants_a_former = HabilitationRequest.objects.filter(
+            email=person["email saisi"]
+        )
+
+        if aidants_a_former.exists():
+            aidant_a_former = aidants_a_former[0]
+            if not aidant_a_former.test_pix_passed:
+                aidant_a_former.test_pix_passed = True
+                aidant_a_former.date_test_pix = date_test_pix
+                aidant_a_former.save()
+                if aidant_a_former.formation_done:
+                    aidant_a_former.validate_and_create_aidant()
 
     logger.info("Sucessfully updated PIX results")
