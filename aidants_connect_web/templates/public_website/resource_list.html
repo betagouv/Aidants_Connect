@@ -1,70 +1,57 @@
 {% load static %}
 
-<div class="row">
-  <div class="card">
-    <div class="card__cover">
-      <img src="{% static 'images/aidantsconnect.png' %}" alt="">
-    </div>
-    <div class="card__content">
-      <h2><a href="https://aidantsconnect.beta.gouv.fr/guide_utilisation/">Guide de prise en main d’Aidants Connect</a></h2>
-      <div class="card__meta"><span>Équipe Aidants Connect</span></div>
-      <p>
-        Des ressources utiles pour mieux comprendre et utiliser le service Aidants Connect.
-      </p>
-    </div>
-    <div class="card__extra" aria-hidden="true">{# hidden because it is a redundant link vs the one in the title #}
-      <a href="{% url 'guide_utilisation' %}">https://aidantsconnect.beta.gouv.fr/guide_utilisation/</a>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card__cover background-color-white">
-      <img src="{% static 'images/solidarite-numerique-illu_home.svg' %}" alt="">
-    </div>
-      <div class="card__content">
-        <h2><a href="https://solidarite-numerique.fr">Solidarité Numérique</a></h2>
-        <div class="card__meta"><span>Mission Société Numérique</span></div>
-        <p>
-          Solidarité Numérique est le centre d’aide pour les démarches en ligne essentielles.
-        </p>
+<div class="fr-grid-row fr-grid-row--gutters">
+  <div class="fr-col-12 fr-col-md-4">
+    <div class="card-ressource">
+      <img src="{% static 'images/aidantsconnect.png' %}" alt=""/>
+      <div class="card-content">
+        <div class="tag">Équipe Aidants Connect</div>
+        <div class="h1">Guide de prise en main Aidants Connect</div>
+        <p class="description">Des ressources utiles pour mieux comprendre et utiliser le service Aidants Connect.</p>
+        <div class="button-box">
+          <button class="primary"><a href="https://aidantsconnect.beta.gouv.fr/guide_utilisation/">Consulter</a></button>
+        </div>
       </div>
-    <div class="card__extra" aria-hidden="true">{# hidden because it is a redundant link vs the one in the title #}
-      <a href="https://solidarite-numerique.fr">solidarite-numerique.fr</a>
+    </div>
+  </div>
+  <div class="fr-col-12 fr-col-md-4">
+    <div class="card-ressource">
+      <img src="{% static 'images/solidaritenumerique.png' %}" alt=""/>
+      <div class="card-content">
+        <div class="tag">Mission Société Numérique</div>
+        <div class="h1">Solidarité Numérique</div>
+        <p>Solidarité Numérique est le centre d’aide pour les démarches en ligne essentielles.</p>
+        <div class="button-box">
+          <button class="primary"><a href="https://solidarite-numerique.fr">Consulter</a></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fr-col-12 fr-col-md-4">
+    <div class="card-ressource">
+      <img src="{% static 'images/kitintervention.png' %}" alt=""/>
+      <div class="card-content">
+        <div class="tag">Mission Société Numérique</div>
+        <div class="h1">Kit d’intervention rapide</div>
+        <p>Ce site a pour objectif de permettre à toute personne, en particulier les non professionnels de la médiation numérique, d’aborder rapidement les principaux enjeux de l’accompagnement des individus en difficulté sur les outils numériques.</p>
+        <div class="button-box">
+          <button class="primary"><a href="https://kit-inclusion.societenumerique.gouv.fr">Consulter</a></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fr-col-12 fr-col-md-4">
+    <div class="card-ressource">
+      <img src="{% static 'images/maquetteimpots.png' %}" alt=""/>
+      <div class="card-content">
+        <div class="tag">Direction Générale des Finances Publiques</div>
+        <div class="h1">Site de démonstration des impôts</div>
+        <p>Ce site est une copie du site des impôts permettant de simuler les déclarations en ligne sans manipuler les données personnelles de la personne accompagnée.</p>
+        <div class="button-box">
+          <button class="primary"><a href="https://www.impots.gouv.fr/portail/www2/fichiers/didacticiels/partenaires/services_en_ligne/part/">Consulter</a></button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-<br>
-<div class="row">
-  <div class="card">
-    <div class="card__cover">
-      <img src="{% static 'images/kitinterventionrimage.png' %}" alt="">
-    </div>
-    <div class="card__content">
-      <h2> <a href="https://kit-inclusion.societenumerique.gouv.fr">Kit d’intervention rapide</a></h2>
-      <div class="card__meta"><span>Mission Société Numérique</span></div>
-      <p>
-        Ce site a pour objectif de permettre à toute personne, en particulier les non professionnels
-        de la médiation numérique, d’aborder rapidement les principaux enjeux de l’accompagnement
-        des individus en difficulté sur les outils numériques.
-      </p>
-    </div>
-    <div class="card__extra" aria-hidden="true">{# hidden because it is a redundant link vs the one in the title #}
-      <a href="https://kit-inclusion.societenumerique.gouv.fr">https://kit-inclusion.societenumerique.gouv.fr</a>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card__cover">
-        <img src="{% static 'images/maquetteimpotsimage.png' %}" alt="">
-    </div>
-    <div class="card__content">
-      <h2><a href="https://www.impots.gouv.fr/portail/www2/fichiers/didacticiels/partenaires/services_en_ligne/part/">Site de démonstration des impôts</a></h2>
-      <div class="card__meta"><span>Direction Générale des Finances Publiques</span></div>
-      <p>
-        Ce site est une copie du site des impôts permettant de simuler les déclarations en ligne
-        sans manipuler les données personnelles de la personne accompagnée.
-      </p>
-    </div>
-    <div class="card__extra" aria-hidden="true">{# hidden because it is a redundant link vs the one in the title #}
-      <a href="https://www.impots.gouv.fr/portail/www2/fichiers/didacticiels/partenaires/services_en_ligne/part/">https://www.impots.gouv.fr/portail/www2/fichiers/didacticiels/partenaires/services_en_ligne/part/</a>
-    </div>
-  </div>
-</div>
+<br><br>

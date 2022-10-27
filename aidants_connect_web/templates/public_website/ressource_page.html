@@ -7,37 +7,13 @@
 {% endblock extracss %}
 
 {% block content %}
-<section class="section">
-  <div class="fr-container">
+<div class="fr-container">
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-12 fr-col-md-10">
     <h1>Outils</h1>
     <h2>RESSOURCES EXTERNES POUR LES AIDANTS</h2>
     <p class="subtitle">Retrouvez ici des outils à votre disposition, externes à Aidants Connect mais susceptibles de vous aider dans vos démarches d’accompagnement.</p>
     {% include 'public_website/resource_list.html' %}
-  </div>
-</section>
-
-<section class="section section-grey">
-  <div class="container">
-    <h1>Partenaires</h1>
-    <div class="row">
-      <div class="text-center">
-        <h2>
-          <img class="logo-height-4em" src="{% static 'images/logo-fc-v2.png' %}" alt="FranceConnect" />
-        </h2>
-        <p>
-          <a href="https://franceconnect.gouv.fr/">FranceConnect</a> est un dispositif qui permet aux internautes de s’identifier sur un
-          service en ligne par l’intermédiaire d’un compte existant (impots.gouv.fr, ameli.fr…).
-        </p>
-      </div>
-      <div class="text-center">
-        <h2>
-          <img class="logo-height-5em" src="{% static 'images/logo-ANLCI.png' %}" alt="Agence Nationale de Lutte contre l’Illettrisme"/>
-        </h2>
-        <p>
-          Aidants Connect a rendu son mandat accessible grâce au concours de l’<a href="http://www.anlci.gouv.fr/">ANLCI</a> (Agence Nationale de Lutte contre l’Illettrisme).
-        </p>
-      </div>
     </div>
-  </div>
-</section>
+</div>
 {% endblock content %}
