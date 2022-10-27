@@ -139,6 +139,54 @@ h3, .h3 {
   }
 }
 
+.card-ressource {
+  border: 1px solid $off-yellow-aidants;
+  box-sizing: border-box;
+  box-shadow: 10px 10px 0 $off-yellow-aidants;
+}
+
+
+.card-ressource {
+  .h1 {
+    font-size: 1.5rem;
+    text-transform: none;
+  }
+  .h2, .h3 {
+    font-size: 1.125rem;
+  }
+}
+
+.card-content {
+  padding: 2rem;
+}
+
+
+.card-ressource img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+.card-ressource .button-box {
+  transform: translateY(4rem);
+}
+
+.tag {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 4px;
+  gap: 10px;
+  display: inline-block;
+  font-family: 'Marianne';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 24px;
+  color: $blue-aidants;
+  background-color: $off_yellow_aidants;
+}
+
 .more-info {
   font-style: italic;
   color: $light-blue-anct;
@@ -316,6 +364,11 @@ button, .button {
     background: $off-yellow-aidants;
     color: $dark-grey-aidants;
   }
+}
+
+button a {
+  color: #fff !important;
+  text-decoration: none;
 }
 
 fieldset {
