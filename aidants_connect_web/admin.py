@@ -526,6 +526,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "carte_totp",
         "is_active",
         "can_create_mandats",
+        "created_at",
+        "updated_at",
         "is_staff",
         "is_superuser",
     )
@@ -734,6 +736,22 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
         column_name="data_pass_id",
     )
     date_formation = Field(attribute="date_formation")
+
+    def after_import_instance(self, instance, new, row_number=None, **kwargs):
+        instance.formation_done = True
+        if instance.test_pix_passed:
+            instance.validate_and_create_aidant()
+
+    def after_save_instance(self, instance, using_transactions, dry_run):
+        aidants_a_former = HabilitationRequest.objects.filter(email=instance.email)
+        for aidant in aidants_a_former:
+            if not aidant.formation_done:
+                aidant.formation_done = True
+                aidant.date_formation = instance.date_formation
+                aidant.save()
+                if aidant.test_pix_passed:
+                    aidant.validate_and_create_aidant()
+        return super().after_save_instance(instance, using_transactions, dry_run)
 
     class Meta:
         model = HabilitationRequest
