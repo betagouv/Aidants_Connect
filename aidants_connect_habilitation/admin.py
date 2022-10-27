@@ -53,6 +53,13 @@ class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
         "phone",
         "email_verified",
     )
+    search_fields = (
+        "email",
+        "last_name",
+        "first_name",
+    )
+
+    list_filter = ("email_verified",)
     readonly_fields = ("issuer_id",)
     inlines = (OrganisationRequestInline,)
     actions = ["resend_confirmation_emails"]
@@ -111,6 +118,13 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "organisation",
         "zipcode",
     )
+    search_fields = (
+        "email",
+        "last_name",
+        "first_name",
+    )
+
+    list_filter = ("is_aidant",)
 
 
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
