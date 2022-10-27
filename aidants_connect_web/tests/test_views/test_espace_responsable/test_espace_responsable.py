@@ -30,7 +30,7 @@ class EspaceResponsableHomePageTests(TestCase):
 
     def test_navigation_menu_contains_a_link_for_the_responsable_structure(self):
         self.client.force_login(self.responsable_tom)
-        response = self.client.get("/")
+        response = self.client.get("/espace-responsable/")
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "Mon espace Responsable",

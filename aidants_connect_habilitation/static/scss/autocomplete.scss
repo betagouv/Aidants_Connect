@@ -1,0 +1,85 @@
+@use "colors";
+
+.autocomplete-input_wrapper {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+
+  ul {
+    background-color: colors.$light-aidants;
+    border: 1px solid colors.$off-yellow-aidants;
+    border-top: 0;
+    border-radius: 0;
+    box-sizing: border-box;
+    left: 0;
+    list-style: none;
+    margin: 0;
+    max-height: 226px;
+    overflow-y: scroll;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    z-index: 1;
+
+
+    li, .no-result {
+      padding: .3rem .5rem;
+    }
+
+    li {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: all .2s ease;
+
+      &:hover {
+        cursor: pointer;
+        background-color: colors.$red-aidants;
+      }
+
+      mark {
+        background-color: transparent;
+        color: colors.$red-aidants;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+.input-spinner-wrapper > .spinner {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.spinner {
+  $spinner-size: 1rem;
+  $spinner-border-size: calc($spinner-size / 8);
+  animation: .75s linear infinite spinner-border;
+  border: $spinner-border-size solid colors.$dark-grey-aidants;
+  border-radius: 50%;
+  border-right-color: transparent;
+  display: inline-block;
+  height: $spinner-size;
+  vertical-align: -0.125em;
+  width: $spinner-size;
+}
+
+@keyframes spinner-border {
+  to { transform: rotate(360deg); }
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

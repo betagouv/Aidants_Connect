@@ -51,13 +51,13 @@
             </li>
             <li class="nav__item">
               <a {% if view_name == 'habilitation' %}class="font-weight-bold"{% endif %}
-                 href="{% url 'habilitation' %}">Habilitation</a>
+                 href="{% url 'habilitation' %}">Premiers pas</a>
             </li>
             <li class="nav__item">
-              <a {% if view_name == 'ressources' %}class="font-weight-bold"{% endif %} href="{% url 'ressources' %}">Ressources</a>
+              <a {% if view_name == 'ressources' %}class="font-weight-bold"{% endif %} href="{% url 'ressources' %}">Outils</a>
             </li>
             <li class="nav__item">
-              <a {% if 'faq' in view_name %}class="font-weight-bold"{% endif %} href="{% url 'faq_generale' %}">FAQ</a>
+              <a {% if 'faq' in view_name %}class="font-weight-bold"{% endif %} href="{% url 'faq_generale' %}">Aide</a>
             </li>
             <li class="nav__item">
               <a class="active" href="{% url 'login' %}">Se connecter</a>

@@ -16,7 +16,7 @@ from django.utils.timezone import now
 
 from phonenumber_field.modelfields import PhoneNumberField
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
@@ -60,6 +60,13 @@ class Person(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if self.email:
+            self.email = self.email.lower()
+        super().save(force_insert, force_update, using, update_fields)
 
     def get_full_name(self):
         return str(self)
@@ -162,6 +169,14 @@ class Manager(PersonWithResponsibilities):
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255)
 
+    city_insee_code = models.CharField(
+        "Code INSEE de la ville", max_length=5, null=True, blank=True
+    )
+
+    department_insee_code = models.CharField(
+        "Code INSEE du département", max_length=5, null=True, blank=True
+    )
+
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
 
     class Meta:
@@ -232,6 +247,14 @@ class OrganisationRequest(models.Model):
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
+
+    city_insee_code = models.CharField(
+        "Code INSEE de la ville", max_length=5, null=True, blank=True
+    )
+
+    department_insee_code = models.CharField(
+        "Code INSEE du département", max_length=5, null=True, blank=True
+    )
 
     is_private_org = models.BooleanField("Structure privée", default=False)
     partner_administration = models.CharField(
@@ -362,6 +385,8 @@ class OrganisationRequest(models.Model):
                 address=self.address,
                 zipcode=self.zipcode,
                 city=self.city,
+                city_insee_code=self.city_insee_code,
+                department_insee_code=self.department_insee_code,
                 data_pass_id=self.data_pass_id,
             )
         except IntegrityError:
@@ -398,31 +423,33 @@ class OrganisationRequest(models.Model):
                 self.save()
             responsable.save()
 
-        for aidant in self.aidant_requests.all():
-            if not HabilitationRequest.objects.filter(
-                email=self.manager.email, organisation=organisation
-            ).exists():
-                HabilitationRequest.objects.create(
-                    first_name=aidant.first_name,
-                    last_name=aidant.last_name,
-                    email=aidant.email,
-                    profession=aidant.profession,
-                    organisation=organisation,
-                )
+        self.create_aidants(organisation)
 
         if self.manager.is_aidant:
-            if not HabilitationRequest.objects.filter(
-                email=self.manager.email, organisation=organisation
-            ).exists():
-                HabilitationRequest.objects.create(
+            HabilitationRequest.objects.get_or_create(
+                email=self.manager.email,
+                organisation=organisation,
+                defaults=dict(
                     first_name=self.manager.first_name,
                     last_name=self.manager.last_name,
-                    email=self.manager.email,
                     profession=self.manager.profession,
-                    organisation=organisation,
-                )
+                ),
+            )
 
         return True
+
+    @transaction.atomic
+    def create_aidants(self, organisation: Organisation):
+        for aidant in self.aidant_requests.all():
+            HabilitationRequest.objects.get_or_create(
+                email=aidant.email,
+                organisation=organisation,
+                defaults=dict(
+                    first_name=aidant.first_name,
+                    last_name=aidant.last_name,
+                    profession=aidant.profession,
+                ),
+            )
 
     def refuse_request(self):
         if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:

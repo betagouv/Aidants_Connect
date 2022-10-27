@@ -6,8 +6,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.wait import WebDriverWait
 
-from aidants_connect.common.constants import RequestStatusConstants
-from aidants_connect.common.tests.testcases import FunctionalTestCase
+from aidants_connect_common.tests.testcases import FunctionalTestCase
+from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.forms import AidantRequestForm
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
@@ -71,7 +71,9 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
         self.__open_form_url(organisation)
 
         for i in range(2):
-            aidant_form: AidantRequestForm = get_form(AidantRequestForm)
+            aidant_form: AidantRequestForm = get_form(
+                AidantRequestForm, form_init_kwargs={"organisation": organisation}
+            )
             aidant_data = aidant_form.cleaned_data
             for field_name in aidant_form.fields:
                 element = self.selenium.find_element(

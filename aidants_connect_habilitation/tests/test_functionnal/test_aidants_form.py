@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from selenium.webdriver.common.by import By
 
-from aidants_connect.common.tests.testcases import FunctionalTestCase
+from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.forms import IssuerForm
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import DraftOrganisationRequestFactory

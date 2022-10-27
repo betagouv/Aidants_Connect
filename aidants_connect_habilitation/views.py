@@ -11,7 +11,8 @@ from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.forms import PatchedModelForm
+from aidants_connect_common.utils.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
@@ -46,6 +47,8 @@ __all__ = [
     "ReadonlyRequestView",
     "AddAidantsRequestView",
 ]
+
+from aidants_connect_web.models import Organisation
 
 """Mixins"""
 
@@ -126,6 +129,30 @@ class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
             )
 
         return super().dispatch(request, *args, **kwargs)
+
+
+class AdressAutocompleteJSMixin:
+    def define_html_attributes(self, form: PatchedModelForm):
+        form.widget_attrs(
+            "address",
+            {
+                "data-address-autocomplete-target": "autcompleteInput",
+                "data-action": "focus->address-autocomplete#onAutocompleteFocus",
+            },
+        )
+        form.widget_attrs(
+            "zipcode", {"data-address-autocomplete-target": "zipcodeInput"}
+        )
+
+        form.widget_attrs("city", {"data-address-autocomplete-target": "cityInput"})
+        form.widget_attrs(
+            "city_insee_code",
+            {"data-address-autocomplete-target": "cityInseeCodeInput"},
+        )
+        form.widget_attrs(
+            "department_insee_code",
+            {"data-address-autocomplete-target": "dptInseeCodeInput"},
+        )
 
 
 """Real views"""
@@ -270,10 +297,9 @@ class ModifyIssuerFormView(VerifiedEmailIssuerView, NewIssuerFormView):
 
 
 class NewOrganisationRequestFormView(
-    HabilitationStepMixin, VerifiedEmailIssuerView, FormView
+    HabilitationStepMixin, VerifiedEmailIssuerView, FormView, AdressAutocompleteJSMixin
 ):
     template_name = "organisation_form.html"
-    form_class = OrganisationRequestForm
 
     @property
     def step(self) -> HabilitationFormStep:
@@ -293,6 +319,11 @@ class NewOrganisationRequestFormView(
             },
         )
 
+    def get_form(self, form_class=None):
+        form = OrganisationRequestForm(**self.get_form_kwargs())
+        self.define_html_attributes(form)
+        return form
+
 
 class ModifyOrganisationRequestFormView(
     OnlyNewRequestsView, NewOrganisationRequestFormView
@@ -305,16 +336,17 @@ class ModifyOrganisationRequestFormView(
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
+class PersonnelRequestFormView(
+    OnlyNewRequestsView, FormView, AdressAutocompleteJSMixin
+):
     template_name = "personnel_form.html"
-    form_class = PersonnelForm
 
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.PERSONNEL
 
-    def form_valid(self, form):
-        form.save(self.organisation)
+    def form_valid(self, form: PersonnelForm):
+        form.save()
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -329,6 +361,11 @@ class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
             "issuer_data": issuer_data,
             "organisation": self.organisation,
         }
+
+    def get_form(self, form_class=None):
+        form = PersonnelForm(organisation=self.organisation, **self.get_form_kwargs())
+        self.define_html_attributes(form.manager_form)
+        return form
 
     def get_form_kwargs(self):
         form_kwargs = super().get_form_kwargs()
@@ -449,7 +486,6 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
 
 class AddAidantsRequestView(LateStageRequestView, FormView):
     template_name = "add_aidants_request.html"
-    form_class = AidantRequestFormSet
 
     def dispatch(self, request, *args, **kwargs):
         if self.organisation.status not in [
@@ -472,6 +508,11 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
             )
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form(self, form_class=None):
+        return AidantRequestFormSet(
+            organisation=self.organisation, **self.get_form_kwargs()
+        )
+
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
@@ -488,9 +529,9 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
         )
 
     def form_valid(self, formset: AidantRequestFormSet):
-        for form in formset:
-            form.instance.organisation = self.organisation
-
         formset.save()
-
+        if self.organisation.status == RequestStatusConstants.VALIDATED.name:
+            self.organisation.create_aidants(
+                Organisation.objects.get(data_pass_id=self.organisation.data_pass_id)
+            )
         return super().form_valid(formset)

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from unittest import mock
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.test import TestCase, override_settings, tag
@@ -8,9 +9,8 @@ from django.urls import reverse
 
 import jwt
 from freezegun import freeze_time
-from pytz import timezone as pytz_timezone
 
-from aidants_connect.common.constants import AuthorizationDurationChoices
+from aidants_connect_common.utils.constants import AuthorizationDurationChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash
@@ -37,7 +37,7 @@ class FCAuthorize(TestCase):
         self.assertNotEqual(connection.state, "")
 
 
-DATE = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
+DATE = datetime(2019, 1, 14, 3, 20, 34, 0, tzinfo=ZoneInfo("Europe/Paris"))
 TEST_FC_CONNECTION_AGE = 300
 
 
@@ -182,12 +182,13 @@ class FCCallback(TestCase):
 
         self.assertEqual(connection.access_token, "test_access_token")
         url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=e"
-            "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRi"
-            "NDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjox"
-            "NTQ3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
-            "bmVjdC5nb3V2LmZyIiwic3ViIjoiMTIzIiwibm9uY2UiOiJ0ZXN0X25vbmNlIn0.QGb2uhgG"
-            "wXvKaVT8FXwOzSObtuLrBRKigd7DVJwUG5s&state=test_state"
+            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?"
+            "id_token_hint=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhd"
+            "WQiOiIyMTEyODY0MzNlMzljY2UwMWRiNDQ4ZDgwMTgxYmRmZDAwNTU1NGI"
+            "xOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ3NDMzMDM0L"
+            "jAsImlhdCI6MTU0NzQzMTgzNC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
+            "bmVjdC5nb3V2LmZyIiwic3ViIjoiMTIzIiwibm9uY2UiOiJ0ZXN0X25vbmNl"
+            "In0.xKAPSsCaTVN29-PeC11j6XMSJnzrT44-OLZ7Nlt7jtE&state=test_state"
             "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -256,14 +257,15 @@ class FCCallback(TestCase):
         self.assertEqual(connection.usager.given_name, "Joséphine")
 
         url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?id_token_hint=ey"
-            "J0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMTEyODY0MzNlMzljY2UwMWRiND"
-            "Q4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ"
-            "3NDM2MDk0LjAsImlhdCI6MTU0NzQzNDg5NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmVj"
-            "dC5nb3V2LmZyIiwic3ViIjoiOWI3NTQ3ODI3MDVjNTVlYmZlMTAzNzFjOTA5ZjYyZTczYTNlM"
-            "DlmYjU2NmZjNWQyMzA0MGEyOWZhZTRlMGViYiIsIm5vbmNlIjoidGVzdF9ub25jZSJ9.J8048"
-            "J_B5MgwQkLzX28yXTDFPB4mTeoyUGW9RSW5YZ4&state=test_state&post_logout_redi"
-            "rect_uri=http://localhost:3000/logout-callback"
+            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?"
+            "id_token_hint=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMT"
+            "EyODY0MzNlMzljY2UwMWRiNDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk"
+            "0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ3NDMzMDM0LjAsImlhdCI6MTU0NzQzMTgz"
+            "NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmVjdC5nb3V2LmZyIiwic3ViIjoiO"
+            "WI3NTQ3ODI3MDVjNTVlYmZlMTAzNzFjOTA5ZjYyZTczYTNlMDlmYjU2NmZjNWQyMz"
+            "A0MGEyOWZhZTRlMGViYiIsIm5vbmNlIjoidGVzdF9ub25jZSJ9.HjK5vaK2zrzmSN"
+            "zB103TN7ft0t_RX-C5vdupICFccc0&state=test_state"
+            "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
 

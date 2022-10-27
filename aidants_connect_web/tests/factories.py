@@ -19,9 +19,6 @@ from aidants_connect_web.models import (
     Autorisation,
     CarteTOTP,
     Connection,
-    DatavizDepartment,
-    DatavizDepartmentsToRegion,
-    DatavizRegion,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -227,18 +224,3 @@ class AttestationJournalFactory(JournalFactory):
     is_remote_mandat = False
     access_token = Faker("md5")
     duree = 6
-
-
-class DatavizRegionFactory(DjangoModelFactory):
-    class Meta:
-        model = DatavizRegion
-
-
-class DatavizDepartmentFactory(DjangoModelFactory):
-    class Meta:
-        model = DatavizDepartment
-
-
-class DatavizDepartmentsToRegionFactory(DjangoModelFactory):
-    class Meta:
-        model = DatavizDepartmentsToRegion

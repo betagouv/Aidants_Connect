@@ -1,23 +1,7 @@
 "use strict";
 
 (function () {
-    /** Logic for correctly extending a class in ES5 */
-    function extend(superClass) {
-        const _constructor = function () {
-            Object.getPrototypeOf(_constructor).apply(this, arguments);
-        }
-
-        _constructor.prototype = Object.create(superClass.prototype, {
-            constructor: {
-                value: _constructor,
-                writable: true,
-                configurable: true
-            }
-        });
-        Object.setPrototypeOf(_constructor, superClass);
-
-        return _constructor;
-    }
+    const SEARCH_EVENT_NAME = "search:search"
 
     // We create the collator once because it is a costly operation
     const collator = new Intl.Collator(navigator.language, {
@@ -44,47 +28,71 @@
      * This was made with Stimulus framework
      * https://stimulus.hotwired.dev
      */
-    const SearchController = extend(Stimulus.Controller);
-    SearchController.prototype.connect = function () {
-        this.searchBarTargets.forEach(function (searchBar) {
-            searchBar.removeAttribute("hidden");
-        })
-    }
+    const SearchController = Object.extendClass(Stimulus.Controller);
+    Object.assign(SearchController.prototype, {
+        "initialize": function initialize() {
+            this.itemTargets.forEach(function (item) {
+                item.setAttribute("data-controller", "search-item");
+                item.setAttribute("data-search-item-target", "item");
+            });
+        },
 
-    SearchController.prototype.search = function (evt) {
-        const self = this;
-        const searchQuery = evt.target.value.trim();
-        this.itemTargets.forEach(function (item) {
-            if (searchQuery.length === 0) {
-                item.classList.remove(self.irrelevantResultClass)
-                return
-            }
+        "connect": function connect() {
+            this.searchBarTargets.forEach(function (searchBar) {
+                searchBar.removeAttribute("hidden");
+            });
+        },
 
-            const searchTerms = JSON.parse(item.dataset.searchTerms)
-            const hasMatchingTerms = searchTerms.some(function (term) {
-                return localeIncludes(term, searchQuery)
-            })
-            if (hasMatchingTerms) {
-                item.classList.remove(self.irrelevantResultClass);
-            } else {
-                item.classList.add(self.irrelevantResultClass);
-            }
-        })
-    }
+        "search": function search(evt) {
+            const event = new CustomEvent(SEARCH_EVENT_NAME, {detail: {term: evt.target.value.trim()}});
+            this.element.dispatchEvent(event);
+        },
+    });
 
-    /* Static fields */
     SearchController.targets = ["searchBar", "item"];
-    SearchController.classes = ["irrelevantResult"];
+
+    const SearchItemController = Object.extendClass(Stimulus.Controller);
+    Object.assign(SearchItemController.prototype, {
+        "initialize": function initialize() {
+            this.searchTerms = JSON.parse(this.itemTarget.dataset.searchTerms);
+        },
+
+        "connect": function connect() {
+            this.boundFilter = this.filter.bind(this);
+            document.querySelector("[data-controller='search']").addEventListener(SEARCH_EVENT_NAME, this.boundFilter);
+        },
+
+        "filter": function filter(event) {
+            const searchTerm = event.detail.term;
+
+            if (searchTerm.length === 0) {
+                // Empty searchbar
+                this.itemTarget.removeAttribute("hidden");
+                return;
+            }
+
+            const hasMatchingTerms = this.searchTerms.some(function (term) {
+                return localeIncludes(term, searchTerm);
+            });
+
+            if (hasMatchingTerms) {
+                this.itemTarget.removeAttribute("hidden");
+            } else {
+                this.itemTarget.setAttribute("hidden", "hidden");
+            }
+        },
+
+        "disconnect": function disconnect() {
+            document.querySelector("[data-controller='search']").removeEventListener(SEARCH_EVENT_NAME, this.boundFilter);
+        },
+    });
+
+    SearchItemController.targets = ["item"];
 
     function init() {
-        // Make search bar visible
-        const els = document.getElementsByClassName("user-search");
-        for (var i = 0; i < els.length; i++) {
-            els.item(i).removeAttribute("hidden");
-        }
-
         const application = Stimulus.Application.start();
         application.register("search", SearchController);
+        application.register("search-item", SearchItemController);
     }
 
     window.addEventListener("load", init);

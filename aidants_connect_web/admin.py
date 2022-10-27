@@ -25,7 +25,6 @@ from import_export.fields import Field
 from import_export.results import RowResult
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from nested_admin import NestedModelAdmin, NestedTabularInline
-from tabbed_admin import TabbedModelAdmin
 
 from aidants_connect.admin import (
     DepartmentFilter,
@@ -34,6 +33,8 @@ from aidants_connect.admin import (
     VisibleToTechAdmin,
     admin_site,
 )
+from aidants_connect_common.models import Department
+from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
@@ -41,10 +42,10 @@ from aidants_connect_web.forms import (
 )
 from aidants_connect_web.models import (
     Aidant,
+    AidantManager,
     Autorisation,
     CarteTOTP,
     Connection,
-    DatavizDepartment,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -439,6 +440,22 @@ class AidantResource(resources.ModelResource):
             totp_device.save()
 
 
+class AidantWithMandatsFilter(SimpleListFilter):
+    title = "Avec/sans mandats"
+    parameter_name = "with_mandates"
+
+    def lookups(self, request, model_admin):
+        return [("true", "Avec des mandats")]
+
+    def queryset(self, request, queryset: AidantManager):
+        if self.value() != "true":
+            return queryset
+
+        return queryset.filter(
+            journal_entries__action=JournalActionKeywords.CREATE_ATTESTATION
+        ).distinct()
+
+
 class AidantDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisations__zipcode"
 
@@ -467,6 +484,13 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     display_totp_device_status.short_description = "Carte TOTP Activée"
     display_totp_device_status.boolean = True
 
+    def display_mandates_count(self, obj: Aidant):
+        return Journal.objects.filter(
+            action=JournalActionKeywords.CREATE_ATTESTATION, aidant=obj
+        ).count()
+
+    display_mandates_count.short_description = "Nombre de mandats créés"
+
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
@@ -476,6 +500,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "validated_cgu_version",
         "display_totp_device_status",
         "carte_totp",
+        "display_mandates_count",
     )
 
     # For bulk import
@@ -487,8 +512,10 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # that references specific fields on `auth.User`.
     list_display = (
         "__str__",
+        "id",
         "email",
         "organisation",
+        "display_mandates_count",
         "carte_totp",
         "is_active",
         "can_create_mandats",
@@ -499,10 +526,11 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_active",
         AidantRegionFilter,
         AidantDepartmentFilter,
+        AidantWithMandatsFilter,
         "is_staff",
         "is_superuser",
     )
-    search_fields = ("first_name", "last_name", "email", "organisation__name")
+    search_fields = ("id", "first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
 
     filter_horizontal = (
@@ -532,6 +560,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "profession",
                     "organisation",
                     "organisations",
+                    "display_mandates_count",
                 )
             },
         ),
@@ -644,24 +673,23 @@ class HabilitationRequestResource(resources.ModelResource):
         fields = set()
 
     def _get_department_from_zipcode(self, habilitation_request):
-        zipcode = habilitation_request.organisation.zipcode
-        if not zipcode:
-            return None
-        departements = DatavizDepartment.objects.filter(zipcode=zipcode[:2])
-        if departements.exists():
-            return departements[0]
+        zipcode = habilitation_request.organisation.zipcode or ""
+        departements = Department.objects.filter(
+            zipcode=Department.extract_dept_zipcode(zipcode)
+        )
+        return departements[0] if departements.exists() else None
 
     def dehydrate_organisation_region(self, habilitation_request):
-        department = self._get_department_from_zipcode(habilitation_request)
+        department: Department = self._get_department_from_zipcode(habilitation_request)
         if not department:
             return ""
-        return department.datavizdepartmentstoregion.region.name
+        return department.region.name
 
     def dehydrate_organisation_departement(self, habilitation_request):
-        department = self._get_department_from_zipcode(habilitation_request)
+        department: Department = self._get_department_from_zipcode(habilitation_request)
         if not department:
             return ""
-        return department.dep_name
+        return department.name
 
 
 class HabilitationRequestImportResource(resources.ModelResource):
@@ -770,7 +798,6 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         self.message_user(request, f"{rows_updated} demandes ont été refusées.")
 
     def send_refusal_email(self, object):
-
         text_message = loader.render_to_string(
             "email/aidant_a_former_refuse.txt", {"aidant": object}
         )
@@ -809,7 +836,6 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
 
     def send_validation_email(self, object):
-
         text_message = loader.render_to_string(
             "email/aidant_a_former_valide.txt", {"aidant": object}
         )
@@ -952,16 +978,16 @@ class UsagerMandatInline(VisibleToTechAdmin, NestedTabularInline):
     inlines = (UsagerAutorisationInline,)
 
 
-class UsagerAdmin(
-    SpecificDeleteActionsMixin, VisibleToTechAdmin, NestedModelAdmin, TabbedModelAdmin
-):
+class UsagerAdmin(SpecificDeleteActionsMixin, VisibleToTechAdmin, NestedModelAdmin):
     list_display = ("__str__", "email", "creation_date")
     search_fields = ("given_name", "family_name", "email")
 
-    tab_infos = (("Info", {"fields": ("given_name", "family_name", "email", "phone")}),)
-    tab_mandats = (UsagerMandatInline,)
+    fieldsets = (
+        ("Informations", {"fields": ("given_name", "family_name", "email", "phone")}),
+    )
 
-    tabs = [("Informations", tab_infos), ("Mandats", tab_mandats)]
+    inlines = (UsagerMandatInline,)
+
     actions = ("specific_delete_action",)
 
     def specific_delete_action(self, request, queryset):

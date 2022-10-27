@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta
 from os.path import join as path_join
 from unittest.mock import Mock, patch
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db.utils import IntegrityError
@@ -9,7 +10,6 @@ from django.utils import timezone
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
-from pytz import timezone as pytz_timezone
 
 from aidants_connect_web.models import (
     Aidant,
@@ -552,7 +552,7 @@ class AutorisationModelTests(TestCase):
         self.assertEqual(first_autorisation.demarche, "Carte grise")
         self.assertEqual(second_autorisation.mandat.usager.family_name, "Flanders")
 
-    fake_date = datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris"))
+    fake_date = datetime(2019, 1, 14, tzinfo=ZoneInfo("Europe/Paris"))
 
     @freeze_time(fake_date)
     def test_autorisation_expiration_date_setting(self):
@@ -567,11 +567,11 @@ class AutorisationModelTests(TestCase):
         )
         self.assertEqual(
             autorisation.creation_date,
-            datetime(2019, 1, 14, tzinfo=pytz_timezone("Europe/Paris")),
+            datetime(2019, 1, 14, tzinfo=ZoneInfo("Europe/Paris")),
         )
         self.assertEqual(
             autorisation.mandat.expiration_date,
-            datetime(2019, 1, 17, tzinfo=pytz_timezone("Europe/Paris")),
+            datetime(2019, 1, 17, tzinfo=ZoneInfo("Europe/Paris")),
         )
 
     def test_was_separately_revoked_auth_not_revoked(self):

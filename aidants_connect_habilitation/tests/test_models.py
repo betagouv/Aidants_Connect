@@ -3,6 +3,7 @@ from unittest.mock import ANY, Mock, patch
 
 from django.core import mail
 from django.db import IntegrityError
+from django.forms import model_to_dict
 from django.http import HttpRequest
 from django.test import TestCase, override_settings, tag
 from django.utils.timezone import now
@@ -10,13 +11,15 @@ from django.utils.timezone import now
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
 from aidants_connect_habilitation.models import (
+    AidantRequest,
     Issuer,
     IssuerEmailConfirmation,
+    Manager,
     OrganisationRequest,
 )
 from aidants_connect_habilitation.tests.factories import (
@@ -436,3 +439,25 @@ class TestIssuerEmailConfirmation(TestCase):
             message=ANY,
             html_message=ANY,
         )
+
+
+class TestIssuer(TestCase):
+    def test_email_lower(self):
+        data = model_to_dict(IssuerFactory.build(email="TEST@TEST.TEST"))
+        issuer = Issuer.objects.create(**data)
+        self.assertEqual("test@test.test", issuer.email)
+
+
+class TestManager(TestCase):
+    def test_email_lower(self):
+        data = model_to_dict(ManagerFactory.build(email="TEST@TEST.TEST"))
+        issuer = Manager.objects.create(**data)
+        self.assertEqual("test@test.test", issuer.email)
+
+
+class TestAidantRequest(TestCase):
+    def test_email_lower(self):
+        orga = OrganisationRequestFactory()
+        data = model_to_dict(AidantRequestFactory.build(email="TEST@TEST.TEST"))
+        issuer = AidantRequest.objects.create(**{**data, "organisation": orga})
+        self.assertEqual("test@test.test", issuer.email)

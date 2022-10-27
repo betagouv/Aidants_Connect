@@ -7,7 +7,7 @@ from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
 from django_otp.plugins.otp_static.models import StaticDevice
 
-from aidants_connect.common.constants import RequestStatusConstants
+from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.admin import OrganisationRequestAdmin
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (

@@ -97,6 +97,8 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "address",
         "zipcode",
         "city",
+        "city_insee_code",
+        "department_insee_code",
         "is_aidant",
     )
     readonly_fields = ("organisation",)
@@ -130,6 +132,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "address",
         "zipcode",
         "city",
+        "city_insee_code",
+        "department_insee_code",
         "is_private_org",
         "partner_administration",
         "france_services_label",
@@ -189,16 +193,16 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 
     def accept_selected_requests(self, request, queryset):
         orgs_created = 0
-        for organisation_request in queryset:
+        for org_request in queryset:
             try:
-                if organisation_request.accept_request_and_create_organisation():
+                if org_request.accept_request_and_create_organisation():
                     orgs_created += 1
-                    self.send_acceptance_email(organisation_request)
+                    self.send_acceptance_email(org_request)
                 else:
                     self.message_user(
                         request,
-                        f"""L'organisation {organisation_request.name} n'a pas été créée.
-                        Vérifiez si la demande est bien en attente de validation.""",
+                        f"L'organisation {org_request.name} n'a pas été créée. "
+                        "Vérifiez si la demande est bien en attente de validation.",
                         level=messages.ERROR,
                     )
             except Organisation.AlreadyExists as e:
@@ -492,8 +496,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         message.save()
 
 
-if settings.AC_HABILITATION_FORM_ENABLED:
-    admin_site.register(Issuer, IssuerAdmin)
-    admin_site.register(Manager, ManagerAdmin)
-    admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
-    admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)
+admin_site.register(Issuer, IssuerAdmin)
+admin_site.register(Manager, ManagerAdmin)
+admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
+admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)

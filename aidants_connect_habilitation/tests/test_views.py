@@ -12,21 +12,23 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
-from factory import Faker
-from faker.config import DEFAULT_LOCALE
+from faker import Faker
 
 from aidants_connect import settings
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
+    EmailOrganisationValidationError,
     IssuerForm,
     ManagerForm,
     OrganisationRequestForm,
+    PersonnelForm,
 )
 from aidants_connect_habilitation.models import (
+    AidantRequest,
     Issuer,
     IssuerEmailConfirmation,
     OrganisationRequest,
@@ -39,6 +41,8 @@ from aidants_connect_habilitation.tests.factories import (
     ManagerFactory,
     OrganisationRequestFactory,
 )
+from aidants_connect_habilitation.tests.utils import get_form
+from aidants_connect_web.models import HabilitationRequest, Organisation
 
 
 @tag("habilitation")
@@ -374,7 +378,7 @@ class ModifyIssuerFormViewTests(TestCase):
         self.assertTemplateUsed(response, self.template_name)
 
     def test_on_correct_issuer_id_post_updates_model(self):
-        new_name = Faker("first_name").evaluate(None, None, {"locale": DEFAULT_LOCALE})
+        new_name = Faker().first_name()
 
         self.assertNotEqual(self.issuer.first_name, new_name)
 
@@ -567,7 +571,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
 
     def test_on_correct_issuer_id_post_updates_model(self):
         model: OrganisationRequest = DraftOrganisationRequestFactory(issuer=self.issuer)
-        new_name = Faker("company").evaluate(None, None, {"locale": DEFAULT_LOCALE})
+        new_name = Faker().company()
         form = OrganisationRequestForm(data={**model_to_dict(model), "name": new_name})
 
         if not form.is_valid():
@@ -600,6 +604,106 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
 
         model.refresh_from_db()
         self.assertEqual(model.name, new_name, "The model's name field wasn't modified")
+
+
+@tag("habilitation")
+class PersonnelRequestFormViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.template_name = "personnel_form.html"
+        cls.issuer: Issuer = IssuerFactory()
+        cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=cls.issuer
+        )
+
+    def test_template(self):
+        response = self.client.get(
+            self.__get_url(self.issuer.issuer_id, self.organisation.uuid)
+        )
+        self.assertTemplateUsed(response, self.template_name)
+
+    def test_has_errors_on_aidants_with_same_email(self):
+        aidants_email = Faker().email()
+
+        manager_data = utils.get_form(
+            ManagerForm, form_init_kwargs={"prefix": PersonnelForm.MANAGER_FORM_PREFIX}
+        ).data
+
+        aidants_data = utils.get_form(
+            AidantRequestFormSet,
+            ignore_errors=True,
+            form_init_kwargs={
+                "organisation": self.organisation,
+                "initial": 2,
+                "prefix": PersonnelForm.AIDANTS_FORMSET_PREFIX,
+            },
+            email=aidants_email,
+        ).data
+
+        response = self.client.post(
+            self.__get_url(self.issuer.issuer_id, self.organisation.uuid),
+            data={**manager_data, **aidants_data},
+        )
+
+        self.assertTemplateUsed(response, self.template_name)
+
+        self.assertIn(
+            str(EmailOrganisationValidationError(aidants_email)),
+            str(
+                response.context_data["form"]
+                .aidants_formset.forms[0]
+                .errors["email"]
+                .data
+            ),
+        )
+
+        self.assertFalse(response.context_data["form"].is_valid())
+
+        aidant: AidantRequest = AidantRequestFactory(organisation=self.organisation)
+
+        manager_data = utils.get_form(
+            ManagerForm, form_init_kwargs={"prefix": PersonnelForm.MANAGER_FORM_PREFIX}
+        ).data
+
+        aidants_data = utils.get_form(
+            AidantRequestFormSet,
+            ignore_errors=True,
+            form_init_kwargs={
+                "organisation": self.organisation,
+                "initial": 1,
+                "prefix": PersonnelForm.AIDANTS_FORMSET_PREFIX,
+            },
+            email=aidant.email,
+        ).data
+
+        response = self.client.post(
+            self.__get_url(self.issuer.issuer_id, self.organisation.uuid),
+            data={**manager_data, **aidants_data},
+        )
+
+        self.assertTemplateUsed(response, self.template_name)
+
+        self.assertIn(
+            str(EmailOrganisationValidationError(aidant.email)),
+            str(
+                response.context_data["form"]
+                .aidants_formset.forms[0]
+                .errors["email"]
+                .data
+            ),
+        )
+
+        self.assertFalse(response.context_data["form"].is_valid())
+
+    def __get_url(self, issuer_id, uuid):
+        return reverse(
+            "habilitation_new_aidants",
+            kwargs={
+                "issuer_id": issuer_id,
+                "uuid": uuid,
+            },
+        )
 
 
 @tag("habilitation")
@@ -693,7 +797,9 @@ class AidantsRequestFormViewTests(TestCase):
         organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
         manager_data = utils.get_form(ManagerForm).data
-        aidants_data = utils.get_form(AidantRequestFormSet).data
+        aidants_data = utils.get_form(
+            AidantRequestFormSet, form_init_kwargs={"organisation": organisation}
+        ).data
 
         # Logic to manually put prefix on form data
         # See https://docs.djangoproject.com/fr/4.0/ref/forms/api/#django.forms.Form.prefix # noqa:E501
@@ -1079,7 +1185,7 @@ class RequestReadOnlyViewTests(TestCase):
         self.assertNotContains(response, "modify-btn")
 
 
-class TestAddAidantsRequestView(TestCase):
+class AddAidantsRequestViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -1113,6 +1219,40 @@ class TestAddAidantsRequestView(TestCase):
                 messages[i].message,
                 "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
             )
+
+    def test_creates_aidants_when_request_is_validated(self):
+        org_req: OrganisationRequest = OrganisationRequestFactory(
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            manager=ManagerFactory(is_aidant=False),
+        )
+        [AidantRequestFactory(organisation=org_req) for _ in range(3)]
+
+        # Create aidants_connect_web.models.Organisation &
+        # aidants_connect_web.models.HabilitationRequest objects
+        org_req.accept_request_and_create_organisation()
+        org_req.refresh_from_db()
+
+        organisation: Organisation = Organisation.objects.get(
+            data_pass_id=org_req.data_pass_id
+        )
+
+        self.assertEqual(RequestStatusConstants.VALIDATED.name, org_req.status)
+        self.assertEqual(
+            3, HabilitationRequest.objects.filter(organisation=organisation).count()
+        )
+
+        furthermore = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"organisation": org_req, "initial": 3},
+        ).data
+
+        self.client.post(
+            self.__get_url(org_req.issuer.issuer_id, org_req.uuid), furthermore
+        )
+
+        self.assertEqual(
+            6, HabilitationRequest.objects.filter(organisation=organisation).count()
+        )
 
     def __get_url(self, issuer_id, uuid):
         return reverse(

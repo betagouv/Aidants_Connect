@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from datetime import datetime, timedelta
 from os import walk as os_walk
@@ -11,7 +13,7 @@ from django.contrib import messages as django_messages
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
-from django.db.models import CASCADE, SET_NULL, Q, QuerySet, Value
+from django.db.models import SET_NULL, Q, QuerySet, Value
 from django.db.models.functions import Concat
 from django.dispatch import Signal
 from django.template import defaultfilters, loader
@@ -22,7 +24,7 @@ from django.utils.functional import cached_property
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from phonenumber_field.modelfields import PhoneNumberField
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     JOURNAL_ACTIONS,
     AuthorizationDurationChoices,
     AuthorizationDurations,
@@ -37,7 +39,6 @@ logger = logging.getLogger()
 
 
 def delete_mandats_and_clean_journal(item, str_today):
-
     for mandat in item.mandats.all():
         entries = Journal.objects.filter(mandat=mandat)
         mandat_str_add_inf = (
@@ -88,6 +89,14 @@ class Organisation(models.Model):
     address = models.TextField("Adresse", default="No address provided")
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
     city = models.CharField("Ville", max_length=255, null=True)
+
+    city_insee_code = models.CharField(
+        "Code INSEE de la ville", max_length=5, null=True, blank=True
+    )
+
+    department_insee_code = models.CharField(
+        "Code INSEE du département", max_length=5, null=True, blank=True
+    )
 
     is_active = models.BooleanField("Est active", default=True, editable=False)
 
@@ -265,7 +274,8 @@ class Aidant(AbstractUser):
         verbose_name = "aidant"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        full_name = f"{self.first_name} {self.last_name}".strip()
+        return full_name if full_name else self.username
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -596,7 +606,6 @@ class UsagerQuerySet(models.QuerySet):
 
 
 class Usager(models.Model):
-
     GENDER_FEMALE = "female"
     GENDER_MALE = "male"
     GENDER_CHOICES = (
@@ -702,6 +711,12 @@ def get_staff_organisation_name_id() -> int:
 
 
 class MandatQuerySet(models.QuerySet):
+    def exclude_outdated(self):
+        return self.exclude(
+            Q(expiration_date__lt=timezone.now() - timedelta(365))
+            | Q(autorisations__revocation_date__lt=timezone.now() - timedelta(365))
+        )
+
     def active(self):
         return (
             self.exclude(expiration_date__lt=timezone.now())
@@ -711,13 +726,21 @@ class MandatQuerySet(models.QuerySet):
 
     def inactive(self):
         return (
-            self.exclude(expiration_date__lt=timezone.now() - timedelta(365))
-            .exclude(autorisations__revocation_date__lt=timezone.now() - timedelta(365))
+            self.exclude_outdated()
             .filter(
                 Q(expiration_date__lt=timezone.now())
                 | ~Q(autorisations__revocation_date__isnull=True)
             )
             .distinct()
+        )
+
+    def for_usager(self, usager):
+        return self.filter(usager=usager)
+
+    def renewable(self):
+        return self.exclude_outdated().filter(
+            ~Q(expiration_date__gt=timezone.now())
+            | Q(autorisations__revocation_date__isnull=True)
         )
 
 
@@ -760,6 +783,12 @@ class Mandat(models.Model):
         # A `mandat` is considered `active` if it contains
         # at least one active `autorisation`.
         return self.autorisations.active().exists()
+
+    @property
+    def can_renew(self):
+        return (
+            not self.is_expired or self.objects.renewable().filter(mandat=self).exists()
+        )
 
     @cached_property
     def revocation_date(self) -> Optional[datetime]:
@@ -967,7 +996,6 @@ class AutorisationQuerySet(models.QuerySet):
 
 
 class Autorisation(models.Model):
-
     DEMARCHE_CHOICES = [
         (name, attributes["titre"]) for name, attributes in settings.DEMARCHES.items()
     ]
@@ -1455,48 +1483,3 @@ class CarteTOTP(models.Model):
 class IdGenerator(models.Model):
     code = models.CharField(max_length=100, unique=True)
     last_id = models.PositiveIntegerField()
-
-
-# The Dataviz* models represent metadata that are used for data display in Metabase.
-# Do not remove even if they are not used directly in the code.
-class DatavizDepartment(models.Model):
-    zipcode = models.CharField(
-        "Code Postal", max_length=10, null=False, blank=False, unique=True
-    )
-    dep_name = models.CharField(
-        "Nom de département", max_length=50, null=False, blank=False
-    )
-
-    def normalize_zipcode(self):
-        return "".join(x if x.isdigit() else "0" for x in self.zipcode)
-
-    class Meta:
-        db_table = "dataviz_department"
-        verbose_name = "Département"
-
-
-class DatavizRegion(models.Model):
-    name = models.CharField(
-        "Nom de région", max_length=50, null=False, blank=False, unique=True
-    )
-
-    class Meta:
-        db_table = "dataviz_region"
-        verbose_name = "Région"
-
-
-class DatavizDepartmentsToRegion(models.Model):
-    department = models.OneToOneField(
-        DatavizDepartment,
-        null=False,
-        blank=False,
-        on_delete=CASCADE,
-    )
-    region = models.ForeignKey(
-        DatavizRegion, null=False, blank=False, on_delete=CASCADE
-    )
-
-    class Meta:
-        db_table = "dataviz_departements_to_region"
-        verbose_name = "Assocation départments/région"
-        verbose_name_plural = "Assocations départments/région"

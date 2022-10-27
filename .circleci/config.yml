@@ -10,7 +10,7 @@ jobs:
     docker:
       - image: cimg/python:3.10.4-browsers
 
-      - image: cimg/postgres:9.6
+      - image: cimg/postgres:12.12
         environment:
           POSTGRES_USER: aidants_connect_team
           POSTGRES_DB: aidants_connect
@@ -37,6 +37,7 @@ jobs:
             . venv/bin/activate
             pip install pipenv
             pipenv install --dev
+            python manage.py collectstatic --noinput
 
       - save_cache:
           paths:

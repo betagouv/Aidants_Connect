@@ -12,8 +12,7 @@ from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.utils import formats, timezone
 
-from aidants_connect.common.constants import AuthorizationDurations
-from aidants_connect.common.forms import PatchedErrorList
+from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
 from aidants_connect_web.models import (
@@ -66,7 +65,7 @@ def new_mandat(request):
         )
 
     else:
-        form = MandatForm(request.POST, error_class=PatchedErrorList)
+        form = MandatForm(request.POST)
 
         if form.is_valid():
             data = form.cleaned_data

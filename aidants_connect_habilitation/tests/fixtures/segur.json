@@ -1,0 +1,136 @@
+{
+  "type": "FeatureCollection",
+  "version": "draft",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.554959,
+          43.475242
+        ]
+      },
+      "properties": {
+        "label": "12 Avenue de S\u00e9gure 64200 Biarritz",
+        "score": 0.8724981818181818,
+        "housenumber": "12",
+        "id": "64122_1875_00012",
+        "name": "12 Avenue de S\u00e9gure",
+        "postcode": "64200",
+        "citycode": "64122",
+        "x": 331504.53,
+        "y": 6274647.86,
+        "city": "Biarritz",
+        "context": "64, Pyr\u00e9n\u00e9es-Atlantiques, Nouvelle-Aquitaine",
+        "type": "housenumber",
+        "importance": 0.59748,
+        "street": "Avenue de S\u00e9gure"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.387433,
+          45.446127
+        ]
+      },
+      "properties": {
+        "label": "12 Avenue de S\u00e9gur 19210 Lubersac",
+        "score": 0.8630599999999999,
+        "housenumber": "12",
+        "id": "19121_0099_00012",
+        "name": "12 Avenue de S\u00e9gur",
+        "postcode": "19210",
+        "citycode": "19121",
+        "x": 573951.33,
+        "y": 6484252.55,
+        "city": "Lubersac",
+        "context": "19, Corr\u00e8ze, Nouvelle-Aquitaine",
+        "type": "housenumber",
+        "importance": 0.49366,
+        "street": "Avenue de S\u00e9gur"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.30893,
+          48.850491
+        ]
+      },
+      "properties": {
+        "label": "Avenue de S\u00e9gur 75007 Paris",
+        "score": 0.7364158823529411,
+        "id": "75107_8909",
+        "name": "Avenue de S\u00e9gur",
+        "postcode": "75007",
+        "citycode": "75107",
+        "x": 649288.31,
+        "y": 6861382.91,
+        "city": "Paris",
+        "district": "Paris 7e Arrondissement",
+        "context": "75, Paris, \u00cele-de-France",
+        "type": "street",
+        "importance": 0.68881
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.305575,
+          48.847446
+        ]
+      },
+      "properties": {
+        "label": "Avenue de S\u00e9gur 75015 Paris",
+        "score": 0.736234973262032,
+        "id": "75115_8909",
+        "name": "Avenue de S\u00e9gur",
+        "postcode": "75015",
+        "citycode": "75115",
+        "x": 649039.14,
+        "y": 6861046.5,
+        "city": "Paris",
+        "district": "Paris 15e Arrondissement",
+        "context": "75, Paris, \u00cele-de-France",
+        "type": "street",
+        "importance": 0.68682
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.774174,
+          43.118682
+        ]
+      },
+      "properties": {
+        "label": "Avenue de S\u00e9gur 83110 Sanary-sur-Mer",
+        "score": 0.7280322459893048,
+        "id": "83123_1152",
+        "name": "Avenue de S\u00e9gur",
+        "postcode": "83110",
+        "citycode": "83123",
+        "x": 925900.84,
+        "y": 6228348.2,
+        "city": "Sanary-sur-Mer",
+        "context": "83, Var, Provence-Alpes-C\u00f4te d'Azur",
+        "type": "street",
+        "importance": 0.59659
+      }
+    }
+  ],
+  "attribution": "BAN",
+  "licence": "ETALAB-2.0",
+  "query": "12 avenue de segur",
+  "limit": 5
+}

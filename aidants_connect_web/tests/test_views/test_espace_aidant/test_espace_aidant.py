@@ -5,7 +5,7 @@ from django.urls import resolve, reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect.common.constants import JournalActionKeywords
+from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -73,7 +73,7 @@ class SwitchOrganisationTests(TestCase):
     def test_aidant_can_see_the_switch_if_they_can_change_orgs(self):
         self.aidant.organisations.set((self.aidant.organisation, OrganisationFactory()))
         self.client.force_login(self.aidant)
-        response = self.client.get("/")
+        response = self.client.get("/espace-aidant/")
         self.assertContains(response, "Changer d'organisation")
 
     def test_aidant_can_switch_to_an_org_they_belong_to(self):

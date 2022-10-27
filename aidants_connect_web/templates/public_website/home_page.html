@@ -1,107 +1,157 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block extracss %}
 <link href="{% static 'css/home.css' %}" rel="stylesheet">
+<link href="{% static 'css/basicLightbox.min.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-  <div class="notification full-width" role="alert">
-    Vous êtes une structure qui souhaite utiliser Aidants Connect ? Nous vous invitons à remplir
-    <a href="{% url 'habilitation' %}">notre formulaire d'habilitation</a>.
-  </div>
 {% if messages %}
   {% for message in messages %}
     <div class="notification {% if message.tags %}{{ message.tags }}{% endif %} full-width" role="alert">{{ message }}</div>
   {% endfor %}
 {% endif %}
-<div class="hero">
-  <div class="hero__container">
-   <h1>Bienvenue sur Aidants Connect</h1>
-    <p>Ce service sécurise et facilite le « faire pour le compte de »</p>
+<div class="fr-container--fluid hero-container">
+  <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center fr-grid-row--middle hero-row">
+    <div class="fr-col">
+      <div class="fr-grid-row fr-grid-row--center">
+        <img class="hero-logo" alt="Logo Aidants Connect" src="{% static 'images/logo-aidants.svg' %}"/>
+      </div>
+      <div class="fr-grid-row fr-grid-row--center">
+        <h1 class="hero-subtitle">Facilement « faire pour le compte de » en toute sécurité</h1>
+      </div>
+      <div class="fr-grid-row fr-grid-row--center">
+        <button class="lightbox-video btn-hero">
+          <span class="img-play"><img alt="Lire la vidéo" src="{% static 'images/play.svg' %}"/></span>Aidants Connect, c’est quoi ?
+        </button>
+      </div>
+    </div>
   </div>
 </div>
-<section class="section section-grey">
-  <div class="container">
-    <div class="row">
-      <div class="min-width-35">
-        <img src="{% static 'images/aidantsconnect-illustration.svg' %}" alt="" />
-      </div>
-      <div>
-        <h2>
-          Vous accompagnez régulièrement des personnes en difficulté avec le numérique dans la réalisation de démarches en ligne ?<br />
-          <small class="font-weight-normal margin-top-10"><span aria-hidden="true">→ </span>Aidants Connect est fait pour vous !</small>
-        </h2>
-        <p class="small__paragraph">
-          <strong>Aidants Connect s’adresse à une diversité d’aidants professionnels</strong>
-          Travailleurs sociaux, agents publics d’accueil, médiateurs numériques...
-        </p>
-        <a class="button primary" href="https://app.livestorm.co/incubateur-des-territoires/aidants-connect">Participer à une démo</a>
-        <a class="button" href="{% url 'habilitation' %}">Être habilité Aidants Connect</a>
+<div class="fr-container--fluid aidants-container">
+  <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center aidants-row">
+    <div class="fr-col-md-4 aidants-col">
+      <div class="fr-grid-row fr-grid-row--right aidants-img-container">
+        <img class="aidants-img" alt="Deux personnes se saluent" src="{% static 'images/aidants.svg' %}"/>
       </div>
     </div>
-  </div>
-</section>
-<section class="section">
-  <div class="container">
-    <div class="row">
-      <div class="text-center">
-        <img class="tile__icon large__icon" src="{% static 'images/key.svg' %}" alt="" />
-        <p class="large__paragraph">
-          <strong>Aidants Connect sécurise juridiquement les aidants</strong>
-          qui accompagnent ces usagers sur les enjeux de confidentialité et de sécurité des données
-        </p>
-      </div>
-      <div class="text-center">
-        <img class="tile__icon large__icon" src="{% static 'images/help.svg' %}" alt="" />
-        <p class="large__paragraph">
-          <strong>Aidants Connect garantit un accompagnement humain</strong>
-          pour toutes les personnes qui, pour diverses raisons, ne peuvent pas faire leurs démarches en ligne
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-{% include 'public_website/section_link_faq_partial.html' %}
-<section class="section section-grey">
-  <div class="container">
-    <div class="row">
-      <div class="text-center">
-        <img class="tile__icon" src="{% static 'images/build.svg' %}" alt="" />
-        <p class="margin-top-0 small__paragraph">
-          <strong>Aidants Connect a été co-construit avec des aidants.</strong>
-          Des ateliers utilisateurs ont eu lieu dans une dizaine de territoires
-        </p>
-        <img class="tile__icon" src="{% static 'images/cycle.svg' %}" alt="" />
-        <p class="margin-top-0 small__paragraph">
-          <strong>Aidants Connect est évolutif.</strong>
-          Le service s’adapte aux réalités du terrain et aux besoins des aidants
-        </p>
-      </div>
-      <div class="form__container min-width-50">
-        <div class="card">
-          <div class="card__content">
-            <form method="post" action="https://app.mailjet.com/widget/iframe/4t3L/E8z" id="newsletter">
-              <h2>Vous souhaitez suivre notre actualité et l’évolution d’Aidants Connect ?</h2>
-              <br />
-              <input type="hidden" id="csrf_token" name="csrf_token" value="YWZhOWVmNGEwNzY4NjViZmQyMDk0ZjUxZjg0Y2Q2ZGU3NTVjN2NmNjFmY2JmYjZkZmI1MWEwZjkxZTIyNGMzNQ==" />
-              <label for="subscribe-email">Entrez votre adresse e-mail (exemple: votre@email.fr)</label>
-              <div class="form__group">
-                <div class="input__group">
-                  <input type="email" id="subscribe-email" name="w-field-field-154291-1000274-1065021-email" placeholder="votre@email.fr" autocomplete="on" required />
-                  <button class="button margin-left-1em" type="submit" name="subscribe" id="form-submit" title="Je m'abonne à l'infolettre">Je m'abonne</button>
-                </div>
-              </div>
-              <p>
-                Votre adresse email est uniquement utilisée pour vous envoyer les lettres d’informations d’Aidants Connect.
-                Vous pouvez à tout moment utiliser le lien de désabonnement intégré dans l’infolettre.
-              </p>
-            </form>
+    <div class="fr-col-md-8 aidants-col">
+      <div class="fr-grid-row fr-grid-row--gutters aidants-text">
+          <div class="fr-grid-row aidants-question">
+            Vous accompagnez régulièrement des personnes en difficulté avec le numérique dans la réalisation de démarches en ligne ?
           </div>
+          <div class="fr-grid-row aidants-title">
+            Aidants Connect est fait pour vous.
+          </div>
+          <div class="fr-grid-row">
+            <p>Aidants Connect s’adresse à une diversité d’aidants professionnels<br>Travailleurs sociaux, agents publics d’accueil, médiateurs numériques...</p>
+          </div>
+      </div>
+      <div class="fr-grid-row fr-grid-row--right aidants-btn-container">
+        <div class="fr-grid-col aidants-btn-col">
+          <a class="btn-homepage" href="https://app.livestorm.co/incubateur-des-territoires/aidants-connect">Participer à une démo</a>
+        </div>
+        <div class="fr-grid-col aidants-btn-col">
+          <a class="btn-homepage" href="{% url 'habilitation' %}">Être habilité Aidants Connect</a>
         </div>
       </div>
     </div>
   </div>
-</section>
+</div>
+<div class="fr-container--fluid info-section">
+  <div class="fr-container info-container">
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center">
+      <div class="fr-col-md-4 info-col">
+        <img alt="cadenas" src="{% static 'images/securisation.svg' %}"/>
+        <p class="info-title">Sécurisation juridique</p>
+        <p class="info-text">Le mandat Aidants Connect instaure un cadre légal pour les démarches réalisées pour autrui
+        </p>
+      </div>
+      <div class="fr-col-md-4 info-col">
+        <img alt="femme" src="{% static 'images/accompagnement.svg' %}"/>
+        <p class="info-title">Accompagnement Humain</p>
+        <p class="info-text">Premier pas vers l'autonomie numérique, Aidants Connect garantit un suivi professionnel et humain</p>
+      </div>
+      <div class="fr-col-md-4 info-col">
+        <img alt="ordinateur" src="{% static 'images/outil.svg' %}"/>
+        <p class="info-title">Un outil intuitif</p>
+        <p class="info-text">Plus besoin de garder les identifiants et mots de passe de vos bénéficiaires, Aidants Connect le fait pour vous !</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="fr-container contact-container">
+  <div class="fr-grid-row">
+    <div class="fr-col-md-4 contact-col">
+      <div class="fr-grid-row question-div">
+        <div class="fr-col">
+          <div class="fr-grid-row">
+            <p class="question-title">Toujours des questions ?</p>
+            <p>Consultez notre procédure d’habilitation ou encore notre aide si vous avez besoin de plus d’informations.</p>
+          </div>
+          <div class="fr-grid-row fr-grid-row--right fr-grid-row--bottom questions-btn-container">
+            <div class="fr-grid-col aidants-btn-col">
+              <a class="btn-homepage" href="{% url 'habilitation' %}">Premiers pas</a>
+            </div>
+            <div class="fr-grid-col aidants-btn-col">
+              <a class="btn-homepage" href="{% url 'faq_generale' %}">Aide</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="fr-col-md-8 contact-col">
+      <div class="fr-grid-row contact-div">
+        <div class="fr-col">
+          <p class="contact-title">Restons en contact !</p>
+          <form method="post" action="https://app.mailjet.com/widget/iframe/4t3L/E8z" id="newsletter">
+            <input type="hidden" id="csrf_token" name="csrf_token" value="YWZhOWVmNGEwNzY4NjViZmQyMDk0ZjUxZjg0Y2Q2ZGU3NTVjN2NmNjFmY2JmYjZkZmI1MWEwZjkxZTIyNGMzNQ==" />
+            <label class="contact-text" for="subscribe-email">Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :</label>
+            <div class="form__group">
+              <div class="input__group">
+                <input type="email" id="subscribe-email" name="w-field-field-154291-1000274-1065021-email" placeholder="votre@email.fr" autocomplete="on" required />
+                <button class="btn-contact" type="submit" name="subscribe" id="form-submit" title="Je m'abonne à l'infolettre">Je m'abonne</button>
+              </div>
+            </div>
+          </form>
+          <p class="contact-text">Besoin d’informations précises ou d’assistance ? Contactez-nous à l’adresse suivante : <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fr-container--fluid partenaires-container">
+  <div class="fr-container">
+    <div class="fr-grid-row partenaires-row">
+      <div class="fr-col-md-6 partenaires-col">
+        <p class="partenaires-title">Partenaires</p>
+        <p class="partenaires-text">Aidants Connect repose également sur des partenariats avec les institutions suivantes. </p>
+      </div>
+      <div class="fr-col-md-3 partenaires-logo-col">
+        <a href="https://franceconnect.gouv.fr/"><img class="partenaire-logo" src="{% static 'images/logo-fc-v2.png' %}" alt="FranceConnect" /></a>
+      </div>
+      <div class="fr-col-md-3 partenaires-logo-col">
+        <a href="http://www.anlci.gouv.fr/"><img class="partenaire-logo" src="{% static 'images/logo-ANLCI.png' %}" alt="Agence Nationale de Lutte contre l’Illettrisme"/></a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock content %}
+
+{% block extrajs %}
+<script src="{% static 'js/basicLightbox.min.js' %}"></script>
+<script>
+  document.querySelector('button.lightbox-video').onclick = () => {
+
+  basicLightbox.create(`
+    <video controls data-id="2">
+      <source src="{% static 'videos/AidantsConnect.mp4' %}" type="video/mp4">
+    </video>
+  `).show()
+  }
+</script>
+{% endblock extrajs %}

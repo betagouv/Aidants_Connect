@@ -3,7 +3,7 @@ venv/*
 **/__pycache__/**
 db.sqlite3
 
-aidants_connect/tmp_email_as_file/**
+tmp_email_as_file
 .env
 staticfiles
 .DS_Store

@@ -16,6 +16,7 @@ import re
 import sys
 from datetime import datetime, timedelta
 from distutils.util import strtobool
+from pathlib import Path
 from typing import Optional, Union
 
 import sentry_sdk
@@ -121,7 +122,6 @@ INSTALLED_APPS = [
     "aidants_connect_overrides",
     "django.contrib.admin",
     "nested_admin",
-    "tabbed_admin",
     "magicauth",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -138,10 +138,19 @@ INSTALLED_APPS = [
     "import_export",
     "phonenumber_field",
     "aidants_connect",
+    "aidants_connect_common",
     "aidants_connect_web",
     "aidants_connect_habilitation",
     "aidants_connect_sandbox",
 ]
+
+# Additionnal app to execute only during tests
+INSTALLED_TEST_APPS = [
+    "aidants_connect_habilitation.tests.third_party_service_mocks",
+]
+
+if "test" in sys.argv:
+    INSTALLED_APPS.append(*INSTALLED_TEST_APPS)
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -159,7 +168,7 @@ MIDDLEWARE = [
 ]
 
 # Add debug toolbar
-if DEBUG:
+if DEBUG and "test" not in sys.argv:
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = ["127.0.0.1"] + ALLOWED_HOSTS
@@ -173,7 +182,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "aidants_connect.common.context_processors.settings_variables",
+                "aidants_connect_common.context_processors.settings_variables",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
@@ -253,10 +262,6 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
 
 STATIC_ROOT = "staticfiles"
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "aidants_connect/common/static"),
-]
-
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "home_page"
@@ -359,7 +364,8 @@ MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
 MAGICAUTH_WAIT_VIEW_TEMPLATE = "login/wait.html"
 MAGICAUTH_ENABLE_2FA = True
 
-# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py#L54  # noqa
+# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py
+# #L54  # noqa
 MAGICAUTH_TOKEN_DURATION_SECONDS = int(
     os.getenv("MAGICAUTH_TOKEN_DURATION_SECONDS", 5 * 60)
 )
@@ -373,8 +379,8 @@ EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
 
-## if file based email backend is used (debug)
-EMAIL_FILE_PATH = os.path.dirname(os.path.abspath(__file__)) + "/tmp_email_as_file"
+# if file based email backend is used (debug)
+EMAIL_FILE_PATH = Path(os.path.dirname(__file__)).parent / "tmp_email_as_file"
 ## if smtp backend is used
 EMAIL_HOST = os.getenv("EMAIL_HOST", None)
 EMAIL_PORT = os.getenv("EMAIL_PORT", None)
@@ -402,6 +408,7 @@ STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
 CSP_IMG_SRC = (
     "'self'",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
@@ -409,14 +416,15 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
-    "'sha256-FUfFEwUd+ObSebyGDfkxyV7KwtyvBBwsE/VxIOfPD68='",  # tabbed_admin
     "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
+    "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
 )
+
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
@@ -487,9 +495,6 @@ ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
 # Staff Organisation name
 STAFF_ORGANISATION_NAME = "BetaGouv"
 
-# Tabbed Admin
-TABBED_ADMIN_USE_JQUERY_UI = True
-
 # Shell Plus
 SHELL_PLUS_IMPORTS = [
     "from datetime import datetime, timedelta",
@@ -501,7 +506,6 @@ DATAPASS_FROM_EMAIL = os.getenv("DATAPASS_FROM_EMAIL", None)
 DATAPASS_TO_EMAIL = os.getenv("DATAPASS_TO_EMAIL", None)
 DATAPASS_CODE_FOR_ID_GENERATOR = "datapassid"
 
-AC_HABILITATION_FORM_ENABLED = getenv_bool("AC_HABILITATION_FORM_ENABLED", False)
 AC_IMPORT_HABILITATION_REQUESTS = getenv_bool("AC_IMPORT_HABILITATION_REQUESTS", False)
 
 SUPPORT_EMAIL = "connexion@aidantsconnect.beta.gouv.fr"
@@ -565,6 +569,10 @@ EMAIL_ORGANISATION_REQUEST_FROM = os.getenv(
     "EMAIL_ORGANISATION_REQUEST_FROM", SUPPORT_EMAIL
 )
 
+EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM = os.getenv(
+    "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM", SUPPORT_EMAIL
+)
+
 EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT = os.getenv(
     "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT",
     "Aidants Connect - Rappel de votre profil demandeur",
@@ -594,8 +602,25 @@ PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
 PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
 PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
 
-GOUV_ADDRESS_SEARCH_API_BASE_URL = "https://api-adresse.data.gouv.fr/search/"
-GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool("GOUV_ADDRESS_SEARCH_API_DISABLED", True)
+if "test" in sys.argv:
+    GOUV_ADDRESS_SEARCH_API_DISABLED = True
+    GOUV_ADDRESS_SEARCH_API_BASE_URL = ""
+else:
+    GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool(
+        "GOUV_ADDRESS_SEARCH_API_DISABLED", True
+    )
+    GOUV_ADDRESS_SEARCH_API_BASE_URL = os.getenv(
+        "GOUV_ADDRESS_SEARCH_API_BASE_URL", "https://api-adresse.data.gouv.fr/search/"
+    )
+
+AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa
+
+if not GOUV_ADDRESS_SEARCH_API_DISABLED:
+    CSP_CONNECT_SRC = (*CSP_CONNECT_SRC, GOUV_ADDRESS_SEARCH_API_BASE_URL)
+    CSP_SCRIPT_SRC = (
+        *CSP_SCRIPT_SRC,
+        AUTOCOMPLETE_SCRIPT_SRC,
+    )
 
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")

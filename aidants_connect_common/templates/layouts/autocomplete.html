@@ -1,0 +1,7 @@
+{% load static %}
+{% if not GOUV_ADDRESS_SEARCH_API_DISABLED %}
+  <link rel="stylesheet" href="{% static 'css/autocomplete.css' %}">
+  <script defer src="{{ AUTOCOMPLETE_SCRIPT_SRC }}"></script>
+  <script defer src="{% static 'js/abstract_autocomplete.js' %}"></script>
+  <script defer src="{% static 'js/address_autocomplete.js' %}"></script>
+{% endif %}

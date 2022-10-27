@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -8,7 +9,6 @@ from django.urls import resolve
 from django.utils import timezone
 
 from freezegun import freeze_time
-from pytz import timezone as pytz_timezone
 
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
@@ -612,9 +612,7 @@ class GenerateAttestationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
 
-    @freeze_time(
-        datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=pytz_timezone("Europe/Paris"))
-    )
+    @freeze_time(datetime(2020, 7, 18, 3, 20, 34, 0, tzinfo=ZoneInfo("Europe/Paris")))
     def test_attestation_contains_text(self):
         self.client.force_login(self.aidant_thierry)
 

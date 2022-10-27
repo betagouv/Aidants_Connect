@@ -12,11 +12,11 @@ from factory.fuzzy import FuzzyInteger, FuzzyText
 from faker import Faker
 from phonenumber_field.phonenumber import to_python
 
-from aidants_connect.common.constants import (
+from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect.common.gouv_address_api import Address, AddressType
+from aidants_connect_common.utils.gouv_address_api import Address, AddressType
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
@@ -60,7 +60,8 @@ class ManagerFactory(DjangoModelFactory):
     email = FactoryFaker("email")
     profession = FactoryFaker("job")
     phone = LazyFunction(_generate_valid_phone)
-
+    city_insee_code = ""
+    department_insee_code = ""
     address = FactoryFaker("street_address")
     zipcode = FactoryFaker("postcode")
     city = FactoryFaker("city")
@@ -147,6 +148,7 @@ def address_factory(
     score: float = None,
     postcode: str = None,
     city: str = None,
+    citycode: str = "",
     department_number: str = None,
     department_name: str = None,
     region: str = None,
@@ -171,6 +173,7 @@ def address_factory(
         score=(score or fake.random.randint(0, 100) / 100),
         postcode=(postcode or _zipcode),
         city=(city or _city),
+        citycode=citycode,
         context=context,
         type=(type or fake.random.choice(AddressType.values())),
     )

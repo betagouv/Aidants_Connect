@@ -13,12 +13,13 @@
 
       <div class="fr-col-12 fr-col-md-8">
         <form
-            method="post"
-            data-controller="dynamic-form"
-            data-dynamic-form-type-input-container-class="type-input-container"
+          method="post"
+          data-controller="dynamic-form"
+          data-dynamic-form-type-input-container-class="type-input-container"
         >
           <h2>Structure d’accueil</h2>
-          <p class="subtitle">Vous pouvez faire autant de demandes qu’il existe de structures d’accueil. Tous les champs sont obligatoires.</p>
+          <p class="subtitle">Vous pouvez faire autant de demandes qu’il existe de structures d’accueil. Tous les champs
+            sont obligatoires.</p>
           <div class="shadowed">
             <h3>Informations générales</h3>
             {% csrf_token %}
@@ -30,31 +31,45 @@
             {% field_as_fr_grid_row form.name %}
             <h3>Informations administratives</h3>
 
-            {% field_as_fr_grid_row form.address %}
+            <section
+              data-controller="address-autocomplete"
+              data-address-autocomplete-api-base-url-value="{{ GOUV_ADDRESS_SEARCH_API_BASE_URL }}"
+            >
+              {% include "_address_validatable_mixin.html" with form=form %}
 
-            {% with errors=form.zipcode.errors|add:form.city.errors %}
-              <div
+              {% field_as_fr_grid_row form.address %}
+
+              {% with errors=form.zipcode.errors|add:form.city.errors %}
+                <div
                   class="form-grid-row fr-grid-row fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}">
-                <div class="fr-col-12 fr-col-md-5">
-                  <label for="{{ form.zipcode.id_for_label }}">{{ form.zipcode.label }}</label>&nbsp;/&nbsp;
-                  <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+                  <div class="fr-col-12 fr-col-md-5">
+                    <label for="{{ form.zipcode.id_for_label }}">{{ form.zipcode.label }}</label>&nbsp;/&nbsp;
+                    <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+                  </div>
+                  <div class="fr-col-4 fr-col-md-2 zipcode-container">
+                    {{ form.zipcode }}
+                  </div>
+                  <div class="fr-col-8 fr-col-md-5">
+                    {{ form.city }}
+                  </div>
+                  <div class="fr-col-8 fr-col-md-5">
+                    {{ form.city_insee_code }}
+                    {{ form.department_insee_code }}
+                  </div>
                 </div>
-                <div class="fr-col-4 fr-col-md-2 zipcode-container">
-                  {{ form.zipcode }}
-                </div>
-                <div class="fr-col-8 fr-col-md-5">
-                  {{ form.city }}
-                </div>
-              </div>
 
-              {% if errors %}
-                <div class="fr-grid-row fr-grid-row--gutters">
-                  <div class="errors fr-col-12 fr-col-md-7 fr-col-offset-md-5">{{ errors }}</div>
-                </div>
-              {% endif %}
-            {% endwith %}
+                {% if errors %}
+                  <div class="fr-grid-row fr-grid-row--gutters">
+                    <div class="errors fr-col-12 fr-col-md-7 fr-col-offset-md-5">{{ errors }}</div>
+                  </div>
+                {% endif %}
+              {% endwith %}
+
+              {% include "layouts/autocomplete.html" %}
+            </section>
 
             {% field_as_fr_grid_row form.siret %}
+            <p><i>Besoin d’aide pour retrouver votre SIRET ? </i> <a href="https://annuaire-entreprises.data.gouv.fr/?mtm_campaign=aidants_connect">Annuaire des Entreprises →</a></p>
 
             {% checkbox_fr_grid_row form.is_private_org %}
 
@@ -93,4 +108,8 @@
   {% stimulusjs %}
   <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/organisation_form.js' %}"></script>
+{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/personnel_form.css' %}" rel="stylesheet">
 {% endblock %}
