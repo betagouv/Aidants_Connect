@@ -63,12 +63,25 @@ from aidants_connect_web.models import (
 logger = logging.getLogger()
 
 
+def get_email_user_for_device(obj):
+    try:
+        return obj.user.email
+    except Exception:
+        pass
+    try:
+        return obj.aidant.email
+    except Exception:
+        pass
+    return None
+
+
 class StaticDeviceStaffAdmin(VisibleToAdminMetier, StaticDeviceAdmin):
-    pass
+    list_display = ("name", "user", get_email_user_for_device)
+    search_fields = ("name", "user__username", "user__email")
 
 
 class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
-    pass
+    search_fields = ("name", "user__username", "user__email")
 
 
 class SpecificDeleteActionsMixin:
@@ -1360,8 +1373,8 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 
     totp_devices_diagnostic.short_description = "Diagnostic Carte/TOTP Device"
 
-    list_display = ("serial_number", "aidant")
-    search_fields = ("serial_number",)
+    list_display = ("serial_number", "aidant", get_email_user_for_device)
+    search_fields = ("serial_number", "aidant__email")
     raw_id_fields = ("aidant",)
     readonly_fields = ("totp_devices_diagnostic",)
     ordering = ("-created_at",)
