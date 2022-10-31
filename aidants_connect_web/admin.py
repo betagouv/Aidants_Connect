@@ -7,6 +7,7 @@ from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.mail import send_mail
 from django.db.models import QuerySet
+from django.forms import ChoiceField
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
@@ -20,7 +21,13 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ExportActionModelAdmin, ImportExportMixin, ImportMixin
+from import_export.admin import (
+    ConfirmImportForm,
+    ExportActionModelAdmin,
+    ImportExportMixin,
+    ImportForm,
+    ImportMixin,
+)
 from import_export.fields import Field
 from import_export.results import RowResult
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
@@ -519,6 +526,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "carte_totp",
         "is_active",
         "can_create_mandats",
+        "created_at",
+        "updated_at",
         "is_staff",
         "is_superuser",
     )
@@ -719,12 +728,64 @@ class HabilitationRequestImportResource(resources.ModelResource):
         import_id_fields = ("email", "organisation__data_pass_id")
 
 
+class HabilitationRequestImportDateFormationResource(resources.ModelResource):
+    email = Field(attribute="email")
+    organisation__data_pass_id = Field(
+        attribute="organisation",
+        widget=ForeignKeyWidget(Organisation, field="data_pass_id"),
+        column_name="data_pass_id",
+    )
+    date_formation = Field(attribute="date_formation")
+
+    def after_import_instance(self, instance, new, row_number=None, **kwargs):
+        instance.formation_done = True
+        if instance.test_pix_passed:
+            instance.validate_and_create_aidant()
+
+    def after_save_instance(self, instance, using_transactions, dry_run):
+        aidants_a_former = HabilitationRequest.objects.filter(email=instance.email)
+        for aidant in aidants_a_former:
+            if not aidant.formation_done:
+                aidant.formation_done = True
+                aidant.date_formation = instance.date_formation
+                aidant.save()
+                if aidant.test_pix_passed:
+                    aidant.validate_and_create_aidant()
+        return super().after_save_instance(instance, using_transactions, dry_run)
+
+    class Meta:
+        model = HabilitationRequest
+        fields = set()
+        import_id_fields = ("email", "organisation__data_pass_id")
+        skip_unchanged = True
+
+
 class HabilitationDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisation__zipcode"
 
 
 class HabilitationRequestRegionFilter(RegionFilter):
     filter_parameter_name = "organisation__zipcode"
+
+
+class HabilitationRequestImportForm(ImportForm):
+    import_choices = ChoiceField(
+        label="Type d'import d'aidant à former",
+        choices=(
+            ("FORMATION_DATE", "Mettre à jour la date de formation"),
+            ("OLD_FILES_IMPORT", "Importer des anciens fichiers"),
+        ),
+    )
+
+
+class ConfirmHabilitationRequestImportForm(ConfirmImportForm):
+    import_choices = ChoiceField(
+        label="Type d'import d'aidant à former",
+        choices=(
+            ("FORMATION_DATE", "Mettre à jour la date de formation"),
+            ("OLD_FILES_IMPORT", "Importer des anciens fichiers"),
+        ),
+    )
 
 
 class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdmin):
@@ -757,14 +818,36 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     )
     ordering = ("email",)
 
-    # Change resource class if explicit setting is set
     resource_class = HabilitationRequestResource
-    if settings.AC_IMPORT_HABILITATION_REQUESTS:
-        resource_class = HabilitationRequestImportResource
 
     change_list_template = (
         "aidants_connect_web/admin/habilitation_request/change_list.html"
     )
+
+    def get_import_resource_kwargs(self, request, form, *args, **kwargs):
+        cleaned_data = getattr(form, "cleaned_data", False)
+        if (
+            isinstance(form, ConfirmHabilitationRequestImportForm)
+            or isinstance(form, HabilitationRequestImportForm)
+            and cleaned_data
+        ):
+            self.import_choices = cleaned_data["import_choices"]
+        return kwargs
+
+    def get_import_resource_class(self):
+        import_choices = getattr(self, "import_choices", False)
+        if import_choices and import_choices == "FORMATION_DATE":
+            return HabilitationRequestImportDateFormationResource
+        elif import_choices and import_choices == "OLD_FILES_IMPORT":
+            return HabilitationRequestImportResource
+
+        return self.get_resource_class()
+
+    def get_import_form(self):
+        return HabilitationRequestImportForm
+
+    def get_confirm_import_form(self):
+        return ConfirmHabilitationRequestImportForm
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

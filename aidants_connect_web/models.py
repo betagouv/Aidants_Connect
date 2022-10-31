@@ -266,6 +266,9 @@ class Aidant(AbstractUser):
     )
     validated_cgu_version = models.TextField(null=True)
 
+    created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True, null=True)
+
     objects = AidantManager()
 
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]
@@ -533,6 +536,8 @@ class HabilitationRequest(models.Model):
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
+    formation_done = models.BooleanField("Formation faite", default=False)
+    date_formation = models.DateTimeField("Date de formation", null=True, blank=True)
     test_pix_passed = models.BooleanField("Test PIX", default=False)
     date_test_pix = models.DateTimeField("Date test PIX", null=True, blank=True)
 
