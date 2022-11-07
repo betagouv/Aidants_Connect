@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.forms import ChoiceField
@@ -749,6 +750,18 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
         column_name="data_pass_id",
     )
     date_formation = Field(attribute="date_formation")
+
+    def before_import_row(self, row, row_number=None, **kwargs):
+        fieldname = "data_pass_id"
+        if not (Organisation.objects.filter(data_pass_id=row[fieldname]).exists()):
+            raise ValidationError("Organisation does not exist")
+        return super().before_import_row(row, row_number, **kwargs)
+
+    # skip new rows
+    def skip_row(self, instance, original):
+        if not original.id:
+            return True
+        return super().skip_row(instance, original)
 
     def after_import_instance(self, instance, new, row_number=None, **kwargs):
         instance.formation_done = True
