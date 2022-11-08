@@ -128,7 +128,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "admin_honeypot",
     "django_otp",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
@@ -394,7 +393,7 @@ EMAIL_SENDER = os.getenv("EMAIL_SENDER", os.getenv("ADMIN_EMAIL"))
 ## Emails from the server
 SERVER_EMAIL = os.getenv("SERVER_EMAIL", os.getenv("ADMIN_EMAIL"))
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
-ADMIN_HONEYPOT_EMAIL_ADMINS = os.getenv("ADMIN_HONEYPOT_EMAIL_ADMINS", SERVER_EMAIL)
+# ADMIN_HONEYPOT_EMAIL_ADMINS = os.getenv("ADMIN_HONEYPOT_EMAIL_ADMINS", SERVER_EMAIL)
 
 # Security headers
 SECURE_BROWSER_XSS_FILTER = True

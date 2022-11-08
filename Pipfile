@@ -8,7 +8,6 @@ python_version = "3.10"
 
 [packages]
 django = "~=4.0"
-django-admin-honeypot = {ref = "a840496", git = "https://github.com/dmpayton/django-admin-honeypot.git"}
 django-celery-beat = "==2.3.0"
 django-csp = "==3.7"
 django-extensions = "==3.2.1"
