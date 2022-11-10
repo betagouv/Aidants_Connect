@@ -10,10 +10,16 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import formats, timezone
+from django.views.generic import FormView, TemplateView, View
 
 from aidants_connect_common.utils.constants import AuthorizationDurations
-from aidants_connect_web.decorators import activity_required, user_is_aidant
+from aidants_connect_web.decorators import (
+    activity_required,
+    aidant_logged_with_activity_required,
+    user_is_aidant,
+)
 from aidants_connect_web.forms import MandatForm, RecapMandatForm
 from aidants_connect_web.models import (
     Aidant,
@@ -34,232 +40,205 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-@login_required
-@user_is_aidant
-@activity_required
-def new_mandat(request):
-    aidant: Aidant = request.user
-    try:
-        connection = Connection.objects.get(pk=request.session.get("connection"))
-    except Connection.DoesNotExist:
-        connection = None
+class RequireConnectionObjectMixin(View):
+    def dispatch(self, request, *args, **kwargs):
+        connection_id = request.session.get("connection")
 
-    if request.method == "GET":
-        inital = (
-            {
-                "duree": connection.duree_keyword,
-                "is_remote": connection.mandat_is_remote,
-                "demarche": connection.demarches,
-                "user_phone": connection.user_phone,
+        if not connection_id:
+            log.error("No connection id found in session")
+            return redirect("espace_aidant_home")
+
+        self.connection: Connection = Connection.objects.get(pk=connection_id)
+        self.aidant: Aidant = request.user
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+@aidant_logged_with_activity_required
+class NewMandat(FormView):
+    form_class = MandatForm
+    template_name = "aidants_connect_web/new_mandat/new_mandat.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+
+        try:
+            self.connection = Connection.objects.get(
+                pk=request.session.get("connection")
+            )
+        except Connection.DoesNotExist:
+            self.connection = None
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {**super().get_context_data(**kwargs), "aidant": self.aidant}
+
+    def get_initial(self):
+        return (
+            {}
+            if self.connection is None
+            else {
+                "duree": self.connection.duree_keyword,
+                "is_remote": self.connection.mandat_is_remote,
+                "demarche": self.connection.demarches,
+                "user_phone": self.connection.user_phone,
             }
-            if connection is not None
-            else None
         )
 
-        form = MandatForm(initial=inital)
+    def get_success_url(self):
+        return reverse("fc_authorize")
 
-        return render(
-            request,
-            "aidants_connect_web/new_mandat/new_mandat.html",
-            {"aidant": aidant, "form": form},
+    def form_valid(self, form: MandatForm):
+        data = form.cleaned_data
+
+        self.connection = Connection.objects.create(
+            aidant=self.aidant,
+            organisation=self.aidant.organisation,
+            demarches=data["demarche"],
+            duree_keyword=data["duree"],
+            mandat_is_remote=data["is_remote"],
+            user_phone=data["user_phone"],
         )
 
-    else:
-        form = MandatForm(request.POST)
+        self.request.session["connection"] = self.connection.pk
 
-        if form.is_valid():
-            data = form.cleaned_data
+        return super().form_valid(form)
 
-            kwargs = {
-                "aidant": aidant,
-                "organisation": aidant.organisation,
-                "demarches": data["demarche"],
-                "duree_keyword": data["duree"],
-                "mandat_is_remote": data["is_remote"],
-            }
 
-            if kwargs["mandat_is_remote"] is True:
-                kwargs["user_phone"] = data["user_phone"]
+@aidant_logged_with_activity_required
+class NewMandatRecap(RequireConnectionObjectMixin, FormView):
+    form_class = RecapMandatForm
+    template_name = "aidants_connect_web/new_mandat/new_mandat_recap.html"
 
-            connection = Connection.objects.create(**kwargs)
-            request.session["connection"] = connection.pk
-            return redirect("fc_authorize")
-        else:
-            return render(
-                request,
-                "aidants_connect_web/new_mandat/new_mandat.html",
-                {"aidant": aidant, "form": form},
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "usager": self.connection.usager,
+            "demarches": [
+                humanize_demarche_names(demarche)
+                for demarche in self.connection.demarches
+            ],
+            "duree": self.connection.get_duree_keyword_display(),
+            "is_remote": self.connection.mandat_is_remote,
+        }
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "aidant": self.aidant}
+
+    def form_valid(self, form):
+        fixed_date = timezone.now()
+        expiration_date = AuthorizationDurations.expiration(
+            self.connection.duree_keyword, fixed_date
+        )
+
+        try:
+            self.connection.demarches.sort()
+
+            # Update user phone before creating mandate
+            if self.connection.user_phone:
+                self.connection.usager.phone = self.connection.user_phone
+                self.connection.usager.save()
+
+            # Create a mandat
+            mandat = Mandat.objects.create(
+                organisation=self.aidant.organisation,
+                usager=self.connection.usager,
+                duree_keyword=self.connection.duree_keyword,
+                is_remote=self.connection.mandat_is_remote,
+                expiration_date=expiration_date,
             )
 
+            # Add a Journal 'create_attestation' action
+            Journal.log_attestation_creation(
+                aidant=self.aidant,
+                usager=self.connection.usager,
+                demarches=self.connection.demarches,
+                is_remote_mandat=self.connection.mandat_is_remote,
+                access_token=self.connection.access_token,
+                attestation_hash=generate_attestation_hash(
+                    self.aidant,
+                    self.connection.usager,
+                    self.connection.demarches,
+                    expiration_date,
+                ),
+                mandat=mandat,
+                duree=AuthorizationDurations.duration(
+                    self.connection.duree_keyword, fixed_date
+                ),
+            )
 
-@login_required
-@user_is_aidant
-@activity_required
-def new_mandat_recap(request):
-    connection_id = request.session.get("connection")
-    if not connection_id:
-        log.error("No connection id found in session")
-        return redirect("espace_aidant_home")
-
-    connection = Connection.objects.get(pk=connection_id)
-
-    aidant = request.user
-    usager = connection.usager
-    demarches_description = [
-        humanize_demarche_names(demarche) for demarche in connection.demarches
-    ]
-    duree = connection.get_duree_keyword_display()
-    is_remote = connection.mandat_is_remote
-
-    if request.method == "GET":
-        form = RecapMandatForm(aidant)
-        return render(
-            request,
-            "aidants_connect_web/new_mandat/new_mandat_recap.html",
-            {
-                "aidant": aidant,
-                "usager": usager,
-                "demarches": demarches_description,
-                "duree": duree,
-                "is_remote": is_remote,
-                "form": form,
-            },
-        )
-
-    else:
-        form = RecapMandatForm(aidant=aidant, data=request.POST)
-
-        if form.is_valid():
-            now = timezone.now()
-            durationkw = connection.duree_keyword
-            mandat_expiration_date = AuthorizationDurations.expiration(durationkw, now)
-            mandat_duree = AuthorizationDurations.duration(durationkw, now)
-
-            try:
-                connection.demarches.sort()
-
-                # Create a mandat
-                mandat = Mandat.objects.create(
-                    organisation=aidant.organisation,
-                    usager=usager,
-                    duree_keyword=connection.duree_keyword,
-                    expiration_date=mandat_expiration_date,
-                    is_remote=connection.mandat_is_remote,
+            # This loop creates one `autorisation` object per `démarche` in the form
+            for demarche in self.connection.demarches:
+                # Revoke existing demarche autorisation(s)
+                similar_active_autorisations = Autorisation.objects.active().filter(
+                    mandat__organisation=self.aidant.organisation,
+                    mandat__usager=self.connection.usager,
+                    demarche=demarche,
                 )
+                for similar_active_autorisation in similar_active_autorisations:
+                    similar_active_autorisation.revoke(
+                        aidant=self.aidant, revocation_date=fixed_date
+                    )
 
-                # Add a Journal 'create_attestation' action
-                Journal.log_attestation_creation(
-                    aidant=aidant,
-                    usager=usager,
-                    demarches=connection.demarches,
-                    duree=mandat_duree,
-                    is_remote_mandat=connection.mandat_is_remote,
-                    access_token=connection.access_token,
-                    attestation_hash=generate_attestation_hash(
-                        aidant, usager, connection.demarches, mandat_expiration_date
-                    ),
+                # Create new demarche autorisation
+                autorisation = Autorisation.objects.create(
                     mandat=mandat,
+                    demarche=demarche,
+                    last_renewal_token=self.connection.access_token,
                 )
+                Journal.log_autorisation_creation(autorisation, self.aidant)
 
-                # This loop creates one `autorisation` object per `démarche` in the form
-                for demarche in connection.demarches:
-                    # Revoke existing demarche autorisation(s)
-                    similar_active_autorisations = Autorisation.objects.active().filter(
-                        mandat__organisation=aidant.organisation,
-                        mandat__usager=usager,
-                        demarche=demarche,
-                    )
-                    for similar_active_autorisation in similar_active_autorisations:
-                        similar_active_autorisation.revoke(
-                            aidant=aidant, revocation_date=now
-                        )
-
-                    # Create new demarche autorisation
-                    autorisation = Autorisation.objects.create(
-                        mandat=mandat,
-                        demarche=demarche,
-                        last_renewal_token=connection.access_token,
-                    )
-                    Journal.log_autorisation_creation(autorisation, aidant)
-
-            except AttributeError as error:
-                log.error("Error happened in Recap")
-                log.error(error)
-                django_messages.error(request, f"Error with Usager attribute : {error}")
-                return redirect("espace_aidant_home")
-
-            except IntegrityError as error:
-                log.error("Error happened in Recap")
-                log.error(error)
-                django_messages.error(request, f"No Usager was given : {error}")
-                return redirect("espace_aidant_home")
-
-            return redirect("new_mandat_success")
-
-        else:
-            return render(
-                request,
-                "aidants_connect_web/new_mandat/new_mandat_recap.html",
-                {
-                    "aidant": aidant,
-                    "usager": usager,
-                    "demarche": demarches_description,
-                    "duree": duree,
-                    "form": form,
-                },
+        except AttributeError as error:
+            log.error("Error happened in Recap")
+            log.error(error)
+            django_messages.error(
+                self.request, f"Error with Usager attribute : {error}"
             )
+            return redirect("espace_aidant_home")
+
+        except IntegrityError as error:
+            log.error("Error happened in Recap")
+            log.error(error)
+            django_messages.error(self.request, f"No Usager was given : {error}")
+            return redirect("espace_aidant_home")
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("new_mandat_success")
 
 
-@login_required
-@user_is_aidant
-@activity_required
-def new_mandat_success(request):
-    connection_id = request.session.get("connection")
-    if not connection_id:
-        log.error("No connection id found in session")
-        return redirect("espace_aidant_home")
+@aidant_logged_with_activity_required
+class NewMandateSuccess(RequireConnectionObjectMixin, TemplateView):
+    template_name = "aidants_connect_web/new_mandat/new_mandat_success.html"
 
-    connection = Connection.objects.get(pk=connection_id)
-    aidant = request.user
-    usager = connection.usager
-
-    return render(
-        request,
-        "aidants_connect_web/new_mandat/new_mandat_success.html",
-        {"aidant": aidant, "usager": usager},
-    )
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "usager": self.connection.usager,
+        }
 
 
-@login_required
-@user_is_aidant
-@activity_required
-def attestation_projet(request):
-    connection_id = request.session.get("connection")
-    if not connection_id:
-        log.error("No connection id found in session")
-        return redirect("espace_aidant_home")
+@aidant_logged_with_activity_required
+class AttestationProject(RequireConnectionObjectMixin, TemplateView):
+    template_name = "aidants_connect_web/attestation.html"
 
-    connection = Connection.objects.get(pk=connection_id)
-    aidant = request.user
-    usager = connection.usager
-    demarches = connection.demarches
-
-    # Django magic :
-    # https://docs.djangoproject.com/en/3.0/ref/models/instances/#django.db.models.Model.get_FOO_display
-    duree = connection.get_duree_keyword_display()
-
-    return render(
-        request,
-        "aidants_connect_web/attestation.html",
-        {
-            "usager": usager,
-            "aidant": aidant,
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "usager": self.connection.usager,
             "date": formats.date_format(date.today(), "l j F Y"),
-            "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
-            "duree": duree,
+            "demarches": [
+                humanize_demarche_names(demarche)
+                for demarche in self.connection.demarches
+            ],
+            "duree": self.connection.get_duree_keyword_display(),
             "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
-        },
-    )
+        }
 
 
 @login_required
@@ -388,7 +367,7 @@ def attestation_qrcode(request):
 
     elif connection is not None:
         connection = Connection.objects.get(pk=connection)
-        aidant = request.user
+        aidant: Aidant = request.user
 
         journal_create_attestation = aidant.get_journal_create_attestation(
             connection.access_token
