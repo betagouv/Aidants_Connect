@@ -1417,6 +1417,16 @@ class AidantModelMethodsTests(TestCase):
             },
         )
 
+    def test_has_a_carte_totp(self):
+        self.assertFalse(self.aidant_marge.has_a_carte_totp)
+        CarteTOTPFactory(aidant=self.aidant_patricia)
+        self.assertTrue(self.aidant_patricia.has_a_carte_totp)
+
+    def test_number_totp_card(self):
+        self.assertEqual(self.aidant_marge.number_totp_card, "Pas de Carte")
+        CarteTOTPFactory(aidant=self.aidant_patricia, serial_number="12121212")
+        self.assertTrue(self.aidant_patricia.number_totp_card, "12121212")
+
 
 @tag("models", "journal")
 class JournalModelTests(TestCase):

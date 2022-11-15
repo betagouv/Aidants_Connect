@@ -308,9 +308,9 @@ class OrganisationAdmin(
     def format_list_of_aidants(self, aidants_list):
         return mark_safe(
             "<table><tr>"
-            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th></tr><tr>'
+            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th><th>Carte TOTP</th></tr><tr>'  # noqa
             + "</tr><tr>".join(
-                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td>'.format(
+                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td><td>{}</td>'.format(
                     aidant.id,
                     reverse(
                         "otpadmin:aidants_connect_web_aidant_change",
@@ -318,6 +318,7 @@ class OrganisationAdmin(
                     ),
                     aidant,
                     aidant.email,
+                    aidant.number_totp_card,
                 )
                 for aidant in aidants_list
             )

@@ -424,6 +424,14 @@ class Aidant(AbstractUser):
         except CarteTOTP.DoesNotExist:
             return False
 
+    @cached_property
+    def number_totp_card(self):
+        try:
+            carte = CarteTOTP.objects.get(aidant=self)
+            return carte.serial_number
+        except CarteTOTP.DoesNotExist:
+            return "Pas de Carte"
+
     def remove_from_organisation(self, organisation: Organisation) -> Optional[bool]:
         if not self.is_in_organisation(organisation):
             return None
