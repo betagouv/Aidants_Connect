@@ -153,9 +153,8 @@ class LoginEmailForm(MagicAuthEmailForm):
 
 
 class MandatForm(PatchedForm):
-    DEMARCHES = [(key, value) for key, value in settings.DEMARCHES.items()]
     demarche = forms.MultipleChoiceField(
-        choices=DEMARCHES,
+        choices=[(key, value) for key, value in settings.DEMARCHES.items()],
         required=True,
         widget=forms.CheckboxSelectMultiple,
         error_messages={
@@ -201,21 +200,11 @@ class MandatForm(PatchedForm):
         required=False,
     )
 
-    def clean(self):
-        cleaned = super().clean()
+    def clean_user_phone(self):
+        if not self.cleaned_data["is_remote"]:
+            return ""
 
-        # TODO: Reactivate when SMS consent is a thing
-        # user_phone = cleaned.get("user_phone")
-        # if user_phone is not None and cleaned["is_remote"] and len(user_phone) == 0:
-        #     self.add_error(
-        #         "user_phone",
-        #         _(
-        #             "Un numéro de téléphone est obligatoire "
-        #             "si le mandat est signé à distance."
-        #         ),
-        #     )
-
-        return cleaned
+        return self.cleaned_data["user_phone"]
 
 
 class OTPForm(forms.Form):

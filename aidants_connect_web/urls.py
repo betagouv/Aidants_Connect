@@ -83,21 +83,21 @@ urlpatterns = [
         name="renew_mandat",
     ),
     # new mandat
-    path("creation_mandat/", mandat.new_mandat, name="new_mandat"),
+    path("creation_mandat/", mandat.NewMandat.as_view(), name="new_mandat"),
     path(
         "creation_mandat/recapitulatif/",
-        mandat.new_mandat_recap,
+        mandat.NewMandatRecap.as_view(),
         name="new_mandat_recap",
     ),
-    path("logout-callback/", mandat.new_mandat_recap, name="new_mandat_recap"),
+    path("logout-callback/", mandat.NewMandatRecap.as_view(), name="new_mandat_recap"),
     path(
         "creation_mandat/visualisation/projet/",
-        mandat.attestation_projet,
+        mandat.AttestationProject.as_view(),
         name="new_attestation_projet",
     ),
     path(
         "creation_mandat/succes/",
-        mandat.new_mandat_success,
+        mandat.NewMandateSuccess.as_view(),
         name="new_mandat_success",
     ),
     path(
