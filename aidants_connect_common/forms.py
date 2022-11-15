@@ -32,10 +32,6 @@ class PatchedModelForm(ModelForm, WidgetAttrMixin):
 
         super().__init__(*sig.args, **sig.kwargs)
 
-    def widget_attrs(self, widget_name: str, attrs: dict):
-        for attr_name, attr_value in attrs.items():
-            self.fields[widget_name].widget.attrs[attr_name] = attr_value
-
 
 class PatchedForm(Form, WidgetAttrMixin):
     def __init__(self, *args, **kwargs):
