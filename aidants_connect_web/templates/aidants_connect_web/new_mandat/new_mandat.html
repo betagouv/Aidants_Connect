@@ -25,7 +25,7 @@
       </h1>
       {% if aidant.organisations.count > 1 %}
         <div class="notification warning">
-          <p>Attention, vous allez créer un mandat au nom de cette structure :</p>
+          <p>Attention, vous allez créer un mandat au nom de cette structure :</p>
           <p><strong>{{ aidant.organisation }}</strong><br>{{ aidant.organisation.address }}</p>
           <p>
             Si ce n'est pas la bonne structure,
@@ -40,21 +40,25 @@
         Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :
       </p>
       <ul>
-        <li>effectuer à votre place les démarches listées dans le mandat, à partir des informations que vous leur avez
-          données ;
+        <li>
+          effectuer à votre place les démarches listées dans le mandat, à partir des informations que vous leur avez
+          données ;
         </li>
-        <li>collecter et conserver seulement les informations nécessaires aux démarches listées dans le mandat ou à
-          celles qui s’y rattachent ;
+        <li>
+          collecter et conserver seulement les informations nécessaires aux démarches listées dans le mandat ou à
+          celles qui s’y rattachent ;
         </li>
-        <li>utiliser et communiquer seulement les informations nécessaires aux démarches listées dans le mandat ou à
-          celles qui s’y rattachent ;
+        <li>
+          utiliser et communiquer seulement les informations nécessaires aux démarches listées dans le mandat ou à
+          celles qui s’y rattachent ;
         </li>
-        <li>Vous informer et demander votre autorisation avant d’effectuer d’autres démarches que celles listées dans le
-          mandat ;
+        <li>
+          Vous informer et demander votre autorisation avant d’effectuer d’autres démarches que celles listées dans le
+          mandat ;
         </li>
-        <li>mettre à jour et supprimer l’ensemble de vos informations personnelles lorsqu’elles ne sont plus utiles ;
+        <li>mettre à jour et supprimer l’ensemble de vos informations personnelles lorsqu’elles ne sont plus utiles ;
         </li>
-        <li>s’interdire de rendre publiques vos informations personnelles ;</li>
+        <li>s’interdire de rendre publiques vos informations personnelles ;</li>
         <li>prendre toutes les précautions pour assurer la sécurité de vos informations personnelles.</li>
       </ul>
       <p>
@@ -67,13 +71,17 @@
     <div class="container">
       <form method="post">
         {% if form.errors %}
-        <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
+          <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
         {% endif %}
         {% csrf_token %}
         <div id="demarches" class="tiles">
-          <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
+          <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
           {% if form.errors.demarche %}
-          <section id="demarche_error_notification" class="notification error" role="alert">{{ form.errors.demarche }}</section>
+            <section
+              id="demarche_error_notification"
+              class="notification error"
+              role="alert"
+            >{{ form.errors.demarche }}</section>
           {% endif %}
           <fieldset id="demarches_list">
             <legend class="sr-only">Sélectionnez la ou les démarche(s)</legend>
@@ -96,7 +104,7 @@
                     {% if label.service_exemples %}
                       <br/>
                       <small>
-                        <i>Exemples :</i>
+                        <i>Exemples :</i>
                         {% for service in label.service_exemples %}
                           <span class="label label-small">{{ service }}</span>
                         {% endfor %}
@@ -109,9 +117,15 @@
           </fieldset>
         </div>
         <div id="duree" class="tiles">
-          <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
+          <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
           {% if form.errors.duree %}
-          <section id="duree_error_notification" class="notification error" role="alert">{{ form.errors.duree }}</section>
+            <section
+              id="duree_error_notification"
+              class="notification error"
+              role="alert"
+            >
+              {{ form.errors.duree }}
+            </section>
           {% endif %}
           <fieldset id="duree_list">
             <legend class="sr-only">Choisissez la durée du mandat</legend>
@@ -141,9 +155,9 @@
           </label>
           <div id="phone_number_panel" class="card padding-1" hidden aria-hidden="true">
             {% if form.errors.user_phone %}
-            <section class="notification error" role="alert">
-              {{ form.errors.user_phone }}
-            </section>
+              <section class="notification error" role="alert">
+                {{ form.errors.user_phone }}
+              </section>
             {% endif %}
             <label for="id_user_phone">
               Veuillez entrer le numéro de téléphone de l'usager ou de l'usagère :
@@ -157,16 +171,16 @@
             />
           </div>
         </div>
-      {% block input_submit_form %}
-        <div id="france_connection" class="tiles">
-          <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
-          <input
-            id="submit_button"
-            type="image"
-            src="{% static 'images/FCboutons-10.png' %}"
-            alt="S’identifier avec FranceConnect"/>
-        </div>
-      {% endblock input_submit_form %}
+        {% block input_submit_form %}
+          <div id="france_connection" class="tiles">
+            <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
+            <input
+              id="submit_button"
+              type="image"
+              src="{% static 'images/FCboutons-10.png' %}"
+              alt="S’identifier avec FranceConnect"/>
+          </div>
+        {% endblock input_submit_form %}
       </form>
     </div>
   </section>
