@@ -1,5 +1,6 @@
 from inspect import signature
 
+from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.forms import Form, ModelForm
@@ -17,7 +18,13 @@ class PatchedErrorList(ErrorList):
     template_name_text = "forms/errors/list/text.txt"
 
 
-class PatchedModelForm(ModelForm):
+class WidgetAttrMixin:
+    def widget_attrs(self, widget_name: str, attrs: dict):
+        for attr_name, attr_value in attrs.items():
+            self.fields[widget_name].widget.attrs[attr_name] = attr_value
+
+
+class PatchedModelForm(ModelForm, WidgetAttrMixin):
     def __init__(self, *args, **kwargs):
         sig = signature(super().__init__).bind_partial(*args, **kwargs)
         sig.arguments.setdefault("label_suffix", "")
@@ -30,7 +37,7 @@ class PatchedModelForm(ModelForm):
             self.fields[widget_name].widget.attrs[attr_name] = attr_value
 
 
-class PatchedForm(Form):
+class PatchedForm(Form, WidgetAttrMixin):
     def __init__(self, *args, **kwargs):
         sig = signature(super().__init__).bind_partial(*args, **kwargs)
         sig.arguments.setdefault("label_suffix", "")
@@ -43,7 +50,7 @@ class AcPhoneNumberField(PhoneNumberField):
     """A PhoneNumberField which accepts any number from metropolitan France
     and overseas"""
 
-    regions = ("FR", "GP", "GF", "MQ", "RE", "KM", "PM")
+    regions = settings.FRENCH_REGION_CODES
 
     def to_python(self, value: PhoneNumber | str):
         for region in self.regions:
