@@ -23,9 +23,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             RequestStatusConstants.VALIDATED.name,
         }
 
-        unauthorized_statuses = (
-            set(RequestStatusConstants.values()) - authorized_statuses
-        )
+        unauthorized_statuses = set(RequestStatusConstants.values) - authorized_statuses
 
         for status in unauthorized_statuses:
             organisation: OrganisationRequest = OrganisationRequestFactory(
