@@ -20,7 +20,7 @@ django-phonenumber-field = {version = "==7.0.0", extras = ["phonenumberslite"]}
 celery = {version = "==5.2.7", extras = ["redis"]}
 gunicorn = "==20.1.0"
 metabasepy = "==1.12.0"
-pillow = "==9.2.0"
+pillow = "==9.3.0"
 psycopg2-binary = "==2.9.3"
 ptpython = "==3.0.20"
 pyjwt = "==2.4.0"
