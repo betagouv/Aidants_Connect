@@ -7,6 +7,7 @@
 {% block extracss %}
   <link href="{% static 'css/id_provider.css' %}" rel="stylesheet" />
   <link href="{% static 'css/users_search.css' %}" rel="stylesheet" />
+  <link href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" rel="stylesheet" />
 {% endblock extracss %}
 
 {% block content %}
@@ -24,35 +25,20 @@
       <h2>Sélectionnez l'usager que vous souhaitez FranceConnecter</h2>
       <p id="instructions">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
       {% if usagers %}
-        {% include "aidants_connect_web/users_search_bar.html" %}
-        <fieldset>
-          <div id="usagers" class="grid">
-            {% for usager in usagers %}
-              <div
-                class="tile usager"
-                data-search-target="item"
-                data-search-terms='{{ usager.search_terms|json_attribute }}'
-              >
-                <input
-                  id="button-{{ usager.id }}"
-                  type="submit"
-                  value="{{ usager.id }}"
-                  name="chosen_usager"
-                  aria-labelledby="label-usager-{{ usager.id }}"
-                />
-                <label
-                  id="label-usager-{{ usager.id }}"
-                  class="label-usager"
-                  for="button-{{ usager.id }}"
-                >
-                  {{ usager.given_name }} {% if usager.preferred_username %}{{ usager.preferred_username }}<br/>Né(e) {% endif %}{{ usager.family_name }}
-                </label>
-              </div>
-            {% endfor %}
-          </div>
+      <fieldset>
+        <div class="user-search row">
+          <label id="filter-input-label" for="filter-input">
+            Rechercher un usager ou une usagère
+          </label>
+          <input type="text" id="filter-input" />
+          <input id="filter-input-id" name="chosen_usager" hidden />
+        </div>
+
           {% csrf_token %}
           <input type="hidden" name="connection_id" value="{{ connection_id }}" />
+          <button id="submit-button" class="button" type="submit">Séléctionner</button>
         </fieldset>
+
       {% else %}
         <div class="notification" role="alert">
           Vous n’avez pas d'usagers avec au moins un mandat en cours.<br>
@@ -65,7 +51,35 @@
 {% endblock content %}
 
 {% block extrajs %}
-  {% stimulusjs %}
-  <script src="{% static 'js/utils.js' %}"></script>
-  <script src="{% static 'js/users_search.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+
+ {{ data|json_script:"usagers_list" }}
+
+  <script>
+    $(function () {
+
+      const users = JSON.parse(document.querySelector("#usagers_list").textContent);
+
+      const autoWidget = $("#filter-input").autocomplete({
+        source: users,
+        minLength: 3,
+        focus : function(event, ui) {
+          $("#filter-input").val(ui.item.label);
+          return false;
+        },
+        select: function(event, ui) {
+          $("#filter-input").val(ui.item.label);
+          $("#filter-input-id").val(ui.item.value);
+          return false;
+        },
+      })
+      .data( "ui-autocomplete" )._renderItem = function( ul, item ) {
+        return $( "<li>" )
+          .attr("data-value", item.value )
+          .append('<div class=ui-menu-item-wrapper>' + item.label +'</div>')
+          .appendTo( ul );
+      };
+    });
+  </script>
 {% endblock %}
