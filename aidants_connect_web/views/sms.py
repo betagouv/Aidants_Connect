@@ -66,18 +66,14 @@ class Callback(View):
             api.send_sms(
                 consent_request.user_phone,
                 sms_response.consent_request_id,
-                render_to_string(
-                    "aidants_connect_web/new_mandat/sms_denial_receipt.txt"
-                ),
+                render_to_string("aidants_connect_web/sms/denial_receipt.txt"),
             )
         else:
             Journal.log_user_consents_sms(**kwargs)
             api.send_sms(
                 consent_request.user_phone,
                 sms_response.consent_request_id,
-                render_to_string(
-                    "aidants_connect_web/new_mandat/sms_agreement_receipt.txt"
-                ),
+                render_to_string("aidants_connect_web/sms/agreement_receipt.txt"),
             )
 
         return HttpResponse("Status=0")

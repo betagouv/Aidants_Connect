@@ -1,3 +1,4 @@
+import logging
 from secrets import token_urlsafe
 from typing import Callable
 from uuid import uuid4
@@ -9,9 +10,12 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.html import format_html
 
 from phonenumbers import PhoneNumber
 
+from aidants_connect_common.templatetags.ac_common import mailto
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_web.constants import RemoteConsentMethodChoices
@@ -20,6 +24,8 @@ from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Aidant, Connection, Journal, Mandat, Usager
 from aidants_connect_web.views.mandat import MandatCreationJsFormView
 from aidants_connect_web.views.mandat import WaitingRoom as MandatWaitingRoom
+
+logger = logging.getLogger()
 
 
 @aidant_logged_with_activity_required
@@ -122,13 +128,38 @@ class RenewMandat(MandatCreationJsFormView):
                 user_phone,
                 self.consent_request_id,
                 render_to_string(
-                    "aidants_connect_web/new_mandat/sms_consent_request.txt",
+                    "aidants_connect_web/sms/consent_request.txt",
                     context={"sms_response_consent": settings.SMS_RESPONSE_CONSENT},
                 ),
             )
         except SmsApi.HttpRequestExpection:
-            # TODO: Handle error
-            pass
+            logger.exception(
+                "An error happend while trying to send an SMS consent request"
+            )
+            error_datetime = timezone.now()
+            email_body = render_to_string(
+                "aidants_connect_web/sms/support_email_send_failure_body.txt",
+                context={
+                    "datetime": error_datetime,
+                    "number": str(user_phone),
+                    "consent_request_id": self.consent_request_id,
+                },
+            )
+            django_messages.error(
+                self.request,
+                format_html(
+                    "Une erreur est survenue pendant l'envoi du SMS de "
+                    "consentement. Merci de réessayer plus tard. Si l'erreur persiste, "
+                    "merci de nous la signaler {}.",
+                    mailto(
+                        "en suivant ce lien pour nous envoyer un email",
+                        settings.SMS_SUPPORT_EMAIL,
+                        settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
+                        email_body,
+                    ),
+                ),
+            )
+            return redirect("espace_aidant_home")
 
         Journal.log_request_user_consent_sms(
             aidant=self.aidant,

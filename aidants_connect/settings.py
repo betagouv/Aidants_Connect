@@ -631,7 +631,11 @@ else:
     SMS_API_DISABLED = getenv_bool("SMS_API_DISABLED", True)
 
 SMS_RESPONSE_CONSENT = os.getenv("SMS_RESPONSE_CONSENT", "Oui")
-
+SMS_SUPPORT_EMAIL = os.getenv("SMS_SUPPORT_EMAIL", SUPPORT_EMAIL)
+SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET = os.getenv(
+    "SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET",
+    "Problème durant l'envoi d'un SMS de demande de consentement pour un mandat à distance",  # noqa
+)
 LM_SMS_SERVICE_USERNAME = os.getenv("LM_SMS_SERVICE_USERNAME")
 LM_SMS_SERVICE_PASSWORD = os.getenv("LM_SMS_SERVICE_PASSWORD")
 LM_SMS_SERVICE_BASE_URL = os.getenv("LM_SMS_SERVICE_BASE_URL")
