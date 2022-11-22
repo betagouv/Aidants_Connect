@@ -200,8 +200,7 @@ class MandatForm(PatchedForm):
     is_remote = forms.BooleanField(required=False)
 
     remote_constent_method = forms.ChoiceField(
-        label="Méthode de consentement à distance",
-        label_suffix=" :",
+        label="Sélectionnez une méthode de consentement à distance",
         choices=RemoteConsentMethodChoices.choices,
         required=False,
         error_messages={
@@ -209,7 +208,7 @@ class MandatForm(PatchedForm):
                 "Veuillez sélectionner la méthode de consentement à distance."
             )
         },
-        widget=DetailedRadioSelect,
+        widget=DetailedRadioSelect(attrs={"input_wrapper_classes": "shadowed"}),
     )
 
     user_phone = AcPhoneNumberField(

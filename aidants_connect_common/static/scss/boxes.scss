@@ -1,0 +1,12 @@
+@use "colors";
+
+.shadowed {
+  border: 1px solid colors.$off-yellow-aidants;
+  box-sizing: border-box;
+  box-shadow: 10px 10px 0 colors.$off-yellow-aidants;
+
+  &.grey {
+    box-shadow: 10px 10px 0 #c5c5c5;
+    border-color: #c5c5c5;
+  }
+}

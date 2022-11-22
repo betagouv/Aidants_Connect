@@ -12,6 +12,7 @@ from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
@@ -174,14 +175,15 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
-        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_0"))
+        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
         for elt in self.selenium.find_elements(
             By.CSS_SELECTOR, "#id_remote_constent_method input"
         ):
             self.assertTrue(elt.get_attribute("required"))
 
         # # Select legacy consent method
-        self.selenium.find_element(By.CSS_SELECTOR, "[value='LEGACY']").click()
+        text = RemoteConsentMethodChoices.LEGACY.label["label"]
+        self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
 
         # FranceConnect
         fc_button = self.selenium.find_element(By.ID, "submit_button")
@@ -290,14 +292,15 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
-        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_0"))
+        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
         for elt in self.selenium.find_elements(
             By.CSS_SELECTOR, "#id_remote_constent_method input"
         ):
             self.assertTrue(elt.get_attribute("required"))
 
         # # Select legacy consent method
-        self.selenium.find_element(By.CSS_SELECTOR, "[value='SMS']").click()
+        text = RemoteConsentMethodChoices.SMS.label["label"]
+        self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
         wait.until(self._element_is_required(By.ID, "id_user_phone"))
         self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
 

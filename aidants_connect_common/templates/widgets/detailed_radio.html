@@ -1,0 +1,5 @@
+{% with id=widget.attrs.id %}<section{% if id %} id="{{ id }}"{% endif %} class="{{ container_class }}{% if widget.attrs.class %} {{ widget.attrs.class }}{% endif %}" >{% for group, options, index in widget.optgroups %}{% if group %}
+  <div><label>{{ group }}</label>{% endif %}{% for option in options %}<div {% if option.input_wrapper_classes %} class="{{ option.input_wrapper_classes }}"{% endif %}>
+    {% include option.template_name with widget=option %}</div>{% endfor %}{% if group %}
+  </div>{% endif %}{% endfor %}
+</section>{% endwith %}
