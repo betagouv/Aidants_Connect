@@ -405,7 +405,7 @@ STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'", "https://stats.data.gouv.fr/matomo.php")
 CSP_IMG_SRC = (
     "'self'",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
@@ -420,6 +420,7 @@ CSP_SCRIPT_SRC = (
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
     "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
+    "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
 )
 
 CSP_STYLE_SRC = ("'self'",)
