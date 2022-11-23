@@ -111,6 +111,11 @@ def authorize(request):
         )
         aidant = request.user
 
+        usagers = aidant.get_usagers_with_active_autorisation()
+        usagers_list = []
+        for user in usagers:
+            usagers_list += [{"value": user.id, "label": user.get_full_name()}]
+
         return render(
             request,
             "aidants_connect_web/id_provider/authorize.html",
@@ -118,6 +123,7 @@ def authorize(request):
                 "connection_id": connection.id,
                 "usagers": aidant.get_usagers_with_active_autorisation(),
                 "aidant": aidant,
+                "data": usagers_list,
             },
         )
 

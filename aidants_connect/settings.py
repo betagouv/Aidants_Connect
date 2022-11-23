@@ -421,9 +421,16 @@ CSP_SCRIPT_SRC = (
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
     "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
     "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
+    "https://code.jquery.com/jquery-3.6.1.js",
+    "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
+    "'sha256-MTmHTCNXu/Je/qmoKw/rxgZTtLA1QVKkrkv7XM0V1SY='",  # authorize.html
 )
 
-CSP_STYLE_SRC = ("'self'",)
+CSP_STYLE_SRC = (
+    "'self'",
+    "https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css",
+)
+
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
     "https://www.youtube.com/embed/hATrqHG4zYQ",
