@@ -287,7 +287,7 @@ DEMARCHES = {
         "titre": "Social - Santé",
         "titre_court": "Social",
         "description": "Carte vitale, Chômage, Handicap, RSA, Personnes âgées…",
-        "service_exemples": ["ameli.fr", "MSA", "RSI"],
+        "service_exemples": ["ameli.fr", "MSA"],
         "icon": "/static/images/icons/social.svg",
     },
     "travail": {
