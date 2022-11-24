@@ -1,9 +1,28 @@
 h1 {
-  font-size: 1.5em;
+  font-size: 2.25rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+  color: #1B4991;
 }
 
-form {
-  max-width: 40em;
+.shadowed {
+  padding: 1rem;
+}
+
+.shadowed > h1 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.shadowed .button-box {
+  transform: translateY(0);
+}
+
+.subtitle {
+  color: #5770BE;
+  font-size: 1.125rem !important;
 }
 
 .row_grid {
