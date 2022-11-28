@@ -97,7 +97,7 @@ class UseAutorisationTests(FunctionalTestCase):
         # Select usager
         welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(
-            welcome_aidant, "Bienvenue sur votre Espace Aidants Connect, Thierry"
+            welcome_aidant, "BIENVENUE SUR VOTRE ESPACE AIDANTS CONNECT, THIERRY"
         )
 
         self.selenium.find_element(By.CLASS_NAME, "ui-autocomplete-input")

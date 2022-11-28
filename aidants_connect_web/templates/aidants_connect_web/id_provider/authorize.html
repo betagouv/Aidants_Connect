@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static ac_extras ac_common %}
 
@@ -6,48 +6,51 @@
 
 {% block extracss %}
   <link href="{% static 'css/id_provider.css' %}" rel="stylesheet" />
-  <link href="{% static 'css/users_search.css' %}" rel="stylesheet" />
-  <link href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" rel="stylesheet" />
+  <link href="{% static 'css/autocomplete.css' %}" rel="stylesheet" />
 {% endblock extracss %}
 
 {% block content %}
-<div class="hero">
-  <div class="hero__container">
-    <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
+
+<div class="fr-container">
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-12 fr-col-md-8">
+      <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
+      <div class="container shadowed">
+
+          <h1>Sélectionnez l'usager que vous souhaitez FranceConnecter</h1>
+            <p id="instructions" class="subtitle">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
+            {% if usagers %}
+            <form method="post">
+            <div class="form-grid-row fr-grid-row fr-grid-row--gutters">
+              <div class="fr-col-12">
+                <label id="filter-input-label" for="filter-input">
+                  Rechercher un usager :
+                </label>
+              </div>
+              <div class="fr-col-12">
+                <input type="text" id="filter-input" required />
+                <input id="filter-input-id" name="chosen_usager" hidden />
+                <div id="autocomplete" class="autocomplete-input_wrapper input-spinner-wrapper"></div>
+              </div>
+                {% csrf_token %}
+                <input type="hidden" name="connection_id" value="{{ connection_id }}" />
+
+            </div>
+            <div class="button-box">
+              <button id="submit-button" class="primary" type="submit">Séléctionner</button>
+            </div>
+          </form>
+          {% else %}
+            <div class="notification" role="alert">
+              Vous n’avez pas d'usagers avec au moins un mandat en cours.<br>
+              Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}">Espace Aidant</a>.
+            </div>
+          {% endif %}
+      </div>
+    </div>
   </div>
 </div>
-<section
-  class="section section-grey mandat-select__section"
-  data-controller="search"
->
-  <div class="container">
-    <form method="post">
-      <h2>Sélectionnez l'usager que vous souhaitez FranceConnecter</h2>
-      <p id="instructions">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
-      {% if usagers %}
-      <fieldset>
-        <div class="user-search row">
-          <label id="filter-input-label" for="filter-input">
-            Rechercher un usager ou une usagère
-          </label>
-          <input type="text" id="filter-input" />
-          <input id="filter-input-id" name="chosen_usager" hidden />
-        </div>
-
-          {% csrf_token %}
-          <input type="hidden" name="connection_id" value="{{ connection_id }}" />
-          <button id="submit-button" class="button" type="submit">Séléctionner</button>
-        </fieldset>
-
-      {% else %}
-        <div class="notification" role="alert">
-          Vous n’avez pas d'usagers avec au moins un mandat en cours.<br>
-          Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}">Espace Aidant</a>.
-        </div>
-      {% endif %}
-    </form>
-  </div>
-</section>
+<br><br>
 {% endblock content %}
 
 {% block extrajs %}
@@ -73,11 +76,12 @@
           $("#filter-input-id").val(ui.item.value);
           return false;
         },
+        appendTo: $("#autocomplete"),
       })
       .data( "ui-autocomplete" )._renderItem = function( ul, item ) {
-        return $( "<li>" )
+        return $("<li class=ui-menu-item-wrapper>" )
           .attr("data-value", item.value )
-          .append('<div class=ui-menu-item-wrapper>' + item.label +'</div>')
+          .append(item.label)
           .appendTo( ul );
       };
     });

@@ -423,13 +423,10 @@ CSP_SCRIPT_SRC = (
     "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
-    "'sha256-MTmHTCNXu/Je/qmoKw/rxgZTtLA1QVKkrkv7XM0V1SY='",  # authorize.html
+    "'sha256-cFyvsDuA3AcV8Zc3M5E7whbtucLdPz2NtUjdlLeuz+c='",  # authorize.html
 )
 
-CSP_STYLE_SRC = (
-    "'self'",
-    "https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css",
-)
+CSP_STYLE_SRC = ("'self'",)
 
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
