@@ -64,8 +64,35 @@
 
       const users = JSON.parse(document.querySelector("#usagers_list").textContent);
 
+      const accentMap = {
+        "â": "a",
+        "à": "a",
+        "é": "e",
+        "è": "e",
+        "ë": "e",
+        "ê": "e",
+        "î": "i",
+        "ï": "i",
+        "ô": "o",
+        "û": "u",
+        "ù": "u"
+      };
+      var normalize = function( term ) {
+        var ret = "";
+        for ( var i = 0; i < term.length; i++ ) {
+          ret += accentMap[ term.charAt(i) ] || term.charAt(i);
+        }
+        return ret;
+      };
+
       const autoWidget = $("#filter-input").autocomplete({
-        source: users,
+        source: function( request, response ) {
+        var matcher = new RegExp( $.ui.autocomplete.escapeRegex( request.term ), "i" );
+          response( $.grep( users, function( value ) {
+            value = value.label || value.value || value;
+            return matcher.test( value ) || matcher.test( normalize( value ) );
+          }) );
+        },
         minLength: 3,
         focus : function(event, ui) {
           $("#filter-input").val(ui.item.label);

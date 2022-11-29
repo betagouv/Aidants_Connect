@@ -424,7 +424,7 @@ CSP_SCRIPT_SRC = (
     "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
-    "'sha256-cFyvsDuA3AcV8Zc3M5E7whbtucLdPz2NtUjdlLeuz+c='",  # authorize.html
+    "'sha256-cHnec29pZPucY/vO+xbH4OdU09Chq5mVE7Hf8emgaD8='",  # authorize.html
 )
 
 CSP_STYLE_SRC = ("'self'",)
