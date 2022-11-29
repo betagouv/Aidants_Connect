@@ -85,6 +85,7 @@ class Organisation(models.Model):
     type = models.ForeignKey(
         OrganisationType, null=True, blank=True, on_delete=SET_NULL
     )
+    is_experiment = models.BooleanField("Structure d'expérimentation ?", default=False)
     siret = models.BigIntegerField("N° SIRET", default=1)
     address = models.TextField("Adresse", default="No address provided")
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
