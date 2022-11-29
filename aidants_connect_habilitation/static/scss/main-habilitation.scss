@@ -139,28 +139,19 @@ h3, .h3 {
   }
 }
 
+.card {
+  margin-bottom: 2rem;
+}
+
 .card-ressource {
   border: 1px solid $off-yellow-aidants;
   box-sizing: border-box;
-  box-shadow: 10px 10px 0 $off-yellow-aidants;
+  box-shadow: 10px 10px 0 $off-yellow-aidants !important;
 }
 
-
-.card-ressource {
-  .h1 {
-    font-size: 1.5rem;
-    text-transform: none;
-  }
-  .h2, .h3 {
-    font-size: 1.125rem;
-  }
+.card-ressource .fr-card__img {
+  aspect-ratio: 1.5;
 }
-
-.card-content {
-  padding: 2rem;
-}
-
-
 .card-ressource img {
     object-fit: cover;
     height: 100%;
@@ -169,6 +160,23 @@ h3, .h3 {
 
 .card-ressource .button-box {
   transform: translateY(4rem);
+}
+
+.card-ressource .fr-card__content {
+  display: block;
+}
+
+.card-ressource .fr-card__footer {
+  margin : 0;
+}
+
+.card-ressource .fr-card__title {
+  color: $red-aidants;
+  font-size: 1.5rem;
+}
+
+.card-ressource .fr-card__desc {
+  font-size: 1rem;
 }
 
 .tag {

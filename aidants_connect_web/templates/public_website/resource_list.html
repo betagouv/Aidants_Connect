@@ -1,57 +1,99 @@
 {% load static %}
 
-<div class="fr-grid-row fr-grid-row--gutters">
+<div class="fr-grid-row fr-grid-row--gutters card">
   <div class="fr-col-12 fr-col-md-4">
-    <div class="card-ressource">
-      <img src="{% static 'images/aidantsconnect.png' %}" alt=""/>
-      <div class="card-content">
-        <div class="tag">Équipe Aidants Connect</div>
-        <div class="h1">Guide de prise en main Aidants Connect</div>
-        <p class="description">Des ressources utiles pour mieux comprendre et utiliser le service Aidants Connect.</p>
-        <div class="button-box">
-          <button class="primary"><a href="https://aidantsconnect.beta.gouv.fr/guide_utilisation/">Consulter</a></button>
+      <div class="fr-card card-ressource">
+          <div class="fr-card__body">
+              <div class="fr-card__content">
+                <div class="tag">Équipe Aidants Connect</div>
+                <h3 class="fr-card__title">
+                  Guide de prise en main Aidants Connect
+                </h3>
+                <p class="fr-card__desc">Des ressources utiles pour mieux comprendre et utiliser le service Aidants Connect.
+                </p>
+              </div>
+          </div>
+          <div class="fr-card__header">
+            <div class="fr-card__img">
+                <img src="{% static 'images/aidantsconnect.png' %}" class="fr-responsive-img" alt="" data-fr-js-ratio="true">
+            </div>
+          </div>
+          <div class="fr-card__footer">
+            <div class="button-box">
+              <a class= "button primary" href="https://aidantsconnect.beta.gouv.fr/guide_utilisation/">Consulter</a>
+            </div>
         </div>
       </div>
-    </div>
   </div>
   <div class="fr-col-12 fr-col-md-4">
-    <div class="card-ressource">
-      <img src="{% static 'images/solidaritenumerique.png' %}" alt=""/>
-      <div class="card-content">
-        <div class="tag">Mission Société Numérique</div>
-        <div class="h1">Solidarité Numérique</div>
-        <p>Solidarité Numérique est le centre d’aide pour les démarches en ligne essentielles.</p>
-        <div class="button-box">
-          <button class="primary"><a href="https://solidarite-numerique.fr">Consulter</a></button>
+      <div class="fr-card card-ressource">
+          <div class="fr-card__body">
+              <div class="fr-card__content">
+                <div class="tag">Mission Société Numérique</div>
+                <h3 class="fr-card__title">
+                    Solidarité Numérique
+                </h3>
+                <p class="fr-card__desc">Solidarité Numérique est le centre d’aide pour les démarches en ligne essentielles.</p>
+              </div>
+          </div>
+          <div class="fr-card__header">
+              <div class="fr-card__img">
+                  <img src="{% static 'images/solidaritenumerique.png' %}" class="fr-responsive-img" alt="" data-fr-js-ratio="true">
+              </div>
+          </div>
+          <div class="fr-card__footer">
+            <div class="button-box">
+              <a class= "button primary" href="https://solidarite-numerique.fr">Consulter</a>
+            </div>
         </div>
       </div>
-    </div>
   </div>
   <div class="fr-col-12 fr-col-md-4">
-    <div class="card-ressource">
-      <img src="{% static 'images/kitintervention.png' %}" alt=""/>
-      <div class="card-content">
-        <div class="tag">Mission Société Numérique</div>
-        <div class="h1">Kit d’intervention rapide</div>
-        <p>Ce site a pour objectif de permettre à toute personne, en particulier les non professionnels de la médiation numérique, d’aborder rapidement les principaux enjeux de l’accompagnement des individus en difficulté sur les outils numériques.</p>
-        <div class="button-box">
-          <button class="primary"><a href="https://kit-inclusion.societenumerique.gouv.fr">Consulter</a></button>
+      <div class="fr-card card-ressource">
+          <div class="fr-card__body">
+              <div class="fr-card__content">
+                <div class="tag">Mission Société Numérique</div>
+                <h3 class="fr-card__title">
+                  Kit d’intervention rapide
+                </h3>
+                <p class="fr-card__desc">Ce site a pour objectif de permettre à toute personne, en particulier les non professionnels de la médiation numérique, d’aborder rapidement les principaux enjeux de l’accompagnement des individus en difficulté sur les outils numériques.</p>
+              </div>
+          </div>
+          <div class="fr-card__header">
+              <div class="fr-card__img">
+                  <img src="{% static 'images/kitintervention.png' %}" class="fr-responsive-img" alt="" data-fr-js-ratio="true">
+              </div>
+          </div>
+          <div class="fr-card__footer">
+            <div class="button-box">
+              <a class= "button primary" href="https://kit-inclusion.societenumerique.gouv.fr">Consulter</a>
+            </div>
         </div>
       </div>
-    </div>
   </div>
+</div>
+<div class="fr-grid-row fr-grid-row--gutters card">
   <div class="fr-col-12 fr-col-md-4">
-    <div class="card-ressource">
-      <img src="{% static 'images/maquetteimpots.png' %}" alt=""/>
-      <div class="card-content">
-        <div class="tag">Direction Générale des Finances Publiques</div>
-        <div class="h1">Site de démonstration des impôts</div>
-        <p>Ce site est une copie du site des impôts permettant de simuler les déclarations en ligne sans manipuler les données personnelles de la personne accompagnée.</p>
-        <div class="button-box">
-          <button class="primary"><a href="https://www.impots.gouv.fr/portail/www2/fichiers/didacticiels/partenaires/services_en_ligne/part/">Consulter</a></button>
+    <div class="fr-card card-ressource">
+        <div class="fr-card__body">
+            <div class="fr-card__content">
+              <div class="tag">Direction Générale des Finances Publiques</div>
+              <h3 class="fr-card__title">
+                  Site de démonstration des impôts
+              </h3>
+              <p class="fr-card__desc">Ce site est une copie du site des impôts permettant de simuler les déclarations en ligne sans manipuler les données personnelles de la personne accompagnée.</p>
+            </div>
         </div>
+        <div class="fr-card__header">
+            <div class="fr-card__img">
+                <img src="{% static 'images/maquetteimpots.png' %}" class="fr-responsive-img" alt="" data-fr-js-ratio="true">
+            </div>
+        </div>
+        <div class="fr-card__footer">
+          <div class="button-box">
+            <a class= "button primary" href="https://www.impots.gouv.fr/portail/www2/fichiers/didacticiels/partenaires/services_en_ligne/part/">Consulter</a>
+          </div>
       </div>
     </div>
   </div>
 </div>
-<br><br>
