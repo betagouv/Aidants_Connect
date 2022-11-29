@@ -24,7 +24,8 @@ from django.views.decorators.csrf import csrf_exempt
 import jwt
 
 from aidants_connect_web.decorators import activity_required, user_is_aidant
-from aidants_connect_web.models import Aidant, Connection, Journal, Usager
+from aidants_connect_web.forms import AuthorizeSelectUsagerForm
+from aidants_connect_web.models import Aidant, Connection, Journal
 from aidants_connect_web.utilities import generate_sha256_hash
 
 logging.basicConfig(level=logging.INFO)
@@ -76,6 +77,8 @@ def check_request_parameters(
 @user_is_aidant
 @activity_required
 def authorize(request):
+    aidant: Aidant = request.user
+    usager_with_active_auth = aidant.get_usagers_with_active_autorisation()
 
     if request.method == "GET":
         parameters = {
@@ -109,11 +112,9 @@ def authorize(request):
             state=parameters["state"],
             nonce=parameters["nonce"],
         )
-        aidant = request.user
 
-        usagers = aidant.get_usagers_with_active_autorisation()
         usagers_list = []
-        for user in usagers:
+        for user in usager_with_active_auth:
             usagers_list += [{"value": user.id, "label": user.get_full_name()}]
 
         return render(
@@ -121,32 +122,51 @@ def authorize(request):
             "aidants_connect_web/id_provider/authorize.html",
             {
                 "connection_id": connection.id,
-                "usagers": aidant.get_usagers_with_active_autorisation(),
+                "usagers": usager_with_active_auth,
                 "aidant": aidant,
                 "data": usagers_list,
             },
         )
 
     else:
-        parameters = {
-            "connection_id": request.POST.get("connection_id"),
-            "chosen_usager": request.POST.get("chosen_usager"),
-        }
+        form = AuthorizeSelectUsagerForm(data=request.POST)
 
-        try:
-            connection = Connection.objects.get(pk=parameters["connection_id"])
-            if connection.is_expired:
-                log.info("connection has expired at authorize")
-                return render(request, "408.html", status=408)
-        except ObjectDoesNotExist:
-            log.info("No connection corresponds to the connection_id:")
-            log.info(parameters["connection_id"])
-            logout(request)
-            return HttpResponseForbidden()
+        if not form.is_valid():
+            # Error with connection: logout and ask aidant ot login again
+            if "connection_id" in form.errors:
+                log.info(
+                    "No connection corresponds to the connection_id: "
+                    f"{form.cleaned_data.get('connection_id')}"
+                )
+                logout(request)
+                return HttpResponseForbidden()
 
-        aidant = request.user
-        chosen_usager = Usager.objects.get(pk=parameters["chosen_usager"])
-        if chosen_usager not in aidant.get_usagers_with_active_autorisation():
+            # Any other error: just display
+            usagers_list = []
+            for user in usager_with_active_auth:
+                usagers_list += [{"value": user.id, "label": user.get_full_name()}]
+
+            return render(
+                request,
+                "aidants_connect_web/id_provider/authorize.html",
+                {
+                    "connection_id": form.cleaned_data["connection_id"],
+                    "usagers": usager_with_active_auth,
+                    "aidant": aidant,
+                    "data": usagers_list,
+                    "errors": form.errors,
+                },
+            )
+
+        # If no user was return, then it's a permission or query error: 404
+        chosen_usager = form.cleaned_data["chosen_usager"]
+        connection = form.cleaned_data["connection_id"]
+
+        if connection.is_expired:
+            log.info("connection has expired at authorize")
+            return render(request, "408.html", status=408)
+
+        if chosen_usager not in usager_with_active_auth:
             log.info(
                 "This usager does not have a valid autorisation "
                 "with the aidant's organisation"
@@ -185,7 +205,7 @@ def fi_select_demarche(request):
             logout(request)
             return HttpResponseForbidden()
 
-        aidant = request.user
+        aidant: Aidant = request.user
 
         usager_demarches = aidant.get_active_demarches_for_usager(connection.usager)
 

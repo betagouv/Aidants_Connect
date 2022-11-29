@@ -15,8 +15,10 @@ from aidants_connect_common.utils.constants import AuthorizationDurations as ADK
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
+    Connection,
     HabilitationRequest,
     Organisation,
+    Usager,
 )
 
 
@@ -426,3 +428,34 @@ class MassEmailHabilitatonForm(forms.Form):
                 (filter(None, (email.strip() for email in email_list.splitlines()))),
             )
         )
+
+
+class AuthorizeSelectUsagerForm(PatchedForm):
+    connection_id = forms.IntegerField(required=True)
+    chosen_usager = forms.IntegerField(
+        required=True,
+        error_messages={
+            "required": (
+                required_msg := (
+                    "Aucun profil n'a été trouvé."
+                    "Veuillez taper le nom d'une personne et la barre de recherche et "
+                    "sélectionner parmis les propositions dans la liste déroulante"
+                )
+            ),
+            "invalid": required_msg,
+        },
+    )
+
+    def clean_connection_id(self):
+        connection_id = self.cleaned_data.get("connection_id")
+        try:
+            return Connection.objects.get(pk=connection_id)
+        except (Connection.DoesNotExist, Connection.MultipleObjectsReturned):
+            raise ValidationError("", code="connection_error")
+
+    def clean_chosen_usager(self):
+        chosen_usager = self.cleaned_data.get("chosen_usager")
+        try:
+            return Usager.objects.get(pk=chosen_usager)
+        except (Usager.DoesNotExist, Usager.MultipleObjectsReturned):
+            return None
