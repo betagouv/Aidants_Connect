@@ -408,12 +408,13 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_CONNECT_SRC = ("'self'", "https://stats.data.gouv.fr/matomo.php")
 CSP_IMG_SRC = (
     "'self'",
+    "data:",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
 )
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
-    "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
+    "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
