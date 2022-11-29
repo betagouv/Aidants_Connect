@@ -249,9 +249,11 @@ class OrganisationAdmin(
     search_fields = ("name", "siret", "data_pass_id")
     list_filter = (
         "is_active",
+        "type",
         WithoutDatapassIdFilter,
         RegionFilter,
         DepartmentFilter,
+        "is_experiment",
     )
 
     # For bulk import
