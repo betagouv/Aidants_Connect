@@ -1,4 +1,4 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
 {% load static ac_extras ac_common %}
 
@@ -6,84 +6,66 @@
 
 {% block extracss %}
   <link href="{% static 'css/id_provider.css' %}" rel="stylesheet" />
-  <link href="{% static 'css/autocomplete.css' %}" rel="stylesheet" />
+  <link href="{% static 'css/users_search.css' %}" rel="stylesheet" />
 {% endblock extracss %}
 
 {% block content %}
-
-<div class="fr-container">
-  <div class="fr-grid-row fr-grid-row--gutters">
-    <div class="fr-col-12 fr-col-md-8">
-      <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
-      <div class="container shadowed">
-
-          <h1>Sélectionnez l'usager que vous souhaitez FranceConnecter</h1>
-            <p id="instructions" class="subtitle">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
-            {% if usagers %}
-            <form method="post">
-            <div class="form-grid-row fr-grid-row fr-grid-row--gutters">
-              <div class="fr-col-12">
-                <label id="filter-input-label" for="filter-input">
-                  Rechercher un usager :
-                </label>
-              </div>
-              <div class="fr-col-12">
-                <input type="text" id="filter-input" required />
-                <input id="filter-input-id" name="chosen_usager" hidden />
-                <div id="autocomplete" class="autocomplete-input_wrapper input-spinner-wrapper"></div>
-              </div>
-                {% csrf_token %}
-                <input type="hidden" name="connection_id" value="{{ connection_id }}" />
-
-            </div>
-            <div class="button-box">
-              <button id="submit-button" class="primary" type="submit">Séléctionner</button>
-            </div>
-          </form>
-          {% else %}
-            <div class="notification" role="alert">
-              Vous n’avez pas d'usagers avec au moins un mandat en cours.<br>
-              Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}">Espace Aidant</a>.
-            </div>
-          {% endif %}
-      </div>
-    </div>
+<div class="hero">
+  <div class="hero__container">
+    <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
   </div>
 </div>
-<br><br>
+<section
+  class="section section-grey mandat-select__section"
+  data-controller="search"
+>
+  <div class="container">
+    <form method="post">
+      <h2>Sélectionnez l'usager que vous souhaitez FranceConnecter</h2>
+      <p id="instructions">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
+      {% if usagers %}
+        {% include "aidants_connect_web/users_search_bar.html" %}
+        <fieldset>
+          <div id="usagers" class="grid">
+            {% for usager in usagers %}
+              <div
+                class="tile usager"
+                data-search-target="item"
+                data-search-terms='{{ usager.search_terms|json_attribute }}'
+              >
+                <input
+                  id="button-{{ usager.id }}"
+                  type="submit"
+                  value="{{ usager.id }}"
+                  name="chosen_usager"
+                  aria-labelledby="label-usager-{{ usager.id }}"
+                />
+                <label
+                  id="label-usager-{{ usager.id }}"
+                  class="label-usager"
+                  for="button-{{ usager.id }}"
+                >
+                  {{ usager.given_name }} {% if usager.preferred_username %}{{ usager.preferred_username }}<br/>Né(e) {% endif %}{{ usager.family_name }}
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+          {% csrf_token %}
+          <input type="hidden" name="connection_id" value="{{ connection_id }}" />
+        </fieldset>
+      {% else %}
+        <div class="notification" role="alert">
+          Vous n’avez pas d'usagers avec au moins un mandat en cours.<br>
+          Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}">Espace Aidant</a>.
+        </div>
+      {% endif %}
+    </form>
+  </div>
+</section>
 {% endblock content %}
 
 {% block extrajs %}
-  <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
-  <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-
- {{ data|json_script:"usagers_list" }}
-
-  <script>
-    $(function () {
-
-      const users = JSON.parse(document.querySelector("#usagers_list").textContent);
-
-      const autoWidget = $("#filter-input").autocomplete({
-        source: users,
-        minLength: 3,
-        focus : function(event, ui) {
-          $("#filter-input").val(ui.item.label);
-          return false;
-        },
-        select: function(event, ui) {
-          $("#filter-input").val(ui.item.label);
-          $("#filter-input-id").val(ui.item.value);
-          return false;
-        },
-        appendTo: $("#autocomplete"),
-      })
-      .data( "ui-autocomplete" )._renderItem = function( ul, item ) {
-        return $("<li class=ui-menu-item-wrapper>" )
-          .attr("data-value", item.value )
-          .append(item.label)
-          .appendTo( ul );
-      };
-    });
-  </script>
+  {% stimulusjs %}
+  <script src="{% static 'js/utils.js' %}"></script>
+  <script src="{% static 'js/users_search.js' %}"></script>
 {% endblock %}
