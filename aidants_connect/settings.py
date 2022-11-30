@@ -142,12 +142,8 @@ INSTALLED_APPS = [
 ]
 
 # Additionnal app to execute only during tests
-INSTALLED_TEST_APPS = [
-    "aidants_connect_habilitation.tests.third_party_service_mocks",
-]
-
 if "test" in sys.argv:
-    INSTALLED_APPS.append(*INSTALLED_TEST_APPS)
+    INSTALLED_APPS.append("aidants_connect_common.tests.third_party_service_mocks")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

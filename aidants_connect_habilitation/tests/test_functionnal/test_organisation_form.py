@@ -225,11 +225,13 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
     @override_settings(
         GOUV_ADDRESS_SEARCH_API_DISABLED=False,
         GOUV_ADDRESS_SEARCH_API_BASE_URL=_django_server_url(
-            reverse("address_api_segur")
+            reverse("test_address_api_segur")
         ),
     )
     @modify_settings(
-        CSP_CONNECT_SRC={"append": _django_server_url(reverse("address_api_segur"))},
+        CSP_CONNECT_SRC={
+            "append": _django_server_url(reverse("test_address_api_segur"))
+        },
         CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
     )
     def test_js_I_must_select_a_correct_address(self):
@@ -295,12 +297,12 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
     @override_settings(
         GOUV_ADDRESS_SEARCH_API_DISABLED=False,
         GOUV_ADDRESS_SEARCH_API_BASE_URL=_django_server_url(
-            reverse("address_api_no_result")
+            reverse("test_address_api_no_result")
         ),
     )
     @modify_settings(
         CSP_CONNECT_SRC={
-            "append": _django_server_url(reverse("address_api_no_result"))
+            "append": _django_server_url(reverse("test_address_api_no_result"))
         },
         CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
     )

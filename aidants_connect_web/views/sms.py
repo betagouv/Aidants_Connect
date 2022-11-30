@@ -1,7 +1,8 @@
+import json
 import logging
 
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -17,10 +18,26 @@ logger = logging.getLogger()
 
 @method_decorator([csrf_exempt], name="dispatch")
 class Callback(View):
+    def dispatch(self, request, *args, **kwargs):
+        if self.request.method.lower() == "post":
+            try:
+                data = json.loads(request.body.decode(settings.DEFAULT_CHARSET))
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                data = {}
+
+            q_dict: QueryDict = self.request.POST
+            q_dict._mutable = True
+            for key, value in data.items():
+                q_dict[key] = value
+
+            q_dict._mutable = False
+
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         api = SmsApi()
         try:
-            sms_response = api.process_sms_response(**self.request.POST)
+            sms_response = api.process_sms_response(self.request.POST)
             phone_number = parse_phone(sms_response.user_phone)
         except SmsApi.ApiRequestExpection as e:
             logger.warning(f"Bad SMS API callback response: {e.reason}")
@@ -76,4 +93,7 @@ class Callback(View):
                 render_to_string("aidants_connect_web/sms/agreement_receipt.txt"),
             )
 
+        return HttpResponse("Status=0")
+
+    def get(self, request, *args, **kwargs):
         return HttpResponse("Status=0")

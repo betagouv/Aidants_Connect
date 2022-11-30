@@ -1,11 +1,17 @@
 from distutils.util import strtobool
+from random import randint
+from unittest import mock
+from unittest.mock import Mock
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.test import override_settings, tag
 from django.urls import reverse
+from django.utils import timezone
 
+from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
+from requests import post as requests_post
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import url_matches
@@ -16,6 +22,8 @@ from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import Journal
 from aidants_connect_web.tests.factories import AidantFactory
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
+
+UUID = "1f75d571-4127-445b-a141-ea837580da14"
 
 
 @tag("functional", "new_mandat")
@@ -249,8 +257,17 @@ class CreateNewMandatTests(FunctionalTestCase):
         ].find_elements(By.CSS_SELECTOR, "tbody tr")
         self.assertEqual(len(active_mandats_after), 2)
 
-    @override_settings(SMS_API_DISABLED=True)
-    def test_create_new_remote_mandat_with_sms_consent(self):
+    @override_settings(
+        SMS_API_DISABLED=False,
+        LM_SMS_SERVICE_USERNAME="username",
+        LM_SMS_SERVICE_PASSWORD="password",
+        LM_SMS_SERVICE_BASE_URL=f"http://localhost:{settings.FC_AS_FS_TEST_PORT}",
+        LM_SMS_SERVICE_OAUTH2_ENDPOINT=reverse("test_sms_api_token"),
+        LM_SMS_SERVICE_SND_SMS_ENDPOINT=reverse("test_sms_api_sms"),
+    )
+    @mock.patch("aidants_connect_web.views.mandat.uuid4")
+    def test_create_new_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
+        uuid4_mock.return_value = UUID
         wait = WebDriverWait(self.selenium, 10)
 
         self.open_live_url("/usagers/")
@@ -292,7 +309,7 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
-        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
+        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_sms"))
         for elt in self.selenium.find_elements(
             By.CSS_SELECTOR, "#id_remote_constent_method input"
         ):
@@ -319,6 +336,7 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Simulate user content
         self._user_consents("0 800 840 800")
+        wait.until(self._user_has_responded("0 800 840 800"))
         self.selenium.refresh()
         wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
@@ -393,17 +411,38 @@ class CreateNewMandatTests(FunctionalTestCase):
         query_part = rf"\?{query_part}" if query_part else ""
         return url_matches(rf"http://localhost:\d+{reverse(route_name)}{query_part}")
 
-    def _user_consents(self, phone_number: str):
-        consent_requests = Journal.objects.find_sms_consent_requests(
-            parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION)
+    def _user_responds(self, phone_number: str, text: str):
+        number = parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION)
+        journal: Journal = Journal.objects.find_sms_consent_requests(
+            number, UUID
+        ).first()
+
+        requests_post(
+            f"http://localhost:{settings.FC_AS_FS_TEST_PORT}{reverse('sms_callback')}",
+            json={
+                "messageId": str(randint(10_000_000, 99_999_999)),
+                "smsMTId": str(randint(10_000_000, 99_999_999)),
+                "smsMTCorrelationId": journal.consent_request_id,
+                "originatorAddress": format_number(number, PhoneNumberFormat.E164),
+                "destinationAdress": str(randint(10_000, 99_999)),
+                "timeStamp": timezone.now().isoformat(),
+                "message": text,
+                "userDataHeader": "",
+                "mcc": "208",
+                "mnc": "14",
+            },
         )
-        for req in consent_requests:
-            req: Journal
-            Journal.log_user_consents_sms(
-                aidant=req.aidant,
-                demarche=req.demarche,
-                duree=req.duree,
-                remote_constent_method=req.remote_constent_method,
-                user_phone=req.user_phone,
-                consent_request_id=req.consent_request_id,
-            )
+
+    def _user_consents(self, phone_number: str):
+        self._user_responds(phone_number, settings.SMS_RESPONSE_CONSENT)
+
+    def _user_denies(self, phone_number: str):
+        self._user_responds(phone_number, "Nope")
+
+    def _user_has_responded(self, phone_number: str):
+        def _predicate(driver):
+            return Journal.objects.find_sms_user_consent_or_denial(
+                parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION), UUID
+            ).exists()
+
+        return _predicate

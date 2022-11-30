@@ -1,13 +1,18 @@
 from datetime import timedelta
 from distutils.util import strtobool
+from random import randint
+from unittest import mock
+from unittest.mock import Mock
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.test import tag
+from django.test import override_settings, tag
 from django.urls import reverse
 from django.utils import timezone
 
+from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
+from requests import post as requests_post
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import url_matches
@@ -23,9 +28,15 @@ from aidants_connect_web.tests.factories import (
 )
 from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
+UUID = "1f75d571-4127-445b-a141-ea837580da14"
+FIXED_PORT = randint(8081, 8179)
+DJANGO_SERVER_URL = f"http://localhost:{FIXED_PORT}"
+
 
 @tag("functional", "renew_mandat")
 class RenewMandatTests(FunctionalTestCase):
+    port = FIXED_PORT
+
     def test_renew_mandat(self):
         self.aidant = AidantFactory(email="thierry@thierry.com")
         device = self.aidant.staticdevice_set.create(id=1)
@@ -179,7 +190,17 @@ class RenewMandatTests(FunctionalTestCase):
 
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 2)
 
-    def test_renew_mandat_remote_mandat_with_sms_consent(self):
+    @override_settings(
+        SMS_API_DISABLED=False,
+        LM_SMS_SERVICE_USERNAME="username",
+        LM_SMS_SERVICE_PASSWORD="password",
+        LM_SMS_SERVICE_BASE_URL=DJANGO_SERVER_URL,
+        LM_SMS_SERVICE_OAUTH2_ENDPOINT=reverse("test_sms_api_token"),
+        LM_SMS_SERVICE_SND_SMS_ENDPOINT=reverse("test_sms_api_sms"),
+    )
+    @mock.patch("aidants_connect_web.views.renew_mandat.uuid4")
+    def test_renew_mandat_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
+        uuid4_mock.return_value = UUID
         wait = WebDriverWait(self.selenium, 10)
 
         self.aidant = AidantFactory(email="thierry@thierry.com")
@@ -247,6 +268,7 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Simulate user content
         self._user_consents("0 800 840 800")
+        wait.until(self._user_has_responded("0 800 840 800"))
         self.selenium.refresh()
 
         # Recap all the information for the Mandat
@@ -287,16 +309,38 @@ class RenewMandatTests(FunctionalTestCase):
         query_part = rf"\?{query_part}" if query_part else ""
         return url_matches(rf"http://localhost:\d+{reverse(route_name)}{query_part}")
 
-    def _user_consents(self, phone_number: str):
-        consent_requests = Journal.objects.find_sms_consent_requests(
-            parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION)
+    def _user_responds(self, phone_number: str, text: str):
+        number = parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION)
+        journal: Journal = Journal.objects.find_sms_consent_requests(
+            number, UUID
+        ).first()
+
+        requests_post(
+            f"{DJANGO_SERVER_URL}{reverse('sms_callback')}",
+            json={
+                "messageId": str(randint(10_000_000, 99_999_999)),
+                "smsMTId": str(randint(10_000_000, 99_999_999)),
+                "smsMTCorrelationId": journal.consent_request_id,
+                "originatorAddress": format_number(number, PhoneNumberFormat.E164),
+                "destinationAdress": str(randint(10_000, 99_999)),
+                "timeStamp": timezone.now().isoformat(),
+                "message": text,
+                "userDataHeader": "",
+                "mcc": "208",
+                "mnc": "14",
+            },
         )
-        for req in consent_requests:
-            Journal.log_user_consents_sms(
-                aidant=req.aidant,
-                demarche=req.demarche,
-                duree=req.duree,
-                remote_constent_method=req.remote_constent_method,
-                user_phone=req.user_phone,
-                consent_request_id=req.consent_request_id,
-            )
+
+    def _user_consents(self, phone_number: str):
+        self._user_responds(phone_number, settings.SMS_RESPONSE_CONSENT)
+
+    def _user_denies(self, phone_number: str):
+        self._user_responds(phone_number, "Nope")
+
+    def _user_has_responded(self, phone_number: str):
+        def _predicate(driver):
+            return Journal.objects.find_sms_user_consent_or_denial(
+                parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION), UUID
+            ).exists()
+
+        return _predicate

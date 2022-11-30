@@ -15,6 +15,8 @@ from requests.models import PreparedRequest
 
 __all__ = ["SmsApi", "SmsResponseCallbackInfos"]
 
+from aidants_connect_common.utils.urls import join_url_parts
+
 logger = logging.getLogger()
 
 
@@ -75,7 +77,7 @@ class SmsApi(metaclass=SmsApiFactory):
     def send_sms(self, phone: PhoneNumber, consent_request_id: str, message: str):
         raise NotImplementedError()
 
-    def process_sms_response(self, **kwargs) -> SmsResponseCallbackInfos:
+    def process_sms_response(self, data: dict) -> SmsResponseCallbackInfos:
         """Takes the JSON body of the callback as **kwargs"""
         raise NotImplementedError()
 
@@ -87,7 +89,7 @@ class SmsApiMock(SmsApi):
     def send_sms(self, phone: PhoneNumber, consent_request_id: str, message: str):
         self._log_message()
 
-    def process_sms_response(self, **kwargs) -> SmsResponseCallbackInfos:
+    def process_sms_response(self, data: dict) -> SmsResponseCallbackInfos:
         self._log_message()
         return SmsResponseCallbackInfos("", "", "")
 
@@ -110,16 +112,14 @@ class SmsApiImpl(SmsApi):
     def __init__(self):
         self._base_url = settings.LM_SMS_SERVICE_BASE_URL
 
-        self._snd_sms_url = self._join_url_parts(
+        self._snd_sms_url = join_url_parts(
             self._base_url, settings.LM_SMS_SERVICE_SND_SMS_ENDPOINT
         )
 
         self._auth_infos = AuthInfos(
             settings.LM_SMS_SERVICE_USERNAME,
             settings.LM_SMS_SERVICE_PASSWORD,
-            self._join_url_parts(
-                self._base_url, settings.LM_SMS_SERVICE_OAUTH2_ENDPOINT
-            ),
+            join_url_parts(self._base_url, settings.LM_SMS_SERVICE_OAUTH2_ENDPOINT),
         )
 
         self._client = OAuthClient(self._auth_infos)
@@ -134,10 +134,6 @@ class SmsApiImpl(SmsApi):
             f"{self.__class__.__qualname__}"
             f"({','.join(starmap(lambda k, v: f'{k}={v!r}', props))})"
         )
-
-    def _join_url_parts(self, base: str, *args):
-        parts = "/".join([arg.removeprefix("/").removesuffix("/") for arg in args])
-        return f"{base.removesuffix('/')}/{parts}"
 
     def send_sms(self, phone: PhoneNumber, consent_request_id: str, message: str):
         phone = str(phone).removeprefix("+")
@@ -163,12 +159,12 @@ class SmsApiImpl(SmsApi):
                 response.get("errorMessage", "No message given by SMS provider"),
             ) from None
 
-    def process_sms_response(self, **kwargs) -> SmsResponseCallbackInfos:
+    def process_sms_response(self, data: dict) -> SmsResponseCallbackInfos:
         try:
             init_kwargs = {
-                "user_phone": f"+{kwargs['originatorAddress'].removeprefix('+')}",
-                "message": kwargs["message"].strip(),
-                "consent_request_id": kwargs["smsMTCorrelationId"],
+                "user_phone": f"+{data['originatorAddress'].removeprefix('+')}",
+                "message": data["message"].strip(),
+                "consent_request_id": data["smsMTCorrelationId"],
             }
 
             return SmsResponseCallbackInfos(**init_kwargs)
