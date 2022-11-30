@@ -408,13 +408,12 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_CONNECT_SRC = ("'self'", "https://stats.data.gouv.fr/matomo.php")
 CSP_IMG_SRC = (
     "'self'",
-    "data:",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
 )
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
-    "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main.html
+    "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
@@ -424,10 +423,12 @@ CSP_SCRIPT_SRC = (
     "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
-    "'sha256-cFyvsDuA3AcV8Zc3M5E7whbtucLdPz2NtUjdlLeuz+c='",  # authorize.html
 )
 
-CSP_STYLE_SRC = ("'self'",)
+CSP_STYLE_SRC = (
+    "'self'",
+    "https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css",
+)
 
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
