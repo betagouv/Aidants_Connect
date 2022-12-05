@@ -6,6 +6,8 @@ from django.test import tag
 from django.utils import timezone
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.expected_conditions import url_contains
+from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.models import Mandat
@@ -97,10 +99,21 @@ class UseAutorisationTests(FunctionalTestCase):
         self.assertEqual(
             welcome_aidant, "BIENVENUE SUR VOTRE ESPACE AIDANTS CONNECT, THIERRY"
         )
-        usagers = self.selenium.find_elements(By.CLASS_NAME, "label-usager")
-        self.assertEqual(len(usagers), 1)
-        self.assertEqual(usagers[0].text, "Joséphine ST-PIERRE")
-        usagers[0].click()
+
+        self.selenium.find_element(By.CLASS_NAME, "ui-autocomplete-input")
+
+        autocomplete = self.selenium.find_element(By.ID, "filter-input")
+        autocomplete.send_keys("Joséphine ST-PIERRE")
+        usager = self.selenium.find_element(
+            By.XPATH, f"//li[@data-value='{self.usager_josephine.id}']"
+        )
+        usager.click()
+
+        button = self.selenium.find_element(By.ID, "submit-button")
+        button.click()
+        wait = WebDriverWait(self.selenium, 10)
+
+        wait.until(url_contains("/select_demarche/?connection_id="))
 
         # Select Démarche
         step2_title = self.selenium.find_element(By.ID, "instructions").text
