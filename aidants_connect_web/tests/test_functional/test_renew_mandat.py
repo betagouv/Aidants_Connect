@@ -141,12 +141,22 @@ class RenewMandatTests(FunctionalTestCase):
         ).click()
 
         duree_section = self.selenium.find_element(By.ID, "duree")
-        duree_section.find_element(By.ID, "SHORT").find_element(
+        short_duree_label = duree_section.find_element(By.ID, "SHORT").find_element(
             By.TAG_NAME, "label"
-        ).click()
+        )
+        self.assertEqual(
+            "Mandat court (expire demain)", short_duree_label.text.replace("\n", " ")
+        )
+        short_duree_label.click()
 
         # Select remote method
         self.selenium.find_element(By.ID, "id_is_remote").click()
+        self.assertEqual(
+            "Mandat court à distance (expire demain)",
+            duree_section.find_element(By.ID, "SHORT")
+            .find_element(By.TAG_NAME, "label")
+            .text.replace("\n", " "),
+        )
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
@@ -236,12 +246,22 @@ class RenewMandatTests(FunctionalTestCase):
         ).click()
 
         duree_section = self.selenium.find_element(By.ID, "duree")
-        duree_section.find_element(By.ID, "SHORT").find_element(
+        short_duree_label = duree_section.find_element(By.ID, "SHORT").find_element(
             By.TAG_NAME, "label"
-        ).click()
+        )
+        self.assertEqual(
+            "Mandat court (expire demain)", short_duree_label.text.replace("\n", " ")
+        )
+        short_duree_label.click()
 
         # Select remote method
         self.selenium.find_element(By.ID, "id_is_remote").click()
+        self.assertEqual(
+            "Mandat court à distance (expire demain)",
+            duree_section.find_element(By.ID, "SHORT")
+            .find_element(By.TAG_NAME, "label")
+            .text.replace("\n", " "),
+        )
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS

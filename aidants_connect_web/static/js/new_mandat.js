@@ -5,26 +5,31 @@
 
     Object.assign(NewMandatForm.prototype, {
         "connect": function connect() {
-            this.mutateVisibility(this.isRemoteInputTarget.checked, this.remoteContentSectionTarget);
-            this.remoteConstentMethodInputTargets.forEach(function(elt) {
-                this.mutateRequirement(this.isRemoteInputTarget.checked, elt);
-            }.bind(this));
-
+            this.computeUiForRemoteMandateValue(this.isRemoteInputTarget.checked);
             const checkedRadioElt = document.querySelector("#id_remote_constent_method input[type='radio']:checked");
-            const isUserConsentSms = checkedRadioElt ? checkedRadioElt.value === this.smsMethodValue : false;
-            this.mutateVisibility(isUserConsentSms, this.userPhoneInputSectionTarget);
-            this.mutateRequirement(isUserConsentSms, this.userPhoneInputTarget);
+            this.computeUiForRemoteConstentMethod(checkedRadioElt ? checkedRadioElt.value : undefined);
         },
 
         "isRemoteChanged": function isRemoteChanged(evt) {
-            this.mutateVisibility(evt.target.checked, this.remoteContentSectionTarget);
-            this.remoteConstentMethodInputTargets.forEach(function(elt) {
-                this.mutateRequirement(evt.target.checked, elt);
-            }.bind(this));
+            this.computeUiForRemoteMandateValue(evt.target.checked);
         },
 
         "remoteConstentMethodChanged": function remoteConstentMethodChanged(evt) {
-            const isUserConsentSms = evt.target.value === this.smsMethodValue;
+            this.computeUiForRemoteConstentMethod(evt.target.value);
+        },
+
+        "computeUiForRemoteMandateValue": function computeUiForRemoteMandateValue(checked) {
+            this.remoteLabelTextTargets.forEach(function (elt) {
+                this.mutateVisibility(checked, elt);
+            }.bind(this));
+            this.mutateVisibility(checked, this.remoteContentSectionTarget);
+            this.remoteConstentMethodInputTargets.forEach(function(elt) {
+                this.mutateRequirement(checked, elt);
+            }.bind(this));
+        },
+
+        "computeUiForRemoteConstentMethod": function computeUiForRemoteConstentMethod(value) {
+            const isUserConsentSms = value === this.smsMethodValue;
             this.mutateVisibility(isUserConsentSms, this.userPhoneInputSectionTarget);
             this.mutateRequirement(isUserConsentSms, this.userPhoneInputTarget);
         },
@@ -35,7 +40,7 @@
                 elt.removeAttribute("aria-hidden");
             } else {
                 elt.setAttribute("hidden", "hidden");
-                elt.setAttribute("aria-hidden", "aria-hidden");
+                elt.setAttribute("aria-hidden", "true");
             }
         },
 
@@ -56,6 +61,7 @@
         "userPhoneInputSection",
         "userPhoneInput",
         "remoteConstentMethodInput",
+        "remoteLabelText",
     ];
 
     NewMandatForm.values = {

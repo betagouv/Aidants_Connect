@@ -149,7 +149,10 @@
                     {% if value in form.duree.value or value in form.duree.initial %}checked{% endif %}
                   />
                   <label class="label-duree" for="button-{{ value }}">
-                    <strong>{{ label.title }} <span class="duree-label-is-remote">à distance</span></strong>
+                    <strong>
+                      {{ label.title }}
+                      <span data-new-mandat-form-target="remoteLabelText" hidden aria-hidden="true"> à distance</span>
+                    </strong>
                     <span>{{ label.description }}</span>
                   </label>
                 </div>

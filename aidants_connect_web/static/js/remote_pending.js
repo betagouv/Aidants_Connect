@@ -28,7 +28,7 @@
         "pollTimeoutValueChanged": function pollTimeoutValueChanged(value) {
             if(value > 0) {
                 clearInterval(this.intervalId);
-                this.intervalId = setInterval(this.poll, value);
+                this.intervalId = setInterval(this.poll.bind(this), value);
             } else if (this.intervalId){
                 clearInterval(this.intervalId);
             }
