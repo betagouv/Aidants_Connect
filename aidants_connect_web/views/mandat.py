@@ -545,7 +545,7 @@ def attestation_qrcode(request):
 
 @aidant_logged_with_activity_required
 class WaitingRoom(RequireConnectionObjectMixin, TemplateView):
-    template_name = "aidants_connect_web/new_mandat/remote_consent_waiting_room.html"
+    template_name = "aidants_connect_web/sms/remote_consent_waiting_room.html"
     poll_route_name = "new_mandat_waiting_room_json"
     next_route_name = "fc_authorize"
 

@@ -11,10 +11,12 @@
             xhr.addEventListener("load", this.onResponse.bind(this));
 
             var url = window.location.origin + this.pollValue;
-            xhr.open("GET", url, true);
+            var form = new FormData();
+            form.set("csrfmiddlewaretoken", this.csrfTokenValue);
+            xhr.open("POST", url, true);
             xhr.setRequestHeader("Accept", "application/json");
-
-            xhr.send();
+            xhr.setRequestHeader("Contet-Type", "multipart/form-data");
+            xhr.send(form);
         },
 
         "onResponse": function onResponse(event) {
@@ -38,12 +40,15 @@
     RemoteConsentWaitingRoom.values = {
         "next": String,
         "poll": String,
-        "pollTimeout": Number
+        "pollTimeout": Number,
+        "csrfToken": String,
     }
+
+    RemoteConsentWaitingRoom.POLL_TIMEOUT = 5000
 
     function init() {
         const application = Stimulus.Application.start();
-        application.register("remote-content-waiting-room", RemoteConsentWaitingRoom);
+        application.register("remote-consent-waiting-room", RemoteConsentWaitingRoom);
     }
 
     window.addEventListener("load", init);

@@ -232,6 +232,14 @@ class MandatForm(PatchedForm):
         required=False,
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["remote_constent_method"].widget.add_compagnon_field(
+            RemoteConsentMethodChoices.SMS.value,
+            self,
+            "aidants_connect_web/new_mandat/user_phone_widget.html",
+        )
+
     def clean_remote_constent_method(self):
         if not self.cleaned_data["is_remote"]:
             return ""

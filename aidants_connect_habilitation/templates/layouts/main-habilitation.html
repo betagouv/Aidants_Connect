@@ -10,8 +10,7 @@
   <link href="{% static 'css/ds-font-grid.css' %}" rel="stylesheet">
   <link href="{% static 'css/main-habilitation.css' %}" rel="stylesheet">
   {# Extra styles #}
-  {% block extracss %}
-  {% endblock %}
+  {% block extracss %}{% endblock %}
 
   {# Polyfills #}
   <script type="text/javascript">
@@ -27,32 +26,27 @@
   </script>
   <!-- Search Engine -->
   <meta name="title" content="Aidants Connect - aidantsconnect.beta.gouv.fr">
-  <meta name="description"
-        content="Permettre à un aidant professionnel de réaliser des démarches administratives en ligne « à la place de » via une connexion sécurisée">
+  <meta name="description" content="{{ SITE_DESCRIPTION }}">
   <meta name="image" content="{% static 'images/aidantsconnect-illustration.svg' %}">
   <!-- Schema.org for Google -->
   <meta itemprop="name" content="Aidants Connect">
-  <meta itemprop="description"
-        content="Permettre à un aidant professionnel de réaliser des démarches administratives en ligne « à la place de » via une connexion sécurisée">
+  <meta itemprop="description" content="{{ SITE_DESCRIPTION }}">
   <meta itemprop="image" content="{% static 'images/aidantsconnect-illustration.svg' %}">
   <!-- Twitter -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Aidants Connect">
-  <meta name="twitter:description"
-        content="Permettre à un aidant professionnel de réaliser des démarches administratives en ligne « à la place de » via une connexion sécurisée">
+  <meta name="twitter:description" content="{{ SITE_DESCRIPTION }}">
   <meta name="twitter:site" content="@betagouv">
   <meta name="twitter:creator" content="betagouv">
   <meta name="twitter:image:src" content="{% static 'images/aidantsconnect-illustration.svg' %}">
   <!-- Open Graph general (Facebook, Pinterest & Google+) -->
   <meta name="og:title" content="Aidants Connect">
-  <meta name="og:description"
-        content="Permettre à un aidant professionnel de réaliser des démarches administratives en ligne « à la place de » via une connexion sécurisée">
+  <meta name="og:description" content="{{ SITE_DESCRIPTION }}">
   <meta name="og:image" content="{% static 'images/aidantsconnect-illustration.svg' %}">
   <meta name="og:url" content="https://aidantsconnect.beta.gouv.fr">
   <meta name="og:site_name" content="Aidants Connect">
   <meta name="og:locale" content="fr_FR">
   <meta name="og:type" content="website">
-
   <!-- Favicons -->
   <meta name="theme-color" content="#ffffff">
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicons/apple-icon-180x180.png' %}">
@@ -60,7 +54,6 @@
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicons/favicon-32x32.png' %}">
   <link rel="manifest" href="{% static 'images/favicons/manifest.json' %}">
   <link rel="mask-icon" href="{% static 'images/favicons/safari-pinned-tab.svg' %}" color="#5bbad5">
-
   <!-- Matomo -->
   {% include "layouts/matomo_script.html" %}
 </head>
@@ -82,5 +75,4 @@
 {% block extrajs %}
 {% endblock %}
 </body>
-
 </html>
