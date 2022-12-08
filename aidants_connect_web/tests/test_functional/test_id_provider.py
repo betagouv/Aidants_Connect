@@ -69,9 +69,9 @@ class IdProviderTest(FunctionalTestCase):
         login_aidant(self)
 
         autocomplete = self.selenium.find_element(By.ID, "filter-input")
-        autocomplete.send_keys("Anne")
+        autocomplete.send_keys("Jose")
         usager = self.selenium.find_element(
-            By.XPATH, f"//li[@data-value='{self.usager_anne.id}']"
+            By.XPATH, f"//li[@data-value='{self.usager_josephine.id}']"
         )
         usager.click()
 
