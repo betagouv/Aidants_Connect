@@ -48,6 +48,9 @@ class TestAidantWithMandatsFilter(TestCase):
             access_token="",
             attestation_hash="",
             mandat=cls.mandat1,
+            remote_constent_method="",
+            user_phone="",
+            consent_request_id="",
         )
 
         cls.aidant_without_mandat1 = AidantFactory(organisation=cls.organisation1)
@@ -64,6 +67,9 @@ class TestAidantWithMandatsFilter(TestCase):
             access_token="",
             attestation_hash="",
             mandat=cls.mandat2,
+            remote_constent_method="",
+            user_phone="",
+            consent_request_id="",
         )
         cls.aidant_without_mandat2 = AidantFactory(organisation=cls.organisation2)
 

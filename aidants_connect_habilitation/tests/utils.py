@@ -2,7 +2,7 @@ from functools import singledispatch
 from importlib import import_module
 from inspect import getmembers, isclass
 from json import dumps, loads
-from os.path import join as path_join
+from pathlib import Path
 from typing import Type, TypeVar, Union
 
 from django.forms import BaseModelFormSet, ModelForm, model_to_dict
@@ -17,7 +17,6 @@ from django.forms.models import fields_for_model
 
 from factory.django import DjangoModelFactory
 
-from aidants_connect_habilitation import tests
 from aidants_connect_habilitation.tests import factories
 
 MF = TypeVar("MF", bound=ModelForm)
@@ -200,7 +199,7 @@ def __get_form_data(form_cls: Type[MF], form_init_kwargs: dict, **kwargs) -> dic
 
 
 def load_json_fixture(name: str, as_string=False) -> dict:
-    path = path_join(tests.__path__[0], "fixtures", name)
+    path = Path(__file__).parent / "fixtures" / name
     with open(path) as f:
         result = loads(f.read())
         return dumps(result) if as_string else result

@@ -1,26 +1,37 @@
 import logging
 from datetime import date
-from typing import Collection
+from typing import Callable, Collection
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db import IntegrityError
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import formats, timezone
+from django.utils.html import format_html
 from django.views.generic import FormView, TemplateView, View
 
+from phonenumbers import PhoneNumber
+
+from aidants_connect_common.templatetags.ac_common import mailto
 from aidants_connect_common.utils.constants import AuthorizationDurations
+from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_web.decorators import (
     activity_required,
     aidant_logged_with_activity_required,
     user_is_aidant,
 )
-from aidants_connect_web.forms import MandatForm, RecapMandatForm
+from aidants_connect_web.forms import (
+    MandatForm,
+    PatchedForm,
+    RecapMandatForm,
+    RemoteConsentMethodChoices,
+)
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
@@ -54,8 +65,39 @@ class RequireConnectionObjectMixin(View):
         return super().dispatch(request, *args, **kwargs)
 
 
+class MandatCreationJsFormView(FormView):
+    def get_form(self, form_class=None):
+        form: PatchedForm = super().get_form(form_class)
+        form.widget_attrs(
+            "is_remote",
+            {
+                "data-action": "new-mandat-form#isRemoteChanged",
+                "data-new-mandat-form-target": "isRemoteInput",
+            },
+        )
+        form.widget_attrs(
+            "remote_constent_method",
+            {
+                "data-action": "new-mandat-form#remoteConstentMethodChanged",
+                "data-new-mandat-form-target": "remoteConstentMethodInput",
+            },
+        )
+        form.widget_attrs(
+            "user_phone",
+            {"data-new-mandat-form-target": "userPhoneInput"},
+        )
+
+        return form
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "sms_method_value": RemoteConsentMethodChoices.SMS.name,
+        }
+
+
 @aidant_logged_with_activity_required
-class NewMandat(FormView):
+class NewMandat(MandatCreationJsFormView):
     form_class = MandatForm
     template_name = "aidants_connect_web/new_mandat/new_mandat.html"
 
@@ -83,14 +125,37 @@ class NewMandat(FormView):
                 "is_remote": self.connection.mandat_is_remote,
                 "demarche": self.connection.demarches,
                 "user_phone": self.connection.user_phone,
+                "remote_constent_method": self.connection.remote_constent_method,
             }
         )
 
     def get_success_url(self):
-        return reverse("fc_authorize")
+        return (
+            reverse("fc_authorize")
+            if self.connection.remote_constent_method
+            not in RemoteConsentMethodChoices.blocked_methods()
+            else reverse("new_mandat_waiting_room")
+        )
 
     def form_valid(self, form: MandatForm):
         data = form.cleaned_data
+        self.consent_request_id = ""
+
+        if (
+            data["is_remote"]
+            and data["remote_constent_method"]
+            in RemoteConsentMethodChoices.blocked_methods()
+        ):
+            # Processes remote blocked method (SMS, email)
+            # To add another consent method, add a ``process_x_method``
+            # For instance ``process_email_method`` and do what you need to do in it
+            method = str(data["remote_constent_method"]).lower()
+            process: Callable[[MandatForm], None | HttpResponse] = getattr(
+                self, f"process_{method}_method", self.process_unknown_method
+            )
+            result = process(form)
+            if isinstance(result, HttpResponse):
+                return result
 
         self.connection = Connection.objects.create(
             aidant=self.aidant,
@@ -98,18 +163,107 @@ class NewMandat(FormView):
             demarches=data["demarche"],
             duree_keyword=data["duree"],
             mandat_is_remote=data["is_remote"],
+            remote_constent_method=data["remote_constent_method"],
             user_phone=data["user_phone"],
+            consent_request_id=self.consent_request_id,
         )
 
         self.request.session["connection"] = self.connection.pk
 
         return super().form_valid(form)
 
+    def process_sms_method(self, form: MandatForm) -> None | HttpResponse:
+        data = form.cleaned_data
+        user_phone: PhoneNumber = data["user_phone"]
+
+        self.consent_request_id = str(uuid4())
+
+        # Try to choose another UUID if there's already one
+        # associated with this number in DB.
+        while Journal.objects.find_sms_consent_requests(
+            user_phone, self.consent_request_id
+        ).exists():
+            self.consent_request_id = str(uuid4())
+
+        try:
+            SmsApi().send_sms(
+                user_phone,
+                self.consent_request_id,
+                render_to_string(
+                    "aidants_connect_web/sms/consent_request.txt",
+                    context={"sms_response_consent": settings.SMS_RESPONSE_CONSENT},
+                ),
+            )
+        except SmsApi.HttpRequestExpection:
+            log.exception(
+                "An error happend while trying to send an SMS consent request"
+            )
+            error_datetime = timezone.now()
+            email_body = render_to_string(
+                "aidants_connect_web/sms/support_email_send_failure_body.txt",
+                context={
+                    "datetime": error_datetime,
+                    "number": str(user_phone),
+                    "consent_request_id": self.consent_request_id,
+                },
+            )
+            django_messages.error(
+                self.request,
+                format_html(
+                    "Une erreur est survenue pendant l'envoi du SMS de "
+                    "consentement. Merci de réessayer plus tard. Si l'erreur persiste, "
+                    "merci de nous la signaler {}.",
+                    mailto(
+                        "en suivant ce lien pour nous envoyer un email",
+                        settings.SMS_SUPPORT_EMAIL,
+                        settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
+                        email_body,
+                    ),
+                ),
+            )
+            return redirect("espace_aidant_home")
+
+        Journal.log_request_user_consent_sms(
+            aidant=self.aidant,
+            demarche=data["demarche"],
+            duree=data["duree"],
+            remote_constent_method=data["remote_constent_method"],
+            user_phone=user_phone,
+            consent_request_id=self.consent_request_id,
+        )
+
+    def process_unknown_method(self, form: MandatForm):
+        raise NotImplementedError(
+            f"Unknown remote consent method {form['remote_constent_method']}"
+        )
+
 
 @aidant_logged_with_activity_required
 class NewMandatRecap(RequireConnectionObjectMixin, FormView):
     form_class = RecapMandatForm
     template_name = "aidants_connect_web/new_mandat/new_mandat_recap.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        next_dispatch = super().dispatch(request, *args, **kwargs)
+
+        # Prevents creating mandate when user has not consented for
+        # a mandate with blocked remote consent method
+        if (
+            self.connection.mandat_is_remote
+            and self.connection.remote_constent_method
+            in RemoteConsentMethodChoices.blocked_methods()
+            and not Journal.objects.find_sms_user_consent(
+                self.connection.user_phone, self.connection.consent_request_id
+            ).exists()
+        ):
+            django_messages.warning(
+                request,
+                "La personne accompagnée n'a pas encore donné "
+                "son consentement pour la création du mandat.",
+            )
+            return redirect(reverse("new_mandat_waiting_room"))
+
+        return next_dispatch
 
     def get_context_data(self, **kwargs):
         return {
@@ -146,8 +300,10 @@ class NewMandatRecap(RequireConnectionObjectMixin, FormView):
                 organisation=self.aidant.organisation,
                 usager=self.connection.usager,
                 duree_keyword=self.connection.duree_keyword,
-                is_remote=self.connection.mandat_is_remote,
                 expiration_date=expiration_date,
+                is_remote=self.connection.mandat_is_remote,
+                remote_constent_method=self.connection.remote_constent_method,
+                consent_request_id=self.connection.consent_request_id,
             )
 
             # Add a Journal 'create_attestation' action
@@ -156,6 +312,9 @@ class NewMandatRecap(RequireConnectionObjectMixin, FormView):
                 usager=self.connection.usager,
                 demarches=self.connection.demarches,
                 is_remote_mandat=self.connection.mandat_is_remote,
+                user_phone=self.connection.user_phone,
+                remote_constent_method=self.connection.remote_constent_method,
+                consent_request_id=self.connection.consent_request_id,
                 access_token=self.connection.access_token,
                 attestation_hash=generate_attestation_hash(
                     self.aidant,
@@ -382,3 +541,41 @@ def attestation_qrcode(request):
             qrcode_png = f.read()
 
     return HttpResponse(qrcode_png, "image/png")
+
+
+@aidant_logged_with_activity_required
+class WaitingRoom(RequireConnectionObjectMixin, TemplateView):
+    template_name = "aidants_connect_web/new_mandat/remote_consent_waiting_room.html"
+    poll_route_name = "new_mandat_waiting_room_json"
+    next_route_name = "fc_authorize"
+
+    def get_context_data(self, **kwargs):
+        return {
+            "next": reverse(self.next_route_name),
+            "poll": reverse(self.poll_route_name),
+            **super().get_context_data(**kwargs),
+        }
+
+    def get(self, request, *args, **kwargs):
+        if (
+            not self.connection.mandat_is_remote
+            or Journal.objects.find_sms_user_consent(
+                self.connection.user_phone, self.connection.consent_request_id
+            ).exists()
+        ):
+            return redirect(reverse(self.next_route_name))
+        return super().get(request, *args, **kwargs)
+
+
+@aidant_logged_with_activity_required
+class WaitingRoomJson(RequireConnectionObjectMixin, View):
+    def post(self, request, *args, **kwargs):
+        if (
+            not self.connection.mandat_is_remote
+            or Journal.objects.find_sms_user_consent(
+                self.connection.user_phone, self.connection.consent_request_id
+            ).exists()
+        ):
+            return JsonResponse({"connectionStatus": "OK"})
+
+        return JsonResponse({"connectionStatus": "NOK"})

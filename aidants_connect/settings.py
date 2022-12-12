@@ -142,12 +142,8 @@ INSTALLED_APPS = [
 ]
 
 # Additionnal app to execute only during tests
-INSTALLED_TEST_APPS = [
-    "aidants_connect_habilitation.tests.third_party_service_mocks",
-]
-
 if "test" in sys.argv:
-    INSTALLED_APPS.append(*INSTALLED_TEST_APPS)
+    INSTALLED_APPS.append("aidants_connect_common.tests.third_party_service_mocks")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -623,3 +619,21 @@ if not GOUV_ADDRESS_SEARCH_API_DISABLED:
 
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+
+if "test" in sys.argv:
+    # Force disable SMS API during tests
+    SMS_API_DISABLED = True
+else:
+    SMS_API_DISABLED = getenv_bool("SMS_API_DISABLED", True)
+
+SMS_RESPONSE_CONSENT = os.getenv("SMS_RESPONSE_CONSENT", "Oui")
+SMS_SUPPORT_EMAIL = os.getenv("SMS_SUPPORT_EMAIL", SUPPORT_EMAIL)
+SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET = os.getenv(
+    "SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET",
+    "Problème durant l'envoi d'un SMS de demande de consentement pour un mandat à distance",  # noqa
+)
+LM_SMS_SERVICE_USERNAME = os.getenv("LM_SMS_SERVICE_USERNAME")
+LM_SMS_SERVICE_PASSWORD = os.getenv("LM_SMS_SERVICE_PASSWORD")
+LM_SMS_SERVICE_BASE_URL = os.getenv("LM_SMS_SERVICE_BASE_URL")
+LM_SMS_SERVICE_OAUTH2_ENDPOINT = os.getenv("LM_SMS_SERVICE_OAUTH2_ENDPOINT")
+LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")

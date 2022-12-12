@@ -2,6 +2,7 @@ from django.forms.models import model_to_dict
 from django.test import TestCase, tag
 from django.test.client import Client
 
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
@@ -269,29 +270,55 @@ class MandatFormTests(TestCase):
 
         form_2 = MandatForm(data={"demarche": [], "duree": "SHORT"})
         self.assertFalse(form_2.is_valid())
-        self.assertEqual(
+        self.assertListEqual(
             form_2.errors["demarche"],
             ["Vous devez sélectionner au moins une démarche."],
         )
 
         form_3 = MandatForm(data={"demarche": ["travail"], "duree": ""})
         self.assertFalse(form_3.is_valid())
-        self.assertEqual(
+        self.assertListEqual(
             form_3.errors["duree"], ["Veuillez sélectionner la durée du mandat."]
         )
 
-        # TODO: Reactivate when SMS consent is a thing
-        # form_4 = MandatForm(
-        #     data={"demarche": ["travail"], "duree": "SHORT", "is_remote": True}
-        # )
-        # self.assertFalse(form_4.is_valid())
-        # self.assertEqual(
-        #     form_4.errors["user_phone"],
-        #     [
-        #         "Un numéro de téléphone est obligatoire si "
-        #         "le mandat est signé à distance."
-        #     ],
-        # )
+        form_4 = MandatForm(
+            data={"demarche": ["travail"], "duree": "SHORT", "is_remote": True}
+        )
+        self.assertFalse(form_4.is_valid())
+        self.assertListEqual(
+            form_4.errors["remote_constent_method"],
+            [
+                "Vous devez choisir parmis l'une des "
+                "méthodes de consentement à distance."
+            ],
+        )
+
+        form_5 = MandatForm(
+            data={
+                "demarche": ["travail"],
+                "duree": "SHORT",
+                "is_remote": True,
+                "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
+            }
+        )
+        self.assertTrue(form_5.is_valid())
+
+        form_6 = MandatForm(
+            data={
+                "demarche": ["travail"],
+                "duree": "SHORT",
+                "is_remote": True,
+                "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
+            }
+        )
+        self.assertFalse(form_6.is_valid())
+        self.assertListEqual(
+            form_6.errors["user_phone"],
+            [
+                "Un numéro de téléphone est obligatoire "
+                "si le consentement est demandé par SMS."
+            ],
+        )
 
     def test_non_existing_demarche_triggers_error(self):
         form = MandatForm(data={"demarche": ["test"], "duree": "16"})
@@ -308,6 +335,34 @@ class MandatFormTests(TestCase):
             form.errors["duree"],
             ["Sélectionnez un choix valide. test n’en fait pas partie."],
         )
+
+    def test_remote_fields_emptied_when_mandate_is_not_remote(self):
+        # Remote mandate related fields a cleaned when mandate is not remote
+        form = MandatForm(
+            data={
+                "demarche": ["argent"],
+                "duree": "SHORT",
+                "is_remote": False,
+                "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
+                "user_phone": "0 800 840 800",
+            }
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual("", form.cleaned_data["remote_constent_method"])
+        self.assertEqual("", form.cleaned_data["user_phone"])
+
+        # Remote mandate related fields a cleaned when mandate is not remote
+        form = MandatForm(
+            data={
+                "demarche": ["argent"],
+                "duree": "SHORT",
+                "is_remote": True,
+                "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
+                "user_phone": "0 800 840 800",
+            }
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual("", form.cleaned_data["user_phone"])
 
 
 class RecapMandatFormTests(TestCase):

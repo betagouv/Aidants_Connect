@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from magicauth.urls import urlpatterns as magicauth_urls
 
@@ -12,6 +12,7 @@ from aidants_connect_web.views import (
     mandat,
     renew_mandat,
     service,
+    sms,
     usagers,
 )
 
@@ -82,12 +83,32 @@ urlpatterns = [
         renew_mandat.RenewMandat.as_view(),
         name="renew_mandat",
     ),
+    path(
+        "renew_mandat/attente_consentement/",
+        renew_mandat.WaitingRoom.as_view(),
+        name="renew_mandat_waiting_room",
+    ),
+    path(
+        "renew_mandat/attente_consentement.json/",
+        mandat.WaitingRoomJson.as_view(),
+        name="renew_mandat_waiting_room_json",
+    ),
     # new mandat
     path("creation_mandat/", mandat.NewMandat.as_view(), name="new_mandat"),
     path(
         "creation_mandat/recapitulatif/",
         mandat.NewMandatRecap.as_view(),
         name="new_mandat_recap",
+    ),
+    path(
+        "creation_mandat/attente_consentement/",
+        mandat.WaitingRoom.as_view(),
+        name="new_mandat_waiting_room",
+    ),
+    path(
+        "creation_mandat/attente_consentement.json/",
+        mandat.WaitingRoomJson.as_view(),
+        name="new_mandat_waiting_room_json",
     ),
     path("logout-callback/", mandat.NewMandatRecap.as_view(), name="new_mandat_recap"),
     path(
@@ -208,6 +229,9 @@ urlpatterns = [
         datapass.habilitation_receiver,
         name="datapass_habilitation",
     ),
+    # # SMS
+    # SMS provider may misconfigure the trailing slash so we need to respond on both
+    re_path(r"sms/callback/?$", sms.Callback.as_view(), name="sms_callback"),
 ]
 
 urlpatterns.extend(magicauth_urls)
