@@ -417,7 +417,6 @@ CSP_SCRIPT_SRC = (
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
     "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
-    "https://cdn.matomo.cloud/gouv.matomo.cloud/matomo.js",
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
 )
@@ -619,6 +618,12 @@ if not GOUV_ADDRESS_SEARCH_API_DISABLED:
 
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+
+if MATOMO_INSTANCE_URL:
+    CSP_SCRIPT_SRC = (
+        *CSP_SCRIPT_SRC,
+        f"{MATOMO_INSTANCE_URL.removesuffix('/')}/matomo.js",
+    )
 
 if "test" in sys.argv:
     # Force disable SMS API during tests
