@@ -15,4 +15,8 @@
   padding: 0 1rem;
   background: colors.$red-aidants;
   color: #fff;
+
+  a[href] {
+    color: #fff;
+  }
 }
