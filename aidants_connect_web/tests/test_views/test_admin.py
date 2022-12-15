@@ -4,7 +4,6 @@ from django.test import RequestFactory, TestCase, tag
 from django.test.client import Client
 from django.urls import reverse
 
-from admin_honeypot.models import LoginAttempt
 from django_otp import DEVICE_ID_SESSION_KEY
 from django_otp.admin import OTPAdminSite
 from django_otp.plugins.otp_static.models import StaticDevice
@@ -37,15 +36,6 @@ from aidants_connect_web.tests.factories import (
 
 @tag("admin")
 class LoginAttemptAdminPageTests(TestCase):
-    def test_honeypot_login_attempt_fails_gracefuly(self):
-        login_attempt_id = LoginAttempt.objects.create(username="test").pk
-        path = reverse(
-            "admin:admin_honeypot_loginattempt_change", args=(login_attempt_id,)
-        )
-        admin = settings.ADMIN_URL
-        admin_url = f"/{admin}admin_honeypot/loginattempt/{login_attempt_id}/change/"
-        self.assertEqual(admin_url, path)
-
     def test_sidebar_is_not_in_login_admin_page(self):
         admin = settings.ADMIN_URL
         amac_client = Client()

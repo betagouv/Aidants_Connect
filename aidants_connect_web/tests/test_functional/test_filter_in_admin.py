@@ -107,7 +107,7 @@ class OrganisationFilterTests(RegionFilterTestCase):
             "Orga du Haut-Rhin" in self.selenium.page_source,
             "Orga du Haut-Rhin is not there, it should",
         )
-        other_link = self.selenium.find_element(By.LINK_TEXT, "Autre")
+        other_link = self.selenium.find_element(By.XPATH, "//a[@href='?region=other']")
         other_link.click()
         self.assertFalse("Orga du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("Sans Code Postal" in self.selenium.page_source)

@@ -42,7 +42,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
 
         # Filter by status
         self.selenium.find_element(
-            By.CSS_SELECTOR, f'[title="{organisation_status.value}"'
+            By.CSS_SELECTOR, f'[title="{organisation_status.label}"]'
         ).click()
 
         WebDriverWait(self.selenium, 10).until(
@@ -126,7 +126,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
 
         # Filter by status
         self.selenium.find_element(
-            By.CSS_SELECTOR, f'[title="{organisation_status.value}"'
+            By.CSS_SELECTOR, f'[title="{organisation_status.label}"]'
         ).click()
 
         WebDriverWait(self.selenium, 10).until(
@@ -210,7 +210,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
 
         # Filter by status
         self.selenium.find_element(
-            By.CSS_SELECTOR, f'[title="{organisation_status.value}"'
+            By.CSS_SELECTOR, f'[title="{organisation_status.label}"]'
         ).click()
 
         WebDriverWait(self.selenium, 10).until(

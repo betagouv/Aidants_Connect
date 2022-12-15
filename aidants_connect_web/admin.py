@@ -5,8 +5,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db.models import QuerySet
+from django.forms import ChoiceField
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
@@ -20,7 +22,13 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
-from import_export.admin import ExportActionModelAdmin, ImportExportMixin, ImportMixin
+from import_export.admin import (
+    ConfirmImportForm,
+    ExportActionModelAdmin,
+    ImportExportMixin,
+    ImportForm,
+    ImportMixin,
+)
 from import_export.fields import Field
 from import_export.results import RowResult
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
@@ -56,12 +64,25 @@ from aidants_connect_web.models import (
 logger = logging.getLogger()
 
 
+def get_email_user_for_device(obj):
+    try:
+        return obj.user.email
+    except Exception:
+        pass
+    try:
+        return obj.aidant.email
+    except Exception:
+        pass
+    return None
+
+
 class StaticDeviceStaffAdmin(VisibleToAdminMetier, StaticDeviceAdmin):
-    pass
+    list_display = ("name", "user", get_email_user_for_device)
+    search_fields = ("name", "user__username", "user__email")
 
 
 class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
-    pass
+    search_fields = ("name", "user__username", "user__email")
 
 
 class SpecificDeleteActionsMixin:
@@ -228,9 +249,11 @@ class OrganisationAdmin(
     search_fields = ("name", "siret", "data_pass_id")
     list_filter = (
         "is_active",
+        "type",
         WithoutDatapassIdFilter,
         RegionFilter,
         DepartmentFilter,
+        "is_experiment",
     )
 
     # For bulk import
@@ -287,9 +310,9 @@ class OrganisationAdmin(
     def format_list_of_aidants(self, aidants_list):
         return mark_safe(
             "<table><tr>"
-            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th></tr><tr>'
+            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th><th>Carte TOTP</th></tr><tr>'  # noqa
             + "</tr><tr>".join(
-                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td>'.format(
+                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td><td>{}</td>'.format(
                     aidant.id,
                     reverse(
                         "otpadmin:aidants_connect_web_aidant_change",
@@ -297,6 +320,7 @@ class OrganisationAdmin(
                     ),
                     aidant,
                     aidant.email,
+                    aidant.number_totp_card,
                 )
                 for aidant in aidants_list
             )
@@ -519,6 +543,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "carte_totp",
         "is_active",
         "can_create_mandats",
+        "created_at",
+        "updated_at",
         "is_staff",
         "is_superuser",
     )
@@ -719,12 +745,76 @@ class HabilitationRequestImportResource(resources.ModelResource):
         import_id_fields = ("email", "organisation__data_pass_id")
 
 
+class HabilitationRequestImportDateFormationResource(resources.ModelResource):
+    email = Field(attribute="email")
+    organisation__data_pass_id = Field(
+        attribute="organisation",
+        widget=ForeignKeyWidget(Organisation, field="data_pass_id"),
+        column_name="data_pass_id",
+    )
+    date_formation = Field(attribute="date_formation")
+
+    def before_import_row(self, row, row_number=None, **kwargs):
+        fieldname = "data_pass_id"
+        if not (Organisation.objects.filter(data_pass_id=row[fieldname]).exists()):
+            raise ValidationError("Organisation does not exist")
+        return super().before_import_row(row, row_number, **kwargs)
+
+    # skip new rows
+    def skip_row(self, instance, original):
+        if not original.id:
+            return True
+        return super().skip_row(instance, original)
+
+    def after_import_instance(self, instance, new, row_number=None, **kwargs):
+        instance.formation_done = True
+        if instance.test_pix_passed:
+            instance.validate_and_create_aidant()
+
+    def after_save_instance(self, instance, using_transactions, dry_run):
+        aidants_a_former = HabilitationRequest.objects.filter(email=instance.email)
+        for aidant in aidants_a_former:
+            if not aidant.formation_done:
+                aidant.formation_done = True
+                aidant.date_formation = instance.date_formation
+                aidant.save()
+                if aidant.test_pix_passed:
+                    aidant.validate_and_create_aidant()
+        return super().after_save_instance(instance, using_transactions, dry_run)
+
+    class Meta:
+        model = HabilitationRequest
+        fields = set()
+        import_id_fields = ("email", "organisation__data_pass_id")
+        skip_unchanged = True
+
+
 class HabilitationDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisation__zipcode"
 
 
 class HabilitationRequestRegionFilter(RegionFilter):
     filter_parameter_name = "organisation__zipcode"
+
+
+class HabilitationRequestImportForm(ImportForm):
+    import_choices = ChoiceField(
+        label="Type d'import d'aidant à former",
+        choices=(
+            ("FORMATION_DATE", "Mettre à jour la date de formation"),
+            ("OLD_FILES_IMPORT", "Importer des anciens fichiers"),
+        ),
+    )
+
+
+class ConfirmHabilitationRequestImportForm(ConfirmImportForm):
+    import_choices = ChoiceField(
+        label="Type d'import d'aidant à former",
+        choices=(
+            ("FORMATION_DATE", "Mettre à jour la date de formation"),
+            ("OLD_FILES_IMPORT", "Importer des anciens fichiers"),
+        ),
+    )
 
 
 class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdmin):
@@ -757,14 +847,36 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     )
     ordering = ("email",)
 
-    # Change resource class if explicit setting is set
     resource_class = HabilitationRequestResource
-    if settings.AC_IMPORT_HABILITATION_REQUESTS:
-        resource_class = HabilitationRequestImportResource
 
     change_list_template = (
         "aidants_connect_web/admin/habilitation_request/change_list.html"
     )
+
+    def get_import_resource_kwargs(self, request, form, *args, **kwargs):
+        cleaned_data = getattr(form, "cleaned_data", False)
+        if (
+            isinstance(form, ConfirmHabilitationRequestImportForm)
+            or isinstance(form, HabilitationRequestImportForm)
+            and cleaned_data
+        ):
+            self.import_choices = cleaned_data["import_choices"]
+        return kwargs
+
+    def get_import_resource_class(self):
+        import_choices = getattr(self, "import_choices", False)
+        if import_choices and import_choices == "FORMATION_DATE":
+            return HabilitationRequestImportDateFormationResource
+        elif import_choices and import_choices == "OLD_FILES_IMPORT":
+            return HabilitationRequestImportResource
+
+        return self.get_resource_class()
+
+    def get_import_form(self):
+        return HabilitationRequestImportForm
+
+    def get_confirm_import_form(self):
+        return ConfirmHabilitationRequestImportForm
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -1277,8 +1389,8 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 
     totp_devices_diagnostic.short_description = "Diagnostic Carte/TOTP Device"
 
-    list_display = ("serial_number", "aidant")
-    search_fields = ("serial_number",)
+    list_display = ("serial_number", "aidant", get_email_user_for_device)
+    search_fields = ("serial_number", "aidant__email")
     raw_id_fields = ("aidant",)
     readonly_fields = ("totp_devices_diagnostic",)
     ordering = ("-created_at",)

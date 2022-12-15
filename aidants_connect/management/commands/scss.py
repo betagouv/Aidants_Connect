@@ -1,6 +1,8 @@
 import os
+from pathlib import Path
 from shutil import which
 
+from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
 
 
@@ -34,12 +36,20 @@ class Command(BaseCommand):
         self.write_horizontal_line()
 
     def compile_stylesheets(self, action):
-        apps = (
-            "aidants_connect_habilitation",
-            "aidants_connect_web",
+        folders = " ".join(
+            [
+                f"{app}/static/scss/:{app}/static/css/"
+                for app in apps.app_configs.keys()
+                if (
+                    app.startswith("aidants_connect")
+                    and Path(f"{app}/static/scss/").exists()
+                )
+            ]
         )
-        folders = " ".join(f"{app}/static/scss/:{app}/static/css/" for app in apps)
-        command = f"sass {action} --style compressed {folders}"
+        command = (
+            f"sass {action} --style compressed {folders} "
+            "--load-path aidants_connect_common/static/scss/"
+        )
         self.stdout.write(f"Running {command}")
         self.write_horizontal_line()
         os.system(command)

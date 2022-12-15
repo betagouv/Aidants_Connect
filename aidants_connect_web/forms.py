@@ -12,11 +12,15 @@ from magicauth.forms import EmailForm as MagicAuthEmailForm
 
 from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
 from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
+from aidants_connect_common.widgets import DetailedRadioSelect
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
+    Connection,
     HabilitationRequest,
     Organisation,
+    Usager,
 )
 
 
@@ -153,9 +157,8 @@ class LoginEmailForm(MagicAuthEmailForm):
 
 
 class MandatForm(PatchedForm):
-    DEMARCHES = [(key, value) for key, value in settings.DEMARCHES.items()]
     demarche = forms.MultipleChoiceField(
-        choices=DEMARCHES,
+        choices=[(key, value) for key, value in settings.DEMARCHES.items()],
         required=True,
         widget=forms.CheckboxSelectMultiple,
         error_messages={
@@ -196,26 +199,60 @@ class MandatForm(PatchedForm):
 
     is_remote = forms.BooleanField(required=False)
 
+    remote_constent_method = forms.ChoiceField(
+        label="Sélectionnez une méthode de consentement à distance",
+        choices=RemoteConsentMethodChoices.choices,
+        required=False,
+        error_messages={
+            "required": _(
+                "Veuillez sélectionner la méthode de consentement à distance."
+            )
+        },
+        widget=DetailedRadioSelect(attrs={"input_wrapper_classes": "shadowed"}),
+    )
+
     user_phone = AcPhoneNumberField(
+        label="Numéro de téléphone de la personne accompagnée",
+        label_suffix=" :",
         initial="",
         required=False,
     )
 
-    def clean(self):
-        cleaned = super().clean()
+    def clean_remote_constent_method(self):
+        if not self.cleaned_data["is_remote"]:
+            return ""
 
-        # TODO: Reactivate when SMS consent is a thing
-        # user_phone = cleaned.get("user_phone")
-        # if user_phone is not None and cleaned["is_remote"] and len(user_phone) == 0:
-        #     self.add_error(
-        #         "user_phone",
-        #         _(
-        #             "Un numéro de téléphone est obligatoire "
-        #             "si le mandat est signé à distance."
-        #         ),
-        #     )
+        if not self.cleaned_data.get("remote_constent_method"):
+            self.add_error(
+                "remote_constent_method",
+                _(
+                    "Vous devez choisir parmis l'une des "
+                    "méthodes de consentement à distance."
+                ),
+            )
+            return ""
 
-        return cleaned
+        return self.cleaned_data["remote_constent_method"]
+
+    def clean_user_phone(self):
+        if (
+            not self.cleaned_data["is_remote"]
+            or self.cleaned_data.get("remote_constent_method")
+            != RemoteConsentMethodChoices.SMS.name
+        ):
+            return ""
+
+        if not self.cleaned_data.get("user_phone"):
+            self.add_error(
+                "user_phone",
+                _(
+                    "Un numéro de téléphone est obligatoire "
+                    "si le consentement est demandé par SMS."
+                ),
+            )
+            return ""
+
+        return self.cleaned_data["user_phone"]
 
 
 class OTPForm(forms.Form):
@@ -437,3 +474,34 @@ class MassEmailHabilitatonForm(forms.Form):
                 (filter(None, (email.strip() for email in email_list.splitlines()))),
             )
         )
+
+
+class AuthorizeSelectUsagerForm(PatchedForm):
+    connection_id = forms.IntegerField(required=True)
+    chosen_usager = forms.IntegerField(
+        required=True,
+        error_messages={
+            "required": (
+                required_msg := (
+                    "Aucun profil n'a été trouvé."
+                    "Veuillez taper le nom d'une personne et la barre de recherche et "
+                    "sélectionner parmis les propositions dans la liste déroulante"
+                )
+            ),
+            "invalid": required_msg,
+        },
+    )
+
+    def clean_connection_id(self):
+        connection_id = self.cleaned_data.get("connection_id")
+        try:
+            return Connection.objects.get(pk=connection_id)
+        except (Connection.DoesNotExist, Connection.MultipleObjectsReturned):
+            raise ValidationError("", code="connection_error")
+
+    def clean_chosen_usager(self):
+        chosen_usager = self.cleaned_data.get("chosen_usager")
+        try:
+            return Usager.objects.get(pk=chosen_usager)
+        except (Usager.DoesNotExist, Usager.MultipleObjectsReturned):
+            return None

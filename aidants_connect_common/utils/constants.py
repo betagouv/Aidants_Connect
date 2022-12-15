@@ -1,12 +1,15 @@
+import enum
 from datetime import date, timedelta
-from enum import Enum, unique
-from typing import Any, Iterable, Tuple
+from typing import List, Tuple
 
 from django.conf import settings
-from django.db.models import IntegerChoices, TextChoices
+from django.db.models import Choices, IntegerChoices, TextChoices
+from django.db.models.enums import ChoicesMeta as DjangoChoicesMeta
+from django.utils.functional import Promise
 from django.utils.timezone import now
 
 __all__ = [
+    "DictChoices",
     "JournalActionKeywords",
     "JOURNAL_ACTIONS",
     "AuthorizationDurations",
@@ -15,6 +18,67 @@ __all__ = [
     "RequestStatusConstants",
     "MessageStakeholders",
 ]
+
+
+class ChoicesMeta(DjangoChoicesMeta):
+    def __new__(metacls, classname, bases, classdict, **kwds):
+        """This is a 1:1 copy of Django's models.enums.ChoicesMeta
+        but allowing dict as enum value and using enum labels rather
+        that weird computation on enum names"""
+        labels = []
+        for key in classdict._member_names:
+            value = classdict[key]
+            if not (
+                isinstance(value, (list, tuple))
+                and len(value) > 1
+                and isinstance(value[-1], (Promise, str, dict))
+            ):
+                value = (key, value)
+            *value, label = value
+            value = tuple(value)
+
+            labels.append(label)
+            # Use dict.__setitem__() to suppress defenses against double
+            # assignment in enum's classdict.
+            dict.__setitem__(classdict, key, value)
+        cls = super(DjangoChoicesMeta, metacls).__new__(
+            metacls, classname, bases, classdict, **kwds
+        )
+        for member, label in zip(cls.__members__.values(), labels):
+            member._label_ = label
+            # Unpack enum.value if Enum kept it a tuple during creation
+            if isinstance(member._value_, tuple):
+                member._value_, *_ = member._value_
+        return enum.unique(cls)
+
+
+class DictChoicesMeta(ChoicesMeta):
+    @property
+    def model_choices(cls) -> List[Tuple]:
+        empty = [(None, "__empty__")] if hasattr(cls, "__empty__") else []
+        return empty + [(item.name, item._human_readable_name(item)) for item in cls]
+
+
+class ChoicesEnum(Choices, metaclass=ChoicesMeta):
+    pass
+
+
+class TextChoicesEnum(str, ChoicesEnum):
+    pass
+
+
+class DictChoices(Choices, metaclass=DictChoicesMeta):
+    """Use for Enums that have dictionnaries as values
+
+    Provide a .model_choices property to use in models.Model
+    classes fields
+    """
+
+    @staticmethod
+    def _human_readable_name(enum_item):
+        """Implement this to return a human readable string from
+        an enum value for the models.Model field"""
+        raise NotImplementedError()
 
 
 class JournalActionKeywords:
@@ -35,6 +99,9 @@ class JournalActionKeywords:
     INIT_RENEW_MANDAT = "init_renew_mandat"
     TRANSFER_MANDAT = "transfer_mandat"
     SWITCH_ORGANISATION = "switch_organisation"
+    REMOTE_MANDAT_CONSENT_RECEIVED = "remote_mandat_consent_received"
+    REMOTE_MANDAT_DENIAL_RECEIVED = "remote_mandat_denial_received"
+    REMOTE_MANDAT_CONSENT_SENT = "remote_mandat_consent_sent"
 
 
 JOURNAL_ACTIONS = (
@@ -67,6 +134,18 @@ JOURNAL_ACTIONS = (
         "Transférer un mandat à une autre organisation",
     ),
     (JournalActionKeywords.SWITCH_ORGANISATION, "Changement d'organisation"),
+    (
+        JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
+        "Consentement reçu pour un mandat conclu à distance",
+    ),
+    (
+        JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+        "Refus reçu pour un mandat conclu à distance",
+    ),
+    (
+        JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+        "Demande de consentement pour un mandat conclu à distance envoyé",
+    ),
 )
 
 
@@ -135,21 +214,6 @@ class AuthorizationDurationChoices(TextChoices):
     )
 
 
-class ChoiceEnum(Enum):
-    @classmethod
-    def choices(cls) -> Iterable[Tuple[Any, Any]]:
-        return ((item.name, item.value) for item in cls)
-
-    @classmethod
-    def labels(cls):
-        return [label for _, label in cls.choices()]
-
-    @classmethod
-    def values(cls):
-        return [value for value, _ in cls.choices()]
-
-
-@unique
 class RequestOriginConstants(IntegerChoices):
     FRANCE_SERVICE = (1, "France Services/MSAP")
     CCAS = (2, "CCAS")
@@ -171,8 +235,7 @@ class RequestOriginConstants(IntegerChoices):
     OTHER = (12, "Autre")
 
 
-@unique
-class RequestStatusConstants(ChoiceEnum):
+class RequestStatusConstants(TextChoicesEnum):
     NEW = "Brouillon"
     AC_VALIDATION_PROCESSING = "En attente de validation par Aidants Connect"
     VALIDATED = "Validée"
@@ -182,7 +245,6 @@ class RequestStatusConstants(ChoiceEnum):
     CHANGES_PROPOSED = "Modifications proposées par Aidants Connect"
 
 
-@unique
-class MessageStakeholders(ChoiceEnum):
+class MessageStakeholders(TextChoicesEnum):
     AC = "Aidants Connect"
     ISSUER = "Demandeur"

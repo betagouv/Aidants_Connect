@@ -1,0 +1,68 @@
+@use "colors";
+@import "boxes.css";
+
+.detailed-radio-select {
+  $tick-size: 32px;
+
+  background-color: white;
+  margin-bottom: 1rem;
+  padding: 0;
+
+  .detailed-radio-select-label-text {
+    font-size: large;
+    font-weight: bold;
+    color: colors.$blue-aidants;
+  }
+
+  input {
+    cursor: pointer;
+    order: 1;
+    position: absolute;
+    transform: translateY(-50%);
+    visibility: hidden;
+    z-index: 2;
+
+    &:checked ~ label {
+      &, .detailed-radio-select-label-text {
+        color: white;
+        background-color: #003b80;
+      }
+
+      &::after {
+        background-color: #003b80;
+        border-color: white;
+      }
+    }
+  }
+
+  label {
+    display: block;
+    cursor: pointer;
+    padding: 12px;
+    position: relative;
+    height: 100%;
+    width: 100%;
+
+    & * {
+      margin-right: 45px;
+    }
+
+    &::after {
+      background-color: white;
+      background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.414 11L4 12.414l5.414 5.414L20.828 6.414 19.414 5l-10 10z' fill='%23fff' fill-rule='nonzero'/%3E%3C/svg%3E ");
+      background-repeat: no-repeat;
+      background-position: 3px 5px;
+      border: 2px solid #003b80;
+      border-radius: 50%;
+      content: '';
+      cursor: pointer;
+      height: 32px;
+      position: absolute;
+      right: 20px;
+      top: calc(50% - ($tick-size / 2));
+      transition: all 100ms ease-in;
+      width: 32px;
+      z-index: 2;
+    }
+  }
+}

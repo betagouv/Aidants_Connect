@@ -1,0 +1,10 @@
+Bonjour,
+
+J'ai rencontré une erreur durant l'envoi d'un SMS de demande de consentement pour un mandat à distance.
+
+Voici les information essentielles :
+- date de l'envoi : {{ datetime }}
+- numéro de téléphone : {{ number }}
+- identifiant de la requête : {{ consent_request_id }}
+
+Cordialement
