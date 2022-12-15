@@ -11,11 +11,25 @@
 {% block content %}
   <div class="fr-container container-habilitation">
     <h1>Comment être habilité Aidants Connect ?</h1>
+
     <ul class="question">
       <li>Ma structure emploie des aidants professionnels ?</li>
       <li>Les aidants accompagnent des usagers dans la réalisation de démarches administratives en ligne ?</li>
     </ul>
     <p class="so">Alors ma structure est éligible Aidants Connect !</p>
+
+    <div class="fr-col-12 fr-col-md-12">
+      <div class="bandeau shadowed">
+        <p>
+          <span aria-hidden="true">⚠️ </span>
+          <strong>Attention</strong> : un grand nombre d’aidants sont en attente d’une formation Aidants Connect et
+          <strong>les
+            formations sont complètes pour les prochains mois.</strong> Vous pouvez vous inscrire sur <strong>liste
+          d’attente</strong> <a href="{% url 'habilitation_new' %}">ici</a> et nous vous contacterons en cas de
+          désistement.
+        </p>
+      </div>
+    </div>
 
     <h2 class="h2-habilitation">Comment se passe l’habilitation ?</h2>
     <ol class="how">
@@ -23,7 +37,7 @@
         <strong>Le responsable de structure complète <a href="{% url 'habilitation_new' %}">le formulaire
         d’habilitation Aidants Connect.</a></strong>
       </li>
-      <li class="how_2"><strong>Aidants Connect valide la demande.</b></strong>
+      <li class="how_2"><strong>Aidants Connect valide la demande.</strong>
       <li class="how_3"><strong>Dans un délai de deux mois, les aidants suivent gratuitement une formation :</strong>
         <ul>
           <li>Une journée dédiée aux sujets d'accompagnement de l'usager, RGPD, France Connect et prise en main de l'outil Aidants Connect</li>
