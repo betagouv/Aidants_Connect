@@ -11,10 +11,12 @@ from factory import (
     SelfAttribute,
     Sequence,
     SubFactory,
+    lazy_attribute,
     post_generation,
 )
 from factory.django import DjangoModelFactory
 
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Autorisation,
     CarteTOTP,
@@ -128,6 +130,11 @@ class MandatFactory(DjangoModelFactory):
     creation_date = LazyAttribute(lambda f: now())
     duree_keyword = "SHORT"
     expiration_date = LazyAttribute(lambda f: now() + timedelta(days=1))
+    is_remote = False
+
+    @lazy_attribute
+    def remote_constent_method(self):
+        return RemoteConsentMethodChoices.LEGACY.name if self.is_remote else ""
 
     class Meta:
         model = Mandat
@@ -202,6 +209,12 @@ class LegacyAutorisationFactory(AutorisationFactory):
 
 
 class ConnectionFactory(DjangoModelFactory):
+    mandat_is_remote = False
+
+    @lazy_attribute
+    def remote_constent_method(self):
+        return RemoteConsentMethodChoices.LEGACY.name if self.mandat_is_remote else ""
+
     class Meta:
         model = Connection
 

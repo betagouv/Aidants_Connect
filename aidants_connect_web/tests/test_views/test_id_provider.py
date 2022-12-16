@@ -238,6 +238,26 @@ class AuthorizeTests(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_post_to_authorize_with_with_empty_usager_selection(self):
+        self.maxDiff = None
+        self.client.force_login(self.aidant_thierry)
+        connection = Connection.objects.create(
+            state="avalidstate123", nonce="avalidnonce456", usager=self.usager
+        )
+        response = self.client.post(
+            "/authorize/",
+            data={"connection_id": connection.id, "chosen_usager": ""},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(
+            response.context["errors"]["chosen_usager"],
+            [
+                "Aucun profil n'a été trouvé.Veuillez taper le nom d'une personne et "
+                "la barre de recherche et sélectionner parmis les propositions dans "
+                "la liste déroulante"
+            ],
+        )
+
 
 @tag("id_provider")
 class FISelectDemarcheTests(TestCase):

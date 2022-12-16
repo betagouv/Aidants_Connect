@@ -1,15 +1,19 @@
+from datetime import datetime
+
 from django.contrib.admin.sites import AdminSite
 from django.test import TestCase, tag
 from django.test.client import RequestFactory
 
+import pytz
 import tablib
 
 from aidants_connect_web.admin import (
     HabilitationRequestAdmin,
+    HabilitationRequestImportDateFormationResource,
     OrganisationAdmin,
     OrganisationResource,
 )
-from aidants_connect_web.models import HabilitationRequest, Organisation
+from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     HabilitationRequestFactory,
@@ -179,6 +183,125 @@ class OrganisationResourceTestCase(TestCase):
         self.assertEqual(1, Organisation.objects.all().count())
         self.assertEqual(2323, Organisation.objects.first().data_pass_id)
         self.assertEqual("34034", Organisation.objects.first().zipcode)
+
+
+@tag("admin")
+class HabilitationRequestResourceTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.orga = OrganisationFactory(data_pass_id=75010029)
+        cls.orga2 = OrganisationFactory(data_pass_id=75010030)
+        cls.aidant_a_former = HabilitationRequestFactory(
+            email="pix@email.com",
+            test_pix_passed=True,
+            date_test_pix=datetime(2022, 1, 1, tzinfo=pytz.UTC),
+            organisation=cls.orga,
+        )
+        cls.aidant_a_former_no_test_pix = HabilitationRequestFactory(
+            email="nopix@email.com",
+            organisation=cls.orga,
+        )
+        cls.data = tablib.Dataset(
+            headers=[
+                "email",
+                "data_pass_id",
+                "date_formation",
+            ]
+        )
+        cls.aidant_a_former_1 = HabilitationRequestFactory(
+            email="two.orgas@email.com",
+            test_pix_passed=True,
+            date_test_pix=datetime(2022, 1, 1, tzinfo=pytz.UTC),
+            organisation=cls.orga,
+        )
+        cls.aidant_a_former_2 = HabilitationRequestFactory(
+            email="two.orgas@email.com",
+            test_pix_passed=True,
+            date_test_pix=datetime(2022, 1, 1, tzinfo=pytz.UTC),
+            organisation=cls.orga2,
+        )
+
+    def test_update_date_formation_and_create_aidant(self):
+        self.assertEqual(4, HabilitationRequest.objects.all().count())
+        self.assertEqual(0, Aidant.objects.all().count())
+        habilitation_request_ressource = (
+            HabilitationRequestImportDateFormationResource()
+        )
+        self.data._data = list()
+        self.data.append(
+            ["pix@email.com", 75010029, datetime(2022, 1, 1, tzinfo=pytz.UTC)]
+        )
+
+        habilitation_request_ressource.import_data(self.data, dry_run=False)
+
+        aidant_a_former = HabilitationRequest.objects.filter(
+            email=self.aidant_a_former.email
+        )[0]
+        self.assertTrue(aidant_a_former.formation_done)
+        self.assertEqual(
+            aidant_a_former.date_formation, datetime(2022, 1, 1, tzinfo=pytz.UTC)
+        )
+        self.assertEqual(1, Aidant.objects.all().count())
+
+    def test_update_date_formation_and_dont_create_aidant(self):
+        self.assertEqual(4, HabilitationRequest.objects.all().count())
+        self.assertEqual(0, Aidant.objects.all().count())
+        habilitation_request_ressource = (
+            HabilitationRequestImportDateFormationResource()
+        )
+        self.data._data = list()
+        self.data.append(
+            ["nopix@email.com", 75010029, datetime(2022, 1, 1, tzinfo=pytz.UTC)]
+        )
+
+        habilitation_request_ressource.import_data(self.data, dry_run=False)
+
+        aidant_a_former = HabilitationRequest.objects.filter(
+            email=self.aidant_a_former_no_test_pix.email
+        )[0]
+        self.assertTrue(aidant_a_former.formation_done)
+        self.assertEqual(
+            aidant_a_former.date_formation, datetime(2022, 1, 1, tzinfo=pytz.UTC)
+        )
+        self.assertEqual(0, Aidant.objects.all().count())
+
+    def test_update_date_formation_and_create_aidant_has_two_orgas(self):
+        self.assertEqual(4, HabilitationRequest.objects.all().count())
+        self.assertEqual(0, Aidant.objects.all().count())
+        habilitation_request_ressource = (
+            HabilitationRequestImportDateFormationResource()
+        )
+        self.data._data = list()
+        self.data.append(
+            ["two.orgas@email.com", 75010029, datetime(2022, 1, 1, tzinfo=pytz.UTC)]
+        )
+
+        habilitation_request_ressource.import_data(self.data, dry_run=False)
+
+        aidant_a_former_1 = HabilitationRequest.objects.filter(
+            email=self.aidant_a_former_1.email
+        )[0]
+        self.assertTrue(aidant_a_former_1.formation_done)
+        self.assertEqual(
+            aidant_a_former_1.date_formation, datetime(2022, 1, 1, tzinfo=pytz.UTC)
+        )
+        self.assertEqual(aidant_a_former_1.status, HabilitationRequest.STATUS_VALIDATED)
+
+        aidant_a_former_2 = HabilitationRequest.objects.filter(
+            email=self.aidant_a_former_1.email
+        )[1]
+        self.assertTrue(aidant_a_former_2.formation_done)
+        self.assertEqual(
+            aidant_a_former_2.date_formation, datetime(2022, 1, 1, tzinfo=pytz.UTC)
+        )
+        self.assertEqual(aidant_a_former_2.status, HabilitationRequest.STATUS_VALIDATED)
+
+        self.assertEqual(
+            1, Aidant.objects.filter(email=aidant_a_former_1.email).count()
+        )
+        aidant = Aidant.objects.filter(email=aidant_a_former_1.email)[0]
+        self.assertIn(self.orga, aidant.organisations.all())
+        self.assertIn(self.orga2, aidant.organisations.all())
 
 
 @tag("admin")

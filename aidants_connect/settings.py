@@ -128,7 +128,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "admin_honeypot",
     "django_otp",
     "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
@@ -145,12 +144,8 @@ INSTALLED_APPS = [
 ]
 
 # Additionnal app to execute only during tests
-INSTALLED_TEST_APPS = [
-    "aidants_connect_habilitation.tests.third_party_service_mocks",
-]
-
 if "test" in sys.argv:
-    INSTALLED_APPS.append(*INSTALLED_TEST_APPS)
+    INSTALLED_APPS.append("aidants_connect_common.tests.third_party_service_mocks")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -290,7 +285,7 @@ DEMARCHES = {
         "titre": "Social - Santé",
         "titre_court": "Social",
         "description": "Carte vitale, Chômage, Handicap, RSA, Personnes âgées…",
-        "service_exemples": ["ameli.fr", "MSA", "RSI"],
+        "service_exemples": ["ameli.fr", "MSA"],
         "icon": "/static/images/icons/social.svg",
     },
     "travail": {
@@ -396,7 +391,7 @@ EMAIL_SENDER = os.getenv("EMAIL_SENDER", os.getenv("ADMIN_EMAIL"))
 ## Emails from the server
 SERVER_EMAIL = os.getenv("SERVER_EMAIL", os.getenv("ADMIN_EMAIL"))
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
-ADMIN_HONEYPOT_EMAIL_ADMINS = os.getenv("ADMIN_HONEYPOT_EMAIL_ADMINS", SERVER_EMAIL)
+# ADMIN_HONEYPOT_EMAIL_ADMINS = os.getenv("ADMIN_HONEYPOT_EMAIL_ADMINS", SERVER_EMAIL)
 
 # Security headers
 SECURE_BROWSER_XSS_FILTER = True
@@ -408,24 +403,28 @@ STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'", "https://stats.data.gouv.fr/matomo.php")
 CSP_IMG_SRC = (
     "'self'",
+    "data:",
     "https://www.service-public.fr/resources/v-5cf79a7acf/web/css/img/png/",
 )
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
-    "'sha256-p0nVvBQQOY8PrKj8/JWPCKOJU8Iso8I6LIVer817o64='",  # main.html
+    "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
     "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
     "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
+    "https://code.jquery.com/jquery-3.6.1.js",
+    "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
 )
 
 CSP_STYLE_SRC = ("'self'",)
+
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
     "https://www.youtube.com/embed/hATrqHG4zYQ",
@@ -526,6 +525,7 @@ WORKERS_NO_TOTP_NOTIFY_EMAIL_FROM = os.getenv(
 )
 
 PHONENUMBER_DEFAULT_REGION = os.getenv("PHONENUMBER_DEFAULT_REGION", "FR")
+FRENCH_REGION_CODES = ("FR", "GP", "GF", "MQ", "RE", "KM", "PM")
 
 AIDANTS__ORGANISATIONS_CHANGED_EMAIL_SUBJECT = os.getenv(
     "AIDANTS__ORGANISATIONS_CHANGED_EMAIL_SUBJECT",
@@ -624,6 +624,31 @@ if not GOUV_ADDRESS_SEARCH_API_DISABLED:
 
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+
+
+if MATOMO_INSTANCE_URL:
+    CSP_SCRIPT_SRC = (
+        *CSP_SCRIPT_SRC,
+        f"{MATOMO_INSTANCE_URL.removesuffix('/')}/matomo.js",
+    )
+
+if "test" in sys.argv:
+    # Force disable SMS API during tests
+    SMS_API_DISABLED = True
+else:
+    SMS_API_DISABLED = getenv_bool("SMS_API_DISABLED", True)
+
+SMS_RESPONSE_CONSENT = os.getenv("SMS_RESPONSE_CONSENT", "Oui")
+SMS_SUPPORT_EMAIL = os.getenv("SMS_SUPPORT_EMAIL", SUPPORT_EMAIL)
+SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET = os.getenv(
+    "SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET",
+    "Problème durant l'envoi d'un SMS de demande de consentement pour un mandat à distance",  # noqa
+)
+LM_SMS_SERVICE_USERNAME = os.getenv("LM_SMS_SERVICE_USERNAME")
+LM_SMS_SERVICE_PASSWORD = os.getenv("LM_SMS_SERVICE_PASSWORD")
+LM_SMS_SERVICE_BASE_URL = os.getenv("LM_SMS_SERVICE_BASE_URL")
+LM_SMS_SERVICE_OAUTH2_ENDPOINT = os.getenv("LM_SMS_SERVICE_OAUTH2_ENDPOINT")
+LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
 
 
 # ########################" SANDBOX SETTING ############################

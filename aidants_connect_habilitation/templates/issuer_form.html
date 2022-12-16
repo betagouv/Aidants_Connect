@@ -14,7 +14,7 @@
         <form method="post">
           <h2>Le demandeur</h2>
           <p class="subtitle">Saisissez ici les détails concernant votre identité. Tous les champs sont obligatoires.</p>
-          <div class="shadowed">
+          <div class="shadowed padding-2rem">
             {% csrf_token %}
             {{ form.non_field_errors }}
             <fieldset>

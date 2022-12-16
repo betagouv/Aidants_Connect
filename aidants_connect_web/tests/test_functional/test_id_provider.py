@@ -65,30 +65,19 @@ class IdProviderTest(FunctionalTestCase):
 
     def test_search_feature(self):
         self.open_live_url(f"/authorize/?{self.url_parameters}")
+
         login_aidant(self)
 
-        users = self.selenium.find_elements(By.CSS_SELECTOR, "#usagers .usager")
-
-        self.assertEqual(len(users), 3)
-
-        self.selenium.find_element(By.ID, "filter-input").send_keys("Anne")
-
-        anne_result = self.selenium.find_element(
-            By.XPATH, "//*[contains(text(), 'Anne Cécile Gertrude EVALOUS')]"
+        autocomplete = self.selenium.find_element(By.ID, "filter-input")
+        autocomplete.send_keys("Jose")
+        usager = self.selenium.find_element(
+            By.XPATH, f"//li[@data-value='{self.usager_josephine.id}']"
         )
-        josephine_result = self.selenium.find_element(
-            By.XPATH, "//*[contains(text(), 'Joséphine ST-PIERRE')]"
-        )
-        corentin_result = self.selenium.find_element(
-            By.XPATH, "//*[contains(text(), 'Corentin Anne')]"
-        )
+        usager.click()
 
-        self.assertTrue(anne_result.is_displayed())
-        self.assertFalse(josephine_result.is_displayed())
-        self.assertTrue(corentin_result.is_displayed())
+        button = self.selenium.find_element(By.ID, "submit-button")
 
+        button.click()
         wait = WebDriverWait(self.selenium, 10)
-
-        corentin_result.click()
 
         wait.until(url_contains("/select_demarche/?connection_id="))

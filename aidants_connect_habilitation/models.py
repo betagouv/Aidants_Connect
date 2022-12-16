@@ -229,7 +229,7 @@ class OrganisationRequest(models.Model):
         "État",
         max_length=150,
         default=RequestStatusConstants.NEW.name,
-        choices=RequestStatusConstants.choices(),
+        choices=RequestStatusConstants.choices,
     )
 
     type = models.ForeignKey(OrganisationType, null=True, on_delete=SET_NULL)
@@ -573,7 +573,7 @@ class RequestMessage(models.Model):
     )
 
     sender = models.CharField(
-        "Expéditeur", max_length=20, choices=MessageStakeholders.choices()
+        "Expéditeur", max_length=20, choices=MessageStakeholders.choices
     )
     content = models.TextField("Message")
 

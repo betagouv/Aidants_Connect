@@ -5,11 +5,12 @@ from django.conf import settings
 from django.contrib import messages as django_messages
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
-from django.urls import resolve
+from django.urls import resolve, reverse
 from django.utils import timezone
 
 from freezegun import freeze_time
 
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
 from aidants_connect_web.tests.factories import (
@@ -38,7 +39,7 @@ class NewMandatTests(TestCase):
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
         found = resolve("/creation_mandat/")
-        self.assertEqual(found.func, mandat.new_mandat)
+        self.assertEqual(found.func.view_class, mandat.NewMandat)
 
     def test_new_mandat_url_triggers_new_mandat_template(self):
         self.client.force_login(self.aidant_thierry)
@@ -75,7 +76,7 @@ class NewMandatTests(TestCase):
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
 
-        # When mandate is remot and telephone number is absent,
+        # When mandate is remote and consent method is absent,
         # mandate creation should fail
         data = {
             "demarche": ["papiers", "logement"],
@@ -83,13 +84,33 @@ class NewMandatTests(TestCase):
             "is_remote": True,
         }
         response = self.client.post("/creation_mandat/", data=data)
-        # TODO: Reactivate when SMS consent is a thing
-        # self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+
+        # When mandate is remote and consent method is legacy,
+        # mandate creation should succeed
+        data = {
+            "demarche": ["papiers", "logement"],
+            "duree": "SHORT",
+            "is_remote": True,
+            "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
+        }
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+
+        # When mandate is remote and consent method is SMS and phone number is absent,
+        # mandate creation should fail
+        data = {
+            "demarche": ["papiers", "logement"],
+            "duree": "SHORT",
+            "is_remote": True,
+            "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
+        }
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertEqual(response.status_code, 200)
 
         data["user_phone"] = self.phone_number
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(response, "/creation_mandat/attente_consentement/")
 
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
         response = self.client.post("/creation_mandat/", data=data)
@@ -98,10 +119,14 @@ class NewMandatTests(TestCase):
             "demarche": ["papiers", "logement"],
             "duree": "LONG",
             "is_remote": True,
+            "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
             "user_phone": self.phone_number,
         }
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(
+            response,
+            "/creation_mandat/attente_consentement/",
+        )
 
 
 @tag("new_mandat")
@@ -138,7 +163,7 @@ class NewMandatRecapTests(TestCase):
 
     def test_recap_url_triggers_the_recap_view(self):
         found = resolve("/creation_mandat/recapitulatif/")
-        self.assertEqual(found.func, mandat.new_mandat_recap)
+        self.assertEqual(found.func.view_class, mandat.NewMandatRecap)
 
     def test_recap_url_triggers_the_recap_template(self):
         self.client.force_login(self.aidant_thierry)
@@ -557,7 +582,7 @@ class GenerateAttestationTests(TestCase):
 
     def test_attestation_projet_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/visualisation/projet/")
-        self.assertEqual(found.func, mandat.attestation_projet)
+        self.assertEqual(found.func.view_class, mandat.AttestationProject)
 
     def test_attestation_final_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/visualisation/final/")
@@ -566,6 +591,14 @@ class GenerateAttestationTests(TestCase):
     def test_autorisation_qrcode_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/qrcode/")
         self.assertEqual(found.func, mandat.attestation_qrcode)
+
+    def test_new_mandat_waiting_room_url_triggers_the_correct_view(self):
+        found = resolve(reverse("new_mandat_waiting_room"))
+        self.assertEqual(found.func.view_class, mandat.WaitingRoom)
+
+    def test_new_mandat_waiting_room_json_url_triggers_the_correct_view(self):
+        found = resolve(reverse("new_mandat_waiting_room_json"))
+        self.assertEqual(found.func.view_class, mandat.WaitingRoomJson)
 
     def test_autorisation_qrcode_ok_with_connection_and_mandat_id(self):
         mandat = MandatFactory(

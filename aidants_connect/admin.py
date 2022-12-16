@@ -5,8 +5,6 @@ from django.contrib.admin import SimpleListFilter
 from django.db.models import CharField, Q
 from django.db.models.functions import Length
 
-from admin_honeypot.admin import LoginAttemptAdmin as HoneypotLoginAttemptAdmin
-from admin_honeypot.models import LoginAttempt as HoneypotLoginAttempt
 from django_celery_beat.admin import ClockedScheduleAdmin, PeriodicTaskAdmin
 from django_celery_beat.models import (
     ClockedSchedule,
@@ -24,7 +22,6 @@ from aidants_connect_common.models import Department, Region
 admin_site = OTPAdminSite(OTPAdminSite.name)
 admin_site.login_template = "aidants_connect_web/admin/login.html"
 
-admin_site.register(HoneypotLoginAttempt, HoneypotLoginAttemptAdmin)
 
 CharField.register_lookup(Length)
 CharField.register_lookup(IsNullOrBlank)

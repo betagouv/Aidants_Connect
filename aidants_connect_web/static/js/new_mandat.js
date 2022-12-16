@@ -1,35 +1,77 @@
+"use strict";
+
 (function () {
-    window.addEventListener("load", function () {
-        // init
-        let mandat_is_remote_checkbox = document.getElementById("id_is_remote");
-        let mandat_duree_label_is_remote_span = document.getElementsByClassName("duree-label-is-remote");
-        for (let i = 0; i < mandat_duree_label_is_remote_span.length; i++) {
-            mandat_duree_label_is_remote_span[i].style.display = "none";
-        }
+    const NewMandatForm = Object.extendClass(Stimulus.Controller);
 
-        function toggle_phone_number_panel(checked) {
-            // TODO: Reactivate when SMS consent is a thing
-            return;
-            let phone_number_panel = document.getElementById("phone_number_panel");
+    Object.assign(NewMandatForm.prototype, {
+        "connect": function connect() {
+            this.computeUiForRemoteMandateValue(this.isRemoteInputTarget.checked);
+            const checkedRadioElt = document.querySelector("#id_remote_constent_method input[type='radio']:checked");
+            this.computeUiForRemoteConstentMethod(checkedRadioElt ? checkedRadioElt.value : undefined);
+        },
 
-            if(checked) {
-                phone_number_panel.removeAttribute("hidden");
-                phone_number_panel.setAttribute("aria-hidden", "false");
+        "isRemoteChanged": function isRemoteChanged(evt) {
+            this.computeUiForRemoteMandateValue(evt.target.checked);
+        },
+
+        "remoteConstentMethodChanged": function remoteConstentMethodChanged(evt) {
+            this.computeUiForRemoteConstentMethod(evt.target.value);
+        },
+
+        "computeUiForRemoteMandateValue": function computeUiForRemoteMandateValue(checked) {
+            this.remoteLabelTextTargets.forEach(function (elt) {
+                this.mutateVisibility(checked, elt);
+            }.bind(this));
+            this.mutateVisibility(checked, this.remoteContentSectionTarget);
+            this.remoteConstentMethodInputTargets.forEach(function(elt) {
+                this.mutateRequirement(checked, elt);
+            }.bind(this));
+        },
+
+        "computeUiForRemoteConstentMethod": function computeUiForRemoteConstentMethod(value) {
+            const isUserConsentSms = value === this.smsMethodValue;
+            this.mutateVisibility(isUserConsentSms, this.userPhoneInputSectionTarget);
+            this.mutateRequirement(isUserConsentSms, this.userPhoneInputTarget);
+        },
+
+        "mutateVisibility": function mutateVisibility(visible, elt) {
+            if (visible) {
+                elt.removeAttribute("hidden");
+                elt.removeAttribute("aria-hidden");
             } else {
-                phone_number_panel.setAttribute("hidden", "");
-                phone_number_panel.setAttribute("aria-hidden", "true");
+                elt.setAttribute("hidden", "hidden");
+                elt.setAttribute("aria-hidden", "true");
+            }
+        },
+
+        "mutateRequirement": function mutateRequirement(required, elt) {
+            if (required) {
+                elt.setAttribute("required", "required");
+            } else {
+                elt.removeAttribute("required");
             }
         }
 
-        toggle_phone_number_panel(mandat_is_remote_checkbox.checked)
+    });
 
-        // toggle mandat_is_remote
-        mandat_is_remote_checkbox.addEventListener('change', function (evt) {
-            for (let i = 0; i < mandat_duree_label_is_remote_span.length; i++) {
-                mandat_duree_label_is_remote_span[i].style.display = this.checked ? "initial" : "none";
-            }
+    /* Static fields */
+    NewMandatForm.targets = [
+        "remoteContentSection",
+        "isRemoteInput",
+        "userPhoneInputSection",
+        "userPhoneInput",
+        "remoteConstentMethodInput",
+        "remoteLabelText",
+    ];
 
-            toggle_phone_number_panel(evt.target.checked);
-        });
-    })
+    NewMandatForm.values = {
+        "smsMethod": String,
+    }
+
+    function init() {
+        const application = Stimulus.Application.start();
+        application.register("new-mandat-form", NewMandatForm);
+    }
+
+    window.addEventListener("load", init);
 })();
