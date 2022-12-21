@@ -179,4 +179,7 @@ class HabilitationDatapass(DatapassMixin, TestCase):
         self.assertEqual(
             habilitation_request.origin, HabilitationRequest.ORIGIN_DATAPASS
         )
-        self.assertEqual(habilitation_request.status, HabilitationRequest.STATUS_NEW)
+        self.assertEqual(
+            habilitation_request.status,
+            HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
+        )

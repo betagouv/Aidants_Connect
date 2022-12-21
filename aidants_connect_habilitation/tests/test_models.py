@@ -154,7 +154,9 @@ class OrganisationRequestTests(TestCase):
             # check if responsable is on the list of aidants too
             self.assertTrue(
                 HabilitationRequest.objects.filter(
-                    organisation=organisation, email=organisation_request.manager.email
+                    organisation=organisation,
+                    email=organisation_request.manager.email,
+                    origin=HabilitationRequest.ORIGIN_HABILITATION,
                 ).exists()
             )
 

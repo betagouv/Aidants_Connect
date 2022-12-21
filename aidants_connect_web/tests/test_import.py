@@ -56,6 +56,28 @@ class ImportEricLastFileTests(TestCase):
             )
         )
 
+    def test_change_status_habilitation_request_already_exists_waiting_list(self):
+        HabilitationRequestFactory(
+            last_name="Simpson",
+            first_name="Marge",
+            email="m.simpson@test.com",
+            organisation=self.orga1,
+            status=HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
+        )
+        self.assertEqual(2, HabilitationRequest.objects.all().count())
+        import_one_row([3234, "Marge", "Simpson", "m.simpson@test.com"])
+        self.assertEqual(2, HabilitationRequest.objects.all().count())
+
+        self.assertTrue(
+            HabilitationRequest.objects.filter(
+                last_name="Simpson",
+                first_name="Marge",
+                email="m.simpson@test.com",
+                organisation__data_pass_id=3234,
+                status=HabilitationRequest.STATUS_PROCESSING,
+            )
+        )
+
     def test_dont_habilitation_request_with_invalid_orga(self):
         self.assertEqual(1, HabilitationRequest.objects.all().count())
         import_one_row([113234, "Marge", "Simpson", "m.simpson@test.com"])

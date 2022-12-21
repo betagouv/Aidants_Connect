@@ -21,7 +21,9 @@ class ImportPixTests(TestCase):
         )
         self.assertEqual(aidant_a_former.test_pix_passed, False)
         self.assertEqual(aidant_a_former.date_test_pix, None)
-        self.assertEqual(aidant_a_former.status, HabilitationRequest.STATUS_NEW)
+        self.assertEqual(
+            aidant_a_former.status, HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+        )
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
 
         data = [
@@ -48,7 +50,9 @@ class ImportPixTests(TestCase):
         self.assertEqual(aidant_a_former.date_formation, None)
         self.assertEqual(aidant_a_former.test_pix_passed, False)
         self.assertEqual(aidant_a_former.date_test_pix, None)
-        self.assertEqual(aidant_a_former.status, HabilitationRequest.STATUS_NEW)
+        self.assertEqual(
+            aidant_a_former.status, HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+        )
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
 
         data = [
@@ -63,7 +67,9 @@ class ImportPixTests(TestCase):
             email=aidant_a_former.email
         )[0]
         self.assertTrue(aidant_a_former.test_pix_passed)
-        self.assertEqual(aidant_a_former.status, HabilitationRequest.STATUS_NEW)
+        self.assertEqual(
+            aidant_a_former.status, HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+        )
 
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
 
@@ -86,8 +92,14 @@ class ImportPixTests(TestCase):
         self.assertEqual(aidant_a_former_1.date_test_pix, None)
         self.assertEqual(aidant_a_former_2.test_pix_passed, False)
         self.assertEqual(aidant_a_former_2.date_test_pix, None)
-        self.assertEqual(aidant_a_former_1.status, HabilitationRequest.STATUS_NEW)
-        self.assertEqual(aidant_a_former_2.status, HabilitationRequest.STATUS_NEW)
+        self.assertEqual(
+            aidant_a_former_1.status,
+            HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
+        )
+        self.assertEqual(
+            aidant_a_former_2.status,
+            HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
+        )
         self.assertEqual(
             0, Aidant.objects.filter(email=aidant_a_former_1.email).count()
         )
