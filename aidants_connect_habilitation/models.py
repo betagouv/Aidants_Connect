@@ -430,6 +430,7 @@ class OrganisationRequest(models.Model):
                 email=self.manager.email,
                 organisation=organisation,
                 defaults=dict(
+                    origin=HabilitationRequest.ORIGIN_HABILITATION,
                     first_name=self.manager.first_name,
                     last_name=self.manager.last_name,
                     profession=self.manager.profession,
@@ -445,6 +446,7 @@ class OrganisationRequest(models.Model):
                 email=aidant.email,
                 organisation=organisation,
                 defaults=dict(
+                    origin=HabilitationRequest.ORIGIN_HABILITATION,
                     first_name=aidant.first_name,
                     last_name=aidant.last_name,
                     profession=aidant.profession,

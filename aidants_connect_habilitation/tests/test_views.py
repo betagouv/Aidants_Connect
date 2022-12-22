@@ -1238,7 +1238,11 @@ class AddAidantsRequestViewTests(TestCase):
 
         self.assertEqual(RequestStatusConstants.VALIDATED.name, org_req.status)
         self.assertEqual(
-            3, HabilitationRequest.objects.filter(organisation=organisation).count()
+            3,
+            HabilitationRequest.objects.filter(
+                organisation=organisation,
+                origin=HabilitationRequest.ORIGIN_HABILITATION,
+            ).count(),
         )
 
         furthermore = get_form(
