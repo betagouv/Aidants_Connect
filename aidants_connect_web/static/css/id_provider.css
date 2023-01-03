@@ -7,6 +7,19 @@ h1 {
   color: #1B4991;
 }
 
+h2 {
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1.25;
+    text-transform: uppercase;
+    color: #1B4991;
+}
+
+.red {
+  color: #ef4056;
+}
+
 .shadowed {
   padding: 1rem;
 }
