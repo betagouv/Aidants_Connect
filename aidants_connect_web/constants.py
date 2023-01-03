@@ -1,5 +1,6 @@
 from typing import Set
 
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 from aidants_connect_common.utils.constants import DictChoices
@@ -14,6 +15,7 @@ class RemoteConsentMethodChoices(DictChoices):
             "Ce mandat vous protège légalement."
         ),
     }
+
     SMS = {
         "label": _("Par SMS"),
         "description": _(
@@ -29,4 +31,7 @@ class RemoteConsentMethodChoices(DictChoices):
 
     @staticmethod
     def blocked_methods() -> Set[str]:
-        return {RemoteConsentMethodChoices.SMS.name}
+        if settings.FF_ACTIVATE_SMS_CONSENT:
+            return {RemoteConsentMethodChoices.SMS.name}
+        else:
+            return {}

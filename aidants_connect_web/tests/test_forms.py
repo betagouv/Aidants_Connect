@@ -1,5 +1,5 @@
 from django.forms.models import model_to_dict
-from django.test import TestCase, tag
+from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 
 from aidants_connect_web.constants import RemoteConsentMethodChoices
@@ -10,6 +10,7 @@ from aidants_connect_web.forms import (
     MandatForm,
     MassEmailHabilitatonForm,
     RecapMandatForm,
+    get_choices_for_remote_method,
 )
 from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
@@ -257,6 +258,32 @@ class AidantChangeFormTests(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(aidant.email, "good@mail.net")
         self.assertEqual(aidant.username, "good@mail.net")
+
+
+class SMSConsentFeatureFlagsTests(TestCase):
+    @override_settings(FF_ACTIVATE_SMS_CONSENT=False)
+    def test_not_sms_method_when_ff_sms_is_false(self):
+        remote_method = get_choices_for_remote_method()
+        self.assertFalse(
+            any(
+                [
+                    key == RemoteConsentMethodChoices.SMS.name
+                    for key, value in remote_method
+                ]
+            )
+        )
+
+    @override_settings(FF_ACTIVATE_SMS_CONSENT=True)
+    def test_not_sms_method_when_ff_sms_is_true(self):
+        remote_method = get_choices_for_remote_method()
+        self.assertTrue(
+            any(
+                [
+                    key == RemoteConsentMethodChoices.SMS.name
+                    for key, value in remote_method
+                ]
+            )
+        )
 
 
 class MandatFormTests(TestCase):
