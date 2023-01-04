@@ -22,6 +22,9 @@ class Testimony(CmsContent):
     body = models.TextField("Contenu")
     # picture : @todo
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name = "Témoignage"
         verbose_name_plural = "Témoignages"
