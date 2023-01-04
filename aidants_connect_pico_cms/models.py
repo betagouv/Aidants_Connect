@@ -10,6 +10,7 @@ class CmsContent(models.Model):
         Aidant, models.SET_NULL, blank=True, null=True, verbose_name="Modifié par"
     )
     published = models.BooleanField("Publié")
+    sort_order = models.PositiveSmallIntegerField("Tri", null=True, db_index=True)
 
     class Meta:
         abstract = True
