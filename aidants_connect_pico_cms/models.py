@@ -1,4 +1,7 @@
 from django.db import models
+from django.utils.html import mark_safe
+
+from markdown import markdown
 
 from aidants_connect_web.models import Aidant
 
@@ -12,6 +15,10 @@ class CmsContent(models.Model):
     published = models.BooleanField("Publié")
     slug = models.SlugField("Clé d’URL")
     sort_order = models.PositiveSmallIntegerField("Tri", null=True, db_index=True)
+    body = models.TextField("Contenu")
+
+    def to_html(self):
+        return mark_safe(markdown(self.body))
 
     class Meta:
         abstract = True
@@ -20,8 +27,6 @@ class CmsContent(models.Model):
 class Testimony(CmsContent):
     name = models.CharField("Nom de l'aidant·e qui témoigne", max_length=255)
     job = models.CharField("Fonction de l'aidant·e qui témoigne", max_length=255)
-    body = models.TextField("Contenu")
-    # picture : @todo
 
     def __str__(self):
         return self.name

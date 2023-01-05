@@ -9,6 +9,8 @@
   <div class="fr-container">
     <h1>{{ object.name }}</h1>
     <h2>{{ object.job }}</h2>
-    {{ object.body }}
+    <div>
+      {{ object.to_html }}
+    </div>
   </div>
 {% endblock %}
