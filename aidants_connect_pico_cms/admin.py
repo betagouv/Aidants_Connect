@@ -17,6 +17,7 @@ class CmsAdmin(ModelAdmin):
         "created_at",
         "updated_at",
     )
+    raw_id_fields = ("updated_by",)
 
 
 admin_site.register(Testimony, CmsAdmin)
