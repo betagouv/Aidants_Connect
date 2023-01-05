@@ -1,0 +1,14 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
+
+{% block title %}
+  Aidants Connect - {{ object.name }} {{ object.job }}
+{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    <h1>{{ object.name }}</h1>
+    <h2>{{ object.job }}</h2>
+    {{ object.body }}
+  </div>
+{% endblock %}

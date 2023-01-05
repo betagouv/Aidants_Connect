@@ -7,6 +7,7 @@ from aidants_connect_pico_cms.models import Testimony
 class CmsAdmin(ModelAdmin):
     list_display = (
         "__str__",
+        "slug",
         "sort_order",
         "published",
         "created_at",
