@@ -156,6 +156,20 @@ class LoginEmailForm(MagicAuthEmailForm):
         return user_email
 
 
+def get_choices_for_remote_method():
+    from django.conf import settings
+
+    remote_choices = RemoteConsentMethodChoices.choices
+    if settings.FF_ACTIVATE_SMS_CONSENT:
+        return remote_choices
+    else:
+        return [
+            (key, value)
+            for key, value in remote_choices
+            if key != RemoteConsentMethodChoices.SMS.name
+        ]
+
+
 class MandatForm(PatchedForm):
     demarche = forms.MultipleChoiceField(
         choices=[(key, value) for key, value in settings.DEMARCHES.items()],
@@ -201,7 +215,7 @@ class MandatForm(PatchedForm):
 
     remote_constent_method = forms.ChoiceField(
         label="Sélectionnez une méthode de consentement à distance",
-        choices=RemoteConsentMethodChoices.choices,
+        choices=get_choices_for_remote_method,
         required=False,
         error_messages={
             "required": _(
