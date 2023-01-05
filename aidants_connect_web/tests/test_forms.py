@@ -274,7 +274,7 @@ class SMSConsentFeatureFlagsTests(TestCase):
         )
 
     @override_settings(FF_ACTIVATE_SMS_CONSENT=True)
-    def test_not_sms_method_when_ff_sms_is_true(self):
+    def test_sms_method_present_when_ff_sms_is_true(self):
         remote_method = get_choices_for_remote_method()
         self.assertTrue(
             any(
