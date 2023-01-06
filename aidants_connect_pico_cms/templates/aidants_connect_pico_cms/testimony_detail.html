@@ -6,22 +6,45 @@
 {% endblock %}
 
 {% block content %}
-  <div>
-    <ul>
-      {% for testimony in all_testimonies %}
-        <li>
-          <a href="{{ testimony.get_absolute_url }}">
-            {{ testimony.name }}, {{ testimony.job }}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
   <div class="fr-container">
-    <h1>{{ object.name }}</h1>
-    <h2>{{ object.job }}</h2>
-    <div>
-      {{ object.to_html }}
+    <h1>Témoignages</h1>
+    <h2>Retours d'expérience</h2>
+    <p class="subtitle">Retrouvez ici tous les témoignages et interviews d'usagers d'Aidants Connect.</p>
+  </div>
+  <div class="yellow-splash">
+    <div class="fr-container">
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-3">
+          <nav aria-label="Témoignages">
+            <ul>
+              {% for testimony in all_testimonies %}
+                <li>
+                  <a href="{{ testimony.get_absolute_url }}"
+                      {% if testimony.slug == object.slug %}
+                     class="active"
+                     aria-label="Section active : {{ testimony.name }}, {{ testimony.job }}"
+                      {% endif %}
+                  >
+                    {{ testimony.name }}, {{ testimony.job }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </nav>
+        </div>
+
+        <div class="fr-col-12 fr-col-md-7">
+          <div class="blue shadowed padding-1rem">
+            <p>Témoignage d’aidant</p>
+            <h1>{{ object.name }}</h1>
+            <h2>{{ object.job }}</h2>
+            <div>
+              {{ object.to_html }}
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 {% endblock %}
