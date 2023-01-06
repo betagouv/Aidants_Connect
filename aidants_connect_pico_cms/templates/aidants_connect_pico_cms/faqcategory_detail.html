@@ -1,0 +1,30 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
+
+{% block title %}
+  Aidants Connect - FAQ {{ object.name }}
+{% endblock %}
+
+{% block content %}
+  <div>
+    <ul>
+      {% for category in categories %}
+        <li>
+          <a href="{% url "faq-category-detail" slug=category.slug %}">
+            {{ category.name }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="fr-container">
+    <h1>{{ object.name }}</h1>
+    <div>
+      {{ object.to_html }}
+    </div>
+    {% for question in questions %}
+      <h2>{{ question.question }}</h2>
+      <div>{{ question.to_html }}</div>
+    {% endfor %}
+  </div>
+{% endblock %}
