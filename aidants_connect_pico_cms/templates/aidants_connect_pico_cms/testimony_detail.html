@@ -43,14 +43,22 @@
         </div>
 
         <div class="fr-col-12 fr-col-md-7">
-          <div class="blue shadowed padding-1rem">
-            <p>Témoignage d’aidant</p>
-            <h1>{{ object.name }}</h1>
-            <h2>{{ object.job }}</h2>
+          <section class="blue shadowed padding-1rem">
+            <div class="testimony-header">
+              <div class="portrait">
+                <img src="" alt="" width="150" height="150">
+              </div>
+              <h1 class="testimony-title">
+                <span class="compo">Témoignage d’aidant</span>
+                <span class="compo">{{ object.name }}</span>
+                <span class="compo">{{ object.job }}</span>
+              </h1>
+            </div>
             <div>
               {{ object.to_html }}
             </div>
-          </div>
+          </section>
+
         </div>
       </div>
 

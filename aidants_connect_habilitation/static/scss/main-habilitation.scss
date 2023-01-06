@@ -780,9 +780,11 @@ footer {
 
   nav ul {
     list-style-type: none;
+
     li + li {
       margin-top: 1.5rem;
     }
+
     a {
       display: flex;
       border-radius: 6rem;
@@ -802,6 +804,7 @@ footer {
       flex-direction: column;
       justify-content: center;
       padding-left: 1.6em;
+
       .name {
         font-weight: bold;
       }
@@ -816,6 +819,41 @@ footer {
         border-radius: 100%;
         border: 2px solid #fff;
       }
+    }
+  }
+
+  .testimony-header {
+    display: flex;
+    justify-content: center;
+
+    .portrait {
+      img {
+        border-radius: 100%;
+      }
+    }
+  }
+
+  .testimony-title {
+    font-size: 1.5rem;
+    color: colors.$blue-aidants;
+    margin-left: 2rem;
+
+    .compo {
+      display: block;
+      margin-bottom: .5em;
+    }
+
+    .compo:first-child {
+      font-weight: normal;
+      font-size: 1rem;
+      color: colors.$red-aidants;
+    }
+
+    .compo:last-child {
+      text-transform: none;
+      font-size: 1rem;
+      font-weight: normal;
+
     }
   }
 }

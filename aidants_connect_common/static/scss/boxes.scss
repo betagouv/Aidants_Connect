@@ -13,6 +13,7 @@
   &.blue {
     box-shadow: 10px 10px 0 colors.$blue-aidants;
     border-color: colors.$blue-aidants;
+    border-width: 2px;
     background: #fff;
   }
 }
