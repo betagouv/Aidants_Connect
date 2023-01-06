@@ -11,11 +11,14 @@
     <h2>Retours d'expérience</h2>
     <p class="subtitle">Retrouvez ici tous les témoignages et interviews d'usagers d'Aidants Connect.</p>
   </div>
-  <div class="yellow-splash">
+  <div class="yellow-splash testimonies">
     <div class="fr-container">
       <div class="fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-12 fr-col-md-3">
           <nav aria-label="Témoignages">
+            <p class="intro">
+              Sélectionnez un témoignage ci-dessous&nbsp;:
+            </p>
             <ul>
               {% for testimony in all_testimonies %}
                 <li>
@@ -25,7 +28,13 @@
                      aria-label="Section active : {{ testimony.name }}, {{ testimony.job }}"
                       {% endif %}
                   >
-                    {{ testimony.name }}, {{ testimony.job }}
+                    <div class="portrait">
+                      <img width="78" height="78" src="" alt="">
+                    </div>
+                    <div class="t-info">
+                      <span class="name">{{ testimony.name }}</span>
+                      <span class="job">{{ testimony.job }}</span>
+                    </div>
                   </a>
                 </li>
               {% endfor %}

@@ -772,3 +772,50 @@ footer {
 .margin-bottom-1 {
   margin-bottom: 1rem;
 }
+
+// testimonies
+
+.testimonies {
+  $radius: 5rem;
+
+  nav ul {
+    list-style-type: none;
+    li + li {
+      margin-top: 1.5rem;
+    }
+    a {
+      display: flex;
+      border-radius: 6rem;
+      text-decoration: none;
+      color: colors.$blue-aidants;
+      font-size: 0.875em;
+      font-weight: normal;
+
+      &.active {
+        background: colors.$blue-aidants;
+        color: #fff;
+      }
+    }
+
+    .t-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-left: 1.6em;
+      .name {
+        font-weight: bold;
+      }
+    }
+
+    .portrait {
+      display: flex;
+
+      img {
+        width: $radius;
+        height: $radius;
+        border-radius: 100%;
+        border: 2px solid #fff;
+      }
+    }
+  }
+}
