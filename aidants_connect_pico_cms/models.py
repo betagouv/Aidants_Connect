@@ -70,3 +70,30 @@ class MandateTranslation(MarkdownContentMixin):
     class Meta:
         verbose_name = "Traduction de mandat"
         verbose_name_plural = "Traductions de mandat"
+
+
+class FaqCategory(CmsContent):
+    name = models.CharField("Nom", max_length=255)
+    body = models.TextField("Introduction", blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Catégorie FAQ"
+        verbose_name_plural = "Catégories FAQ"
+
+
+class FaqQuestion(CmsContent):
+    question = models.TextField("Question")
+    category = models.ForeignKey(
+        FaqCategory, models.SET_NULL, null=True, verbose_name="Catégorie"
+    )
+
+    def __str__(self):
+        return self.question
+
+    class Meta:
+        verbose_name = "Question FAQ"
+        verbose_name_plural = "Questions FAQ"
+

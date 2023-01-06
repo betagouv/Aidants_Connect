@@ -3,6 +3,7 @@ from django.forms import models
 
 from aidants_connect.admin import admin_site
 from aidants_connect_common.widgets import SearchableRadioSelect
+from aidants_connect_pico_cms.models import FaqCategory, FaqQuestion
 from aidants_connect_pico_cms.models import MandateTranslation, Testimony
 
 
@@ -23,6 +24,18 @@ class CmsAdmin(ModelAdmin):
     raw_id_fields = ("updated_by",)
 
 
+class FaqQuestionAdmin(CmsAdmin):
+    list_filter = ("published", "category")
+    list_display = (
+        "__str__",
+        "slug",
+        "category",
+        "sort_order",
+        "published",
+        "created_at",
+    )
+
+
 class MandateTranslationAdminForm(models.ModelForm):
     class Meta:
         model = MandateTranslation
@@ -34,3 +47,9 @@ class MandateTranslationAdminForm(models.ModelForm):
 class MandateTranslationAdmin(ModelAdmin):
     list_display = ("__str__",)
     form = MandateTranslationAdminForm
+
+
+
+admin_site.register(FaqCategory, CmsAdmin)
+admin_site.register(FaqQuestion, FaqQuestionAdmin)
+
