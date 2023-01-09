@@ -71,6 +71,9 @@ def aidant_logged_with_activity_required(view=None, *, method_name=""):
     Can be applied to either the class itself or any method of the class.
     If applied on the class, will be applied on ``dispatch`` method by default
     but can be changed by using ``method_name`` argument.
+
+    ``additionnal_decorators`` allows to decorate the view with additionnal decorators,
+    like csrf_exempt.
     """
 
     def decorator(decorated):

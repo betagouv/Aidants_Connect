@@ -1,0 +1,48 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static ac_common %}
+
+{% block title %}Aidants Connect - En attente de consentement{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/remote_consent_waiting_room.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <section class="section">
+      <div
+        class="container"
+        data-controller="remote-consent-waiting-room"
+        data-remote-consent-waiting-room-next-value="{{ next }}"
+        data-remote-consent-waiting-room-poll-value="{{ poll }}"
+        data-remote-consent-waiting-room-poll-timeout-value="5000"
+        data-remote-consent-waiting-room-csrf-token-value="{{ csrf_token }}"
+      >
+        <h1>En attente <span class="h2">du consentement par SMS…</span></h1>
+        <p class="subtitle">
+          La personne accompagnée doit maintenant donner son consentement via le SMS reçu.
+          Une fois le consentement reçu, cette page se rafraîchira automatiquement.
+        </p>
+      </div>
+
+
+      <img
+        class="remote-consent-waiting-room-banner"
+        src="{% static 'images/remote_consent_waiting_room_banner.svg' %}"
+        alt=""
+      />
+    </section>
+  </div>
+{% endblock content %}
+
+{% block extrajs %}
+  {% stimulusjs %}
+  <script src="{% static 'js/utils.js' %}"></script>
+  <script src="{% static 'js/remote_pending.js' %}"></script>
+{% endblock %}

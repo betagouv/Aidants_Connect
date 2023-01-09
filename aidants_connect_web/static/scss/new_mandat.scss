@@ -1,3 +1,5 @@
+@use "colors";
+
 .step-title {
   margin-top: 2em;
 }
@@ -36,19 +38,11 @@
   }
 }
 
-.detailed-radio-select {
-  label {
-    padding: 1rem;
-  }
+.user-phoner-wrapper {
+  margin-top: 1rem;
+}
 
-  p {
-    padding-bottom: 0;
-    padding-top: 0;
-    margin-bottom: 0;
-    margin-top: 0;
-  }
-
-  .detailed-radio-select-label-text {
-    margin-bottom: 1rem;
-  }
+.form-section legend {
+  font-size: large;
+  color: colors.$blue-aidants;
 }

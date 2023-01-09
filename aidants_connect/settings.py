@@ -22,6 +22,7 @@ from typing import Optional, Union
 import sentry_sdk
 from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from aidants_connect.postgres_url import turn_psql_url_into_param
 
@@ -112,7 +113,10 @@ if SENTRY_DSN:
     SENTRY_ENV = os.getenv("SENTRY_ENV", "unknown")
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration()],
+        integrations=[
+            DjangoIntegration(),
+            LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
+        ],
         environment=SENTRY_ENV,
     )
 
@@ -483,6 +487,11 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_RESULT_SERIALIZER = JSON_SERIALIZER
 CELERY_TASK_SERIALIZER = JSON_SERIALIZER
 CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
+
+SITE_DESCRIPTION = (
+    "Permettre à un aidant professionnel de réaliser des démarches administratives en "
+    "ligne « à la place de » via une connexion sécurisée"
+)
 
 # COVID-19 changes
 ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(

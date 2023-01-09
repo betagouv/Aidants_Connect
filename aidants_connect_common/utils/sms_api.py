@@ -1,13 +1,17 @@
 import inspect
+import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import starmap
+from pathlib import Path
 
 from django.conf import settings
 from django.utils.timezone import now
 
-from phonenumbers import PhoneNumber
+from phonenumbers import PhoneNumber, PhoneNumberFormat, format_number
+from redis import Redis
+from redis.exceptions import ConnectionError
 from requests import Session
 from requests import post as requests_post
 from requests.adapters import HTTPAdapter, Response
@@ -15,9 +19,17 @@ from requests.models import PreparedRequest
 
 __all__ = ["SmsApi", "SmsResponseCallbackInfos"]
 
+from aidants_connect_common.utils.date_time_json_encoder import DateTimeJsonEncoder
 from aidants_connect_common.utils.urls import join_url_parts
 
 logger = logging.getLogger()
+
+redis_client = Redis.from_url(settings.REDIS_URL)
+try:
+    redis_client.ping()
+except ConnectionError:
+    logger.warning(f"{__file__}: No Redis connection available")
+    redis_client = None
 
 
 @dataclass
@@ -87,7 +99,21 @@ class SmsApiMock(SmsApi):
         self._message = message
 
     def send_sms(self, phone: PhoneNumber, consent_request_id: str, message: str):
-        self._log_message()
+        if settings.DEBUG and getattr(settings, "EMAIL_FILE_PATH", None):
+            file = Path(settings.EMAIL_FILE_PATH).resolve()
+            file.mkdir(parents=True, exist_ok=True)
+            file = file / f"{now().strftime('%Y%m%d-%H%M%S')}-{abs(id(self))}.log"
+            formatted_phone = format_number(phone, PhoneNumberFormat.INTERNATIONAL)
+            with open(file, "a") as f:
+                f.writelines(
+                    [
+                        f"Téléphone : {formatted_phone}\n",
+                        f"ID de requête : {consent_request_id}\n\n",
+                        message,
+                    ]
+                )
+        else:
+            self._log_message()
 
     def process_sms_response(self, data: dict) -> SmsResponseCallbackInfos:
         self._log_message()
@@ -136,7 +162,7 @@ class SmsApiImpl(SmsApi):
         )
 
     def send_sms(self, phone: PhoneNumber, consent_request_id: str, message: str):
-        phone = str(phone).removeprefix("+")
+        phone = format_number(phone, PhoneNumberFormat.E164).removeprefix("+")
 
         response = self._client.post(
             self._snd_sms_url,
@@ -144,6 +170,7 @@ class SmsApiImpl(SmsApi):
                 "userIds": [phone],
                 "correlationId": consent_request_id,
                 "message": message.strip(),
+                "encoding": "Unicode",
             },
         )
 
@@ -195,11 +222,28 @@ class TokenInfos:
     emitted: datetime = field(default_factory=now)
 
     def is_expired(self):
-        return self.emitted + timedelta(seconds=self.ttl) < now()
+        return self.emitted + timedelta(seconds=self.ttl) <= now()
+
+    def as_json_string(self):
+        return DateTimeJsonEncoder().encode(self.__dict__)
 
     @staticmethod
-    def from_json(json):
-        return TokenInfos(access_token=json["access_token"], ttl=json["ttl"])
+    def from_json(json_dict):
+        try:
+            emitted = (
+                datetime.fromisoformat(json_dict["emitted"])
+                if "emitted" in json_dict
+                else now()
+            )
+        except Exception:
+            logger.exception("Error creating TokenInfos")
+            emitted = now()
+
+        return TokenInfos(
+            access_token=json_dict["access_token"],
+            ttl=int(json_dict["ttl"]),
+            emitted=emitted,
+        )
 
 
 class OAuthClient(Session):
@@ -213,6 +257,38 @@ class OAuthMiddleware(HTTPAdapter):
     _token: None | TokenInfos = None
     __attrs__ = [*HTTPAdapter.__attrs__, "_auth_infos"]
 
+    @property
+    def token(self):
+        if isinstance(self._token, TokenInfos):
+            return self._token
+
+        if redis_client:
+            try:
+                token = redis_client.get(__name__)
+                if token:
+                    self._token = TokenInfos.from_json(json.loads(token))
+                    return self._token
+            except Exception:
+                logger.exception("Error retreiving token from Redis")
+
+        return None
+
+    @token.setter
+    def token(self, value: TokenInfos):
+        self._token = value
+
+        if redis_client:
+            try:
+                redis_client.set(
+                    __name__,
+                    value.as_json_string(),
+                    # Expire data in redis 10 minute sooner
+                    # to avoid falling outside the TTL
+                    keepttl=(value.ttl - 10 if value.ttl > 10 else value.ttl),
+                )
+            except Exception:
+                logger.exception("Error setting token in Redis")
+
     def __init__(self, auth_infos: AuthInfos, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._auth_infos = auth_infos
@@ -224,7 +300,7 @@ class OAuthMiddleware(HTTPAdapter):
         if request.url.startswith(self._auth_infos.access_token_url):
             return super().send(request, *args, **kwargs)
 
-        if not self._token or self._token.is_expired():
+        if not self.token or self.token.is_expired():
             self._fetch_token()
 
         response = self._send(request, *args, **kwargs)
@@ -244,7 +320,7 @@ class OAuthMiddleware(HTTPAdapter):
             },
         ).json()
 
-        self._token = TokenInfos.from_json(response)
+        self.token = TokenInfos.from_json(response)
 
     def _send(self, request: PreparedRequest, *args, **kwargs):
         request.headers["Content-Type"] = "application/json"

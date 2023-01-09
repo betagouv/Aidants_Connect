@@ -34,14 +34,15 @@ django-magicauth = {ref = "0.11", git = "https://github.com/betagouv/django-magi
 
 [dev-packages]
 pipenv = "*"
-black = "==22.8.0"
+black = "==22.12.0"
+tomli = {version = "*", python_version = "< '3.11'" } # dependency from Black that is weirdly not installed on CI
 coverage = "==6.4.4"
 django-debug-toolbar = "==3.6.0"
-isort = "==5.10.1"
+isort = "==5.11.4"
 factory-boy = "==3.2.1"
-flake8 = "==5.0.4"
+flake8 = "==6.0.0"
 freezegun = "==1.2.2"
 pre-commit = "==2.20.0"
-pre-commit-hooks = "==4.3.0"
+pre-commit-hooks = "==4.4.0"
 selenium = "==4.4.3"
 tblib = "*"
