@@ -15,7 +15,6 @@
             form.set("csrfmiddlewaretoken", this.csrfTokenValue);
             xhr.open("POST", url, true);
             xhr.setRequestHeader("Accept", "application/json");
-            xhr.setRequestHeader("Content-Type", "multipart/form-data");
             xhr.send(form);
         },
 

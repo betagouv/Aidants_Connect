@@ -569,6 +569,9 @@ class WaitingRoom(RequireConnectionObjectMixin, TemplateView):
 
 @aidant_logged_with_activity_required
 class WaitingRoomJson(RequireConnectionObjectMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         if (
             not self.connection.mandat_is_remote

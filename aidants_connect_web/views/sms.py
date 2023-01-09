@@ -35,15 +35,20 @@ class Callback(View):
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        if "statusMessage" in self.request.POST:
-            # Result from SMS sending
+        if "originatorAddress" not in self.request.POST:
+            # SMS send report
             try:
                 # Must not fail
-                if "errorMessage" in self.request.POST:
+                if self.request.POST.get("errorCode", 0) != 0:
+                    error_message = self.request.POST.get("errorMessage")
+                    additionnal_infos = (
+                        f"Error message returned by SMS provider: {error_message}"
+                        if error_message
+                        else "No error message returned by SMS provider."
+                    )
                     logger.warning(
                         "An error happened while trying to send SMS with ID "
-                        f"{self.request.POST['correlationId']!r}. Message returned "
-                        f"SMS provider: {self.request.POST['errorMessage']}"
+                        f"{self.request.POST['correlationId']!r}. {additionnal_infos}"
                     )
             except Exception:
                 logger.exception("Error processing API SMS response")
