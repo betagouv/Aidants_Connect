@@ -10,7 +10,7 @@
     <ul>
       {% for testimony in all_testimonies %}
         <li>
-          <a href="{% url "temoignage-detail" slug=testimony.slug %}">
+          <a href="{{ testimony.get_absolute_url }}">
             {{ testimony.name }}, {{ testimony.job }}
           </a>
         </li>

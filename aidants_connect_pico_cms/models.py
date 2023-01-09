@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.utils.html import mark_safe
 
 from markdown import markdown
@@ -30,6 +31,9 @@ class Testimony(CmsContent):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("temoignage-detail", kwargs={"slug": self.slug})
 
     class Meta:
         verbose_name = "Témoignage"
