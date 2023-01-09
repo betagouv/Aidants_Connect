@@ -1,6 +1,10 @@
 {% extends 'layouts/main-habilitation.html' %}
 {% load static form_extras %}
 
+{% block body_class %}
+remove-footer-margin
+{% endblock %}
+
 {% block title %}
   Aidants Connect - {{ object.name }} {{ object.job }}
 {% endblock %}
