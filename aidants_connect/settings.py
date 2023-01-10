@@ -424,6 +424,7 @@ CSP_SCRIPT_SRC = (
     "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
+    "'sha256-NR0PzgaeuNCaj2DbnvXN6W2GoemNJ9jQE4tqs/H7O0c='",  # ie-deprecation.html
 )
 
 CSP_STYLE_SRC = ("'self'",)
