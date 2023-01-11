@@ -1,6 +1,6 @@
 from django.db import models
 from django.urls import reverse
-from django.utils.html import mark_safe
+from django.utils.html import escape, mark_safe
 
 from markdown import markdown
 
@@ -19,7 +19,7 @@ class CmsContent(models.Model):
     body = models.TextField("Contenu")
 
     def to_html(self):
-        return mark_safe(markdown(self.body))
+        return mark_safe(markdown(escape(self.body)))
 
     class Meta:
         abstract = True
