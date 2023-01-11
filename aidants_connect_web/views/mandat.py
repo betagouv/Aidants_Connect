@@ -21,6 +21,7 @@ from phonenumbers import PhoneNumber
 from aidants_connect_common.templatetags.ac_common import mailto
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_common.utils.sms_api import SmsApi
+from aidants_connect_common.views import RequireConnectionObjectMixin
 from aidants_connect_web.decorators import (
     activity_required,
     aidant_logged_with_activity_required,
@@ -49,20 +50,6 @@ from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
-
-
-class RequireConnectionObjectMixin(View):
-    def dispatch(self, request, *args, **kwargs):
-        connection_id = request.session.get("connection")
-
-        if not connection_id:
-            log.error("No connection id found in session")
-            return redirect("espace_aidant_home")
-
-        self.connection: Connection = Connection.objects.get(pk=connection_id)
-        self.aidant: Aidant = request.user
-
-        return super().dispatch(request, *args, **kwargs)
 
 
 class MandatCreationJsFormView(FormView):

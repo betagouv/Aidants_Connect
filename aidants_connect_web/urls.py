@@ -132,7 +132,7 @@ urlpatterns = [
         name="new_attestation_qrcode",
     ),
     # id_provider
-    path("authorize/", id_provider.authorize, name="authorize"),
+    path("authorize/", id_provider.Authorize.as_view(), name="authorize"),
     path("token/", id_provider.token, name="token"),
     path("userinfo/", id_provider.user_info, name="user_info"),
     path("select_demarche/", id_provider.fi_select_demarche, name="fi_select_demarche"),

@@ -33,6 +33,7 @@
                   <input id="filter-input-id" name="chosen_usager" hidden/>
                   <div id="autocomplete" class="autocomplete-input_wrapper input-spinner-wrapper"></div>
                 </div>
+                {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
                 {% csrf_token %}
                 <input type="hidden" name="connection_id" value="{{ connection_id }}"/>
 
@@ -60,7 +61,4 @@
   <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
   <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
   <script src="{% static 'js/hidden_users_search.js' %}"></script>
-  <script>
-
-  </script>
 {% endblock %}

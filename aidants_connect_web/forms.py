@@ -21,6 +21,7 @@ from aidants_connect_web.models import (
     HabilitationRequest,
     Organisation,
     Usager,
+    UsagerQuerySet,
 )
 
 
@@ -514,16 +515,53 @@ class AuthorizeSelectUsagerForm(PatchedForm):
         },
     )
 
+    def __init__(self, usager_with_active_auth: UsagerQuerySet, *args, **kwargs):
+        self.usager_with_active_auth = usager_with_active_auth
+        super().__init__(*args, **kwargs)
+
     def clean_connection_id(self):
         connection_id = self.cleaned_data.get("connection_id")
         try:
-            return Connection.objects.get(pk=connection_id)
+            connection = Connection.objects.get(pk=connection_id)
+            if connection.is_expired:
+                ValidationError("", code="connection_expired")
+            return connection
         except (Connection.DoesNotExist, Connection.MultipleObjectsReturned):
             raise ValidationError("", code="connection_error")
 
     def clean_chosen_usager(self):
         chosen_usager = self.cleaned_data.get("chosen_usager")
         try:
-            return Usager.objects.get(pk=chosen_usager)
+            user = Usager.objects.get(pk=chosen_usager)
+            if chosen_usager not in self.usager_with_active_auth:
+                return None
+            return user
         except (Usager.DoesNotExist, Usager.MultipleObjectsReturned):
             return None
+
+
+class OAuthParametersForm(PatchedForm):
+    state = forms.IntegerField(required=False)
+    nonce = forms.IntegerField(required=False)
+    response_type = forms.CharField()
+    client_id = forms.CharField()
+    redirect_uri = forms.CharField()
+    scope = forms.CharField()
+    acr_values = forms.CharField()
+
+    def __init__(self, *args, relaxed=False, **kwargs):
+        self.relaxed = relaxed
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if self.relaxed:
+            return cleaned_data
+
+        additionnal_keys = set(self.data.keys()) - set(self.fields.keys())
+
+        for additionnal_key in additionnal_keys:
+            self.add_error(None, ValidationError(additionnal_key, "additionnal_key"))
+
+        return cleaned_data
