@@ -80,4 +80,4 @@ class IdProviderTest(FunctionalTestCase):
         button.click()
         wait = WebDriverWait(self.selenium, 10)
 
-        wait.until(url_contains("/select_demarche/?connection_id="))
+        wait.until(url_contains("/select_demarche/"))

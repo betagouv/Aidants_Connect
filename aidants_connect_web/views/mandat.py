@@ -21,7 +21,7 @@ from phonenumbers import PhoneNumber
 from aidants_connect_common.templatetags.ac_common import mailto
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_common.utils.sms_api import SmsApi
-from aidants_connect_common.views import RequireConnectionObjectMixin
+from aidants_connect_common.views import RequireConnectionView
 from aidants_connect_web.decorators import (
     activity_required,
     aidant_logged_with_activity_required,
@@ -228,7 +228,7 @@ class NewMandat(MandatCreationJsFormView):
 
 
 @aidant_logged_with_activity_required
-class NewMandatRecap(RequireConnectionObjectMixin, FormView):
+class NewMandatRecap(RequireConnectionView, FormView):
     form_class = RecapMandatForm
     template_name = "aidants_connect_web/new_mandat/new_mandat_recap.html"
 
@@ -359,7 +359,7 @@ class NewMandatRecap(RequireConnectionObjectMixin, FormView):
 
 
 @aidant_logged_with_activity_required
-class NewMandateSuccess(RequireConnectionObjectMixin, TemplateView):
+class NewMandateSuccess(RequireConnectionView, TemplateView):
     template_name = "aidants_connect_web/new_mandat/new_mandat_success.html"
 
     def get_context_data(self, **kwargs):
@@ -371,7 +371,7 @@ class NewMandateSuccess(RequireConnectionObjectMixin, TemplateView):
 
 
 @aidant_logged_with_activity_required
-class AttestationProject(RequireConnectionObjectMixin, TemplateView):
+class AttestationProject(RequireConnectionView, TemplateView):
     template_name = "aidants_connect_web/attestation.html"
 
     def get_context_data(self, **kwargs):
@@ -533,7 +533,7 @@ def attestation_qrcode(request):
 
 
 @aidant_logged_with_activity_required
-class WaitingRoom(RequireConnectionObjectMixin, TemplateView):
+class WaitingRoom(RequireConnectionView, TemplateView):
     template_name = "aidants_connect_web/sms/remote_consent_waiting_room.html"
     poll_route_name = "new_mandat_waiting_room_json"
     next_route_name = "fc_authorize"
@@ -557,10 +557,7 @@ class WaitingRoom(RequireConnectionObjectMixin, TemplateView):
 
 
 @aidant_logged_with_activity_required
-class WaitingRoomJson(RequireConnectionObjectMixin, View):
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
+class WaitingRoomJson(RequireConnectionView, View):
     def post(self, request, *args, **kwargs):
         if (
             not self.connection.mandat_is_remote

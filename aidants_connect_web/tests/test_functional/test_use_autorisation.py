@@ -113,7 +113,7 @@ class UseAutorisationTests(FunctionalTestCase):
         button.click()
         wait = WebDriverWait(self.selenium, 10)
 
-        wait.until(url_contains("/select_demarche/?connection_id="))
+        wait.until(url_contains("/select_demarche/"))
 
         # Select Démarche
         step2_title = self.selenium.find_element(By.ID, "instructions").text

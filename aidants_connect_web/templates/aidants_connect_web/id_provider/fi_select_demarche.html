@@ -18,9 +18,11 @@
       <div class="container shadowed">
         <h1>Sélectionnez le type de démarche que vous allez effectuer</h1>
         <p id="instructions" class="subtitle">En sélectionnant une démarche, vous allez FranceConnecter <span class="red">{{ usager.given_name }} {{ usager.family_name }}.</span></p>
+        {% if change_user_url %}
         <div class="button-box">
-          <a class="button primary" href="{% url 'authorize' %}">Changer d'usager</a>
+          <a class="button primary" href="{{ change_user_url }}">Changer d'usager</a>
         </div>
+        {% endif %}
       </div>
 
       <h2>Type de démarche</h2>
@@ -44,7 +46,6 @@
       <br>
       {% endfor %}
       {% csrf_token %}
-      <input type="hidden" name="connection_id" value="{{ connection_id }}" />
       <br>
       <div class="notification" role="alert">
         Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat ait expiré.<br>
