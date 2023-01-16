@@ -58,7 +58,7 @@
   {% include "layouts/matomo_script.html" %}
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
 {% block nav %}
   {% include 'layouts/_header.html' %}
 {% endblock nav %}
