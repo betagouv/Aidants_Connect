@@ -303,7 +303,7 @@ class OrganisationRequest(models.Model):
 
     @property
     def status_label(self):
-        return RequestStatusConstants[self.status].value
+        return RequestStatusConstants[self.status].label
 
     def __str__(self):
         return self.name
