@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.test import override_settings
 from django.urls import reverse
 
 from selenium.common.exceptions import WebDriverException
@@ -10,14 +11,13 @@ from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.wait import WebDriverWait
 
 
+@override_settings(DEBUG=True)
 class FunctionalTestCase(StaticLiveServerTestCase):
     js = True
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
-        settings.DEBUG = True
 
         firefox_options = FirefoxOptions()
         firefox_options.headless = settings.HEADLESS_FUNCTIONAL_TESTS
