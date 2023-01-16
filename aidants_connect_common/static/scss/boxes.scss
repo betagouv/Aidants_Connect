@@ -43,6 +43,10 @@
     padding: 1rem 1rem 0;
 
     > summary {
+      background: no-repeat url("../images/plus-blue.svg") 100% 50%;
+      padding-right: 2rem;
+      cursor: pointer;
+
       &::marker {
         content: "";
       }
@@ -54,6 +58,7 @@
 
     &[open] {
       > summary {
+        background-image: url("../images/minus-red.svg");
         > h3 {
           color: colors.$red-aidants;
         }
@@ -64,6 +69,12 @@
 
   > details + details {
     border-top: 1px solid colors.$off-yellow-aidants;
+  }
+}
+
+.markdown-content {
+  ul, ol {
+    margin: 1rem 2rem;
   }
 }
 
