@@ -106,6 +106,7 @@ class Authorize(RequireConnectionMixin, FormView):
             self.connection = Connection.objects.create(
                 state=form.cleaned_data["state"], nonce=form.cleaned_data["nonce"]
             )
+            self.request.session["connection"] = self.connection.pk
             return super().get(request, *args, **kwargs)
         else:
             return self.form_invalid_get(form)
@@ -116,6 +117,7 @@ class Authorize(RequireConnectionMixin, FormView):
             return result
         else:
             self.connection = result
+            self.request.session["connection"] = self.connection.pk
 
         self.oauth_parameters_form = OAuthParametersForm(
             data=self.request.POST, relaxed=True
@@ -151,7 +153,6 @@ class Authorize(RequireConnectionMixin, FormView):
     def form_valid(self, form):
         self.connection.usager = form.cleaned_data["chosen_usager"]
         self.connection.save()
-        self.request.session["connection"] = self.connection.pk
         return super().form_valid(form)
 
     def form_invalid_get(self, form):
@@ -267,7 +268,7 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
     def get_context_data(self, **kwargs):
         oauth_parameters_form = OAuthParametersForm(data=self.request.GET, relaxed=True)
         if oauth_parameters_form.is_valid():
-            parameters = urlencode(self.oauth_parameters_form.cleaned_data)
+            parameters = urlencode(oauth_parameters_form.cleaned_data)
             change_user_url = f"{reverse('authorize')}?{parameters}"
         else:
             change_user_url = None

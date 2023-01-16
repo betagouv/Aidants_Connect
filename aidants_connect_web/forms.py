@@ -527,7 +527,9 @@ class AuthorizeSelectUsagerForm(PatchedForm):
                 raise ValidationError("", code="unauthorized_user")
             return user
         except (Usager.DoesNotExist, Usager.MultipleObjectsReturned):
-            return None
+            raise ValidationError(
+                "La personne sélectionnée ne semble pas exister", code="invalid"
+            )
 
 
 class OAuthParametersForm(PatchedForm):
