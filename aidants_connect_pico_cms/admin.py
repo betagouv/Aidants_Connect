@@ -49,7 +49,5 @@ class MandateTranslationAdmin(ModelAdmin):
     form = MandateTranslationAdminForm
 
 
-
 admin_site.register(FaqCategory, CmsAdmin)
 admin_site.register(FaqQuestion, FaqQuestionAdmin)
-
