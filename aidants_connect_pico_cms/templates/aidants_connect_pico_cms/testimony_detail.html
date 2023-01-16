@@ -1,0 +1,27 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
+
+{% block title %}
+  Aidants Connect - {{ object.name }} {{ object.job }}
+{% endblock %}
+
+{% block content %}
+  <div>
+    <ul>
+      {% for testimony in all_testimonies %}
+        <li>
+          <a href="{{ testimony.get_absolute_url }}">
+            {{ testimony.name }}, {{ testimony.job }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="fr-container">
+    <h1>{{ object.name }}</h1>
+    <h2>{{ object.job }}</h2>
+    <div>
+      {{ object.to_html }}
+    </div>
+  </div>
+{% endblock %}

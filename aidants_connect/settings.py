@@ -143,6 +143,7 @@ INSTALLED_APPS = [
     "aidants_connect_common",
     "aidants_connect_web",
     "aidants_connect_habilitation",
+    "aidants_connect_pico_cms",
 ]
 
 # Additionnal app to execute only during tests
