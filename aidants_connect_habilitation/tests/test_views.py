@@ -125,6 +125,24 @@ class NewIssuerFormViewTests(TestCase):
             html_message=ANY,
         )
 
+        # Also test when user gives their email with capitals
+        send_mail_mock.reset_mock()
+        send_mail_mock.assert_not_called()
+
+        data["email"] = issuer.email.capitalize()
+
+        self.assertNotEqual(issuer.email, data["email"])
+
+        self.client.post(reverse(self.pattern_name), data)
+
+        send_mail_mock.assert_called_with(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=[issuer.email],
+            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
+            message=ANY,
+            html_message=ANY,
+        )
+
     def test_render_warning_when_issuer_already_exists(self):
         issuer: Issuer = IssuerFactory()
 
