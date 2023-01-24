@@ -1716,6 +1716,7 @@ class Journal(models.Model):
         remote_constent_method: RemoteConsentMethodChoices | str,
         user_phone: PhoneNumber,
         consent_request_id: str,
+        message: str,
     ) -> Journal:
         return cls.__log_sms_event(
             JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
@@ -1725,6 +1726,7 @@ class Journal(models.Model):
             remote_constent_method,
             user_phone,
             consent_request_id,
+            message,
         )
 
     @classmethod
@@ -1736,6 +1738,7 @@ class Journal(models.Model):
         remote_constent_method: RemoteConsentMethodChoices | str,
         user_phone: PhoneNumber,
         consent_request_id: str,
+        message: str,
     ) -> Journal:
         return cls.__log_sms_event(
             JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
@@ -1745,10 +1748,11 @@ class Journal(models.Model):
             remote_constent_method,
             user_phone,
             consent_request_id,
+            message,
         )
 
     @classmethod
-    def log_request_user_consent_sms(
+    def log_user_consent_request_sms_sent(
         cls,
         aidant: Aidant,
         demarche: str | Iterable,
@@ -1756,6 +1760,7 @@ class Journal(models.Model):
         remote_constent_method: RemoteConsentMethodChoices | str,
         user_phone: PhoneNumber,
         consent_request_id: str,
+        message: str,
     ) -> Journal:
         return cls.__log_sms_event(
             JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
@@ -1765,6 +1770,7 @@ class Journal(models.Model):
             remote_constent_method,
             user_phone,
             consent_request_id,
+            message,
         )
 
     @classmethod
@@ -1777,6 +1783,7 @@ class Journal(models.Model):
         remote_constent_method: RemoteConsentMethodChoices | str,
         user_phone: PhoneNumber,
         consent_request_id: str,
+        message: str,
     ) -> Journal:
         remote_constent_method = (
             RemoteConsentMethodChoices[remote_constent_method]
@@ -1797,6 +1804,7 @@ class Journal(models.Model):
             is_remote_mandat=True,
             user_phone=format_number(user_phone, PhoneNumberFormat.E164),
             consent_request_id=consent_request_id,
+            additional_information=f"message={message}",
         )
 
 

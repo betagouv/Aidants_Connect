@@ -185,14 +185,15 @@ class NewMandat(MandatCreationJsFormView):
         ).exists():
             self.consent_request_id = str(uuid4())
 
+        user_consent_request_sms_text = render_to_string(
+            "aidants_connect_web/sms/consent_request.txt",
+            context={"sms_response_consent": settings.SMS_RESPONSE_CONSENT},
+        )
         try:
             SmsApi().send_sms(
                 user_phone,
                 self.consent_request_id,
-                render_to_string(
-                    "aidants_connect_web/sms/consent_request.txt",
-                    context={"sms_response_consent": settings.SMS_RESPONSE_CONSENT},
-                ),
+                user_consent_request_sms_text,
             )
         except SmsApi.HttpRequestExpection:
             log.exception(
@@ -223,13 +224,14 @@ class NewMandat(MandatCreationJsFormView):
             )
             return redirect("espace_aidant_home")
 
-        Journal.log_request_user_consent_sms(
+        Journal.log_user_consent_request_sms_sent(
             aidant=self.aidant,
             demarche=data["demarche"],
             duree=data["duree"],
             remote_constent_method=data["remote_constent_method"],
             user_phone=user_phone,
             consent_request_id=self.consent_request_id,
+            message=user_consent_request_sms_text,
         )
 
     def process_unknown_method(self, form: MandatForm):

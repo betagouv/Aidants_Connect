@@ -347,18 +347,29 @@ class CreateNewMandatTests(FunctionalTestCase):
         ):
             self.assertTrue(elt.get_attribute("required"))
 
-        # # Select legacy consent method
+        # # Select SMS consent method
         text = RemoteConsentMethodChoices.SMS.label["label"]
         self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
         wait.until(self._element_is_required(By.ID, "id_user_phone"))
         self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
 
-        # FranceConnect
+        # Waiting room
         fc_button = self.selenium.find_element(By.ID, "submit_button")
         fc_button.click()
         wait.until(self._path_matches("new_mandat_waiting_room"))
 
-        # Test that page blocks until user has consented
+        # # Test the message is correctly logged
+        consent_request_log: Journal = Journal.objects.find_sms_consent_requests(
+            parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION), UUID
+        )[0]
+
+        self.assertIn(
+            "Un aidant a créé un mandat en votre nom. "
+            "Confirmez-vous la création de ce mandat ?",
+            consent_request_log.additional_information,
+        )
+
+        # # Test that page blocks until user has consented
         self.selenium.refresh()
         wait.until(self._path_matches("new_mandat_waiting_room"))
 
@@ -369,6 +380,11 @@ class CreateNewMandatTests(FunctionalTestCase):
         # Simulate user content
         self._user_consents("0 800 840 800")
         wait.until(self._user_has_responded("0 800 840 800"))
+        # # Test user consent is correctly logged
+        user_consent_log: Journal = Journal.objects.find_sms_user_consent(
+            parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION), UUID
+        )[0]
+        self.assertEqual("message=Oui", user_consent_log.additional_information)
 
         # Testing JS script
         # Change poll time for immediate execution
