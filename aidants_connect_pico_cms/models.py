@@ -3,11 +3,30 @@ from django.urls import reverse
 from django.utils.html import escape, mark_safe
 
 from markdown import markdown
+from markdown.extensions.attr_list import AttrListExtension
 
+from aidants_connect_pico_cms.constants import MANDATE_TRANSLATION_LANGUAGE_AVAILABLE
 from aidants_connect_web.models import Aidant
 
 
-class CmsContent(models.Model):
+class MarkdownContentMixin(models.Model):
+    body = models.TextField("Contenu")
+
+    def to_html(self):
+        return mark_safe(
+            markdown(
+                escape(self.body),
+                extensions=[
+                    AttrListExtension(),  # Allows to add HTML classes and ID
+                ],
+            )
+        )
+
+    class Meta:
+        abstract = True
+
+
+class CmsContent(MarkdownContentMixin, models.Model):
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
     updated_by = models.ForeignKey(
@@ -16,10 +35,6 @@ class CmsContent(models.Model):
     published = models.BooleanField("Publié")
     slug = models.SlugField("Clé d’URL")
     sort_order = models.PositiveSmallIntegerField("Tri", null=True, db_index=True)
-    body = models.TextField("Contenu")
-
-    def to_html(self):
-        return mark_safe(markdown(escape(self.body)))
 
     class Meta:
         abstract = True
@@ -38,3 +53,20 @@ class Testimony(CmsContent):
     class Meta:
         verbose_name = "Témoignage"
         verbose_name_plural = "Témoignages"
+
+
+class MandateTranslation(MarkdownContentMixin):
+    lang = models.CharField(
+        "Langue du mandat traduit",
+        primary_key=True,
+        max_length=10,
+        choices=list(sorted(MANDATE_TRANSLATION_LANGUAGE_AVAILABLE.items())),
+    )
+
+    @property
+    def lang_name(self):
+        return MANDATE_TRANSLATION_LANGUAGE_AVAILABLE.get(self.lang, "")
+
+    class Meta:
+        verbose_name = "Traduction de mandat"
+        verbose_name_plural = "Traductions de mandat"

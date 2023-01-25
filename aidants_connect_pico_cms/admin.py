@@ -1,9 +1,12 @@
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, register
+from django.forms import models
 
 from aidants_connect.admin import admin_site
-from aidants_connect_pico_cms.models import Testimony
+from aidants_connect_common.widgets import SearchableRadioSelect
+from aidants_connect_pico_cms.models import MandateTranslation, Testimony
 
 
+@register(Testimony, site=admin_site)
 class CmsAdmin(ModelAdmin):
     list_display = (
         "__str__",
@@ -20,4 +23,14 @@ class CmsAdmin(ModelAdmin):
     raw_id_fields = ("updated_by",)
 
 
-admin_site.register(Testimony, CmsAdmin)
+class MandateTranslationAdminForm(models.ModelForm):
+    class Meta:
+        model = MandateTranslation
+        fields = "__all__"
+        widgets = {"lang": SearchableRadioSelect}
+
+
+@register(MandateTranslation, site=admin_site)
+class MandateTranslationAdmin(ModelAdmin):
+    list_display = ("__str__",)
+    form = MandateTranslationAdminForm

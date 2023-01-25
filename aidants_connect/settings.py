@@ -19,6 +19,9 @@ from distutils.util import strtobool
 from pathlib import Path
 from typing import Optional, Union
 
+from django.conf import global_settings
+from django.utils.translation import gettext_noop
+
 import sentry_sdk
 from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -244,6 +247,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
 LANGUAGE_CODE = "fr"
+LANGUAGES = global_settings.LANGUAGES + [
+    # Add language using ISO 639-3 language code
+    # https://fr.wikipedia.org/wiki/ISO_639-3
+    ("pus", gettext_noop("Pachto")),
+    ("prs", gettext_noop("Dari")),
+]
+
+# ISO 639-1 language code for language that write right-to-left
+LANGUAGES_BIDI = global_settings.LANGUAGES_BIDI + ["pus", "prs"]
 
 TIME_ZONE = "Europe/Paris"
 
