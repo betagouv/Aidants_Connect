@@ -1,7 +1,8 @@
-from django.db.models import CharField, Lookup
+from django.db.models import CharField, Lookup, TextField
 
 
 @CharField.register_lookup
+@TextField.register_lookup
 class IsNullOrBlank(Lookup):
     lookup_name = "isnull_or_blank"
     prepare_rhs = False

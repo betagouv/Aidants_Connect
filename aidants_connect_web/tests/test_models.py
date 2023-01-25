@@ -5,13 +5,17 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
+from django.db import transaction
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
 from django.utils import timezone
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
+from phonenumbers import PhoneNumberFormat, format_number
+from phonenumbers import parse as parse_number
 
+from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Aidant,
@@ -1633,6 +1637,134 @@ class JournalModelTests(TestCase):
         self.assertTrue(
             validate_attestation_hash(attestation_string, entry.attestation_hash)
         )
+
+    def test_infos_set_remote_mandate_by_sms_constraint(self):
+        # Journal logged
+        journal = Journal._log_sms_event(
+            JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+            self.aidant_thierry,
+            "logement,transports",
+            "SHORT",
+            RemoteConsentMethodChoices.SMS.value,
+            parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION),
+            str(uuid4()),
+            "message",
+        )
+
+        self.assertEqual("message=message", journal.additional_information)
+
+        # Test I can't create a SMS related journal without a aidant
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                    aidant=None,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=True,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    consent_request_id=str(uuid4()),
+                    additional_information="message",
+                )
+
+        # Test I can't create a SMS related journal with remote field false
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                    aidant=None,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=False,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    consent_request_id=str(uuid4()),
+                    additional_information="message",
+                )
+
+        # Test I can't create a SMS related journal without a phone number
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                    aidant=None,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=False,
+                    user_phone="",
+                    consent_request_id=str(uuid4()),
+                    additional_information="message",
+                )
+
+        # Test I can't create a SMS related journal with another remote method
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+                    aidant=None,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.LEGACY.value,
+                    is_remote_mandat=False,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    consent_request_id=str(uuid4()),
+                    additional_information="message",
+                )
+
+        # Test I can't create a SMS related journal without a message
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+                    aidant=self.aidant_thierry,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=True,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    consent_request_id=str(uuid4()),
+                )
+
+        # Test I can't create a SMS related journal without a consent request ID
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                    aidant=self.aidant_thierry,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=True,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    additional_information="message",
+                )
 
 
 @tag("models", "habilitation_request")
