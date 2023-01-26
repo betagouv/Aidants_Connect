@@ -94,6 +94,10 @@ class OrganisationRequestAdminTests(TestCase):
         self.assertIn(
             "formations sont complètes pour les prochains mois", acceptance_message.body
         )
+        self.assertIn("Vous êtes sur liste d'attente", acceptance_message.body)
+        self.assertNotIn(
+            "Vous pouvez vous inscrire sur liste d’attente ici", acceptance_message.body
+        )
 
     def test_send_email_with_custom_body_and_subject(self):
         self.assertEqual(len(mail.outbox), 0)
