@@ -364,8 +364,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         )[0]
 
         self.assertIn(
-            "Un aidant a créé un mandat en votre nom. "
-            "Confirmez-vous la création de ce mandat ?",
+            "Aidant Connect, bonjour",
             consent_request_log.additional_information,
         )
 
@@ -493,7 +492,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
 
     def _user_consents(self, phone_number: str):
-        self._user_responds(phone_number, settings.SMS_RESPONSE_CONSENT)
+        self._user_responds(phone_number, "Oui")
 
     def _user_denies(self, phone_number: str):
         self._user_responds(phone_number, "Nope")

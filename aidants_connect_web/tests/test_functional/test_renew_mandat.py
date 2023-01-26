@@ -208,7 +208,7 @@ class RenewMandatTests(FunctionalTestCase):
         LM_SMS_SERVICE_OAUTH2_ENDPOINT=reverse("test_sms_api_token"),
         LM_SMS_SERVICE_SND_SMS_ENDPOINT=reverse("test_sms_api_sms"),
     )
-    @mock.patch("aidants_connect_web.views.renew_mandat.uuid4")
+    @mock.patch("aidants_connect_web.views.mandat.uuid4")
     def test_renew_mandat_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
         uuid4_mock.return_value = UUID
         wait = WebDriverWait(self.selenium, 10)
@@ -288,8 +288,7 @@ class RenewMandatTests(FunctionalTestCase):
         )[0]
 
         self.assertIn(
-            "Un aidant a créé un mandat en votre nom. "
-            "Confirmez-vous la création de ce mandat ?",
+            "Aidant Connect, bonjour",
             consent_request_log.additional_information,
         )
 
@@ -370,7 +369,7 @@ class RenewMandatTests(FunctionalTestCase):
         )
 
     def _user_consents(self, phone_number: str):
-        self._user_responds(phone_number, settings.SMS_RESPONSE_CONSENT)
+        self._user_responds(phone_number, "Oui")
 
     def _user_denies(self, phone_number: str):
         self._user_responds(phone_number, "Nope")

@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import date
 from typing import Callable, Collection
 from uuid import uuid4
@@ -8,7 +9,7 @@ from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db import IntegrityError
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -19,7 +20,10 @@ from django.views.generic import FormView, TemplateView, View
 from phonenumbers import PhoneNumber
 
 from aidants_connect_common.templatetags.ac_common import mailto
-from aidants_connect_common.utils.constants import AuthorizationDurations
+from aidants_connect_common.utils.constants import (
+    AuthorizationDurationChoices,
+    AuthorizationDurations,
+)
 from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
 from aidants_connect_web.decorators import (
@@ -39,6 +43,7 @@ from aidants_connect_web.models import (
     Connection,
     Journal,
     Mandat,
+    Organisation,
     Usager,
 )
 from aidants_connect_web.utilities import (
@@ -83,8 +88,113 @@ class MandatCreationJsFormView(FormView):
         }
 
 
+class RemoteMandateMixin:
+    def process_consent(
+        self, aidant: Aidant, organisation: Organisation, form: MandatForm
+    ) -> None | HttpResponse:
+        if (
+            not form.cleaned_data["is_remote"]
+            or form.cleaned_data["remote_constent_method"]
+            not in RemoteConsentMethodChoices.blocked_methods()
+        ):
+            return None
+        # Processes remote blocked method (SMS, email)
+        # To add another consent method, add a ``process_x_method``
+        # For instance ``process_email_method`` and do what you need to do in it
+        method = str(form.cleaned_data["remote_constent_method"]).lower()
+        process: Callable[
+            [Aidant, Organisation, MandatForm], None | HttpResponse
+        ] = getattr(self, f"_process_{method}_method", self._process_unknown_method)
+        return process(aidant, organisation, form)
+
+    def _process_sms_method(
+        self, aidant: Aidant, organisation: Organisation, form: MandatForm
+    ) -> None | HttpResponse:
+        data = form.cleaned_data
+        user_phone: PhoneNumber = data["user_phone"]
+
+        self.consent_request_id = str(uuid4())
+
+        # Try to choose another UUID if there's already one
+        # associated with this number in DB.
+        while Journal.objects.find_sms_consent_requests(
+            user_phone, self.consent_request_id
+        ).exists():
+            self.consent_request_id = str(uuid4())
+
+        message = render_to_string(
+            "aidants_connect_web/sms/consent_request.txt",
+            context={
+                "aidant": aidant,
+                "organisation": organisation,
+                "demarches": [
+                    humanize_demarche_names(demarche)
+                    for demarche in sorted(form.cleaned_data["demarche"])
+                ],
+                "duree_text": AuthorizationDurationChoices(
+                    form.cleaned_data["duree"]
+                ).label,
+                "sms_response_consent": settings.SMS_RESPONSE_CONSENT,
+            },
+        )
+
+        # Strip the traling spaces
+        message = re.sub(r"^\s*", "", message)
+        message = re.sub(r"\s*$", "", message)
+
+        try:
+            SmsApi().send_sms(user_phone, self.consent_request_id, message)
+        except SmsApi.HttpRequestExpection:
+            log.exception(
+                "An error happend while trying to send an SMS consent request"
+            )
+            error_datetime = timezone.now()
+            email_body = render_to_string(
+                "aidants_connect_web/sms/support_email_send_failure_body.txt",
+                context={
+                    "datetime": error_datetime,
+                    "number": str(user_phone),
+                    "consent_request_id": self.consent_request_id,
+                },
+            )
+            django_messages.error(
+                self.request,
+                format_html(
+                    "Une erreur est survenue pendant l'envoi du SMS de "
+                    "consentement. Merci de réessayer plus tard. Si l'erreur persiste, "
+                    "merci de nous la signaler {}.",
+                    mailto(
+                        "en suivant ce lien pour nous envoyer un email",
+                        settings.SMS_SUPPORT_EMAIL,
+                        settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
+                        email_body,
+                    ),
+                ),
+            )
+            return redirect("espace_aidant_home")
+
+        Journal.log_user_consent_request_sms_sent(
+            aidant=aidant,
+            demarche=data["demarche"],
+            duree=data["duree"],
+            remote_constent_method=data["remote_constent_method"],
+            user_phone=user_phone,
+            consent_request_id=self.consent_request_id,
+            message=message,
+        )
+
+    def _process_unknown_method(
+        self,
+        aidant: Aidant,
+        organisation: Organisation,
+        form: MandatForm,
+    ):
+        log.error(f"Unknown remote consent method {form['remote_constent_method']}")
+        raise Http404()
+
+
 @aidant_logged_with_activity_required
-class NewMandat(MandatCreationJsFormView):
+class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
     form_class = MandatForm
     template_name = "aidants_connect_web/new_mandat/new_mandat.html"
 
@@ -128,21 +238,11 @@ class NewMandat(MandatCreationJsFormView):
         data = form.cleaned_data
         self.consent_request_id = ""
 
-        if (
-            data["is_remote"]
-            and data["remote_constent_method"]
-            in RemoteConsentMethodChoices.blocked_methods()
+        if isinstance(
+            result := self.process_consent(self.aidant, self.aidant.organisation, form),
+            HttpResponse,
         ):
-            # Processes remote blocked method (SMS, email)
-            # To add another consent method, add a ``process_x_method``
-            # For instance ``process_email_method`` and do what you need to do in it
-            method = str(data["remote_constent_method"]).lower()
-            process: Callable[[MandatForm], None | HttpResponse] = getattr(
-                self, f"process_{method}_method", self.process_unknown_method
-            )
-            result = process(form)
-            if isinstance(result, HttpResponse):
-                return result
+            return result
 
         self.connection = Connection.objects.create(
             aidant=self.aidant,
@@ -158,73 +258,6 @@ class NewMandat(MandatCreationJsFormView):
         self.request.session["connection"] = self.connection.pk
 
         return super().form_valid(form)
-
-    def process_sms_method(self, form: MandatForm) -> None | HttpResponse:
-        data = form.cleaned_data
-        user_phone: PhoneNumber = data["user_phone"]
-
-        self.consent_request_id = str(uuid4())
-
-        # Try to choose another UUID if there's already one
-        # associated with this number in DB.
-        while Journal.objects.find_sms_consent_requests(
-            user_phone, self.consent_request_id
-        ).exists():
-            self.consent_request_id = str(uuid4())
-
-        user_consent_request_sms_text = render_to_string(
-            "aidants_connect_web/sms/consent_request.txt",
-            context={"sms_response_consent": settings.SMS_RESPONSE_CONSENT},
-        )
-        try:
-            SmsApi().send_sms(
-                user_phone,
-                self.consent_request_id,
-                user_consent_request_sms_text,
-            )
-        except SmsApi.HttpRequestExpection:
-            log.exception(
-                "An error happend while trying to send an SMS consent request"
-            )
-            error_datetime = timezone.now()
-            email_body = render_to_string(
-                "aidants_connect_web/sms/support_email_send_failure_body.txt",
-                context={
-                    "datetime": error_datetime,
-                    "number": str(user_phone),
-                    "consent_request_id": self.consent_request_id,
-                },
-            )
-            django_messages.error(
-                self.request,
-                format_html(
-                    "Une erreur est survenue pendant l'envoi du SMS de "
-                    "consentement. Merci de réessayer plus tard. Si l'erreur persiste, "
-                    "merci de nous la signaler {}.",
-                    mailto(
-                        "en suivant ce lien pour nous envoyer un email",
-                        settings.SMS_SUPPORT_EMAIL,
-                        settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
-                        email_body,
-                    ),
-                ),
-            )
-            return redirect("espace_aidant_home")
-
-        Journal.log_user_consent_request_sms_sent(
-            aidant=self.aidant,
-            demarche=data["demarche"],
-            duree=data["duree"],
-            remote_constent_method=data["remote_constent_method"],
-            user_phone=user_phone,
-            consent_request_id=self.consent_request_id,
-            message=user_consent_request_sms_text,
-        )
-
-    def process_unknown_method(self, form: MandatForm):
-        raise NotImplementedError(
-            f"Unknown remote consent method {form['remote_constent_method']}"
-        )
 
 
 @aidant_logged_with_activity_required
