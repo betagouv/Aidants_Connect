@@ -902,6 +902,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         rows_updated = queryset.filter(
             status__in=(
                 HabilitationRequest.STATUS_PROCESSING,
+                HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
                 HabilitationRequest.STATUS_NEW,
             )
         ).update(status=HabilitationRequest.STATUS_REFUSED)
@@ -937,13 +938,23 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     mark_refused.short_description = "Refuser les demandes sélectionnées"
 
     def mark_processing(self, request, queryset):
-        rows_updated = queryset.filter(status=HabilitationRequest.STATUS_NEW).update(
-            status=HabilitationRequest.STATUS_PROCESSING
+        habilitation_requests = queryset.filter(
+            status__in=[
+                HabilitationRequest.STATUS_NEW,
+                HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
+            ]
         )
-        for habilitation_request in queryset:
+
+        for habilitation_request in habilitation_requests:
+            habilitation_request.status = HabilitationRequest.STATUS_PROCESSING
+            habilitation_request.save()
+        for habilitation_request in habilitation_requests:
             self.send_validation_email(habilitation_request)
 
-        self.message_user(request, f"{rows_updated} demandes sont maintenant en cours.")
+        self.message_user(
+            request,
+            f"{habilitation_requests.count()} demandes sont maintenant en cours.",
+        )
 
     mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
 
@@ -1023,6 +1034,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             status__in=(
                 HabilitationRequest.STATUS_PROCESSING,
                 HabilitationRequest.STATUS_NEW,
+                HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
                 HabilitationRequest.STATUS_VALIDATED,
             )
         )

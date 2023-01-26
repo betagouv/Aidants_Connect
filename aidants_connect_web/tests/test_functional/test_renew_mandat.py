@@ -162,7 +162,7 @@ class RenewMandatTests(FunctionalTestCase):
         # # wait for the execution of JS
         wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
         for elt in self.selenium.find_elements(
-            By.CSS_SELECTOR, "#id_remote_constent_method input"
+            By.CSS_SELECTOR, "#id_remote_constent_method > input"
         ):
             self.assertTrue(elt.get_attribute("required"))
 
@@ -267,7 +267,7 @@ class RenewMandatTests(FunctionalTestCase):
         # # wait for the execution of JS
         wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
         for elt in self.selenium.find_elements(
-            By.CSS_SELECTOR, "#id_remote_constent_method input"
+            By.CSS_SELECTOR, "#id_remote_constent_method > input"
         ):
             self.assertTrue(elt.get_attribute("required"))
 

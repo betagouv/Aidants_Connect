@@ -496,6 +496,7 @@ class Aidant(AbstractUser):
 
 
 class HabilitationRequest(models.Model):
+    STATUS_WAITING_LIST_HABILITATION = "habilitation_waitling_list"
     STATUS_NEW = "new"
     STATUS_PROCESSING = "processing"
     STATUS_VALIDATED = "validated"
@@ -505,8 +506,10 @@ class HabilitationRequest(models.Model):
     ORIGIN_DATAPASS = "datapass"
     ORIGIN_RESPONSABLE = "responsable"
     ORIGIN_OTHER = "autre"
+    ORIGIN_HABILITATION = "habilitation"
 
     STATUS_LABELS = {
+        STATUS_WAITING_LIST_HABILITATION: "Liste d'attente demande habilitation",
         STATUS_NEW: "Nouvelle",
         STATUS_PROCESSING: "En cours",
         STATUS_VALIDATED: "Validée",
@@ -518,6 +521,7 @@ class HabilitationRequest(models.Model):
         ORIGIN_DATAPASS: "Datapass",
         ORIGIN_RESPONSABLE: "Responsable Structure",
         ORIGIN_OTHER: "Autre",
+        ORIGIN_HABILITATION: "Formulaire Habilitation",
     }
 
     first_name = models.CharField("Prénom", max_length=150)
@@ -536,7 +540,7 @@ class HabilitationRequest(models.Model):
         "État",
         blank=False,
         max_length=150,
-        default=STATUS_NEW,
+        default=STATUS_WAITING_LIST_HABILITATION,
         choices=((status, label) for status, label in STATUS_LABELS.items()),
     )
     origin = models.CharField(
@@ -571,6 +575,7 @@ class HabilitationRequest(models.Model):
         if self.status not in (
             self.STATUS_PROCESSING,
             self.STATUS_NEW,
+            self.STATUS_WAITING_LIST_HABILITATION,
             self.STATUS_VALIDATED,
         ):
             return False

@@ -78,6 +78,27 @@ class OrganisationRequestAdminTests(TestCase):
         self.assertTrue(org_request.manager.email in acceptance_message.recipients())
         self.assertTrue(org_request.issuer.email in acceptance_message.recipients())
 
+    def test_acceptance_message_has_waiting_list_message(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        org_request = OrganisationRequestFactory(
+            status=RequestStatusConstants.VALIDATED.name,
+            data_pass_id=67245456,
+        )
+
+        self.org_request_admin.send_acceptance_email(org_request)
+        self.assertEqual(len(mail.outbox), 2)
+
+        acceptance_message = mail.outbox[1]
+
+        self.assertIn(
+            "formations sont complètes pour les prochains mois", acceptance_message.body
+        )
+        self.assertIn("Vous êtes sur liste d'attente", acceptance_message.body)
+        self.assertNotIn(
+            "Vous pouvez vous inscrire sur liste d’attente ici", acceptance_message.body
+        )
+
     def test_send_email_with_custom_body_and_subject(self):
         self.assertEqual(len(mail.outbox), 0)
 

@@ -97,7 +97,8 @@ class HabilitationRequestsTests(TestCase):
                 HabilitationRequest.ORIGIN_RESPONSABLE,
             )
             self.assertEqual(
-                created_habilitation_request.status, HabilitationRequest.STATUS_NEW
+                created_habilitation_request.status,
+                HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
             )
 
     def test_email_is_lowercased(self):

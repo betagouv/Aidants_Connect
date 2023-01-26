@@ -194,9 +194,10 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
         )
 
     def send_issuer_profile_reminder_mail(self, email: str):
+        issuer: Issuer = Issuer.objects.get(email__iexact=email)
         path = reverse(
             "habilitation_issuer_page",
-            kwargs={"issuer_id": str(Issuer.objects.get(email=email).issuer_id)},
+            kwargs={"issuer_id": str(issuer.issuer_id)},
         )
         context = {"url": self.request.build_absolute_uri(path)}
         text_message = loader.render_to_string(
@@ -207,7 +208,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
         )
         send_mail(
             from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
-            recipient_list=[email],
+            recipient_list=[issuer.email],
             subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
             message=text_message,
             html_message=html_message,

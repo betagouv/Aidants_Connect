@@ -16,7 +16,12 @@ $bp-xl: 78em;
 // basic layout -----------------------------------------
 
 html, body {
-  height: 100%;
+  min-height: 100vh;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
 }
 
 ul, ol {
@@ -30,6 +35,7 @@ svg.previews {
 
 #main {
   overflow: hidden;
+  flex-grow: 100;
 }
 
 main {
@@ -80,6 +86,7 @@ main {
 }
 
 h1, .h1 {
+  display: block;
   font-size: 3rem;
   font-weight: bold;
   color: colors.$red-aidants;
@@ -95,6 +102,7 @@ h1, .h1 {
 }
 
 h2, .h2 {
+  display: block;
   font-size: 2.25rem;
   color: colors.$blue-aidants;
   font-weight: bold;
@@ -134,33 +142,40 @@ h3, .h3 {
   border: 1px solid colors.$off-yellow-aidants;
   box-sizing: border-box;
   box-shadow: 10px 10px 0 colors.$off-yellow-aidants;
-}
+  height: 100%; // to fill space in parent column box
+  display: flex; // for child content proper display
+  flex-direction: column;
 
-
-.card-ressource {
   .h1 {
     font-size: 1.5rem;
     text-transform: none;
   }
+
   .h2, .h3 {
     font-size: 1.125rem;
   }
-}
 
-.card-content {
-  padding: 2rem;
-}
-
-
-.card-ressource img {
+  img {
     object-fit: cover;
-    height: 100%;
     width: 100%;
+  }
+
+  .card-content {
+    padding: 2rem;
+    flex-grow: 1; // to fill all remaining space in parent .card-resource
+    display: flex; // for proper display of child content (p and button box)
+    flex-direction: column;
+
+    p {
+      flex-grow: 1; // in order to "push" the button-box at the end
+    }
+  }
+
+  .button-box {
+    transform: translateY(4rem);
+  }
 }
 
-.card-ressource .button-box {
-  transform: translateY(4rem);
-}
 
 .tag {
   display: flex;
@@ -756,4 +771,98 @@ footer {
 
 .margin-bottom-1 {
   margin-bottom: 1rem;
+}
+
+// testimonies
+
+.testimonies {
+  $radius: 5rem;
+
+  nav ul {
+    list-style-type: none;
+
+    li + li {
+      margin-top: 1.5rem;
+    }
+
+    a {
+      display: flex;
+      border-radius: 6rem;
+      text-decoration: none;
+      color: colors.$blue-aidants;
+      font-size: 0.875em;
+      font-weight: normal;
+
+      &.active {
+        background: colors.$blue-aidants;
+        color: #fff;
+      }
+    }
+
+    .t-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-left: 1.6em;
+
+      .name {
+        font-weight: bold;
+      }
+    }
+
+    .portrait {
+      display: flex;
+
+      img {
+        width: $radius;
+        height: $radius;
+        border-radius: 100%;
+        border: 2px solid #fff;
+      }
+    }
+  }
+
+  .testimony-header {
+    display: flex;
+    justify-content: center;
+
+    .portrait {
+      img {
+        border-radius: 100%;
+      }
+    }
+  }
+
+  .testimony-title {
+    font-size: 1.5rem;
+    color: colors.$blue-aidants;
+    margin-left: 2rem;
+
+    .compo {
+      display: block;
+      margin-bottom: .5em;
+    }
+
+    .compo:first-child {
+      font-weight: normal;
+      font-size: 1rem;
+      color: colors.$red-aidants;
+    }
+
+    .compo:last-child {
+      text-transform: none;
+      font-size: 1rem;
+      font-weight: normal;
+
+    }
+  }
+
+  .testimony-content {
+    h1,h2,h3,h4 {
+      font-weight: bold;
+      font-size: 1rem;
+      margin: 2em 0 1em;
+      color: colors.$red-aidants;
+    }
+  }
 }
