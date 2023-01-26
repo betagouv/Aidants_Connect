@@ -3,6 +3,8 @@ from django.conf import settings
 
 def settings_variables(request):
     return {
+        "SUPPORT_EMAIL": settings.SUPPORT_EMAIL,
+        "SITE_DESCRIPTION": settings.SITE_DESCRIPTION,
         "MATOMO_INSTANCE_URL": settings.MATOMO_INSTANCE_URL,
         "MATOMO_INSTANCE_SITE_ID": settings.MATOMO_INSTANCE_SITE_ID,
         "GOUV_ADDRESS_SEARCH_API_DISABLED": settings.GOUV_ADDRESS_SEARCH_API_DISABLED,

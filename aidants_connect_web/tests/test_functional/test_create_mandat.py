@@ -50,8 +50,12 @@ class CreateNewMandatTests(FunctionalTestCase):
         welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(welcome_aidant, "Vos usagères et usagers")
 
-        usagers_before = self.selenium.find_elements(By.TAG_NAME, "tr")
-        self.assertEqual(len(usagers_before), 0)
+        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
+        self.assertEqual(1, len(usagers_before))
+        self.assertEqual(
+            "Il n'y a encore personne avec qui vous avez un mandat.",
+            usagers_before[0].text.strip(),
+        )
 
         # Create new mandat
         add_usager_button = self.selenium.find_element(By.ID, "add_usager")
@@ -151,8 +155,12 @@ class CreateNewMandatTests(FunctionalTestCase):
         welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(welcome_aidant, "Vos usagères et usagers")
 
-        usagers_before = self.selenium.find_elements(By.TAG_NAME, "tr")
-        self.assertEqual(len(usagers_before), 0)
+        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
+        self.assertEqual(1, len(usagers_before))
+        self.assertEqual(
+            "Il n'y a encore personne avec qui vous avez un mandat.",
+            usagers_before[0].text.strip(),
+        )
 
         # Create new mandat
         add_usager_button = self.selenium.find_element(By.ID, "add_usager")
@@ -195,7 +203,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         # # wait for the execution of JS
         wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
         for elt in self.selenium.find_elements(
-            By.CSS_SELECTOR, "#id_remote_constent_method input"
+            By.CSS_SELECTOR, "#id_remote_constent_method > input"
         ):
             self.assertTrue(elt.get_attribute("required"))
 
@@ -287,8 +295,12 @@ class CreateNewMandatTests(FunctionalTestCase):
         welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(welcome_aidant, "Vos usagères et usagers")
 
-        usagers_before = self.selenium.find_elements(By.TAG_NAME, "tr")
-        self.assertEqual(len(usagers_before), 0)
+        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
+        self.assertEqual(1, len(usagers_before))
+        self.assertEqual(
+            "Il n'y a encore personne avec qui vous avez un mandat.",
+            usagers_before[0].text.strip(),
+        )
 
         # Create new mandat
         add_usager_button = self.selenium.find_element(By.ID, "add_usager")
@@ -331,7 +343,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         # # wait for the execution of JS
         wait.until(self._element_is_required(By.ID, "id_remote_constent_method_sms"))
         for elt in self.selenium.find_elements(
-            By.CSS_SELECTOR, "#id_remote_constent_method input"
+            By.CSS_SELECTOR, "#id_remote_constent_method > input"
         ):
             self.assertTrue(elt.get_attribute("required"))
 
@@ -357,7 +369,18 @@ class CreateNewMandatTests(FunctionalTestCase):
         # Simulate user content
         self._user_consents("0 800 840 800")
         wait.until(self._user_has_responded("0 800 840 800"))
-        self.selenium.refresh()
+
+        # Testing JS script
+        # Change poll time for immediate execution
+        self.selenium.execute_script(
+            """
+            document.querySelector(
+                "[data-controller='remote-consent-waiting-room']"
+            ).setAttribute(
+                "data-remote-content-waiting-room-poll-timeout-value", "1"
+            )
+        """
+        )
         wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
         self.assertEqual("Connexion - choix du compte", self.selenium.title)

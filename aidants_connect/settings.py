@@ -22,6 +22,7 @@ from typing import Optional, Union
 import sentry_sdk
 from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from aidants_connect.postgres_url import turn_psql_url_into_param
 
@@ -112,7 +113,10 @@ if SENTRY_DSN:
     SENTRY_ENV = os.getenv("SENTRY_ENV", "unknown")
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration()],
+        integrations=[
+            DjangoIntegration(),
+            LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
+        ],
         environment=SENTRY_ENV,
     )
 
@@ -140,6 +144,7 @@ INSTALLED_APPS = [
     "aidants_connect_common",
     "aidants_connect_web",
     "aidants_connect_habilitation",
+    "aidants_connect_pico_cms",
     "aidants_connect_sandbox",
 ]
 
@@ -421,6 +426,7 @@ CSP_SCRIPT_SRC = (
     "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
+    "'sha256-NR0PzgaeuNCaj2DbnvXN6W2GoemNJ9jQE4tqs/H7O0c='",  # ie-deprecation.html
 )
 
 CSP_STYLE_SRC = ("'self'",)
@@ -485,6 +491,11 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_RESULT_SERIALIZER = JSON_SERIALIZER
 CELERY_TASK_SERIALIZER = JSON_SERIALIZER
 CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
+
+SITE_DESCRIPTION = (
+    "Permettre à un aidant professionnel de réaliser des démarches administratives en "
+    "ligne « à la place de » via une connexion sécurisée"
+)
 
 # COVID-19 changes
 ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
@@ -638,6 +649,8 @@ if "test" in sys.argv:
 else:
     SMS_API_DISABLED = getenv_bool("SMS_API_DISABLED", True)
 
+
+FF_ACTIVATE_SMS_CONSENT = getenv_bool("FF_ACTIVATE_SMS_CONSENT", True)
 SMS_RESPONSE_CONSENT = os.getenv("SMS_RESPONSE_CONSENT", "Oui")
 SMS_SUPPORT_EMAIL = os.getenv("SMS_SUPPORT_EMAIL", SUPPORT_EMAIL)
 SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET = os.getenv(

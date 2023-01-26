@@ -1645,6 +1645,9 @@ class HabilitationRequestMethodTests(TestCase):
         for habilitation_request in (
             HabilitationRequestFactory(status=HabilitationRequest.STATUS_PROCESSING),
             HabilitationRequestFactory(status=HabilitationRequest.STATUS_NEW),
+            HabilitationRequestFactory(
+                status=HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+            ),
         ):
             self.assertEqual(
                 0, Aidant.objects.filter(email=habilitation_request.email).count()

@@ -20,6 +20,7 @@ django-phonenumber-field = {version = "==7.0.0", extras = ["phonenumberslite"]}
 celery = {version = "==5.2.7", extras = ["redis"]}
 gunicorn = "==20.1.0"
 metabasepy = "==1.12.0"
+markdown = "==3.4.1"
 pillow = "==9.3.0"
 psycopg2-binary = "==2.9.3"
 ptpython = "==3.0.20"
@@ -34,14 +35,16 @@ django-magicauth = {ref = "0.11", git = "https://github.com/betagouv/django-magi
 
 [dev-packages]
 pipenv = "*"
-black = "==22.8.0"
-coverage = "==6.4.4"
-django-debug-toolbar = "==3.6.0"
-isort = "==5.10.1"
-factory-boy = "==3.2.1"
-flake8 = "==5.0.4"
-freezegun = "==1.2.2"
-pre-commit = "==2.20.0"
-pre-commit-hooks = "==4.3.0"
-selenium = "==4.4.3"
+coverage = "~=7.0"
+django-debug-toolbar = "~=3.6"
+factory-boy = "~=3.2"
+freezegun = "~=1.2"
+pre-commit = "~=2.20"
+selenium = "~=4.4"
 tblib = "*"
+# pre-commit dependencies
+black = "==22.12.0"
+tomli = {version = "*", python_version = "< '3.11'" } # dependency from Black that is weirdly not installed on CI
+isort = "==5.11.4"
+flake8 = "==6.0.0"
+pre-commit-hooks = "==4.4.0"

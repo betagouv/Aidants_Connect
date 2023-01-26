@@ -1,0 +1,33 @@
+{% load static ac_common %}
+
+<template id="ie-end-of-life-tpl">
+  <div class="ie-end-of-life">
+    <h1>Attention ! Il semble que vous utilisiez Internet Explorer</h1>
+    <p>
+      Le 15 juin dernier
+      <a href="https://blogs.windows.com/windowsexperience/2022/06/15/internet-explorer-11-has-retired-and-is-officially-out-of-support-what-you-need-to-know/">
+        Microsoft a offciellement annoncé la fin de vie d'Internet Explorer au profit de Edge (lien en anglais)
+      </a>.
+      Internet Explorer ne reçoit plus de mises à jour de sécurité depuis ce jour et n'est plus considéré comme un
+      navigateur sûr pour Aidants Connect.
+    </p>
+    <p>
+      C'est pourquoi, à compter du 31 avril 2022, nous ne pourrons plus garantir le bon fonctionnement de l'application Aidant Connect avec le navigateur Internet Explorer.
+      À compter de cette date Aidant Connect risque de mal fonctionner sur votre navigateur.
+    </p>
+    <p>
+      Si vous pensez que nous devrions continuer de supporter Internet Explorer, vous pouvez nous contacter par email à
+      {% mailto link_text=SUPPORT_EMAIL recipient=SUPPORT_EMAIL subject="Fin de vie d'Internet Explorer" body="" %}.
+    </p>
+  </div>
+</template>
+
+<link href="{% static 'css/ie-deprecation.css' %}" rel="stylesheet">
+
+<script type="text/javascript">
+    if (/MSIE \d|Trident.*rv:/.test(navigator.userAgent)) {
+        document.querySelector("#main").insertAdjacentHTML(
+            "afterbegin", document.querySelector("#ie-end-of-life-tpl").innerHTML
+        );
+    }
+</script>

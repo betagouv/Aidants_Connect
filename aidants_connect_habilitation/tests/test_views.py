@@ -125,6 +125,24 @@ class NewIssuerFormViewTests(TestCase):
             html_message=ANY,
         )
 
+        # Also test when user gives their email with capitals
+        send_mail_mock.reset_mock()
+        send_mail_mock.assert_not_called()
+
+        data["email"] = issuer.email.capitalize()
+
+        self.assertNotEqual(issuer.email, data["email"])
+
+        self.client.post(reverse(self.pattern_name), data)
+
+        send_mail_mock.assert_called_with(
+            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+            recipient_list=[issuer.email],
+            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
+            message=ANY,
+            html_message=ANY,
+        )
+
     def test_render_warning_when_issuer_already_exists(self):
         issuer: Issuer = IssuerFactory()
 
@@ -313,19 +331,19 @@ class IssuerPageViewTests(TestCase):
     def test_new_organisation_request_is_displayed_with_links(self):
         organisation = DraftOrganisationRequestFactory(issuer=self.issuer)
         response = self.client.get(self.get_url(self.issuer.issuer_id))
-        self.assertContains(response, RequestStatusConstants.NEW.value)
+        self.assertContains(response, RequestStatusConstants.NEW.label)
         self.assertContains(response, "Soumettre la demande")
         self.assertContains(response, organisation.name)
 
     def test_submitted_organisation_request_is_displayed_without_links(self):
         organisation = OrganisationRequestFactory(
             issuer=self.issuer,
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value,
         )
         response = self.client.get(self.get_url(self.issuer.issuer_id))
         self.assertNotContains(response, RequestStatusConstants.NEW.value)
         self.assertContains(
-            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
+            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.label
         )
         self.assertNotContains(response, "Soumettre la demande")
         self.assertContains(response, organisation.name)
@@ -1133,18 +1151,18 @@ class RequestReadOnlyViewTests(TestCase):
 
     def test_no_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value
         )
         response = self.client.get(organisation.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, organisation.name)
         self.assertContains(
-            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.value
+            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.label
         )
 
     def test_issuer_can_post_a_message(self):
         organisation = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value
         )
         response = self.client.get(organisation.get_absolute_url())
         self.assertNotContains(response, "Bonjour bonjour")
@@ -1156,7 +1174,7 @@ class RequestReadOnlyViewTests(TestCase):
 
     def test_correct_message_is_shown_when_empty_messages_history(self):
         organisation = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value
         )
         response = self.client.get(organisation.get_absolute_url())
         self.assertContains(response, "Notre conversation démarre ici.")
@@ -1238,7 +1256,11 @@ class AddAidantsRequestViewTests(TestCase):
 
         self.assertEqual(RequestStatusConstants.VALIDATED.name, org_req.status)
         self.assertEqual(
-            3, HabilitationRequest.objects.filter(organisation=organisation).count()
+            3,
+            HabilitationRequest.objects.filter(
+                organisation=organisation,
+                origin=HabilitationRequest.ORIGIN_HABILITATION,
+            ).count(),
         )
 
         furthermore = get_form(

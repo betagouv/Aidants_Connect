@@ -12,6 +12,7 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin_site.urls),
     path("", include("aidants_connect_web.urls")),
     path("habilitation/", include("aidants_connect_habilitation.urls")),
+    path("", include("aidants_connect_pico_cms.urls")),
 ]
 
 if "test" in sys.argv:
