@@ -95,6 +95,7 @@ class Callback(View):
             "remote_constent_method": consent_request.remote_constent_method,
             "user_phone": consent_request.user_phone,
             "consent_request_id": consent_request.consent_request_id,
+            "message": sms_response.message,
         }
 
         consent_response = settings.SMS_RESPONSE_CONSENT.lower().strip()

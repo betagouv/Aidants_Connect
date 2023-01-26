@@ -1400,6 +1400,29 @@ class Journal(models.Model):
     class Meta:
         verbose_name = "entrée de journal"
         verbose_name_plural = "entrées de journal"
+        constraints = [
+            # All infos are set when creating a journal for remote mandate by SMS
+            models.CheckConstraint(
+                check=(
+                    ~Q(
+                        action__in=[
+                            JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                            JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
+                            JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+                        ]
+                    )
+                    | (
+                        Q(aidant__isnull=False)
+                        & Q(is_remote_mandat=True)
+                        & Q(user_phone__isnull_or_blank=False)
+                        & Q(consent_request_id__isnull_or_blank=False)
+                        & Q(remote_constent_method=RemoteConsentMethodChoices.SMS.name)
+                        & Q(additional_information__isnull_or_blank=False)
+                    )
+                ),
+                name="infos_set_remote_mandate_by_sms",
+            )
+        ]
 
     def __str__(self):
         return f"Entrée #{self.id} : {self.action} - {self.aidant}"
@@ -1716,8 +1739,9 @@ class Journal(models.Model):
         remote_constent_method: RemoteConsentMethodChoices | str,
         user_phone: PhoneNumber,
         consent_request_id: str,
+        message: str,
     ) -> Journal:
-        return cls.__log_sms_event(
+        return cls._log_sms_event(
             JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
             aidant,
             demarche,
@@ -1725,6 +1749,7 @@ class Journal(models.Model):
             remote_constent_method,
             user_phone,
             consent_request_id,
+            message,
         )
 
     @classmethod
@@ -1736,8 +1761,9 @@ class Journal(models.Model):
         remote_constent_method: RemoteConsentMethodChoices | str,
         user_phone: PhoneNumber,
         consent_request_id: str,
+        message: str,
     ) -> Journal:
-        return cls.__log_sms_event(
+        return cls._log_sms_event(
             JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
             aidant,
             demarche,
@@ -1745,10 +1771,11 @@ class Journal(models.Model):
             remote_constent_method,
             user_phone,
             consent_request_id,
+            message,
         )
 
     @classmethod
-    def log_request_user_consent_sms(
+    def log_user_consent_request_sms_sent(
         cls,
         aidant: Aidant,
         demarche: str | Iterable,
@@ -1756,8 +1783,9 @@ class Journal(models.Model):
         remote_constent_method: RemoteConsentMethodChoices | str,
         user_phone: PhoneNumber,
         consent_request_id: str,
+        message: str,
     ) -> Journal:
-        return cls.__log_sms_event(
+        return cls._log_sms_event(
             JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
             aidant,
             demarche,
@@ -1765,10 +1793,11 @@ class Journal(models.Model):
             remote_constent_method,
             user_phone,
             consent_request_id,
+            message,
         )
 
     @classmethod
-    def __log_sms_event(
+    def _log_sms_event(
         cls,
         action: str,
         aidant: Aidant,
@@ -1777,6 +1806,7 @@ class Journal(models.Model):
         remote_constent_method: RemoteConsentMethodChoices | str,
         user_phone: PhoneNumber,
         consent_request_id: str,
+        message: str,
     ) -> Journal:
         remote_constent_method = (
             RemoteConsentMethodChoices[remote_constent_method]
@@ -1797,6 +1827,7 @@ class Journal(models.Model):
             is_remote_mandat=True,
             user_phone=format_number(user_phone, PhoneNumberFormat.E164),
             consent_request_id=consent_request_id,
+            additional_information=f"message={message}",
         )
 
 
