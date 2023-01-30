@@ -1,7 +1,10 @@
-from django.test import TestCase, tag
+from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 
-from aidants_connect_pico_cms.tests.factories import TestimonyFactory
+from aidants_connect_pico_cms.tests.factories import (  # FaqQuestionFactory,
+    FaqCategoryFactory,
+    TestimonyFactory,
+)
 
 
 @tag("pico_cms")
@@ -24,3 +27,26 @@ class TestimonyViewTests(TestCase):
     def test_404_on_nonexisting_testimony(self):
         response = self.client.get("/temoignages/pamela-bsence/")
         self.assertEqual(response.status_code, 404)
+
+
+@tag("pico_cms")
+class FaqViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.faq_section_1 = FaqCategoryFactory(
+            name="Première section de FAQ", slug="premiere-section", sort_order=10
+        )
+        cls.faq_section_2 = FaqCategoryFactory(
+            name="Deuxième section de FAQ", slug="seconde-section", sort_order=20
+        )
+
+    @override_settings(FF_USE_PICO_CMS_FOR_FAQ=True)
+    def test_right_template_is_used_and_content_is_here(self):
+        response = self.client.get("/faq/premiere-section/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_pico_cms/faqcategory_detail.html"
+        )
+        self.assertContains(response, "Première section de FAQ")
+        self.assertContains(response, "Deuxième section de FAQ")

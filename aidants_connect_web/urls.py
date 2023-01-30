@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import path, re_path
 
 from magicauth.urls import urlpatterns as magicauth_urls
@@ -209,19 +210,6 @@ urlpatterns = [
     path("habilitation", service.habilitation, name="habilitation"),
     path("ressources/", service.ressources, name="ressources"),
     path("accessibilite/", service.accessibilite, name="accessibilite"),
-    # # FAQ
-    path("faq/", service.faq_generale, name="faq_generale"),
-    path("faq/mandat/", service.faq_mandat, name="faq_mandat"),
-    path(
-        "faq/donnees-personnelles/",
-        service.faq_donnees_personnelles,
-        name="faq_donnees_personnelles",
-    ),
-    path(
-        "faq/habilitation/",
-        service.faq_habilitation,
-        name="faq_habilitation",
-    ),
     # # Datapass
     path(
         "datapass_receiver/",
@@ -237,5 +225,22 @@ urlpatterns = [
     # SMS provider may misconfigure the trailing slash so we need to respond on both
     re_path(r"sms/callback/?$", sms.Callback.as_view(), name="sms_callback"),
 ]
+
+if not settings.FF_USE_PICO_CMS_FOR_FAQ:
+    faq_urls = [
+        path("faq/", service.faq_generale, name="faq_generale"),
+        path("faq/mandat/", service.faq_mandat, name="faq_mandat"),
+        path(
+            "faq/donnees-personnelles/",
+            service.faq_donnees_personnelles,
+            name="faq_donnees_personnelles",
+        ),
+        path(
+            "faq/habilitation/",
+            service.faq_habilitation,
+            name="faq_habilitation",
+        ),
+    ]
+    urlpatterns.extend(faq_urls)
 
 urlpatterns.extend(magicauth_urls)

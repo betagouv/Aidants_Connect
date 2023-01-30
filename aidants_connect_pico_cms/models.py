@@ -79,6 +79,9 @@ class FaqCategory(CmsContent):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("faq-category-detail", kwargs={"slug": self.slug})
+
     class Meta:
         verbose_name = "Catégorie FAQ"
         verbose_name_plural = "Catégories FAQ"

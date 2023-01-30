@@ -667,3 +667,7 @@ LM_SMS_SERVICE_PASSWORD = os.getenv("LM_SMS_SERVICE_PASSWORD")
 LM_SMS_SERVICE_BASE_URL = os.getenv("LM_SMS_SERVICE_BASE_URL")
 LM_SMS_SERVICE_OAUTH2_ENDPOINT = os.getenv("LM_SMS_SERVICE_OAUTH2_ENDPOINT")
 LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
+
+# If set to False, FAQ content will be fetched from aidants_connect_web
+# else FAQ will be set from dynamic content of pico_cms.faq_section and faq_question
+FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
