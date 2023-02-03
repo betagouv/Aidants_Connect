@@ -45,7 +45,7 @@
           {% for question in questions %}
             <details>
               <summary>
-                <h3>{{ question.question }}</h3>
+                <h3 id="{{ question.slug }}">{{ question.question }}</h3>
               </summary>
               <div class="markdown-content">
                 {{ question.to_html }}
