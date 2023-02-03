@@ -36,6 +36,11 @@
       {# ---- content ---- #}
       <div class="fr-col-12 fr-col-md-8">
         <h2>{{ object.name }}</h2>
+        {% if object.body %}
+          <div class="markdown-content">
+            {{ object.to_html }}
+          </div>
+        {% endif %}
         <div class="accordion shadowed">
           {% for question in questions %}
             <details>
