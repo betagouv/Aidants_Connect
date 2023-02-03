@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 
@@ -8,12 +9,19 @@ from aidants_connect_pico_cms.tests.factories import (  # FaqQuestionFactory,
 
 
 @tag("pico_cms")
-class TestimonyViewTests(TestCase):
+class TestTestimonyViews(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.daphne = TestimonyFactory(name="Daphné Dante", slug="daphne-dante")
-        cls.maite = TestimonyFactory(name="Maïté Moignage", slug="maite-moignage")
+        cls.daphne = TestimonyFactory(
+            name="Daphné Dante", slug="daphne-dante", published=True
+        )
+        cls.maite = TestimonyFactory(
+            name="Maïté Moignage", slug="maite-moignage", published=True
+        )
+        cls.cachee = TestimonyFactory(
+            name="Malika Chée", slug="malika", published=False
+        )
 
     def test_right_template_is_used_and_content_is_here(self):
         response = self.client.get("/temoignages/daphne-dante/")
@@ -23,6 +31,7 @@ class TestimonyViewTests(TestCase):
         )
         self.assertContains(response, "Daphné Dante")
         self.assertContains(response, "Maïté Moignage")
+        self.assertNotContains(response, "Malika Chée")
 
     def test_404_on_nonexisting_testimony(self):
         response = self.client.get("/temoignages/pamela-bsence/")
@@ -30,7 +39,8 @@ class TestimonyViewTests(TestCase):
 
 
 @tag("pico_cms")
-class FaqViewTests(TestCase):
+@override_settings(FF_USE_PICO_CMS_FOR_FAQ=True)
+class TestFaqViews(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -41,9 +51,9 @@ class FaqViewTests(TestCase):
             name="Deuxième section de FAQ", slug="seconde-section", sort_order=20
         )
 
-    @override_settings(FF_USE_PICO_CMS_FOR_FAQ=True)
     def test_right_template_is_used_and_content_is_here(self):
-        response = self.client.get("/faq/premiere-section/")
+        self.assertTrue(settings.FF_USE_PICO_CMS_FOR_FAQ)
+        response = self.client.get(self.faq_section_1.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
             response, "aidants_connect_pico_cms/faqcategory_detail.html"
