@@ -326,7 +326,7 @@ class GuideUtilisationTests(TestCase):
         self.assertTemplateUsed(response, "public_website/guide_utilisation.html")
 
 
-@tag("service")
+@tag("service", "faq")
 class FAQTests(TestCase):
     def test_faq_url_triggers_the_correct_template(self):
         response = self.client.get("/faq/")

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
@@ -26,6 +26,8 @@ class FaqDefaultView(View):
         first_published_category = (
             FaqCategory.objects.filter(published=True).order_by("sort_order").first()
         )
+        if not first_published_category:
+            return HttpResponseNotFound()
         return HttpResponseRedirect(first_published_category.get_absolute_url())
 
 
