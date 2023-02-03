@@ -773,6 +773,35 @@ footer {
   margin-bottom: 1rem;
 }
 
+// FAQ
+.more-questions {
+  background: colors.$blue-aidants;
+  color: #fff;
+  position: relative;
+  padding: 1.5rem 1.5rem 2rem;
+  margin: 3rem 0 2rem;
+
+  h2 {
+    font-size: 1.5rem;
+    text-transform: none;
+    font-weight: normal;
+    color: #fff;
+  }
+
+  .questions-cta {
+    display: flex;
+    height: 3rem;
+    padding: 0 1rem;
+    background: colors.$red-aidants;
+    position: absolute;
+    right: 1.5rem;
+    bottom: -1.5rem;
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
 // testimonies
 
 .testimonies {
@@ -858,7 +887,7 @@ footer {
   }
 
   .testimony-content {
-    h1,h2,h3,h4 {
+    h1, h2, h3, h4 {
       font-weight: bold;
       font-size: 1rem;
       margin: 2em 0 1em;
