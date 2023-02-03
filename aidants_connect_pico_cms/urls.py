@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.urls import path
 
 from aidants_connect_pico_cms.views import (
@@ -9,12 +8,6 @@ from aidants_connect_pico_cms.views import (
 
 urlpatterns = [
     path("temoignages/<slug:slug>/", TestimonyView.as_view(), name="temoignage-detail"),
+    path("faq/", FaqDefaultView.as_view(), name="faq_generale"),
+    path("faq/<slug:slug>/", FaqCategoryView.as_view(), name="faq-category-detail"),
 ]
-
-if settings.FF_USE_PICO_CMS_FOR_FAQ:
-    urlpatterns.append(
-        path("faq/", FaqDefaultView.as_view(), name="faq_generale"),
-    )
-    urlpatterns.append(
-        path("faq/<slug:slug>/", FaqCategoryView.as_view(), name="faq-category-detail"),
-    )

@@ -228,7 +228,6 @@ urlpatterns = [
 
 if not settings.FF_USE_PICO_CMS_FOR_FAQ:
     faq_urls = [
-        path("faq/", service.faq_generale, name="faq_generale"),
         path("faq/mandat/", service.faq_mandat, name="faq_mandat"),
         path(
             "faq/donnees-personnelles/",

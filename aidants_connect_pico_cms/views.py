@@ -1,4 +1,7 @@
-from django.views.generic.base import RedirectView
+from django.conf import settings
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 
 from aidants_connect_pico_cms.models import FaqCategory, FaqQuestion, Testimony
@@ -15,12 +18,15 @@ class TestimonyView(DetailView):
         return context
 
 
-class FaqDefaultView(RedirectView):
-    def get_redirect_url(self, *args, **kwargs):
+class FaqDefaultView(View):
+    def get(self, request, *args, **kwargs):
+        if not settings.FF_USE_PICO_CMS_FOR_FAQ:
+            return render(request, "public_website/faq/generale.html")
+
         first_published_category = (
             FaqCategory.objects.filter(published=True).order_by("sort_order").first()
         )
-        return first_published_category.get_absolute_url()
+        return HttpResponseRedirect(first_published_category.get_absolute_url())
 
 
 class FaqCategoryView(DetailView):
