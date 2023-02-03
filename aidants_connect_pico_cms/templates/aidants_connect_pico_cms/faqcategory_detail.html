@@ -6,12 +6,16 @@
 {% endblock %}
 
 {% block content %}
-  {% include 'public_website/faq/_header.html' %}
+  <div class="fr-container">
+    <h1>Aide</h1>
+    <h1 class="h2">Foire aux questions</h1>
+    <p class="subtitle">Vous trouverez ici les réponses aux questions les plus fréquemment posées à nos équipes.</p>
+  </div>
   <div class="fr-container">
     <div class="fr-grid-row fr-grid-row--gutters">
       {# ---- navigation ---- #}
       <div class="fr-col-12 fr-col-md-3">
-        <nav class="side-menu" role="navigation" aria-label="Menu questions fréquentes">
+        <nav class="faq-menu" role="navigation" aria-label="Menu questions fréquentes">
           <ul>
             {% for category in categories %}
               <li>
