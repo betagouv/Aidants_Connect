@@ -128,7 +128,7 @@ class RemoteMandateMixin:
                 "aidant": aidant,
                 "organisation": organisation,
                 "demarches": [
-                    humanize_demarche_names(demarche)
+                    settings.DEMARCHES[demarche]["titre"].capitalize()
                     for demarche in sorted(form.cleaned_data["demarche"])
                 ],
                 "duree_text": AuthorizationDurationChoices(

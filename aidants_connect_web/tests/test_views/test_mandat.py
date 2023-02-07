@@ -1,5 +1,5 @@
+import re
 from datetime import datetime, timedelta
-from textwrap import dedent
 from typing import List
 from unittest import mock
 from unittest.mock import ANY, MagicMock, Mock
@@ -87,16 +87,18 @@ class TestRemoteMandateMixin(TestCase):
         send_sms_mock.assert_called_once_with(
             ANY,
             UUID,
-            dedent(
-                f"""\
-                Aidant Connect, bonjour.
-
-                Thierry Goneau de l'organisation COMMUNE D'HOULBEC COCHEREL souhaite créer un mandat pour une durée d'un mois (31 jours) en votre nom pour les démarches suivantes :
-                
-                - LOGEMENT: Allocations logement, Permis de construire, Logement social, Fin de bail…,
-                - PAPIERS - CITOYENNETÉ: État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité….
-                
-                Répondez « Oui » sans ponctuation à ce message pour accepter le mandat. Toute autre réponse que « Oui » équivaut à un refus explicite."""  # noqa
+            self._trim_margin(
+                """Aidant Connect, bonjour.
+                |
+                |Thierry Goneau de l'organisation COMMUNE D'HOULBEC COCHEREL souhaite\
+                | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
+                | les démarches suivantes :
+                |
+                |- Logement,
+                |- Papiers - citoyenneté.
+                |
+                |Répondez « Oui » sans ponctuation pour accepter le mandat.\
+                | Toute autre réponse sera considéré comme un refus explicite."""
             ),
         )
 
@@ -114,15 +116,20 @@ class TestRemoteMandateMixin(TestCase):
         send_sms_mock.assert_called_once_with(
             ANY,
             UUID,
-            dedent(
-                f"""\
-                Aidant Connect, bonjour.
-                
-                Thierry Goneau de l'organisation COMMUNE D'HOULBEC COCHEREL souhaite créer un mandat pour une durée d'un mois (31 jours) en votre nom pour la démarche PAPIERS - CITOYENNETÉ: État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…
-                
-                Répondez « Oui » sans ponctuation à ce message pour accepter le mandat. Toute autre réponse que « Oui » équivaut à un refus explicite."""  # noqa
+            self._trim_margin(
+                """Aidant Connect, bonjour.
+                |
+                |Thierry Goneau de l'organisation COMMUNE D'HOULBEC COCHEREL souhaite\
+                | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
+                | la démarche Papiers - citoyenneté.
+                |
+                |Répondez « Oui » sans ponctuation pour accepter le mandat.\
+                | Toute autre réponse sera considéré comme un refus explicite."""
             ),
         )
+
+    def _trim_margin(self, message):
+        return re.sub(r"[\r\t\f\v  ]+\|", "", message, flags=re.MULTILINE)
 
     def _get_form(
         self,
@@ -452,13 +459,12 @@ class NewMandatRecapTests(TestCase):
 
             self.assertEqual(Autorisation.objects.count(), 3)
 
-            last_usager_organisation_papiers_autorisations = Autorisation.objects.filter(  # noqa: E501
-                # noqa
-                demarche="papiers",
-                mandat__usager=self.test_usager,
-                mandat__organisation=self.aidant_thierry.organisation,
-            ).order_by(
-                "-mandat__creation_date"
+            last_usager_organisation_papiers_autorisations = (
+                Autorisation.objects.filter(
+                    demarche="papiers",
+                    mandat__usager=self.test_usager,
+                    mandat__organisation=self.aidant_thierry.organisation,
+                ).order_by("-mandat__creation_date")
             )
 
             new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
