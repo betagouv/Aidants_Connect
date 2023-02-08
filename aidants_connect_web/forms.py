@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.conf import settings
 from django.contrib.auth import password_validation
@@ -17,10 +19,10 @@ from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
-    Connection,
     HabilitationRequest,
     Organisation,
     Usager,
+    UsagerQuerySet,
 )
 
 
@@ -499,7 +501,6 @@ class MassEmailHabilitatonForm(forms.Form):
 
 
 class AuthorizeSelectUsagerForm(PatchedForm):
-    connection_id = forms.IntegerField(required=True)
     chosen_usager = forms.IntegerField(
         required=True,
         error_messages={
@@ -514,16 +515,104 @@ class AuthorizeSelectUsagerForm(PatchedForm):
         },
     )
 
-    def clean_connection_id(self):
-        connection_id = self.cleaned_data.get("connection_id")
-        try:
-            return Connection.objects.get(pk=connection_id)
-        except (Connection.DoesNotExist, Connection.MultipleObjectsReturned):
-            raise ValidationError("", code="connection_error")
+    def __init__(self, usager_with_active_auth: UsagerQuerySet, *args, **kwargs):
+        self.usager_with_active_auth = usager_with_active_auth
+        super().__init__(*args, **kwargs)
 
     def clean_chosen_usager(self):
         chosen_usager = self.cleaned_data.get("chosen_usager")
         try:
-            return Usager.objects.get(pk=chosen_usager)
+            user = Usager.objects.get(pk=chosen_usager)
+            if user not in self.usager_with_active_auth:
+                raise ValidationError("", code="unauthorized_user")
+            return user
         except (Usager.DoesNotExist, Usager.MultipleObjectsReturned):
-            return None
+            raise ValidationError(
+                "La personne sélectionnée ne semble pas exister", code="invalid"
+            )
+
+
+class OAuthParametersForm(PatchedForm):
+    state = forms.CharField()
+    nonce = forms.CharField()
+    response_type = forms.CharField()
+    client_id = forms.CharField()
+    redirect_uri = forms.CharField()
+    scope = forms.CharField()
+    acr_values = forms.CharField()
+
+    def clean_nonce(self):
+        result = self.cleaned_data.get("nonce")
+        if result and not result.isalnum():
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_state(self):
+        result = self.cleaned_data.get("state")
+        if result and not result.isalnum():
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_response_type(self):
+        result = self.cleaned_data.get("response_type")
+        if result != "code":
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_client_id(self):
+        result = self.cleaned_data.get("client_id")
+        if result != settings.FC_AS_FI_ID:
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_redirect_uri(self):
+        result = self.cleaned_data.get("redirect_uri")
+        if result != settings.FC_AS_FI_CALLBACK_URL:
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_scope(self):
+        result = self.cleaned_data.get("scope")
+        splitted = re.split(r"\s+", result)
+        splitted.sort()
+        if splitted != ["address", "birth", "email", "openid", "phone", "profile"]:
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_acr_values(self):
+        result = self.cleaned_data.get("acr_values")
+        if result != "eidas1":
+            raise ValidationError("", "invalid")
+        return result
+
+    def __init__(self, *args, relaxed=False, **kwargs):
+        self.relaxed = relaxed
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if self.relaxed:
+            return cleaned_data
+
+        additionnal_keys = set(self.data.keys()) - set(self.fields.keys())
+
+        for additionnal_key in additionnal_keys:
+            self.add_error(None, ValidationError(additionnal_key, "additionnal_key"))
+
+        return cleaned_data
+
+
+class SelectDemarcheForm(PatchedForm):
+    chosen_demarche = forms.CharField()
+
+    def __init__(self, aidant: Aidant, user: Usager, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.aidant = aidant
+        self.user = user
+
+    def clean_chosen_demarche(self):
+        result = self.cleaned_data["chosen_demarche"]
+        if not self.aidant.get_valid_autorisation(result, self.user):
+            raise ValidationError("", code="unauthorized_demarche")
+        return result

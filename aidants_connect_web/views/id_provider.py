@@ -2,10 +2,10 @@ import logging
 import re
 import time
 from secrets import token_urlsafe
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
@@ -16,16 +16,30 @@ from django.http import (
     HttpResponseRedirect,
     JsonResponse,
 )
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import FormView
 
 import jwt
 
-from aidants_connect_web.decorators import activity_required, user_is_aidant
-from aidants_connect_web.forms import AuthorizeSelectUsagerForm
-from aidants_connect_web.models import Aidant, Connection, Journal
+from aidants_connect_common.forms import PatchedErrorList
+from aidants_connect_common.views import RequireConnectionMixin
+from aidants_connect_web.decorators import aidant_logged_with_activity_required
+from aidants_connect_web.forms import (
+    AuthorizeSelectUsagerForm,
+    OAuthParametersForm,
+    SelectDemarcheForm,
+)
+from aidants_connect_web.models import (
+    Aidant,
+    AutorisationQuerySet,
+    Connection,
+    Journal,
+    Usager,
+    UsagerQuerySet,
+)
 from aidants_connect_web.utilities import generate_sha256_hash
 
 logging.basicConfig(level=logging.INFO)
@@ -73,194 +87,206 @@ def check_request_parameters(
     return 0, "all good"
 
 
-@login_required
-@user_is_aidant
-@activity_required
-def authorize(request):
-    aidant: Aidant = request.user
-    usager_with_active_auth = aidant.get_usagers_with_active_autorisation()
+@aidant_logged_with_activity_required
+class Authorize(RequireConnectionMixin, FormView):
+    form_class = AuthorizeSelectUsagerForm
+    template_name = "aidants_connect_web/id_provider/authorize.html"
 
-    if request.method == "GET":
-        parameters = {
-            "state": request.GET.get("state"),
-            "nonce": request.GET.get("nonce"),
-            "response_type": request.GET.get("response_type"),
-            "client_id": request.GET.get("client_id"),
-            "redirect_uri": request.GET.get("redirect_uri"),
-            "scope": request.GET.get("scope"),
-            "acr_values": request.GET.get("acr_values"),
-        }
-        EXPECTED_STATIC_PARAMETERS = {
-            "response_type": "code",
-            "client_id": settings.FC_AS_FI_ID,
-            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
-            "scope": "openid profile email address phone birth",
-            "acr_values": "eidas1",
-        }
-
-        error, message = check_request_parameters(
-            parameters, EXPECTED_STATIC_PARAMETERS, "authorize"
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        self.usager_with_active_auth: UsagerQuerySet = (
+            self.aidant.get_usagers_with_active_autorisation()
         )
-        if error:
-            return (
-                HttpResponseBadRequest()
-                if message == "missing parameter"
-                else HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        form = OAuthParametersForm(data=request.GET)
+        if form.is_valid():
+            self.oauth_parameters_form = form
+            self.connection = Connection.objects.create(
+                state=form.cleaned_data["state"], nonce=form.cleaned_data["nonce"]
             )
+            self.request.session["connection"] = self.connection.pk
+            return super().get(request, *args, **kwargs)
+        else:
+            return self.form_invalid_get(form)
 
-        connection = Connection.objects.create(
-            state=parameters["state"],
-            nonce=parameters["nonce"],
+    def post(self, request, *args, **kwargs):
+        result = self.check_connection(request)
+        if isinstance(result, HttpResponse):
+            return result
+        else:
+            self.connection = result
+            self.request.session["connection"] = self.connection.pk
+
+        self.oauth_parameters_form = OAuthParametersForm(
+            data=self.request.POST, relaxed=True
         )
 
-        usagers_list = []
-        for user in usager_with_active_auth:
-            usagers_list += [{"value": user.id, "label": user.get_full_name()}]
-
-        return render(
-            request,
-            "aidants_connect_web/id_provider/authorize.html",
-            {
-                "connection_id": connection.id,
-                "usagers": usager_with_active_auth,
-                "aidant": aidant,
-                "data": usagers_list,
-            },
-        )
-
-    else:
-        form = AuthorizeSelectUsagerForm(data=request.POST)
-
-        if not form.is_valid():
-            # Error with connection: logout and ask aidant ot login again
-            if "connection_id" in form.errors:
-                log.info(
-                    "No connection corresponds to the connection_id: "
-                    f"{form.cleaned_data.get('connection_id')}"
-                )
-                logout(request)
-                return HttpResponseForbidden()
-
-            # Any other error: just display
-            usagers_list = []
-            for user in usager_with_active_auth:
-                usagers_list += [{"value": user.id, "label": user.get_full_name()}]
-
-            return render(
-                request,
-                "aidants_connect_web/id_provider/authorize.html",
-                {
-                    "connection_id": form.cleaned_data["connection_id"],
-                    "usagers": usager_with_active_auth,
-                    "aidant": aidant,
-                    "data": usagers_list,
-                    "errors": form.errors,
-                },
+        if not self.oauth_parameters_form.is_valid():
+            # That case should only happen if, for whatever reason,
+            # the user touched the HTML with their sticky fingers…
+            log.error(
+                "The HTML was modified, bad OAuth parameters "
+                f"{self.oauth_parameters_form.data!r}"
             )
+            # Punish the user
+            logout(self.request)
+            return HttpResponseForbidden()
 
-        # If no user was return, then it's a permission or query error: 404
-        chosen_usager = form.cleaned_data["chosen_usager"]
-        connection = form.cleaned_data["connection_id"]
+        return super().post(request, *args, **kwargs)
 
-        if connection.is_expired:
-            log.info("connection has expired at authorize")
-            return render(request, "408.html", status=408)
-
-        if chosen_usager not in usager_with_active_auth:
+    def form_invalid(self, form):
+        if (
+            "unauthorized_user"
+            in form.errors.get("chosen_usager", PatchedErrorList()).error_codes
+        ):
             log.info(
-                "This usager does not have a valid autorisation "
-                "with the aidant's organisation"
+                f"User {self.request.POST['chosen_usager']} does not have a valid "
+                f"autorisation with the organisation of aidant with id {self.aidant.id}"
             )
-            log.info(aidant.id)
-            logout(chosen_usager.id)
-            logout(request)
+            logout(self.request)
             return HttpResponseForbidden()
 
-        connection.usager = chosen_usager
-        connection.save()
+        return super().form_invalid(form)
 
-        select_demarches_url = (
-            f"{reverse('fi_select_demarche')}?connection_id={connection.id}"
-        )
-        return redirect(select_demarches_url)
+    def form_valid(self, form):
+        self.connection.usager = form.cleaned_data["chosen_usager"]
+        self.connection.save()
+        return super().form_valid(form)
 
+    def form_invalid_get(self, form):
+        view_location = f"{self.__module__}.{self.__class__.__name__}"
+        requirement_errors = set()
+        format_validation_errors = set()
+        additionnal_keys_errors = set()
+        for field_name, errors in form.errors.items():
+            if "required" in errors.error_codes:
+                requirement_errors.update([field_name])
+            if "invalid" in errors.error_codes:
+                format_validation_errors.update([field_name])
+            if error := errors.get_error_by_code("additionnal_key"):
+                additionnal_keys_errors.update([error.message])
 
-@login_required
-@user_is_aidant
-@activity_required
-def fi_select_demarche(request):
-    if request.method == "GET":
-        parameters = {
-            "connection_id": request.GET.get("connection_id"),
+        if requirement_errors:
+            log.info(
+                f"400 Bad request: The following parameters are missing: "
+                f"{requirement_errors!r} @ {view_location}"
+            )
+            return HttpResponseBadRequest("missing parameter")
+
+        if format_validation_errors:
+            log.info(
+                "403 forbidden request: The following parameters are malformed: "
+                f"{format_validation_errors!r} @ {view_location}"
+            )
+            return HttpResponseForbidden("malformed parameter value")
+
+        if additionnal_keys_errors:
+            log.info(
+                "403 forbidden request: Unexpected parameters: "
+                f"{additionnal_keys_errors!r} @ {view_location}"
+            )
+            return HttpResponseForbidden("forbidden parameter value")
+
+        log.warning(f"Uncatched validation error @ {view_location}")
+        return HttpResponseBadRequest()
+
+    def get_form_kwargs(self):
+        return {
+            **super().get_form_kwargs(),
+            "usager_with_active_auth": self.usager_with_active_auth,
         }
 
-        try:
-            connection = Connection.objects.get(pk=parameters["connection_id"])
-            if connection.is_expired:
-                log.info("Connection has expired at select_demarche")
-                return render(request, "408.html", status=408)
-        except ObjectDoesNotExist:
-            log.info("No connection matches the connection_id:")
-            log.info(parameters["connection_id"])
-            logout(request)
-            return HttpResponseForbidden()
-
-        aidant: Aidant = request.user
-
-        usager_demarches = aidant.get_active_demarches_for_usager(connection.usager)
-
-        demarches = {
-            nom_demarche: settings.DEMARCHES[nom_demarche]
-            for nom_demarche in usager_demarches
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "oauth_parameters_form": self.oauth_parameters_form,
+            "connection_id": self.connection.id,
+            "usagers": self.usager_with_active_auth,
+            "aidant": self.aidant,
+            "data": [
+                {"value": user.id, "label": user.get_full_name()}
+                for user in self.usager_with_active_auth
+            ],
         }
 
-        return render(
-            request,
-            "aidants_connect_web/id_provider/fi_select_demarche.html",
-            {
-                "connection_id": connection.id,
-                "aidant": request.user.get_full_name(),
-                "usager": connection.usager,
-                "demarches": demarches,
-            },
+    def get_success_url(self):
+        parameters = urlencode(self.oauth_parameters_form.cleaned_data)
+        return f"{reverse('fi_select_demarche')}?{parameters}"
+
+
+@aidant_logged_with_activity_required
+class FISelectDemarche(RequireConnectionMixin, FormView):
+    template_name = "aidants_connect_web/id_provider/fi_select_demarche.html"
+    form_class = SelectDemarcheForm
+
+    def dispatch(self, request, *args, **kwargs):
+        result = self.check_connection(request)
+        if isinstance(result, HttpResponse):
+            return result
+        else:
+            self.connection = result
+        self.aidant: Aidant = request.user
+        self.usager: Usager = self.connection.usager
+        self.user_demarches: AutorisationQuerySet = (
+            self.aidant.get_active_demarches_for_usager(self.usager)
         )
+        return super().dispatch(request, *args, **kwargs)
 
-    else:
-        parameters = {
-            "connection_id": request.POST.get("connection_id"),
-            "chosen_demarche": request.POST.get("chosen_demarche"),
-        }
-
-        try:
-            connection = Connection.objects.get(pk=parameters["connection_id"])
-            if connection.is_expired:
-                log.info("connection has expired at select_demarche")
-                return render(request, "408.html", status=408)
-        except ObjectDoesNotExist:
-            log.info("No connection corresponds to the connection_id:")
-            log.info(parameters["connection_id"])
-            logout(request)
-            return HttpResponseForbidden()
-
-        aidant: Aidant = request.user
-        autorisation = aidant.get_valid_autorisation(
-            parameters["chosen_demarche"], connection.usager
-        )
-        if not autorisation:
+    def form_invalid(self, form: SelectDemarcheForm):
+        if (
+            "chosen_demarche" in form.errors
+            and "unauthorized_demarche" in form.errors["chosen_demarche"].error_codes
+        ):
             log.info("The autorisation asked does not exist")
             return HttpResponseForbidden()
 
-        code = token_urlsafe(64)
-        connection.code = make_password(code, settings.FC_AS_FI_HASH_SALT)
-        connection.demarche = parameters["chosen_demarche"]
-        connection.autorisation = autorisation
-        connection.complete = True
-        connection.aidant = aidant
-        connection.organisation = aidant.organisation
-        connection.save()
+        return super().form_invalid(form)
 
-        return redirect(
-            f"{settings.FC_AS_FI_CALLBACK_URL}?code={code}&state={connection.state}"
+    def form_valid(self, form):
+        self.connection.code = make_password(
+            token_urlsafe(64), settings.FC_AS_FI_HASH_SALT
+        )
+        self.connection.demarche = form.cleaned_data["chosen_demarche"]
+        self.connection.autorisation = self.aidant.get_valid_autorisation(
+            self.connection.demarche, self.usager
+        )
+        self.connection.complete = True
+        self.connection.aidant = self.aidant
+        self.connection.organisation = self.aidant.organisation
+        self.connection.save()
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        return {
+            **super().get_form_kwargs(),
+            "aidant": self.aidant,
+            "user": self.usager,
+        }
+
+    def get_context_data(self, **kwargs):
+        oauth_parameters_form = OAuthParametersForm(data=self.request.GET, relaxed=True)
+        if oauth_parameters_form.is_valid():
+            parameters = urlencode(oauth_parameters_form.cleaned_data)
+            change_user_url = f"{reverse('authorize')}?{parameters}"
+        else:
+            change_user_url = None
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant.get_full_name(),
+            "usager": self.usager,
+            "demarches": {
+                demarche_name: settings.DEMARCHES[demarche_name]
+                for demarche_name in self.user_demarches
+            },
+            "change_user_url": change_user_url,
+        }
+
+    def get_success_url(self):
+        return (
+            f"{settings.FC_AS_FI_CALLBACK_URL}?"
+            f"code={self.connection.code}&state={self.connection.state}"
         )
 
 
@@ -269,7 +295,8 @@ def _mock_refresh_token():
 
 
 # Due to `no_referer` error
-# https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf.csrf_exempt
+# https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf
+# .csrf_exempt
 @csrf_exempt
 def token(request):
     if request.method == "GET":
@@ -321,12 +348,9 @@ def token(request):
         "aud": settings.FC_AS_FI_ID,
         # The expiration time. in the format "seconds since epoch"
         # TODO Check if 10 minutes is not too much
-        "exp": int(time.time()) + settings.FC_CONNECTION_AGE,
-        # The issued at time
-        "iat": int(time.time()),
-        # The issuer,  the URL of your Auth0 tenant
-        "iss": settings.HOST,
-        # The unique identifier of the user
+        "exp": int(time.time()) + settings.FC_CONNECTION_AGE,  # The issued at time
+        "iat": int(time.time()),  # The issuer,  the URL of your Auth0 tenant
+        "iss": settings.HOST,  # The unique identifier of the user
         "sub": connection.usager.sub,
         "nonce": connection.nonce,
     }

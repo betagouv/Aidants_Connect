@@ -113,12 +113,12 @@ class UseAutorisationTests(FunctionalTestCase):
         button.click()
         wait = WebDriverWait(self.selenium, 10)
 
-        wait.until(url_contains("/select_demarche/?connection_id="))
+        wait.until(url_contains("/select_demarche/"))
 
         # Select Démarche
         step2_title = self.selenium.find_element(By.ID, "instructions").text
-        self.assertIn("En selectionnant une démarche", step2_title)
-        demarches = self.selenium.find_elements(By.ID, "label_demarche")
+        self.assertIn("En sélectionnant une démarche", step2_title)
+        demarches = self.selenium.find_elements(By.ID, "button-demarche")
         self.assertEqual(len(demarches), 2)
         last_demarche = demarches[-1]
         last_demarche.click()
