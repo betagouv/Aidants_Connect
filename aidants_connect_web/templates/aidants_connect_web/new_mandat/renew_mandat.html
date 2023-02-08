@@ -5,8 +5,25 @@
 {% block title %}Aidants Connect - Renouveler un mandat{% endblock %}
 
 {% block input_submit_form %}
+
   <div id="renew_mandat" class="tiles">
     <h2 class="step-title">Étape 3 : Renouveler le mandat</h2>
-    <input id="submit_renew_button" type="submit" class="button" value="Renouveler le  mandat"/>
+    <div class="buttons">
+      <button
+        class="button"
+        data-action="open-mandate-translation#onOpenTranslation"
+        data-open-mandate-translation-target="button"
+        hidden
+        aria-hidden="true"
+      >
+        Voir le mandat et sa traduction
+      </button>
+      <input
+        id="submit_renew_button"
+        type="submit"
+        class="button"
+        value="Renouveler le mandat"
+      />
+    </div>
   </div>
 {% endblock input_submit_form %}

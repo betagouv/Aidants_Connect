@@ -3,11 +3,13 @@ from django.core import mail
 from selenium.webdriver.common.by import By
 
 
-def login_aidant(self, aidant_email: str = "thierry@thierry.com"):
+def login_aidant(
+    self, aidant_email: str = "thierry@thierry.com", otp_code: str = "123456"
+):
     login_field = self.selenium.find_element(By.ID, "id_email")
     login_field.send_keys(aidant_email)
     otp_field = self.selenium.find_element(By.ID, "id_otp_token")
-    otp_field.send_keys("123456")
+    otp_field.send_keys(otp_code)
     submit_button = self.selenium.find_element(By.XPATH, "//button")
     submit_button.click()
     email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text

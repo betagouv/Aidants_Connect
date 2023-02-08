@@ -46,3 +46,9 @@
   font-size: large;
   color: colors.$blue-aidants;
 }
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

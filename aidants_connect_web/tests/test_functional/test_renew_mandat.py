@@ -280,7 +280,7 @@ class RenewMandatTests(FunctionalTestCase):
         # Renew Mandat
         fc_button = self.selenium.find_element(By.ID, "submit_renew_button")
         fc_button.click()
-        wait.until(self._path_matches("renew_mandat_waiting_room"))
+        wait.until(self.path_matches("renew_mandat_waiting_room"))
 
         # # Test the message is correctly logged
         consent_request_log: Journal = Journal.objects.find_sms_consent_requests(
@@ -294,7 +294,7 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Test that page blocks until user has consented
         self.selenium.refresh()
-        wait.until(self._path_matches("renew_mandat_waiting_room"))
+        wait.until(self.path_matches("renew_mandat_waiting_room"))
 
         # Simulate user content
         self._user_consents("0 800 840 800")
@@ -341,7 +341,7 @@ class RenewMandatTests(FunctionalTestCase):
 
         return _predicate
 
-    def _path_matches(self, route_name: str, query_params: dict = None):
+    def path_matches(self, route_name: str, query_params: dict = None):
         query_part = urlencode(query_params or {}, quote_via=lambda s, _1, _2, _3: s)
         query_part = rf"\?{query_part}" if query_part else ""
         return url_matches(rf"http://localhost:\d+{reverse(route_name)}{query_part}")

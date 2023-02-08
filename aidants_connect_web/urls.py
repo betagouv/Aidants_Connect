@@ -137,6 +137,11 @@ urlpatterns = [
         mandat.attestation_qrcode,
         name="new_attestation_qrcode",
     ),
+    path(
+        "creation_mandat/traduction/",
+        mandat.Translation.as_view(),
+        name="mandate_translation",
+    ),
     # id_provider
     path("authorize/", id_provider.Authorize.as_view(), name="authorize"),
     path("token/", id_provider.token, name="token"),

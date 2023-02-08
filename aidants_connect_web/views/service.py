@@ -23,8 +23,8 @@ def humanize_demarche_names(name: str) -> str:
     >>> humanize_demarche_names('argent')
     "ARGENT: Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
             "Surendettement…"
-    :param machine_names:
-    :return: list of human names and description
+    :param name: Demarche to describe
+    :return: Human names and description for demarche
     """
     demarches = settings.DEMARCHES
     return f"{demarches[name]['titre'].upper()}: {demarches[name]['description']}"

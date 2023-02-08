@@ -85,7 +85,13 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "aidant": self.aidant}
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "translation_url": self.request.build_absolute_uri(
+                reverse("mandate_translation")
+            ),
+        }
 
     def get_success_url(self):
         return (
