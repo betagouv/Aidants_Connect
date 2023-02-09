@@ -45,6 +45,11 @@ jobs:
           key: v1-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
+          name: check Django missing migrations
+          command: |
+            . venv/bin/activate
+            ./manage.py makemigrations --no-input --dry-run --check
+      - run:
           name: run linting
           command: |
             . venv/bin/activate
