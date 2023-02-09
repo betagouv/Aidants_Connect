@@ -1,6 +1,8 @@
 from typing import Dict, Tuple
 
-from django.forms import BaseForm, RadioSelect
+from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.forms import BaseForm, Media, RadioSelect, Select
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
@@ -94,3 +96,26 @@ class DetailedRadioSelect(RadioSelect):
             self._container_class, attrs.get("class")
         )
         return context
+
+
+class SearchableRadioSelect(Select):
+    def build_attrs(self, base_attrs, extra_attrs=None):
+        extra_attrs = extra_attrs or {}
+        extra_attrs["data-searchable-radio-select"] = True
+        return super().build_attrs(base_attrs, extra_attrs)
+
+    @property
+    def media(self):
+        extra = "" if settings.DEBUG else ".min"
+        return Media(
+            js=(
+                "admin/js/vendor/select2/select2.full%s.js" % extra,
+                staticfiles_storage.url("js/searchable-radio-select.js"),
+            ),
+            css={
+                "screen": (
+                    "admin/css/vendor/select2/select2%s.css" % extra,
+                    "admin/css/autocomplete.css",
+                ),
+            },
+        )
