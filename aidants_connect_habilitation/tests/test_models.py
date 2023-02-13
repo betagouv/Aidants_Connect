@@ -324,6 +324,17 @@ class OrganisationRequestTests(TestCase):
             RequestStatusConstants.REFUSED.name,
         )
 
+    def test_go_in_waiting_again(self):
+        organisation_request = OrganisationRequestFactory(
+            status=RequestStatusConstants.REFUSED.name
+        )
+        organisation_request.go_in_waiting_again()
+
+        self.assertEqual(
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            organisation_request.status,
+        )
+
 
 class TestIssuerEmailConfirmation(TestCase):
     NOW = now()

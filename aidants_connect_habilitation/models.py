@@ -370,6 +370,11 @@ class OrganisationRequest(models.Model):
             self.notify_issuer_request_modified()
 
     @transaction.atomic
+    def go_in_waiting_again(self):
+        self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        self.save()
+
+    @transaction.atomic
     def accept_request_and_create_organisation(self):
         if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
             return False

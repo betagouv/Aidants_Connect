@@ -254,8 +254,21 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
                 self.admin_site.admin_view(self.require_changes_one_request),
                 name="aidants_connect_habilitation_organisationrequest_requirechanges",
             ),
+            path(
+                "<path:object_id>/waiting/",
+                self.admin_site.admin_view(self.in_waiting_one_request),
+                name="aidants_connect_habilitation_organisationrequest_waiting",
+            ),
             *super().get_urls(),
         ]
+
+    def in_waiting_one_request(self, request, object_id):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__in_waiting_request_get(request, object_id)
+        else:
+            return self.__in_waiting_request_post(request, object_id)
 
     def accept_one_request(self, request, object_id):
         if request.method not in ["GET", "POST"]:
@@ -280,6 +293,42 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             return self.__require_changes_request_get(request, object_id)
         else:
             return self.__require_changes_request_post(request, object_id)
+
+    def __in_waiting_request_get(self, request, object_id):
+        orga_request = OrganisationRequest.objects.get(id=object_id)
+        view_context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "object_id": object_id,
+            "object": orga_request,
+        }
+
+        return render(
+            request,
+            "aidants_connect_habilitation/admin/organisation_request/in_waiting_form.html",  # noqa
+            view_context,
+        )
+
+    def __in_waiting_request_post(self, request, object_id):
+        orga_request = OrganisationRequest.objects.get(id=object_id)
+        orga_request.go_in_waiting_again()
+        self.message_user(
+            request,
+            (
+                f"Tout s'est bien passé. La demande {orga_request.data_pass_id} a "
+                f"été remise en attente"
+            ),
+        )
+
+        redirect_path = reverse(
+            "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
+        )
+        preserved_filters = self.get_preserved_filters(request)
+        opts = self.model._meta
+        redirect_path = add_preserved_filters(
+            {"preserved_filters": preserved_filters, "opts": opts}, redirect_path
+        )
+        return HttpResponseRedirect(redirect_path)
 
     def __accept_request_get(self, request, object_id):
         object = OrganisationRequest.objects.get(id=object_id)
