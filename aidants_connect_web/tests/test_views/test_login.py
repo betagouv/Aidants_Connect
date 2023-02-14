@@ -11,6 +11,16 @@ class LoginTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.aidant = AidantFactory(is_active=False, post__with_otp_device=True)
+        cls.aidant_active = AidantFactory(is_active=True, post__with_otp_device=True)
+
+    def test_user_can_connect_with_uppercase_email(self):
+        response = self.client.post(
+            "/accounts/login/",
+            {"email": self.aidant_active.email.upper(), "otp_token": "123456"},
+        )
+        self.assertEqual(response.status_code, 302)
+        # Check no email was sent
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_inactive_aidant_with_valid_totp_cannot_login(self):
         response = self.client.post(
