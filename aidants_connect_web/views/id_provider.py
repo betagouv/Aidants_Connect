@@ -245,9 +245,8 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
         return super().form_invalid(form)
 
     def form_valid(self, form):
-        self.connection.code = make_password(
-            token_urlsafe(64), settings.FC_AS_FI_HASH_SALT
-        )
+        self.code = token_urlsafe(64)
+        self.connection.code = make_password(self.code, settings.FC_AS_FI_HASH_SALT)
         self.connection.demarche = form.cleaned_data["chosen_demarche"]
         self.connection.autorisation = self.aidant.get_valid_autorisation(
             self.connection.demarche, self.usager
@@ -286,7 +285,7 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
     def get_success_url(self):
         return (
             f"{settings.FC_AS_FI_CALLBACK_URL}?"
-            f"code={self.connection.code}&state={self.connection.state}"
+            f"code={self.code}&state={self.connection.state}"
         )
 
 
