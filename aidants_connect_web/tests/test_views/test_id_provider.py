@@ -1,6 +1,7 @@
 import json
 from datetime import date, datetime, timedelta
 from unittest import mock
+from unittest.mock import Mock
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
@@ -279,6 +280,10 @@ class FISelectDemarcheTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
+        cls.code = (
+            "r2xKN_qFnQgK0XlwEu_Eii1oa6PrU9yVw1l8yNhh4"
+            "vb0ZFUPLaPKb9qL3S8G5VJS7aftiO8jl-0tez72Wi2D6Q"
+        )
         cls.aidant_thierry = AidantFactory()
         cls.aidant_yasmina = AidantFactory(
             organisation=cls.aidant_thierry.organisation,
@@ -360,7 +365,9 @@ class FISelectDemarcheTests(TestCase):
         self.assertEqual(len(autorisations), 3)
 
     @freeze_time(date_close)
-    def test_post_to_select_demarche_triggers_redirect(self):
+    @mock.patch("aidants_connect_web.views.id_provider.token_urlsafe")
+    def test_post_to_select_demarche_triggers_redirect(self, token_urlsafe_mock: Mock):
+        token_urlsafe_mock.return_value = self.code
         self.client.force_login(self.aidant_thierry)
         session = self.client.session
         session["connection"] = self.connection.id
@@ -369,9 +376,16 @@ class FISelectDemarcheTests(TestCase):
             "/select_demarche/", data={"chosen_demarche": "famille"}
         )
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            f"https://fcp.integ01.dev-franceconnect.fr/oidc_callback?"
+            f"code={self.code}&state=avalidstate123",
+        )
 
     @freeze_time(date_close)
-    def test_with_another_aidant_from_the_organisation(self):
+    @mock.patch("aidants_connect_web.views.id_provider.token_urlsafe")
+    def test_with_another_aidant_from_the_organisation(self, token_urlsafe_mock: Mock):
+        token_urlsafe_mock.return_value = self.code
         self.client.force_login(self.aidant_yasmina)
         session = self.client.session
         session["connection"] = self.connection.id
@@ -382,6 +396,11 @@ class FISelectDemarcheTests(TestCase):
             data={"chosen_demarche": "famille"},
         )
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            f"https://fcp.integ01.dev-franceconnect.fr/oidc_callback?"
+            f"code={self.code}&state=avalidstate123",
+        )
 
     date_further_away = datetime(2019, 1, 9, 9, tzinfo=ZoneInfo("Europe/Paris"))
 
