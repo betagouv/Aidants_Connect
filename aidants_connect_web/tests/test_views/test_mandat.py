@@ -78,7 +78,9 @@ class TestRemoteMandateMixin(TestCase):
     def test_process_sms_template(self, send_sms_mock: Mock, uuid4_mock: Mock):
         uuid4_mock.return_value = UUID
 
-        form = self._get_form(["papiers", "logement"], RemoteConsentMethodChoices.SMS)
+        form = self._get_form(
+            list(settings.DEMARCHES.keys()), RemoteConsentMethodChoices.SMS
+        )
 
         RemoteMandateMixin().process_consent(
             self.aidant_thierry, self.aidant_thierry.organisation, form
@@ -90,15 +92,22 @@ class TestRemoteMandateMixin(TestCase):
             self._trim_margin(
                 """Aidant Connect, bonjour.
                 |
-                |Thierry Goneau de l'organisation COMMUNE D'HOULBEC COCHEREL souhaite\
-                | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
-                | les démarches suivantes :
+                |L'organisation COMMUNE D'HOULBEC COCHEREL souhaite créer un mandat\
+                | pour une durée d'un mois (31 jours) en votre nom pour les démarches\
+                | suivantes :
                 |
+                |- Argent,
+                |- Étranger,
+                |- Famille,
+                |- Justice,
                 |- Logement,
-                |- Papiers - citoyenneté.
+                |- Loisirs,
+                |- Papiers - citoyenneté,
+                |- Social - santé,
+                |- Transports,
+                |- Travail.
                 |
-                |Répondez « Oui » sans ponctuation pour accepter le mandat.\
-                | Toute autre réponse sera considéré comme un refus explicite."""
+                |Répondez « Oui » pour accepter le mandat."""
             ),
         )
 
@@ -119,12 +128,11 @@ class TestRemoteMandateMixin(TestCase):
             self._trim_margin(
                 """Aidant Connect, bonjour.
                 |
-                |Thierry Goneau de l'organisation COMMUNE D'HOULBEC COCHEREL souhaite\
+                |L'organisation COMMUNE D'HOULBEC COCHEREL souhaite\
                 | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
                 | la démarche Papiers - citoyenneté.
                 |
-                |Répondez « Oui » sans ponctuation pour accepter le mandat.\
-                | Toute autre réponse sera considéré comme un refus explicite."""
+                |Répondez « Oui » pour accepter le mandat."""
             ),
         )
 

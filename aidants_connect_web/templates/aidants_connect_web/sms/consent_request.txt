@@ -4,7 +4,7 @@ Aidant Connect, bonjour.
 
 {% linebreakless dont_rstrip=True %}
 {% autoescape off %}{# Turn off HTML autoescape. That would mess with apostrophies #}
-{{ aidant.get_full_name }} de l'organisation {{ organisation.name }} souhaite créer un mandat {{ duree_text }} en votre nom
+L'organisation {{ organisation.name }} souhaite créer un mandat {{ duree_text }} en votre nom
 {% if demarches|length == 1 %}
  pour la démarche {{ demarches.0 }}.
 {% else %}
@@ -16,7 +16,6 @@ Aidant Connect, bonjour.
 {% endif %}
 {% keeplinebreak %}
 {% keeplinebreak %}
-Répondez « {{ sms_response_consent }} » sans ponctuation pour accepter le mandat.
- Toute autre réponse sera considéré comme un refus explicite.
+Répondez « {{ sms_response_consent }} » pour accepter le mandat.
 {% endautoescape %}
 {% endlinebreakless %}
