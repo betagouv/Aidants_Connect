@@ -130,7 +130,7 @@ class AidantChangeForm(forms.ModelForm):
 
         if data_email != initial_email:
             if (
-                Aidant.objects.filter(email=data_email).exists()
+                Aidant.objects.filter(email__iexact=data_email).exists()
                 or Aidant.objects.exclude(id=initial_id)
                 .filter(username=data_email)
                 .exists()

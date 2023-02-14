@@ -17,7 +17,7 @@ def update_pix_and_create_aidant(json_result):
             person["date d'envoi"], "%Y-%m-%d"
         ).astimezone(ZoneInfo("Europe/Paris"))
         aidants_a_former = HabilitationRequest.objects.filter(
-            email=person["email saisi"]
+            email__iexact=person["email saisi"]
         )
 
         if aidants_a_former.exists():

@@ -448,7 +448,7 @@ class OrganisationRequest(models.Model):
     def create_aidants(self, organisation: Organisation):
         for aidant in self.aidant_requests.all():
             HabilitationRequest.objects.get_or_create(
-                email=aidant.email,
+                email__iexact=aidant.email,
                 organisation=organisation,
                 defaults=dict(
                     origin=HabilitationRequest.ORIGIN_HABILITATION,

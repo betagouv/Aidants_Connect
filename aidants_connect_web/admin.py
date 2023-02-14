@@ -772,7 +772,9 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
             instance.validate_and_create_aidant()
 
     def after_save_instance(self, instance, using_transactions, dry_run):
-        aidants_a_former = HabilitationRequest.objects.filter(email=instance.email)
+        aidants_a_former = HabilitationRequest.objects.filter(
+            email__iexact=instance.email
+        )
         for aidant in aidants_a_former:
             if not aidant.formation_done:
                 aidant.formation_done = True

@@ -471,7 +471,7 @@ def new_habilitation_request(request):
     habilitation_request = form.save(commit=False)
 
     if Aidant.objects.filter(
-        email=habilitation_request.email,
+        email__iexact=habilitation_request.email,
         organisation__in=responsable.responsable_de.all(),
     ).exists():
         django_messages.warning(

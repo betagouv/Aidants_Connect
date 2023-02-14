@@ -46,7 +46,7 @@ def habilitation_already_exists(content):
     if email:
         email = email.lower()
     return HabilitationRequest.objects.filter(
-        email=email,
+        email__iexact=email,
         organisation__data_pass_id=content["data_pass_id"],
     )
 

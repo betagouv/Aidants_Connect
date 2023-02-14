@@ -458,7 +458,7 @@ class AidantRequestForm(PatchedModelForm, CleanEmailMixin):
     def clean_email(self):
         email = super().clean_email()
 
-        query = Q(organisation=self.organisation) & Q(email=email)
+        query = Q(organisation=self.organisation) & Q(email__iexact=email)
         if getattr(self.instance, "pk"):
             # This user already exists, and we need to verify that
             # we are not trying to modify its email with the email
