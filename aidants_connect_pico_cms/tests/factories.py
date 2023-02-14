@@ -3,7 +3,7 @@ from random import randint
 from factory import Faker as FactoryFaker
 from factory.django import DjangoModelFactory
 
-from aidants_connect_pico_cms.models import Testimony
+from aidants_connect_pico_cms.models import FaqCategory, FaqQuestion, Testimony
 
 
 class CmsContentFactory(DjangoModelFactory):
@@ -22,3 +22,16 @@ class TestimonyFactory(CmsContentFactory):
 
     class Meta:
         model = Testimony
+
+
+class FaqCategoryFactory(CmsContentFactory):
+    name = FactoryFaker("sentence")
+    body = FactoryFaker("paragraph")
+
+    class Meta:
+        model = FaqCategory
+
+
+class FaqQuestionFactory(CmsContentFactory):
+    class Meta:
+        model = FaqQuestion

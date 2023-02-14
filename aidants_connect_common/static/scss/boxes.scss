@@ -1,5 +1,6 @@
 @use "colors";
 
+// box with a yellow shadow ------------------------------------------------------------
 .shadowed {
   border: 1px solid colors.$off-yellow-aidants;
   box-sizing: border-box;
@@ -23,6 +24,8 @@
   padding: 3.5rem 0;
 }
 
+// box meant for important warnings ----------------------------------------------------
+
 .bandeau {
   padding: 0 1rem;
   background: colors.$red-aidants;
@@ -30,5 +33,74 @@
 
   a[href] {
     color: #fff;
+  }
+}
+
+// used on FAQ -------------------------------------------------------------------------
+
+.accordion {
+  > details {
+    padding: 1rem 1rem 0;
+
+    > summary {
+      background: no-repeat url("../images/plus-blue.svg") 100% 50%;
+      padding-right: 2rem;
+      cursor: pointer;
+
+      &::marker {
+        content: "";
+      }
+
+      h3 {
+        font-size: 1.25rem;
+      }
+    }
+
+    &[open] {
+      > summary {
+        background-image: url("../images/minus-red.svg");
+        > h3 {
+          color: colors.$red-aidants;
+        }
+      }
+    }
+
+  }
+
+  > details + details {
+    border-top: 1px solid colors.$off-yellow-aidants;
+  }
+}
+
+.markdown-content {
+  ul, ol {
+    margin: 1rem 2rem;
+  }
+}
+
+// side menu used on FAQ ---------------------------------------------------------------
+
+.faq-menu {
+  ul {
+    list-style-type: none;
+  }
+  a[href] {
+    display: inline-block;
+    text-decoration: none;
+    background: colors.$red-aidants;
+    font-weight: normal;
+    color: #fff;
+    padding: .75rem;
+    margin: 0 0 .75rem;
+
+    &:hover {
+      box-shadow: 0 10px 0 colors.$off-yellow-aidants;
+      color: #fff;
+    }
+
+    &.active {
+      margin-left: 1rem;
+      background: colors.$blue-aidants;
+    }
   }
 }
