@@ -3,8 +3,12 @@ from django.forms import models
 
 from aidants_connect.admin import admin_site
 from aidants_connect_common.widgets import SearchableRadioSelect
-from aidants_connect_pico_cms.models import FaqCategory, FaqQuestion
-from aidants_connect_pico_cms.models import MandateTranslation, Testimony
+from aidants_connect_pico_cms.models import (
+    FaqCategory,
+    FaqQuestion,
+    MandateTranslation,
+    Testimony,
+)
 
 
 @register(Testimony, site=admin_site)

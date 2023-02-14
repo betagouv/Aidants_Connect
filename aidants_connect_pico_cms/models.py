@@ -99,4 +99,3 @@ class FaqQuestion(CmsContent):
     class Meta:
         verbose_name = "Question FAQ"
         verbose_name_plural = "Questions FAQ"
-
