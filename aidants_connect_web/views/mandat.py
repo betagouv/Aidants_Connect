@@ -21,7 +21,7 @@ from phonenumbers import PhoneNumber
 from aidants_connect_common.templatetags.ac_common import mailto
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_common.utils.sms_api import SmsApi
-from aidants_connect_common.views import RequireConnectionView
+from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
 from aidants_connect_web.decorators import (
     activity_required,
     aidant_logged_with_activity_required,
@@ -359,8 +359,18 @@ class NewMandatRecap(RequireConnectionView, FormView):
 
 
 @aidant_logged_with_activity_required
-class NewMandateSuccess(RequireConnectionView, TemplateView):
+class NewMandateSuccess(RequireConnectionMixin, TemplateView):
     template_name = "aidants_connect_web/new_mandat/new_mandat_success.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if isinstance(result := self.check_connection(request), HttpResponse):
+            return result
+
+        self.connection = result
+        self.aidant: Aidant = request.user
+        # Clear the session
+        self.request.session.pop("connection")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         return {
