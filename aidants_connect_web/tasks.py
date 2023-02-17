@@ -76,6 +76,14 @@ def delete_duplicated_static_tokens(*, logger=None):
             token.delete()
 
 
+def get_recipient_list_for_organisation(organisation):
+    return list(
+        organisation.aidants.filter(can_create_mandats=True).values_list(
+            "email", flat=True
+        )
+    )
+
+
 @shared_task
 def notify_soon_expired_mandates():
 
@@ -87,7 +95,7 @@ def notify_soon_expired_mandates():
     )
 
     for organisation in organisations:
-        recipient_list = list(organisation.aidants.values_list("email", flat=True))
+        recipient_list = get_recipient_list_for_organisation(organisation)
 
         org_mandates: List[Mandat] = list(
             mandates_qset.filter(organisation=organisation)

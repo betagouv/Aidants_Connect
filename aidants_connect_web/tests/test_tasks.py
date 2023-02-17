@@ -6,10 +6,21 @@ import pytz
 
 from aidants_connect_habilitation.tasks import update_pix_and_create_aidant
 from aidants_connect_web.models import Aidant, HabilitationRequest
+from aidants_connect_web.tasks import get_recipient_list_for_organisation
 from aidants_connect_web.tests.factories import (
+    AidantFactory,
     HabilitationRequestFactory,
     OrganisationFactory,
 )
+
+
+class UtilsTaskTests(TestCase):
+    def test_get_recipient_list_for_organisation(self):
+        orga = OrganisationFactory()
+        AidantFactory(organisation=orga, can_create_mandats=True)
+        AidantFactory(organisation=orga, can_create_mandats=False)
+        self.assertEqual(1, Aidant.objects.filter(can_create_mandats=True).count())
+        self.assertEqual(1, len(get_recipient_list_for_organisation(orga)))
 
 
 class ImportPixTests(TestCase):
