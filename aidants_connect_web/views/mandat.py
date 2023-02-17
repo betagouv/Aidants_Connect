@@ -228,12 +228,16 @@ class NewMandat(MandatCreationJsFormView):
 
 
 @aidant_logged_with_activity_required
-class NewMandatRecap(RequireConnectionView, FormView):
+class NewMandatRecap(RequireConnectionMixin, FormView):
     form_class = RecapMandatForm
     template_name = "aidants_connect_web/new_mandat/new_mandat_recap.html"
 
     def dispatch(self, request, *args, **kwargs):
-        next_dispatch = super().dispatch(request, *args, **kwargs)
+        if isinstance(result := self.check_connection(request), HttpResponse):
+            return result
+
+        self.connection: Connection = result
+        self.aidant: Aidant = request.user
 
         # Prevents creating mandate when user has not consented for
         # a mandate with blocked remote consent method
@@ -252,7 +256,7 @@ class NewMandatRecap(RequireConnectionView, FormView):
             )
             return redirect(reverse("new_mandat_waiting_room"))
 
-        return next_dispatch
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         return {
