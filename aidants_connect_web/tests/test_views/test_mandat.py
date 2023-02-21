@@ -1,8 +1,13 @@
+import re
 from datetime import datetime, timedelta
+from typing import List
+from unittest import mock
+from unittest.mock import ANY, MagicMock, Mock
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib import messages as django_messages
+from django.db import transaction
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
@@ -20,8 +25,143 @@ from aidants_connect_web.tests.factories import (
     UsagerFactory,
 )
 from aidants_connect_web.views import mandat
+from aidants_connect_web.views.mandat import RemoteMandateMixin
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
+
+UUID = "7ce05928-979c-49ab-8e10-a1a221d39acb"
+
+
+@tag("new_mandat")
+class TestRemoteMandateMixin(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.phone_number = "0 800 840 800"
+        cls.aidant_thierry = AidantFactory()
+
+    def test_process_consent_returns_none_if_not_remote_or_not_blocked_method(self):
+        target = RemoteMandateMixin()
+
+        form = self._get_form(["papiers", "logement"])
+
+        for method in RemoteConsentMethodChoices.blocked_methods():
+            setattr(target, f"_process_{method}_method", MagicMock())
+
+        result = target.process_consent(
+            self.aidant_thierry, self.aidant_thierry.organisation, form
+        )
+
+        for method in RemoteConsentMethodChoices.blocked_methods():
+            getattr(target, f"_process_{method}_method").assert_not_called()
+
+        self.assertIs(None, result)
+
+        form = self._get_form(
+            ["papiers", "logement"], RemoteConsentMethodChoices.LEGACY
+        )
+
+        for method in RemoteConsentMethodChoices.blocked_methods():
+            setattr(target, f"_process_{method}_method", MagicMock())
+
+        result = target.process_consent(
+            self.aidant_thierry, self.aidant_thierry.organisation, form
+        )
+
+        for method in RemoteConsentMethodChoices.blocked_methods():
+            getattr(target, f"_process_{method}_method").assert_not_called()
+
+        self.assertIs(None, result)
+
+    @mock.patch("aidants_connect_web.views.mandat.uuid4")
+    @mock.patch("aidants_connect_common.utils.sms_api.SmsApiMock.send_sms")
+    def test_process_sms_template(self, send_sms_mock: Mock, uuid4_mock: Mock):
+        uuid4_mock.return_value = UUID
+
+        form = self._get_form(
+            list(settings.DEMARCHES.keys()), RemoteConsentMethodChoices.SMS
+        )
+
+        RemoteMandateMixin().process_consent(
+            self.aidant_thierry, self.aidant_thierry.organisation, form
+        )
+
+        send_sms_mock.assert_called_once_with(
+            ANY,
+            UUID,
+            self._trim_margin(
+                """Aidant Connect, bonjour.
+                |
+                |L'organisation COMMUNE D'HOULBEC COCHEREL souhaite créer un mandat\
+                | pour une durée d'un mois (31 jours) en votre nom pour les démarches\
+                | suivantes :
+                |
+                |- Argent,
+                |- Étranger,
+                |- Famille,
+                |- Justice,
+                |- Logement,
+                |- Loisirs,
+                |- Papiers - citoyenneté,
+                |- Social - santé,
+                |- Transports,
+                |- Travail.
+                |
+                |Répondez « Oui » pour accepter le mandat."""
+            ),
+        )
+
+        send_sms_mock.reset_mock()
+
+        with transaction.atomic():
+            Journal.objects.filter(consent_request_id=UUID).delete()
+
+        form = self._get_form(["papiers"], RemoteConsentMethodChoices.SMS)
+
+        RemoteMandateMixin().process_consent(
+            self.aidant_thierry, self.aidant_thierry.organisation, form
+        )
+
+        send_sms_mock.assert_called_once_with(
+            ANY,
+            UUID,
+            self._trim_margin(
+                """Aidant Connect, bonjour.
+                |
+                |L'organisation COMMUNE D'HOULBEC COCHEREL souhaite\
+                | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
+                | la démarche Papiers - citoyenneté.
+                |
+                |Répondez « Oui » pour accepter le mandat."""
+            ),
+        )
+
+    def _trim_margin(self, message):
+        return re.sub(r"[\r\t\f\v  ]+\|", "", message, flags=re.MULTILINE)
+
+    def _get_form(
+        self,
+        demarche: List[str],
+        remote_constent_method: RemoteConsentMethodChoices | None = None,
+    ):
+        data = {
+            "demarche": demarche,
+            "duree": "MONTH",
+            "is_remote": remote_constent_method is not None,
+            "user_phone": self.phone_number,
+        }
+
+        if remote_constent_method:
+            data["remote_constent_method"] = remote_constent_method.value
+
+        form = MandatForm(data=data)
+
+        if not form.is_valid():
+            self.fail(
+                f"Test form is invalid because of the following errors: {form.errors}"
+            )
+
+        return form
 
 
 @tag("new_mandat")
@@ -328,12 +468,13 @@ class NewMandatRecapTests(TestCase):
             self.assertEqual(Autorisation.objects.count(), 3)
 
             last_usager_organisation_papiers_autorisations = (
-                Autorisation.objects.filter(  # noqa
+                Autorisation.objects.filter(
                     demarche="papiers",
                     mandat__usager=self.test_usager,
                     mandat__organisation=self.aidant_thierry.organisation,
                 ).order_by("-mandat__creation_date")
             )
+
             new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
             old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]
             self.assertEqual(new_papiers_autorisation.duration_for_humans, 366)  # noqa

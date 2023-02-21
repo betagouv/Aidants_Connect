@@ -1,3 +1,4 @@
+from textwrap import dedent
 from urllib.parse import quote
 
 from django.template import Context, Template
@@ -62,6 +63,33 @@ class LinebreaklessTests(TestCase):
             "<li>item 3</li>\n</ul>",
             result.strip(),
         )
+
+    def test_keeplinebreak_keeps_witespace_on_option(self):
+        result = self._render_template(
+            dedent(
+                """\
+                {% load ac_common %}
+                {% linebreakless dont_rstrip=True %}
+                This is a line;
+                 this is line
+                {% endlinebreakless %}"""
+            )
+        )
+
+        self.assertEqual("This is a line; this is line", result.strip())
+
+        result = self._render_template(
+            dedent(
+                """\
+                {% load ac_common %}
+                {% linebreakless dont_lstrip=True %}
+                This is a line; 
+                this is line
+                {% endlinebreakless %}"""  # noqa: W291
+            )
+        )
+
+        self.assertEqual("This is a line; this is line", result.strip())
 
     def test_keeplinebreak_throws_expception_when_not_followed_by_a_linebreak(self):
         template = """

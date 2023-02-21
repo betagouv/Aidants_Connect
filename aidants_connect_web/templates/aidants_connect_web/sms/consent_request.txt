@@ -1,6 +1,21 @@
+{% load ac_common %}
+
 Aidant Connect, bonjour.
 
-Un aidant a créé un mandat en votre nom. Confirmez-vous la création de ce mandat ?
-Répondez « {{ sms_response_consent }} » sans ponctuation à ce message pour confirmer votre consentement.
-
-Notez que toute autre réponse que « oui » sera interprétée comme un refus explicite.
+{% linebreakless dont_rstrip=True %}
+{% autoescape off %}{# Turn off HTML autoescape. That would mess with apostrophies #}
+L'organisation {{ organisation.name }} souhaite créer un mandat {{ duree_text }} en votre nom
+{% if demarches|length == 1 %}
+ pour la démarche {{ demarches.0 }}.
+{% else %}
+ pour les démarches suivantes :{% keeplinebreak %}
+{% for demarche in demarches %}
+{% keeplinebreak %}
+- {{ demarche }}{% list_term %}
+{% endfor %}
+{% endif %}
+{% keeplinebreak %}
+{% keeplinebreak %}
+Répondez « {{ sms_response_consent }} » pour accepter le mandat.
+{% endautoescape %}
+{% endlinebreakless %}
