@@ -363,18 +363,8 @@ class NewMandatRecap(RequireConnectionMixin, FormView):
 
 
 @aidant_logged_with_activity_required
-class NewMandateSuccess(RequireConnectionMixin, TemplateView):
+class NewMandateSuccess(RequireConnectionView, TemplateView):
     template_name = "aidants_connect_web/new_mandat/new_mandat_success.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        if isinstance(result := self.check_connection(request), HttpResponse):
-            return result
-
-        self.connection = result
-        self.aidant: Aidant = request.user
-        # Clear the session
-        self.request.session.pop("connection")
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         return {
