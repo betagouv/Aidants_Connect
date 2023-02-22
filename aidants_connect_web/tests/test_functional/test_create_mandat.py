@@ -341,10 +341,11 @@ class CreateNewMandatTests(FunctionalTestCase):
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
         wait.until(self._element_is_required(By.ID, "id_remote_constent_method_sms"))
-        for elt in self.selenium.find_elements(
-            By.CSS_SELECTOR, "#id_remote_constent_method > input"
-        ):
-            self.assertTrue(elt.get_attribute("required"))
+        elts = self.selenium.find_elements(
+            By.CSS_SELECTOR, 'input[id^="id_remote_constent_method"]'
+        )
+        self.assertEqual(2, len(elts))
+        [self.assertTrue(elt.get_attribute("required")) for elt in elts]
 
         # # Select SMS consent method
         text = RemoteConsentMethodChoices.SMS.label["label"]
@@ -354,6 +355,11 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Waiting room
         fc_button = self.selenium.find_element(By.ID, "submit_button")
+        fc_button.click()
+        wait.until(self.path_matches("new_mandat_remote_second_step"))
+
+        # # Send user consent request
+        fc_button = self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]')
         fc_button.click()
         wait.until(self.path_matches("new_mandat_waiting_room"))
 

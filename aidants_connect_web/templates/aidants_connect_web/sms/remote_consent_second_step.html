@@ -1,0 +1,20 @@
+{% extends 'layouts/main-habilitation.html' %}
+{% load static ac_common %}
+
+{% block title %}Aidants Connect - Récapitulatif envoyé{% endblock %}
+
+{% block content %}
+
+  <div class="fr-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <button class="primary" type="submit">Demander le consentement.</button>
+    </form>
+  </div>
+{% endblock content %}

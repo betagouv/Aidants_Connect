@@ -13,10 +13,11 @@ from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.decorators import aidant_logged_with_activity_required
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Aidant, Connection, Journal, Mandat, Usager
+from aidants_connect_web.views.mandat import MandatCreationJsFormView
 from aidants_connect_web.views.mandat import (
-    MandatCreationJsFormView,
-    RemoteMandateMixin,
+    RemoteConsentSecondStepView as MandatRemoteConsentSecondStepView,
 )
+from aidants_connect_web.views.mandat import RemoteMandateMixin
 from aidants_connect_web.views.mandat import WaitingRoom as MandatWaitingRoom
 
 logger = logging.getLogger()
@@ -26,6 +27,9 @@ logger = logging.getLogger()
 class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
     form_class = MandatForm
     template_name = "aidants_connect_web/new_mandat/renew_mandat.html"
+
+    waiting_room_path = "renew_mandat_waiting_room"
+    mandat_form_path = "renew_mandat"
 
     def dispatch(self, request, *args, **kwargs):
         self.aidant: Aidant = request.user
@@ -49,7 +53,9 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
         self.consent_request_id = ""
 
         if isinstance(
-            result := self.process_consent(self.aidant, self.aidant.organisation, form),
+            result := self.process_consent_first_step(
+                self.aidant, self.aidant.organisation, form
+            ),
             HttpResponse,
         ):
             return result
@@ -99,8 +105,12 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             reverse("new_mandat_recap")
             if self.connection.remote_constent_method
             not in RemoteConsentMethodChoices.blocked_methods()
-            else reverse("renew_mandat_waiting_room")
+            else reverse("renew_remote_second_step")
         )
+
+
+class RemoteConsentSecondStepView(MandatRemoteConsentSecondStepView):
+    next_route_name = "renew_mandat_waiting_room"
 
 
 # MandatWaitingRoom is already decorated with aidant_logged_with_activity_required

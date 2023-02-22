@@ -1641,7 +1641,7 @@ class JournalModelTests(TestCase):
     def test_infos_set_remote_mandate_by_sms_constraint(self):
         # Journal logged
         journal = Journal._log_sms_event(
-            JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+            JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
             self.aidant_thierry,
             "logement,transports",
             "SHORT",
@@ -1657,7 +1657,7 @@ class JournalModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 Journal.objects.create(
-                    action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                    action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
                     aidant=None,
                     demarche="logement,transports",
                     duree=365,
@@ -1677,7 +1677,7 @@ class JournalModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 Journal.objects.create(
-                    action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                    action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
                     aidant=None,
                     demarche="logement,transports",
                     duree=365,
@@ -1697,7 +1697,7 @@ class JournalModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 Journal.objects.create(
-                    action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                    action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
                     aidant=None,
                     demarche="logement,transports",
                     duree=365,
@@ -1712,7 +1712,7 @@ class JournalModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 Journal.objects.create(
-                    action=JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+                    action=JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
                     aidant=None,
                     demarche="logement,transports",
                     duree=365,
@@ -1732,7 +1732,7 @@ class JournalModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 Journal.objects.create(
-                    action=JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+                    action=JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
                     aidant=self.aidant_thierry,
                     demarche="logement,transports",
                     duree=365,
@@ -1751,7 +1751,7 @@ class JournalModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 Journal.objects.create(
-                    action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+                    action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
                     aidant=self.aidant_thierry,
                     demarche="logement,transports",
                     duree=365,
