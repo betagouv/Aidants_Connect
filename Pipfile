@@ -45,6 +45,6 @@ tblib = "*"
 # pre-commit dependencies
 black = "==22.12.0"
 tomli = {version = "*", python_version = "< '3.11'" } # dependency from Black that is weirdly not installed on CI
-isort = "==5.11.4"
 flake8 = "==6.0.0"
 pre-commit-hooks = "==4.4.0"
+isort = "==5.12.0"
