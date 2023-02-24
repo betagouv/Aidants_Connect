@@ -92,9 +92,14 @@ class OrganisationRequestAdminTests(TestCase):
         acceptance_message = mail.outbox[1]
 
         self.assertIn(
-            "formations sont complètes pour les prochains mois", acceptance_message.body
+            "les formations peuvent être complètes pour les prochaines semaines",
+            acceptance_message.body,
         )
-        self.assertIn("Vous êtes sur liste d'attente", acceptance_message.body)
+        self.assertIn(
+            "Vous serez contactés prochainement par l'organisme de formation qui vous "
+            "communiquera les dates disponibles pour les formations à venir. ",
+            acceptance_message.body,
+        )
         self.assertNotIn(
             "Vous pouvez vous inscrire sur liste d’attente ici", acceptance_message.body
         )
