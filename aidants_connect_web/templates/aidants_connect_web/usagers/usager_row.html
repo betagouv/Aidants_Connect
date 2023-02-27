@@ -29,6 +29,6 @@
   {% if has_no_autorisations %}
   <td></td>
   {% else %}
-  <td><a href="{% url 'renew_mandat' usager_id=usager.id %}">Renouveler le mandat</a></td>
+  <td><a href="{{ usager.renew_mandate_url }}">Renouveler le mandat</a></td>
   {% endif %}
 </tr>

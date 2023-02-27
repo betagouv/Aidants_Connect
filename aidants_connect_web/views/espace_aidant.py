@@ -1,4 +1,4 @@
-from urllib.parse import unquote
+from urllib.parse import unquote, urlencode
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -16,11 +16,14 @@ from aidants_connect_web.models import Aidant, Journal
 @login_required
 def home(request):
     aidant = request.user
-
+    parameters = urlencode({"next": reverse("new_mandat")})
     return render(
         request,
         "aidants_connect_web/espace_aidant/home.html",
-        {"aidant": aidant},
+        {
+            "new_mandat_url": f"{reverse('clear_connection')}?{parameters}",
+            "aidant": aidant,
+        },
     )
 
 

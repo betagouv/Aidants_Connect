@@ -50,7 +50,7 @@
             <a id="view_mandats" class="tile text-center background-color-grey" href="{% url 'usagers' %}">
               <span aria-hidden="true">📂<br/></span>Mes mandats
             </a>
-            <a id="add_usager" class="tile text-center background-color-grey" href="{% url 'new_mandat' %}">
+            <a id="add_usager" class="tile text-center background-color-grey" href="{{ new_mandat_url }}">
               <span aria-hidden="true">📝<br/></span>Créer un mandat
             </a>
           {% endif %}
