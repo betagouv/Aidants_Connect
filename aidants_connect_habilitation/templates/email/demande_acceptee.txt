@@ -4,7 +4,7 @@ Bienvenue sur Aidants Connect !
 
 La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}, a été acceptée.
 
-⚠️ Attention : un grand nombre d’aidants sont en attente d’une formation Aidants Connect et les formations sont complètes pour les prochains mois. Vous êtes sur liste d'attente et nous vous contacterons en cas de désistement.
+⚠️ Attention : un nombre important d’aidants sont en attente d’une formation Aidants Connect et les formations peuvent être complètes pour les prochaines semaines. Vous serez contactés prochainement par l'organisme de formation qui vous communiquera les dates disponibles pour les formations à venir. 
 
 Pour rappel, ci-dessous les étapes de la procédure d’habilitation Aidants Connect :
 
@@ -21,3 +21,6 @@ Enfin, une fois les aidants formés, le kit de bienvenue - contenant les accès 
 A l'attention de {{ organisation.manager }}
 {{ organisation.manager.address }}
 {{ organisation.manager.zipcode }} {{ organisation.manager.city }}
+
+Bien cordialement,
+L'équipe Aidants Connect
