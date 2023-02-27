@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 from unittest import mock
 from unittest.mock import ANY, MagicMock, Mock
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -805,3 +806,36 @@ class GenerateAttestationTests(TestCase):
         self.assertIn("COMMUNE", response_content)
         # if this fails, check if info is not on second page
         self.assertIn("18 juillet 2020", response_content)
+
+
+class TestClearConnectionView(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_thierry = AidantFactory()
+        cls.client = Client()
+
+        cls.test_usager = UsagerFactory(
+            given_name="Fabrice",
+            family_name="MERCIER",
+            sub="46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
+        )
+
+    def test_clear_session_and_redirect(self):
+        self.client.force_login(self.aidant_thierry)
+        session = self.client.session
+        session["connection"] = 1
+        session["qr_code_mandat_id"] = 2
+        session.save()
+
+        self.assertEqual(1, self.client.session["connection"])
+        self.assertEqual(2, self.client.session["qr_code_mandat_id"])
+
+        parameter = urlencode(
+            {"next": reverse("renew_mandat", kwargs={"usager_id": self.test_usager.id})}
+        )
+        response = self.client.get(f"{reverse('clear_connection')}?{parameter}")
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(f"/renew_mandat/{self.test_usager.id}", response.url)
+
+        self.assertIsNone(self.client.session.get("connection"))
+        self.assertIsNone(self.client.session.get("qr_code_mandat_id"))
