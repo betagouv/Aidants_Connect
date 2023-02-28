@@ -2,6 +2,7 @@ import logging
 import re
 from datetime import date
 from typing import Callable, Collection
+from urllib.parse import unquote_plus
 from uuid import uuid4
 
 from django.conf import settings
@@ -15,7 +16,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import formats, timezone
 from django.utils.html import format_html
-from django.views.generic import FormView, TemplateView, View
+from django.views.generic import FormView, RedirectView, TemplateView, View
 
 from phonenumbers import PhoneNumber
 
@@ -605,3 +606,15 @@ class WaitingRoomJson(RequireConnectionView, View):
             return JsonResponse({"connectionStatus": "OK"})
 
         return JsonResponse({"connectionStatus": "NOK"})
+
+
+@aidant_logged_with_activity_required
+class ClearConnectionView(RedirectView):
+    def dispatch(self, request, *args, **kwargs):
+        request.session.pop("connection", None)
+        request.session.pop("qr_code_mandat_id", None)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_redirect_url(self, *args, **kwargs):
+        next_path = self.request.GET.get("next", reverse("espace_aidant_home"))
+        return unquote_plus(next_path)
