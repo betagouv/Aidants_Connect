@@ -172,6 +172,7 @@
           <section id="france_connection" class="tiles">
             <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
             <div class="buttons">
+              {% if FF_MANDATE_TRANSLATION %}
               <button
                 class="button"
                 data-action="open-mandate-translation#onOpenTranslation"
@@ -181,6 +182,7 @@
               >
                 Voir le mandat et sa traduction
               </button>
+              {% endif %}
               <input
                 id="submit_button"
                 type="image"

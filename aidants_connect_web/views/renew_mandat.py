@@ -91,6 +91,7 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             "translation_url": self.request.build_absolute_uri(
                 reverse("mandate_translation")
             ),
+            "FF_MANDATE_TRANSLATION": settings.FF_MANDATE_TRANSLATION,
         }
 
     def get_success_url(self):

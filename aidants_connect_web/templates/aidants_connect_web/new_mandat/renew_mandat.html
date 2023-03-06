@@ -9,6 +9,7 @@
   <div id="renew_mandat" class="tiles">
     <h2 class="step-title">Étape 3 : Renouveler le mandat</h2>
     <div class="buttons">
+      {% if FF_MANDATE_TRANSLATION %}
       <button
         class="button"
         data-action="open-mandate-translation#onOpenTranslation"
@@ -18,6 +19,7 @@
       >
         Voir le mandat et sa traduction
       </button>
+      {% endif %}
       <input
         id="submit_renew_button"
         type="submit"

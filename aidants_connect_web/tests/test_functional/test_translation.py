@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 
 from django.db import transaction
-from django.test import tag
+from django.test import override_settings, tag
 from django.urls import reverse
 from django.utils import formats, timezone
 
@@ -22,6 +22,7 @@ from aidants_connect_web.tests.factories import (
 
 
 @tag("functional", "renew_mandat")
+@override_settings(FF_MANDATE_TRANSLATION=True)
 class DisplayTranslationTests(FunctionalTestCase):
     def setUp(self):
         self.aidant = AidantFactory(post__with_otp_device=True)
