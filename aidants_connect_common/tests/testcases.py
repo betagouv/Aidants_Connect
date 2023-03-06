@@ -1,5 +1,8 @@
+from urllib.parse import urlencode
+
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.core import mail
 from django.test import override_settings
 from django.urls import reverse
 
@@ -9,6 +12,8 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.wait import WebDriverWait
+
+from aidants_connect_web.models import Aidant
 
 
 @override_settings(DEBUG=True)
@@ -25,6 +30,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
 
         cls.selenium = WebDriver(options=firefox_options)
         cls.selenium.implicitly_wait(10)
+        cls.wait = WebDriverWait(cls.selenium, 10)
 
         # In some rare cases, the first connection to the Django LiveServer
         # fails for reasons currently unexplained. Setting this variable to `True`
@@ -66,3 +72,35 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
         selenium_wait.until(url_matches(f"^.+{reverse('otpadmin:index')}$"))
+
+    def login_aidant(self, aidant: Aidant, otp_code: str | None = None):
+        """
+        This method is meant to replace
+        ``aidants_connect_web.tests.test_functional.utilities`` and avoid the burden
+        of creating a known OTP code each time. The first found token will be used.
+        Optionnaly, another OTP code can be specified.
+        """
+        otp_code = otp_code or aidant.staticdevice_set.first().token_set.first().token
+
+        login_field = self.selenium.find_element(By.ID, "id_email")
+        login_field.send_keys(aidant.email)
+        otp_field = self.selenium.find_element(By.ID, "id_otp_token")
+        otp_field.send_keys(otp_code)
+        submit_button = self.selenium.find_element(By.XPATH, "//button")
+        submit_button.click()
+        email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text
+        self.assertEqual(
+            email_sent_title, "Un email vous a été envoyé pour vous connecter."
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        token_email = mail.outbox[0].body
+        line_containing_magic_link = token_email.split("\n")[2]
+        magic_link_https = line_containing_magic_link.split()[-1]
+        magic_link_http = magic_link_https.replace("https", "http", 1)
+        magic_link_no_wait = magic_link_http.replace("chargement/code", "code", 1)
+        self.selenium.get(magic_link_no_wait)
+
+    def path_matches(self, route_name: str, query_params: dict = None):
+        query_part = urlencode(query_params or {}, quote_via=lambda s, _1, _2, _3: s)
+        query_part = rf"\?{query_part}" if query_part else ""
+        return url_matches(rf"http://localhost:\d+{reverse(route_name)}{query_part}")

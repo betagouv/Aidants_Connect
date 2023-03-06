@@ -2,7 +2,6 @@ from distutils.util import strtobool
 from random import randint
 from unittest import mock
 from unittest.mock import Mock
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.test import override_settings, tag
@@ -113,7 +112,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        wait.until(self._path_matches("new_mandat_recap", {"state": ".+"}))
+        wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -243,7 +242,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        wait.until(self._path_matches("new_mandat_recap", {"state": ".+"}))
+        wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -356,7 +355,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         # Waiting room
         fc_button = self.selenium.find_element(By.ID, "submit_button")
         fc_button.click()
-        wait.until(self._path_matches("new_mandat_waiting_room"))
+        wait.until(self.path_matches("new_mandat_waiting_room"))
 
         # # Test the message is correctly logged
         consent_request_log: Journal = Journal.objects.find_sms_consent_requests(
@@ -370,11 +369,11 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # # Test that page blocks until user has consented
         self.selenium.refresh()
-        wait.until(self._path_matches("new_mandat_waiting_room"))
+        wait.until(self.path_matches("new_mandat_waiting_room"))
 
         # Try to force creation of mandate; should be redirected to waiting room
         self.open_live_url(reverse("new_mandat_recap"))
-        wait.until(self._path_matches("new_mandat_waiting_room"))
+        wait.until(self.path_matches("new_mandat_waiting_room"))
 
         # Simulate user content
         self._user_consents("0 800 840 800")
@@ -425,7 +424,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        wait.until(self._path_matches("new_mandat_recap", {"state": ".+"}))
+        wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -463,11 +462,6 @@ class CreateNewMandatTests(FunctionalTestCase):
             return strtobool(attr)
 
         return _predicate
-
-    def _path_matches(self, route_name: str, query_params: dict = None):
-        query_part = urlencode(query_params or {}, quote_via=lambda s, _1, _2, _3: s)
-        query_part = rf"\?{query_part}" if query_part else ""
-        return url_matches(rf"http://localhost:\d+{reverse(route_name)}{query_part}")
 
     def _user_responds(self, phone_number: str, text: str):
         number = parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION)

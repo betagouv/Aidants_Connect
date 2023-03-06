@@ -70,11 +70,12 @@
   <section
     id="mandat_specifications"
     class="section section-grey"
-    data-controller="new-mandat-form"
+    data-controller="new-mandat-form open-mandate-translation"
     data-new-mandat-form-sms-method-value="{{ sms_method_value }}"
+    data-open-mandate-translation-open-url-value="{{ translation_url }}"
   >
     <div class="container">
-      <form method="post">
+      <form data-open-mandate-translation-target="form" method="post">
         {% if form.errors %}
           <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
         {% endif %}
@@ -168,14 +169,28 @@
           </section>
         </div>
         {% block input_submit_form %}
-          <div id="france_connection" class="tiles">
+          <section id="france_connection" class="tiles">
             <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
-            <input
-              id="submit_button"
-              type="image"
-              src="{% static 'images/FCboutons-10.png' %}"
-              alt="S’identifier avec FranceConnect"/>
-          </div>
+            <div class="buttons">
+              {% if FF_MANDATE_TRANSLATION %}
+              <button
+                class="button"
+                data-action="open-mandate-translation#onOpenTranslation"
+                data-open-mandate-translation-target="button"
+                hidden
+                aria-hidden="true"
+              >
+                Voir le mandat et sa traduction
+              </button>
+              {% endif %}
+              <input
+                id="submit_button"
+                type="image"
+                src="{% static 'images/FCboutons-10.png' %}"
+                alt="S’identifier avec FranceConnect"
+              />
+            </div>
+          </section>
         {% endblock input_submit_form %}
       </form>
     </div>
@@ -186,4 +201,5 @@
   {% stimulusjs %}
   <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/new_mandat.js' %}"></script>
+  <script src="{% static 'js/mandate-translation.js' %}"></script>
 {% endblock %}

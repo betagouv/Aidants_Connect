@@ -1,3 +1,5 @@
+from typing import List
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
@@ -64,7 +66,9 @@ def user_is_responsable_structure(view=None, redirect_field_name="next"):
     return decorator if (view is None) else decorator(view)
 
 
-def aidant_logged_with_activity_required(view=None, *, method_name=""):
+def aidant_logged_with_activity_required(
+    view=None, *, method_name="", more_decorators: List | None = None
+):
     """
     Combines @login_required, @user_is_aidant and @activity_required for CBVs.
 
@@ -81,8 +85,10 @@ def aidant_logged_with_activity_required(view=None, *, method_name=""):
         if isinstance(decorated, type) and not method_name:
             kwargs["name"] = "dispatch"
 
+        more = more_decorators or []
+
         fun = method_decorator(
-            [login_required, user_is_aidant, activity_required], **kwargs
+            [login_required, user_is_aidant, activity_required, *more], **kwargs
         )
 
         return fun(decorated)

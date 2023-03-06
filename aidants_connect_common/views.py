@@ -33,10 +33,9 @@ class RequireConnectionMixin:
 
 class RequireConnectionView(RequireConnectionMixin, View):
     def dispatch(self, request, *args, **kwargs):
-        result = self.check_connection(request)
-        if isinstance(result, HttpResponse):
+        if isinstance(result := self.check_connection(request), HttpResponse):
             return result
-        else:
-            self.connection = result
+
+        self.connection: Connection = result
         self.aidant: Aidant = request.user
         return super().dispatch(request, *args, **kwargs)

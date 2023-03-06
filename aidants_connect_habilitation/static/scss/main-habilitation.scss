@@ -45,6 +45,10 @@ main {
   }
 }
 
+[hidden], [aria-hidden] {
+  display: none !important;
+}
+
 // Accessibility ------------------------------------------------------
 
 :focus-visible {
@@ -93,13 +97,16 @@ h1, .h1 {
   margin: 2.5rem 0;
   text-transform: uppercase;
   line-height: 1.25;
+}
 
+h1, .h1, .subtitle-container {
   + .subtitle {
     font-size: 1.25rem;
     color: colors.$light-blue-anct;
     line-height: 2rem;
   }
 }
+
 
 h2, .h2 {
   display: block;

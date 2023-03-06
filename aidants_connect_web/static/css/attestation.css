@@ -17,7 +17,7 @@ h1 {
   margin: 0 2em .6em;
 }
 
-p, ul {
+p:not(.subtitle), ul {
     margin: 0;
 }
 

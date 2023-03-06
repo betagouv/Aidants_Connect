@@ -11,11 +11,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template import engines
+from django.template.backends.django import DjangoTemplates
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import formats, timezone
 from django.utils.html import format_html
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, RedirectView, TemplateView, View
 
 from phonenumbers import PhoneNumber
@@ -27,6 +30,7 @@ from aidants_connect_common.utils.constants import (
 )
 from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
+from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_web.decorators import (
     activity_required,
     aidant_logged_with_activity_required,
@@ -212,7 +216,14 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "aidant": self.aidant}
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "translation_url": self.request.build_absolute_uri(
+                reverse("mandate_translation")
+            ),
+            "FF_MANDATE_TRANSLATION": settings.FF_MANDATE_TRANSLATION,
+        }
 
     def get_initial(self):
         return (
@@ -424,6 +435,68 @@ class AttestationProject(RequireConnectionView, TemplateView):
             ],
             "duree": self.connection.get_duree_keyword_display(),
             "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
+        }
+
+
+@aidant_logged_with_activity_required(more_decorators=[csrf_exempt])
+class Translation(TemplateView):
+    template_name = "aidants_connect_web/attestation_projet.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        lang: MandateTranslation = get_object_or_404(
+            MandateTranslation, pk=request.POST.get("lang_code")
+        )
+
+        template_engine = next(
+            engine for engine in engines.all() if isinstance(engine, DjangoTemplates)
+        )
+
+        return self.response_class(
+            request=self.request,
+            template=template_engine.from_string(lang.to_html()),
+            context={},
+            using=template_engine,
+        )
+
+    def get_context_data(self, **kwargs):
+        try:
+            duree = AuthorizationDurationChoices(
+                self.request.GET.get("duree", "")
+            ).label
+        except ValueError:
+            duree = ""
+
+        def not_implemented(*args, **kwargs):
+            pass
+
+        user = Usager(
+            pk=-100,
+            given_name="_____",
+            family_name="_____",
+            preferred_username="_____",
+        )
+
+        user.save = not_implemented  # Prevent saving this object
+
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "usager": user,
+            "date": formats.date_format(date.today(), "l j F Y"),
+            "demarches": [
+                humanize_demarche_names(demarche)
+                for demarche in self.request.GET.getlist("demarche", [])
+            ],
+            "duree": duree,
+            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
+            "available_translations": MandateTranslation.objects.all(),
+            "translation_endpoint": self.request.build_absolute_uri(
+                reverse("mandate_translation")
+            ),
         }
 
 

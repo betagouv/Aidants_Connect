@@ -1,0 +1,107 @@
+{% extends 'layouts/main-habilitation.html' %}
+
+{% load static ac_common %}
+
+{% block title %}Aidants Connect - Impression du mandat{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/attestation-project.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block nav %}
+  {% load static %}
+
+  {% include 'layouts/_skip-links.html' %}
+  <header>
+    <div class="fr-container">
+      <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+        <div class="fr-col-12 fr-col-md-5">
+          <a class="header-logo" href="{% url 'home_page' %}">
+            <img width="200" src="{% static 'images/Marianne_logo_1120.png' %}" alt=""/>
+            <img width="100" src="{% static 'images/aidants-connect_logo.png' %}" alt="Aidants Connect"/>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+{% endblock nav %}
+
+{% block content %}
+
+<div
+  class="fr-container"
+  data-controller="mandate-translation"
+  data-mandate-translation-translation-endpoint-value="{{ translation_endpoint }}"
+>
+  <h1>Projet de mandat</h1>
+  <div class="subtitle-container no-print">
+    <p class="subtitle fr-col-12 fr-col-md-6">
+      Vous trouverez ci-dessous le projet de mandat que vous êtes en train de créer.
+      {% if available_translations|length > 0 %}
+        Si nécessaire, vous pouvez sélectionner parmi les langues ci-dessous pour en afficher une traduction.
+      {% endif %}
+    </p>
+    <div class="fr-col-12 fr-col-md-6 print-button-container">
+      <div class="shadowed padding-1rem">
+        <p>Vous pouvez imprimer ce mandat en cliquant sur le bouton ci-dessous.</p>
+        <button class="primary" data-action="mandate-translation#print">Imprimer</button>
+      </div>
+    </div>
+  </div>
+
+  {% if available_translations|length > 0 %}
+    <header class="mandate-translation-row no-print">
+      <h3 class="mandate-translation-column">Version française</h3>
+      <section class="mandate-translation-column">
+        <label class="h3" for="mandate-translation-lang">Traduire le mandat en :</label>
+        <select
+          id="mandate-translation-lang"
+          data-action="mandate-translation#selectTranslation"
+        >
+          <option value="">----</option>
+          {% for translation in available_translations %}
+            <option value="{{ translation.lang }}">{{ translation.lang_name }}</option>
+          {% endfor %}
+        </select>
+      </section>
+    </header>
+
+    <p class="subtitle">
+      Mandat pour réaliser des démarches en ligne avec le service « Aidants Connect »
+    </p>
+
+    <section class="mandate-translation-row">
+      <article class="mandate-translation-column mandate-translation-fr-container">
+        {% include current_mandat_template %}
+      </article>
+      <article
+        class="container mandate-translation-column mandate-translation-other no-print"
+        hidden
+        aria-hidden="true"
+        data-mandate-translation-target="translationContainer"
+      >
+      </article>
+    </section>
+  {% else %}
+    <p class="subtitle">
+      Mandat pour réaliser des démarches en ligne avec le service « Aidants Connect »
+    </p>
+    {% include current_mandat_template %}
+  {% endif %}
+</div>
+{% endblock content %}
+
+{% block footer %}
+  {% if modified %}
+    <em class="text-center margin-bottom-1em">Ce contrat est mis à jour régulièrement pour des raisons légales. Il peut
+      avoir été modifié depuis votre dernière visite.</em>
+  {% endif %}
+{% endblock footer %}
+
+{% block extrajs %}
+  {% if available_translations|length > 0 %}
+    {% stimulusjs %}
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/mandate-translation.js' %}"></script>
+  {% endif %}
+{% endblock %}

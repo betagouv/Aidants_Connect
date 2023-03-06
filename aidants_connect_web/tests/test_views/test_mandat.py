@@ -16,9 +16,10 @@ from django.utils import timezone
 
 from freezegun import freeze_time
 
+from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
+from aidants_connect_web.models import Aidant, Autorisation, Connection, Journal, Usager
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     MandatFactory,
@@ -839,3 +840,43 @@ class TestClearConnectionView(TestCase):
 
         self.assertIsNone(self.client.session.get("connection"))
         self.assertIsNone(self.client.session.get("qr_code_mandat_id"))
+
+
+class TestTranslation(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_thierry: Aidant = AidantFactory()
+        cls.lang: MandateTranslation = MandateTranslation.objects.create(
+            lang="pus", body="# Test title\n\nTest"
+        )
+
+    def test_get_triggers_the_correct_view(self):
+        found = resolve(reverse("mandate_translation"))
+        self.assertEqual(found.func.view_class, mandat.Translation)
+
+    def test_get_renders_the_correct_template(self):
+        self.client.force_login(self.aidant_thierry)
+
+        response = self.client.get(reverse("mandate_translation"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/attestation_projet.html")
+
+    def test_post_returns_404_on_unknown_lang(self):
+        self.client.force_login(self.aidant_thierry)
+
+        response = self.client.post(
+            reverse("mandate_translation"), data={"lang_code": "aaaaaaaaaaaaa"}
+        )
+
+        self.assertEqual(404, response.status_code)
+
+    def test_post_returns_html_translation_on_known_lang(self):
+        self.client.force_login(self.aidant_thierry)
+
+        response = self.client.post(
+            reverse("mandate_translation"), data={"lang_code": self.lang.lang}
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(b"<h1>Test title</h1>\n<p>Test</p>", response.content)

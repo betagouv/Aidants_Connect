@@ -671,3 +671,5 @@ LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
 # If set to False, FAQ content will be fetched from aidants_connect_web
 # else FAQ will be set from dynamic content of pico_cms.faq_section and faq_question
 FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
+
+FF_MANDATE_TRANSLATION = getenv_bool("FF_MANDATE_TRANSLATION", False)
