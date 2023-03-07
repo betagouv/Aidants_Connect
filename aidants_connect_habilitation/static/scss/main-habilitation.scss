@@ -37,7 +37,7 @@ main {
   }
 }
 
-[hidden], [aria-hidden] {
+[hidden] {
   display: none !important;
 }
 
@@ -114,6 +114,11 @@ h2, .h2 {
   text-transform: uppercase;
   margin: 2rem 0;
   line-height: 1.25;
+
+  + .subtitle {
+    margin-top: -1.5rem;
+    margin-bottom: 2rem;
+  }
 
   &:first-child, legend + & {
     margin-top: 0;
