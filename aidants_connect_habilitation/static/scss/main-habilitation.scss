@@ -90,16 +90,22 @@ main {
 }
 
 h1, .h1 {
+  $margin-top: 2.5rem;
+
   display: block;
   font-size: 3rem;
   font-weight: bold;
   color: colors.$red-aidants;
-  margin: 2.5rem 0;
+  margin: $margin-top 0;
   text-transform: uppercase;
   line-height: 1.25;
+
+  + h2 {
+    margin-top: -$margin-top;
+  }
 }
 
-h1, .h1, .subtitle-container {
+h1, .h1, h2, .h2, .subtitle-container {
   + .subtitle {
     font-size: 1.25rem;
     color: colors.$light-blue-anct;
@@ -117,20 +123,15 @@ h2, .h2 {
   margin: 2rem 0;
   line-height: 1.25;
 
-  + .subtitle {
-    margin-top: -1.5rem;
-    margin-bottom: 2rem;
-  }
-
   &:first-child, legend + & {
     margin-top: 0;
   }
 }
 
 h3, .h3 {
-  font-size: 1.5rem;
   color: colors.$light-blue-anct;
-  font-weight: normal;
+  font-size: 1.5rem;
+  font-weight: bold;
   margin: 2.5rem 0 1.5rem;
   line-height: 1.25;
 

@@ -1,0 +1,67 @@
+@use "colors";
+
+.procedure {
+  color: colors.$blue-aidants;
+  list-style: none;
+  counter-reset: my-awesome-counter;
+
+  mark {
+    background: none;
+    color: colors.$red-aidants;
+  }
+
+  em {
+    color: colors.$light-blue-anct;
+  }
+
+  table {
+    width: 100%;
+    border-spacing: 0;
+    table-layout: fixed;
+
+    th, td {
+      padding: .5rem;
+    }
+
+    th {
+      background: colors.$light-grey-aidants;
+    }
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    counter-increment: my-awesome-counter;
+    margin: 0 .25rem 2rem .25rem;
+
+    &::before {
+      background: colors.$red-aidants;
+      border-radius: 50%;
+      color: white;
+      content: counter(my-awesome-counter);
+      height: 2rem;
+      line-height: 2rem;
+      margin-right: 3rem;
+      min-width: 2rem;
+      text-align: center;
+      width: 2rem;
+    }
+
+    > * {
+      margin: 0;
+      flex-grow: 1;
+    }
+  }
+}
+
+.additionnal-comments {
+  color: #FFF;
+  background: colors.$blue-aidants;
+  margin-bottom: 2rem;
+}
+
+.sandbox-buttons {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 4rem;
+}
