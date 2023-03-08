@@ -1,17 +1,9 @@
 @use "colors";
-@import "detailed-radio-select.css";
-@import "boxes.css";
-@import "utils.css";
+@use "utils";
+@use "boxes";
+@use "detailed-radio-select";
 
 $font-stack: "Marianne", arial, sans-serif;
-
-// break points -----------------------------------------
-
-$bp-xs: 20em;
-$bp-sm: 36em;
-$bp-md: 48em;
-$bp-lg: 62em;
-$bp-xl: 78em;
 
 // basic layout -----------------------------------------
 
@@ -138,6 +130,15 @@ h3, .h3 {
   &:first-child, legend + & {
     margin-top: 0;
   }
+}
+
+h3.h3-prime {
+  // Like h2 but with with text size of h3. To use on <h3> that visually places between <h2> and <h3>
+  display: block;
+  color: colors.$blue-aidants;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 2rem 0;
 }
 
 .shadowed {
@@ -511,7 +512,7 @@ fieldset {
   }
 }
 
-@media (max-width: $bp-md) {
+@media (max-width: utils.$bp-md) {
   .form-grid-row {
     .fr-col-md-5 {
       padding-bottom: .25rem;
@@ -526,7 +527,7 @@ fieldset {
   }
 }
 
-@media (min-width: $bp-lg) {
+@media (min-width: utils.$bp-lg) {
   .form-grid-row-narrow {
     .fr-col-md-5 {
       padding-bottom: .25rem;
@@ -773,12 +774,6 @@ footer {
   a:focus-visible .icon {
     fill: colors.$dark-grey-aidants;
   }
-}
-
-// utilities ----------------------------------------------
-
-.margin-bottom-1 {
-  margin-bottom: 1rem;
 }
 
 // FAQ

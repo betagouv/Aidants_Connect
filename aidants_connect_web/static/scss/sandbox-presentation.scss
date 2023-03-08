@@ -1,4 +1,5 @@
 @use "colors";
+@use "utils";
 
 .procedure {
   color: colors.$blue-aidants;
@@ -21,6 +22,8 @@
 
     th, td {
       padding: .5rem;
+      overflow: scroll;
+      text-overflow: ellipsis;
     }
 
     th {
@@ -28,28 +31,53 @@
     }
   }
 
+
   li {
     display: flex;
     align-items: center;
     counter-increment: my-awesome-counter;
     margin: 0 .25rem 2rem .25rem;
 
-    &::before {
+    @mixin li-counter {
       background: colors.$red-aidants;
       border-radius: 50%;
       color: white;
       content: counter(my-awesome-counter);
       height: 2rem;
       line-height: 2rem;
-      margin-right: 3rem;
       min-width: 2rem;
       text-align: center;
       width: 2rem;
     }
 
+    .shadowed {
+      padding: 2rem;
+    }
+
+    @media (max-width: utils.$bp-sm) {
+      .shadowed {
+        padding: 1rem;
+      }
+    }
+
+    @media (min-width: utils.$bp-sm) {
+      &::before {
+        @include li-counter;
+        margin-right: 3rem;
+      }
+    }
+
     > * {
       margin: 0;
       flex-grow: 1;
+
+      @media (max-width: utils.$bp-sm) {
+        &::before {
+          @include li-counter;
+          display: block;
+          margin-bottom: 1rem;
+        }
+      }
     }
   }
 }
@@ -58,6 +86,16 @@
   color: #FFF;
   background: colors.$blue-aidants;
   margin-bottom: 2rem;
+  padding: 2rem;
+
+  ul, ol {
+    padding: revert;
+  }
+  @media (max-width: utils.$bp-sm) {
+    & {
+      padding: 1rem;
+    }
+  }
 }
 
 .sandbox-buttons {
