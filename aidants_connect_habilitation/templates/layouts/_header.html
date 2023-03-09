@@ -19,6 +19,9 @@
               <li>
                 <a {% if view_name == 'home_page' %}class="active"{% endif %} href="{% url 'home_page' %}">Accueil</a>
               </li>
+              {% if user_is_authenticated %}<li>
+                <a {% if view_name == 'espace_aidant' %}class="active"{% endif %} href="{% url 'espace_aidant_home' %}">Espace aidant</a>
+              </li>{% endif %}
               <li>
                 <a {% if 'habilitation' in view_name %}class="active"{% endif %}
                    href="{% url 'habilitation' %}">Premiers pas</a>
@@ -31,9 +34,9 @@
                 <a {% if 'faq' in view_name %}class="active"{% endif %}
                    href="{% url 'faq_generale' %}">Aide</a>
               </li>
-              <li>
-                {% if not user_is_authenticated %}<a class="button primary" href="{% url 'login' %}">Se connecter</a>{% endif %}
-              </li>
+              {% if not user_is_authenticated %}<li>
+                <a class="button primary" href="{% url 'login' %}">Se connecter</a>
+              </li>{% endif %}
             {% endwith %}
           </ul>
         </nav>
