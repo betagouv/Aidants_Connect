@@ -1,6 +1,6 @@
 {% extends 'layouts/main-habilitation.html' %}
 
-{% load static %}
+{% load static ac_common %}
 
 {% block title %}Aidants Connect - Espace Aidant{% endblock %}
 
@@ -34,47 +34,65 @@
     {% endif %}
     <section class="section tiles aidant-home-services">
       <h3>Vos services</h3>
-      <div class="grid">
+      <div class="fr-grid-row fr-grid-row--gutters">
         {% if aidant.is_responsable_structure %}
-          <a id="view_organisation" class="tile"
-             href="{% url 'espace_responsable_home' %}">
-            <span aria-hidden="true">🏢<br/></span>Mon espace responsable
-          </a>
-          {% if not aidant.has_a_totp_device %}
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
             <a id="view_organisation" class="tile"
-               href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}">
-              <span aria-hidden="true">💳<br/></span>Activer ma carte
+               href="{% url 'espace_responsable_home' %}">
+              <span aria-hidden="true">🏢<br/></span>Mon espace responsable
             </a>
+          </div>
+          {% if not aidant.has_a_totp_device %}
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+              <a id="view_organisation" class="tile"
+                 href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}">
+                <span aria-hidden="true">💳<br/></span>Activer ma carte
+              </a>
+            </div>
           {% endif %}
         {% else %}
-          <a id="view_organisation" class="tile"
-             href="{% url 'espace_aidant_organisation' %}">
-            <span aria-hidden="true">🏢<br/></span>Mon organisation
-          </a>
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <a id="view_organisation" class="tile"
+               href="{% url 'espace_aidant_organisation' %}">
+              <span aria-hidden="true">🏢<br/></span>Mon organisation
+            </a>
+          </div>
         {% endif %}
         {% if aidant.can_create_mandats %}
-          <a id="view_mandats" class="tile" href="{% url 'usagers' %}">
-            <span aria-hidden="true">📂<br/></span>Mes mandats
-          </a>
-          <a id="add_usager" class="tile" href="{{ new_mandat_url }}">
-            <span aria-hidden="true">📝<br/></span>Créer un mandat
-          </a>
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <a id="view_mandats" class="tile" href="{% url 'usagers' %}">
+              <span aria-hidden="true">📂<br/></span>Mes mandats
+            </a>
+          </div>
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <a id="add_usager" class="tile" href="{{ new_mandat_url }}">
+              <span aria-hidden="true">📝<br/></span>Créer un mandat
+            </a>
+          </div>
         {% endif %}
-        <a id="ask_for_help" class="tile"
-           href="mailto:contact@aidantsconnect.beta.gouv.fr?subject=sos&body=Bonjour, je suis (nom,prénom), de la structure (nom de structure), j’aimerais que vous me rappeliez afin de résoudre mon problème (description du problème), voici mon numéro (numéro de téléphone)">
-          <span aria-hidden="true">🆘<br/></span>J’ai besoin d’aide
-        </a>
-        <a id="help_tutorial" class="tile"
-           href="https://www.etsijaccompagnais.fr/tutoriel-aidants-connect">
-          <span aria-hidden="true">💡<br/></span>Tutoriel Aidants Connect
-        </a>
-        {% if request.user.organisations.count > 1 and not disable_change_organisation %}
-          <a
-            href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
-            class="tile"
-          >
-            <span aria-hidden="true">🏢 &rarr;️ 🏢<br/></span>Changer d'organisation
+
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <a id="ask_for_help" class="tile" href="{{ sos_href }}">
+            <span aria-hidden="true">🆘<br/></span>J’ai besoin d’aide
           </a>
+        </div>
+
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <a id="help_tutorial" class="tile"
+             href="https://www.etsijaccompagnais.fr/tutoriel-aidants-connect">
+            <span aria-hidden="true">💡<br/></span>Tutoriel Aidants Connect
+          </a>
+        </div>
+        {% if request.user.organisations.count > 1 and not disable_change_organisation %}
+
+          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <a
+              href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
+              class="tile"
+            >
+              <span aria-hidden="true">🏢 &rarr;️ 🏢<br/></span>Changer d'organisation
+            </a>
+          </div>
         {% endif %}
       </div>
     </section>
