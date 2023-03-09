@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from aidants_connect_common.templatetags.ac_common import mailto_href
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
 from aidants_connect_web.models import Aidant, Journal
@@ -17,12 +18,22 @@ from aidants_connect_web.models import Aidant, Journal
 def home(request):
     aidant = request.user
     parameters = urlencode({"next": reverse("new_mandat")})
+    sos_href = mailto_href(
+        recipient="contact@aidantsconnect.beta.gouv.fr",
+        subject="sos",
+        body=(
+            "Bonjour, je suis (nom,prénom), de la structure (nom de structure), "
+            "j’aimerais que vous me rappeliez afin de résoudre mon problème "
+            "(description du problème), voici mon numéro (numéro de téléphone)"
+        ),
+    )
     return render(
         request,
         "aidants_connect_web/espace_aidant/home.html",
         {
             "new_mandat_url": f"{reverse('clear_connection')}?{parameters}",
             "aidant": aidant,
+            "sos_href": sos_href,
         },
     )
 

@@ -32,7 +32,7 @@
                    href="{% url 'faq_generale' %}">Aide</a>
               </li>
               <li>
-                <a class="button primary" href="{% url 'login' %}">Se connecter</a>
+                {% if not user_is_authenticated %}<a class="button primary" href="{% url 'login' %}">Se connecter</a>{% endif %}
               </li>
             {% endwith %}
           </ul>
