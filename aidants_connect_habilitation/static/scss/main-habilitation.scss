@@ -1,17 +1,9 @@
 @use "colors";
-@import "detailed-radio-select.css";
-@import "boxes.css";
-@import "utils.css";
+@use "utils";
+@use "boxes";
+@use "detailed-radio-select";
 
 $font-stack: "Marianne", arial, sans-serif;
-
-// break points -----------------------------------------
-
-$bp-xs: 20em;
-$bp-sm: 36em;
-$bp-md: 48em;
-$bp-lg: 62em;
-$bp-xl: 78em;
 
 // basic layout -----------------------------------------
 
@@ -90,16 +82,22 @@ main {
 }
 
 h1, .h1 {
+  $margin-top: 2.5rem;
+
   display: block;
   font-size: 3rem;
   font-weight: bold;
   color: colors.$red-aidants;
-  margin: 2.5rem 0;
+  margin: $margin-top 0;
   text-transform: uppercase;
   line-height: 1.25;
+
+  + h2 {
+    margin-top: -$margin-top;
+  }
 }
 
-h1, .h1, .subtitle-container {
+h1, .h1, h2, .h2, .subtitle-container {
   + .subtitle {
     font-size: 1.25rem;
     color: colors.$light-blue-anct;
@@ -117,26 +115,30 @@ h2, .h2 {
   margin: 2rem 0;
   line-height: 1.25;
 
-  + .subtitle {
-    margin-top: -1.5rem;
-    margin-bottom: 2rem;
-  }
-
   &:first-child, legend + & {
     margin-top: 0;
   }
 }
 
 h3, .h3 {
-  font-size: 1.5rem;
   color: colors.$light-blue-anct;
-  font-weight: normal;
+  font-size: 1.5rem;
+  font-weight: bold;
   margin: 2.5rem 0 1.5rem;
   line-height: 1.25;
 
   &:first-child, legend + & {
     margin-top: 0;
   }
+}
+
+h3.h3-prime {
+  // Like h2 but with with text size of h3. To use on <h3> that visually places between <h2> and <h3>
+  display: block;
+  color: colors.$blue-aidants;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 2rem 0;
 }
 
 .shadowed {
@@ -510,7 +512,7 @@ fieldset {
   }
 }
 
-@media (max-width: $bp-md) {
+@media (max-width: utils.$bp-md) {
   .form-grid-row {
     .fr-col-md-5 {
       padding-bottom: .25rem;
@@ -525,7 +527,7 @@ fieldset {
   }
 }
 
-@media (min-width: $bp-lg) {
+@media (min-width: utils.$bp-lg) {
   .form-grid-row-narrow {
     .fr-col-md-5 {
       padding-bottom: .25rem;
@@ -772,12 +774,6 @@ footer {
   a:focus-visible .icon {
     fill: colors.$dark-grey-aidants;
   }
-}
-
-// utilities ----------------------------------------------
-
-.margin-bottom-1 {
-  margin-bottom: 1rem;
 }
 
 // FAQ

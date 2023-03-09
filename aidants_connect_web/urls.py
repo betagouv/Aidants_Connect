@@ -12,6 +12,7 @@ from aidants_connect_web.views import (
     login,
     mandat,
     renew_mandat,
+    sandbox,
     service,
     sms,
     usagers,
@@ -234,6 +235,12 @@ urlpatterns = [
     # # SMS
     # SMS provider may misconfigure the trailing slash so we need to respond on both
     re_path(r"sms/callback/?$", sms.Callback.as_view(), name="sms_callback"),
+    # # Bac à sable
+    path(
+        "bac-a-sable/presentation",
+        sandbox.Sandbox.as_view(),
+        name="datapass_habilitation",
+    ),
 ]
 
 if not settings.FF_USE_PICO_CMS_FOR_FAQ:
