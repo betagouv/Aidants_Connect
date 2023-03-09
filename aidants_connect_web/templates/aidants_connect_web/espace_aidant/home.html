@@ -84,7 +84,6 @@
           </a>
         </div>
         {% if request.user.organisations.count > 1 and not disable_change_organisation %}
-
           <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
             <a
               href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
@@ -94,6 +93,13 @@
             </a>
           </div>
         {% endif %}
+
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <a href="{{ sandbox_url }}" class="tile">
+            <span aria-hidden="true"><img class="icon" src="{% static "images/icons/sandbox-icon.png" %}"><br/></span>
+            Site bac à sable
+          </a>
+        </div>
       </div>
     </section>
     <section class="section ">
