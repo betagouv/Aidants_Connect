@@ -34,6 +34,7 @@ def home(request):
             "new_mandat_url": f"{reverse('clear_connection')}?{parameters}",
             "aidant": aidant,
             "sos_href": sos_href,
+            "sandbox_url": settings.SANDBOX_URL,
         },
     )
 
