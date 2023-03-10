@@ -11,8 +11,6 @@ from aidants_connect_pico_cms.models import (
 )
 
 
-@register(Testimony, site=admin_site)
-@register(FaqCategory, site=admin_site)
 class CmsAdmin(ModelAdmin):
     list_display = (
         "__str__",
@@ -26,7 +24,44 @@ class CmsAdmin(ModelAdmin):
         "created_at",
         "updated_at",
     )
-    raw_id_fields = ("updated_by",)
+
+
+@register(Testimony, site=admin_site)
+class TestimonyAdmin(CmsAdmin):
+    fieldsets = (
+        ("Contenu", {"fields": ("name", "job", "body")}),
+        (
+            "Publication",
+            {
+                "fields": (
+                    "published",
+                    "sort_order",
+                    "slug",
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+    )
+
+
+@register(FaqCategory, site=admin_site)
+class FaqCategoryAdmin(CmsAdmin):
+    fieldsets = (
+        ("Contenu", {"fields": ("name", "body")}),
+        (
+            "Publication",
+            {
+                "fields": (
+                    "published",
+                    "sort_order",
+                    "slug",
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+    )
 
 
 @register(FaqQuestion, site=admin_site)
@@ -47,6 +82,7 @@ class FaqQuestionAdmin(CmsAdmin):
             {
                 "fields": (
                     "published",
+                    "sort_order",
                     "slug",
                     "created_at",
                     "updated_at",
