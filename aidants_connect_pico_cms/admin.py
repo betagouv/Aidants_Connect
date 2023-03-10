@@ -12,6 +12,7 @@ from aidants_connect_pico_cms.models import (
 
 
 @register(Testimony, site=admin_site)
+@register(FaqCategory, site=admin_site)
 class CmsAdmin(ModelAdmin):
     list_display = (
         "__str__",
@@ -28,6 +29,7 @@ class CmsAdmin(ModelAdmin):
     raw_id_fields = ("updated_by",)
 
 
+@register(FaqQuestion, site=admin_site)
 class FaqQuestionAdmin(CmsAdmin):
     list_filter = ("published", "category")
     list_display = (
@@ -65,7 +67,3 @@ class MandateTranslationAdminForm(models.ModelForm):
 class MandateTranslationAdmin(ModelAdmin):
     list_display = ("__str__",)
     form = MandateTranslationAdminForm
-
-
-admin_site.register(FaqCategory, CmsAdmin)
-admin_site.register(FaqQuestion, FaqQuestionAdmin)
