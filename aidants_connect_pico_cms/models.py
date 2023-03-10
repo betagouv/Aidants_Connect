@@ -92,6 +92,7 @@ class FaqQuestion(CmsContent):
     category = models.ForeignKey(
         FaqCategory, models.SET_NULL, null=True, verbose_name="Catégorie"
     )
+    body = models.TextField("Réponse")
 
     def __str__(self):
         return self.question
