@@ -38,6 +38,20 @@ class FaqQuestionAdmin(CmsAdmin):
         "published",
         "created_at",
     )
+    fieldsets = (
+        ("Contenu", {"fields": ("question", "body", "category")}),
+        (
+            "Publication",
+            {
+                "fields": (
+                    "published",
+                    "slug",
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+    )
 
 
 class MandateTranslationAdminForm(models.ModelForm):
