@@ -76,7 +76,7 @@ urlpatterns = [
     ),
     path(
         "mandats/<int:mandat_id>/visualisation",
-        mandat.attestation_visualisation,
+        mandat.AttestationVisualisation.as_view(),
         name="mandat_visualisation",
     ),
     # renew mandat
@@ -130,7 +130,7 @@ urlpatterns = [
     ),
     path(
         "creation_mandat/visualisation/final/",
-        mandat.attestation_final,
+        mandat.AttestationFinal.as_view(),
         name="new_attestation_final",
     ),
     path(

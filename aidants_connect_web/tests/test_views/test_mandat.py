@@ -1,5 +1,6 @@
 import re
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+from textwrap import dedent
 from typing import List
 from unittest import mock
 from unittest.mock import ANY, MagicMock, Mock
@@ -12,22 +13,31 @@ from django.db import transaction
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
-from django.utils import timezone
+from django.utils import formats, timezone
 
 from freezegun import freeze_time
 
 from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.models import Aidant, Autorisation, Connection, Journal, Usager
+from aidants_connect_web.models import (
+    Aidant,
+    Autorisation,
+    Connection,
+    Journal,
+    Mandat,
+    Usager,
+)
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    ConnectionFactory,
     MandatFactory,
     OrganisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import mandat
 from aidants_connect_web.views.mandat import RemoteMandateMixin
+from aidants_connect_web.views.service import humanize_demarche_names
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
@@ -723,14 +733,6 @@ class GenerateAttestationTests(TestCase):
             usager=cls.test_usager,
         )
 
-    def test_attestation_projet_url_triggers_the_correct_view(self):
-        found = resolve("/creation_mandat/visualisation/projet/")
-        self.assertEqual(found.func.view_class, mandat.AttestationProject)
-
-    def test_attestation_final_url_triggers_the_correct_view(self):
-        found = resolve("/creation_mandat/visualisation/final/")
-        self.assertEqual(found.func, mandat.attestation_final)
-
     def test_autorisation_qrcode_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/qrcode/")
         self.assertEqual(found.func, mandat.attestation_qrcode)
@@ -842,7 +844,7 @@ class TestClearConnectionView(TestCase):
         self.assertIsNone(self.client.session.get("qr_code_mandat_id"))
 
 
-class TestTranslation(TestCase):
+class TranslationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.aidant_thierry: Aidant = AidantFactory()
@@ -880,3 +882,254 @@ class TestTranslation(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertEqual(b"<h1>Test title</h1>\n<p>Test</p>", response.content)
+
+
+class AttestationVisualisationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_1: Aidant = AidantFactory()
+        cls.aidant_2: Aidant = AidantFactory()
+        cls.mandat: Mandat = MandatFactory(organisation=cls.aidant_1.organisation)
+        cls.mandat_no_template: Mandat = MandatFactory(
+            organisation=cls.aidant_1.organisation, template_path=None
+        )
+        cls.mandat_aidant_2: Mandat = MandatFactory(
+            organisation=cls.aidant_2.organisation, template_path=None
+        )
+
+    def test_get_triggers_the_correct_view(self):
+        found = resolve(
+            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+        )
+        self.assertEqual(found.func.view_class, mandat.AttestationVisualisation)
+
+    def test_raises_404_on_mandate_not_found(self):
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse("mandat_visualisation", kwargs={"mandat_id": 10_000_000})
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_raises_404_on_mandate_found_for_another_organisation(self):
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse(
+                "mandat_visualisation", kwargs={"mandat_id": self.mandat_aidant_2.pk}
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_variables_set_for_mandate_with_template(self):
+        """
+        Should set ``modified=False`` in ``request.context`` and
+        set ``qr_code_mandat_id`` in ``request.session``
+        """
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+        )
+
+        self.assertEqual(
+            self.mandat.pk,
+            response.context["request"].session.get("qr_code_mandat_id"),
+            "'qr_code_mandat_id' should not be set to the mandate ID in "
+            "request.session when the mandate has a template path set",
+        )
+
+        self.assertFalse(
+            response.context["modified"],
+            "'modified' should be set to False in context when the mandate has "
+            "a template path set",
+        )
+
+    def test_variables_set_for_mandate_without_template(self):
+        """
+        Should set ``modified=True`` in ``request.context`` and
+        not set ``qr_code_mandat_id`` in ``request.session``
+        """
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse(
+                "mandat_visualisation", kwargs={"mandat_id": self.mandat_no_template.pk}
+            )
+        )
+
+        self.assertIsNone(
+            response.context["request"].session.get("qr_code_mandat_id"),
+            "'qr_code_mandat_id' should not be set in request.session when the mandate "
+            "deosn't have a template path set",
+        )
+
+        self.assertTrue(
+            response.context["modified"],
+            "'modified' should be set to True in context when the mandate doesn't "
+            "have a template path set",
+        )
+
+    def test_get_renders_the_template_on_mandate_found(self):
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
+
+        expected_context = {
+            "usager": self.mandat.usager,
+            "aidant": self.aidant_1,
+            "date": formats.date_format(self.mandat.creation_date.date(), "l j F Y"),
+            "demarches": [
+                humanize_demarche_names(it.demarche)
+                for it in self.mandat.autorisations.all()
+            ],
+            "duree": self.mandat.get_duree_keyword_display(),
+            "current_mandat_template": self.mandat.get_mandate_template_path(),
+            "final": True,
+            "modified": False,
+        }
+
+        for key, expected in expected_context.items():
+            self.assertEqual(
+                expected,
+                response.context[key],
+                dedent(
+                    f"""
+                    Context for variable {key!r} is different from expected
+                    expected: {expected}
+                    got: {response.context[key]}"""
+                ),
+            )
+
+
+class AttestationProjectTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.connection: Connection = ConnectionFactory(
+            duree_keyword="SHORT", demarches=["argent", "papiers"]
+        )
+        cls.aidant_1: Aidant = AidantFactory()
+
+    def test_get_triggers_the_correct_view(self):
+        found = resolve(reverse("new_attestation_projet"))
+        self.assertEqual(found.func.view_class, mandat.AttestationProject)
+
+    def test_logout_on_no_connection(self):
+        self.client.force_login(self.aidant_1)
+
+        session = self.client.session
+        session["connection"] = 10_000_000
+        session.save()
+
+        self.assertTrue(self.aidant_1.is_authenticated)
+
+        response = self.client.get(reverse("new_attestation_projet"))
+
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+        self.assertEqual(response.status_code, 403)
+
+    @freeze_time("2020-01-01 07:00:00")
+    def test_renders_attestation(self):
+        self.client.force_login(self.aidant_1)
+
+        session = self.client.session
+        session["connection"] = self.connection.pk
+        session.save()
+
+        response = self.client.get(reverse("new_attestation_projet"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
+
+        expected_context = {
+            "usager": self.connection.usager,
+            "aidant": self.aidant_1,
+            "date": formats.date_format(date.today(), "l j F Y"),
+            "demarches": [humanize_demarche_names(it) for it in ["argent", "papiers"]],
+            "duree": "pour une durée de 1 jour",
+            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
+            "final": False,
+            "modified": False,
+        }
+
+        for key, expected in expected_context.items():
+            self.assertEqual(
+                expected,
+                response.context[key],
+                dedent(
+                    f"""
+                    Context for variable {key!r} is different from expected
+                    expected: {expected}
+                    got: {response.context[key]}"""
+                ),
+            )
+
+
+class AttestationFinalTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.connection: Connection = ConnectionFactory(
+            duree_keyword="SHORT", demarches=["argent", "papiers"]
+        )
+        cls.aidant_1: Aidant = AidantFactory()
+
+    def test_get_triggers_the_correct_view(self):
+        found = resolve(reverse("new_attestation_final"))
+        self.assertEqual(found.func.view_class, mandat.AttestationFinal)
+
+    def test_logout_on_no_connection(self):
+        self.client.force_login(self.aidant_1)
+
+        session = self.client.session
+        session["connection"] = 10_000_000
+        session.save()
+
+        self.assertTrue(self.aidant_1.is_authenticated)
+
+        response = self.client.get(reverse("new_attestation_final"))
+
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+        self.assertEqual(response.status_code, 403)
+
+    @freeze_time("2020-01-01 07:00:00")
+    def test_renders_attestation(self):
+        self.client.force_login(self.aidant_1)
+
+        session = self.client.session
+        session["connection"] = self.connection.pk
+        session.save()
+
+        response = self.client.get(reverse("new_attestation_final"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
+
+        expected_context = {
+            "usager": self.connection.usager,
+            "aidant": self.aidant_1,
+            "date": formats.date_format(date.today(), "l j F Y"),
+            "demarches": [humanize_demarche_names(it) for it in ["argent", "papiers"]],
+            "duree": "pour une durée de 1 jour",
+            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
+            "final": True,
+            "modified": False,
+        }
+
+        for key, expected in expected_context.items():
+            self.assertEqual(
+                expected,
+                response.context[key],
+                dedent(
+                    f"""
+                    Context for variable {key!r} is different from expected
+                    expected: {expected}
+                    got: {response.context[key]}"""
+                ),
+            )
