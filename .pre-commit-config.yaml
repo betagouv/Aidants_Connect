@@ -5,7 +5,7 @@ repos:
     hooks:
     - id: missing-django-migrations
       name: Check for missing django migrations
-      entry: ./manage.py makemigrations --no-input --dry-run --check
+      entry: env PIPENV_VERBOSITY=-1 pipenv run python manage.py makemigrations --no-input --dry-run --check
       language: system
       pass_filenames: false
   - repo: https://github.com/psf/black
