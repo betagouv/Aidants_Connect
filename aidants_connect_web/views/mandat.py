@@ -1,7 +1,7 @@
 import logging
 import re
 from datetime import date
-from typing import Callable, Collection
+from typing import Callable, List
 from urllib.parse import unquote_plus
 from uuid import uuid4
 
@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.template import engines
 from django.template.backends.django import DjangoTemplates
 from django.template.loader import render_to_string
@@ -51,11 +51,7 @@ from aidants_connect_web.models import (
     Organisation,
     Usager,
 )
-from aidants_connect_web.utilities import (
-    generate_attestation_hash,
-    generate_mailto_link,
-    generate_qrcode_png,
-)
+from aidants_connect_web.utilities import generate_attestation_hash, generate_qrcode_png
 from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)
@@ -196,6 +192,42 @@ class RemoteMandateMixin:
     ):
         log.error(f"Unknown remote consent method {form['remote_constent_method']}")
         raise Http404()
+
+
+class RenderAttestationAbstract(TemplateView):
+    template_name = "aidants_connect_web/attestation.html"
+    final = False
+    modified = False
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "usager": self.get_usager(),
+            "aidant": self.request.user,
+            "date": formats.date_format(self.get_date(), "l j F Y"),
+            "demarches": [
+                humanize_demarche_names(demarche) for demarche in self.get_demarches()
+            ],
+            "duree": self.get_duree(),
+            "current_mandat_template": self.get_template(),
+            "final": self.final,
+            "modified": self.modified,
+        }
+
+    def get_usager(self) -> Usager:
+        raise NotImplementedError()
+
+    def get_date(self) -> date:
+        raise NotImplementedError()
+
+    def get_demarches(self) -> List[str]:
+        raise NotImplementedError()
+
+    def get_duree(self) -> str:
+        raise NotImplementedError()
+
+    def get_template(self) -> str:
+        raise NotImplementedError()
 
 
 @aidant_logged_with_activity_required
@@ -420,22 +452,25 @@ class NewMandateSuccess(RequireConnectionView, TemplateView):
 
 
 @aidant_logged_with_activity_required
-class AttestationProject(RequireConnectionView, TemplateView):
-    template_name = "aidants_connect_web/attestation.html"
+class AttestationProject(RequireConnectionView, RenderAttestationAbstract):
+    # We don't need to check connection expiration here
+    # since we're already after AC connection
+    check_connection_expiration = False
 
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "aidant": self.aidant,
-            "usager": self.connection.usager,
-            "date": formats.date_format(date.today(), "l j F Y"),
-            "demarches": [
-                humanize_demarche_names(demarche)
-                for demarche in self.connection.demarches
-            ],
-            "duree": self.connection.get_duree_keyword_display(),
-            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
-        }
+    def get_usager(self) -> Usager:
+        return self.connection.usager
+
+    def get_date(self) -> date:
+        return date.today()
+
+    def get_demarches(self) -> List[str]:
+        return self.connection.demarches
+
+    def get_duree(self) -> str:
+        return self.connection.get_duree_keyword_display()
+
+    def get_template(self) -> str:
+        return settings.MANDAT_TEMPLATE_PATH
 
 
 @aidant_logged_with_activity_required(more_decorators=[csrf_exempt])
@@ -500,117 +535,50 @@ class Translation(TemplateView):
         }
 
 
-@login_required
-@user_is_aidant
-@activity_required
-def attestation_final(request):
-    connection_id = request.session.get("connection")
-    if not connection_id:
-        log.error("No connection id found in session")
-        return redirect("espace_aidant_home")
-
-    connection = Connection.objects.get(pk=connection_id)
-
-    aidant: Aidant = request.user
-    usager = connection.usager
-    demarches = connection.demarches
-
-    # Django magic :
-    # https://docs.djangoproject.com/en/3.0/ref/models/instances/#django.db.models.Model.get_FOO_display
-    duree = connection.get_duree_keyword_display()
-
-    return __attestation_visualisation(
-        request,
-        settings.MANDAT_TEMPLATE_PATH,
-        usager,
-        aidant,
-        date.today(),
-        demarches,
-        duree,
-    )
+# @aidant_logged_with_activity_required is already on AttestationProject
+class AttestationFinal(AttestationProject):
+    final = True
 
 
-@login_required
-@user_is_aidant
-@activity_required
-def attestation_visualisation(request, mandat_id):
-    aidant: Aidant = request.user
-    mandat_query_set = Mandat.objects.filter(pk=mandat_id)
-    if mandat_query_set.count() != 1:
-        mailto_body = render_to_string(
-            "aidants_connect_web/mandate_visualisation_errors/not_found_email_body.txt",
-            request=request,
-            context={"mandat_id": mandat_id},
+@aidant_logged_with_activity_required
+class AttestationVisualisation(RenderAttestationAbstract):
+    final = True
+
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        self.mandat = get_object_or_404(
+            Mandat, pk=kwargs["mandat_id"], organisation=self.aidant.organisation
         )
+        self.template = self.mandat.get_mandate_template_path()
+        if self.template:
+            # At this point, the generated QR code on the mandate comes from an
+            # independant HTTP request. Normally, what we should do is to modifiy how
+            # this HTTP request is done so that the mandate ID is passed during the
+            # request. But the mandate template can't be modified anymore because that
+            # would change their hash and defeat the algorithm that recovers the
+            # original mandate template from the journal entries. The only found
+            # solution, which is not nice, is to retain the mandate ID as a session
+            # state. Please forgive us for what we did...
+            request.session["qr_code_mandat_id"] = kwargs["mandat_id"]
+        else:
+            self.modified = True
 
-        return render(
-            request,
-            "aidants_connect_web/mandate_visualisation_errors/error_page.html",
-            {
-                "mandat_id": mandat_id,
-                "support_email": settings.SUPPORT_EMAIL,
-                "mailto": generate_mailto_link(
-                    settings.SUPPORT_EMAIL,
-                    f"Problème en essayant de visualiser le mandat n°{mandat_id}",
-                    mailto_body,
-                ),
-            },
-        )
+        return super().dispatch(request, *args, **kwargs)
 
-    mandat: Mandat = mandat_query_set.first()
-    template = mandat.get_mandate_template_path()
+    def get_usager(self) -> Usager:
+        return self.mandat.usager
 
-    if template is not None:
-        # At this point, the generated QR code on the mandate comes from an independant
-        # HTTP request. Normally, what we should do is to modifiy how this HTTP request
-        # is done so that the mandate ID is passed during the request. But the mandate
-        # template can't be modified anymore because that would change their hash and
-        # defeat the algorithm that recovers the original mandate template from the
-        # journal entries. The only found solution, which is not nice, is to retain the
-        # mandate ID as a session state. Please forgive us for what we did...
-        request.session["qr_code_mandat_id"] = mandat_id
-        modified = False
-    else:
-        template = settings.MANDAT_TEMPLATE_PATH
-        modified = True
+    def get_date(self) -> date:
+        return self.mandat.creation_date.date()
 
-    procedures = [it.demarche for it in mandat.autorisations.all()]
-    return __attestation_visualisation(
-        request,
-        template,
-        mandat.usager,
-        aidant,
-        mandat.creation_date.date(),
-        procedures,
-        mandat.get_duree_keyword_display(),
-        modified=modified,
-    )
+    def get_demarches(self) -> List[str]:
+        return [it.demarche for it in self.mandat.autorisations.all()]
 
+    def get_duree(self) -> str:
+        return self.mandat.get_duree_keyword_display()
 
-def __attestation_visualisation(
-    request,
-    template: str,
-    usager: Usager,
-    aidant: Aidant,
-    attestation_date: date,
-    demarches: Collection[str],
-    duree: str,
-    modified: bool = False,
-):
-    return render(
-        request,
-        "aidants_connect_web/attestation.html",
-        {
-            "usager": usager,
-            "aidant": aidant,
-            "date": formats.date_format(attestation_date, "l j F Y"),
-            "demarches": [humanize_demarche_names(demarche) for demarche in demarches],
-            "duree": duree,
-            "current_mandat_template": template,
-            "final": True,
-            "modified": modified,
-        },
-    )
+    def get_template(self) -> str:
+        return self.template or settings.MANDAT_TEMPLATE_PATH
 
 
 @login_required

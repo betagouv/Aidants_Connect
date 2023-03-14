@@ -12,13 +12,15 @@ log = logging.getLogger()
 
 
 class RequireConnectionMixin:
+    check_connection_expiration = True
+
     def check_connection(self, request: HttpRequest) -> HttpResponse | Connection:
         connection_id = request.session.get("connection")
         view_location = f"{self.__module__}.{self.__class__.__name__}"
 
         try:
             connection: Connection = Connection.objects.get(pk=connection_id)
-            if connection.is_expired:
+            if connection.is_expired and self.check_connection_expiration:
                 log.info(f"Connection has expired @ {view_location}")
                 return render(request, "408.html", status=408)
 
