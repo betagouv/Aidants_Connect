@@ -702,17 +702,18 @@ ol.messages-list {
 
 .header-links {
   list-style: none;
-  text-align: right;
+  // Overriden in @media below for larger screens
+  text-align: center;
 
   li {
-    display: inline-block;
-    margin-left: 2rem;
+    // Overriden in @media below for larger screens
+    margin: 0;
   }
 
   a {
     text-decoration: none;
     color: colors.$dark-grey-aidants;
-    display: block;
+    display: inline-block;
     padding: .25rem 0;
 
     &.active {
@@ -726,6 +727,31 @@ ol.messages-list {
 
     &.button {
       padding: .25rem .5rem;
+    }
+  }
+
+  @media (min-width: utils.$bp-lg) {
+    text-align: right;
+
+    li {
+      display: inline;
+
+      &:not(:first-child) {
+        margin-left: 2rem;
+      }
+    }
+  }
+}
+
+.aidants-connect-header {
+  @media(max-width: utils.$bp-xl) {
+    .fr-container {
+      margin: 0;
+      padding: 0;
+    }
+    .fr-grid-row--gutters, .fr-grid-row-sm--gutters, .fr-grid-row-md--gutters {
+      margin: 0;
+      padding: 0;
     }
   }
 }
