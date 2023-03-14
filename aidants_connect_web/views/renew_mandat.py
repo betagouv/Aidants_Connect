@@ -6,7 +6,7 @@ from django.contrib import messages as django_messages
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_web.constants import RemoteConsentMethodChoices
@@ -110,7 +110,7 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
 
 
 class RemoteConsentSecondStepView(MandatRemoteConsentSecondStepView):
-    next_route_name = "renew_mandat_waiting_room"
+    success_url = reverse_lazy("renew_mandat_waiting_room")
 
 
 # MandatWaitingRoom is already decorated with aidant_logged_with_activity_required

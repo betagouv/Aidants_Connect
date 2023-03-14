@@ -1,10 +1,15 @@
 {% extends 'layouts/main-habilitation.html' %}
+{% load form_extras %}
 {% load static ac_common %}
 
 {% block title %}Aidants Connect - Récapitulatif envoyé{% endblock %}
 
-{% block content %}
+{% block extracss %}
 
+  <link href="{% static 'css/remote_consent_second_step.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
   <div class="fr-container">
     {% if messages %}
       {% for message in messages %}
@@ -13,8 +18,42 @@
     {% endif %}
 
     <form method="post">
-      {% csrf_token %}
-      <button class="primary" type="submit">Demander le consentement.</button>
+      <h1>Récapitulatif du mandat</h1>
+      <h2>Consentement à distance</h2>
+      <p class="subtitle">
+        Un premier SMS va être envoyé à la personne accompagnée pour qu'elle puisse vérifier les caractéristiques du
+        mandat que vous proposez de créer. Un second SMS lui sera envoyé à l'étape suivante pour lui demander son
+        consentement.
+      </p>
+
+      <h3 class="h3-prime">Éléments du mandat</h3>
+
+      <section class="shadowed padding-2rem fr-col-12 fr-col-xl-8 mandate-elements-summary">
+        <p>
+          Un SMS a été envoyé au numéro <strong>{{ user_phone }}</strong> pour récapituler les éléments suivants du
+          mandat proposé :
+        </p>
+        <ul>
+          {% for title, description in demarches.items %}
+            <li>
+              <div class="fr-grid-row mandate-element-item">
+                <strong class="fr-col-12 fr-col-md-3">{{ title }}</strong>
+                <p class="fr-col-12 fr-col-md-9">{{ description }}</p>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <h3 class="h3-prime">Identité du destinataire</h3>
+      <section class="shadowed padding-2rem fr-col-12 fr-col-xl-8">
+        {% csrf_token %}
+        {% checkbox_fr_grid_row form.identity_verification %}
+      </section>
+
+      <section class="button-box standalone fr-col-12 fr-col-xl-8">
+        <button class="primary" type="submit">Demander le consentement.</button>
+      </section>
     </form>
   </div>
 {% endblock content %}

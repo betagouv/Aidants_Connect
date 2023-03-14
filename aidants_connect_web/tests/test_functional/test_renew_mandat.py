@@ -278,14 +278,13 @@ class RenewMandatTests(FunctionalTestCase):
         wait.until(self._element_is_required(By.ID, "id_user_phone"))
         self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
 
-        # Renew Mandat
-        fc_button = self.selenium.find_element(By.ID, "submit_renew_button")
-        fc_button.click()
+        # # Send recap mandate and go to second step
+        self.selenium.find_element(By.ID, "submit_renew_button").click()
         wait.until(self.path_matches("renew_remote_second_step"))
 
         # # Send user consent request
-        fc_button = self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]')
-        fc_button.click()
+        self.selenium.find_element(By.ID, "id_identity_verification").click()
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
         wait.until(self.path_matches("renew_mandat_waiting_room"))
 
         # # Test the message is correctly logged

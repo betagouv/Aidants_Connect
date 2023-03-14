@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.template import engines
 from django.template.backends.django import DjangoTemplates
 from django.template.loader import render_to_string
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import formats, timezone
 from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
@@ -37,6 +37,7 @@ from aidants_connect_web.decorators import (
     user_is_aidant,
 )
 from aidants_connect_web.forms import (
+    IdentityVerificationForm,
     MandatForm,
     PatchedForm,
     RecapMandatForm,
@@ -448,11 +449,10 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
 
 
 @aidant_logged_with_activity_required
-class RemoteConsentSecondStepView(
-    RemoteMandateMixin, RequireConnectionMixin, TemplateView
-):
+class RemoteConsentSecondStepView(RemoteMandateMixin, RequireConnectionMixin, FormView):
     template_name = "aidants_connect_web/sms/remote_consent_second_step.html"
-    next_route_name = "new_mandat_waiting_room"
+    success_url = reverse_lazy("new_mandat_waiting_room")
+    form_class = IdentityVerificationForm
 
     def dispatch(self, request, *args, **kwargs):
         if isinstance(
@@ -465,14 +465,28 @@ class RemoteConsentSecondStepView(
 
         return super().dispatch(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
+    def form_valid(self, form):
         if isinstance(
             result := self.process_consent_second_step(self.connection),
             HttpResponse,
         ):
             return result
 
-        return redirect(self.next_route_name)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "duree": self.connection.duree_keyword,
+            "demarches": {
+                settings.DEMARCHES[name]["titre"]: (
+                    settings.DEMARCHES[name]["description"]
+                )
+                for name in self.connection.demarches
+            },
+            "user_phone": self.connection.user_phone,
+            "aidant": self.connection.aidant,
+        }
 
 
 @aidant_logged_with_activity_required

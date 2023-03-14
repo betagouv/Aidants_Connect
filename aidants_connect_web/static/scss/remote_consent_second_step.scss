@@ -1,0 +1,52 @@
+@use "colors";
+
+.mandate-elements-summary {
+  strong {
+    font-weight: bold;
+    color: colors.$blue-aidants;
+  }
+
+  p {
+    margin: 0;
+    padding: 0;
+  }
+
+  ul {
+    margin-top: 1rem;
+    list-style-type: none;
+
+    li {
+      align-items: center;
+      display: flex;
+      margin: 0 0 1rem 0;
+
+      &::before {
+        background: colors.$red-aidants;
+        border-radius: 50%;
+        color: white;
+        content: '✔';
+        font-size: x-large;
+        height: 2rem;
+        line-height: 2rem;
+        margin-right: 2rem;
+        min-width: 2rem;
+        text-align: center;
+        width: 2rem;
+      }
+
+      .mandate-element-item {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+
+        strong {
+          text-transform: uppercase;
+          margin: 0;
+          padding: 0;
+        }
+
+
+      }
+    }
+  }
+}

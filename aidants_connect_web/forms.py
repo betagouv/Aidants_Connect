@@ -616,3 +616,15 @@ class SelectDemarcheForm(PatchedForm):
         if not self.aidant.get_valid_autorisation(result, self.user):
             raise ValidationError("", code="unauthorized_demarche")
         return result
+
+
+class IdentityVerificationForm(PatchedForm):
+    identity_verification = forms.BooleanField(
+        required=True,
+        label=(
+            "En tant qu’aidant, je certifie avoir validé l’identité de l’usager "
+            "répondant au numéro de téléphone qui recevra la demande de "
+            "consentement par SMS."
+        ),
+        label_suffix="",
+    )
