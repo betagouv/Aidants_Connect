@@ -22,20 +22,9 @@
 
             const form = new FormData();
             form.append("lang_code", this.langCodeValue);
-            var url = new URL(this.translationEndpointValue);
-            xhr.open("POST", url, true);
+            xhr.open("POST", this.translationEndpointValue, true);
             xhr.setRequestHeader("Accept", "text/html");
             xhr.send(form);
-        },
-
-        "mutateVisibility": function mutateVisibility(visible, elt) {
-            if (visible) {
-                elt.removeAttribute("hidden");
-                elt.removeAttribute("aria-hidden");
-            } else {
-                elt.setAttribute("hidden", "hidden");
-                elt.setAttribute("aria-hidden", "true");
-            }
         },
 
         "onResponse": function onResponse(evt) {
@@ -52,13 +41,13 @@
 
         "setContainerContent": function setContainerContent(html) {
             if (html === undefined) {
-                this.translationContainerTarget.innerHTML = "";
+                this.translationContainerTarget.innerHTML = this.emptyTranslationTplTarget.innerHTML;
                 this.translationContainerTarget.removeAttribute("lang");
-                this.mutateVisibility(false, this.translationContainerTarget);
+                this.translationContainerTarget.classList.add(this.noprintClass);
             } else {
                 this.translationContainerTarget.innerHTML = html;
                 this.translationContainerTarget.setAttribute("lang", this.langCodeValue);
-                this.mutateVisibility(true, this.translationContainerTarget);
+                this.translationContainerTarget.classList.remove(this.noprintClass);
             }
         },
 
@@ -67,8 +56,13 @@
         },
     });
 
+    MandateTranslation.classes = [
+        "noprint",
+    ];
+
     MandateTranslation.targets = [
         "translationContainer",
+        "emptyTranslationTpl",
     ];
 
     MandateTranslation.values = {
@@ -77,51 +71,10 @@
     };
 
 
-    const OpenMandateTranslation = Object.extendClass(Stimulus.Controller);
-
-    Object.assign(OpenMandateTranslation.prototype, {
-        "connect": function connect() {
-            this.mutateVisibility(true, this.buttonTarget);
-        },
-
-        "onOpenTranslation": function onOpenTranslation(evt) {
-            evt.preventDefault();
-            evt.stopPropagation();
-
-            const searchParams = new URLSearchParams(new FormData(this.formTarget));
-            const url = new URL(this.openUrlValue);
-            searchParams.forEach(function (v, k, _) {
-                if (k !== "csrfmiddlewaretoken") {
-                    url.searchParams.append(k, v);
-                }
-            });
-            window.open(url.toString(), "_blank", "noopener,noreferrer");
-        },
-
-        "mutateVisibility": function mutateVisibility(visible, elt) {
-            if (visible) {
-                elt.removeAttribute("hidden");
-                elt.removeAttribute("aria-hidden");
-            } else {
-                elt.setAttribute("hidden", "hidden");
-                elt.setAttribute("aria-hidden", "true");
-            }
-        }
-    });
-
-    OpenMandateTranslation.targets = [
-        "form",
-        "button",
-    ]
-
-    OpenMandateTranslation.values = {
-        "openUrl": String,
-    }
 
     function init() {
         const application = Stimulus.Application.start();
         application.register("mandate-translation", MandateTranslation);
-        application.register("open-mandate-translation", OpenMandateTranslation);
     }
 
     window.addEventListener("load", init);

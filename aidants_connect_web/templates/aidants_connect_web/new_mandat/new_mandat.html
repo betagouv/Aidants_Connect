@@ -72,7 +72,6 @@
     class="section section-grey"
     data-controller="new-mandat-form open-mandate-translation"
     data-new-mandat-form-sms-method-value="{{ sms_method_value }}"
-    data-open-mandate-translation-open-url-value="{{ translation_url }}"
   >
     <div class="container">
       <form data-open-mandate-translation-target="form" method="post">
@@ -80,6 +79,7 @@
           <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
         {% endif %}
         {% csrf_token %}
+
         <div id="demarches" class="tiles">
           <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
           {% if form.errors.demarche %}
@@ -124,6 +124,7 @@
             </div>
           </fieldset>
         </div>
+
         <div id="duree" class="tiles">
           <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
           {% if form.errors.duree %}
@@ -161,28 +162,29 @@
             </div>
           </fieldset>
           <label for="{{ form.is_remote.id_for_label }}" class="notification warning margin-top-1em">
-            La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
+            La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
             {{ form.is_remote }}
           </label>
           <section hidden aria-hidden="true" data-new-mandat-form-target="remoteContentSection">
             {% fields_as_fieldset form.remote_constent_method fieldset_classes="form-section" %}
           </section>
         </div>
+
+        <section class="mandate-translation-section">
+          <h2 class="step-title">Étape 3 : Prévisualisez un mandat type (facultatif)</h2>
+          <div class="shadowed padding-2rem">
+            <h4 class="h4-prime">L’usager prend connaissance d’un mandat type</h4>
+            <p>Des traductions sont disponibles en consultant cette page.</p>
+            <div class="button-box">
+              <a href="{% url 'mandate_translation' %}" class="button primary">Consulter le mandat type</a>
+            </div>
+          </div>
+        </section>
+
         {% block input_submit_form %}
           <section id="france_connection" class="tiles">
-            <h2 class="step-title">Étape 3 : Connectez l'usager à FranceConnect</h2>
+            <h2 class="step-title">Étape {% if has_mandate_translations %}4{% else %}3{% endif %} : Connectez l'usager à FranceConnect</h2>
             <div class="buttons">
-              {% if FF_MANDATE_TRANSLATION %}
-              <button
-                class="button"
-                data-action="open-mandate-translation#onOpenTranslation"
-                data-open-mandate-translation-target="button"
-                hidden
-                aria-hidden="true"
-              >
-                Voir le mandat et sa traduction
-              </button>
-              {% endif %}
               <input
                 id="submit_button"
                 type="image"
@@ -201,5 +203,4 @@
   {% stimulusjs %}
   <script src="{% static 'js/utils.js' %}"></script>
   <script src="{% static 'js/new_mandat.js' %}"></script>
-  <script src="{% static 'js/mandate-translation.js' %}"></script>
 {% endblock %}

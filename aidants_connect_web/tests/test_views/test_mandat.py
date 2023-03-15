@@ -862,7 +862,9 @@ class TranslationTests(TestCase):
         response = self.client.get(reverse("mandate_translation"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "aidants_connect_web/attestation_projet.html")
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/attestation_translation.html"
+        )
 
     def test_post_returns_404_on_unknown_lang(self):
         self.client.force_login(self.aidant_thierry)

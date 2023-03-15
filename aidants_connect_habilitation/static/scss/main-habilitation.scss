@@ -146,6 +146,13 @@ h3.h3-prime {
   margin: 2rem 0;
 }
 
+h4.h4-prime {
+  display: block;
+  color: colors.$blue-aidants;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
 .shadowed {
   .h2, .h3 {
     font-size: 1.125rem;
@@ -706,7 +713,10 @@ ol.messages-list {
 
   li {
     display: inline-block;
-    margin-left: 2rem;
+
+    &:not(:first-child) {
+      margin-left: 2rem;
+    }
   }
 
   a {

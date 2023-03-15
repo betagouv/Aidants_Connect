@@ -33,7 +33,9 @@
               <li>
                 <a {% if 'faq' in view_name %}class="active"{% endif %}
                    href="{% url 'faq_generale' %}">Aide</a>
-              </li>{% if user_is_authenticated %}
+              </li>
+              <li>
+                {% if user_is_authenticated %}
                 <a class="button primary" href="{% url 'logout' %}">Se déconnecter</a>
                 {% else %}
                 <a class="button primary" href="{% url 'login' %}">Se connecter</a>

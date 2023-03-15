@@ -13,18 +13,19 @@
 }
 
 p:not(.subtitle), ul {
-    margin: 0;
+  margin: 0;
 }
 
 p + p, ul + p {
-    margin-top: .7em;
+  margin-top: .7em;
 }
 
 .demarches {
-    font-size: .95em;
+  font-size: .95em;
 }
+
 .demarches + p {
-    margin-top: .1em;
+  margin-top: .1em;
 }
 
 .organisation-address {
@@ -51,52 +52,75 @@ p + p, ul + p {
 
 
 .navbar__home, .container > h1.text-center {
-    /* Hide the header and title on old templates */
-    display: none;
+  /* Hide the header and title on old templates */
+  display: none;
 }
 
 .container {
-    border: none;
+  border: none;
 }
 
 .mandate-translation-row {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 
-    .mandate-translation-column {
-        flex: 1 1 0;
-        display: flex;
-    }
+  .mandate-translation-column {
+    flex: 1 1 0;
+    display: flex;
+  }
 }
 
 header.mandate-translation-row .mandate-translation-column:last-child {
-    justify-content: right;
+  justify-content: right;
 }
 
 .subtitle-container {
-    display: flex;
-    flex-direction: row;
-    margin-bottom: 4rem;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 4rem;
 }
 
 .print-button-container .shadowed {
-    max-width: 23rem;
+  max-width: 23rem;
+  float: right;
+
+  p {
+    margin-bottom: 1rem;
+  }
+
+  button {
     float: right;
-
-    p {
-        margin-bottom: 1rem;
-    }
-
-    button {
-        float: right;
-    }
+  }
 }
 
 ul, ol {
-    /* Cancel padding setting from main-habilitation.scss */
-    padding: revert;
+  /* Cancel padding setting from main-habilitation.scss */
+  padding: revert;
 }
 
 .mandate-translation-other {
-    border-left: 1px solid colors.$blue-aidants;
+  border-left: 1px solid colors.$blue-aidants;
+}
+
+.empty-translation-container {
+  color: colors.$red-aidants;
+
+  & > * {
+    display: block;
+    margin: auto;
+    text-align: center;
+    font-size: initial;
+  }
+
+  img {
+    margin-bottom: 2rem;
+  }
+
+  h4 {
+    font-size: large;
+    font-weight: bold;
+    line-height: 1.25;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
 }

@@ -251,10 +251,9 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
         return {
             **super().get_context_data(**kwargs),
             "aidant": self.aidant,
-            "translation_url": self.request.build_absolute_uri(
-                reverse("mandate_translation")
+            "has_mandate_translations": (
+                settings.FF_MANDATE_TRANSLATION and MandateTranslation.objects.exists()
             ),
-            "FF_MANDATE_TRANSLATION": settings.FF_MANDATE_TRANSLATION,
         }
 
     def get_initial(self):
@@ -474,12 +473,8 @@ class AttestationProject(RequireConnectionView, RenderAttestationAbstract):
 
 
 @aidant_logged_with_activity_required(more_decorators=[csrf_exempt])
-class Translation(TemplateView):
-    template_name = "aidants_connect_web/attestation_projet.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.aidant: Aidant = request.user
-        return super().dispatch(request, *args, **kwargs)
+class Translation(RenderAttestationAbstract):
+    template_name = "aidants_connect_web/attestation_translation.html"
 
     def post(self, request, *args, **kwargs):
         lang: MandateTranslation = get_object_or_404(
@@ -498,41 +493,36 @@ class Translation(TemplateView):
         )
 
     def get_context_data(self, **kwargs):
-        try:
-            duree = AuthorizationDurationChoices(
-                self.request.GET.get("duree", "")
-            ).label
-        except ValueError:
-            duree = ""
+        return {
+            **super().get_context_data(**kwargs),
+            "available_translations": MandateTranslation.objects.all(),
+        }
 
+    def get_usager(self) -> Usager:
         def not_implemented(*args, **kwargs):
             pass
 
         user = Usager(
             pk=-100,
-            given_name="_____",
-            family_name="_____",
-            preferred_username="_____",
+            given_name="__________",
+            family_name="__________",
+            preferred_username="__________",
         )
 
         user.save = not_implemented  # Prevent saving this object
+        return user
 
-        return {
-            **super().get_context_data(**kwargs),
-            "aidant": self.aidant,
-            "usager": user,
-            "date": formats.date_format(date.today(), "l j F Y"),
-            "demarches": [
-                humanize_demarche_names(demarche)
-                for demarche in self.request.GET.getlist("demarche", [])
-            ],
-            "duree": duree,
-            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
-            "available_translations": MandateTranslation.objects.all(),
-            "translation_endpoint": self.request.build_absolute_uri(
-                reverse("mandate_translation")
-            ),
-        }
+    def get_date(self) -> date:
+        return date.today()
+
+    def get_demarches(self) -> List[str]:
+        return settings.DEMARCHES.keys()
+
+    def get_duree(self) -> str:
+        return "__________"
+
+    def get_template(self) -> str:
+        return settings.MANDAT_TEMPLATE_PATH
 
 
 # @aidant_logged_with_activity_required is already on AttestationProject
