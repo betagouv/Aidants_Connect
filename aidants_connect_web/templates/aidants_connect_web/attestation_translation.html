@@ -5,7 +5,7 @@
 {% block title %}Aidants Connect - Impression du mandat{% endblock %}
 
 {% block extracss %}
-  <link href="{% static 'css/attestation-project.css' %}" rel="stylesheet">
+  <link href="{% static 'css/attestation-translation.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block nav %}
@@ -27,29 +27,26 @@
 {% endblock nav %}
 
 {% block content %}
-
-<div
-  class="fr-container"
-  data-controller="mandate-translation"
-  data-mandate-translation-translation-endpoint-value="{{ translation_endpoint }}"
->
-  <h1>Projet de mandat</h1>
-  <div class="subtitle-container no-print">
-    <p class="subtitle fr-col-12 fr-col-md-6">
-      Vous trouverez ci-dessous le projet de mandat que vous êtes en train de créer.
-      {% if available_translations|length > 0 %}
+  <div
+    class="fr-container"
+    data-controller="mandate-translation"
+    data-mandate-translation-translation-endpoint-value="{% url 'mandate_translation' %}"
+    data-mandate-translation-noprint-class="no-print"
+  >
+    <h1>Projet de mandat</h1>
+    <div class="subtitle-container no-print">
+      <p class="subtitle fr-col-12 fr-col-md-6">
+        Vous trouverez ci-dessous le projet de mandat que vous êtes en train de créer.
         Si nécessaire, vous pouvez sélectionner parmi les langues ci-dessous pour en afficher une traduction.
-      {% endif %}
-    </p>
-    <div class="fr-col-12 fr-col-md-6 print-button-container">
-      <div class="shadowed padding-1rem">
-        <p>Vous pouvez imprimer ce mandat en cliquant sur le bouton ci-dessous.</p>
-        <button class="primary" data-action="mandate-translation#print">Imprimer</button>
+      </p>
+      <div class="fr-col-12 fr-col-md-6 print-button-container">
+        <div class="shadowed padding-1rem">
+          <p>Vous pouvez imprimer ce mandat en cliquant sur le bouton ci-dessous.</p>
+          <button class="primary" data-action="mandate-translation#print">Imprimer</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  {% if available_translations|length > 0 %}
     <header class="mandate-translation-row no-print">
       <h3 class="mandate-translation-column">Version française</h3>
       <section class="mandate-translation-column">
@@ -75,27 +72,29 @@
         {% include current_mandat_template %}
       </article>
       <article
-        class="container mandate-translation-column mandate-translation-other no-print"
-        hidden
-        aria-hidden="true"
+        class="container mandate-translation-column mandate-translation-other"
         data-mandate-translation-target="translationContainer"
       >
       </article>
     </section>
-  {% else %}
-    <p class="subtitle">
-      Mandat pour réaliser des démarches en ligne avec le service « Aidants Connect »
-    </p>
-    {% include current_mandat_template %}
-  {% endif %}
-</div>
+
+    <template hidden data-mandate-translation-target="emptyTranslationTpl">
+      <div class="empty-translation-container">
+        <img src="{% static 'images/translation-logo.svg' %}" alt=""/>
+        <h4>D'autres langues sont disponibles</h4>
+        <p>
+          Retrouvez ici le mandat type en version traduite.
+          Sélectionnez une langue dans la liste déroulante ci-dessus.
+        </p>
+      </div>
+    </template>
+  </div>
 {% endblock content %}
 
 {% block footer %}
-  {% if modified %}
-    <em class="text-center margin-bottom-1em">Ce contrat est mis à jour régulièrement pour des raisons légales. Il peut
-      avoir été modifié depuis votre dernière visite.</em>
-  {% endif %}
+  <em class="text-center margin-bottom-1em">
+    Ceci est un mandat-type. Il n'a aucune valeur juridique.
+  </em>
 {% endblock footer %}
 
 {% block extrajs %}

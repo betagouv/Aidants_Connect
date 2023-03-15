@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 from datetime import timedelta
 
 from django.db import transaction
@@ -7,7 +6,6 @@ from django.urls import reverse
 from django.utils import formats, timezone
 
 from freezegun import freeze_time
-from selenium.common import NoSuchWindowException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
@@ -50,29 +48,28 @@ class DisplayTranslationTests(FunctionalTestCase):
         ).click()
 
         self.selenium.find_element(
-            By.CSS_SELECTOR, '[data-open-mandate-translation-target="button"]'
+            By.CSS_SELECTOR, ".mandate-translation-section a"
         ).click()
 
-        with self.switch_to_window("Aidants Connect - Impression du mandat"):
-            self.wait.until(self.path_matches("mandate_translation", {".*": ".*"}))
+        self.wait.until(self.path_matches("mandate_translation"))
 
-            mandat = self.selenium.find_element(By.CSS_SELECTOR, ".container")
+        mandat = self.selenium.find_element(By.CSS_SELECTOR, ".container")
 
-            self.assertInHTML(
-                "FAMILLE: Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
-                mandat.get_attribute("innerHTML"),
-            )
+        self.assertInHTML(
+            "FAMILLE: Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
+            mandat.get_attribute("innerHTML"),
+        )
 
-            self.assertInHTML(
-                "ARGENT: Crédit immobilier, Impôts, Consommation, "
-                "Livret A, Assurance, Surendettement…",
-                mandat.get_attribute("innerHTML"),
-            )
+        self.assertInHTML(
+            "ARGENT: Crédit immobilier, Impôts, Consommation, "
+            "Livret A, Assurance, Surendettement…",
+            mandat.get_attribute("innerHTML"),
+        )
 
-            self.assertInHTML(
-                formats.date_format(timezone.now(), "l j F Y"),
-                mandat.get_attribute("innerHTML"),
-            )
+        self.assertInHTML(
+            formats.date_format(timezone.now(), "l j F Y"),
+            mandat.get_attribute("innerHTML"),
+        )
 
     def test_display_translation_for_new_mandat(self):
         self.lang: MandateTranslation = MandateTranslation.objects.create(
@@ -97,40 +94,34 @@ class DisplayTranslationTests(FunctionalTestCase):
         ).click()
 
         self.selenium.find_element(
-            By.CSS_SELECTOR, '[data-open-mandate-translation-target="button"]'
+            By.CSS_SELECTOR, ".mandate-translation-section a"
         ).click()
 
-        with self.switch_to_window("Aidants Connect - Impression du mandat"):
-            self.wait.until(self.path_matches("mandate_translation", {".*": ".*"}))
+        self.wait.until(self.path_matches("mandate_translation"))
 
-            self.assertFalse(
-                self.selenium.find_element(
-                    By.CSS_SELECTOR, ".mandate-translation-other"
-                ).is_displayed(),
-                "Container .mandate-translation-other should not be visible",
-            )
-
-            select = Select(
-                self.selenium.find_element(By.CSS_SELECTOR, "#mandate-translation-lang")
-            )
-
-            select.select_by_visible_text(self.lang.lang_name)
-
-            translation_container = self.selenium.find_element(
+        self.assertInHTML(
+            "D'autres langues sont disponibles",
+            self.selenium.find_element(
                 By.CSS_SELECTOR, ".mandate-translation-other"
-            )
+            ).get_attribute("innerHTML"),
+        )
 
-            self.assertTrue(
-                translation_container.is_displayed(),
-                "Container .mandate-translation-other should be visible",
-            )
+        select = Select(
+            self.selenium.find_element(By.CSS_SELECTOR, "#mandate-translation-lang")
+        )
 
-            self.assertHTMLEqual(
-                self.lang.to_html(),
-                translation_container.get_attribute("innerHTML"),
-            )
+        select.select_by_visible_text(self.lang.lang_name)
 
-            self.assertEqual("pus", translation_container.get_attribute("lang"))
+        translation_container = self.selenium.find_element(
+            By.CSS_SELECTOR, ".mandate-translation-other"
+        )
+
+        self.assertHTMLEqual(
+            self.lang.to_html(),
+            translation_container.get_attribute("innerHTML"),
+        )
+
+        self.assertEqual("pus", translation_container.get_attribute("lang"))
 
     def test_display_translation_for_renew_mandat(self):
         self.lang: MandateTranslation = MandateTranslation.objects.create(
@@ -166,60 +157,36 @@ class DisplayTranslationTests(FunctionalTestCase):
         ).click()
 
         self.selenium.find_element(
-            By.CSS_SELECTOR, '[data-open-mandate-translation-target="button"]'
+            By.CSS_SELECTOR, ".mandate-translation-section a"
         ).click()
 
-        with self.switch_to_window("Aidants Connect - Impression du mandat"):
-            self.wait.until(self.path_matches("mandate_translation", {".*": ".*"}))
+        self.wait.until(self.path_matches("mandate_translation"))
 
-            self.assertFalse(
-                self.selenium.find_element(
-                    By.CSS_SELECTOR, ".mandate-translation-other"
-                ).is_displayed(),
-                "Container .mandate-translation-other should not be visible",
-            )
-
-            select = Select(
-                self.selenium.find_element(By.CSS_SELECTOR, "#mandate-translation-lang")
-            )
-
-            select.select_by_visible_text(self.lang.lang_name)
-
-            translation_container = self.selenium.find_element(
+        self.assertInHTML(
+            "D'autres langues sont disponibles",
+            self.selenium.find_element(
                 By.CSS_SELECTOR, ".mandate-translation-other"
-            )
+            ).get_attribute("innerHTML"),
+        )
 
-            self.assertTrue(
-                translation_container.is_displayed(),
-                "Container .mandate-translation-other should be visible",
-            )
+        select = Select(
+            self.selenium.find_element(By.CSS_SELECTOR, "#mandate-translation-lang")
+        )
 
-            self.assertHTMLEqual(
-                self.lang.to_html(),
-                translation_container.get_attribute("innerHTML"),
-            )
+        select.select_by_visible_text(self.lang.lang_name)
 
-            self.assertEqual("pus", translation_container.get_attribute("lang"))
+        translation_container = self.selenium.find_element(
+            By.CSS_SELECTOR, ".mandate-translation-other"
+        )
 
-    @contextmanager
-    def switch_to_window(self, window_title):
-        """
-        Switches to an existing browser window or tab
-        and closes it at the end of the context
-        """
-        origin_window = self.selenium.current_window_handle
-        for window in self.selenium.window_handles:
-            self.selenium.switch_to.window(window)
-            if self.selenium.title.strip() == window_title:
-                try:
-                    yield
-                    break
-                finally:
-                    if self.selenium.current_window_handle != origin_window:
-                        self.selenium.close()
-                        self.selenium.switch_to.window(origin_window)
-        else:
-            self.selenium.switch_to.window(origin_window)
-            raise NoSuchWindowException(
-                f"Unable to locate window with title {window_title}"
-            )
+        self.assertTrue(
+            translation_container.is_displayed(),
+            "Container .mandate-translation-other should be visible",
+        )
+
+        self.assertHTMLEqual(
+            self.lang.to_html(),
+            translation_container.get_attribute("innerHTML"),
+        )
+
+        self.assertEqual("pus", translation_container.get_attribute("lang"))
