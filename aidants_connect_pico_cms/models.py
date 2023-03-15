@@ -6,7 +6,6 @@ from markdown import markdown
 from markdown.extensions.attr_list import AttrListExtension
 
 from aidants_connect_pico_cms.constants import MANDATE_TRANSLATION_LANGUAGE_AVAILABLE
-from aidants_connect_web.models import Aidant
 
 
 class MarkdownContentMixin(models.Model):
@@ -29,11 +28,16 @@ class MarkdownContentMixin(models.Model):
 class CmsContent(MarkdownContentMixin, models.Model):
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
-    updated_by = models.ForeignKey(
-        Aidant, models.SET_NULL, blank=True, null=True, verbose_name="Modifié par"
-    )
     published = models.BooleanField("Publié")
-    slug = models.SlugField("Clé d’URL")
+    slug = models.SlugField(
+        "Clé d’URL",
+        help_text=(
+            "Par exemple <code>questions-generales</code> pour "
+            "« Questions générales ».<br>"
+            "Sera utilisée pour créer des liens vers cet élément de contenu.<br>"
+            "50 caractères maximum."
+        ),
+    )
     sort_order = models.PositiveSmallIntegerField("Tri", null=True, db_index=True)
 
     class Meta:
@@ -92,6 +96,7 @@ class FaqQuestion(CmsContent):
     category = models.ForeignKey(
         FaqCategory, models.SET_NULL, null=True, verbose_name="Catégorie"
     )
+    body = models.TextField("Réponse")
 
     def __str__(self):
         return self.question
