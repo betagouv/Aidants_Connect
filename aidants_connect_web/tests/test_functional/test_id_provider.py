@@ -83,7 +83,6 @@ class IdProviderTest(FunctionalTestCase):
         self._select_user("Coren", self.usager_corentin)
 
     def _select_user(self, search_text: str, selected_user: Usager):
-
         autocomplete = self.selenium.find_element(By.ID, "filter-input")
         autocomplete.send_keys(search_text)
         usager = self.selenium.find_element(
