@@ -7,6 +7,7 @@ from itertools import starmap
 from pathlib import Path
 
 from django.conf import settings
+from django.utils.functional import classproperty
 from django.utils.timezone import now
 
 from phonenumbers import PhoneNumber, PhoneNumberFormat, format_number
@@ -23,13 +24,6 @@ from aidants_connect_common.utils.date_time_json_encoder import DateTimeJsonEnco
 from aidants_connect_common.utils.urls import join_url_parts
 
 logger = logging.getLogger()
-
-redis_client = Redis.from_url(settings.REDIS_URL)
-try:
-    redis_client.ping()
-except ConnectionError:
-    logger.warning(f"{__file__}: No Redis connection available")
-    redis_client = None
 
 
 @dataclass
@@ -257,15 +251,25 @@ class OAuthMiddleware(HTTPAdapter):
     _token: None | TokenInfos = None
     __attrs__ = [*HTTPAdapter.__attrs__, "_auth_infos"]
 
+    @classproperty
+    def redis_client(cls):
+        if not hasattr(cls, "_redis_client"):
+            cls._redis_client = Redis.from_url(settings.REDIS_URL)
+            try:
+                cls._redis_client.ping()
+            except ConnectionError:
+                logger.warning(f"{__file__}: No Redis connection available")
+                cls._redis_client = None
+        return cls._redis_client
+
     @property
     def token(self):
         if isinstance(self._token, TokenInfos):
             return self._token
 
-        if redis_client:
+        if self.redis_client:
             try:
-                token = redis_client.get(__name__)
-                if token:
+                if token := self.redis_client.get(__name__):
                     self._token = TokenInfos.from_json(json.loads(token))
                     return self._token
             except Exception:
@@ -277,9 +281,9 @@ class OAuthMiddleware(HTTPAdapter):
     def token(self, value: TokenInfos):
         self._token = value
 
-        if redis_client:
+        if self.redis_client:
             try:
-                redis_client.set(
+                self.redis_client.set(
                     __name__,
                     value.as_json_string(),
                     # Expire data in redis 10 minute sooner
