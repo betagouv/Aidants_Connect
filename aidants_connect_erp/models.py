@@ -6,7 +6,6 @@ from .constants import SendingStatusChoices
 
 
 class CardSending(models.Model):
-
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
 

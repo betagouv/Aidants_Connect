@@ -1402,7 +1402,13 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 
     totp_devices_diagnostic.short_description = "Diagnostic Carte/TOTP Device"
 
-    list_display = ("serial_number", "aidant", get_email_user_for_device)
+    list_display = (
+        "serial_number",
+        "aidant",
+        get_email_user_for_device,
+        "is_functional",
+    )
+    list_filter = ("is_functional",)
     search_fields = ("serial_number", "aidant__email")
     raw_id_fields = ("aidant",)
     readonly_fields = ("totp_devices_diagnostic",)
