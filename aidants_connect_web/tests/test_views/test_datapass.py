@@ -36,7 +36,6 @@ class DatapassMixin:
 
 @tag("datapass")
 class OrganisationDatapass(DatapassMixin, TestCase):
-
     datapass_url = "/datapass_receiver/"
 
     @classmethod
@@ -93,7 +92,6 @@ class OrganisationDatapass(DatapassMixin, TestCase):
 
     def test_id_NaN_generates_bad_request(self):
         for should_be_a_number in ["data_pass_id", "organization_siret"]:
-
             bad_data_from_datapass = self.good_data_from_datapass.copy()
             bad_data_from_datapass[should_be_a_number] = "bad_data"
 

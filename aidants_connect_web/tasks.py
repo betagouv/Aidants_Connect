@@ -86,7 +86,6 @@ def get_recipient_list_for_organisation(organisation):
 
 @shared_task
 def notify_soon_expired_mandates():
-
     mandates_qset = Mandat.find_soon_expired(settings.MANDAT_EXPIRED_SOON)
     organisations: List[Organisation] = list(
         Organisation.objects.filter(
