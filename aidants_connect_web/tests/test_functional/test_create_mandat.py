@@ -18,9 +18,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.constants import RemoteConsentMethodChoices
-from aidants_connect_web.models import Journal
+from aidants_connect_web.models import Aidant, Journal
 from aidants_connect_web.tests.factories import AidantFactory
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 UUID = "1f75d571-4127-445b-a141-ea837580da14"
 
@@ -33,18 +32,16 @@ class CreateNewMandatTests(FunctionalTestCase):
         cls.port = settings.FC_AS_FS_TEST_PORT
         super().setUpClass()
 
-    def setUp(self) -> None:
-        self.aidant = AidantFactory(email="thierry@thierry.com")
-        device = self.aidant.staticdevice_set.create(id=1)
-        device.token_set.create(token="123456")
-        device.token_set.create(token="123455")
+    def setUp(self):
+        self.otp = "123455"
+        self.aidant: Aidant = AidantFactory(post__with_otp_device=["123456", self.otp])
 
     def test_create_new_mandat(self):
         wait = WebDriverWait(self.selenium, 10)
 
         self.open_live_url("/usagers/")
 
-        login_aidant(self)
+        self.login_aidant(self.aidant)
 
         welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(welcome_aidant, "Vos usagères et usagers")
@@ -125,7 +122,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         id_personal_data.click()
         id_otp_token = checkboxes[2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys("123455")
+        id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
@@ -149,7 +146,7 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.open_live_url("/usagers/")
 
-        login_aidant(self)
+        self.login_aidant(self.aidant)
 
         welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(welcome_aidant, "Vos usagères et usagers")
@@ -255,7 +252,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         id_personal_data.click()
         id_otp_token = checkboxes[2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys("123455")
+        id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
@@ -289,7 +286,7 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.open_live_url("/usagers/")
 
-        login_aidant(self)
+        self.login_aidant(self.aidant)
 
         welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(welcome_aidant, "Vos usagères et usagers")
@@ -351,14 +348,15 @@ class CreateNewMandatTests(FunctionalTestCase):
         text = RemoteConsentMethodChoices.SMS.label["label"]
         self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
         wait.until(self._element_is_required(By.ID, "id_user_phone"))
+        wait.until(self._element_is_required(By.ID, "id_user_remote_contact_verified"))
         self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
+        self.selenium.find_element(By.ID, "id_user_remote_contact_verified").click()
 
         # # Send recap mandate and go to second step
         self.selenium.find_element(By.ID, "submit_button").click()
         wait.until(self.path_matches("new_mandat_remote_second_step"))
 
         # # Send user consent request
-        self.selenium.find_element(By.ID, "id_identity_verification").click()
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
         wait.until(self.path_matches("new_mandat_waiting_room"))
 
@@ -442,7 +440,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         id_personal_data.click()
         id_otp_token = checkboxes[2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys("123455")
+        id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()

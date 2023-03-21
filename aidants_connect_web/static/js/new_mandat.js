@@ -1,40 +1,10 @@
 "use strict";
 
 (function () {
-    const NewMandatForm = Object.extendClass(Stimulus.Controller);
+    const REMOTE_METHOD_EVENT_NAME = "remoteconsent:changed"
 
-    Object.assign(NewMandatForm.prototype, {
-        "connect": function connect() {
-            this.computeUiForRemoteMandateValue(this.isRemoteInputTarget.checked);
-            const checkedRadioElt = document.querySelector("#id_remote_constent_method input[type='radio']:checked");
-            this.computeUiForRemoteConstentMethod(checkedRadioElt ? checkedRadioElt.value : undefined);
-        },
-
-        "isRemoteChanged": function isRemoteChanged(evt) {
-            this.computeUiForRemoteMandateValue(evt.target.checked);
-        },
-
-        "remoteConstentMethodChanged": function remoteConstentMethodChanged(evt) {
-            this.computeUiForRemoteConstentMethod(evt.target.value);
-        },
-
-        "computeUiForRemoteMandateValue": function computeUiForRemoteMandateValue(checked) {
-            this.remoteLabelTextTargets.forEach(function (elt) {
-                this.mutateVisibility(checked, elt);
-            }.bind(this));
-            this.mutateVisibility(checked, this.remoteContentSectionTarget);
-            this.remoteConstentMethodInputTargets.forEach(function(elt) {
-                this.mutateRequirement(checked, elt);
-            }.bind(this));
-        },
-
-        "computeUiForRemoteConstentMethod": function computeUiForRemoteConstentMethod(value) {
-            const isUserConsentSms = value === this.smsMethodValue;
-            this.mutateVisibility(isUserConsentSms, this.userPhoneInputSectionTarget);
-            this.mutateRequirement(isUserConsentSms, this.userPhoneInputTarget);
-        },
-
-        "mutateVisibility": function mutateVisibility(visible, elt) {
+    const MutateStateMixin = {
+        mutateVisibility: function mutateVisibility(visible, elt) {
             if (visible) {
                 elt.removeAttribute("hidden");
                 elt.removeAttribute("aria-hidden");
@@ -44,33 +14,109 @@
             }
         },
 
-        "mutateRequirement": function mutateRequirement(required, elt) {
+        mutateRequirement: function mutateRequirement(required, elt) {
             if (required) {
                 elt.setAttribute("required", "required");
             } else {
                 elt.removeAttribute("required");
             }
         }
+    };
 
+    const IsRemoteController = Object.extendClass(Stimulus.Controller);
+
+    Object.assign(IsRemoteController.prototype, MutateStateMixin, {
+        connect: function connect() {
+            this.isRemoteValue = this.isRemoteInputTarget.checked;
+            this.consentMethodValue = "";
+            this.requiredInputTargets
+                .filter(function (elt) {
+                    return elt.checked;
+                })
+                .forEach(function (elt) {
+                    this.consentMethodValue = elt.value
+                }.bind(this));
+        },
+
+        isRemoteInputTriggered: function isRemoteInputTriggered(evt) {
+            this.isRemoteValue = evt.target.checked
+        },
+
+        consentMethodValueChanged: function consentMethodValueChanged(value) {
+            const event = new CustomEvent(REMOTE_METHOD_EVENT_NAME, {detail: {method: value.trim()}});
+            this.element.dispatchEvent(event);
+        },
+
+        remoteMethodTriggered: function (evt) {
+            this.consentMethodValue = evt.target.value;
+        },
+
+        isRemoteValueChanged: function isRemoteValueChanged(value) {
+            this.mutateVisibility(value, this.remoteConsentSectionTarget);
+            this.remoteLabelTextTargets.forEach(function (elt) {
+                this.mutateVisibility(value, elt);
+            }.bind(this));
+            this.requiredInputTargets.forEach(function (elt) {
+                this.mutateRequirement(value, elt);
+            }.bind(this));
+        },
     });
 
     /* Static fields */
-    NewMandatForm.targets = [
-        "remoteContentSection",
+    IsRemoteController.targets = [
         "isRemoteInput",
-        "userPhoneInputSection",
-        "userPhoneInput",
-        "remoteConstentMethodInput",
+        "requiredInput",
         "remoteLabelText",
+        "remoteConsentSection"
     ];
 
-    NewMandatForm.values = {
-        "smsMethod": String,
+    IsRemoteController.values = {
+        "isRemote": Boolean,
+        "consentMethod": String,
+    };
+
+    const RemoteMethodController = Object.extendClass(Stimulus.Controller);
+
+    Object.assign(RemoteMethodController.prototype, MutateStateMixin, {
+            connect: function connect() {
+                if (this.hasRequiredInputsTarget) {
+                    this.boundRemoteMethodTriggered = this.remoteMethodTriggered.bind(this);
+                    document.querySelector("[data-controller='is-remote-controller']").addEventListener(
+                        REMOTE_METHOD_EVENT_NAME, this.boundRemoteMethodTriggered
+                    );
+                }
+            },
+
+            remoteMethodTriggered: function remoteMethodTriggered(event) {
+                const state = event.detail.method === this.consentMethodValue;
+                this.mutateVisibility(state, this.requiredInputsTarget);
+                this.requiredInputsTarget.querySelectorAll("input").forEach(function (elt) {
+                    this.mutateRequirement(state, elt);
+                }.bind(this));
+            },
+
+            disconnect: function disconnect() {
+                if (this.hasRequiredInputsTarget) {
+                    document.querySelector("[data-controller='is-remote-controller']").removeEventListener(
+                        REMOTE_METHOD_EVENT_NAME, this.boundRemoteMethodTriggered
+                    );
+                }
+            },
+        }
+    );
+
+    RemoteMethodController.targets = [
+        "requiredInputs"
+    ];
+
+    RemoteMethodController.values = {
+        "consentMethod": String,
     }
 
     function init() {
         const application = Stimulus.Application.start();
-        application.register("new-mandat-form", NewMandatForm);
+        application.register("is-remote-controller", IsRemoteController);
+        application.register("remote-method-controller", RemoteMethodController);
     }
 
     window.addEventListener("load", init);

@@ -195,6 +195,7 @@ class TestRemoteMandateMixin(TestCase):
             "duree": "MONTH",
             "is_remote": remote_constent_method is not None,
             "user_phone": self.phone_number,
+            "user_remote_contact_verified": True,
         }
 
         if remote_constent_method:
@@ -295,6 +296,7 @@ class NewMandatTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data["user_phone"] = self.phone_number
+        data["user_remote_contact_verified"] = True
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(
             response, "/creation_mandat/a_distance/demande_consentement/"
@@ -309,6 +311,7 @@ class NewMandatTests(TestCase):
             "is_remote": True,
             "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
             "user_phone": self.phone_number,
+            "user_remote_contact_verified": True,
         }
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(

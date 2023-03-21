@@ -10,7 +10,7 @@ from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db import IntegrityError
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template import engines
 from django.template.backends.django import DjangoTemplates
@@ -37,7 +37,6 @@ from aidants_connect_web.decorators import (
     user_is_aidant,
 )
 from aidants_connect_web.forms import (
-    IdentityVerificationForm,
     MandatForm,
     PatchedForm,
     RecapMandatForm,
@@ -65,20 +64,9 @@ class MandatCreationJsFormView(FormView):
         form.widget_attrs(
             "is_remote",
             {
-                "data-action": "new-mandat-form#isRemoteChanged",
-                "data-new-mandat-form-target": "isRemoteInput",
+                "data-action": "is-remote-controller#isRemoteInputTriggered",
+                "data-is-remote-controller-target": "isRemoteInput",
             },
-        )
-        form.widget_attrs(
-            "remote_constent_method",
-            {
-                "data-action": "new-mandat-form#remoteConstentMethodChanged",
-                "data-new-mandat-form-target": "remoteConstentMethodInput",
-            },
-        )
-        form.widget_attrs(
-            "user_phone",
-            {"data-new-mandat-form-target": "userPhoneInput"},
         )
 
         return form
@@ -449,35 +437,25 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
 
 
 @aidant_logged_with_activity_required
-class RemoteConsentSecondStepView(RemoteMandateMixin, RequireConnectionMixin, FormView):
+class RemoteConsentSecondStepView(
+    RemoteMandateMixin, RequireConnectionView, TemplateView
+):
     template_name = "aidants_connect_web/sms/remote_consent_second_step.html"
     success_url = reverse_lazy("new_mandat_waiting_room")
-    form_class = IdentityVerificationForm
 
-    def dispatch(self, request, *args, **kwargs):
-        if isinstance(
-            result := self.check_connection(request),
-            HttpResponse,
-        ):
-            return result
-
-        self.connection = result
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
+    def post(self, request, *args, **kwargs):
         if isinstance(
             result := self.process_consent_second_step(self.connection),
             HttpResponse,
         ):
             return result
 
-        return super().form_valid(form)
+        return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            "duree": self.connection.duree_keyword,
+            "duree": self.connection.get_duree_keyword_display(),
             "demarches": {
                 settings.DEMARCHES[name]["titre"]: (
                     settings.DEMARCHES[name]["description"]
