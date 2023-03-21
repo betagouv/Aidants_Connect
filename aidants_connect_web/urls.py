@@ -239,7 +239,7 @@ urlpatterns = [
     path(
         "bac-a-sable/presentation",
         sandbox.Sandbox.as_view(),
-        name="datapass_habilitation",
+        name="sandbox_presentation",
     ),
 ]
 
