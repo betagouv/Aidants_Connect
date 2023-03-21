@@ -1846,6 +1846,7 @@ class CarteTOTP(models.Model):
     aidant = models.OneToOneField(
         Aidant, null=True, blank=True, on_delete=SET_NULL, related_name="carte_totp"
     )
+    is_functional = models.BooleanField("Fonctionne correctement", default=True)
 
     class Meta:
         verbose_name = "carte TOTP"
