@@ -51,6 +51,7 @@ from aidants_connect_web.forms import (
 from aidants_connect_web.models import (
     Aidant,
     AidantManager,
+    AidantStatistiques,
     Autorisation,
     CarteTOTP,
     Connection,
@@ -1623,9 +1624,23 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         )
 
 
+class AidantStatistiquesAdmin(ModelAdmin):
+    list_display = (
+        "created_at",
+        "number_aidants",
+        "number_aidants_is_active",
+        "number_responsable",
+        "number_aidants_without_totp",
+        "number_aidant_can_create_mandat",
+        "number_aidant_with_login",
+        "number_aidant_who_have_created_mandat",
+    )
+
+
 # Display the following tables in the admin
 admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
+admin_site.register(AidantStatistiques, AidantStatistiquesAdmin)
 admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)
 admin_site.register(Mandat, MandatAdmin)
