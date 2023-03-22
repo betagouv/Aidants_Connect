@@ -104,6 +104,16 @@ class Organisation(models.Model):
         "Code INSEE du département", max_length=5, null=True, blank=True
     )
 
+    france_services_label = models.BooleanField(
+        "Labellisation France Services", default=False
+    )
+    france_services_number = models.CharField(
+        "Numéro d’immatriculation France Services",
+        blank=True,
+        default="",
+        max_length=200,
+    )
+
     is_active = models.BooleanField("Est active", default=True, editable=False)
 
     objects = OrganisationManager()
@@ -244,9 +254,24 @@ class AidantManager(UserManager):
 aidants__organisations_changed = Signal()
 
 
+class AidantType(models.Model):
+    name = models.CharField("Nom", max_length=350)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
     phone = models.TextField("Téléphone", blank=True)
+
+    aidant_type = models.ForeignKey(
+        AidantType,
+        on_delete=models.SET_NULL,
+        verbose_name="Type d'aidant",
+        null=True,
+        blank=True,
+    )
 
     organisation = models.ForeignKey(
         Organisation,
