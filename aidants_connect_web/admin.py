@@ -52,6 +52,7 @@ from aidants_connect_web.models import (
     Aidant,
     AidantManager,
     AidantStatistiques,
+    AidantType,
     Autorisation,
     CarteTOTP,
     Connection,
@@ -553,6 +554,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     )
     list_filter = (
         "is_active",
+        "aidant_type",
+        "can_create_mandats",
         AidantRegionFilter,
         AidantDepartmentFilter,
         AidantWithMandatsFilter,
@@ -572,6 +575,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             {
                 "fields": (
                     "username",
+                    "aidant_type",
                     "first_name",
                     "last_name",
                     "email",
@@ -1648,6 +1652,7 @@ class AidantStatistiquesAdmin(ModelAdmin):
 # Display the following tables in the admin
 admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
+admin_site.register(AidantType)
 admin_site.register(AidantStatistiques, AidantStatistiquesAdmin)
 admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)

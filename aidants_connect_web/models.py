@@ -254,9 +254,24 @@ class AidantManager(UserManager):
 aidants__organisations_changed = Signal()
 
 
+class AidantType(models.Model):
+    name = models.CharField("Nom", max_length=350)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
 class Aidant(AbstractUser):
     profession = models.TextField(blank=False)
     phone = models.TextField("Téléphone", blank=True)
+
+    aidant_type = models.ForeignKey(
+        AidantType,
+        on_delete=models.SET_NULL,
+        verbose_name="Type d'aidant",
+        null=True,
+        blank=True,
+    )
 
     organisation = models.ForeignKey(
         Organisation,
