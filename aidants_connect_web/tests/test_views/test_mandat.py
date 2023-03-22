@@ -148,7 +148,6 @@ class TestRemoteMandateMixin(TestCase):
 
     @mock.patch("aidants_connect_common.utils.sms_api.SmsApiMock.send_sms")
     def test_process_sms_second_step_template(self, send_sms_mock: Mock):
-
         connection: Connection = ConnectionFactory(
             aidant=self.aidant_thierry,
             organisation=self.aidant_thierry.organisation,
