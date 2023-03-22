@@ -335,17 +335,22 @@ class NewMandatRecap(RequireConnectionMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "aidant": self.aidant,
-            "usager": self.connection.usager,
-            "demarches": [
-                humanize_demarche_names(demarche)
-                for demarche in self.connection.demarches
-            ],
-            "duree": self.connection.get_duree_keyword_display(),
-            "is_remote": self.connection.mandat_is_remote,
-        }
+        try:
+            return {
+                **super().get_context_data(**kwargs),
+                "aidant": self.aidant,
+                "usager": self.connection.usager,
+                "demarches": [
+                    humanize_demarche_names(demarche)
+                    for demarche in self.connection.demarches
+                ],
+                "duree": self.connection.get_duree_keyword_display(),
+                "is_remote": self.connection.mandat_is_remote,
+            }
+        except TypeError as e:
+            raise Exception(
+                f"Exception from connection with id {self.connection.pk}"
+            ) from e
 
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "aidant": self.aidant}
@@ -455,6 +460,14 @@ class AttestationProject(RequireConnectionView, RenderAttestationAbstract):
     # We don't need to check connection expiration here
     # since we're already after AC connection
     check_connection_expiration = False
+
+    def get_context_data(self, **kwargs):
+        try:
+            return super().get_context_data(**kwargs)
+        except TypeError as e:
+            raise Exception(
+                f"Exception from connection with id {self.connection.pk}"
+            ) from e
 
     def get_usager(self) -> Usager:
         return self.connection.usager
