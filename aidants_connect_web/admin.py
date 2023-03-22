@@ -241,6 +241,7 @@ class OrganisationAdmin(
         "is_active",
         "id",
         "data_pass_id",
+        "france_services_label",
     )
     readonly_fields = (
         "display_responsables",
@@ -250,6 +251,7 @@ class OrganisationAdmin(
     search_fields = ("name", "siret", "data_pass_id")
     list_filter = (
         "is_active",
+        "france_services_label",
         "type",
         WithoutDatapassIdFilter,
         RegionFilter,

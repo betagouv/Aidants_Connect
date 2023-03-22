@@ -104,6 +104,16 @@ class Organisation(models.Model):
         "Code INSEE du département", max_length=5, null=True, blank=True
     )
 
+    france_services_label = models.BooleanField(
+        "Labellisation France Services", default=False
+    )
+    france_services_number = models.CharField(
+        "Numéro d’immatriculation France Services",
+        blank=True,
+        default="",
+        max_length=200,
+    )
+
     is_active = models.BooleanField("Est active", default=True, editable=False)
 
     objects = OrganisationManager()
