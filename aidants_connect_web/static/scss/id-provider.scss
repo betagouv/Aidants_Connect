@@ -1,0 +1,70 @@
+@use "colors";
+
+.user-detail {
+  &[open] {
+    summary:after {
+      content: "−";
+      color: colors.$red-aidants;
+    }
+  }
+
+  summary {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    &:after {
+      content: "+";
+      color: colors.$blue-aidants;
+      font-size: xx-large;
+      font-weight: bold;
+      height: 24px;
+      position: relative;
+      top: -0.3rem;
+      width: 24px;
+    }
+  }
+
+  .user-search {
+    margin: 2rem 0;
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .user-detail-item {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    &:not(:last-child) {
+      margin-bottom: 1rem;
+    }
+  }
+}
+
+.select-demarche-info {
+  h4 {
+    margin-top: 0;
+  }
+
+  .instructions {
+    color: colors.$blue-aidants;
+
+    em {
+      color: colors.$red-aidants;
+      font-style: normal;
+    }
+  }
+}
+
+.demarche-infos {
+  * {
+    padding: 0;
+    margin: 0;
+  }
+
+  strong {
+    color: colors.$blue-aidants;
+  }
+}

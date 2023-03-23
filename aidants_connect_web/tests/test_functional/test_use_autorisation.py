@@ -17,7 +17,6 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 FC_URL_PARAMETERS = (
     f"state=34"
@@ -33,7 +32,7 @@ FC_URL_PARAMETERS = (
 @tag("functional", "id_provider")
 class UseAutorisationTests(FunctionalTestCase):
     def setUp(self):
-        self.aidant_1 = AidantFactory(email="thierry@thierry.com")
+        self.aidant_1 = AidantFactory()
         device = self.aidant_1.staticdevice_set.create(id=self.aidant_1.id)
         device.token_set.create(token="123456")
         self.aidant_2 = AidantFactory()
@@ -78,7 +77,7 @@ class UseAutorisationTests(FunctionalTestCase):
     def test_use_autorisation_with_preloging(self):
         # prelogin
         self.open_live_url("/espace-aidant/")
-        login_aidant(self)
+        self.login_aidant(self.aidant_1)
 
         url = f"/authorize/?{FC_URL_PARAMETERS}"
         self.open_live_url(url)
@@ -89,20 +88,20 @@ class UseAutorisationTests(FunctionalTestCase):
         url = f"/authorize/?{FC_URL_PARAMETERS}"
         self.open_live_url(url)
 
-        login_aidant(self)
+        self.login_aidant(self.aidant_1)
 
         self.use_a_autorisation()
 
     def use_a_autorisation(self):
         # Select usager
-        welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
+        welcome_aidant = self.selenium.find_element(By.ID, "welcome_aidant").text
         self.assertEqual(
             welcome_aidant, "BIENVENUE SUR VOTRE ESPACE AIDANTS CONNECT, THIERRY"
         )
 
         self.selenium.find_element(By.CLASS_NAME, "ui-autocomplete-input")
 
-        autocomplete = self.selenium.find_element(By.ID, "filter-input")
+        autocomplete = self.selenium.find_element(By.ID, "anonymous-filter-input")
         autocomplete.send_keys("Joséphine ST-PIERRE")
         usager = self.selenium.find_element(
             By.XPATH, f"//li[@data-value='{self.usager_josephine.id}']"
@@ -116,7 +115,7 @@ class UseAutorisationTests(FunctionalTestCase):
         wait.until(url_contains("/select_demarche/"))
 
         # Select Démarche
-        step2_title = self.selenium.find_element(By.ID, "instructions").text
+        step2_title = self.selenium.find_element(By.CSS_SELECTOR, ".instructions").text
         self.assertIn("En sélectionnant une démarche", step2_title)
         demarches = self.selenium.find_elements(By.ID, "button-demarche")
         self.assertEqual(len(demarches), 2)

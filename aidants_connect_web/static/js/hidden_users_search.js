@@ -22,7 +22,7 @@ $(function () {
     }
 
     const users = JSON.parse(document.querySelector("#usagers_list").textContent);
-    $("#filter-input").autocomplete({
+    $("#anonymous-filter-input").autocomplete({
         source: function (request, response) {
             const results = users.filter(function(item) {
                 return localeIncludes(item.label, request.term);
@@ -31,13 +31,9 @@ $(function () {
             response(results);
         },
         minLength: 3,
-        focus: function (event, ui) {
-            $("#filter-input").val(ui.item.label);
-            return false;
-        },
         select: function (event, ui) {
-            $("#filter-input").val(ui.item.label);
-            $("#filter-input-id").val(ui.item.value);
+            $("#anonymous-filter-input").val(ui.item.label);
+            $("#anonymous-filter-input-id").val(ui.item.value);
             return false;
         },
         appendTo: $("#autocomplete"),
