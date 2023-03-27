@@ -1292,6 +1292,7 @@ class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
 
 class ConnectionAdmin(ModelAdmin):
     list_display = ("id", "usager", "aidant", "complete")
+    raw_id_fields = ("usager", "aidant")
 
 
 class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
