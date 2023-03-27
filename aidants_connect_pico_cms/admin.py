@@ -1,7 +1,7 @@
 from django.contrib.admin import ModelAdmin, register
 from django.forms import models
 
-from aidants_connect.admin import admin_site
+from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_common.widgets import SearchableRadioSelect
 from aidants_connect_pico_cms.models import (
     FaqCategory,
@@ -11,7 +11,7 @@ from aidants_connect_pico_cms.models import (
 )
 
 
-class CmsAdmin(ModelAdmin):
+class CmsAdmin(VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "__str__",
         "slug",
@@ -100,6 +100,6 @@ class MandateTranslationAdminForm(models.ModelForm):
 
 
 @register(MandateTranslation, site=admin_site)
-class MandateTranslationAdmin(ModelAdmin):
+class MandateTranslationAdmin(VisibleToAdminMetier, ModelAdmin):
     list_display = ("__str__",)
     form = MandateTranslationAdminForm
