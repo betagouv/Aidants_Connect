@@ -30,44 +30,58 @@
      */
     const SearchController = Object.extendClass(Stimulus.Controller);
     Object.assign(SearchController.prototype, {
-        "initialize": function initialize() {
+        initialize: function initialize() {
             this.itemTargets.forEach(function (item) {
                 item.setAttribute("data-controller", "search-item");
                 item.setAttribute("data-search-item-target", "item");
             });
         },
 
-        "connect": function connect() {
+        connect: function connect() {
             this.searchBarTargets.forEach(function (searchBar) {
                 searchBar.removeAttribute("hidden");
             });
+            this.searchTokenValue = this.searchInputTarget.value;
         },
 
-        "search": function search(evt) {
-            const event = new CustomEvent(SEARCH_EVENT_NAME, {detail: {term: evt.target.value.trim()}});
-            this.element.dispatchEvent(event);
+        search: function search(evt) {
+            this.searchTokenValue = evt.target.value;
         },
+        
+        searchTokenValueChanged: function searchInputValueChanged(value) {
+            const event = new CustomEvent(SEARCH_EVENT_NAME, {detail: {term: value.trim()}});
+            this.element.dispatchEvent(event);
+        }
     });
 
-    SearchController.targets = ["searchBar", "item"];
+    SearchController.targets = [
+        "searchBar",
+        "item",
+        "searchInput",
+    ];
+    
+    SearchController.values = {
+        searchToken: String
+    }
 
     const SearchItemController = Object.extendClass(Stimulus.Controller);
     Object.assign(SearchItemController.prototype, {
-        "initialize": function initialize() {
+        initialize: function initialize() {
             this.searchTerms = JSON.parse(this.itemTarget.dataset.searchTerms);
         },
 
-        "connect": function connect() {
+        connect: function connect() {
             this.boundFilter = this.filter.bind(this);
             document.querySelector("[data-controller='search']").addEventListener(SEARCH_EVENT_NAME, this.boundFilter);
         },
 
-        "filter": function filter(event) {
+        filter: function filter(event) {
             const searchTerm = event.detail.term;
 
             if (searchTerm.length === 0) {
-                // Empty searchbar
+                // Empty searchbar case
                 this.itemTarget.removeAttribute("hidden");
+                this.itemTarget.removeAttribute("aria-hidden");
                 return;
             }
 
@@ -77,12 +91,14 @@
 
             if (hasMatchingTerms) {
                 this.itemTarget.removeAttribute("hidden");
+                this.itemTarget.removeAttribute("aria-hidden");
             } else {
                 this.itemTarget.setAttribute("hidden", "hidden");
+                this.itemTarget.setAttribute("aria-hidden", "aria-hidden");
             }
         },
 
-        "disconnect": function disconnect() {
+        disconnect: function disconnect() {
             document.querySelector("[data-controller='search']").removeEventListener(SEARCH_EVENT_NAME, this.boundFilter);
         },
     });

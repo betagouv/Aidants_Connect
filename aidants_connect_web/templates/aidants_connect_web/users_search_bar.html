@@ -7,8 +7,6 @@ Just add it anywhere you display users along with the following static files:
 - aidants_connect_web/static/js/users_search.js
 {% endcomment %}
 <div class="user-search row" hidden data-search-target="searchBar">
-  <label id="filter-input-label" for="filter-input">
-    Rechercher un usager ou une usagère
-  </label>
-  <input id="filter-input" type="text" data-action="search#search" />
+  <label id="filter-input-label" for="filter-input">Rechercher un usager ou une usagère</label>
+  <input id="filter-input" type="text" data-search-target="searchInput" data-action="search#search" />
 </div>

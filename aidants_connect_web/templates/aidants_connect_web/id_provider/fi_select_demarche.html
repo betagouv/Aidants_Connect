@@ -5,7 +5,7 @@
 {% block title %}Aidants Connect - Sélectionnez la démarche{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/id_provider.css' %}" rel="stylesheet">
+<link href="{% static 'css/id-provider.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 
@@ -14,32 +14,33 @@
   <div class="fr-grid-row fr-grid-row--gutters">
     <div class="fr-col-12 fr-col-md-8">
     <form method="post">
-      <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
-      <div class="container shadowed">
-        <h1>Sélectionnez le type de démarche que vous allez effectuer</h1>
-        <p id="instructions" class="subtitle">En sélectionnant une démarche, vous allez FranceConnecter <span class="red">{{ usager.given_name }} {{ usager.family_name }}.</span></p>
+      <h2 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h2>
+      <div class="select-demarche-info container shadowed clearfix padding-1rem">
+        <h4 class="h4-prime">Sélectionnez le type de démarche que vous allez effectuer</h4>
+        <p class="instructions">
+          En sélectionnant une démarche, vous allez FranceConnecter
+          <em>{{ usager.given_name }} {{ usager.family_name }}</em>
+        </p>
         {% if change_user_url %}
-        <div class="button-box">
-          <a class="button primary change-user" href="{{ change_user_url }}">Changer d'usager</a>
-        </div>
+        <a class="button primary float-right change-user" href="{{ change_user_url }}">Changer d'usager</a>
         {% endif %}
       </div>
 
       <h2>Type de démarche</h2>
       {% for demarche, demarche_info in demarches.items %}
       <div class="container shadowed" id="{{ demarche }}">
-        <div class="fr-grid-row fr-grid-row--middle">
+        <div class="fr-grid-row fr-grid-row--middle padding-1rem">
           <div class="fr-col-3">
             <img src="{{ demarche_info.icon }}" alt="Icon {{ demarche_info.titre }}" />
           </div>
-          <div class="fr-col-5">
-            <h3 id="title_demarche" class="h2">{{ demarche_info.titre }}</h3>
+          <div class="fr-col-5 demarche-infos">
+            <strong class="demarche-title">{{ demarche_info.titre }}</strong>
             <p>{{ demarche_info.description }}</p>
           </div>
           <div class="fr-col-4">
-            <div class="button-box">
-              <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="primary" type="submit">Sélectionner cette démarche</button>
-            </div>
+            <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="primary" type="submit">
+              Sélectionner cette démarche
+            </button>
           </div>
         </div>
       </div>

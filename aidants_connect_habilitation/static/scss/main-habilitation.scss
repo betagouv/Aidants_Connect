@@ -97,7 +97,7 @@ h1, .h1 {
   }
 }
 
-h1, .h1, h2, .h2, .subtitle-container {
+h1, .h1, h2, .h2, h3, .h3, h4, .h4, .subtitle-container {
   + .subtitle {
     font-size: 1.25rem;
     color: colors.$light-blue-anct;
@@ -269,6 +269,21 @@ dl {
 
   dt {
     font-weight: bold;
+  }
+}
+
+.float-right {
+  float: right;
+}
+
+.clearfix {
+  display: flow-root;
+
+  &:after {
+    // Remove after en of support for IE11
+    content: "";
+    display: table;
+    clear: both;
   }
 }
 

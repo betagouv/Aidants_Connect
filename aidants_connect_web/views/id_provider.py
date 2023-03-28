@@ -112,12 +112,11 @@ class Authorize(RequireConnectionMixin, FormView):
             return self.form_invalid_get(form)
 
     def post(self, request, *args, **kwargs):
-        result = self.check_connection(request)
-        if isinstance(result, HttpResponse):
+        if isinstance(result := self.check_connection(request), HttpResponse):
             return result
-        else:
-            self.connection = result
-            self.request.session["connection"] = self.connection.pk
+
+        self.connection = result
+        self.request.session["connection"] = self.connection.pk
 
         self.oauth_parameters_form = OAuthParametersForm(
             data=self.request.POST, relaxed=True
@@ -202,7 +201,6 @@ class Authorize(RequireConnectionMixin, FormView):
         return {
             **super().get_context_data(**kwargs),
             "oauth_parameters_form": self.oauth_parameters_form,
-            "connection_id": self.connection.id,
             "usagers": self.usager_with_active_auth,
             "aidant": self.aidant,
             "data": [

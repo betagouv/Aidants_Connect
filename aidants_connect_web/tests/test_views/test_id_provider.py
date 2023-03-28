@@ -171,7 +171,6 @@ class AuthorizeTests(TestCase):
             data=self.valid_oauth_data,
         )
 
-        self.assertIsInstance(response.context["connection_id"], int)
         self.assertIsInstance(response.context["usagers"], QuerySet)
         self.assertEqual(len(response.context["usagers"]), 1)
         self.assertIsInstance(response.context["aidant"], Aidant)
