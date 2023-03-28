@@ -161,8 +161,8 @@ class Organisation(models.Model):
         )
 
     @cached_property
-    def aidants_not_responsables(self):
-        return self.aidants.exclude(responsable_de=self).all()
+    def aidants_not_responsables(self) -> QuerySet:
+        return self.aidants.exclude(responsable_de=self)
 
     @cached_property
     def num_usagers(self):
@@ -456,20 +456,14 @@ class Aidant(AbstractUser):
         return self.totpdevice_set.filter(confirmed=True).exists()
 
     @cached_property
-    def has_a_carte_totp(self):
-        try:
-            CarteTOTP.objects.get(aidant=self)
-            return True
-        except CarteTOTP.DoesNotExist:
-            return False
+    def has_a_carte_totp(self) -> bool:
+        return hasattr(self, "carte_totp")
 
     @cached_property
-    def number_totp_card(self):
-        try:
-            carte = CarteTOTP.objects.get(aidant=self)
-            return carte.serial_number
-        except CarteTOTP.DoesNotExist:
-            return "Pas de Carte"
+    def number_totp_card(self) -> str:
+        if self.has_a_carte_totp:
+            return self.carte_totp.serial_number
+        return "Pas de Carte"
 
     def remove_from_organisation(self, organisation: Organisation) -> Optional[bool]:
         if not self.is_in_organisation(organisation):
@@ -591,6 +585,10 @@ class HabilitationRequest(models.Model):
     date_formation = models.DateTimeField("Date de formation", null=True, blank=True)
     test_pix_passed = models.BooleanField("Test PIX", default=False)
     date_test_pix = models.DateTimeField("Date test PIX", null=True, blank=True)
+
+    @property
+    def aidant_full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
 
     class Meta:
         constraints = (
@@ -1911,6 +1909,10 @@ class CarteTOTP(models.Model):
         Aidant, null=True, blank=True, on_delete=SET_NULL, related_name="carte_totp"
     )
     is_functional = models.BooleanField("Fonctionne correctement", default=True)
+
+    @cached_property
+    def totp_device(self):
+        return TOTPDevice.objects.filter(user=self.aidant).first()
 
     class Meta:
         verbose_name = "carte TOTP"

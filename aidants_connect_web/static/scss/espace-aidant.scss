@@ -1,6 +1,7 @@
 @use "colors";
 
-h3 {
+// aidants_connect_web/espace_aidant/home.html
+h3.home-section {
   display: block;
   font-size: 2rem;
   color: #000;
@@ -93,5 +94,88 @@ h3 {
       height: 1em;
       width: 1em;
     }
+  }
+}
+
+// aidants_connect_web/espace_aidant/organisation.html
+.organisation-summary {
+  display: flex;
+  align-items: stretch;
+
+  > [class^="fr-col"] > * {
+    height: 100%;
+  }
+
+  .organisation-stats {
+    background-color: colors.$blue-aidants;
+
+    & * {
+      color: #FFF;
+    }
+  }
+}
+
+table.table {
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+  width: 100%;
+
+
+  tbody.shadowed {
+    td {
+      border: none;
+      padding: 1rem;
+    }
+
+    tr:not(:last-child) td {
+      border-bottom: 1px solid colors.$light-grey-aidants;
+    }
+  }
+
+  &.aidants-list {
+    tr td:last-child {
+      text-align: right;
+
+      a.button {
+        padding: .25rem;
+
+        &:not(:last-child) {
+          margin-bottom: .5rem;
+        }
+      }
+    }
+  }
+
+  [class^="request-status"] {
+    padding: .25rem;
+    border: 1px solid;
+
+    &.request-status-cancelled {
+      border-color: colors.$shadow-grey;
+    }
+
+    &.request-status-cancelled {
+      border-color: colors.$dark-grey-aidants;
+      color: colors.$dark-grey-aidants;
+    }
+
+    &.request-status-processing {
+      border-color: colors.$light-blue-anct;
+      color: colors.$light-blue-anct;
+    }
+
+    &.request-status-refused {
+      border-color: colors.$red-aidants;
+      color: colors.$red-aidants;
+    }
+
+    &.request-status-validated {
+      border-color: colors.$dark-green-anct;
+      color: colors.$dark-green-anct;
+    }
+  }
+
+  .unverified-card-warning {
+    max-width: 20rem;
   }
 }

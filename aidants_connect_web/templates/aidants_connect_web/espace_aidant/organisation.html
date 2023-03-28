@@ -1,50 +1,51 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block title %}Aidants Connect - Mon organisation{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
+  <div class="fr-container">
     {% if messages %}
       {% for message in messages %}
         <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
       {% endfor %}
     {% endif %}
-    <h1>Mon organisation : {{ organisation.name }}</h1>
-    {% include "aidants_connect_web/espace_aidant/notifications.html" with user=aidant %}
-    {% include "aidants_connect_web/espace_aidant/statistics.html" with organisation=organisation %}
-  </div>
-</section>
+    <h1>Mon organisation</h1>
+    <h2>{{ organisation.name }}</h2>
+    <p class="subtitle">
+      Retrouvez ici des outils à votre disposition, externes à Aidants Connect mais susceptibles de vous aider dans vos
+      démarches d’accompagnement.
+    </p>
 
-<section class="section section-grey">
-  <div class="container">
-    <h2>Aidants actifs</h2>
+    {% include "aidants_connect_web/espace_aidant/notifications.html" with user=aidant %}
+    {% include "aidants_connect_web/espace_aidant/statistics.html" %}
+
+    <h2>Aidants</h2>
+
     {% if organisation_active_aidants %}
       <table class="table">
         <thead>
-          <tr>
-            <th scope="col" class="th-50">Nom</th>
-            <th scope="col">Email</th>
-          </tr>
+        <tr>
+          <th>Nom</th>
+          <th>Email</th>
+        </tr>
         </thead>
-        <tbody>
-          {% for aidant in organisation_active_aidants %}
-            <tr>
-              <td>{{ aidant.get_full_name }}</td>
-              <td>{{ aidant.email }}</td>
-            </tr>
-          {% endfor %}
+        <tbody class="shadowed">
+        {% for aidant in organisation_active_aidants %}
+          <tr>
+            <td>{{ aidant.get_full_name }}</td>
+            <td>{{ aidant.email }}</td>
+          </tr>
+        {% endfor %}
         </tbody>
       </table>
     {% else %}
       <div class="notification" role="alert">L'organisation n'a pas encore d'aidants.</div>
     {% endif %}
   </div>
-</section>
 {% endblock content %}

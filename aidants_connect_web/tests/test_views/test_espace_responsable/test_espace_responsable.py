@@ -97,7 +97,7 @@ class EspaceResponsableOrganisationPage(TestCase):
     def test_espace_responsable_organisation_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
         found = resolve(f"/espace-responsable/organisation/{self.id_organisation}/")
-        self.assertEqual(found.func, espace_responsable.organisation)
+        self.assertEqual(found.func.view_class, espace_responsable.OrganisationView)
 
     def test_espace_responsable_organisation_url_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
