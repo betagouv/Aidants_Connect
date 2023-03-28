@@ -1,11 +1,11 @@
-from typing import Collection
-
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.views.generic import TemplateView
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
@@ -61,38 +61,47 @@ def home(request):
     )
 
 
-@require_GET
-@login_required
-@user_is_responsable_structure
-@activity_required
-def organisation(request: HttpRequest, organisation_id: int):
-    responsable: Aidant = request.user
-    organisation: Organisation = get_object_or_404(Organisation, pk=organisation_id)
-    check_organisation_and_responsable(responsable, organisation)
+@method_decorator(
+    [login_required, user_is_responsable_structure, activity_required], name="dispatch"
+)
+class OrganisationView(TemplateView):
+    template_name = "aidants_connect_web/espace_responsable/organisation.html"
 
-    aidants: Collection[Aidant] = organisation.aidants.order_by(
-        "-is_active", "last_name"
-    ).prefetch_related("carte_totp")
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        self.organisation: Organisation = get_object_or_404(
+            Organisation, pk=kwargs.get("organisation_id")
+        )
 
-    habilitation_requests = organisation.habilitation_requests.exclude(
-        status=HabilitationRequest.STATUS_VALIDATED
-    ).order_by("status", "last_name")
-    totp_devices_users = {
-        device.user.id: device.confirmed
-        for device in TOTPDevice.objects.filter(user__in=aidants)
-    }
+        check_organisation_and_responsable(self.aidant, self.organisation)
 
-    return render(
-        request,
-        "aidants_connect_web/espace_responsable/organisation.html",
-        {
-            "responsable": responsable,
-            "organisation": organisation,
-            "aidants": aidants,
-            "totp_devices_users": totp_devices_users,
-            "habilitation_requests": habilitation_requests,
-        },
-    )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        organisation_active_aidants = [self.aidant] + list(
+            self.organisation.aidants_not_responsables.filter(is_active=True)
+            .order_by("last_name")
+            .prefetch_related("carte_totp")
+        )
+
+        organisation_habilitation_requests = (
+            self.organisation.habilitation_requests.order_by("status", "last_name")
+        )
+
+        organisation_inactive_aidants = (
+            self.organisation.aidants_not_responsables.filter(is_active=False)
+            .order_by("last_name")
+            .prefetch_related("carte_totp")
+        )
+
+        return {
+            **super().get_context_data(**kwargs),
+            "responsable": self.aidant,
+            "organisation": self.organisation,
+            "organisation_active_aidants": organisation_active_aidants,
+            "organisation_habilitation_requests": organisation_habilitation_requests,
+            "organisation_inactive_aidants": organisation_inactive_aidants,
+        }
 
 
 @require_http_methods(["GET", "POST"])
@@ -161,7 +170,6 @@ def aidant(request, aidant_id):
         "aidants_connect_web/espace_responsable/aidant.html",
         {
             "aidant": aidant,
-            "organisation": organisation,
             "form": form,
             "orga_form": orga_form,
             "responsable": responsable,
@@ -358,7 +366,6 @@ def associate_aidant_carte_totp(request, aidant_id):
         "aidants_connect_web/espace_responsable/write-carte-totp-sn.html",
         {
             "aidant": aidant,
-            "organisation": organisation,
             "responsable": responsable,
             "form": form,
         },
@@ -441,7 +448,7 @@ def validate_aidant_carte_totp(request, aidant_id):
     return render(
         request,
         "aidants_connect_web/espace_responsable/validate-carte-totp.html",
-        {"aidant": aidant, "organisation": organisation, "form": form},
+        {"aidant": aidant, "form": form},
     )
 
 
