@@ -28,6 +28,7 @@ from phonenumbers import PhoneNumber, PhoneNumberFormat, format_number, is_valid
 from phonenumbers import parse as parse_number
 from phonenumbers import region_code_for_country_code
 
+from aidants_connect_common.models import Department
 from aidants_connect_common.utils.constants import (
     JOURNAL_ACTIONS,
     AuthorizationDurationChoices,
@@ -123,6 +124,13 @@ class Organisation(models.Model):
 
     class AlreadyExists(Exception):
         pass
+
+    @cached_property
+    def region(self):
+        try:
+            return Department.objects.get(insee_code=self.department_insee_code).region
+        except Exception:
+            return None
 
     @cached_property
     def num_active_aidants(self):
