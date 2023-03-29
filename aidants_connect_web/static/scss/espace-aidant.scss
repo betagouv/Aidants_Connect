@@ -151,10 +151,11 @@ table.table {
     border: 1px solid;
 
     &.request-status-cancelled {
-      border-color: colors.$shadow-grey;
+      border-color: colors.$dark-grey-aidants;
+      color: colors.$dark-grey-aidants;
     }
 
-    &.request-status-cancelled {
+    &.request-status-new {
       border-color: colors.$dark-grey-aidants;
       color: colors.$dark-grey-aidants;
     }
@@ -167,11 +168,6 @@ table.table {
     &.request-status-refused {
       border-color: colors.$red-aidants;
       color: colors.$red-aidants;
-    }
-
-    &.request-status-validated {
-      border-color: colors.$dark-green-anct;
-      color: colors.$dark-green-anct;
     }
   }
 

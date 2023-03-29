@@ -85,7 +85,9 @@ class OrganisationView(TemplateView):
         )
 
         organisation_habilitation_requests = (
-            self.organisation.habilitation_requests.order_by("status", "last_name")
+            self.organisation.habilitation_requests.exclude(
+                status=HabilitationRequest.STATUS_VALIDATED
+            ).order_by("status", "last_name")
         )
 
         organisation_inactive_aidants = (
