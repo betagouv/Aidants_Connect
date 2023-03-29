@@ -1304,7 +1304,6 @@ class Connection(models.Model):
                 ),
                 name="connection_consent_request_id_set",
             ),
-            # fmt: on
         ]
         verbose_name = "connexion"
 
@@ -1329,7 +1328,7 @@ class JournalQuerySet(models.QuerySet):
         consent_request_id: str,
     ) -> JournalQuerySet:
         return self.filter(
-            action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+            action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
             usager=user,
             aidant=aidant,
             remote_constent_method=remote_constent_method,
@@ -1342,7 +1341,16 @@ class JournalQuerySet(models.QuerySet):
         self, user_phone: PhoneNumber, consent_request_id: str | None = None
     ):
         return self._find_consent_actions(
-            action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+            action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+            user_phone=user_phone,
+            consent_request_id=consent_request_id,
+        )
+
+    def find_sms_consent_recap(
+        self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    ):
+        return self._find_consent_actions(
+            action=JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
             user_phone=user_phone,
             consent_request_id=consent_request_id,
         )
@@ -1351,7 +1359,7 @@ class JournalQuerySet(models.QuerySet):
         self, user_phone: PhoneNumber, consent_request_id: str | None = None
     ):
         return self._find_consent_actions(
-            action=JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
+            action=JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
             user_phone=user_phone,
             consent_request_id=consent_request_id,
         )
@@ -1361,8 +1369,8 @@ class JournalQuerySet(models.QuerySet):
     ):
         return self._find_consent_actions(
             action=[
-                JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
-                JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+                JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
+                JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
             ],
             user_phone=user_phone,
             consent_request_id=consent_request_id,
@@ -1439,9 +1447,10 @@ class Journal(models.Model):
                 check=(
                     ~Q(
                         action__in=[
-                            JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
-                            JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
-                            JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+                            JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+                            JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
+                            JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
+                            JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
                         ]
                     )
                     | (
@@ -1775,7 +1784,7 @@ class Journal(models.Model):
         message: str,
     ) -> Journal:
         return cls._log_sms_event(
-            JournalActionKeywords.REMOTE_MANDAT_CONSENT_RECEIVED,
+            JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
             aidant,
             demarche,
             duree,
@@ -1797,7 +1806,29 @@ class Journal(models.Model):
         message: str,
     ) -> Journal:
         return cls._log_sms_event(
-            JournalActionKeywords.REMOTE_MANDAT_DENIAL_RECEIVED,
+            JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
+            aidant,
+            demarche,
+            duree,
+            remote_constent_method,
+            user_phone,
+            consent_request_id,
+            message,
+        )
+
+    @classmethod
+    def log_user_mandate_recap_sms_sent(
+        cls,
+        aidant: Aidant,
+        demarche: str | Iterable,
+        duree: int | str,
+        remote_constent_method: RemoteConsentMethodChoices | str,
+        user_phone: PhoneNumber,
+        consent_request_id: str,
+        message: str,
+    ) -> Journal:
+        return cls._log_sms_event(
+            JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
             aidant,
             demarche,
             duree,
@@ -1819,7 +1850,7 @@ class Journal(models.Model):
         message: str,
     ) -> Journal:
         return cls._log_sms_event(
-            JournalActionKeywords.REMOTE_MANDAT_CONSENT_SENT,
+            JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
             aidant,
             demarche,
             duree,

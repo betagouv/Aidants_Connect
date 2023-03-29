@@ -86,6 +86,11 @@ urlpatterns = [
         name="renew_mandat",
     ),
     path(
+        "renew_mandat/a_distance/demande_consentement/",
+        renew_mandat.RemoteConsentSecondStepView.as_view(),
+        name="renew_remote_second_step",
+    ),
+    path(
         "renew_mandat/attente_consentement/",
         renew_mandat.WaitingRoom.as_view(),
         name="renew_mandat_waiting_room",
@@ -108,12 +113,17 @@ urlpatterns = [
         name="new_mandat_recap",
     ),
     path(
-        "creation_mandat/attente_consentement/",
+        "creation_mandat/a_distance/demande_consentement/",
+        mandat.RemoteConsentSecondStepView.as_view(),
+        name="new_mandat_remote_second_step",
+    ),
+    path(
+        "creation_mandat/a_distance/attente_consentement/",
         mandat.WaitingRoom.as_view(),
         name="new_mandat_waiting_room",
     ),
     path(
-        "creation_mandat/attente_consentement.json/",
+        "creation_mandat/a_distance/attente_consentement.json/",
         mandat.WaitingRoomJson.as_view(),
         name="new_mandat_waiting_room_json",
     ),

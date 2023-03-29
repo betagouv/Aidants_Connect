@@ -58,14 +58,14 @@ class TestRemoteMandateMixin(TestCase):
         form = self._get_form(["papiers", "logement"])
 
         for method in RemoteConsentMethodChoices.blocked_methods():
-            setattr(target, f"_process_{method}_method", MagicMock())
+            setattr(target, f"_process_{method}_first_step", MagicMock())
 
-        result = target.process_consent(
+        result = target.process_consent_first_step(
             self.aidant_thierry, self.aidant_thierry.organisation, form
         )
 
         for method in RemoteConsentMethodChoices.blocked_methods():
-            getattr(target, f"_process_{method}_method").assert_not_called()
+            getattr(target, f"_process_{method}_first_step").assert_not_called()
 
         self.assertIs(None, result)
 
@@ -74,27 +74,29 @@ class TestRemoteMandateMixin(TestCase):
         )
 
         for method in RemoteConsentMethodChoices.blocked_methods():
-            setattr(target, f"_process_{method}_method", MagicMock())
+            setattr(target, f"_process_{method}_first_step", MagicMock())
 
-        result = target.process_consent(
+        result = target.process_consent_first_step(
             self.aidant_thierry, self.aidant_thierry.organisation, form
         )
 
         for method in RemoteConsentMethodChoices.blocked_methods():
-            getattr(target, f"_process_{method}_method").assert_not_called()
+            getattr(target, f"_process_{method}_first_step").assert_not_called()
 
         self.assertIs(None, result)
 
     @mock.patch("aidants_connect_web.views.mandat.uuid4")
     @mock.patch("aidants_connect_common.utils.sms_api.SmsApiMock.send_sms")
-    def test_process_sms_template(self, send_sms_mock: Mock, uuid4_mock: Mock):
+    def test_process_sms_first_step_template(
+        self, send_sms_mock: Mock, uuid4_mock: Mock
+    ):
         uuid4_mock.return_value = UUID
 
         form = self._get_form(
             list(settings.DEMARCHES.keys()), RemoteConsentMethodChoices.SMS
         )
 
-        RemoteMandateMixin().process_consent(
+        RemoteMandateMixin().process_consent_first_step(
             self.aidant_thierry, self.aidant_thierry.organisation, form
         )
 
@@ -104,7 +106,7 @@ class TestRemoteMandateMixin(TestCase):
             self._trim_margin(
                 """Aidant Connect, bonjour.
                 |
-                |L'organisation COMMUNE D'HOULBEC COCHEREL souhaite créer un mandat\
+                |L'organisation COMMUNE D'HOULBEC COCHEREL va créer un mandat\
                 | pour une durée d'un mois (31 jours) en votre nom pour les démarches\
                 | suivantes :
                 |
@@ -117,9 +119,7 @@ class TestRemoteMandateMixin(TestCase):
                 |- Papiers - citoyenneté,
                 |- Social - santé,
                 |- Transports,
-                |- Travail.
-                |
-                |Répondez « Oui » pour accepter le mandat."""
+                |- Travail."""
             ),
         )
 
@@ -130,7 +130,7 @@ class TestRemoteMandateMixin(TestCase):
 
         form = self._get_form(["papiers"], RemoteConsentMethodChoices.SMS)
 
-        RemoteMandateMixin().process_consent(
+        RemoteMandateMixin().process_consent_first_step(
             self.aidant_thierry, self.aidant_thierry.organisation, form
         )
 
@@ -140,11 +140,44 @@ class TestRemoteMandateMixin(TestCase):
             self._trim_margin(
                 """Aidant Connect, bonjour.
                 |
-                |L'organisation COMMUNE D'HOULBEC COCHEREL souhaite\
+                |L'organisation COMMUNE D'HOULBEC COCHEREL va\
                 | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
-                | la démarche Papiers - citoyenneté.
+                | la démarche Papiers - citoyenneté."""
+            ),
+        )
+
+    @mock.patch("aidants_connect_common.utils.sms_api.SmsApiMock.send_sms")
+    def test_process_sms_second_step_template(self, send_sms_mock: Mock):
+        connection: Connection = ConnectionFactory(
+            aidant=self.aidant_thierry,
+            organisation=self.aidant_thierry.organisation,
+            mandat_is_remote=True,
+            remote_constent_method=RemoteConsentMethodChoices.SMS.name,
+            consent_request_id=UUID,
+            user_phone="0 800 840 800",
+            duree_keyword="SHORT",
+        )
+
+        Journal.log_user_mandate_recap_sms_sent(
+            aidant=connection.aidant,
+            demarche=connection.demarche,
+            duree=connection.duree_keyword,
+            remote_constent_method=connection.remote_constent_method,
+            user_phone=connection.user_phone,
+            consent_request_id=connection.consent_request_id,
+            message="message=0",
+        )
+
+        RemoteMandateMixin().process_consent_second_step(connection)
+
+        send_sms_mock.assert_called_once_with(
+            ANY,
+            UUID,
+            self._trim_margin(
+                """Aidant Connect, bonjour.
                 |
-                |Répondez « Oui » pour accepter le mandat."""
+                |Donnez-vous votre accord pour la création de ce mandat ?\
+                | Répondez « Oui » pour accepter le mandat."""
             ),
         )
 
@@ -161,6 +194,7 @@ class TestRemoteMandateMixin(TestCase):
             "duree": "MONTH",
             "is_remote": remote_constent_method is not None,
             "user_phone": self.phone_number,
+            "user_remote_contact_verified": True,
         }
 
         if remote_constent_method:
@@ -261,8 +295,11 @@ class NewMandatTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data["user_phone"] = self.phone_number
+        data["user_remote_contact_verified"] = True
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/creation_mandat/attente_consentement/")
+        self.assertRedirects(
+            response, "/creation_mandat/a_distance/demande_consentement/"
+        )
 
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
         response = self.client.post("/creation_mandat/", data=data)
@@ -273,11 +310,12 @@ class NewMandatTests(TestCase):
             "is_remote": True,
             "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
             "user_phone": self.phone_number,
+            "user_remote_contact_verified": True,
         }
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(
             response,
-            "/creation_mandat/attente_consentement/",
+            "/creation_mandat/a_distance/demande_consentement/",
         )
 
 

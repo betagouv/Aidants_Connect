@@ -224,7 +224,7 @@ class MandatForm(PatchedForm):
                 "Veuillez sélectionner la méthode de consentement à distance."
             )
         },
-        widget=DetailedRadioSelect(attrs={"input_wrapper_classes": "shadowed"}),
+        widget=DetailedRadioSelect(),
     )
 
     user_phone = AcPhoneNumberField(
@@ -234,13 +234,14 @@ class MandatForm(PatchedForm):
         required=False,
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["remote_constent_method"].widget.add_compagnon_field(
-            RemoteConsentMethodChoices.SMS.value,
-            self,
-            "aidants_connect_web/new_mandat/user_phone_widget.html",
-        )
+    user_remote_contact_verified = forms.BooleanField(
+        required=False,
+        label=(
+            "Je certifie avoir validé l’identité de l’usager répondant au numéro de "
+            "téléphone qui recevra la demande de consentement par SMS."
+        ),
+        label_suffix="",
+    )
 
     def clean_remote_constent_method(self):
         if not self.cleaned_data["is_remote"]:
@@ -277,6 +278,22 @@ class MandatForm(PatchedForm):
             return ""
 
         return self.cleaned_data["user_phone"]
+
+    def clean_user_remote_contact_verified(self):
+        if (
+            not self.cleaned_data["is_remote"]
+            or self.cleaned_data.get("remote_constent_method")
+            not in RemoteConsentMethodChoices.blocked_methods()
+        ):
+            return True
+
+        if not self.cleaned_data.get("user_remote_contact_verified"):
+            raise ValidationError(
+                self.fields["user_remote_contact_verified"].error_messages["required"],
+                code="required",
+            )
+
+        return True
 
 
 class OTPForm(forms.Form):

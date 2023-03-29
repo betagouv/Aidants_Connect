@@ -1,10 +1,6 @@
-from typing import Dict, Tuple
-
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.forms import BaseForm, Media, RadioSelect, Select
-from django.template.loader import render_to_string
-from django.utils.safestring import mark_safe
+from django.forms import Media, RadioSelect, Select
 
 from aidants_connect_common.templatetags.form_extras import merge_html_attr_values
 
@@ -22,38 +18,8 @@ class DetailedRadioSelect(RadioSelect):
             "input_wrapper_classes", self.input_wrapper_base_class
         )
         self._container_class = attrs.pop("input_wrapper_classes", "")
-        self._compagnon_fields: Dict[str, Tuple[BaseForm, str, dict]] = {}
 
         super().__init__(attrs, choices)
-
-    def add_compagnon_field(
-        self,
-        choice: str,
-        form: BaseForm,
-        template: str,
-        context: dict = None,
-    ):
-        """
-        ``compagnon_fields`` allows to declare another widget to be rendered along
-        with one or several Select subwidget. Let's assume a ``DetailedRadioSelect``
-        with options ["OPTION_1", "OPTION_2"] and a form with a member like:
-        ``some_field = TextField()``. Then ``some_field`` can be redered directly
-        below the ``<input>`` for ``OPTION_1`` by doing:
-
-            class SomeForm(Form)
-                some_field = TextField()
-                choice_field = forms.ChoiceField(
-                    choices=[("OPTION_1", "Some label"), ("OPTION_2", "Other label")],
-                    widget=DetailedRadioSelect()
-                )
-
-                def __init__(self, *args, **kwargs):
-                    super().__init__(*args, **kwargs)
-                    self.fields["remote_constent_method"].widget.add_compagnon_field(
-                        self, "some_field", "OPTION_1"
-                    )
-        """
-        self._compagnon_fields[choice] = form, template, context or {}
 
     def input_wrapper_classes(self, *extra_classes):
         return merge_html_attr_values([self.input_wrapper_base_class, *extra_classes])
@@ -76,12 +42,6 @@ class DetailedRadioSelect(RadioSelect):
         opts_context["input_wrapper_classes"] = self.input_wrapper_classes(
             self._input_wrapper_classes
         )
-
-        if value in self._compagnon_fields:
-            form, template, context = self._compagnon_fields[value]
-            opts_context["compagnon_field"] = mark_safe(
-                render_to_string(template, context={**form.get_context(), **context})
-            )
 
         if "id" in attrs:
             opts_context["attrs"]["id"] = self.id_for_label(

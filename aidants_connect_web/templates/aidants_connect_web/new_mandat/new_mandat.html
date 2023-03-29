@@ -70,11 +70,10 @@
   <section
     id="mandat_specifications"
     class="section section-grey"
-    data-controller="new-mandat-form open-mandate-translation"
-    data-new-mandat-form-sms-method-value="{{ sms_method_value }}"
+    data-controller="is-remote-controller"
   >
     <div class="container">
-      <form data-open-mandate-translation-target="form" method="post">
+      <form method="post">
         {% if form.errors %}
           <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
         {% endif %}
@@ -153,7 +152,7 @@
                   <label class="label-duree" for="button-{{ value }}">
                     <strong>
                       {{ label.title }}
-                      <span data-new-mandat-form-target="remoteLabelText" hidden aria-hidden="true"> à distance</span>
+                      <span data-is-remote-controller-target="remoteLabelText" hidden aria-hidden="true"> à distance</span>
                     </strong>
                     <span>{{ label.description }}</span>
                   </label>
@@ -165,9 +164,41 @@
             La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
             {{ form.is_remote }}
           </label>
-          <section hidden aria-hidden="true" data-new-mandat-form-target="remoteContentSection">
-            {% fields_as_fieldset form.remote_constent_method fieldset_classes="form-section" %}
-          </section>
+
+          {% if form.remote_constent_method.errors %}<div class="notification error" role="alert">
+            {{ form.remote_constent_method.errors }}
+          </div>{% endif %}
+
+          <fieldset hidden aria-hidden="true" data-is-remote-controller-target="remoteConsentSection">
+            <legend {% class_attr form.remote_constent_method.legend_classes %}>
+              {{ form.remote_constent_method.label_tag }}
+            </legend>
+            {% for subfield in form.remote_constent_method %}
+              <div
+                class="shadowed detailed-radio-select"
+                data-controller="remote-method-controller"
+                data-remote-method-controller-consent-method-value="{{ subfield.data.value }}"
+              >
+                <input{% html_attrs subfield.data.attrs %}
+                  type="radio"
+                  name="{{ subfield.data.name }}"
+                  value="{{ subfield.data.value }}"
+                  data-is-remote-controller-target="requiredInput"
+                  data-action="is-remote-controller#remoteMethodTriggered"
+                >
+                <label for="{{ subfield.id_for_label }}">
+                  <span class="detailed-radio-select-label-text">{{ subfield.choice_label }}</span>
+                  <span class="detailed-radio-select-description">{{ subfield.data.description }}</span>
+                </label>
+                {% if subfield.data.value == "SMS" %}
+                  <div hidden aria-hidden="true" data-remote-method-controller-target="requiredInputs">
+                    {% field_as_p form.user_phone %}
+                    {% checkbox_fr_grid_row form.user_remote_contact_verified %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </fieldset>
         </div>
 
         <section class="mandate-translation-section">

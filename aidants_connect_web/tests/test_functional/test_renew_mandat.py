@@ -16,17 +16,15 @@ from requests import post as requests_post
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import url_matches
-from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.constants import RemoteConsentMethodChoices
-from aidants_connect_web.models import Journal, Mandat
+from aidants_connect_web.models import Aidant, Journal, Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 UUID = "1f75d571-4127-445b-a141-ea837580da14"
 FIXED_PORT = randint(8081, 8179)
@@ -37,12 +35,11 @@ DJANGO_SERVER_URL = f"http://localhost:{FIXED_PORT}"
 class RenewMandatTests(FunctionalTestCase):
     port = FIXED_PORT
 
-    def test_renew_mandat(self):
-        self.aidant = AidantFactory(email="thierry@thierry.com")
-        device = self.aidant.staticdevice_set.create(id=1)
-        device.token_set.create(token="123456")
-        device.token_set.create(token="123455")
+    def setUp(self):
+        self.otp = "123455"
+        self.aidant: Aidant = AidantFactory(post__with_otp_device=["123456", self.otp])
 
+    def test_renew_mandat(self):
         self.usager = UsagerFactory(given_name="Fabrice")
         MandatFactory(
             organisation=self.aidant.organisation,
@@ -53,7 +50,7 @@ class RenewMandatTests(FunctionalTestCase):
 
         self.open_live_url(f"/renew_mandat/{self.usager.pk}")
 
-        login_aidant(self)
+        self.login_aidant(self.aidant)
 
         demarches_section = self.selenium.find_element(By.ID, "demarches")
         demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
@@ -90,7 +87,7 @@ class RenewMandatTests(FunctionalTestCase):
         id_personal_data.click()
         id_otp_token = checkboxes[2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys("123455")
+        id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
@@ -106,13 +103,6 @@ class RenewMandatTests(FunctionalTestCase):
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 2)
 
     def test_renew_mandat_remote_mandat_with_legacy_consent(self):
-        wait = WebDriverWait(self.selenium, 10)
-
-        self.aidant = AidantFactory(email="thierry@thierry.com")
-        device = self.aidant.staticdevice_set.create(id=1)
-        device.token_set.create(token="123456")
-        device.token_set.create(token="123455")
-
         self.usager = UsagerFactory(given_name="Fabrice")
         MandatFactory(
             organisation=self.aidant.organisation,
@@ -123,7 +113,7 @@ class RenewMandatTests(FunctionalTestCase):
 
         self.open_live_url(f"/renew_mandat/{self.usager.pk}")
 
-        login_aidant(self)
+        self.login_aidant(self.aidant)
 
         demarches_section = self.selenium.find_element(By.ID, "demarches")
         demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
@@ -160,7 +150,9 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
-        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
+        self.wait.until(
+            self._element_is_required(By.ID, "id_remote_constent_method_legacy")
+        )
         for elt in self.selenium.find_elements(
             By.CSS_SELECTOR, "#id_remote_constent_method > input"
         ):
@@ -185,7 +177,7 @@ class RenewMandatTests(FunctionalTestCase):
         id_personal_data.click()
         id_otp_token = checkboxes[2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys("123455")
+        id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
@@ -211,12 +203,6 @@ class RenewMandatTests(FunctionalTestCase):
     @mock.patch("aidants_connect_web.views.mandat.uuid4")
     def test_renew_mandat_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
         uuid4_mock.return_value = UUID
-        wait = WebDriverWait(self.selenium, 10)
-
-        self.aidant = AidantFactory(email="thierry@thierry.com")
-        device = self.aidant.staticdevice_set.create(id=1)
-        device.token_set.create(token="123456")
-        device.token_set.create(token="123455")
 
         self.usager = UsagerFactory(given_name="Fabrice")
         MandatFactory(
@@ -228,7 +214,7 @@ class RenewMandatTests(FunctionalTestCase):
 
         self.open_live_url(f"/renew_mandat/{self.usager.pk}")
 
-        login_aidant(self)
+        self.login_aidant(self.aidant)
 
         demarches_section = self.selenium.find_element(By.ID, "demarches")
         demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
@@ -265,22 +251,32 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
-        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
-        for elt in self.selenium.find_elements(
-            By.CSS_SELECTOR, "#id_remote_constent_method > input"
-        ):
-            self.assertTrue(elt.get_attribute("required"))
+        self.wait.until(
+            self._element_is_required(By.ID, "id_remote_constent_method_legacy")
+        )
+        elts = self.selenium.find_elements(
+            By.CSS_SELECTOR, 'input[id^="id_remote_constent_method"]'
+        )
+        self.assertEqual(2, len(elts))
+        [self.assertTrue(elt.get_attribute("required")) for elt in elts]
 
         # # Select SMS consent method
         text = RemoteConsentMethodChoices.SMS.label["label"]
         self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
-        wait.until(self._element_is_required(By.ID, "id_user_phone"))
+        self.wait.until(self._element_is_required(By.ID, "id_user_phone"))
+        self.wait.until(
+            self._element_is_required(By.ID, "id_user_remote_contact_verified")
+        )
         self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
+        self.selenium.find_element(By.ID, "id_user_remote_contact_verified").click()
 
-        # Renew Mandat
-        fc_button = self.selenium.find_element(By.ID, "submit_renew_button")
-        fc_button.click()
-        wait.until(self.path_matches("renew_mandat_waiting_room"))
+        # # Send recap mandate and go to second step
+        self.selenium.find_element(By.ID, "submit_renew_button").click()
+        self.wait.until(self.path_matches("renew_remote_second_step"))
+
+        # # Send user consent request
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.wait.until(self.path_matches("renew_mandat_waiting_room"))
 
         # # Test the message is correctly logged
         consent_request_log: Journal = Journal.objects.find_sms_consent_requests(
@@ -294,11 +290,11 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Test that page blocks until user has consented
         self.selenium.refresh()
-        wait.until(self.path_matches("renew_mandat_waiting_room"))
+        self.wait.until(self.path_matches("renew_mandat_waiting_room"))
 
         # Simulate user content
         self._user_consents("0 800 840 800")
-        wait.until(self._user_has_responded("0 800 840 800"))
+        self.wait.until(self._user_has_responded("0 800 840 800"))
 
         # # Test user consent is correctly logged
         user_consent_log: Journal = Journal.objects.find_sms_user_consent(
@@ -319,7 +315,7 @@ class RenewMandatTests(FunctionalTestCase):
         id_personal_data.click()
         id_otp_token = checkboxes[2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys("123455")
+        id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()

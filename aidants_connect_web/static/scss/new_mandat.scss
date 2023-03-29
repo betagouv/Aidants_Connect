@@ -87,5 +87,27 @@
       }
     }
   }
+}
 
+.detailed-radio-select-label-text, .detailed-radio-select-description {
+  display: block;
+}
+
+.detailed-radio-select {
+  .checkbox-col {
+    display: flex;
+    align-items: center;
+  }
+
+  input[type=checkbox] {
+    appearance: none;
+    border-radius: 0;
+    border: 1px solid colors.$blue-aidants;
+    height: 1.5rem;
+    width: 1.5rem;
+    min-width: 1.5rem;
+    padding: 0;
+    margin: 0 1rem 0 0;
+    position: relative;
+  }
 }
