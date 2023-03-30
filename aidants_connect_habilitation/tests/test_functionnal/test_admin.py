@@ -42,7 +42,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
 
         # Filter by status
         self.selenium.find_element(
-            By.CSS_SELECTOR, f'[title="{organisation_status.label}"]'
+            By.XPATH, f"//a[normalize-space(text())='{organisation_status.label}']"
         ).click()
 
         WebDriverWait(self.selenium, 10).until(
@@ -82,9 +82,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
         # Move to second step
         self.selenium.find_element(By.XPATH, f'//a[contains(@href, "{href}")]').click()
 
-        WebDriverWait(self.selenium, 10).until(
-            url_matches(f"^.+{href}\\?([^=]+=[^=]+)+$")
-        )
+        self.wait.until(url_matches(f"^.+{href}\\?([^=]+=[^=]+)+$"))
 
         # Check filters were preserved
         self.assertEqual(
@@ -93,14 +91,14 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
         )
 
         # Definitely accept request
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, 'input[value="Accepter la demande"]'
+        ).click()
 
-        path = reverse(
-            "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
-        )
-
-        WebDriverWait(self.selenium, 10).until(
-            url_matches(f"^.+{path}\\?(\\w+=\\w+)+$")
+        self.wait.until(
+            self.path_matches(
+                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
+            )
         )
 
         # Check filters were preserved
@@ -126,7 +124,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
 
         # Filter by status
         self.selenium.find_element(
-            By.CSS_SELECTOR, f'[title="{organisation_status.label}"]'
+            By.XPATH, f"//a[normalize-space(text())='{organisation_status.label}']"
         ).click()
 
         WebDriverWait(self.selenium, 10).until(
@@ -166,9 +164,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
         # Move to second step
         self.selenium.find_element(By.XPATH, f'//a[contains(@href, "{href}")]').click()
 
-        WebDriverWait(self.selenium, 10).until(
-            url_matches(f"^.+{href}\\?([^=]+=[^=]+)+$")
-        )
+        self.wait.until(url_matches(f"^.+{href}\\?([^=]+=[^=]+)+$"))
 
         # Check filters were preserved
         self.assertEqual(
@@ -177,14 +173,14 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
         )
 
         # Definitely deny request
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, 'input[value="Refuser la demande"]'
+        ).click()
 
-        path = reverse(
-            "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
-        )
-
-        WebDriverWait(self.selenium, 10).until(
-            url_matches(f"^.+{path}\\?(\\w+=\\w+)+$")
+        self.wait.until(
+            self.path_matches(
+                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
+            )
         )
 
         # Check filters were preserved
@@ -210,12 +206,10 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
 
         # Filter by status
         self.selenium.find_element(
-            By.CSS_SELECTOR, f'[title="{organisation_status.label}"]'
+            By.XPATH, f"//a[normalize-space(text())='{organisation_status.label}']"
         ).click()
 
-        WebDriverWait(self.selenium, 10).until(
-            url_matches(f"^.+{path}\\?(\\w+=\\w+)+$")
-        )
+        self.wait.until(url_matches(f"^.+{path}\\?(\\w+=\\w+)+$"))
 
         self.assertEqual(
             urlparse(self.selenium.current_url).query,
@@ -232,9 +226,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
             kwargs={"object_id": organisation.id},
         )
 
-        WebDriverWait(self.selenium, 10).until(
-            url_matches(f"^.+{path}\\?([^=]+=[^=]+)+$")
-        )
+        self.wait.until(url_matches(f"^.+{path}\\?([^=]+=[^=]+)+$"))
 
         # Check filters were preserved
         self.assertEqual(
@@ -250,9 +242,7 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
         # Move to second step
         self.selenium.find_element(By.XPATH, f'//a[contains(@href, "{href}")]').click()
 
-        WebDriverWait(self.selenium, 10).until(
-            url_matches(f"^.+{href}\\?([^=]+=[^=]+)+$")
-        )
+        self.wait.until(url_matches(f"^.+{href}\\?([^=]+=[^=]+)+$"))
 
         # Check filters were preserved
         self.assertEqual(
@@ -261,14 +251,14 @@ class OrganisationRequestAdminTests(FunctionalTestCase):
         )
 
         # Definitely require changes
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, 'input[value="Demander des modifications"]'
+        ).click()
 
-        path = reverse(
-            "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
-        )
-
-        WebDriverWait(self.selenium, 10).until(
-            url_matches(f"^.+{path}\\?(\\w+=\\w+)+$")
+        self.wait.until(
+            self.path_matches(
+                "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
+            )
         )
 
         # Check filters were preserved

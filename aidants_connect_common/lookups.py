@@ -15,6 +15,9 @@ class IsNullOrBlank(Lookup):
             )
 
         sql, params = compiler.compile(self.lhs)
+        # sql expression par will appear 2 times in final expression so any parameters
+        # will need to be formatted twice.
+        params.extend(params)
         neg = "NOT " if not self.rhs else ""
         neq = "!" if not self.rhs else ""
         op = "AND" if not self.rhs else "OR"

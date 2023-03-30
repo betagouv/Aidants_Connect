@@ -259,10 +259,13 @@ class UsagerAdminPageTests(TestCase):
 @tag("admin")
 class TOTPCardAdminPageTests(TestCase):
     @classmethod
-    def setUpTestData(cls):
+    def setUpClass(cls):
+        super().setUpClass()
         cls.admin = OTPAdminSite(OTPAdminSite.name)
         cls.tested = CarteTOTPAdmin(CarteTOTP, cls.admin)
 
+    @classmethod
+    def setUpTestData(cls):
         cls.bizdev_user = AidantFactory(
             is_staff=True,
             is_superuser=False,

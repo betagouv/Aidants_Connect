@@ -206,13 +206,17 @@ class RegionFilterTests(TestCase):
 @tag("admin")
 class HabilitationRequestAdminTests(TestCase):
     @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.habilitation_request_admin = HabilitationRequestAdmin(
+            HabilitationRequest, AdminSite()
+        )
+
+    @classmethod
     def setUpTestData(cls):
         cls.organisation = OrganisationFactory()
         cls.habilitation_request = HabilitationRequestFactory(
             organisation=cls.organisation
-        )
-        cls.habilitation_request_admin = HabilitationRequestAdmin(
-            HabilitationRequest, AdminSite()
         )
         cls.manager = AidantFactory(
             organisation=cls.organisation, post__is_organisation_manager=True

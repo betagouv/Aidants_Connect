@@ -20,6 +20,13 @@ from aidants_connect_web.tests.factories import AidantFactory
 @tag("admin")
 class OrganisationRequestAdminTests(TestCase):
     @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.org_request_admin = OrganisationRequestAdmin(
+            OrganisationRequest, AdminSite()
+        )
+
+    @classmethod
     def setUpTestData(cls):
         cls.amac_user = AidantFactory(
             is_staff=True,
@@ -33,10 +40,6 @@ class OrganisationRequestAdminTests(TestCase):
         amac_session = cls.amac_client.session
         amac_session[DEVICE_ID_SESSION_KEY] = cls.amac_device.persistent_id
         amac_session.save()
-
-        cls.org_request_admin = OrganisationRequestAdmin(
-            OrganisationRequest, AdminSite()
-        )
 
     def test_send_default_email(self):
         self.assertEqual(len(mail.outbox), 0)
