@@ -1,4 +1,5 @@
 {% extends 'layouts/main-habilitation.html' %}
+{% load ac_common %}
 {% load static ac_extras %}
 
 {% block title %}Aidants Connect - Mon organisation{% endblock %}
@@ -77,7 +78,7 @@
         {% for aidant in organisation_active_aidants %}
           <tr>
             <td>{{ aidant.get_full_name }}{% if aidant.pk == responsable.pk %} (Responsable){% endif %}</td>
-            <td>{{ aidant.email }}</td>
+            <td>{% mailto recipient=aidant.email %}</td>
             <td>
               {{ aidant.number_totp_card }}
 
@@ -136,12 +137,30 @@
         {% for request in organisation_habilitation_requests %}
           <tr>
             <td>{{ request.aidant_full_name }}</td>
-            <td>{{ request.email }}</td>
+            <td>{% mailto recipient=request.email %}</td>
             <td>{{ request.profession }}</td>
             <td>
-              <span class="request-status-{{ request.status|lower }}">
+              <div class="tooltip request-status-{{ request.status|lower }}">
                 {{ request.get_status_display }}
-              </span>
+                <div class="tooltiptext request-status-{{ request.status|lower }}">
+                  {% if request.status|lower == "new" %}
+                    Cet aidant vient d’être ajouté sur l’espace du Responsable Aidants Connect
+                  {% elif request.status|lower == "processing" %}
+                    L’équipe Aidants Connect a validé l’ajout de cet aidant, il est en cours de formation.
+                  {% elif request.status|lower == "refused" %}
+                    La demande d’ajout de cet aidant est refusée pour l’une des raisons suivantes :
+                    <ul>
+                      <li>l’aidant n’est pas éligible au dispositif (ex: infirmier),</li>
+                      <li>
+                        l’adresse email ne respecte pas les critères d’éligibilité (nominative et professionnelle),
+                      </li>
+                      <li>l’aidant est déjà identifié dans la base de données.</li>
+                    </ul>
+                  {% elif request.status|lower == "cancelled" %}
+                    À la demande de l’aidant, l’habilitation est annulée
+                  {% endif %}
+                </div>
+              </div>
             </td>
           </tr>
         {% endfor %}
@@ -164,7 +183,7 @@
         {% for aidant in organisation_inactive_aidants %}
           <tr>
             <td>{{ aidant.get_full_name }}</td>
-            <td>{{ aidant.email }}</td>
+            <td>{% mailto recipient=aidant.email %}</td>
             <td>
               {{ aidant.number_totp_card }}
               {% if aidant.has_a_carte_totp and not aidant.carte_totp.totp_device.confirmed %}

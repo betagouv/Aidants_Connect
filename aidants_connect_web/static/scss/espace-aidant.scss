@@ -146,7 +146,7 @@ table.table {
     }
   }
 
-  [class^="request-status"] {
+  [class*="request-status"] {
     padding: .25rem;
     border: 1px solid;
 
@@ -169,6 +169,27 @@ table.table {
       border-color: colors.$red-aidants;
       color: colors.$red-aidants;
     }
+  }
+
+  .tooltip {
+    display: inline-block;
+    position: relative;
+  }
+
+  .tooltip .tooltiptext {
+    background-color: #FFF;
+    display: inline-block;
+    list-style-position: inside;
+    margin: 1rem 0;
+    padding: 1rem;
+    position: absolute;
+    visibility: hidden;
+    width: 250px;
+    z-index: 1;
+  }
+
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
   }
 
   .unverified-card-warning {
