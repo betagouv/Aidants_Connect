@@ -10,7 +10,7 @@ register = template.Library()
 
 
 @register.simple_tag
-def mailto_href(recipient: str, subject: str, body: str):
+def mailto_href(recipient: str, subject: str = "", body: str = ""):
     def quote_via(string, _, encoding, errors):
         """
         Custom quote function for urlencode
@@ -23,13 +23,25 @@ def mailto_href(recipient: str, subject: str, body: str):
         """
         return quote(string, "", encoding, errors)
 
-    urlencoded = urlencode({"subject": subject, "body": body}, quote_via=quote_via)
+    query = {}
 
-    return f"mailto:{recipient}?{urlencoded}"
+    if subject:
+        query["subject"] = subject
+    if body:
+        query["body"] = body
+
+    urlencoded = (
+        urlencode({"subject": subject, "body": body}, quote_via=quote_via)
+        if query
+        else ""
+    )
+
+    return f"mailto:{recipient}{'?' + urlencoded if urlencoded else ''}"
 
 
 @register.simple_tag
-def mailto(link_text: str, recipient: str, subject: str, body: str):
+def mailto(recipient: str, link_text: str = "", subject: str = "", body: str = ""):
+    link_text = link_text or recipient
     return mark_safe(
         f'<a href="{mailto_href(recipient, subject, body)}">{link_text}</a>'
     )

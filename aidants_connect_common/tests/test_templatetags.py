@@ -14,7 +14,9 @@ class Test(TestCase):
         subject = "Objet: test"
         body = "Ceci est un mail de test"
         self.assertEqual(
-            mailto(mail_link, recipient, subject, body),
+            mailto(
+                link_text=mail_link, recipient=recipient, subject=subject, body=body
+            ),
             f'<a href="mailto:{recipient}?subject={quote(subject, "")}&'
             f'body={quote(body, "")}">{mail_link}</a>',
         )
