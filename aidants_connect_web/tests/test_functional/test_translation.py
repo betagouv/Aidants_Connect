@@ -117,7 +117,7 @@ class DisplayTranslationTests(FunctionalTestCase):
         )
 
         self.assertHTMLEqual(
-            self.lang.to_html(),
+            f'<section class="container rtl">{self.lang.to_html()}</section>',
             translation_container.get_attribute("innerHTML"),
         )
 
@@ -185,7 +185,7 @@ class DisplayTranslationTests(FunctionalTestCase):
         )
 
         self.assertHTMLEqual(
-            self.lang.to_html(),
+            f'<section class="container rtl">{self.lang.to_html()}</section>',
             translation_container.get_attribute("innerHTML"),
         )
 

@@ -886,8 +886,11 @@ class TranslationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.aidant_thierry: Aidant = AidantFactory()
-        cls.lang: MandateTranslation = MandateTranslation.objects.create(
+        cls.pachto_language: MandateTranslation = MandateTranslation.objects.create(
             lang="pus", body="# Test title\n\nTest"
+        )
+        cls.breton_language: MandateTranslation = MandateTranslation.objects.create(
+            lang="br", body="# Test title\n\nTest"
         )
 
     def test_get_triggers_the_correct_view(self):
@@ -917,11 +920,26 @@ class TranslationTests(TestCase):
         self.client.force_login(self.aidant_thierry)
 
         response = self.client.post(
-            reverse("mandate_translation"), data={"lang_code": self.lang.lang}
+            reverse("mandate_translation"),
+            data={"lang_code": self.pachto_language.lang},
         )
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual(b"<h1>Test title</h1>\n<p>Test</p>", response.content)
+        self.assertHTMLEqual(
+            '<section class="container rtl"><h1>Test title</h1><p>Test</p></<section>',
+            response.content.decode("utf-8"),
+        )
+
+        response = self.client.post(
+            reverse("mandate_translation"),
+            data={"lang_code": self.breton_language.lang},
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertHTMLEqual(
+            '<section class="container"><h1>Test title</h1><p>Test</p></<section>',
+            response.content.decode("utf-8"),
+        )
 
 
 class AttestationVisualisationTests(TestCase):
