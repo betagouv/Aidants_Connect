@@ -1292,7 +1292,19 @@ class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
 
 class ConnectionAdmin(ModelAdmin):
     list_display = ("id", "usager", "aidant", "complete")
-    raw_id_fields = ("usager", "aidant")
+    raw_id_fields = ("usager", "aidant", "organisation")
+    readonly_fields = ("autorisation",)
+    search_fields = (
+        "id",
+        "aidant__first_name",
+        "aidant__last_name",
+        "aidant__email",
+        "usager__family_name",
+        "usager__given_name",
+        "usager__email",
+        "consent_request_id",
+        "organisation__name",
+    )
 
 
 class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
