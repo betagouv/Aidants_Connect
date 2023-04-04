@@ -1954,3 +1954,7 @@ class AidantStatistiques(models.Model):
     number_aidant_who_have_created_mandat = models.PositiveIntegerField(
         "Nb d'aidant qui ont créé des mandats", default=0
     )
+
+    class Meta:
+        verbose_name = "Statistiques aidants"
+        verbose_name_plural = "Statistiques aidants"
