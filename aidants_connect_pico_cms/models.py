@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.html import escape, mark_safe
@@ -70,6 +71,10 @@ class MandateTranslation(MarkdownContentMixin):
     @property
     def lang_name(self):
         return MANDATE_TRANSLATION_LANGUAGE_AVAILABLE.get(self.lang, "")
+
+    @property
+    def is_rtl(self):
+        return self.lang in settings.LANGUAGES_BIDI
 
     class Meta:
         verbose_name = "Traduction de mandat"

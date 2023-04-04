@@ -12,8 +12,6 @@ from django.contrib.staticfiles import finders
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.template import engines
-from django.template.backends.django import DjangoTemplates
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import formats, timezone
@@ -33,6 +31,7 @@ from aidants_connect_common.views import RequireConnectionMixin, RequireConnecti
 from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_web.decorators import (
     activity_required,
+    aidant_logged_required,
     aidant_logged_with_activity_required,
     user_is_aidant,
 )
@@ -638,24 +637,28 @@ class AttestationProject(RequireConnectionView, RenderAttestationAbstract):
         return settings.MANDAT_TEMPLATE_PATH
 
 
-@aidant_logged_with_activity_required(more_decorators=[csrf_exempt])
+# This page do not require a recent activity to avoid breaking the post() method
+@aidant_logged_required(more_decorators=[csrf_exempt])
 class Translation(RenderAttestationAbstract):
     template_name = "aidants_connect_web/attestation_translation.html"
 
     def post(self, request, *args, **kwargs):
-        lang: MandateTranslation = get_object_or_404(
+        self.lang: MandateTranslation = get_object_or_404(
             MandateTranslation, pk=request.POST.get("lang_code")
         )
 
-        template_engine = next(
-            engine for engine in engines.all() if isinstance(engine, DjangoTemplates)
-        )
+        context = {
+            **super().get_context_data(**kwargs),
+            "html_content": self.lang.to_html(),
+            "rtl": self.lang.is_rtl,
+        }
+        return self.render_to_response(context)
 
-        return self.response_class(
-            request=self.request,
-            template=template_engine.from_string(lang.to_html()),
-            context={},
-            using=template_engine,
+    def get_template_names(self):
+        return (
+            "aidants_connect_web/attestation-translated.html"
+            if self.request.method.lower() == "post"
+            else "aidants_connect_web/attestation_translation.html"
         )
 
     def get_context_data(self, **kwargs):
