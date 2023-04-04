@@ -31,6 +31,9 @@ def humanize_demarche_names(name: str) -> str:
 
 
 def home_page(request):
+    if request.user.is_authenticated:
+        return redirect("espace_aidant_home")
+
     if request.GET.get("infolettre", ""):
         django_messages.success(
             request, "Votre inscription à l'infolettre a bien été prise en compte."
