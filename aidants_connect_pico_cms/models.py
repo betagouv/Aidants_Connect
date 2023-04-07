@@ -76,6 +76,11 @@ class MandateTranslation(MarkdownContentMixin):
     def is_rtl(self):
         return self.lang in settings.LANGUAGES_BIDI
 
+    def __str__(self):
+        return (
+            f"{self.lang_name}{' (écriture de droite à gauche)' if self.is_rtl else ''}"
+        )
+
     class Meta:
         verbose_name = "Traduction de mandat"
         verbose_name_plural = "Traductions de mandat"
