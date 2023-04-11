@@ -100,7 +100,7 @@ class DisplayTranslationTests(FunctionalTestCase):
         self.wait.until(self.path_matches("mandate_translation"))
 
         self.assertInHTML(
-            "D'autres langues sont disponibles",
+            "D’autres langues sont disponibles",
             self.selenium.find_element(
                 By.CSS_SELECTOR, ".mandate-translation-other"
             ).get_attribute("innerHTML"),
@@ -163,7 +163,7 @@ class DisplayTranslationTests(FunctionalTestCase):
         self.wait.until(self.path_matches("mandate_translation"))
 
         self.assertInHTML(
-            "D'autres langues sont disponibles",
+            "D’autres langues sont disponibles",
             self.selenium.find_element(
                 By.CSS_SELECTOR, ".mandate-translation-other"
             ).get_attribute("innerHTML"),
