@@ -1,5 +1,6 @@
 from django.contrib.admin import ModelAdmin, register
 from django.forms import models
+from django.urls import reverse_lazy
 
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_common.widgets import SearchableRadioSelect
@@ -9,6 +10,7 @@ from aidants_connect_pico_cms.models import (
     MandateTranslation,
     Testimony,
 )
+from aidants_connect_pico_cms.widgets import TranslationMarkdownTextarea
 
 
 class CmsAdmin(VisibleToAdminMetier, ModelAdmin):
@@ -95,8 +97,19 @@ class FaqQuestionAdmin(CmsAdmin):
 class MandateTranslationAdminForm(models.ModelForm):
     class Meta:
         model = MandateTranslation
-        fields = "__all__"
-        widgets = {"lang": SearchableRadioSelect}
+        fields = ("lang", "body")
+        widgets = {
+            "lang": SearchableRadioSelect(
+                attrs={"data-markdown-editor-target": "langInput"}
+            ),
+            "body": TranslationMarkdownTextarea(
+                attrs={
+                    "data-markdown-editor-render-endpoint-value": reverse_lazy(
+                        "mandate_translation"
+                    ),
+                }
+            ),
+        }
 
 
 @register(MandateTranslation, site=admin_site)

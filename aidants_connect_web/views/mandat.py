@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import formats, timezone
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, RedirectView, TemplateView, View
 
@@ -29,6 +30,7 @@ from aidants_connect_common.utils.constants import (
 from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
 from aidants_connect_pico_cms.models import MandateTranslation
+from aidants_connect_pico_cms.utils import is_lang_rtl, render_markdown
 from aidants_connect_web.decorators import (
     activity_required,
     aidant_logged_required,
@@ -643,15 +645,23 @@ class Translation(RenderAttestationAbstract):
     template_name = "aidants_connect_web/attestation_translation.html"
 
     def post(self, request, *args, **kwargs):
-        self.lang: MandateTranslation = get_object_or_404(
-            MandateTranslation, pk=request.POST.get("lang_code")
-        )
-
-        context = {
-            **super().get_context_data(**kwargs),
-            "html_content": self.lang.to_html(),
-            "rtl": self.lang.is_rtl,
-        }
+        # Case of renderding a draft from admin
+        if body := request.POST.get("body"):
+            lang = request.POST["lang"]
+            context = {
+                **super().get_context_data(**kwargs),
+                "html_content": mark_safe(render_markdown(body)),
+                "rtl": is_lang_rtl(lang),
+            }
+        else:
+            lang: MandateTranslation = get_object_or_404(
+                MandateTranslation, pk=request.POST.get("lang_code")
+            )
+            context = {
+                **super().get_context_data(**kwargs),
+                "html_content": lang.to_html(),
+                "rtl": lang.is_rtl,
+            }
         return self.render_to_response(context)
 
     def get_template_names(self):

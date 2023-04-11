@@ -1,26 +1,17 @@
-from django.conf import settings
 from django.db import models
 from django.urls import reverse
-from django.utils.html import escape, mark_safe
-
-from markdown import markdown
-from markdown.extensions.attr_list import AttrListExtension
+from django.utils.html import mark_safe
 
 from aidants_connect_pico_cms.constants import MANDATE_TRANSLATION_LANGUAGE_AVAILABLE
+from aidants_connect_pico_cms.fields import MarkdownField
+from aidants_connect_pico_cms.utils import is_lang_rtl, render_markdown
 
 
 class MarkdownContentMixin(models.Model):
-    body = models.TextField("Contenu")
+    body = MarkdownField("Contenu")
 
     def to_html(self):
-        return mark_safe(
-            markdown(
-                escape(self.body),
-                extensions=[
-                    AttrListExtension(),  # Allows to add HTML classes and ID
-                ],
-            )
-        )
+        return mark_safe(render_markdown(self.body))
 
     class Meta:
         abstract = True
@@ -74,7 +65,7 @@ class MandateTranslation(MarkdownContentMixin):
 
     @property
     def is_rtl(self):
-        return self.lang in settings.LANGUAGES_BIDI
+        return is_lang_rtl(self.lang)
 
     def __str__(self):
         return (
@@ -88,7 +79,7 @@ class MandateTranslation(MarkdownContentMixin):
 
 class FaqCategory(CmsContent):
     name = models.CharField("Nom", max_length=255)
-    body = models.TextField("Introduction", blank=True, null=True)
+    body = MarkdownField("Introduction", blank=True, null=True)
 
     def __str__(self):
         return self.name

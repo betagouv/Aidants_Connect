@@ -237,7 +237,9 @@ if ssl_option:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        "NAME": (
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        )
     },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
@@ -286,7 +288,7 @@ DEMARCHES = {
     "papiers": {
         "titre": "Papiers - Citoyenneté",
         "titre_court": "Papiers",
-        "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",
+        "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",  # NOQA
         "service_exemples": ["ANTS", "Défenseur des droits"],
         "icon": "/static/images/icons/papiers.svg",
     },
@@ -314,14 +316,14 @@ DEMARCHES = {
     "logement": {
         "titre": "Logement",
         "titre_court": "Logement",
-        "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",
+        "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",  # NOQA
         "service_exemples": ["CAF", "Enedis"],
         "icon": "/static/images/icons/logement.svg",
     },
     "transports": {
         "titre": "Transports",
         "titre_court": "Transports",
-        "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",
+        "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",  # NOQA
         "service_exemples": ["ANTS", "ANTAI", "Crit'air"],
         "icon": "/static/images/icons/transports.svg",
     },
@@ -343,7 +345,7 @@ DEMARCHES = {
     "etranger": {
         "titre": "Étranger",
         "titre_court": "Étranger",
-        "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",
+        "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",  # NOQA
         "service_exemples": ["OFPRA"],
         "icon": "/static/images/icons/etranger.svg",
     },
@@ -375,8 +377,7 @@ MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
 MAGICAUTH_WAIT_VIEW_TEMPLATE = "login/wait.html"
 MAGICAUTH_ENABLE_2FA = True
 
-# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py
-# #L54  # noqa
+# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py  # NOQA
 MAGICAUTH_TOKEN_DURATION_SECONDS = int(
     os.getenv("MAGICAUTH_TOKEN_DURATION_SECONDS", 5 * 60)
 )
@@ -390,9 +391,9 @@ EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
 
-# if file based email backend is used (debug)
+# # if file based email backend is used (debug)
 EMAIL_FILE_PATH = Path(os.path.dirname(__file__)).parent / "tmp_email_as_file"
-## if smtp backend is used
+# # if smtp backend is used
 EMAIL_HOST = os.getenv("EMAIL_HOST", None)
 EMAIL_PORT = os.getenv("EMAIL_PORT", None)
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", None)
@@ -400,11 +401,11 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", None)
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", None)
 
-## if email backend is aidants_connect_web.mail.ForceSpecificSenderBackend
+# # if email backend is aidants_connect_web.mail.ForceSpecificSenderBackend
 EMAIL_EXTRA_HEADERS = os.getenv("EMAIL_EXTRA_HEADERS", None)
 EMAIL_SENDER = os.getenv("EMAIL_SENDER", os.getenv("ADMIN_EMAIL"))
 
-## Emails from the server
+# Emails from the server
 SERVER_EMAIL = os.getenv("SERVER_EMAIL", os.getenv("ADMIN_EMAIL"))
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
 # ADMIN_HONEYPOT_EMAIL_ADMINS = os.getenv("ADMIN_HONEYPOT_EMAIL_ADMINS", SERVER_EMAIL)
@@ -416,6 +417,8 @@ X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
 STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
+MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
+MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
@@ -428,19 +431,23 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
+    MD_EDITOR_JS_URL,
     "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
-    "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",  # NOQA
     "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
     "'sha256-NR0PzgaeuNCaj2DbnvXN6W2GoemNJ9jQE4tqs/H7O0c='",  # ie-deprecation.html
 )
 
-CSP_STYLE_SRC = ("'self'",)
+CSP_STYLE_SRC = (
+    "'self'",
+    MD_EDITOR_CSS_URL,
+)
 
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
@@ -584,7 +591,7 @@ EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY = os.getenv(
     "EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY",
     """Bonjour,
 
-    Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.""",
+    Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.""",  # NOQA
 )
 
 EMAIL_ORGANISATION_REQUEST_FROM = os.getenv(
