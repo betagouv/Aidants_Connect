@@ -917,9 +917,9 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             self.send_refusal_email(habilitation_request)
         self.message_user(request, f"{rows_updated} demandes ont été refusées.")
 
-    def send_refusal_email(self, object):
+    def send_refusal_email(self, aidant):
         text_message = loader.render_to_string(
-            "email/aidant_a_former_refuse.txt", {"aidant": object}
+            "email/aidant_a_former_refuse.txt", {"aidant": aidant}
         )
         html_message = loader.render_to_string(
             "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
@@ -927,11 +927,11 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
 
         subject = (
             "Aidants Connect - La demande d'ajout de l'aidant(e) "
-            f"{object.first_name} {object.last_name} a été refusée."
+            f"{aidant.first_name} {aidant.last_name} a été refusée."
         )
 
         recipients = [
-            manager.email for manager in object.organisation.responsables.all()
+            manager.email for manager in aidant.organisation.responsables.all()
         ]
 
         send_mail(

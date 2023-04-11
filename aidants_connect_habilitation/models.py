@@ -66,6 +66,8 @@ class Person(models.Model):
     ):
         if self.email:
             self.email = self.email.lower()
+        if update_fields is not None:
+            update_fields = {"email"}.union(update_fields)
         super().save(force_insert, force_update, using, update_fields)
 
     def get_full_name(self):

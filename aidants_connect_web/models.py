@@ -1272,6 +1272,8 @@ class Connection(models.Model):
 
             # Normalize phone number to international format
             self.user_phone = format_number(user_phone, PhoneNumberFormat.E164)
+            if update_fields is not None:
+                update_fields = {"user_phone"}.union(update_fields)
 
         super().save(force_insert, force_update, using, update_fields)
 
