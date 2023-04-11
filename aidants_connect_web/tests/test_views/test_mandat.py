@@ -926,7 +926,8 @@ class TranslationTests(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertHTMLEqual(
-            '<section class="container rtl"><h1>Test title</h1><p>Test</p></<section>',
+            '<section class="container" dir="rtl">'
+            "<h1>Test title</h1><p>Test</p></<section>",
             response.content.decode("utf-8"),
         )
 
