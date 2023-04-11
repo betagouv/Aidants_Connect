@@ -28,14 +28,14 @@
           <p>Attention, vous allez créer un mandat au nom de cette structure :</p>
           <p><strong>{{ aidant.organisation }}</strong><br>{{ aidant.organisation.address }}</p>
           <p>
-            Si ce n'est pas la bonne structure,
+            Si ce n’est pas la bonne structure,
             <a href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}">
               vous pouvez en changer
             </a>.
           </p>
         </div>
       {% endif %}
-      <h2>Mentions à lire à l'usager</h2>
+      <h2>Mentions à lire à l’usager</h2>
       <p>
         Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :
       </p>
@@ -202,19 +202,22 @@
         </div>
 
         <section class="mandate-translation-section">
-          <h2 class="step-title">Étape 3 : Prévisualisez un mandat type (facultatif)</h2>
+          <h2 class="step-title">Étape 3 : Prévisualisez un mandat traduit (à titre informatif)</h2>
           <div class="shadowed padding-2rem">
-            <h4 class="h4-prime">L’usager prend connaissance d’un mandat type</h4>
-            <p>Des traductions sont disponibles en consultant cette page.</p>
+            <h4 class="h4-prime">L’usager prend connaissance d’un mandat traduit</h4>
+            <p>
+              Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune valeur
+              juridique. Seul le mandat final en français a une valeur juridique valide.
+            </p>
             <div class="button-box">
-              <a href="{% url 'mandate_translation' %}" class="button primary">Consulter le mandat type</a>
+              <a href="{% url 'mandate_translation' %}" class="button primary">Consulter le mandat traduit</a>
             </div>
           </div>
         </section>
 
         {% block input_submit_form %}
           <section id="france_connection" class="tiles">
-            <h2 class="step-title">Étape {% if has_mandate_translations %}4{% else %}3{% endif %} : Connectez l'usager à FranceConnect</h2>
+            <h2 class="step-title">Étape {% if has_mandate_translations %}4{% else %}3{% endif %} : Connectez l’usager à FranceConnect</h2>
             <div class="buttons">
               <input
                 id="submit_button"
