@@ -33,15 +33,14 @@
     data-mandate-translation-translation-endpoint-value="{% url 'mandate_translation' %}"
     data-mandate-translation-noprint-class="no-print"
   >
-    <h1>Projet de mandat</h1>
+    <h1>Projet de mandat traduit</h1>
     <div class="subtitle-container no-print">
       <p class="subtitle fr-col-12 fr-col-md-6">
-        Vous trouverez ci-dessous le projet de mandat que vous êtes en train de créer.
-        Si nécessaire, vous pouvez sélectionner parmi les langues ci-dessous pour en afficher une traduction.
+        Vous trouverez ci-dessous un mandat type pour lequel plusieurs traductions sont disponibles. Les traductions de mandat servent uniquement à expliquer à l’usager ce que c’est qu’un mandat et ses implications. Ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.
       </p>
       <div class="fr-col-12 fr-col-md-6 print-button-container">
         <div class="shadowed padding-1rem">
-          <p>Vous pouvez imprimer ce mandat en cliquant sur le bouton ci-dessous.</p>
+          <p>Vous pouvez imprimer ce mandat type en cliquant sur le bouton ci-dessous. Attention, nous vous rappelons que ce mandat n’a aucune valeur juridique. Il est traduit à titre indicatif pour l’usager.</p>
           <button class="primary" data-action="mandate-translation#print">Imprimer</button>
         </div>
       </div>
@@ -81,7 +80,7 @@
     <template hidden data-mandate-translation-target="emptyTranslationTpl">
       <div class="empty-translation-container">
         <img src="{% static 'images/translation-logo.svg' %}" alt=""/>
-        <h4>D'autres langues sont disponibles</h4>
+        <h4>D’autres langues sont disponibles</h4>
         <p>
           Retrouvez ici le mandat type en version traduite.
           Sélectionnez une langue dans la liste déroulante ci-dessus.
@@ -93,7 +92,7 @@
 
 {% block footer %}
   <em class="text-center margin-bottom-1em">
-    Ceci est un mandat-type. Il n'a aucune valeur juridique.
+    Ceci est un mandat-type. Il n’a aucune valeur juridique.
   </em>
 {% endblock footer %}
 
