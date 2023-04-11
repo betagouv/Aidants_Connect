@@ -51,9 +51,9 @@ class CardSendingAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     search_fields = (
         "organisation__name",
         "organisation__city",
-        "responsable_first_name",
-        "responsable_last_name",
-        "responsable_email",
+        "responsable__first_name",
+        "responsable__last_name",
+        "responsable__email",
     )
 
 
