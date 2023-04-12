@@ -454,6 +454,7 @@ CSP_FRAME_SRC = (
     "https://www.youtube.com/embed/hATrqHG4zYQ",
     "https://www.youtube.com/embed/WTHj_kQXnzs",
     "https://www.youtube.com/embed/ihsm-36I-fE",
+    "https://www.youtube.com/embed/AJGo6bydQss",
 )
 
 # Admin Page settings
