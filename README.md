@@ -102,11 +102,18 @@ Dans votre répertoire de travail, créez et activez un environnement virtuel :
 virtualenv venv
 source venv/bin/activate
 ```
+Installez pipenv :
+
+```shell
+brew install pipenv  # Sur Mac
+# Ou
+pip install pipenv
+```
 
 Installez les dépendances :
 
 ```shell
-pip install -r requirements.txt
+pipenv install --dev
 ```
 
 Si vous avez un Mac M1, ou si la commande précédente déclenche le message d'erreur `ld: library not found for -lssl`, référez-vous à la section [Troubleshooting](#troubleshooting).
