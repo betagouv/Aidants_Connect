@@ -1043,6 +1043,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 HabilitationRequest.STATUS_NEW,
                 HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
                 HabilitationRequest.STATUS_VALIDATED,
+                HabilitationRequest.STATUS_CANCELLED,
             )
         )
         treated_emails = set()

@@ -611,6 +611,7 @@ class HabilitationRequest(models.Model):
             self.STATUS_NEW,
             self.STATUS_WAITING_LIST_HABILITATION,
             self.STATUS_VALIDATED,
+            self.STATUS_CANCELLED,
         ):
             return False
 
