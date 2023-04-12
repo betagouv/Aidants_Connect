@@ -24,6 +24,7 @@ from aidants_connect_web.models import (
     Usager,
     UsagerQuerySet,
 )
+from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
 
 class AidantCreationForm(forms.ModelForm):
@@ -176,7 +177,7 @@ class MandatForm(PatchedForm):
     demarche = forms.MultipleChoiceField(
         choices=[(key, value) for key, value in settings.DEMARCHES.items()],
         required=True,
-        widget=forms.CheckboxSelectMultiple,
+        widget=MandatDemarcheSelect,
         error_messages={
             "required": _("Vous devez sélectionner au moins une démarche.")
         },
@@ -185,35 +186,41 @@ class MandatForm(PatchedForm):
     DUREES = [
         (
             ADKW.SHORT,
-            {"title": "Mandat court", "description": "(expire demain)"},
+            {"label": "Mandat court", "description": "(expire demain)"},
         ),
         (
             ADKW.MONTH,
             {
-                "title": "Mandat d'un mois",
+                "label": "Mandat d'un mois",
                 "description": f"({ADKW.DAYS[ADKW.MONTH]} jours)",
             },
         ),
         (
             ADKW.LONG,
-            {"title": "Mandat long", "description": "(12 mois)"},
+            {"label": "Mandat long", "description": "(12 mois)"},
         ),
         (
             ADKW.SEMESTER,
             {
-                "title": "Mandat de 6 mois",
+                "label": "Mandat de 6 mois",
                 "description": f"({ADKW.DAYS[ADKW.SEMESTER]} jours)",
             },
         ),
     ]
     duree = forms.ChoiceField(
+        label="Choisissez la durée du mandat",
         choices=DUREES,
         required=True,
         initial=3,
         error_messages={"required": _("Veuillez sélectionner la durée du mandat.")},
+        widget=MandatDureeRadioSelect,
     )
 
-    is_remote = forms.BooleanField(required=False)
+    is_remote = forms.BooleanField(
+        label="Signature à distance du mandat",
+        label_suffix="",
+        required=False,
+    )
 
     remote_constent_method = forms.ChoiceField(
         label="Sélectionnez une méthode de consentement à distance",
@@ -224,7 +231,7 @@ class MandatForm(PatchedForm):
                 "Veuillez sélectionner la méthode de consentement à distance."
             )
         },
-        widget=DetailedRadioSelect(),
+        widget=DetailedRadioSelect,
     )
 
     user_phone = AcPhoneNumberField(

@@ -1,8 +1,8 @@
 {% load form_extras %}
-{% if errors %}<div class="notification error" role="alert">
-  {{ errors }}
-</div>{% endif %}
 <fieldset{% class_attr fieldset_classes %}>
+  {% if errors %}<div class="notification error" role="alert">
+    {{ errors }}
+  </div>{% endif %}
   {% if field.label %}<legend {% class_attr legend_classes %}>{{ field.label_tag }}</legend>{% endif %}
   {{ field }}
   {% if field.help_text %}<span class="helptext">{{ field.help_text|safe }}</span>{% endif %}

@@ -1,6 +1,6 @@
 {% load form_extras %}
 <section {% id_attr widget.attrs.id %}{% class_attr widget.container_classes %}>
-  {% for group, options, index in widget.optgroups %}{% if group %}<div{% class_attr option.input_wrapper_classes %}><label>{{ group }}</label>{% endif %}
+  {% for group, options, index in widget.optgroups %}{% if group %}<div><label>{{ group }}</label>{% endif %}
   {% for option in options %}<div{% if not group %}{% class_attr option.input_wrapper_classes %}{% endif %}>
       {% include option.template_name with widget=option %}
   </div>{% endfor %}

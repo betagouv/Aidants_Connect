@@ -1,44 +1,40 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static form_extras ac_common %}
 
 {% block title %}Aidants Connect - Nouveau mandat{% endblock %}
 
 {% block extracss %}
-  <link href="{% static 'css/form.css' %}" rel="stylesheet">
-  <link href="{% static 'css/new_mandat.css' %}" rel="stylesheet">
+  <link href="{% static 'css/new-mandat.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-  {% if messages %}
-    {% for message in messages %}
-      <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
-  <section id="engagement" class="section">
-    <div class="container container-small">
-      <h1 class="section__title">
-        Créer ou renouveler un mandat
-        {% if aidant.organisations.count > 1 %}
-          pour {{ aidant.organisation }}
-        {% endif %}
-      </h1>
-      {% if aidant.organisations.count > 1 %}
-        <div class="notification warning">
-          <p>Attention, vous allez créer un mandat au nom de cette structure :</p>
-          <p><strong>{{ aidant.organisation }}</strong><br>{{ aidant.organisation.address }}</p>
-          <p>
-            Si ce n’est pas la bonne structure,
-            <a href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}">
-              vous pouvez en changer
-            </a>.
-          </p>
-        </div>
-      {% endif %}
-      <h2>Mentions à lire à l’usager</h2>
-      <p>
-        Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :
-      </p>
+  <div class="fr-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <h1>
+      Créer ou renouveler un mandat{% if aidant.organisations.count > 1 %} pour {{ aidant.organisation }}{% endif %}
+    </h1>
+    {% if aidant.organisations.count > 1 %}
+      <div class="notification warning">
+        <p>Attention, vous allez créer un mandat au nom de cette structure :</p>
+        <p><strong>{{ aidant.organisation }}</strong><br>{{ aidant.organisation.address }}</p>
+        <p>
+          Si ce n’est pas la bonne structure,
+          <a href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}">
+            vous pouvez en changer
+          </a>.
+        </p>
+      </div>
+    {% endif %}
+    <h2>Mentions à lire à l’usager</h2>
+
+    <section>
+      <p>Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :</p>
       <ul>
         <li>
           effectuer à votre place les démarches listées dans le mandat, à partir des informations que vous leur avez
@@ -65,146 +61,89 @@
         À partir du moment où un aidant habilité par <strong>{{ aidant.organisation }}</strong> réalise à votre place
         une des démarches listées dans le mandat, il accepte de le faire dans les conditions décrites dans le mandat.
       </p>
-    </div>
-  </section>
-  <section
-    id="mandat_specifications"
-    class="section section-grey"
-    data-controller="is-remote-controller"
-  >
-    <div class="container">
-      <form method="post">
-        {% if form.errors %}
-          <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
-        {% endif %}
-        {% csrf_token %}
+    </section>
 
-        <div id="demarches" class="tiles">
-          <h2>Étape 1 : Sélectionnez la ou les démarche(s)</h2>
-          {% if form.errors.demarche %}
-            <section
-              id="demarche_error_notification"
-              class="notification error"
-              role="alert"
+    <h3 class="h3-prime">{% block form_title %}Création de mandat{% endblock %}</h3>
+
+    <form method="post" data-controller="is-remote-controller">
+      {% if form.errors %}
+        <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
+      {% endif %}
+      {% csrf_token %}
+
+      <h4 class="step-title">Sélectionnez la ou les démarche(s)</h4>
+      {% fields_as_fieldset form.demarche fieldset_classes="demarche-section" legend_classes="sr-only" %}
+
+      <h4 class="step-title">Choisissez la durée du mandat</h4>
+      {% fields_as_fieldset form.duree fieldset_classes="duree-section container-small" legend_classes="sr-only" %}
+
+      <fieldset class="container-small is-remote-section">
+        <section class="shadowed margin-bottom-1em mandate-is-remote-field">
+          {{ form.is_remote }}
+          {{ form.is_remote.label_tag }}
+        </section>
+
+        <section
+          class="mandate-remote-method-section"
+          hidden
+          aria-hidden="true"
+          data-is-remote-controller-target="remoteConsentSection"
+        >
+          {% if form.remote_constent_method.errors %}
+            <div class="notification error" role="alert">
+              {{ form.remote_constent_method.errors }}
+            </div>{% endif %}
+
+          <legend class="remote-consent-legend">
+            {{ form.remote_constent_method.label }}
+          </legend>
+          {% for subfield in form.remote_constent_method %}
+            <div
+              class="detailed-radio-select shadowed margin-bottom-1em"
+              data-controller="remote-method-controller"
+              data-remote-method-controller-consent-method-value="{{ subfield.data.value }}"
             >
-              {{ form.errors.demarche }}
-            </section>
-          {% endif %}
-          <fieldset id="demarches_list">
-            <legend class="sr-only">Sélectionnez la ou les démarche(s)</legend>
-            <div class="grid">
-              {% for value, label in form.demarche.field.choices %}
-                <div id="{{ value }}" class="tile">
-                  <input
-                    id="button-{{ value }}"
-                    type="checkbox"
-                    value="{{ value }}"
-                    name="demarche"
-                    class="sr-only"
-                    {% if form.errors.demarche %}aria-describedby="demarche_error_notification"{% endif %}
-                    {% if value in form.demarche.value or value in form.demarche.initial %}checked{% endif %}
-                  />
-                  <label class="label-demarche" for="button-{{ value }}">
-                    <img src="{{ label.icon }}" alt=""/>
-                    <strong>{{ label.titre }}</strong>
-                    {{ label.description }}
-                    {% if label.service_exemples %}
-                      <br/>
-                      <small>
-                        <i>Exemples :</i>
-                        {% for service in label.service_exemples %}
-                          <span class="label label-small">{{ service }}</span>
-                        {% endfor %}
-                      </small>
-                    {% endif %}
-                  </label>
-                </div>
-              {% endfor %}
-            </div>
-          </fieldset>
-        </div>
-
-        <div id="duree" class="tiles">
-          <h2 class="step-title">Étape 2 : Choisissez la durée du mandat</h2>
-          {% if form.errors.duree %}
-            <section
-              id="duree_error_notification"
-              class="notification error"
-              role="alert"
-            >
-              {{ form.errors.duree }}
-            </section>
-          {% endif %}
-          <fieldset id="duree_list">
-            <legend class="sr-only">Choisissez la durée du mandat</legend>
-            <div class="grid">
-              {% for value, label in form.duree.field.choices %}
-                <div id="{{ value }}" class="tile">
-                  <input
-                    id="button-{{ value }}"
-                    type="radio"
-                    value="{{ value }}"
-                    name="duree"
-                    class="sr-only"
-                    {% if form.errors.duree %}aria-describedby="duree_error_notification"{% endif %}
-                    {% if value in form.duree.value or value in form.duree.initial %}checked{% endif %}
-                  />
-                  <label class="label-duree" for="button-{{ value }}">
-                    <strong>
-                      {{ label.title }}
-                      <span data-is-remote-controller-target="remoteLabelText" hidden aria-hidden="true"> à distance</span>
-                    </strong>
-                    <span>{{ label.description }}</span>
-                  </label>
-                </div>
-              {% endfor %}
-            </div>
-          </fieldset>
-          <label for="{{ form.is_remote.id_for_label }}" class="notification warning margin-top-1em">
-            La signature du mandat se fait-elle à distance ? Si oui, cochez cette case
-            {{ form.is_remote }}
-          </label>
-
-          {% if form.remote_constent_method.errors %}<div class="notification error" role="alert">
-            {{ form.remote_constent_method.errors }}
-          </div>{% endif %}
-
-          <fieldset hidden aria-hidden="true" data-is-remote-controller-target="remoteConsentSection">
-            <legend {% class_attr form.remote_constent_method.legend_classes %}>
-              {{ form.remote_constent_method.label_tag }}
-            </legend>
-            {% for subfield in form.remote_constent_method %}
-              <div
-                class="shadowed detailed-radio-select"
-                data-controller="remote-method-controller"
-                data-remote-method-controller-consent-method-value="{{ subfield.data.value }}"
+              <input{% html_attrs subfield.data.attrs %}
+                type="radio"
+                name="{{ subfield.data.name }}"
+                value="{{ subfield.data.value }}"
+                data-is-remote-controller-target="requiredInput"
+                data-action="is-remote-controller#remoteMethodTriggered"
               >
-                <input{% html_attrs subfield.data.attrs %}
-                  type="radio"
-                  name="{{ subfield.data.name }}"
-                  value="{{ subfield.data.value }}"
-                  data-is-remote-controller-target="requiredInput"
-                  data-action="is-remote-controller#remoteMethodTriggered"
-                >
-                <label for="{{ subfield.id_for_label }}">
+
+              <label for="{{ subfield.id_for_label }}" {% class_attr subfield.data.label_classes %}>
+                <img
+                  src="{% static subfield.data.img_src %}"
+                  class="{{ subfield.input_wrapper_base_class }}-logo"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <span class="{{ subfield.data.input_wrapper_base_class }}-label-text-and-description">
                   <span class="detailed-radio-select-label-text">{{ subfield.choice_label }}</span>
                   <span class="detailed-radio-select-description">{{ subfield.data.description }}</span>
-                </label>
-                {% if subfield.data.value == "SMS" %}
-                  <div hidden aria-hidden="true" data-remote-method-controller-target="requiredInputs">
-                    {% field_as_p form.user_phone %}
-                    {% checkbox_fr_grid_row form.user_remote_contact_verified %}
-                  </div>
-                {% endif %}
-              </div>
-            {% endfor %}
-          </fieldset>
-        </div>
+                </span>
+              </label>
+              {% if subfield.data.value == "SMS" %}
+                <div
+                  class="padding-1rem"
+                  hidden
+                  aria-hidden="true"
+                  data-remote-method-controller-target="requiredInputs"
+                >
+                  {% field_as_p form.user_phone p_classes="field-block" %}
+                  {% checkbox_fr_grid_row form.user_remote_contact_verified %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </section>
+      </fieldset>
 
-        <section class="mandate-translation-section">
-          <h2 class="step-title">Étape 3 : Prévisualisez un mandat traduit (à titre informatif)</h2>
-          <div class="shadowed padding-2rem">
-            <h4 class="h4-prime">L’usager prend connaissance d’un mandat traduit</h4>
+      {% if has_mandate_translations %}
+        <h4 class="step-title">Prévisualisez un mandat traduit (à titre informatif)</h4>
+        <section class="mandate-translation-section container-small margin-bottom-6rem">
+          <div class="shadowed padding-1rem">
+            <h5 class="h4-prime">L’usager prend connaissance d’un mandat traduit</h5>
             <p>
               Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune valeur
               juridique. Seul le mandat final en français a une valeur juridique valide.
@@ -214,23 +153,23 @@
             </div>
           </div>
         </section>
+      {% endif %}
 
-        {% block input_submit_form %}
-          <section id="france_connection" class="tiles">
-            <h2 class="step-title">Étape {% if has_mandate_translations %}4{% else %}3{% endif %} : Connectez l’usager à FranceConnect</h2>
-            <div class="buttons">
-              <input
-                id="submit_button"
-                type="image"
-                src="{% static 'images/FCboutons-10.png' %}"
-                alt="S’identifier avec FranceConnect"
-              />
-            </div>
-          </section>
-        {% endblock input_submit_form %}
-      </form>
-    </div>
-  </section>
+      {% block input_submit_form %}
+        <h4 class="step-title">Connectez l’usager à FranceConnect</h4>
+        <section id="france_connection" class="tiles">
+          <div class="buttons">
+            <input
+              id="submit_button"
+              type="image"
+              src="{% static 'images/FCboutons-10.png' %}"
+              alt="S’identifier avec FranceConnect"
+            />
+          </div>
+        </section>
+      {% endblock input_submit_form %}
+    </form>
+  </div>
 {% endblock content %}
 
 {% block extrajs %}

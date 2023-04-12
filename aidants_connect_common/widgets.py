@@ -9,23 +9,10 @@ class DetailedRadioSelect(RadioSelect):
     template_name = "widgets/detailed_radio.html"
     option_template_name = "widgets/detailed_radio_option.html"
     input_wrapper_base_class = "detailed-radio-select"
-
-    def __init__(self, attrs=None, choices=(), wrap_label=False):
-        """Unwrap label by default and set a CSS class"""
-        self.wrap_label = wrap_label
-        attrs = attrs or {}
-        self._input_wrapper_classes = attrs.pop(
-            "input_wrapper_classes", self.input_wrapper_base_class
-        )
-        self._container_class = attrs.pop("input_wrapper_classes", "")
-
-        super().__init__(attrs, choices)
-
-    def input_wrapper_classes(self, *extra_classes):
-        return merge_html_attr_values([self.input_wrapper_base_class, *extra_classes])
-
-    def container_classes(self, *extra_classes):
-        return merge_html_attr_values(extra_classes)
+    container_classes = ""
+    input_wrapper_classes = ""
+    label_classes = ""
+    checkbox_select_multiple = False
 
     def create_option(
         self, name, value, label, selected, index, subindex=None, attrs=None
@@ -35,12 +22,22 @@ class DetailedRadioSelect(RadioSelect):
         )
 
         if isinstance(opts_context["label"], dict):
-            opts_context.update(**opts_context.pop("label"))
+            opts_context.update(**self.choices_label_adapter(opts_context.pop("label")))
 
-        opts_context["wrap_label"] = self.wrap_label
         opts_context["input_wrapper_base_class"] = self.input_wrapper_base_class
-        opts_context["input_wrapper_classes"] = self.input_wrapper_classes(
-            self._input_wrapper_classes
+
+        input_wrapper_classes = [
+            self.input_wrapper_base_class,
+            self.input_wrapper_classes,
+        ]
+        if self.allow_multiple_selected:
+            input_wrapper_classes.append(f"{self.input_wrapper_base_class}-multiselect")
+        opts_context["input_wrapper_classes"] = merge_html_attr_values(
+            input_wrapper_classes
+        )
+
+        opts_context["label_classes"] = merge_html_attr_values(
+            [self.label_classes, f"{self.input_wrapper_base_class}-label"]
         )
 
         if "id" in attrs:
@@ -50,12 +47,30 @@ class DetailedRadioSelect(RadioSelect):
 
         return opts_context
 
+    @staticmethod
+    def choices_label_adapter(label: dict) -> dict:
+        return label
+
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        context["widget"]["container_classes"] = self.container_classes(
-            self._container_class, attrs.get("class")
+        context["widget"]["container_classes"] = merge_html_attr_values(
+            [self.container_classes, attrs.get("class", "")]
         )
         return context
+
+    def use_required_attribute(self, initial):
+        return (
+            False
+            if self.checkbox_select_multiple
+            else super().use_required_attribute(initial)
+        )
+
+    def value_omitted_from_data(self, data, files, name):
+        return (
+            False
+            if self.checkbox_select_multiple
+            else super().value_omitted_from_data(data, files, name)
+        )
 
 
 class SearchableRadioSelect(Select):
