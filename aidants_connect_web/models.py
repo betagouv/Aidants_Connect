@@ -537,7 +537,7 @@ class HabilitationRequest(models.Model):
     ORIGIN_HABILITATION = "habilitation"
 
     STATUS_LABELS = {
-        STATUS_WAITING_LIST_HABILITATION: "Liste d'attente demande habilitation",
+        STATUS_WAITING_LIST_HABILITATION: "Liste d'attente",
         STATUS_NEW: "Nouvelle",
         STATUS_PROCESSING: "En cours",
         STATUS_VALIDATED: "Validée",

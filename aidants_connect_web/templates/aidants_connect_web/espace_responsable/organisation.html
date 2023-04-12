@@ -143,7 +143,10 @@
               <div class="tooltip request-status-{{ request.status|lower }}">
                 {{ request.get_status_display }}
                 <div class="tooltiptext request-status-{{ request.status|lower }}">
-                  {% if request.status|lower == "new" %}
+                  {% if request.status|lower == "habilitation_waitling_list" %}
+                    Les prochaines sessions de formation sur votre territoire sont complètes.
+                    Nous contacterons cet aidant dès que possible.
+                  {% elif request.status|lower == "new" %}
                     Cet aidant vient d’être ajouté sur l’espace du Responsable Aidants Connect
                   {% elif request.status|lower == "processing" %}
                     L’équipe Aidants Connect a validé l’ajout de cet aidant, il est en cours de formation.

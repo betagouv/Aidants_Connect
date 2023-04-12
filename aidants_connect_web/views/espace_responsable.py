@@ -85,13 +85,8 @@ class OrganisationView(TemplateView):
         )
 
         organisation_habilitation_requests = (
-            self.organisation.habilitation_requests.filter(
-                status__in=[
-                    HabilitationRequest.STATUS_NEW,
-                    HabilitationRequest.STATUS_PROCESSING,
-                    HabilitationRequest.STATUS_REFUSED,
-                    HabilitationRequest.STATUS_CANCELLED,
-                ]
+            self.organisation.habilitation_requests.exclude(
+                status=HabilitationRequest.STATUS_VALIDATED
             ).order_by("status", "last_name")
         )
 

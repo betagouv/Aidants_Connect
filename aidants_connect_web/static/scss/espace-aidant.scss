@@ -156,8 +156,8 @@ table.table {
     }
 
     &.request-status-new {
-      border-color: colors.$dark-grey-aidants;
-      color: colors.$dark-grey-aidants;
+      border-color: colors.$dark-green-anct;
+      color: colors.$dark-green-anct;
     }
 
     &.request-status-processing {
@@ -169,6 +169,11 @@ table.table {
       border-color: colors.$red-aidants;
       color: colors.$red-aidants;
     }
+
+    &.request-status-habilitation_waitling_list {
+      border-color: colors.$blue-aidants;
+      color: colors.$blue-aidants;
+    }
   }
 
   .tooltip {
@@ -179,10 +184,11 @@ table.table {
   .tooltip .tooltiptext {
     background-color: #FFF;
     display: inline-block;
+    left: -1px;
     list-style-position: inside;
-    margin: 1rem 0;
     padding: 1rem;
     position: absolute;
+    top: 2rem;
     visibility: hidden;
     width: 250px;
     z-index: 1;
@@ -195,4 +201,8 @@ table.table {
   .unverified-card-warning {
     max-width: 20rem;
   }
+}
+
+main a[href^="mailto:"] {
+  font-weight: normal;
 }
