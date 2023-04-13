@@ -6,12 +6,14 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
+from django.views.generic import TemplateView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
 from aidants_connect_web.decorators import activity_required, user_is_aidant
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
-from aidants_connect_web.models import Aidant, Journal
+from aidants_connect_web.models import Aidant, Journal, Organisation
 
 
 @login_required
@@ -39,26 +41,31 @@ def home(request):
     )
 
 
-@login_required
-def organisation(request):
-    aidant = request.user
+@method_decorator(login_required, name="dispatch")
+class OrganisationView(TemplateView):
+    template_name = "aidants_connect_web/espace_aidant/organisation.html"
 
-    organisation = aidant.organisation
-    if not organisation:
-        django_messages.error(request, "Vous n'êtes pas rattaché à une organisation.")
-        return redirect("espace_aidant_home")
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        self.organisation: Organisation = self.aidant.organisation
 
-    organisation_active_aidants = organisation.aidants.active()
+        if not self.organisation:
+            django_messages.error(
+                request, "Vous n'êtes pas rattaché à une organisation."
+            )
+            return redirect("espace_aidant_home")
 
-    return render(
-        request,
-        "aidants_connect_web/espace_aidant/organisation.html",
-        {
-            "aidant": aidant,
-            "organisation": organisation,
-            "organisation_active_aidants": organisation_active_aidants,
-        },
-    )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "organisation": self.organisation,
+            "organisation_active_aidants": (
+                self.organisation.aidants.active().order_by("last_name")
+            ),
+        }
 
 
 @login_required

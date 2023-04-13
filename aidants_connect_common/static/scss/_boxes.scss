@@ -7,14 +7,21 @@
   box-shadow: 10px 10px 0 colors.$off-yellow-aidants;
 
   &.grey {
-    box-shadow: 10px 10px 0 #c5c5c5;
-    border-color: #c5c5c5;
+    box-shadow: 10px 10px colors.$shadow-grey;
+    border-color: colors.$shadow-grey;
   }
 
   &.blue {
     box-shadow: 10px 10px 0 colors.$blue-aidants;
     border-color: colors.$blue-aidants;
-    border-width: 2px;
+    border-width: 1px;
+    background: #fff;
+  }
+
+  &.red {
+    box-shadow: 10px 10px 0 colors.$red-aidants;
+    border-color: colors.$red-aidants;
+    border-width: 1px;
     background: #fff;
   }
 }

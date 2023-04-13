@@ -217,10 +217,10 @@ class RemoteMandateMixin:
                     "récapitulatif. Merci de réessayer plus tard. Si l'erreur "
                     "persiste, merci de nous la signaler {}.",
                     mailto(
-                        "en suivant ce lien pour nous envoyer un email",
-                        settings.SMS_SUPPORT_EMAIL,
-                        settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
-                        email_body,
+                        link_text="en suivant ce lien pour nous envoyer un email",
+                        recipient=settings.SMS_SUPPORT_EMAIL,
+                        subject=settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
+                        body=email_body,
                     ),
                 ),
             )
@@ -278,10 +278,10 @@ class RemoteMandateMixin:
                     "consentement. Merci de réessayer plus tard. Si l'erreur persiste, "
                     "merci de nous la signaler {}.",
                     mailto(
-                        "en suivant ce lien pour nous envoyer un email",
-                        settings.SMS_SUPPORT_EMAIL,
-                        settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
-                        email_body,
+                        link_text="en suivant ce lien pour nous envoyer un email",
+                        recipient=settings.SMS_SUPPORT_EMAIL,
+                        subject=settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
+                        body=email_body,
                     ),
                 ),
             )

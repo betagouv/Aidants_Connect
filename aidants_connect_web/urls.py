@@ -27,7 +27,7 @@ urlpatterns = [
     path("espace-aidant/", espace_aidant.home, name="espace_aidant_home"),
     path(
         "espace-aidant/organisation/",
-        espace_aidant.organisation,
+        espace_aidant.OrganisationView.as_view(),
         name="espace_aidant_organisation",
     ),
     path(
@@ -173,7 +173,7 @@ urlpatterns = [
     ),
     path(
         "espace-responsable/organisation/<int:organisation_id>/",
-        espace_responsable.organisation,
+        espace_responsable.OrganisationView.as_view(),
         name="espace_responsable_organisation",
     ),
     path(
