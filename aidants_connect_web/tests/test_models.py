@@ -1828,20 +1828,18 @@ class HabilitationRequestMethodTests(TestCase):
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
 
     def test_do_not_validate_if_invalid_status(self):
-        for status in (
-            HabilitationRequest.STATUS_REFUSED,
-            HabilitationRequest.STATUS_CANCELLED,
-        ):
-            habilitation_request = HabilitationRequestFactory(status=status)
-            self.assertEqual(
-                0, Aidant.objects.filter(email=habilitation_request.email).count()
-            )
-            self.assertFalse(habilitation_request.validate_and_create_aidant())
-            self.assertEqual(
-                0, Aidant.objects.filter(email=habilitation_request.email).count()
-            )
-            db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
-            self.assertEqual(db_hab_request.status, status)
+        habilitation_request = HabilitationRequestFactory(
+            status=HabilitationRequest.STATUS_REFUSED
+        )
+        self.assertEqual(
+            0, Aidant.objects.filter(email=habilitation_request.email).count()
+        )
+        self.assertFalse(habilitation_request.validate_and_create_aidant())
+        self.assertEqual(
+            0, Aidant.objects.filter(email=habilitation_request.email).count()
+        )
+        db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
+        self.assertEqual(db_hab_request.status, HabilitationRequest.STATUS_REFUSED)
 
 
 @tag("models", "manndat", "usager", "journal")

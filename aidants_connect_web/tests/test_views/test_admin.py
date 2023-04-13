@@ -564,6 +564,22 @@ class HabilitationRequestAdminPageTests(TestCase):
             )
             self.assertTrue(Aidant.objects.filter(email=email).exists())
 
+    def test_mass_habilitation_on_canceled_status(self):
+        for _ in range(2):
+            HabilitationRequestFactory(status=HabilitationRequest.STATUS_CANCELLED)
+        self.assertEqual(2, HabilitationRequest.objects.all().count())
+        emails = tuple(obj.email for obj in HabilitationRequest.objects.all())
+        response = self.bizdev_client.post(self.url, {"email_list": "\n".join(emails)})
+        self.assertRedirects(response, self.list_url, fetch_redirect_response=False)
+        response = self.bizdev_client.get(self.list_url)
+        self.assertContains(response, "Les 2 demandes ont bien été validées.")
+        for email in emails:
+            habilitation_request = HabilitationRequest.objects.get(email=email)
+            self.assertEqual(
+                habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+            )
+            self.assertTrue(Aidant.objects.filter(email=email).exists())
+
     def test_mass_habilitation_with_valid_and_invalid_addresses(self):
         for _ in range(5):
             HabilitationRequestFactory()
