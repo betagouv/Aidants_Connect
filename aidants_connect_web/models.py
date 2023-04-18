@@ -7,7 +7,6 @@ from os.path import dirname
 from os.path import join as path_join
 from re import sub as regex_sub
 from typing import Collection, Iterable, Optional, Union
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -728,10 +727,7 @@ class Usager(models.Model):
 
     @property
     def renew_mandate_url(self):
-        parameters = urlencode(
-            {"next": reverse("renew_mandat", kwargs={"usager_id": self.id})}
-        )
-        return f"{reverse('clear_connection')}?{parameters}"
+        return reverse("renew_mandat", kwargs={"usager_id": self.id})
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"

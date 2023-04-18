@@ -1,5 +1,3 @@
-from urllib.parse import urlencode
-
 from django.conf import settings
 from django.test import TestCase, tag
 from django.test.client import Client
@@ -185,10 +183,10 @@ class UsagersDetailsPageTests(TestCase):
         response = self.client.get(f"/usagers/{self.usager.id}/")
         response_content = response.content.decode("utf-8")
         self.assertIn("Renouveler le mandat", response_content)
-        parameters = urlencode(
-            {"next": reverse("renew_mandat", kwargs={"usager_id": self.usager.id})}
+        self.assertIn(
+            reverse("renew_mandat", kwargs={"usager_id": self.usager.id}),
+            response_content,
         )
-        self.assertIn(f"{reverse('clear_connection')}?{parameters}", response_content)
 
 
 @tag("responsable-structure")

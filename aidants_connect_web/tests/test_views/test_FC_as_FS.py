@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from unittest import mock
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -63,7 +64,7 @@ class FCCallback(TestCase):
             aidant=self.aidant,
             organisation=self.aidant.organisation,
         )
-        Connection.objects.create(
+        self.connection2 = Connection.objects.create(
             state="test_another_state",
             connection_type="FS",
             nonce="test_another_nonce",
@@ -77,8 +78,8 @@ class FCCallback(TestCase):
 
     @freeze_time(date)
     def test_no_code_triggers_fc_error(self):
-        response = self.client.get("/callback/", data={"state": "test_state"})
-        self.check_fc_error_with_message(response)
+        response = self.client.get("/callback/", data={"state": self.connection.state})
+        self.check_fc_error_with_message(response, self.connection.pk)
 
     @freeze_time(date)
     def test_no_state_triggers_fc_error(self):
@@ -94,9 +95,15 @@ class FCCallback(TestCase):
 
     date_expired = DATE + timedelta(seconds=TEST_FC_CONNECTION_AGE + 1)
 
-    def check_fc_error_with_message(self, response):
+    def check_fc_error_with_message(self, response, connection_id=None):
+        query_params = (
+            f"?{urlencode({'connection_id': connection_id})}" if connection_id else ""
+        )
+
         self.assertRedirects(
-            response, reverse("new_mandat"), fetch_redirect_response=False
+            response,
+            f"{reverse('new_mandat')}{query_params}",
+            fetch_redirect_response=False,
         )
         response = self.client.get(reverse("new_mandat"))
         self.assertContains(response, "Nous avons rencontré une erreur")
@@ -104,9 +111,9 @@ class FCCallback(TestCase):
     @freeze_time(date_expired)
     def test_expired_connection_yields_fc_error(self):
         response = self.client.get(
-            "/callback/", data={"state": "test_state", "code": "test_code"}
+            "/callback/", data={"state": self.connection.state, "code": "test_code"}
         )
-        self.check_fc_error_with_message(response)
+        self.check_fc_error_with_message(response, self.connection.pk)
 
     @freeze_time(date)
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
@@ -128,9 +135,9 @@ class FCCallback(TestCase):
 
         mock_post.return_value = mock_response
         response = self.client.get(
-            "/callback/", data={"state": "test_another_state", "code": "test_code"}
+            "/callback/", data={"state": self.connection2.state, "code": "test_code"}
         )
-        self.check_fc_error_with_message(response)
+        self.check_fc_error_with_message(response, self.connection2.pk)
 
     @freeze_time(date)
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
