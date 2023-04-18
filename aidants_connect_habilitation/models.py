@@ -406,7 +406,7 @@ class OrganisationRequest(models.Model):
         self.status = RequestStatusConstants.VALIDATED.name
         self.save()
 
-        responsable_query = Aidant.objects.filter(username=self.manager.email)
+        responsable_query = Aidant.objects.filter(username__iexact=self.manager.email)
 
         if not responsable_query.exists():
             responsable = Aidant.objects.create(

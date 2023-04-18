@@ -258,6 +258,21 @@ class AidantManager(UserManager):
         self.__normalize_fields(extra_fields)
         return super().create_superuser(username, email, password, **extra_fields)
 
+    @classmethod
+    def normalize_email(cls, email):
+        return super().normalize_email(email).lower()
+
+    def create(self, **kwargs):
+        if email := kwargs.get("email"):
+            email = email.strip().lower()
+            kwargs["email"] = email
+            if (
+                username := kwargs.get("username")
+            ) and username.strip().lower() == email:
+                kwargs["username"] = email
+
+        return super().create(**kwargs)
+
 
 aidants__organisations_changed = Signal()
 
@@ -613,8 +628,8 @@ class HabilitationRequest(models.Model):
         ):
             return False
 
-        if Aidant.objects.filter(username=self.email).count() > 0:
-            aidant: Aidant = Aidant.objects.get(username=self.email)
+        if Aidant.objects.filter(username__iexact=self.email).count() > 0:
+            aidant: Aidant = Aidant.objects.get(username__iexact=self.email)
             aidant.organisations.add(self.organisation)
             aidant.is_active = True
             aidant.can_create_mandats = True
@@ -623,7 +638,7 @@ class HabilitationRequest(models.Model):
             self.save()
             return True
 
-        aidant = Aidant.objects.create(
+        Aidant.objects.create(
             last_name=self.last_name,
             first_name=self.first_name,
             profession=self.profession,
