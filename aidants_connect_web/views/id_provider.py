@@ -106,18 +106,11 @@ class Authorize(RequireConnectionMixin, FormView):
             self.connection = Connection.objects.create(
                 state=form.cleaned_data["state"], nonce=form.cleaned_data["nonce"]
             )
-            self.request.session["connection"] = self.connection.pk
             return super().get(request, *args, **kwargs)
         else:
             return self.form_invalid_get(form)
 
     def post(self, request, *args, **kwargs):
-        if isinstance(result := self.check_connection(request), HttpResponse):
-            return result
-
-        self.connection = result
-        self.request.session["connection"] = self.connection.pk
-
         self.oauth_parameters_form = OAuthParametersForm(
             data=self.request.POST, relaxed=True
         )
@@ -131,6 +124,23 @@ class Authorize(RequireConnectionMixin, FormView):
             )
             # Punish the user
             logout(self.request)
+            return HttpResponseForbidden()
+
+        view_location = f"{self.__module__}.{self.__class__.__name__}"
+
+        try:
+            connection_id = self.request.POST.get("connection_id")
+            self.connection = Connection.objects.get(pk=connection_id)
+
+            if self.connection.is_expired:
+                log.info(f"Connection has expired @ {view_location}")
+                return render(request, "408.html", status=408)
+
+        except Connection.DoesNotExist:
+            log.error(
+                f"No connection id found for id {connection_id} @ {view_location}"
+            )
+            logout(request)
             return HttpResponseForbidden()
 
         return super().post(request, *args, **kwargs)
@@ -147,11 +157,18 @@ class Authorize(RequireConnectionMixin, FormView):
             logout(self.request)
             return HttpResponseForbidden()
 
+        if "invalid" in form.errors.get("connection", PatchedErrorList()).error_codes:
+            view_location = f"{self.__module__}.{self.__class__.__name__}"
+            log.error(f"Absent connection id @ {view_location}")
+            logout(self.request)
+            return HttpResponseForbidden()
+
         return super().form_invalid(form)
 
     def form_valid(self, form):
         self.connection.usager = form.cleaned_data["chosen_usager"]
         self.connection.save()
+        self.request.session["connection"] = self.connection.pk
         return super().form_valid(form)
 
     def form_invalid_get(self, form):
@@ -201,6 +218,7 @@ class Authorize(RequireConnectionMixin, FormView):
         return {
             **super().get_context_data(**kwargs),
             "oauth_parameters_form": self.oauth_parameters_form,
+            "connection_id": self.connection.pk,
             "usagers": self.usager_with_active_auth,
             "aidant": self.aidant,
             "data": [
@@ -220,11 +238,10 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
     form_class = SelectDemarcheForm
 
     def dispatch(self, request, *args, **kwargs):
-        result = self.check_connection(request)
-        if isinstance(result, HttpResponse):
+        if isinstance(result := self.check_connection(request), HttpResponse):
             return result
-        else:
-            self.connection = result
+
+        self.connection = result
         self.aidant: Aidant = request.user
         self.usager: Usager = self.connection.usager
         self.user_demarches: AutorisationQuerySet = (
