@@ -110,16 +110,16 @@ class TestRemoteMandateMixin(TestCase):
                 | pour une durée d'un mois (31 jours) en votre nom pour les démarches\
                 | suivantes :
                 |
-                |- Argent,
-                |- Étranger,
-                |- Famille,
+                |- Argent - impôts - consomation,
+                |- Étranger - europe,
+                |- Famille - scolarité,
                 |- Justice,
                 |- Logement,
-                |- Loisirs,
-                |- Papiers - citoyenneté,
+                |- Loisirs - sport - culture,
+                |- Papiers - citoyenneté - élections,
                 |- Social - santé,
-                |- Transports,
-                |- Travail."""
+                |- Transports - mobilité,
+                |- Travail - formation."""
             ),
         )
 
@@ -142,7 +142,7 @@ class TestRemoteMandateMixin(TestCase):
                 |
                 |L'organisation COMMUNE D'HOULBEC COCHEREL va\
                 | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
-                | la démarche Papiers - citoyenneté."""
+                | la démarche Papiers - citoyenneté - élections."""
             ),
         )
 

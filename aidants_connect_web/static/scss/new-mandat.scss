@@ -207,8 +207,20 @@ body {
   }
 
   .detailed-radio-select-label-text-and-description {
-    padding: 1rem;
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
+    padding: 1rem;
+
+    .detailed-radio-select-description {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+
+      .scope {
+        flex-grow: 1;
+      }
+    }
   }
 
   .detailed-radio-select > input:checked ~ label {
