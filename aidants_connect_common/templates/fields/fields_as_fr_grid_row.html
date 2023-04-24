@@ -1,7 +1,7 @@
 <div
     class="form-grid-row fr-grid-row fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %} {{ field.css_classes }}">
-  <div class="fr-col-12 fr-col-md-5">{% if field.label %}{{ field.label_tag }}{% endif %}</div>
-  <div class="fr-col-12 fr-col-md-7">
+  <div class="fr-col-12 {% if large_label %}fr-col-md-7{% else %}fr-col-md-5{% endif %}">{% if field.label %}{{ field.label_tag }}{% endif %}</div>
+  <div class="fr-col-12 {% if large_label %}fr-col-md-5{% else %}fr-col-md-7{% endif %}">
     {{ field }}
     {% if field.help_text %}
       <p class="help-text">

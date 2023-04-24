@@ -31,8 +31,8 @@ def field_as_p(field: BoundField, p_classes=None):
 
 
 @register.inclusion_tag("fields/fields_as_fr_grid_row.html")
-def field_as_fr_grid_row(field: BoundField):
-    return field_as_something(field)
+def field_as_fr_grid_row(field: BoundField, large_label=False):
+    return field_as_something(field, large_label=large_label)
 
 
 @register.inclusion_tag("fields/fields_as_narrow_fr_grid_row.html")

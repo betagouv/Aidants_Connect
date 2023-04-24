@@ -330,9 +330,7 @@ class OTPForm(forms.Form):
 
 
 class RecapMandatForm(OTPForm, forms.Form):
-    personal_data = forms.BooleanField(
-        label="J’autorise mon aidant à utiliser mes données à caractère personnel."
-    )
+    personal_data = forms.BooleanField()
 
 
 class CarteOTPSerialNumberForm(forms.Form):

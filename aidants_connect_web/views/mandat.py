@@ -472,6 +472,7 @@ class RemoteConsentSecondStepView(
 class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
     form_class = RecapMandatForm
     template_name = "aidants_connect_web/new_mandat/new_mandat_recap.html"
+    check_connection_expiration = False
 
     def dispatch(self, request, *args, **kwargs):
         if isinstance(result := self.check_connection(request), HttpResponse):
@@ -492,13 +493,16 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
         try:
             return {
                 **super().get_context_data(**kwargs),
-                "aidant": self.aidant,
+                "aidant": self.connection.aidant,
                 "usager": self.connection.usager,
-                "demarches": [
-                    humanize_demarche_names(demarche)
-                    for demarche in self.connection.demarches
-                ],
+                "organisation": self.connection.organisation,
                 "duree": self.connection.get_duree_keyword_display(),
+                "demarches": {
+                    settings.DEMARCHES[name]["titre"]: (
+                        settings.DEMARCHES[name]["description"]
+                    )
+                    for name in self.connection.demarches
+                },
                 "is_remote": self.connection.mandat_is_remote,
             }
         except TypeError as e:

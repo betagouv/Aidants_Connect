@@ -1,6 +1,6 @@
 @use "colors";
 
-.mandate-elements-summary {
+.mandate-summary-block {
   strong {
     font-weight: bold;
     color: colors.$blue-aidants;
@@ -11,30 +11,20 @@
     padding: 0;
   }
 
-  ul {
+  > ul {
     margin-top: 1rem;
     list-style-type: none;
 
-    li {
+    > li {
       align-items: center;
       display: flex;
       margin: 0 0 1rem 0;
 
       &::before {
-        background: colors.$red-aidants;
-        border-radius: 50%;
-        color: white;
-        content: '✔';
-        font-size: x-large;
-        height: 2rem;
-        line-height: 2rem;
         margin-right: 2rem;
-        min-width: 2rem;
-        text-align: center;
-        width: 2rem;
       }
 
-      .mandate-element-item {
+      > * {
         align-items: center;
         display: flex;
         flex-grow: 1;
@@ -47,4 +37,8 @@
       }
     }
   }
+}
+
+.mandate-elements-summary > ul > li::before {
+  content: url("/static/images/icons/tick-checked.svg");
 }

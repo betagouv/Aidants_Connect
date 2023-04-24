@@ -129,12 +129,18 @@ h2, .h2 {
 h3, .h3 {
   color: colors.$light-blue-anct;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: normal;
   margin: 2.5rem 0 1.5rem;
   line-height: 1.25;
 
   &:first-child, legend + & {
     margin-top: 0;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  &.upper {
+    text-transform: uppercase;
   }
 }
 

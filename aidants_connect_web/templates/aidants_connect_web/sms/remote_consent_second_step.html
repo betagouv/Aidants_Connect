@@ -5,8 +5,7 @@
 {% block title %}Aidants Connect - Récapitulatif envoyé{% endblock %}
 
 {% block extracss %}
-
-  <link href="{% static 'css/remote_consent_second_step.css' %}" rel="stylesheet">
+  <link href="{% static 'css/mandate-elements.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -17,39 +16,21 @@
       {% endfor %}
     {% endif %}
 
-    <form method="post">
-      <h1>Récapitulatif du mandat</h1>
-      <h2>Consentement à distance</h2>
-      <p class="subtitle">
-        Un premier SMS va être envoyé à la personne accompagnée pour qu'elle puisse vérifier les caractéristiques du
-        mandat que vous proposez de créer. Un second SMS lui sera envoyé à l'étape suivante pour lui demander son
-        consentement.
-      </p>
+    <h1>Récapitulatif du mandat</h1>
+    <h2>Consentement à distance</h2>
+    <p class="subtitle">
+      Un premier SMS va être envoyé à la personne accompagnée pour qu'elle puisse vérifier les caractéristiques du
+      mandat que vous proposez de créer. Un second SMS lui sera envoyé à l'étape suivante pour lui demander son
+      consentement.
+    </p>
 
+    <form class="fr-col-12 fr-col-lg-8" method="post">
+      {% csrf_token %}
       <h3 class="h3-prime">Éléments du mandat</h3>
 
-      <section class="shadowed padding-2rem fr-col-12 fr-col-xl-8 mandate-elements-summary">
-        <p>
-          Un SMS a été envoyé au numéro <strong>{{ user_phone }}</strong> pour récapituler les éléments suivants du
-          mandat proposé :
-        </p>
-        <ul>
-          {% for title, description in demarches.items %}
-            <li>
-              <div class="fr-grid-row mandate-element-item">
-                <strong class="fr-col-12 fr-col-md-3">{{ title }}</strong>
-                <p class="fr-col-12 fr-col-md-9">{{ description }}</p>
-              </div>
-            </li>
-          {% endfor %}
-        </ul>
-        <p><strong>{{ duree|capfirst }}.</strong></p>
-      </section>
+      {% include "aidants_connect_web/sms/_mandate-elements-sms.html" %}
 
-      <section class="button-box standalone fr-col-12 fr-col-xl-8">
-        {% csrf_token %}
-        <button class="primary" type="submit">Demander le consentement.</button>
-      </section>
+      <input type="submit" class="float-right button primary" value="Envoyer la demande de consentement par SMS"/>
     </form>
   </div>
 {% endblock content %}

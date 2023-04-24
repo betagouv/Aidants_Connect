@@ -78,7 +78,7 @@
       {% fields_as_fieldset form.duree fieldset_classes="duree-section container-small" legend_classes="sr-only" %}
 
       <fieldset class="container-small is-remote-section">
-        <section class="shadowed margin-bottom-1em mandate-is-remote-field">
+        <section class="shadowed margin-bottom-1rem mandate-is-remote-field">
           {{ form.is_remote }}
           {{ form.is_remote.label_tag }}
         </section>
@@ -99,7 +99,7 @@
           </legend>
           {% for subfield in form.remote_constent_method %}
             <div
-              class="detailed-radio-select shadowed margin-bottom-1em"
+              class="detailed-radio-select shadowed margin-bottom-1rem"
               data-controller="remote-method-controller"
               data-remote-method-controller-consent-method-value="{{ subfield.data.value }}"
             >
