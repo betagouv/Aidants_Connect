@@ -921,6 +921,12 @@ class AidantModelTests(TestCase):
         Aidant.objects.create(username="Marge", organisation=self.superuser_org)
         self.assertRaises(IntegrityError, Aidant.objects.create, username="Marge")
 
+    def test_what_happens_when_an_aidant_tries_to_use_same_email(self):
+        Aidant.objects.create(email="Test@test.test", organisation=self.superuser_org)
+        self.assertRaises(
+            IntegrityError, Aidant.objects.create, username="TEST@TEST.TEST"
+        )
+
     def test_get_aidant_organisation(self):
         orga = OrganisationFactory(
             name="COMMUNE DE HOULBEC COCHEREL",
