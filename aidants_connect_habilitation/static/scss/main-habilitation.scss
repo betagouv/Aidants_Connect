@@ -19,6 +19,7 @@ body {
 ul, ol {
   margin: 0;
   padding: 0;
+  list-style-position: inside;
 }
 
 svg.previews {
@@ -146,7 +147,7 @@ h3.h3-prime {
   margin: 2rem 0;
 }
 
-h4.h4-prime {
+.h4-prime {
   display: block;
   color: colors.$blue-aidants;
   font-weight: bold;

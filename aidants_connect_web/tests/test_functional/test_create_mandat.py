@@ -14,7 +14,6 @@ from requests import post as requests_post
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import url_matches
-from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.constants import RemoteConsentMethodChoices
@@ -37,8 +36,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.aidant: Aidant = AidantFactory(post__with_otp_device=["123456", self.otp])
 
     def test_create_new_mandat(self):
-        wait = WebDriverWait(self.selenium, 10)
-
         self.open_live_url("/usagers/")
 
         self.login_aidant(self.aidant)
@@ -54,33 +51,29 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
 
         # Create new mandat
-        add_usager_button = self.selenium.find_element(By.ID, "add_usager")
-        add_usager_button.click()
+        self.selenium.find_element(By.ID, "add_usager").click()
+        self.wait.until(self.path_matches("new_mandat"))
 
-        demarches_section = self.selenium.find_element(By.ID, "demarches")
-        demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
-        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
+        demarches_section = self.selenium.find_element(
+            By.CSS_SELECTOR, ".demarche-section"
+        )
 
-        demarches_grid = self.selenium.find_element(By.ID, "demarches_list")
-        demarches = demarches_grid.find_elements(By.TAG_NAME, "input")
+        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
 
-        demarches_section.find_element(By.ID, "argent").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
         ).click()
-        demarches_section.find_element(By.ID, "famille").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
         ).click()
 
-        duree_section = self.selenium.find_element(By.ID, "duree")
-        duree_section.find_element(By.ID, "SHORT").find_element(
-            By.TAG_NAME, "label"
-        ).click()
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_duree_short ~ label").click()
 
         # FranceConnect
         fc_button = self.selenium.find_element(By.ID, "submit_button")
         fc_button.click()
-        wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)
 
@@ -96,7 +89,7 @@ class CreateNewMandatTests(FunctionalTestCase):
             By.ID, "fi-identity-provider-example"
         )
         demonstration_hex.click()
-        wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
@@ -104,12 +97,12 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
-        wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
+        self.wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -142,8 +135,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertEqual(len(active_mandats_after), 2)
 
     def test_create_new_remote_mandat_with_legacy_consent(self):
-        wait = WebDriverWait(self.selenium, 10)
-
         self.open_live_url("/usagers/")
 
         self.login_aidant(self.aidant)
@@ -159,27 +150,24 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
 
         # Create new mandat
-        add_usager_button = self.selenium.find_element(By.ID, "add_usager")
-        add_usager_button.click()
+        self.selenium.find_element(By.ID, "add_usager").click()
+        self.wait.until(self.path_matches("new_mandat"))
 
-        demarches_section = self.selenium.find_element(By.ID, "demarches")
-        demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
-        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
-
-        demarches_grid = self.selenium.find_element(By.ID, "demarches_list")
-        demarches = demarches_grid.find_elements(By.TAG_NAME, "input")
+        demarches_section = self.selenium.find_element(
+            By.CSS_SELECTOR, ".demarche-section"
+        )
+        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
 
-        demarches_section.find_element(By.ID, "argent").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
         ).click()
-        demarches_section.find_element(By.ID, "famille").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
         ).click()
 
-        duree_section = self.selenium.find_element(By.ID, "duree")
-        short_duree_label = duree_section.find_element(By.ID, "SHORT").find_element(
-            By.TAG_NAME, "label"
+        short_duree_label = self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_duree_short ~ label"
         )
         self.assertEqual(
             "Mandat court (expire demain)", short_duree_label.text.replace("\n", " ")
@@ -190,18 +178,21 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "id_is_remote").click()
         self.assertEqual(
             "Mandat court à distance (expire demain)",
-            duree_section.find_element(By.ID, "SHORT")
-            .find_element(By.TAG_NAME, "label")
-            .text.replace("\n", " "),
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "#id_duree_short ~ label"
+            ).text.replace("\n", " "),
         )
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
-        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_legacy"))
-        for elt in self.selenium.find_elements(
-            By.CSS_SELECTOR, "#id_remote_constent_method > input"
-        ):
-            self.assertTrue(elt.get_attribute("required"))
+        self.wait.until(
+            self._element_is_required(By.ID, "id_remote_constent_method_legacy")
+        )
+        elts = self.selenium.find_elements(
+            By.CSS_SELECTOR, 'input[id^="id_remote_constent_method"]'
+        )
+        self.assertEqual(2, len(elts))
+        [self.assertTrue(elt.get_attribute("required")) for elt in elts]
 
         # # Select legacy consent method
         text = RemoteConsentMethodChoices.LEGACY.label["label"]
@@ -210,7 +201,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         # FranceConnect
         fc_button = self.selenium.find_element(By.ID, "submit_button")
         fc_button.click()
-        wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)
 
@@ -226,7 +217,7 @@ class CreateNewMandatTests(FunctionalTestCase):
             By.ID, "fi-identity-provider-example"
         )
         demonstration_hex.click()
-        wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
@@ -234,12 +225,12 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
-        wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
+        self.wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -282,7 +273,6 @@ class CreateNewMandatTests(FunctionalTestCase):
     @mock.patch("aidants_connect_web.views.mandat.uuid4")
     def test_create_new_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
         uuid4_mock.return_value = UUID
-        wait = WebDriverWait(self.selenium, 10)
 
         self.open_live_url("/usagers/")
 
@@ -299,45 +289,44 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
 
         # Create new mandat
-        add_usager_button = self.selenium.find_element(By.ID, "add_usager")
-        add_usager_button.click()
+        self.selenium.find_element(By.ID, "add_usager").click()
+        self.wait.until(self.path_matches("new_mandat"))
 
-        demarches_section = self.selenium.find_element(By.ID, "demarches")
-        demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
-        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
-
-        demarches_grid = self.selenium.find_element(By.ID, "demarches_list")
-        demarches = demarches_grid.find_elements(By.TAG_NAME, "input")
+        demarches_section = self.selenium.find_element(
+            By.CSS_SELECTOR, ".demarche-section"
+        )
+        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
 
-        demarches_section.find_element(By.ID, "argent").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
         ).click()
-        demarches_section.find_element(By.ID, "famille").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
         ).click()
 
-        duree_section = self.selenium.find_element(By.ID, "duree")
-        short_duree_label = duree_section.find_element(By.ID, "SHORT").find_element(
-            By.TAG_NAME, "label"
+        short_duree_label = self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_duree_short ~ label"
         )
+        short_duree_label.click()
         self.assertEqual(
             "Mandat court (expire demain)", short_duree_label.text.replace("\n", " ")
         )
-        short_duree_label.click()
 
         # Select remote method
         self.selenium.find_element(By.ID, "id_is_remote").click()
         self.assertEqual(
             "Mandat court à distance (expire demain)",
-            duree_section.find_element(By.ID, "SHORT")
-            .find_element(By.TAG_NAME, "label")
-            .text.replace("\n", " "),
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "#id_duree_short ~ label"
+            ).text.replace("\n", " "),
         )
 
         # Check that I must fill a remote consent method
         # # wait for the execution of JS
-        wait.until(self._element_is_required(By.ID, "id_remote_constent_method_sms"))
+        self.wait.until(
+            self._element_is_required(By.ID, "id_remote_constent_method_sms")
+        )
         elts = self.selenium.find_elements(
             By.CSS_SELECTOR, 'input[id^="id_remote_constent_method"]'
         )
@@ -347,18 +336,20 @@ class CreateNewMandatTests(FunctionalTestCase):
         # # Select SMS consent method
         text = RemoteConsentMethodChoices.SMS.label["label"]
         self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
-        wait.until(self._element_is_required(By.ID, "id_user_phone"))
-        wait.until(self._element_is_required(By.ID, "id_user_remote_contact_verified"))
+        self.wait.until(self._element_is_required(By.ID, "id_user_phone"))
+        self.wait.until(
+            self._element_is_required(By.ID, "id_user_remote_contact_verified")
+        )
         self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
         self.selenium.find_element(By.ID, "id_user_remote_contact_verified").click()
 
         # # Send recap mandate and go to second step
         self.selenium.find_element(By.ID, "submit_button").click()
-        wait.until(self.path_matches("new_mandat_remote_second_step"))
+        self.wait.until(self.path_matches("new_mandat_remote_second_step"))
 
         # # Send user consent request
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-        wait.until(self.path_matches("new_mandat_waiting_room"))
+        self.wait.until(self.path_matches("new_mandat_waiting_room"))
 
         # # Test the message is correctly logged
         consent_request_log: Journal = Journal.objects.find_sms_consent_requests(
@@ -372,15 +363,15 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # # Test that page blocks until user has consented
         self.selenium.refresh()
-        wait.until(self.path_matches("new_mandat_waiting_room"))
+        self.wait.until(self.path_matches("new_mandat_waiting_room"))
 
         # Try to force creation of mandate; should be redirected to waiting room
         self.open_live_url(reverse("new_mandat_recap"))
-        wait.until(self.path_matches("new_mandat_waiting_room"))
+        self.wait.until(self.path_matches("new_mandat_waiting_room"))
 
         # Simulate user content
         self._user_consents("0 800 840 800")
-        wait.until(self._user_has_responded("0 800 840 800"))
+        self.wait.until(self._user_has_responded("0 800 840 800"))
         # # Test user consent is correctly logged
         user_consent_log: Journal = Journal.objects.find_sms_user_consent(
             parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION), UUID
@@ -398,7 +389,7 @@ class CreateNewMandatTests(FunctionalTestCase):
             )
         """
         )
-        wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
         self.assertEqual("Connexion - choix du compte", self.selenium.title)
 
@@ -414,7 +405,7 @@ class CreateNewMandatTests(FunctionalTestCase):
             By.ID, "fi-identity-provider-example"
         )
         demonstration_hex.click()
-        wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
@@ -422,12 +413,12 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
         self.assertEqual(submit_button.get_attribute("type"), "submit")
         submit_button.click()
-        wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
+        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
+        self.wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text

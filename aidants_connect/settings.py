@@ -286,14 +286,14 @@ AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 
 DEMARCHES = {
     "papiers": {
-        "titre": "Papiers - Citoyenneté",
+        "titre": "Papiers - Citoyenneté - Élections",
         "titre_court": "Papiers",
         "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",  # NOQA
         "service_exemples": ["ANTS", "Défenseur des droits"],
         "icon": "/static/images/icons/papiers.svg",
     },
     "famille": {
-        "titre": "Famille",
+        "titre": "Famille - Scolarité",
         "titre_court": "Famille",
         "description": "Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
         "service_exemples": ["CAF", "ameli.fr", "EduConnect"],
@@ -307,7 +307,7 @@ DEMARCHES = {
         "icon": "/static/images/icons/social.svg",
     },
     "travail": {
-        "titre": "Travail",
+        "titre": "Travail - Formation",
         "titre_court": "Travail",
         "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
         "service_exemples": ["Pôle emploi", "Mon compte formation", "info-retraite.fr"],
@@ -321,14 +321,14 @@ DEMARCHES = {
         "icon": "/static/images/icons/logement.svg",
     },
     "transports": {
-        "titre": "Transports",
+        "titre": "Transports - Mobilité",
         "titre_court": "Transports",
         "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",  # NOQA
         "service_exemples": ["ANTS", "ANTAI", "Crit'air"],
         "icon": "/static/images/icons/transports.svg",
     },
     "argent": {
-        "titre": "Argent",
+        "titre": "Argent - Impôts - Consomation",
         "titre_court": "Argent",
         "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
         "Surendettement…",
@@ -343,14 +343,14 @@ DEMARCHES = {
         "icon": "/static/images/icons/justice.svg",
     },
     "etranger": {
-        "titre": "Étranger",
+        "titre": "Étranger - Europe",
         "titre_court": "Étranger",
         "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",  # NOQA
         "service_exemples": ["OFPRA"],
         "icon": "/static/images/icons/etranger.svg",
     },
     "loisirs": {
-        "titre": "Loisirs",
+        "titre": "Loisirs - Sport - Culture",
         "titre_court": "Loisirs",
         "description": "Animaux, Permis bateau, Tourisme, Permis de chasser…",
         "service_exemples": ["Ariane"],

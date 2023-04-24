@@ -52,25 +52,20 @@ class RenewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        demarches_section = self.selenium.find_element(By.ID, "demarches")
-        demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
-        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
-
-        demarches_grid = self.selenium.find_element(By.ID, "demarches_list")
-        demarches = demarches_grid.find_elements(By.TAG_NAME, "input")
+        demarches_section = self.selenium.find_element(
+            By.CSS_SELECTOR, ".demarche-section"
+        )
+        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
 
-        demarches_section.find_element(By.ID, "argent").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
         ).click()
-        demarches_section.find_element(By.ID, "famille").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
         ).click()
 
-        duree_section = self.selenium.find_element(By.ID, "duree")
-        duree_section.find_element(By.ID, "SHORT").find_element(
-            By.TAG_NAME, "label"
-        ).click()
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_duree_short ~ label").click()
 
         # Renew Mandat
         fc_button = self.selenium.find_element(By.ID, "submit_renew_button")
@@ -115,24 +110,21 @@ class RenewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        demarches_section = self.selenium.find_element(By.ID, "demarches")
-        demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
-        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
-
-        demarches_grid = self.selenium.find_element(By.ID, "demarches_list")
-        demarches = demarches_grid.find_elements(By.TAG_NAME, "input")
+        demarches_section = self.selenium.find_element(
+            By.CSS_SELECTOR, ".demarche-section"
+        )
+        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
 
-        demarches_section.find_element(By.ID, "argent").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
         ).click()
-        demarches_section.find_element(By.ID, "famille").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
         ).click()
 
-        duree_section = self.selenium.find_element(By.ID, "duree")
-        short_duree_label = duree_section.find_element(By.ID, "SHORT").find_element(
-            By.TAG_NAME, "label"
+        short_duree_label = self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_duree_short ~ label"
         )
         self.assertEqual(
             "Mandat court (expire demain)", short_duree_label.text.replace("\n", " ")
@@ -143,9 +135,9 @@ class RenewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "id_is_remote").click()
         self.assertEqual(
             "Mandat court à distance (expire demain)",
-            duree_section.find_element(By.ID, "SHORT")
-            .find_element(By.TAG_NAME, "label")
-            .text.replace("\n", " "),
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "#id_duree_short ~ label"
+            ).text.replace("\n", " "),
         )
 
         # Check that I must fill a remote consent method
@@ -153,10 +145,11 @@ class RenewMandatTests(FunctionalTestCase):
         self.wait.until(
             self._element_is_required(By.ID, "id_remote_constent_method_legacy")
         )
-        for elt in self.selenium.find_elements(
-            By.CSS_SELECTOR, "#id_remote_constent_method > input"
-        ):
-            self.assertTrue(elt.get_attribute("required"))
+        elts = self.selenium.find_elements(
+            By.CSS_SELECTOR, 'input[id^="id_remote_constent_method"]'
+        )
+        self.assertEqual(2, len(elts))
+        [self.assertTrue(elt.get_attribute("required")) for elt in elts]
 
         # # Select legacy consent method
         text = RemoteConsentMethodChoices.LEGACY.label["label"]
@@ -216,24 +209,21 @@ class RenewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        demarches_section = self.selenium.find_element(By.ID, "demarches")
-        demarche_title = demarches_section.find_element(By.TAG_NAME, "h2").text
-        self.assertEqual(demarche_title, "Étape 1 : Sélectionnez la ou les démarche(s)")
-
-        demarches_grid = self.selenium.find_element(By.ID, "demarches_list")
-        demarches = demarches_grid.find_elements(By.TAG_NAME, "input")
+        demarches_section = self.selenium.find_element(
+            By.CSS_SELECTOR, ".demarche-section"
+        )
+        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
 
-        demarches_section.find_element(By.ID, "argent").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
         ).click()
-        demarches_section.find_element(By.ID, "famille").find_element(
-            By.TAG_NAME, "label"
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
         ).click()
 
-        duree_section = self.selenium.find_element(By.ID, "duree")
-        short_duree_label = duree_section.find_element(By.ID, "SHORT").find_element(
-            By.TAG_NAME, "label"
+        short_duree_label = self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_duree_short ~ label"
         )
         self.assertEqual(
             "Mandat court (expire demain)", short_duree_label.text.replace("\n", " ")
@@ -244,9 +234,9 @@ class RenewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "id_is_remote").click()
         self.assertEqual(
             "Mandat court à distance (expire demain)",
-            duree_section.find_element(By.ID, "SHORT")
-            .find_element(By.TAG_NAME, "label")
-            .text.replace("\n", " "),
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "#id_duree_short ~ label"
+            ).text.replace("\n", " "),
         )
 
         # Check that I must fill a remote consent method

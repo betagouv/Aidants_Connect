@@ -25,8 +25,9 @@ def fields_as_fieldset(field: BoundField, fieldset_classes=None, legend_classes=
 
 
 @register.inclusion_tag("fields/fields_as_p.html")
-def field_as_p(field: BoundField):
-    return field_as_something(field)
+def field_as_p(field: BoundField, p_classes=None):
+    p_classes = field.css_classes(p_classes)
+    return field_as_something(field, p_classes=p_classes)
 
 
 @register.inclusion_tag("fields/fields_as_fr_grid_row.html")
