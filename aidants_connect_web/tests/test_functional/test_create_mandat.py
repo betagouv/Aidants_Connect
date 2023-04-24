@@ -106,8 +106,8 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(recap_title, "Récapitulatif du mandat")
-        recap_text = self.selenium.find_element(By.ID, "recap_text").text
+        self.assertEqual("RÉCAPITULATIF DU MANDAT", recap_title)
+        recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
         id_personal_data = checkboxes[1]
@@ -234,8 +234,8 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(recap_title, "Récapitulatif du mandat")
-        recap_text = self.selenium.find_element(By.ID, "recap_text").text
+        self.assertEqual("RÉCAPITULATIF DU MANDAT À DISTANCE", recap_title)
+        recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
         id_personal_data = checkboxes[1]
@@ -422,8 +422,8 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(recap_title, "Récapitulatif du mandat")
-        recap_text = self.selenium.find_element(By.ID, "recap_text").text
+        self.assertEqual("RÉCAPITULATIF DU MANDAT À DISTANCE", recap_title)
+        recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
         id_personal_data = checkboxes[1]

@@ -400,11 +400,6 @@ class RecapMandatFormTests(TestCase):
         device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 
-    def test_form_renders_item_text_input(self):
-        self.client.force_login(self.aidant_thierry)
-        form = RecapMandatForm(aidant=self.aidant_thierry)
-        self.assertIn("autorise", form.as_p())
-
     def test_valid_form(self):
         self.client.force_login(self.aidant_thierry)
         form_1 = RecapMandatForm(

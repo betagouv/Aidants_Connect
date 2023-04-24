@@ -1,85 +1,72 @@
-{% extends 'layouts/main.html' %}
-
-{% load static %}
+{% extends 'layouts/main-habilitation.html' %}
+{% load static form_extras %}
 
 {% block title %}Aidants Connect - Récapitulatif du nouveau mandat{% endblock %}
 
 {% block extracss %}
-  <link href="{% static 'css/form.css' %}" rel="stylesheet">
-  <link href="{% static 'css/new_mandat.css' %}" rel="stylesheet">
+  <link href="{% static 'css/mandate-elements.css' %}" rel="stylesheet">
+  <link href="{% static 'css/mandate-recap.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-  <div class="hero">
-    <div class="container hero__container">
-      <h1>Récapitulatif du mandat</h1>
-    </div>
+  <div class="fr-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form class="fr-col-12 fr-col-lg-8" method="post">
+      {% csrf_token %}
+
+      <h1>Récapitulatif du mandat{% if is_remote %} à distance{% endif %}</h1>
+
+      <p class="subtitle">Retrouvez ici toutes les informations relatives au mandat avant de procéder à sa
+        validation.</p>
+
+      <h3 class="upper clearfix">
+        <span class="align-middle">Éléments du mandat</span>
+        <span class="float-right">
+          <a class="button primary" href="{% url 'new_attestation_projet' %}" target="_blank" rel="noopener noreferrer">
+            Voir le projet de mandat
+          </a>
+        </span>
+      </h3>
+
+      {% include "aidants_connect_web/new_mandat/_mandate-elements.html" %}
+
+      <h3 class="upper">Validation de l’usager</h3>
+
+      <section class="shadowed red padding-2rem margin-bottom-2rem mandate-summary-block">
+        <p class="reminder-title">Rappels</p>
+        <ul>
+          <li class="i-handshake">Le mandat est révocable à tout moment par les deux parties</li>
+          <li class="i-eyes">L’usager a des droits d’accès, de rectification et de suppression sur ses données</li>
+          <li class="i-warning">L’usager n’est pas sous tutelle ou curatelle</li>
+        </ul>
+      </section>
+
+      <section class="shadowed padding-2rem margin-bottom-2rem mandate-summary-block">
+        <p class="margin-bottom-1rem">
+          En cochant ces cases, <strong>{{ aidant.get_full_name }}</strong> confirme :
+        </p>
+        <div class="errors">{{ form.personal_data.errors }}</div>
+        {{ form.personal_data }}
+        <label for="{{ form.personal_data.id_for_label }}">
+          Avoir communiqué à <strong>{{ usager.get_full_name }}</strong> les informations concernant l’objet de
+          l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits
+          sur ses données ET avoir conservé son consentement écrit (capture d'écran email, SMS…) pour conclure le
+          mandat et utiliser ses données à caractère personnel.
+        </label>
+      </section>
+
+      <h3 class="upper">Validation de l’aidant</h3>
+
+      <section class="shadowed padding-2rem margin-bottom-2rem">
+        {% field_as_fr_grid_row form.otp_token large_label=True %}
+      </section>
+
+      <input type="submit" class="float-right button primary" value="Enregistrer le mandat"/>
+    </form>
   </div>
-  <section class="section section-grey">
-    <div class="container container-small">
-      <form method="post">
-        {% if form.errors %}
-          <div class="notification error" role="alert">{{ form.errors }}</div>
-        {% endif %}
-        {% csrf_token %}
-        <a class="button-outline primary small float-right" href="{% url 'new_attestation_projet' %}" target="_blank" rel="noopener noreferrer">Voir le projet de mandat</a>
-        <h2>Éléments du mandat</h2>
-        <div class="panel">
-          <div class="form__group">
-            <div id="recap_text">
-              <strong>{{ usager }}</strong> autorise <strong>{{ aidant.organisation }}</strong> à réaliser à sa place
-              les démarches administratives suivantes :
-            </div>
-            <ul>
-              {% for demarche in demarches %}
-                <li>{{ demarche }}</li>
-              {% endfor %}
-            </ul>
-            <p><strong>{{ duree }}.</strong></p>
-            {% if is_remote %}
-            <div><i>Mandat réalisé à distance</i></div>
-            {% endif %}
-          </div>
-        </div>
-        <h2>Validation de l'usager</h2>
-        {% if form.non_field_errors %}
-          <div class="notification error" role="alert">{{ form.non_field_errors }}</div>
-        {% endif %}
-        <div class="panel form__group">
-          <div class="margin-bottom-1em">En cochant les cases, <strong>{{ aidant }}</strong> confirme :</div>
-          <div class="checkbox__group margin-bottom-1em">
-            <input type="checkbox" id="id_personal_data" name="personal_data" required />
-            <label class="label-inline" for="id_personal_data">
-              Avoir communiqué à <strong>{{ usager }}</strong> les informations concernant l’objet de l’intervention,
-              la raison pour laquelle ses informations sont collectées et leur utilité ; les droits sur ses données 
-              ET avoir conservé son consentement écrit 
-              {% if is_remote %}
-              (signature du mandat après impression) 
-              {% else %}
-              (capture d'écran email, SMS...)
-              {% endif %}
-              pour conclure le mandat et utiliser ses données à caractère personnel. 
-            </label>
-          </div>
-        <h3>Rappels</h3>
-        <p>🤝 Le mandat est révocable à tout moment par les deux parties.</p>
-        <p>🗣 L'usager a des droits d'accès, de rectification et de suppression sur ses données.</p>
-        <p>🤝 L'usager n'est pas sous tutelle ou curatelle.</p>
-        </div>
-        <h2>Validation de l'aidant</h2>
-        <div class="panel form__group">
-          <fieldset>
-            <div class="not_checkbox_group">
-              <label for="id_otp_token">{{ form.otp_token.label_tag }}</label>
-              <div class="max-width-50">{{ form.otp_token }}</div>
-            </div>
-          </fieldset>
-          <br>
-          <div class="form__group">
-            <input type="submit" class="button" value="Enregistrer le mandat" />
-          </div>
-        </div>
-      </form>
-    </div>
-  </section>
-{% endblock content %}
+{% endblock %}
