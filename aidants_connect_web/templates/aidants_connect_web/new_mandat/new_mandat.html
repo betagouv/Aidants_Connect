@@ -33,7 +33,7 @@
     {% endif %}
     <h2>Mentions à lire à l’usager</h2>
 
-    <section>
+    <section class="prior-notice fr-col-12 fr-col-lg-10">
       <p>Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :</p>
       <ul>
         <li>
@@ -49,7 +49,7 @@
           celles qui s’y rattachent ;
         </li>
         <li>
-          Vous informer et demander votre autorisation avant d’effectuer d’autres démarches que celles listées dans le
+          vous informer et demander votre autorisation avant d’effectuer d’autres démarches que celles listées dans le
           mandat ;
         </li>
         <li>mettre à jour et supprimer l’ensemble de vos informations personnelles lorsqu’elles ne sont plus utiles ;
@@ -57,8 +57,8 @@
         <li>s’interdire de rendre publiques vos informations personnelles ;</li>
         <li>prendre toutes les précautions pour assurer la sécurité de vos informations personnelles.</li>
       </ul>
-      <p>
-        À partir du moment où un aidant habilité par <strong>{{ aidant.organisation }}</strong> réalise à votre place
+      <p class="bold">
+        À partir du moment où un aidant habilité par {{ aidant.organisation }} réalise à votre place
         une des démarches listées dans le mandat, il accepte de le faire dans les conditions décrites dans le mandat.
       </p>
     </section>
@@ -72,102 +72,105 @@
       {% csrf_token %}
 
       <h4 class="step-title">Sélectionnez la ou les démarche(s)</h4>
-      {% fields_as_fieldset form.demarche fieldset_classes="demarche-section" legend_classes="sr-only" %}
+      {% fields_as_fieldset form.demarche fieldset_classes="demarches-section" legend_classes="sr-only" %}
 
-      <h4 class="step-title">Choisissez la durée du mandat</h4>
-      {% fields_as_fieldset form.duree fieldset_classes="duree-section container-small" legend_classes="sr-only" %}
+      <div class="fr-col-12 fr-col-lg-8">
+        <h4 class="step-title">Choisissez la durée du mandat</h4>
+        {% fields_as_fieldset form.duree fieldset_classes="duree-section" legend_classes="sr-only" %}
 
-      <fieldset class="container-small is-remote-section">
-        <section class="shadowed margin-bottom-1rem mandate-is-remote-field">
-          {{ form.is_remote }}
-          {{ form.is_remote.label_tag }}
-        </section>
+        <fieldset class="is-remote-section">
+          <section class="shadowed margin-bottom-1rem mandate-is-remote-field">
+            {{ form.is_remote }}
+            {{ form.is_remote.label_tag }}
+          </section>
 
-        <section
-          class="mandate-remote-method-section"
-          hidden
-          aria-hidden="true"
-          data-is-remote-controller-target="remoteConsentSection"
-        >
-          {% if form.remote_constent_method.errors %}
-            <div class="notification error" role="alert">
-              {{ form.remote_constent_method.errors }}
-            </div>{% endif %}
+          <section
+            class="mandate-remote-method-section"
+            hidden
+            aria-hidden="true"
+            data-is-remote-controller-target="remoteConsentSection"
+          >
+            {% if form.remote_constent_method.errors %}
+              <div class="notification error" role="alert">
+                {{ form.remote_constent_method.errors }}
+              </div>{% endif %}
 
-          <legend class="remote-consent-legend">
-            {{ form.remote_constent_method.label }}
-          </legend>
-          {% for subfield in form.remote_constent_method %}
-            <div
-              class="detailed-radio-select shadowed margin-bottom-1rem"
-              data-controller="remote-method-controller"
-              data-remote-method-controller-consent-method-value="{{ subfield.data.value }}"
-            >
-              <input{% html_attrs subfield.data.attrs %}
-                type="radio"
-                name="{{ subfield.data.name }}"
-                value="{{ subfield.data.value }}"
-                data-is-remote-controller-target="requiredInput"
-                data-action="is-remote-controller#remoteMethodTriggered"
+            <legend class="remote-consent-legend">
+              {{ form.remote_constent_method.label }}
+            </legend>
+            {% for subfield in form.remote_constent_method %}
+              <div
+                class="detailed-radio-select shadowed margin-bottom-1rem"
+                data-controller="remote-method-controller"
+                data-remote-method-controller-consent-method-value="{{ subfield.data.value }}"
               >
-
-              <label for="{{ subfield.id_for_label }}" {% class_attr subfield.data.label_classes %}>
-                <img
-                  src="{% static subfield.data.img_src %}"
-                  class="{{ subfield.input_wrapper_base_class }}-logo"
-                  alt=""
-                  aria-hidden="true"
-                />
-                <span class="{{ subfield.data.input_wrapper_base_class }}-label-text-and-description">
-                  <span class="detailed-radio-select-label-text">{{ subfield.choice_label }}</span>
-                  <span class="detailed-radio-select-description">{{ subfield.data.description }}</span>
-                </span>
-              </label>
-              {% if subfield.data.value == "SMS" %}
-                <div
-                  class="padding-1rem"
-                  hidden
-                  aria-hidden="true"
-                  data-remote-method-controller-target="requiredInputs"
+                <input{% html_attrs subfield.data.attrs %}
+                  type="radio"
+                  name="{{ subfield.data.name }}"
+                  value="{{ subfield.data.value }}"
+                  data-is-remote-controller-target="requiredInput"
+                  data-action="is-remote-controller#remoteMethodTriggered"
                 >
-                  {% field_as_p form.user_phone p_classes="field-block" %}
-                  {% checkbox_fr_grid_row form.user_remote_contact_verified %}
-                </div>
-              {% endif %}
-            </div>
-          {% endfor %}
-        </section>
-      </fieldset>
 
-      {% if has_mandate_translations %}
-        <h4 class="step-title">Prévisualisez un mandat traduit (à titre informatif)</h4>
-        <section class="mandate-translation-section container-small margin-bottom-6rem">
-          <div class="shadowed padding-1rem">
-            <h5 class="h4-prime">L’usager prend connaissance d’un mandat traduit</h5>
-            <p>
-              Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune valeur
-              juridique. Seul le mandat final en français a une valeur juridique valide.
-            </p>
-            <div class="button-box">
-              <a href="{% url 'mandate_translation' %}" class="button primary">Consulter le mandat traduit</a>
-            </div>
-          </div>
-        </section>
-      {% endif %}
+                <label for="{{ subfield.id_for_label }}" {% class_attr subfield.data.label_classes %}>
+                  <img
+                    src="{% static subfield.data.img_src %}"
+                    class="{{ subfield.data.input_wrapper_base_class }}-logo"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span class="{{ subfield.data.input_wrapper_base_class }}-label-text-and-description">
+                    <span class="{{ subfield.data.input_wrapper_base_class }}-text">{{ subfield.choice_label }}</span>
+                    <span class="{{ subfield.data.input_wrapper_base_class }}-description">
+                      {{ subfield.data.description }}
+                    </span>
+                  </span>
+                </label>
+                {% if subfield.data.value == "SMS" %}
+                  <div
+                    class="related-fields"
+                    hidden
+                    aria-hidden="true"
+                    data-remote-method-controller-target="requiredInputs"
+                  >
+                    {% field_as_p form.user_phone p_classes="field-block" %}
+                    {% checkbox_fr_grid_row form.user_remote_contact_verified %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </section>
+        </fieldset>
 
-      {% block input_submit_form %}
-        <h4 class="step-title">Connectez l’usager à FranceConnect</h4>
-        <section id="france_connection" class="tiles">
-          <div class="buttons">
+        {% if has_mandate_translations %}
+          <h4 class="step-title">Prévisualisez un mandat traduit (à titre informatif)</h4>
+          <section class="mandate-translation-section margin-bottom-6rem">
+            <div class="shadowed padding-1rem">
+              <h5 class="mandate-translation-title">L’usager prend connaissance d’un mandat traduit</h5>
+              <p>
+                Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune
+                valeur juridique. Seul le mandat final en français a une valeur juridique valide.
+              </p>
+              <div class="button-box">
+                <a href="{% url 'mandate_translation' %}" class="button primary">Consulter le mandat traduit</a>
+              </div>
+            </div>
+          </section>
+        {% endif %}
+
+        {% block input_submit_form %}
+          <h4 class="step-title">Connectez l’usager à FranceConnect</h4>
+          <section id="france_connection">
             <input
               id="submit_button"
+              class="submit-button"
               type="image"
-              src="{% static 'images/FCboutons-10.png' %}"
+              src="{% static 'images/FC-button.png' %}"
               alt="S’identifier avec FranceConnect"
             />
-          </div>
-        </section>
-      {% endblock input_submit_form %}
+          </section>
+        {% endblock input_submit_form %}
+      </div>
     </form>
   </div>
 {% endblock content %}

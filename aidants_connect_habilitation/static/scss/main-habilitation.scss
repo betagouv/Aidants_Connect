@@ -3,7 +3,7 @@
 @use "boxes";
 @use "detailed-radio-select";
 
-$font-stack: "Marianne", arial, sans-serif;
+$font-stack: "Marianne-Regular", arial, sans-serif;
 
 // basic layout -----------------------------------------
 
@@ -103,6 +103,10 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, .subtitle-container {
     font-size: 1.25rem;
     color: colors.$light-blue-anct;
     line-height: 2rem;
+  }
+
+  .button {
+    text-transform: none;
   }
 }
 
@@ -745,7 +749,6 @@ ol.messages-list {
     text-decoration: none;
     color: colors.$dark-grey-aidants;
     display: block;
-    padding: .25rem 0;
 
     &.active {
       color: colors.$red-aidants;
@@ -754,10 +757,6 @@ ol.messages-list {
 
     &:hover {
       box-shadow: 0 .5rem 0 colors.$off-yellow-aidants;
-    }
-
-    &.button {
-      padding: .25rem .5rem;
     }
   }
 }

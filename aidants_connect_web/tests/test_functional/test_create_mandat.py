@@ -55,7 +55,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.wait.until(self.path_matches("new_mandat"))
 
         demarches_section = self.selenium.find_element(
-            By.CSS_SELECTOR, ".demarche-section"
+            By.CSS_SELECTOR, ".demarches-section"
         )
 
         demarches = demarches_section.find_elements(By.TAG_NAME, "input")
@@ -154,7 +154,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.wait.until(self.path_matches("new_mandat"))
 
         demarches_section = self.selenium.find_element(
-            By.CSS_SELECTOR, ".demarche-section"
+            By.CSS_SELECTOR, ".demarches-section"
         )
         demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
@@ -170,14 +170,14 @@ class CreateNewMandatTests(FunctionalTestCase):
             By.CSS_SELECTOR, "#id_duree_short ~ label"
         )
         self.assertEqual(
-            "Mandat court (expire demain)", short_duree_label.text.replace("\n", " ")
+            "MANDAT COURT (expire demain)", short_duree_label.text.replace("\n", " ")
         )
         short_duree_label.click()
 
         # Select remote method
         self.selenium.find_element(By.ID, "id_is_remote").click()
         self.assertEqual(
-            "Mandat court à distance (expire demain)",
+            "MANDAT COURT À DISTANCE (expire demain)",
             self.selenium.find_element(
                 By.CSS_SELECTOR, "#id_duree_short ~ label"
             ).text.replace("\n", " "),
@@ -293,7 +293,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.wait.until(self.path_matches("new_mandat"))
 
         demarches_section = self.selenium.find_element(
-            By.CSS_SELECTOR, ".demarche-section"
+            By.CSS_SELECTOR, ".demarches-section"
         )
         demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
@@ -310,13 +310,13 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
         short_duree_label.click()
         self.assertEqual(
-            "Mandat court (expire demain)", short_duree_label.text.replace("\n", " ")
+            "MANDAT COURT (expire demain)", short_duree_label.text.replace("\n", " ")
         )
 
         # Select remote method
         self.selenium.find_element(By.ID, "id_is_remote").click()
         self.assertEqual(
-            "Mandat court à distance (expire demain)",
+            "MANDAT COURT À DISTANCE (expire demain)",
             self.selenium.find_element(
                 By.CSS_SELECTOR, "#id_duree_short ~ label"
             ).text.replace("\n", " "),
