@@ -1,5 +1,4 @@
 import hashlib
-import io
 import time
 from datetime import date, datetime
 from pathlib import Path
@@ -8,8 +7,6 @@ from typing import TYPE_CHECKING, Optional, Union
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
-
-import qrcode
 
 if TYPE_CHECKING:
     from aidants_connect_web.models import Aidant, Connection, Usager
@@ -61,13 +58,6 @@ def validate_attestation_hash(attestation_string, attestation_hash):
         attestation_string_with_salt.encode("utf-8")
     )
     return new_attestation_hash == attestation_hash
-
-
-def generate_qrcode_png(string: str):
-    stream = io.BytesIO()
-    img = qrcode.make(string)
-    img.save(stream, "PNG")
-    return stream.getvalue()
 
 
 def generate_attestation_hash(

@@ -1,0 +1,11 @@
+<div class="shadowed padding-1rem clearfix">
+  <p class="margin-bottom-1rem">Vous pouvez imprimer ce mandat en cliquant sur le bouton ci-dessous.</p>
+  <button class="primary float-right" data-action-print>Imprimer</button>
+</div>
+
+<script type="application/javascript">
+    "use strict";
+    new Promise(resolve => window.addEventListener("load", resolve)).then(() => {
+        document.querySelector("button[data-action-print]").addEventListener("click", () => window.print());
+    });
+</script>

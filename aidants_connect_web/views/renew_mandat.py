@@ -34,7 +34,6 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
 
     def dispatch(self, request, *args, **kwargs):
         request.session.pop("connection", None)
-        request.session.pop("qr_code_mandat_id", None)
 
         self.aidant: Aidant = request.user
         self.usager: Usager = self.aidant.get_usager(kwargs.get("usager_id"))

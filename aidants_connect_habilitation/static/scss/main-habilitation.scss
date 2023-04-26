@@ -599,6 +599,20 @@ fieldset {
   box-shadow: 10px 10px 0 colors.$red-aidants;
 }
 
+@media screen {
+  .print-only {
+    display: none;
+  }
+}
+
+@media print {
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+}
+
+
 // habilitation form breadcrumbs -----------------------
 
 .habilitation-breadcrumbs {
