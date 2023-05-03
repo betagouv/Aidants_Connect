@@ -1,4 +1,4 @@
-from urllib.parse import unquote, urlencode
+from urllib.parse import unquote
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -19,7 +19,6 @@ from aidants_connect_web.models import Aidant, Journal, Organisation
 @login_required
 def home(request):
     aidant = request.user
-    parameters = urlencode({"next": reverse("new_mandat")})
     sos_href = mailto_href(
         recipient="contact@aidantsconnect.beta.gouv.fr",
         subject="sos",
@@ -33,7 +32,6 @@ def home(request):
         request,
         "aidants_connect_web/espace_aidant/home.html",
         {
-            "new_mandat_url": f"{reverse('clear_connection')}?{parameters}",
             "aidant": aidant,
             "sos_href": sos_href,
             "sandbox_url": settings.SANDBOX_URL,

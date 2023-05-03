@@ -101,11 +101,6 @@ urlpatterns = [
         name="renew_mandat_waiting_room_json",
     ),
     # new mandat
-    path(
-        "clear_connection/",
-        mandat.ClearConnectionView.as_view(),
-        name="clear_connection",
-    ),
     path("creation_mandat/", mandat.NewMandat.as_view(), name="new_mandat"),
     path(
         "creation_mandat/recapitulatif/",
