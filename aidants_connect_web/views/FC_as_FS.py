@@ -1,10 +1,12 @@
 import logging
 from secrets import token_urlsafe
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.db import IntegrityError
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 import jwt
 import requests as python_request
@@ -57,7 +59,7 @@ def fc_authorize(request):
 
 
 def fc_callback(request):
-    def fc_error(log_msg):
+    def fc_error(log_msg, connection_id=None):
         log.error(log_msg)
         django_messages.error(
             request,
@@ -65,7 +67,12 @@ def fc_callback(request):
             "France Connect. C'est probabablement temporaire. Pouvez-vous réessayer "
             "votre requête ?",
         )
-        return redirect("new_mandat")
+
+        query_params = (
+            f"?{urlencode({'connection_id': connection_id})}" if connection_id else ""
+        )
+
+        return redirect(f"{reverse('new_mandat')}{query_params}")
 
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
@@ -82,15 +89,16 @@ def fc_callback(request):
     if request.GET.get("error"):
         return fc_error(
             f"FranceConnect returned an error: "
-            f"{request.GET.get('error_description')}"
+            f"{request.GET.get('error_description')}",
+            connection.pk,
         )
 
     if connection.is_expired:
-        return fc_error("408: FC connection has expired.")
+        return fc_error("408: FC connection has expired.", connection.pk)
 
     code = request.GET.get("code")
     if not code:
-        return fc_error("FC AS FS: no code has been provided")
+        return fc_error("FC AS FS: no code has been provided", connection.pk)
 
     token_url = f"{fc_base}/token"
     payload = {
@@ -109,14 +117,16 @@ def fc_callback(request):
     except ValueError:  # not a valid JSON
         return fc_error(
             f"Request to {token_url} failed. Status code: "
-            f"{request_for_token.status_code}, body: {request_for_token.text}"
+            f"{request_for_token.status_code}, body: {request_for_token.text}",
+            connection.pk,
         )
 
     connection.access_token = content.get("access_token")
     if connection.access_token is None:
         return fc_error(
             f"No access_token return when requesting {token_url}. JSON response: "
-            f"{repr(content)}"
+            f"{repr(content)}",
+            connection.pk,
         )
 
     connection.save()
@@ -130,18 +140,20 @@ def fc_callback(request):
             algorithms=["HS256"],
         )
     except ExpiredSignatureError:
-        return fc_error("403: token signature has expired.")
+        return fc_error("403: token signature has expired.", connection.pk)
 
     if connection.nonce != decoded_token.get("nonce"):
-        return fc_error("FC as FS: The nonce is different than the one expected")
+        return fc_error(
+            "FC as FS: The nonce is different than the one expected", connection.pk
+        )
 
     if connection.is_expired:
-        log.info("408: FC connection has expired.")
+        log.info("408: FC connection has expired.", connection.pk)
         return render(request, "408.html", status=408)
 
     usager, error = get_user_info(connection)
     if error:
-        return fc_error(error)
+        return fc_error(error, connection.pk)
 
     connection.usager = usager
     connection.save()

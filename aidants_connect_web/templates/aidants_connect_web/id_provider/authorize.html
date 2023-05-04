@@ -24,10 +24,11 @@
                 <div class="fr-col-12">
                   <label id="filter-input-label" for="anonymous-filter-input">Rechercher un usager :</label>
                   <input type="text" id="anonymous-filter-input" required/>
-                  <input id="anonymous-filter-input-id" name="chosen_usager" aria-hidden="true" hidden/>
+                  <input id="anonymous-filter-input-id" name="chosen_usager" type="hidden"/>
                   <div id="autocomplete" class="autocomplete-input_wrapper input-spinner-wrapper"></div>
                 </div>
                 {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
+                <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
                 {% csrf_token %}
               </div>
               <button id="submit-button" class="primary float-right" type="submit">Séléctionner</button>
@@ -51,13 +52,13 @@
               <form class="user-detail-item" method="post">
                 {% csrf_token %}
                 {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
+                  <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
                 <span>{{ usager.get_full_name }}</span>
                 <input
                   id="filter-input-id"
                   name="chosen_usager"
                   value="{{ usager.id }}"
-                  aria-hidden="true"
-                  hidden
+                  type="hidden"
                 />
                 <button class="primary" type="submit" data-user-id="{{ usager.id }}">Sélectionner</button>
               </form>

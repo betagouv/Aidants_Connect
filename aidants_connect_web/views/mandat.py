@@ -2,7 +2,6 @@ import logging
 import re
 from datetime import date
 from typing import Callable, List
-from urllib.parse import unquote_plus
 from uuid import uuid4
 
 from django.conf import settings
@@ -18,7 +17,7 @@ from django.utils import formats, timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import FormView, RedirectView, TemplateView, View
+from django.views.generic import FormView, TemplateView, View
 
 from phonenumbers import PhoneNumber
 
@@ -368,13 +367,18 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
     template_name = "aidants_connect_web/new_mandat/new_mandat.html"
 
     def dispatch(self, request, *args, **kwargs):
+        # Clean the session
+        request.session.pop("connection", None)
+        request.session.pop("qr_code_mandat_id", None)
+
         self.aidant: Aidant = request.user
 
-        try:
-            self.connection = Connection.objects.get(
-                pk=request.session.get("connection")
-            )
-        except Connection.DoesNotExist:
+        if connection_id := kwargs.get("connection_id"):
+            try:
+                self.connection = Connection.objects.get(pk=connection_id)
+            except Connection.DoesNotExist:
+                self.connection = None
+        else:
             self.connection = None
 
         return super().dispatch(request, *args, **kwargs)
@@ -820,15 +824,3 @@ class WaitingRoomJson(RequireConnectionView, View):
             return JsonResponse({"connectionStatus": "OK"})
 
         return JsonResponse({"connectionStatus": "NOK"})
-
-
-@aidant_logged_with_activity_required
-class ClearConnectionView(RedirectView):
-    def dispatch(self, request, *args, **kwargs):
-        request.session.pop("connection", None)
-        request.session.pop("qr_code_mandat_id", None)
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_redirect_url(self, *args, **kwargs):
-        next_path = self.request.GET.get("next", reverse("espace_aidant_home"))
-        return unquote_plus(next_path)

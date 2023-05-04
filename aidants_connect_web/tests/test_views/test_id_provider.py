@@ -181,14 +181,11 @@ class AuthorizeTests(TestCase):
             state="avalidstate123", nonce="avalidnonce456", usager=self.usager
         )
 
-        session = self.client.session
-        session["connection"] = connection.id
-        session.save()
-
         response = self.client.post(
             "/authorize/",
             data={
                 "chosen_usager": connection.usager.id,
+                "connection_id": connection.id,
                 # Pass valid OAuth data for changing user feature
                 **self.valid_oauth_data,
             },
@@ -210,14 +207,12 @@ class AuthorizeTests(TestCase):
         self,
     ):
         self.client.force_login(self.aidant_thierry)
-        session = self.client.session
-        session["connection"] = self.connection.pk
-        session.save()
 
         response = self.client.post(
             "/authorize/",
             data={
                 "chosen_usager": 1,
+                "connection_id": self.connection.pk,
                 # Pass valid OAuth data for changing user feature
                 **self.valid_oauth_data,
             },
@@ -231,9 +226,20 @@ class AuthorizeTests(TestCase):
 
     def test_post_to_authorize_with_unknown_connection_triggers_forbidden(self):
         self.client.force_login(self.aidant_thierry)
-        session = self.client.session
-        session["connection"] = self.connection.id + 1
-        session.save()
+
+        response = self.client.post(
+            "/authorize/",
+            data={
+                "chosen_usager": 1,
+                "connection_id": self.connection.id + 1,
+                # Pass valid OAuth data for changing user feature
+                **self.valid_oauth_data,
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_post_to_authorize_omitting_connection_triggers_forbidden(self):
+        self.client.force_login(self.aidant_thierry)
 
         response = self.client.post(
             "/authorize/",
@@ -251,14 +257,11 @@ class AuthorizeTests(TestCase):
             state="avalidstate123", nonce="avalidnonce456", usager=self.usager
         )
 
-        session = self.client.session
-        session["connection"] = connection.pk
-        session.save()
-
         response = self.client.post(
             "/authorize/",
             data={
                 "chosen_usager": "",
+                "connection_id": connection.pk,
                 # Pass valid OAuth data for changing user feature
                 **self.valid_oauth_data,
             },

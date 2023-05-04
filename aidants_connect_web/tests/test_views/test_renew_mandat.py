@@ -98,6 +98,27 @@ class RenewMandatTests(TestCase):
         response = self.client.get(reverse("usagers"))
         self.assertContains(response, "Renouveler")
 
+    def test_new_mandat_clears_the_session(self):
+        MandatFactory(
+            organisation=self.aidant_thierry.organisation,
+            usager=self.usager,
+            expiration_date=timezone.now() + timedelta(days=5),
+        )
+        self.client.force_login(self.aidant_thierry)
+
+        session = self.client.session
+        session["connection"] = 1
+        session["qr_code_mandat_id"] = 2
+        session.save()
+
+        self.assertEqual(1, self.client.session["connection"])
+        self.assertEqual(2, self.client.session["qr_code_mandat_id"])
+
+        self.client.get(reverse("renew_mandat", args=(self.usager.pk,)))
+
+        self.assertIsNone(self.client.session.get("connection"))
+        self.assertIsNone(self.client.session.get("qr_code_mandat_id"))
+
     def test_renew_mandat_ok(self):
         MandatFactory(
             organisation=self.aidant_thierry.organisation,
