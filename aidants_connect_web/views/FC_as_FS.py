@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from secrets import token_urlsafe
 from urllib.parse import urlencode
 
@@ -138,6 +139,7 @@ def fc_callback(request):
             settings.FC_AS_FS_SECRET,
             audience=settings.FC_AS_FS_ID,
             algorithms=["HS256"],
+            leeway=timedelta(seconds=30),
         )
     except ExpiredSignatureError:
         return fc_error("403: token signature has expired.", connection.pk)

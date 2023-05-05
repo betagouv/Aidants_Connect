@@ -163,14 +163,14 @@ class FCCallback(TestCase):
             "nonce": "test_nonce",
         }
 
+        id_token = jwt.encode(id_token, settings.FC_AS_FS_SECRET, algorithm="HS256")
+
         mock_response.json = mock.Mock(
             return_value={
                 "access_token": "test_access_token",
                 "token_type": "Bearer",
                 "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
+                "id_token": id_token,
             }
         )
 
@@ -190,12 +190,7 @@ class FCCallback(TestCase):
         self.assertEqual(connection.access_token, "test_access_token")
         url = (
             "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?"
-            "id_token_hint=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhd"
-            "WQiOiIyMTEyODY0MzNlMzljY2UwMWRiNDQ4ZDgwMTgxYmRmZDAwNTU1NGI"
-            "xOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ3NDMzMDM0L"
-            "jAsImlhdCI6MTU0NzQzMTgzNC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
-            "bmVjdC5nb3V2LmZyIiwic3ViIjoiMTIzIiwibm9uY2UiOiJ0ZXN0X25vbmNl"
-            "In0.xKAPSsCaTVN29-PeC11j6XMSJnzrT44-OLZ7Nlt7jtE&state=test_state"
+            f"id_token_hint={id_token}&state=test_state"
             "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)
@@ -225,14 +220,17 @@ class FCCallback(TestCase):
             "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
             "nonce": "test_nonce",
         }
+
+        encoded_token = jwt.encode(
+            id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+        )
+
         mock_response.json = mock.Mock(
             return_value={
                 "access_token": "test_access_token",
                 "token_type": "Bearer",
                 "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
+                "id_token": encoded_token,
             }
         )
 
@@ -265,13 +263,7 @@ class FCCallback(TestCase):
 
         url = (
             "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?"
-            "id_token_hint=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMT"
-            "EyODY0MzNlMzljY2UwMWRiNDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk"
-            "0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ3NDMzMDM0LjAsImlhdCI6MTU0NzQzMTgz"
-            "NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmVjdC5nb3V2LmZyIiwic3ViIjoiO"
-            "WI3NTQ3ODI3MDVjNTVlYmZlMTAzNzFjOTA5ZjYyZTczYTNlMDlmYjU2NmZjNWQyMz"
-            "A0MGEyOWZhZTRlMGViYiIsIm5vbmNlIjoidGVzdF9ub25jZSJ9.HjK5vaK2zrzmSN"
-            "zB103TN7ft0t_RX-C5vdupICFccc0&state=test_state"
+            f"id_token_hint={encoded_token}&state=test_state"
             "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
         )
         self.assertRedirects(response, url, fetch_redirect_response=False)

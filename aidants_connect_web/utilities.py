@@ -1,5 +1,6 @@
 import hashlib
 import io
+import time
 from datetime import date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
@@ -11,7 +12,7 @@ from django.db.models import F
 import qrcode
 
 if TYPE_CHECKING:
-    from aidants_connect_web.models import Aidant, Usager
+    from aidants_connect_web.models import Aidant, Connection, Usager
 
 
 @transaction.atomic
@@ -107,3 +108,17 @@ def generate_attestation_hash(
 
 def mandate_template_path():
     return settings.MANDAT_TEMPLATE_PATH
+
+
+def generate_id_token(connection: "Connection"):
+    return {
+        # The audience, the Client ID of your Auth0 Application
+        "aud": settings.FC_AS_FI_ID,
+        # The expiration time. in the format "seconds since epoch"
+        # TODO Check if 10 minutes is not too much
+        "exp": int(time.time()) + settings.FC_CONNECTION_AGE,  # The issued at time
+        "iat": int(time.time()),  # The issuer,  the URL of your Auth0 tenant
+        "iss": settings.HOST,  # The unique identifier of the user
+        "sub": connection.usager.sub,
+        "nonce": connection.nonce,
+    }
