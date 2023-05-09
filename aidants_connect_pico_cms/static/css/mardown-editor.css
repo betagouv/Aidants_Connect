@@ -40,3 +40,16 @@
     background-color: var(--body-bg);
 
 }
+
+.CodeMirror-cursor {
+    border-left: 1px solid var(--body-fg);
+}
+
+.editor-preview ul, .editor-preview ol {
+    padding: revert !important;
+    margin: revert !important;
+}
+
+.editor-preview li {
+    list-style: revert !important;
+}
