@@ -24,6 +24,7 @@ from aidants_connect_web.models import (
     HabilitationRequest,
     Journal,
     Mandat,
+    Notification,
     Organisation,
     OrganisationType,
     Usager,
@@ -1933,3 +1934,55 @@ class OrganisationDeleteTests(TestCase):
         self.assertEqual(len(Organisation.objects.all()), 1)
         self.assertEqual(len(Mandat.objects.all()), 0)
         self.assertEqual(len(Journal.objects.all()), 4)
+
+
+class TestNotification(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.notification_type = ""
+        cls.aidant: Aidant = AidantFactory()
+
+    def test_constraints(self):
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                Notification.objects.create(
+                    type=self.notification_type,
+                    aidant=self.aidant,
+                    must_ack=True,
+                    was_ack=None,
+                )
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                Notification.objects.create(
+                    type=self.notification_type,
+                    aidant=self.aidant,
+                    must_ack=False,
+                    auto_ack_date=None,
+                    was_ack=None,
+                )
+        with transaction.atomic():
+            Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today(),
+                was_ack=None,
+            )
+
+        with transaction.atomic():
+            Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=True,
+                auto_ack_date=date.today(),
+                was_ack=False,
+            )
+
+        with transaction.atomic():
+            Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=True,
+                auto_ack_date=None,
+                was_ack=False,
+            )

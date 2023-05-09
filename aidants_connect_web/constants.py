@@ -3,7 +3,7 @@ from typing import Set
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
-from aidants_connect_common.utils.constants import DictChoices
+from aidants_connect_common.utils.constants import DictChoices, TextChoicesEnum
 
 
 class RemoteConsentMethodChoices(DictChoices):
@@ -37,3 +37,7 @@ class RemoteConsentMethodChoices(DictChoices):
             return {RemoteConsentMethodChoices.SMS.name}
         else:
             return set()
+
+
+class NotificationType(TextChoicesEnum):
+    pass

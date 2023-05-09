@@ -34,7 +34,7 @@ from aidants_connect_common.utils.constants import (
     AuthorizationDurations,
     JournalActionKeywords,
 )
-from aidants_connect_web.constants import RemoteConsentMethodChoices
+from aidants_connect_web.constants import NotificationType, RemoteConsentMethodChoices
 from aidants_connect_web.utilities import (
     generate_attestation_hash,
     mandate_template_path,
@@ -1974,3 +1974,27 @@ class AidantStatistiques(models.Model):
     class Meta:
         verbose_name = "Statistiques aidants"
         verbose_name_plural = "Statistiques aidants"
+
+
+class Notification(models.Model):
+    type = models.CharField(choices=NotificationType.choices)
+    aidant = models.ForeignKey(
+        Aidant, on_delete=models.CASCADE, related_name="notifications"
+    )
+    date = models.DateField(auto_now_add=True)
+    must_ack = models.BooleanField("Doit être acquité pour disparaître", default=True)
+    auto_ack_date = models.DateField("Échéance", null=True, default=None)
+    was_ack = models.BooleanField("A été acquité", null=True, default=False)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    # Must be aknowlegeable if it has to be aknowleged
+                    (Q(must_ack=False) ^ Q(was_ack__isnull=False))
+                    # Can't both have no expiration date and be not acknoledgeable
+                    & (Q(auto_ack_date__isnull=False) | Q(was_ack__isnull=False))
+                ),
+                name="must_ack_conditions",
+            )
+        ]
