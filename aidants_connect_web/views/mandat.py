@@ -390,9 +390,7 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
         return {
             **super().get_context_data(**kwargs),
             "aidant": self.aidant,
-            "has_mandate_translations": (
-                settings.FF_MANDATE_TRANSLATION and MandateTranslation.objects.exists()
-            ),
+            "has_mandate_translations": MandateTranslation.objects.exists(),
         }
 
     def get_initial(self):
