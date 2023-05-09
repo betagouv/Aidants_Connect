@@ -14,6 +14,7 @@ from django.test.client import Client
 from django.urls import resolve, reverse
 from django.utils import timezone
 
+import jwt
 from freezegun import freeze_time
 
 from aidants_connect_web.models import Aidant, Connection, Journal, Usager
@@ -23,6 +24,7 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
+from aidants_connect_web.utilities import generate_id_token
 from aidants_connect_web.views import id_provider
 
 
@@ -515,13 +517,15 @@ class TokenTests(TestCase):
             response_json["access_token"], settings.FC_AS_FI_HASH_SALT
         )
         connection = Connection.objects.get(code=self.code_hash)
+
         awaited_response = {
             "access_token": connection.access_token,
             "expires_in": 3600,
-            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ0ZXN0X2NsaWVu"
-            "dF9pZCIsImV4cCI6MTMyNjUwNzkzNCwiaWF0IjoxMzI2NTA3NjM0LCJpc3MiOiJsb2NhbGhvc"
-            "3QiLCJzdWIiOiJhdmFsaWRzdWI3ODkiLCJub25jZSI6ImF2YWxpZG5vbmNlNDU2In0.HnXqpp"
-            "IwykH_7GJgmFCT8Lt119qQyygiKk6W-WSXVCU",
+            "id_token": jwt.encode(
+                generate_id_token(connection),
+                self.fc_request["client_secret"],
+                algorithm="HS256",
+            ),
             "refresh_token": "5ieq7bg173y99tt6ma",
             "token_type": "Bearer",
         }

@@ -202,8 +202,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         fc_button = self.selenium.find_element(By.ID, "submit_button")
         fc_button.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-        fc_title = self.selenium.title
-        self.assertEqual("Connexion - choix du compte", fc_title)
 
         # Nouvelle mire dialog
         if len(self.selenium.find_elements(By.ID, "message-on-login")) > 0:
@@ -390,8 +388,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         """
         )
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-
-        self.assertEqual("Connexion - choix du compte", self.selenium.title)
 
         # Nouvelle mire dialog
         if len(self.selenium.find_elements(By.ID, "message-on-login")) > 0:

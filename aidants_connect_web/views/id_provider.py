@@ -1,6 +1,5 @@
 import logging
 import re
-import time
 from secrets import token_urlsafe
 from urllib.parse import urlencode
 
@@ -40,7 +39,7 @@ from aidants_connect_web.models import (
     Usager,
     UsagerQuerySet,
 )
-from aidants_connect_web.utilities import generate_sha256_hash
+from aidants_connect_web.utilities import generate_id_token, generate_sha256_hash
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -357,18 +356,9 @@ def token(request):
         log.info(parameters["code"])
         return HttpResponseForbidden()
 
-    id_token = {
-        # The audience, the Client ID of your Auth0 Application
-        "aud": settings.FC_AS_FI_ID,
-        # The expiration time. in the format "seconds since epoch"
-        # TODO Check if 10 minutes is not too much
-        "exp": int(time.time()) + settings.FC_CONNECTION_AGE,  # The issued at time
-        "iat": int(time.time()),  # The issuer,  the URL of your Auth0 tenant
-        "iss": settings.HOST,  # The unique identifier of the user
-        "sub": connection.usager.sub,
-        "nonce": connection.nonce,
-    }
-    encoded_id_token = jwt.encode(id_token, client_secret, algorithm="HS256")
+    encoded_id_token = jwt.encode(
+        generate_id_token(connection), client_secret, algorithm="HS256"
+    )
 
     access_token = token_urlsafe(64)
     connection.access_token = make_password(access_token, settings.FC_AS_FI_HASH_SALT)
