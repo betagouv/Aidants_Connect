@@ -188,7 +188,7 @@ urlpatterns = [
     ),
     path(
         "espace-responsable/aidant/<int:aidant_id>/supprimer-carte/",
-        espace_responsable.remove_card_from_aidant,
+        espace_responsable.RemoveCardFromAidant.as_view(),
         name="espace_responsable_aidant_remove_card",
     ),
     path(

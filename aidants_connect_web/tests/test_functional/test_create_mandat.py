@@ -102,7 +102,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        self.wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
+        self.wait.until(
+            self.path_matches("new_mandat_recap", query_params={"state": ".+"})
+        )
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -228,7 +230,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        self.wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
+        self.wait.until(
+            self.path_matches("new_mandat_recap", query_params={"state": ".+"})
+        )
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -414,7 +418,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         # FC - Validate the information
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
-        self.wait.until(self.path_matches("new_mandat_recap", {"state": ".+"}))
+        self.wait.until(
+            self.path_matches("new_mandat_recap", query_params={"state": ".+"})
+        )
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text

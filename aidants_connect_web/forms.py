@@ -358,21 +358,42 @@ class CarteTOTPValidationForm(forms.Form):
     )
 
 
-class RemoveCardFromAidantForm(forms.Form):
+class RemoveCardFromAidantForm(PatchedForm):
     reason = forms.ChoiceField(
         choices=(
-            ("perte", "Perte : La carte a été perdue."),
-            ("casse", "Casse : La carte a été détériorée."),
+            ("perte", "Perte : La carte a été perdue."),
+            ("casse", "Casse : La carte a été détériorée."),
             (
                 "dysfonctionnement",
-                "Dysfonctionnement : La carte ne fonctionne pas ou plus.",
+                "Disfonctionnement : La carte ne fonctionne pas ou plus.",
             ),
-            ("depart", "Départ : L’aidant concerné quitte la structure."),
-            ("erreur", "Erreur : J’ai lié cette carte à ce compte par erreur."),
-            ("autre", "Autre : Je complète ci-dessous."),
+            ("depart", "Départ : L’aidant concerné quitte la structure."),
+            ("erreur", "Erreur : J’ai lié cette carte à ce compte par erreur."),
+            ("autre", "Autre : Je complète ci-dessous."),
         )
     )
     other_reason = forms.CharField(required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        reason = cleaned_data.get("reason").lower()
+        other_reason = cleaned_data.get("other_reason")
+
+        if reason != "autre":
+            return cleaned_data
+
+        if not other_reason:
+            self.add_error(
+                "other_reason",
+                ValidationError(
+                    "Vous devez remplir ce champ si la raison indiquée est autre.",
+                    code="required",
+                ),
+            )
+        else:
+            cleaned_data["reason"] = other_reason
+
+        return cleaned_data
 
 
 class SwitchMainAidantOrganisationForm(forms.Form):

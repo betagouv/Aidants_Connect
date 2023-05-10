@@ -1,5 +1,6 @@
 from django.test import TestCase, tag
 from django.test.client import Client
+from django.urls import reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
@@ -26,7 +27,6 @@ class DissociateCarteTOTPTests(TestCase):
         cls.dissociation_url = (
             f"/espace-responsable/aidant/{cls.aidant_tim.id}/supprimer-carte/"
         )
-        cls.aidant_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
 
     def create_carte_for_tim(self):
         self.carte = CarteTOTPFactory(
@@ -50,8 +50,10 @@ class DissociateCarteTOTPTests(TestCase):
             self.dissociation_url,
             data={"reason": "perte"},
         )
-        self.assertRedirects(response, self.aidant_url, fetch_redirect_response=False)
-        response = self.client.get(self.aidant_url)
+        self.assertRedirects(
+            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+        )
+        response = self.client.get(response.url, follow=True)
         response_content = response.content.decode("utf-8")
         self.assertIn("Tout s’est bien passé", response_content)
         # Check card still exists but that TOTP Device doesn't

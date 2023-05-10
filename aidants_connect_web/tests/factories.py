@@ -91,6 +91,10 @@ class AidantFactory(DjangoModelFactory):
         if kwargs.get("is_organisation_manager", False):
             self.responsable_de.add(self.organisation)
 
+        if kwargs.get("with_carte_totp", False):
+            carte: CarteTOTP = CarteTOTPFactory(aidant=self)
+            carte.createTOTPDevice(confirmed=True).save()
+
     @post_generation
     def password(self, create, value, **_):
         if not create:

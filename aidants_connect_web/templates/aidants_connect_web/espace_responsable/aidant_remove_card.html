@@ -1,0 +1,23 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+{% load ac_extras %}
+
+{% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      <h1>
+        Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte
+        de lʼaidant {{ aidant.get_full_name }}, {{ aidant.profession }}
+      </h1>
+      {% include "aidants_connect_web/espace_responsable/_aidant_remove_card.html" %}
+    </div>
+  </section>
+{% endblock content %}
