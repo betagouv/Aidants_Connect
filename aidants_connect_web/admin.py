@@ -3,7 +3,7 @@ from collections.abc import Collection
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
+from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline, register
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
@@ -59,6 +59,7 @@ from aidants_connect_web.models import (
     HabilitationRequest,
     Journal,
     Mandat,
+    Notification,
     Organisation,
     Usager,
 )
@@ -1661,6 +1662,11 @@ class AidantStatistiquesAdmin(ModelAdmin):
         "number_aidant_with_login",
         "number_aidant_who_have_created_mandat",
     )
+
+
+@register(Notification, site=admin_site)
+class NotificationAdmin(ModelAdmin):
+    raw_id_fields = ("aidant",)
 
 
 # Display the following tables in the admin
