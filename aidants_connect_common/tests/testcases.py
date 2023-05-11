@@ -1,3 +1,4 @@
+from typing import Optional
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -6,7 +7,7 @@ from django.core import mail
 from django.test import override_settings
 from django.urls import reverse
 
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.webdriver import WebDriver
@@ -100,7 +101,23 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         magic_link_no_wait = magic_link_http.replace("chargement/code", "code", 1)
         self.selenium.get(magic_link_no_wait)
 
-    def path_matches(self, route_name: str, query_params: dict = None):
+    def path_matches(
+        self, route_name: str, *, kwargs: dict = None, query_params: dict = None
+    ):
+        kwargs = kwargs or {}
         query_part = urlencode(query_params or {}, quote_via=lambda s, _1, _2, _3: s)
         query_part = rf"\?{query_part}" if query_part else ""
-        return url_matches(rf"http://localhost:\d+{reverse(route_name)}{query_part}")
+        return url_matches(
+            rf"http://localhost:\d+{reverse(route_name, kwargs=kwargs)}{query_part}"
+        )
+
+    def assertElementNotFound(self, by=By.ID, value: Optional[str] = None):
+        implicit_wait = self.selenium.timeouts.implicit_wait
+        self.selenium.implicitly_wait(1)
+        try:
+            with self.assertRaises(
+                NoSuchElementException, msg="Found element expected to be absent"
+            ):
+                self.selenium.find_element(by=by, value=value)
+        finally:
+            self.selenium.implicitly_wait(implicit_wait)

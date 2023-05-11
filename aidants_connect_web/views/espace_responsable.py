@@ -1,11 +1,14 @@
+import contextlib
+
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
-from django.views.generic import TemplateView
+from django.views.generic import FormView, TemplateView
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
@@ -13,6 +16,7 @@ from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.decorators import (
     activity_required,
+    aidant_logged_with_activity_required,
     user_is_responsable_structure,
 )
 from aidants_connect_web.forms import (
@@ -179,55 +183,56 @@ def aidant(request, aidant_id):
     )
 
 
-@require_POST
-@login_required
-@user_is_responsable_structure
-@activity_required
-def remove_card_from_aidant(request, aidant_id):
-    responsable: Aidant = request.user
-    aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if not responsable.can_see_aidant(aidant):
-        raise Http404
+@aidant_logged_with_activity_required
+class RemoveCardFromAidant(FormView):
+    template_name = "aidants_connect_web/espace_responsable/aidant_remove_card.html"
+    form_class = RemoveCardFromAidantForm
+    success_url = reverse_lazy("espace_responsable_home")
 
-    if not aidant.has_a_carte_totp:
-        return redirect(
-            "espace_responsable_aidant",
-            aidant_id=aidant.id,
+    def dispatch(self, request, *args, **kwargs):
+        self.responsable: Aidant = request.user
+        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs.get("aidant_id"))
+
+        if not self.responsable.can_see_aidant(self.aidant):
+            raise Http404
+
+        if not self.aidant.has_a_carte_totp:
+            return HttpResponseRedirect(self.get_success_url())
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "responsable": self.responsable,
+        }
+
+    def form_valid(self, form):
+        sn = self.aidant.carte_totp.serial_number
+
+        with transaction.atomic():
+            carte = CarteTOTP.objects.get(serial_number=sn)
+
+            with contextlib.suppress(TOTPDevice.DoesNotExist):
+                TOTPDevice.objects.get(key=carte.seed, user=self.aidant).delete()
+
+            carte.aidant = None
+            carte.save()
+
+            Journal.log_card_dissociation(
+                self.responsable, self.aidant, sn, form.cleaned_data["reason"]
+            )
+
+        django_messages.success(
+            self.request,
+            (
+                f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
+                f"de l’aidant {self.aidant.get_full_name()}."
+            ),
         )
 
-    form = RemoveCardFromAidantForm(request.POST)
-
-    if not form.is_valid():
-        raise Exception("Invalid form for card/aidant dissociation")
-
-    data = form.cleaned_data
-    reason = data.get("reason")
-    if reason == "autre":
-        reason = data.get("other_reason")
-    sn = aidant.carte_totp.serial_number
-    with transaction.atomic():
-        carte = CarteTOTP.objects.get(serial_number=sn)
-        try:
-            device = TOTPDevice.objects.get(key=carte.seed, user=aidant)
-            device.delete()
-        except TOTPDevice.DoesNotExist:
-            pass
-        carte.aidant = None
-        carte.save()
-        Journal.log_card_dissociation(responsable, aidant, sn, reason)
-
-    django_messages.success(
-        request,
-        (
-            f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
-            f"de l’aidant {aidant.get_full_name()}."
-        ),
-    )
-
-    return redirect(
-        "espace_responsable_aidant",
-        aidant_id=aidant.id,
-    )
+        return super().form_valid(form)
 
 
 @require_http_methods(["GET", "POST"])

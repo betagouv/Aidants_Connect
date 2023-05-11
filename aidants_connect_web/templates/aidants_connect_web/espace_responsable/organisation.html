@@ -77,7 +77,13 @@
         <tbody class="shadowed">
         {% for aidant in organisation_active_aidants %}
           <tr>
-            <td>{{ aidant.get_full_name }}{% if aidant.pk == responsable.pk %} (Responsable){% endif %}</td>
+            <td>
+              {% if aidant.pk == responsable.pk %}
+                {{ aidant.get_full_name }} (Responsable)
+              {% else %}
+                <a href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">{{ aidant.get_full_name }}</a>
+              {% endif %}
+            </td>
             <td>{% mailto recipient=aidant.email %}</td>
             <td>
               {{ aidant.number_totp_card }}
@@ -109,9 +115,18 @@
                 <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}" class="button">
                   Lier une carte
                 </a>
-              {% elif not aidant.carte_totp.totp_device.confirmed %}
-                <a href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}" class="button">
-                  Valider la carte
+              {% else %}
+                {% if not aidant.carte_totp.totp_device.confirmed %}
+                  <a href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}" class="button">
+                    Valider la carte
+                  </a>
+                {% endif %}
+                <a
+                  id="remove-totp-card-from-aidant-{{ aidant.id }}"
+                  href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
+                  class="button"
+                >
+                  Délier la carte
                 </a>
               {% endif %}
             </td>
@@ -185,7 +200,9 @@
         <tbody class="shadowed grey">
         {% for aidant in organisation_inactive_aidants %}
           <tr>
-            <td>{{ aidant.get_full_name }}</td>
+            <td>
+              <a href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">{{ aidant.get_full_name }}</a>
+            </td>
             <td>{% mailto recipient=aidant.email %}</td>
             <td>
               {{ aidant.number_totp_card }}
@@ -198,13 +215,13 @@
               {% endif %}
             </td>
             <td>
-              {% if not aidant.has_a_carte_totp %}
-                <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}" class="button">
-                  Lier une carte
-                </a>
-              {% elif not aidant.carte_totp.totp_device.confirmed %}
-                <a href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}" class="button">
-                  Valider la carte
+              {% if aidant.has_a_carte_totp %}
+                <a
+                  id="remove-totp-card-from-aidant-{{ aidant.id }}"
+                  href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
+                  class="button"
+                >
+                  Délier la carte
                 </a>
               {% endif %}
             </td>
