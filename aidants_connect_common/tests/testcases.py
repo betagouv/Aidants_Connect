@@ -113,7 +113,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
 
     def assertElementNotFound(self, by=By.ID, value: Optional[str] = None):
         implicit_wait = self.selenium.timeouts.implicit_wait
-        self.selenium.implicitly_wait(1)
+        self.selenium.implicitly_wait(0.1)
         try:
             with self.assertRaises(
                 NoSuchElementException, msg="Found element expected to be absent"

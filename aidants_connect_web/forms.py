@@ -6,6 +6,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
+from django.db.models import Q
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
@@ -419,7 +420,7 @@ class AddOrganisationResponsableForm(forms.Form):
     def __init__(self, organisation: Organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["candidate"].queryset = organisation.aidants.exclude(
-            responsable_de=organisation
+            Q(responsable_de=organisation) | Q(is_active=False)
         ).order_by("last_name")
 
 
