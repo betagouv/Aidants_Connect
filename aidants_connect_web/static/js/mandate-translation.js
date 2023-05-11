@@ -70,8 +70,6 @@
         "langCode": String,
     };
 
-
-
     function init() {
         const application = Stimulus.Application.start();
         application.register("mandate-translation", MandateTranslation);

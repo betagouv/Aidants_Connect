@@ -76,7 +76,7 @@ urlpatterns = [
     ),
     path(
         "mandats/<int:mandat_id>/visualisation",
-        mandat.AttestationVisualisation.as_view(),
+        mandat.Attestation.as_view(),
         name="mandat_visualisation",
     ),
     # renew mandat
@@ -129,18 +129,18 @@ urlpatterns = [
         name="new_attestation_projet",
     ),
     path(
-        "creation_mandat/succes/",
+        "creation_mandat/succes/<int:mandat_id>",
         mandat.NewMandateSuccess.as_view(),
         name="new_mandat_success",
     ),
     path(
-        "creation_mandat/visualisation/final/",
-        mandat.AttestationFinal.as_view(),
+        "creation_mandat/visualisation/final/<int:mandat_id>",
+        mandat.Attestation.as_view(),
         name="new_attestation_final",
     ),
-    path(
-        "creation_mandat/qrcode/",
-        mandat.attestation_qrcode,
+    re_path(
+        "creation_mandat/qrcode/(?P<mandat_id>[0-9]+)?/?",
+        mandat.AttestationQRCode.as_view(),
         name="new_attestation_qrcode",
     ),
     path(
