@@ -1,0 +1,82 @@
+
+.fr-container {
+  margin: 1rem auto 1rem auto;
+
+  .attestation-content {
+    border: 1px solid black;
+    padding: 1rem;
+
+    @media print {
+      font-size: 0.75em;
+      line-height: 1.4em;
+    }
+  }
+
+  .notification {
+    margin: 1rem 0 1rem 0;
+  }
+
+  .img-qrcode {
+    height: 10em;
+  }
+
+  h1 {
+    color: black;
+    font-size: 2em;
+    line-height: 1.125em;
+    margin: 0 2em .6em;
+    text-transform: none;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  ul {
+    padding: 0 0 0 2rem;
+  }
+
+  .demarches {
+    font-size: .95em;
+  }
+
+  .demarches + p {
+    margin-top: .1em;
+  }
+
+  .organisation-address {
+    min-width: 15em;
+    display: inline-block;
+  }
+
+  /* Back compatibility with past mandat templates */
+  .container {
+    margin: 0;
+    padding: 0;
+    border: none;
+    width: 100%;
+  }
+
+  .navbar__home {
+    display: none;
+  }
+}
+
+
+@media print {
+  @page {
+    size: auto; /* auto is the initial value */
+    margin: 1rem 2rem 1rem 2rem; /* this affects the margin in the printer settings */
+  }
+
+  .fr-container {
+    border: 0;
+    padding: 0;
+    margin: 1em;
+    width: auto;
+  }
+}

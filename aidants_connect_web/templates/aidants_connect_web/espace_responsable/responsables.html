@@ -28,7 +28,7 @@
           responsables :</p>
         <ul>
           {% for responsable in organisation.responsables.all %}
-            <li>{{ responsable }}</li>
+            <li>{{ responsable.get_full_name }} ({{ responsable.email }})</li>
           {% endfor %}
         </ul>
       {% endif %}

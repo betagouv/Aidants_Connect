@@ -507,3 +507,12 @@ class DesignationOfAnotherResponsable(TestCase):
         self.aidante_bidule.refresh_from_db()
         self.assertFalse(self.aidante_bidule.is_responsable_structure())
         self.assertNotIn(self.orga, self.aidante_bidule.responsable_de.all())
+
+    def test_disabled_aidant_cannot_become_responsable(self):
+        self.aidante_bidule = AidantFactory(is_active=False)
+        self.client.force_login(self.respo)
+        self.assertFalse(self.aidante_bidule.is_responsable_structure())
+        self.client.post(self.url, data={"candidate": self.aidante_bidule.id})
+        self.aidante_bidule.refresh_from_db()
+        self.assertFalse(self.aidante_bidule.is_responsable_structure())
+        self.assertNotIn(self.orga, self.aidante_bidule.responsable_de.all())

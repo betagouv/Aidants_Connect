@@ -1,12 +1,12 @@
 import logging
 import re
 from datetime import date
+from io import BytesIO
 from typing import Callable, List
 from uuid import uuid4
 
 from django.conf import settings
 from django.contrib import messages as django_messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
@@ -19,6 +19,7 @@ from django.utils.safestring import mark_safe
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, TemplateView, View
 
+import qrcode
 from phonenumbers import PhoneNumber
 
 from aidants_connect_common.templatetags.ac_common import mailto
@@ -31,10 +32,8 @@ from aidants_connect_common.views import RequireConnectionMixin, RequireConnecti
 from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_pico_cms.utils import is_lang_rtl, render_markdown
 from aidants_connect_web.decorators import (
-    activity_required,
     aidant_logged_required,
     aidant_logged_with_activity_required,
-    user_is_aidant,
 )
 from aidants_connect_web.forms import (
     MandatForm,
@@ -51,7 +50,7 @@ from aidants_connect_web.models import (
     Organisation,
     Usager,
 )
-from aidants_connect_web.utilities import generate_attestation_hash, generate_qrcode_png
+from aidants_connect_web.utilities import generate_attestation_hash
 from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)
@@ -343,6 +342,11 @@ class RenderAttestationAbstract(TemplateView):
             "current_mandat_template": self.get_template(),
             "final": self.final,
             "modified": self.modified,
+            "qr_code_src": (
+                reverse("new_attestation_qrcode", kwargs={"mandat_id": mandat.pk})
+                if (mandat := getattr(self, "mandat", None))
+                else None
+            ),
         }
 
     def get_usager(self) -> Usager:
@@ -369,7 +373,6 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
     def dispatch(self, request, *args, **kwargs):
         # Clean the session
         request.session.pop("connection", None)
-        request.session.pop("qr_code_mandat_id", None)
 
         self.aidant: Aidant = request.user
 
@@ -387,9 +390,7 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
         return {
             **super().get_context_data(**kwargs),
             "aidant": self.aidant,
-            "has_mandate_translations": (
-                settings.FF_MANDATE_TRANSLATION and MandateTranslation.objects.exists()
-            ),
+            "has_mandate_translations": MandateTranslation.objects.exists(),
         }
 
     def get_initial(self):
@@ -532,7 +533,7 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
                 self.connection.usager.save()
 
             # Create a mandat
-            mandat = Mandat.objects.create(
+            self.mandat = Mandat.objects.create(
                 organisation=self.aidant.organisation,
                 usager=self.connection.usager,
                 duree_keyword=self.connection.duree_keyword,
@@ -558,7 +559,7 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
                     self.connection.demarches,
                     expiration_date,
                 ),
-                mandat=mandat,
+                mandat=self.mandat,
                 duree=AuthorizationDurations.duration(
                     self.connection.duree_keyword, fixed_date
                 ),
@@ -579,7 +580,7 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
 
                 # Create new demarche autorisation
                 autorisation = Autorisation.objects.create(
-                    mandat=mandat,
+                    mandat=self.mandat,
                     demarche=demarche,
                     last_renewal_token=self.connection.access_token,
                 )
@@ -602,18 +603,25 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse("new_mandat_success")
+        return reverse("new_mandat_success", kwargs={"mandat_id": self.mandat.pk})
 
 
 @aidant_logged_with_activity_required
-class NewMandateSuccess(RequireConnectionView, TemplateView):
+class NewMandateSuccess(TemplateView):
     template_name = "aidants_connect_web/new_mandat/new_mandat_success.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        self.mandat = get_object_or_404(
+            Mandat, pk=kwargs["mandat_id"], organisation=self.aidant.organisation
+        )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
+            "mandat": self.mandat,
             "aidant": self.aidant,
-            "usager": self.connection.usager,
         }
 
 
@@ -712,13 +720,8 @@ class Translation(RenderAttestationAbstract):
         return settings.MANDAT_TEMPLATE_PATH
 
 
-# @aidant_logged_with_activity_required is already on AttestationProject
-class AttestationFinal(AttestationProject):
-    final = True
-
-
 @aidant_logged_with_activity_required
-class AttestationVisualisation(RenderAttestationAbstract):
+class Attestation(RenderAttestationAbstract):
     final = True
 
     def dispatch(self, request, *args, **kwargs):
@@ -727,18 +730,7 @@ class AttestationVisualisation(RenderAttestationAbstract):
             Mandat, pk=kwargs["mandat_id"], organisation=self.aidant.organisation
         )
         self.template = self.mandat.get_mandate_template_path()
-        if self.template:
-            # At this point, the generated QR code on the mandate comes from an
-            # independant HTTP request. Normally, what we should do is to modifiy how
-            # this HTTP request is done so that the mandate ID is passed during the
-            # request. But the mandate template can't be modified anymore because that
-            # would change their hash and defeat the algorithm that recovers the
-            # original mandate template from the journal entries. The only found
-            # solution, which is not nice, is to retain the mandate ID as a session
-            # state. Please forgive us for what we did...
-            request.session["qr_code_mandat_id"] = kwargs["mandat_id"]
-        else:
-            self.modified = True
+        self.modified = not self.template
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -758,34 +750,23 @@ class AttestationVisualisation(RenderAttestationAbstract):
         return self.template or settings.MANDAT_TEMPLATE_PATH
 
 
-@login_required
-@user_is_aidant
-@activity_required
-def attestation_qrcode(request):
-    attestation_hash = None
-    connection = request.session.get("connection", None)
-    mandat_id = request.session.pop("qr_code_mandat_id", None)
+@aidant_logged_with_activity_required
+class AttestationQRCode(View):
+    def get(self, request, *args, **kwargs):
+        if (mandat_id := kwargs.get("mandat_id")) is not None:
+            attestation_hash = Mandat.get_attestation_hash_or_none(mandat_id)
+            qrcode_png = self.generate_qrcode_png(attestation_hash)
+        else:
+            with open(finders.find("images/empty_qr_code.png"), "rb") as f:
+                qrcode_png = f.read()
 
-    if mandat_id is not None:
-        attestation_hash = Mandat.get_attestation_hash_or_none(mandat_id)
+        return HttpResponse(qrcode_png, content_type="image/png")
 
-    elif connection is not None:
-        connection = Connection.objects.get(pk=connection)
-        aidant: Aidant = request.user
-
-        journal_create_attestation = aidant.get_journal_create_attestation(
-            connection.access_token
-        )
-        if journal_create_attestation is not None:
-            attestation_hash = journal_create_attestation.attestation_hash
-
-    if attestation_hash is not None:
-        qrcode_png = generate_qrcode_png(attestation_hash)
-    else:
-        with open(finders.find("images/empty_qr_code.png"), "rb") as f:
-            qrcode_png = f.read()
-
-    return HttpResponse(qrcode_png, "image/png")
+    def generate_qrcode_png(self, content: str):
+        stream = BytesIO()
+        img = qrcode.make(content)
+        img.save(stream, "PNG")
+        return stream.getvalue()
 
 
 @aidant_logged_with_activity_required

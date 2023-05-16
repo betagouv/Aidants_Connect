@@ -34,7 +34,6 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
 
     def dispatch(self, request, *args, **kwargs):
         request.session.pop("connection", None)
-        request.session.pop("qr_code_mandat_id", None)
 
         self.aidant: Aidant = request.user
         self.usager: Usager = self.aidant.get_usager(kwargs.get("usager_id"))
@@ -104,9 +103,7 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             "translation_url": self.request.build_absolute_uri(
                 reverse("mandate_translation")
             ),
-            "has_mandate_translations": (
-                settings.FF_MANDATE_TRANSLATION and MandateTranslation.objects.exists()
-            ),
+            "has_mandate_translations": MandateTranslation.objects.exists(),
         }
 
     def get_success_url(self):

@@ -442,6 +442,7 @@ CSP_SCRIPT_SRC = (
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
     "'sha256-NR0PzgaeuNCaj2DbnvXN6W2GoemNJ9jQE4tqs/H7O0c='",  # ie-deprecation.html
+    "'sha256-TzFaIqy7u6q6ovMbU59mz7pAL/g930THGxhG6dg/cHQ='",  # _attestation-print.html
 )
 
 CSP_STYLE_SRC = (
@@ -680,7 +681,5 @@ LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
 # If set to False, FAQ content will be fetched from aidants_connect_web
 # else FAQ will be set from dynamic content of pico_cms.faq_section and faq_question
 FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
-
-FF_MANDATE_TRANSLATION = getenv_bool("FF_MANDATE_TRANSLATION", False)
 
 SANDBOX_URL = os.getenv("SANDBOX_URL", "")

@@ -912,7 +912,7 @@ class Mandat(models.Model):
         url = regex_sub(r"/+", "/", f"{settings.HOST}{path}")
         return f"https://{url}"
 
-    def get_mandate_template_path(self) -> Union[None, str]:
+    def get_mandate_template_path(self) -> str | None:
         """Returns the template file path of the consent document that was presented
         to the user when the mandate was issued.
 
@@ -995,7 +995,7 @@ class Mandat(models.Model):
             return None
 
     @classmethod
-    def get_attestation_hash_or_none(cls, mandate_id):
+    def get_attestation_hash_or_none(cls, mandate_id) -> None | str:
         result = cls.get_attestation_or_none(mandate_id)
         return result.attestation_hash if result is not None else result
 

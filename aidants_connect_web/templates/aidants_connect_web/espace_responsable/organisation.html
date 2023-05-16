@@ -61,79 +61,9 @@
       </span>
     </h2>
 
-
-
     {% if organisation_active_aidants %}
       <h3>Aidants actifs</h3>
-      <table class="table aidants-list">
-        <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Email</th>
-          <th>Carte Aidants Connect</th>
-          <th><span class="sr-only">Retirer un aidant</span></th>
-        </tr>
-        </thead>
-        <tbody class="shadowed">
-        {% for aidant in organisation_active_aidants %}
-          <tr>
-            <td>
-              {% if aidant.pk == responsable.pk %}
-                {{ aidant.get_full_name }} (Responsable)
-              {% else %}
-                <a href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">{{ aidant.get_full_name }}</a>
-              {% endif %}
-            </td>
-            <td>{% mailto recipient=aidant.email %}</td>
-            <td>
-              {{ aidant.number_totp_card }}
-
-              {% if aidant.has_a_carte_totp and not aidant.carte_totp.totp_device.confirmed %}
-                <p class="unverified-card-warning shadowed red padding-1rem">
-                  Attention : Le fonctionnement de cette carte n’a pas été vérifié.
-                  Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
-                  de se connecter à Aidants Connect.
-                </p>
-              {% endif %}
-            </td>
-            <td>
-              {% if aidant.pk != responsable.pk %}
-                <a
-                  id="remove-aidant-{{ aidant.id }}-from-organisation"
-                  href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
-                  class="button"
-                >
-                  {% if aidant.organisations.count > 1 %}
-                    Retirer l’aidant de l’organisation
-                  {% else %}
-                    Désactiver l’aidant
-                  {% endif %}
-                </a>
-              {% endif %}
-
-              {% if not aidant.has_a_carte_totp %}
-                <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}" class="button">
-                  Lier une carte
-                </a>
-              {% else %}
-                {% if not aidant.carte_totp.totp_device.confirmed %}
-                  <a href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}" class="button">
-                    Valider la carte
-                  </a>
-                {% endif %}
-                <a
-                  id="remove-totp-card-from-aidant-{{ aidant.id }}"
-                  href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
-                  class="button"
-                >
-                  Délier la carte
-                </a>
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants table_class="shadowed" %}
     {% endif %}
 
     {% if organisation_habilitation_requests %}
@@ -188,47 +118,7 @@
 
     {% if organisation_inactive_aidants %}
       <h3>Aidants désactivés</h3>
-      <table class="table aidants-list">
-        <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Email</th>
-          <th>Carte Aidants Connect</th>
-          <th><span class="sr-only">Actions sur l’aidant ou l’aidante</span></th>
-        </tr>
-        </thead>
-        <tbody class="shadowed grey">
-        {% for aidant in organisation_inactive_aidants %}
-          <tr>
-            <td>
-              <a href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">{{ aidant.get_full_name }}</a>
-            </td>
-            <td>{% mailto recipient=aidant.email %}</td>
-            <td>
-              {{ aidant.number_totp_card }}
-              {% if aidant.has_a_carte_totp and not aidant.carte_totp.totp_device.confirmed %}
-                <p class="shadowed red padding-1rem unverified-card-warning">
-                  Attention : Le fonctionnement de cette carte n’a pas été vérifié.
-                  Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
-                  de se connecter à Aidants Connect.
-                </p>
-              {% endif %}
-            </td>
-            <td>
-              {% if aidant.has_a_carte_totp %}
-                <a
-                  id="remove-totp-card-from-aidant-{{ aidant.id }}"
-                  href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
-                  class="button"
-                >
-                  Délier la carte
-                </a>
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_aidants table_class="shadowed grey" %}
     {% endif %}
   </div>
 {% endblock content %}

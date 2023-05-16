@@ -16,8 +16,7 @@
       <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
         <div class="fr-col-12 fr-col-md-5">
           <a class="header-logo" href="{% url 'home_page' %}">
-            <img width="200" src="{% static 'images/Marianne_logo_1120.png' %}" alt=""/>
-            <img width="100" src="{% static 'images/aidants-connect_logo.png' %}" alt="Aidants Connect"/>
+            {% include "layouts/_header_logos.html" %}
           </a>
         </div>
       </div>
@@ -35,13 +34,12 @@
     <h1>Projet de mandat traduit</h1>
     <div class="subtitle-container no-print">
       <p class="subtitle fr-col-12 fr-col-md-6">
-        Vous trouverez ci-dessous un mandat type pour lequel plusieurs traductions sont disponibles. Les traductions de mandat servent uniquement à expliquer à l’usager ce que c’est qu’un mandat et ses implications. Ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.
+        Vous trouverez ci-dessous un mandat type pour lequel plusieurs traductions sont disponibles. Les traductions de
+        mandat servent uniquement à expliquer à l’usager ce que c’est qu’un mandat et ses implications. Ces traductions
+        n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.
       </p>
       <div class="fr-col-12 fr-col-md-6 print-button-container">
-        <div class="shadowed padding-1rem">
-          <p>Vous pouvez imprimer ce mandat type en cliquant sur le bouton ci-dessous. Attention, nous vous rappelons que ce mandat n’a aucune valeur juridique. Il est traduit à titre indicatif pour l’usager.</p>
-          <button class="primary" data-action="mandate-translation#print">Imprimer</button>
-        </div>
+        {% include 'aidants_connect_web/_attestation-print.html' %}
       </div>
     </div>
 
@@ -63,6 +61,11 @@
 
     <p class="subtitle">
       Mandat pour réaliser des démarches en ligne avec le service « Aidants Connect »
+    </p>
+
+    <p class="print-only notification warning margin-bottom-2rem" role="alert">
+      Attention, nous vous rappelons que ce mandat n’a aucune valeur juridique.
+      Il est traduit à titre indicatif pour l’usager.
     </p>
 
     <section class="mandate-translation-row">
@@ -89,11 +92,7 @@
   </div>
 {% endblock content %}
 
-{% block footer %}
-  <em class="text-center margin-bottom-1rem">
-    Ceci est un mandat-type. Il n’a aucune valeur juridique.
-  </em>
-{% endblock footer %}
+{% block footer %}{% endblock footer %}
 
 {% block extrajs %}
   {% if available_translations|length > 0 %}
