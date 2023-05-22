@@ -8,6 +8,8 @@ class SendingStatusChoices(TextChoicesEnum):
 
     RECEIVED = "Colis livré"
 
+    WAITING = "En attente"
+
     LOST = "Colis perdu"
 
     RETURNED = "Colis retour"
