@@ -24,6 +24,7 @@ from aidants_connect_web.models import (
     HabilitationRequest,
     Journal,
     Mandat,
+    Notification,
     Organisation,
     OrganisationType,
     Usager,
@@ -249,3 +250,10 @@ class AttestationJournalFactory(JournalFactory):
     is_remote_mandat = False
     access_token = Faker("md5")
     duree = 6
+
+
+class NotificationFactory(DjangoModelFactory):
+    aidant = SubFactory(AidantFactory)
+
+    class Meta:
+        model = Notification

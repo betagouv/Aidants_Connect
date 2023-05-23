@@ -1,0 +1,89 @@
+from django.test import TestCase
+from django.urls import resolve, reverse
+
+from aidants_connect_web.models import Notification
+from aidants_connect_web.tests.factories import AidantFactory, NotificationFactory
+from aidants_connect_web.views import notifications
+
+
+class NotificationsTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+        cls.unread_notification: Notification = NotificationFactory(
+            was_ack=False, aidant=cls.aidant
+        )
+        cls.read_notification: Notification = NotificationFactory(
+            was_ack=True, aidant=cls.aidant
+        )
+
+    def test_triggers_correct_view(self):
+        found = resolve(reverse("notification_list"))
+        self.assertEqual(found.func.view_class, notifications.Notifications)
+
+    def test_renders_correct_template(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get(reverse("notification_list"))
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/notifications/notification_list.html"
+        )
+
+
+class MarkNotificationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+        cls.aidant2 = AidantFactory()
+
+        cls.unread_notification: Notification = NotificationFactory(
+            was_ack=False, aidant=cls.aidant
+        )
+        cls.read_notification: Notification = NotificationFactory(
+            was_ack=True, aidant=cls.aidant
+        )
+
+    def test_post(self):
+        self.assertFalse(self.unread_notification.was_ack)
+        self.client.force_login(self.aidant)
+        response = self.client.post(
+            reverse(
+                "notification_mark",
+                kwargs={"notification_id": self.unread_notification.pk},
+            )
+        )
+        self.assertRedirects(response, reverse("notification_list"))
+        self.unread_notification.refresh_from_db()
+        self.assertTrue(self.unread_notification.was_ack)
+
+    def test_post_fails_on_other_aidant_notification(self):
+        self.client.force_login(self.aidant2)
+        response = self.client.post(
+            reverse(
+                "notification_mark",
+                kwargs={"notification_id": self.unread_notification.pk},
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_delete(self):
+        self.assertTrue(self.read_notification.was_ack)
+        self.client.force_login(self.aidant)
+        response = self.client.delete(
+            reverse(
+                "notification_mark",
+                kwargs={"notification_id": self.read_notification.pk},
+            )
+        )
+        self.assertRedirects(response, reverse("notification_list"))
+        self.read_notification.refresh_from_db()
+        self.assertFalse(self.read_notification.was_ack)
+
+    def test_delete_fails_on_other_aidant_notification(self):
+        self.client.force_login(self.aidant2)
+        response = self.client.post(
+            reverse(
+                "notification_mark",
+                kwargs={"notification_id": self.unread_notification.pk},
+            )
+        )
+        self.assertEqual(404, response.status_code)

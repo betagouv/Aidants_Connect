@@ -11,6 +11,7 @@ from aidants_connect_web.views import (
     id_provider,
     login,
     mandat,
+    notifications,
     renew_mandat,
     sandbox,
     service,
@@ -236,6 +237,16 @@ urlpatterns = [
         "datapass_habilitation/",
         datapass.habilitation_receiver,
         name="datapass_habilitation",
+    ),
+    path(
+        "notifications/",
+        notifications.Notifications.as_view(),
+        name="notification_list",
+    ),
+    path(
+        "notifications/<int:notification_id>/marquer/",
+        notifications.MarkNotification.as_view(),
+        name="notification_mark",
     ),
     # # SMS
     # SMS provider may misconfigure the trailing slash so we need to respond on both
