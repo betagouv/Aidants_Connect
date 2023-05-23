@@ -29,6 +29,44 @@ class NotificationsTests(TestCase):
         )
 
 
+class NotificationDetailTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+        cls.aidant2 = AidantFactory()
+        cls.notification: Notification = NotificationFactory(
+            was_ack=False, aidant=cls.aidant
+        )
+
+    def test_triggers_correct_view(self):
+        found = resolve(
+            reverse(
+                "notification_detail", kwargs={"notification_id": self.notification.pk}
+            )
+        )
+        self.assertEqual(found.func.view_class, notifications.NotificationDetail)
+
+    def test_renders_correct_template(self):
+        self.client.force_login(self.aidant)
+        response = self.client.get(
+            reverse(
+                "notification_detail", kwargs={"notification_id": self.notification.pk}
+            )
+        )
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/notifications/notification_detail.html"
+        )
+
+    def test_delete_fails_on_other_aidant_notification(self):
+        self.client.force_login(self.aidant2)
+        response = self.client.get(
+            reverse(
+                "notification_detail", kwargs={"notification_id": self.notification.pk}
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+
 class MarkNotificationTests(TestCase):
     @classmethod
     def setUpTestData(cls):

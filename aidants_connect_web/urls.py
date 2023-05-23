@@ -244,6 +244,11 @@ urlpatterns = [
         name="notification_list",
     ),
     path(
+        "notifications/<int:notification_id>/",
+        notifications.NotificationDetail.as_view(),
+        name="notification_detail",
+    ),
+    path(
         "notifications/<int:notification_id>/marquer/",
         notifications.MarkNotification.as_view(),
         name="notification_mark",

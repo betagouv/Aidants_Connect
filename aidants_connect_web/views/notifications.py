@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 
 from aidants_connect_web.constants import NotificationType
 from aidants_connect_web.decorators import (
@@ -32,6 +32,19 @@ class Notifications(ListView):
         if self.type_filter:
             filter_kwargs["type"] = self.type_filter
         return Notification.objects.filter(**filter_kwargs).order_by("-date").all()
+
+
+@aidant_logged_with_activity_required
+class NotificationDetail(DetailView):
+    template_name = "aidants_connect_web/notifications/notification_detail.html"
+    context_object_name = "notification"
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(
+            Notification,
+            aidant=self.request.user,
+            pk=self.kwargs.get("notification_id"),
+        )
 
 
 @aidant_logged_required
