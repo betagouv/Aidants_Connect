@@ -39,7 +39,7 @@ from aidants_connect_web.models import Organisation
 class OrganisationRequestInline(VisibleToAdminMetier, TabularInline):
     model = OrganisationRequest
     show_change_link = True
-    fields = ("id", "status", "name", "type", "address", "zipcode", "city")
+    fields = ("id", "uuid", "status", "name", "type", "address", "zipcode", "city")
     readonly_fields = fields
     extra = 0
     can_delete = False
@@ -136,6 +136,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "issuer",
         "created_at",
         "updated_at",
+        "uuid",
         "data_pass_id",
         "status",
         "organisation",

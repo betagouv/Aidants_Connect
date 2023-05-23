@@ -92,6 +92,12 @@ class Issuer(PersonWithResponsibilities):
 
     email_verified = models.BooleanField(verbose_name="Email vérifié", default=False)
 
+    def get_absolute_url(self):
+        return reverse(
+            "habilitation_issuer_page",
+            kwargs={"issuer_id": self.issuer_id},
+        )
+
     class Meta:
         verbose_name = "Demandeur"
 
