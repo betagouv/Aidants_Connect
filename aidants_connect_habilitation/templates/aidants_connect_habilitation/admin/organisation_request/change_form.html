@@ -3,14 +3,13 @@
 
 {% block object-tools-items %}
   {% with status=adminform.form.instance.status %}
-
-      {% if status in "AC_VALIDATION_PROCESSING,CHANGES_REQUIRED,VALIDATED,REFUSED,CLOSED" %}
-          <li>
-              <a href="{% qurl 'otpadmin:aidants_connect_habilitation_organisationrequest_waiting' object_id=object_id %}">
-                  Remettre en attente
-              </a>
-          </li>
-      {% endif %}
+    {% if status in "AC_VALIDATION_PROCESSING,CHANGES_REQUIRED,REFUSED,CLOSED" %}
+      <li>
+        <a href="{% qurl 'otpadmin:aidants_connect_habilitation_organisationrequest_waiting' object_id=object_id %}">
+          Remettre en attente
+        </a>
+      </li>
+    {% endif %}
 
     {% if status in "AC_VALIDATION_PROCESSING,CHANGES_REQUESTED" %}
       <li>
