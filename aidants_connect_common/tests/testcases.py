@@ -89,10 +89,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         otp_field.send_keys(otp_code)
         submit_button = self.selenium.find_element(By.XPATH, "//button")
         submit_button.click()
-        email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(
-            email_sent_title, "Un email vous a été envoyé pour vous connecter."
-        )
+        self.wait.until(self.path_matches("magicauth-email-sent"))
         self.assertEqual(len(mail.outbox), 1)
         token_email = mail.outbox[0].body
         line_containing_magic_link = token_email.split("\n")[2]

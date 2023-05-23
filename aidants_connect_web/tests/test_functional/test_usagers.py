@@ -7,7 +7,6 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 class UsagersTest(FunctionalTestCase):
@@ -48,7 +47,7 @@ class UsagersTest(FunctionalTestCase):
 
     def test_search_feature(self):
         self.open_live_url("/usagers/")
-        login_aidant(self)
+        self.login_aidant(self.aidant)
 
         user_with_valid_mandate = self.selenium.find_elements(
             By.CSS_SELECTOR, ".table.with-valid-mandate tbody tr"
