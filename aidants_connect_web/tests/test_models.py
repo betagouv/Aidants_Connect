@@ -36,6 +36,7 @@ from aidants_connect_web.tests.factories import (
     CarteTOTPFactory,
     HabilitationRequestFactory,
     MandatFactory,
+    NotificationFactory,
     OrganisationFactory,
     OrganisationTypeFactory,
     RevokedMandatFactory,
@@ -1986,3 +1987,37 @@ class TestNotification(TestCase):
                 auto_ack_date=None,
                 was_ack=False,
             )
+
+
+class NotificationTests(TestCase):
+    def test_constraints(self):
+        with transaction.atomic():
+            self.assertRaises(
+                IntegrityError, NotificationFactory, must_ack=True, was_ack=None
+            )
+
+        with transaction.atomic():
+            self.assertRaises(
+                IntegrityError, NotificationFactory, must_ack=False, was_ack=False
+            )
+
+        with transaction.atomic():
+            self.assertRaises(
+                IntegrityError, NotificationFactory, auto_ack_date=None, was_ack=None
+            )
+
+    def test_mark_read(self):
+        notification: Notification = NotificationFactory(was_ack=False)
+        notification.refresh_from_db()
+        self.assertFalse(notification.was_ack)
+        notification.mark_read()
+        notification.refresh_from_db()
+        self.assertTrue(notification.was_ack)
+
+    def test_mark_unread(self):
+        notification: Notification = NotificationFactory(was_ack=True)
+        notification.refresh_from_db()
+        self.assertTrue(notification.was_ack)
+        notification.mark_unread()
+        notification.refresh_from_db()
+        self.assertFalse(notification.was_ack)

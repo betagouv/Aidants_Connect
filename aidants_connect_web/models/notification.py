@@ -22,6 +22,14 @@ class Notification(models.Model):
     auto_ack_date = models.DateField("Échéance", null=True, default=None)
     was_ack = models.BooleanField("A été acquité", null=True, default=False)
 
+    def mark_read(self):
+        self.was_ack = True
+        self.save()
+
+    def mark_unread(self):
+        self.was_ack = False
+        self.save()
+
     class Meta:
         constraints = [
             models.CheckConstraint(
