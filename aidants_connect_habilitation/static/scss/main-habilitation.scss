@@ -599,6 +599,10 @@ fieldset {
   box-shadow: 10px 10px 0 colors.$red-aidants;
 }
 
+.full-width {
+  width: 100%;
+}
+
 @media screen {
   .print-only {
     display: none;

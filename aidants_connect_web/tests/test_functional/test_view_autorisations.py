@@ -12,7 +12,6 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional")
@@ -71,7 +70,7 @@ class ViewAutorisationsTests(FunctionalTestCase):
         self.open_live_url("/espace-aidant/")
 
         # Login
-        login_aidant(self)
+        self.login_aidant(self.aidant)
 
         # Espace Aidant home
         self.selenium.find_element(By.ID, "view_mandats").click()

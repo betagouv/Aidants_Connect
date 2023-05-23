@@ -25,9 +25,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         submit_button = self.selenium.find_element(By.XPATH, "//button")
         submit_button.click()
         email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(
-            email_sent_title, "Un email vous a été envoyé pour vous connecter."
-        )
+        self.assertEqual("LIEN DE CONNEXION ENVOYÉ", email_sent_title)
         self.assertEqual(len(mail.outbox), 1)
         token_email = mail.outbox[0].body
         line_containing_magic_link = token_email.split("\n")[2]
