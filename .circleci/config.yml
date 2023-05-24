@@ -5,17 +5,96 @@
 version: "2.1"
 orbs:
   browser-tools: circleci/browser-tools@1.2.4
-jobs:
-  build:
-    docker:
-      - image: cimg/python:3.10.4-browsers
 
-      - image: cimg/postgres:12.12
+parameters:
+  python-img-tag:
+    type: string
+    default: "3.10.4-browsers"
+  db-img-tag:
+    type: string
+    default: "12.12"
+  workingdir:
+    type: string
+    default: "~/repo"
+
+executors:
+  testbed:
+    docker:
+      - image: cimg/python:<< pipeline.parameters.python-img-tag >>
+      - image: cimg/postgres:<< pipeline.parameters.db-img-tag >>
         environment:
           POSTGRES_USER: aidants_connect_team
           POSTGRES_DB: aidants_connect
 
-    working_directory: ~/repo
+workflows:
+  all:
+    jobs:
+      - build
+      - code-checks:
+          requires:
+            - build
+      - test:
+          requires:
+            - build
+      - coverage:
+          requires:
+            - test
+
+jobs:
+  build:
+    docker:
+      - image: cimg/python:<< pipeline.parameters.python-img-tag >>
+    working_directory: << pipeline.parameters.workingdir >>
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            # fallback to using the latest cache if no exact match is found
+            - v3-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv /tmp/venv
+            . /tmp/venv/bin/activate
+            pip install pipenv
+            pipenv install --dev
+
+      - save_cache:
+          paths:
+            - /tmp/venv
+          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
+  code-checks:
+    executor: testbed
+    working_directory: << pipeline.parameters.workingdir >>
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: check Django missing migrations
+          command: |
+            . /tmp/venv/bin/activate
+            ./manage.py makemigrations --no-input --dry-run --check
+      - run:
+          name: run linting
+          command: |
+            . /tmp/venv/bin/activate
+            black --check .
+            flake8
+            isort . --check
+  test:
+    executor: testbed
+    parallelism: 4
+    working_directory: << pipeline.parameters.workingdir >>
 
     steps:
       - checkout
@@ -25,49 +104,47 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "Pipfile.lock" }}
-            # fallback to using the latest cache if no exact match is found
-            - v2-dependencies-
-
-      - run:
-          name: install dependencies
-          command: |
-            mkdir -p staticfiles
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install pipenv
-            pipenv install --dev
-            python manage.py collectstatic --noinput
-
-      - save_cache:
-          paths:
-            - ./venv
-          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
-
-      - run:
-          name: check Django missing migrations
-          command: |
-            . venv/bin/activate
-            ./manage.py makemigrations --no-input --dry-run --check
-      - run:
-          name: run linting
-          command: |
-            . venv/bin/activate
-            black --check .
-            flake8
-            isort . --check
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run unit tests
+          # Refs:
+          # https://circleci.com/docs/parallelism-faster-jobs/
+          # https://support.circleci.com/hc/en-us/articles/360048786831-Use-test-splitting-with-Python-Django-tests
           command: |
-            . venv/bin/activate
-            coverage run manage.py test
+            circleci tests glob '**/test*.py' | tr "$IFS" '\n' | sort | uniq > test_filenames.txt
+            TESTFILES=$(circleci tests split --split-by=timings test_filenames.txt | tr '/' '.' | sed 's/.py//g')
+
+            mkdir -p staticfiles
+
+            . /tmp/venv/bin/activate
+            python manage.py collectstatic --noinput
+            coverage run --parallel-mode manage.py test --verbosity=2 $TESTFILES
+      - persist_to_workspace:
+          root: .
+          paths: [".coverage*"]
+  coverage:
+    docker:
+      - image: cimg/python:3.10.4-browsers
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+
+      - attach_workspace:
+          at: .
+
       - run:
           name: coverage report
           command: |
-            . venv/bin/activate
+            . /tmp/venv/bin/activate
+            coverage combine
             coverage report
+            coverage html
 
       - store_artifacts:
-          path: test-reports
-          destination: test-reports
+          path: htmlcov
