@@ -145,6 +145,10 @@ jobs:
             coverage combine
             coverage report
             coverage html
+            coverage xml
 
       - store_artifacts:
           path: htmlcov
+
+      - store_test_results:
+          path: coverage.xml
