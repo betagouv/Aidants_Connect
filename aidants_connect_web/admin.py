@@ -1666,7 +1666,9 @@ class AidantStatistiquesAdmin(ModelAdmin):
 
 @register(Notification, site=admin_site)
 class NotificationAdmin(ModelAdmin):
+    date_hierarchy = "date"
     raw_id_fields = ("aidant",)
+    list_display = ("type", "aidant", "date", "auto_ack_date", "was_ack")
 
 
 # Display the following tables in the admin
