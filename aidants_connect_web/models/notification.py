@@ -21,6 +21,10 @@ class Notification(models.Model):
     must_ack = models.BooleanField("Doit être acquité pour disparaître", default=True)
     auto_ack_date = models.DateField("Échéance", null=True, default=None)
     was_ack = models.BooleanField("A été acquité", null=True, default=False)
+    body = models.TextField("Contenu de la notification", blank=True, default="")
+
+    def __str__(self):
+        return f"Notification f{self.get_type_display()} pour {self.aidant}"
 
     def mark_read(self):
         self.was_ack = True
