@@ -89,7 +89,6 @@ class HabilitationRequest(models.Model):
     def __str__(self):
         return f"{self.email}"
 
-    @transaction.atomic
     def validate_and_create_aidant(self):
         if self.status not in (
             self.STATUS_PROCESSING,
@@ -100,26 +99,33 @@ class HabilitationRequest(models.Model):
         ):
             return False
 
-        if Aidant.objects.filter(username__iexact=self.email).count() > 0:
-            aidant: Aidant = Aidant.objects.get(username__iexact=self.email)
-            aidant.organisations.add(self.organisation)
-            aidant.is_active = True
-            aidant.can_create_mandats = True
-            aidant.save()
+        with transaction.atomic():
+            if Aidant.objects.filter(username__iexact=self.email).count() > 0:
+                aidant: Aidant = Aidant.objects.get(username__iexact=self.email)
+                aidant.organisations.add(self.organisation)
+                aidant.is_active = True
+                aidant.can_create_mandats = True
+                aidant.save()
+                self.status = self.STATUS_VALIDATED
+                self.save()
+                return True
+
+            aidant = Aidant.objects.create(
+                last_name=self.last_name,
+                first_name=self.first_name,
+                profession=self.profession,
+                organisation=self.organisation,
+                email=self.email,
+                username=self.email,
+            )
             self.status = self.STATUS_VALIDATED
             self.save()
-            return True
 
-        Aidant.objects.create(
-            last_name=self.last_name,
-            first_name=self.first_name,
-            profession=self.profession,
-            organisation=self.organisation,
-            email=self.email,
-            username=self.email,
-        )
-        self.status = self.STATUS_VALIDATED
-        self.save()
+        # Prevent circular import
+        from aidants_connect_web.tasks import email_welcome_aidant
+
+        email_welcome_aidant(aidant.email, logger=logger)
+
         return True
 
     @property

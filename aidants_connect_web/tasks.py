@@ -272,3 +272,27 @@ def compute_aidants_statistics(*, logger=None):
 
     logger.info("Compute Aidants Stastistics...")
     compute_statistics()
+
+
+@shared_task
+def email_welcome_aidant(aidant_email: str, *, logger=None):
+    if not settings.FF_WELCOME_AIDANT:
+        return
+
+    logger: Logger = logger or get_task_logger(__name__)
+
+    context = {}
+
+    text_message = loader.render_to_string("email/aidant_bienvenue.txt", context)
+
+    html_message = loader.render_to_string("email/aidant_bienvenue.html", context)
+
+    send_mail(
+        from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
+        recipient_list=[aidant_email],
+        subject=settings.EMAIL_WELCOME_AIDANT_SUBJECT,
+        message=text_message,
+        html_message=html_message,
+    )
+
+    logger.info(f"Welcome email sent to {aidant_email}")
