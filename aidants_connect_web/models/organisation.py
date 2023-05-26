@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -52,6 +53,7 @@ class OrganisationManager(models.Manager):
 
 class Organisation(models.Model):
     data_pass_id = models.PositiveIntegerField("Datapass ID", null=True, unique=True)
+    uuid = models.UUIDField("API ID", unique=True, default=uuid4)
     name = models.TextField("Nom", default="No name provided")
     type = models.ForeignKey(
         OrganisationType, null=True, blank=True, on_delete=SET_NULL

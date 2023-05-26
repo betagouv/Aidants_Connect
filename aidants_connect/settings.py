@@ -135,6 +135,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "django_otp",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
@@ -689,3 +690,8 @@ FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
 SANDBOX_URL = os.getenv("SANDBOX_URL", "")
 
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,
+}
