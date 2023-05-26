@@ -1,8 +1,9 @@
 from django.conf import settings
-from django.urls import path, re_path
+from django.urls import include, path, re_path
 
 from magicauth.urls import urlpatterns as magicauth_urls
 
+from aidants_connect_web.api.urls import router as api_router
 from aidants_connect_web.views import (
     FC_as_FS,
     datapass,
@@ -262,6 +263,7 @@ urlpatterns = [
         sandbox.Sandbox.as_view(),
         name="sandbox_presentation",
     ),
+    path("api/", include(api_router.urls)),
 ]
 
 if not settings.FF_USE_PICO_CMS_FOR_FAQ:
