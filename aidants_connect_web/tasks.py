@@ -3,6 +3,7 @@ from datetime import timedelta
 from logging import Logger
 from typing import List
 
+from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Count, Q
 from django.template import loader
@@ -14,7 +15,6 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
-from aidants_connect import settings
 from aidants_connect_common.models import Department
 from aidants_connect_web.models import (
     Aidant,
@@ -288,11 +288,73 @@ def email_welcome_aidant(aidant_email: str, *, logger=None):
     html_message = loader.render_to_string("email/aidant_bienvenue.html", context)
 
     send_mail(
-        from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
+        from_email=settings.EMAIL_AIDANT_DEACTIVATION_WARN_FROM,
         recipient_list=[aidant_email],
-        subject=settings.EMAIL_WELCOME_AIDANT_SUBJECT,
+        subject=settings.EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT,
         message=text_message,
         html_message=html_message,
     )
 
     logger.info(f"Welcome email sent to {aidant_email}")
+
+
+@shared_task
+def email_old_aidants(*, logger=None):
+    if not settings.FF_DEACTIVATE_OLD_AIDANT:
+        return
+
+    logger: Logger = logger or get_task_logger(__name__)
+
+    @shared_task
+    def email_one_aidant(a: Aidant):
+        context = {}
+        text_message = loader.render_to_string(
+            "email/old_aidant_deactivation_warning.txt", context
+        )
+        html_message = loader.render_to_string(
+            "email/old_aidant_deactivation_warning.html", context
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
+            recipient_list=[a.email],
+            subject=settings.EMAIL_WELCOME_AIDANT_SUBJECT,
+            message=text_message,
+            html_message=html_message,
+        )
+
+        a.deactivation_warning_at = timezone.now()
+        a.save()
+
+        logger.info(
+            f"Sent warning notice for aidant {a.get_full_name()} "
+            "not connected recently"
+        )
+
+    aidants = Aidant.objects.deactivation_warnable().all()
+
+    logger.info(
+        f"Sending warning notice for {len(aidants)} aidants not connected recently"
+    )
+
+    for aidant in aidants:
+        email_one_aidant(aidant)
+
+    logger.info(
+        f"Sent warning notice for {len(aidants)} aidants not connected recently"
+    )
+
+
+@shared_task
+def deactivate_warned_aidants(*, logger=None):
+    if not settings.FF_DEACTIVATE_OLD_AIDANT:
+        return
+
+    logger: Logger = logger or get_task_logger(__name__)
+
+    deactivable = Aidant.objects.deactivable()
+
+    for aidant in deactivable:
+        aidant.deactivate()
+
+    logger.info(f"Deactivated {len(deactivable)} aidants")

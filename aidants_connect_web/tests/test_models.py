@@ -10,6 +10,7 @@ from django.db.utils import IntegrityError
 from django.test import TestCase, tag
 from django.utils import timezone
 
+from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
 from phonenumbers import PhoneNumberFormat, format_number
@@ -942,6 +943,59 @@ class AidantModelTests(TestCase):
         AidantFactory()
         AidantFactory(is_active=False)
         self.assertEqual(Aidant.objects.active().count(), 1)
+
+    def test_get_aidants_not_connected_recently(self):
+        now = timezone.now()
+
+        with freeze_time(now):
+            AidantFactory(is_active=True, last_login=timezone.now())
+            AidantFactory(
+                is_active=True,
+                last_login=timezone.now()
+                - relativedelta(months=5)
+                + relativedelta(days=1),
+            )
+            AidantFactory(
+                is_active=False, last_login=timezone.now() - relativedelta(year=1)
+            )
+
+            aidants_selected = [
+                AidantFactory(
+                    is_active=True,
+                    last_login=timezone.now() - relativedelta(months=5),
+                ),
+                AidantFactory(
+                    is_active=True, last_login=timezone.now() - relativedelta(year=1)
+                ),
+            ]
+
+            self.assertEqual(
+                aidants_selected, list(Aidant.objects.not_connected_recently())
+            )
+
+    def test_get_aidants_warnable(self):
+        now = timezone.now()
+
+        with freeze_time(now):
+            AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=timezone.now()
+                - relativedelta(months=5)
+                + relativedelta(days=1),
+            )
+
+            aidants_selected = [
+                AidantFactory(
+                    is_active=True,
+                    last_login=timezone.now() - relativedelta(months=5),
+                    deactivation_warning_at=None,
+                ),
+            ]
+
+            self.assertEqual(
+                aidants_selected, list(Aidant.objects.deactivation_warnable())
+            )
 
 
 @tag("models", "aidant")
