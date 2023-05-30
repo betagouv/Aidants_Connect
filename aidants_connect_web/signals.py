@@ -16,6 +16,8 @@ from aidants_connect_web.models import Aidant, Journal, aidants__organisations_c
 @receiver(user_logged_in)
 def log_connection_on_login(sender, user: Aidant, request, **kwargs):
     Journal.log_connection(user)
+    user.deactivation_warning_at = None
+    user.save()
 
 
 @receiver(user_logged_in)

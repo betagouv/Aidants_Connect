@@ -7,7 +7,10 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.dispatch import Signal
+from django.utils import timezone
 from django.utils.functional import cached_property
+
+from dateutil.relativedelta import relativedelta
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
 
@@ -21,6 +24,19 @@ logger = logging.getLogger()
 class AidantManager(UserManager):
     def active(self):
         return self.filter(is_active=True)
+
+    def not_connected_recently(self):
+        return self.active().filter(
+            last_login__lte=timezone.now() - relativedelta(months=5)
+        )
+
+    def deactivation_warnable(self):
+        return self.not_connected_recently().filter(deactivation_warning_at=None)
+
+    def deactivable(self):
+        return self.not_connected_recently().filter(
+            deactivation_warning_at__lt=timezone.now() - relativedelta(months=1)
+        )
 
     def __normalize_fields(self, extra_fields: dict):
         for field_name in extra_fields.keys():
@@ -111,6 +127,9 @@ class Aidant(AbstractUser):
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True, null=True)
+    deactivation_warning_at = models.DateTimeField(
+        "Date d'envoi de l’email d’alerte de désactivation", null=True, default=None
+    )
 
     objects = AidantManager()
 
@@ -123,9 +142,27 @@ class Aidant(AbstractUser):
         full_name = f"{self.first_name} {self.last_name}".strip()
         return full_name if full_name else self.username
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if self.is_active is False:
+            self.deactivation_warning_at = None
+
+            if update_fields:
+                update_fields = set(update_fields)
+                update_fields.add("deactivation_warning_at")
+
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
         self.organisations.add(self.organisation)
+
+    def deactivate(self):
+        self.is_active = False
+        self.save(update_fields={"is_active"})
 
     def get_full_name(self):
         return str(self)
@@ -273,9 +310,7 @@ class Aidant(AbstractUser):
             return None
 
         if self.organisations.count() == 1:
-            self.is_active = False
-            self.save()
-
+            self.deactivate()
             return self.is_active
 
         self.organisations.remove(organisation)
