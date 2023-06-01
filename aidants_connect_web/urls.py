@@ -194,6 +194,11 @@ urlpatterns = [
         name="espace_responsable_aidant_remove_card",
     ),
     path(
+        "espace-responsable/aidant/<int:aidant_id>/ajouter-otp-app/",
+        espace_responsable.AddAppOTPToAidant.as_view(),
+        name="espace_responsable_aidant_add_app_otp",
+    ),
+    path(
         "espace-responsable/aidant/<int:aidant_id>/changer-organisations/",
         espace_responsable.change_aidant_organisations,
         name="espace_responsable_aidant_change_organisations",

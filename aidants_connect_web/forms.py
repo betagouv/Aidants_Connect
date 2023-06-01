@@ -11,6 +11,7 @@ from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 
 from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
@@ -660,3 +661,26 @@ class SelectDemarcheForm(PatchedForm):
         if not self.aidant.get_valid_autorisation(result, self.user):
             raise ValidationError("", code="unauthorized_demarche")
         return result
+
+
+class AddAppOTPToAidantForm(PatchedForm):
+    otp_token = forms.CharField(
+        label=(
+            "Entrez ici le code de vérification donné par "
+            "votre application pour valider la création"
+        ),
+        label_suffix=" :",
+        min_length=6,
+        max_length=8,
+    )
+
+    def __init__(self, otp_device: TOTPDevice, *args, **kwargs):
+        self.otp_device = otp_device
+        super().__init__(*args, **kwargs)
+
+    def clean_otp(self):
+        token = self.cleaned_data["otp_token"]
+        if not self.otp_device.verify_token(token):
+            raise ValidationError("La vérification du code OTP a échoué")
+
+        return token

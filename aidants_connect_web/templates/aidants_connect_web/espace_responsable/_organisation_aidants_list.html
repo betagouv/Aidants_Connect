@@ -65,6 +65,15 @@
               Valider la carte
             </a>
           {% endif %}
+          {% if not aidant.has_otp_app %}
+            <a
+              id="add-otp-app-to-aidant-{{ aidant.id }}"
+              href="{% url 'espace_responsable_aidant_add_app_otp' aidant_id=aidant.id %}"
+              class="button"
+            >
+              Ajouter une application OTP
+            </a>
+          {% endif %}
         {% endif %}
         {% if aidant.has_a_carte_totp %}
           <a
