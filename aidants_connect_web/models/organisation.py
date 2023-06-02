@@ -136,7 +136,11 @@ class Organisation(models.Model):
 
     @property
     def display_address(self):
-        return self.address if self.address != "No address provided" else ""
+        return self.address if self.address != "No address provided" else "__________"
+
+    @property
+    def display_city(self):
+        return self.city if self.city else "__________"
 
     admin_num_mandats.short_description = "Nombre de mandats"
 

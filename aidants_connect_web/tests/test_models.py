@@ -750,7 +750,7 @@ class OrganisationModelTests(TestCase):
         organisation_no_address.save()
         organisation_address.save()
 
-        self.assertEqual(organisation_no_address.display_address, "")
+        self.assertEqual(organisation_no_address.display_address, "__________")
         self.assertNotEqual(
             organisation_no_address.display_address,
             Organisation._meta.get_field("address").default,
