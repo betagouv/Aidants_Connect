@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 
 from dateutil.relativedelta import relativedelta
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
 
@@ -298,6 +299,12 @@ class Aidant(AbstractUser):
     @cached_property
     def has_a_carte_totp(self) -> bool:
         return hasattr(self, "carte_totp")
+
+    @cached_property
+    def has_otp_app(self) -> bool:
+        return self.totpdevice_set.filter(
+            name=TOTPDevice.APP_DEVICE_NAME % self.pk
+        ).exists()
 
     @cached_property
     def number_totp_card(self) -> str:

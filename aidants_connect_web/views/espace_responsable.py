@@ -1,8 +1,11 @@
+import base64
 import contextlib
+from io import BytesIO
 
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.forms import model_to_dict
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -10,6 +13,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.views.generic import FormView, TemplateView
 
+import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import RequestStatusConstants
@@ -20,6 +24,7 @@ from aidants_connect_web.decorators import (
     user_is_responsable_structure,
 )
 from aidants_connect_web.forms import (
+    AddAppOTPToAidantForm,
     AddOrganisationResponsableForm,
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
@@ -244,6 +249,84 @@ class RemoveCardFromAidant(FormView):
         )
 
         return super().form_valid(form)
+
+
+@aidant_logged_with_activity_required
+class AddAppOTPToAidant(FormView):
+    template_name = "aidants_connect_web/espace_responsable/app_otp_confirm.html"
+    form_class = AddAppOTPToAidantForm
+    success_url = reverse_lazy("espace_responsable_home")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.responsable: Aidant = request.user
+        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
+
+        if not self.responsable.can_see_aidant(self.aidant):
+            raise Http404()
+
+        self.otp_device_qs = self.aidant.totpdevice_set.filter(
+            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk
+        ).all()
+
+        if request.method.lower() != "delete" and self.otp_device_qs:
+            django_messages.warning(
+                request,
+                "Il existe déjà une application OTP liée à ce profil. "
+                "Si vous voulez en attacher un nouveau, "
+                "veuillez supprimer l'anciennne.",
+            )
+            return HttpResponseRedirect(self.get_success_url())
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.otp_device = TOTPDevice(
+            user=self.aidant,
+            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk,
+            confirmed=False,
+        )
+        request.session["otp_device"] = model_to_dict(self.otp_device)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.otp_device = TOTPDevice(
+            **self.get_model_kwargs(request.session["otp_device"])
+        )
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.otp_device.confirmed = True
+        self.otp_device.save()
+        return super().form_valid(form)
+
+    @staticmethod
+    def get_model_kwargs(fields: dict):
+        result = {}
+        for field_name, field_value in fields.items():
+            field = TOTPDevice._meta.get_field(field_name)
+
+            if field.many_to_one:
+                result[field.attname] = int(field_value)
+            else:
+                result[field_name] = field_value
+        return result
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "otp_device": self.otp_device}
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "otp_device_qr_code_href": (
+                f"data:image/png;base64,{self.get_image_base_64()}"
+            ),
+        }
+
+    def get_image_base_64(self):
+        stream = BytesIO()
+        img = qrcode.make(self.otp_device.config_url, box_size=7, border=4)
+        img.save(stream, "PNG")
+        return base64.b64encode(stream.getvalue()).decode("utf-8")
 
 
 @require_http_methods(["GET", "POST"])
