@@ -31,8 +31,22 @@ def field_as_p(field: BoundField, p_classes=None):
 
 
 @register.inclusion_tag("fields/fields_as_fr_grid_row.html")
-def field_as_fr_grid_row(field: BoundField, large_label=False):
-    return field_as_something(field, large_label=large_label)
+def field_as_fr_grid_row(field: BoundField, label_size=None):
+    label_size_class = {
+        "large": "fr-col-md-7",
+        "medium": "fr-col-md-6",
+        "small": "fr-col-md-5",
+    }.get(str(label_size).lower(), "fr-col-md-5")
+    input_size_class = {
+        "large": "fr-col-md-5",
+        "medium": "fr-col-md-6",
+        "small": "fr-col-md-7",
+    }.get(str(label_size).lower(), "fr-col-md-7")
+    return field_as_something(
+        field,
+        input_size_class=input_size_class,
+        label_size_class=label_size_class,
+    )
 
 
 @register.inclusion_tag("fields/fields_as_narrow_fr_grid_row.html")
