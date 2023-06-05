@@ -18,15 +18,15 @@
               </li>{% endif %}
               <li>
                 <a {% if 'habilitation' in view_name %}class="active"{% endif %}
-                   href="{% url 'habilitation' %}">Premiers pas</a>
+                   href="{% url 'habilitation' %}">Habilitation</a>
               </li>
               <li>
                 <a {% if view_name == 'ressources' %}class="active"{% endif %}
-                   href="{% url 'ressources' %}">Outils</a>
+                   href="{% url 'ressources' %}">Ressources pédagogiques</a>
               </li>
               <li>
                 <a {% if 'faq' in view_name %}class="active"{% endif %}
-                   href="{% url 'faq_generale' %}">Aide</a>
+                   href="{% url 'faq_generale' %}">FAQ</a>
               </li>
               <li>
                 {% if user_is_authenticated %}
