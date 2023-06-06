@@ -2,7 +2,7 @@
 
 {% load static form_extras %}
 
-{% block title %}Aidants Connect - Ajout d’une application OTP pour {{ aidant.get_full_name }}{% endblock %}
+{% block title %}Aidants Connect - Suppression d’une application OTP pour {{ aidant.get_full_name }}{% endblock %}
 
 {% block content %}
   <div class="fr-container">
@@ -13,8 +13,8 @@
     {% endif %}
     <form method="post">
       {% csrf_token %}
-      <img src="{{ otp_device_qr_code_href }}" alt="OTP QR code à flasher dans votre application">
-      {% field_as_p form.otp_token %}
+      <p>Vous vous apprêtez à supprimer l’application OTP du profil de {{ aidant.get_full_name }}.</p>
+      <p>Confirmez-vous cette action ?</p>
       <a href="{% url 'espace_responsable_home' %}" class="button">Annuler</a>
       <input type="submit" class="button" value="Confirmer">
     </form>

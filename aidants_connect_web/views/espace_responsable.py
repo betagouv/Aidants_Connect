@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
-from django.views.generic import FormView, TemplateView
+from django.views.generic import DeleteView, FormView, TemplateView
 
 import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -264,16 +264,13 @@ class AddAppOTPToAidant(FormView):
         if not self.responsable.can_see_aidant(self.aidant):
             raise Http404()
 
-        self.otp_device_qs = self.aidant.totpdevice_set.filter(
+        if self.aidant.totpdevice_set.filter(
             name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk
-        ).all()
-
-        if request.method.lower() != "delete" and self.otp_device_qs:
+        ).exists():
             django_messages.warning(
                 request,
-                "Il existe déjà une application OTP liée à ce profil. "
-                "Si vous voulez en attacher un nouveau, "
-                "veuillez supprimer l'anciennne.",
+                "Il existe déjà une application OTP liée à ce profil. Si vous voulez "
+                "en attacher une nouvelle, veuillez supprimer l'anciennne.",
             )
             return HttpResponseRedirect(self.get_success_url())
 
@@ -327,6 +324,29 @@ class AddAppOTPToAidant(FormView):
         img = qrcode.make(self.otp_device.config_url, box_size=7, border=4)
         img.save(stream, "PNG")
         return base64.b64encode(stream.getvalue()).decode("utf-8")
+
+
+@aidant_logged_with_activity_required
+class RemoveAppOTPFromAidant(DeleteView):
+    template_name = "aidants_connect_web/espace_responsable/app_otp_remove.html"
+    success_url = reverse_lazy("espace_responsable_home")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.responsable: Aidant = request.user
+        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
+
+        if not self.responsable.can_see_aidant(self.aidant):
+            raise Http404()
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {**super().get_context_data(**kwargs), "aidant": self.aidant}
+
+    def get_object(self, queryset=None):
+        return self.aidant.totpdevice_set.filter(
+            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk
+        )
 
 
 @require_http_methods(["GET", "POST"])

@@ -84,6 +84,15 @@
             Délier la carte
           </a>
         {% endif %}
+        {% if aidant.has_otp_app %}
+          <a
+            id="add-otp-app-to-aidant-{{ aidant.id }}"
+            href="{% url 'espace_responsable_aidant_remove_app_otp' aidant_id=aidant.id %}"
+            class="button"
+          >
+            Supprimer une application OTP
+          </a>
+        {% endif %}
       </td>
     </tr>
   {% endfor %}
