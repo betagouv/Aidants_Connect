@@ -1,0 +1,21 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>
+      <p>Bonjour {{ user.first_name }} {{ user.last_name }},</p>
+      <p>Pour accéder à Aidants Connect, cliquez sur :</p>
+    </mj-text>
+    <mj-button
+      href="https://{{ site.domain }}{% url 'magicauth-wait' token.key %}?next={{ next_url|urlencode }}"
+      border-radius="0"
+      background-color="#EF4056"
+      color="#FFF"
+    >
+      Connexion
+    </mj-button>
+    <mj-text>Ce lien n'est valable que {{ TOKEN_DURATION_MINUTES }} minutes. Il est à usage unique.</mj-text>
+  </mj-column>
+</mj-section>
+{% endblock %}
