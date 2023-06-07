@@ -2,8 +2,14 @@ from django.conf import settings
 from django.test import TestCase, tag
 from django.utils.timezone import now
 
+from aidants_connect_common.models import Department, Region
 from aidants_connect_common.utils.constants import JournalActionKeywords
-from aidants_connect_web.models import Aidant, AidantStatistiques, HabilitationRequest
+from aidants_connect_web.models import (
+    Aidant,
+    AidantStatistiques,
+    AidantStatistiquesbyDepartment,
+    HabilitationRequest,
+)
 from aidants_connect_web.statistics import compute_statistics
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -64,68 +70,166 @@ class StatisticsTests(TestCase):
         self.assertEqual(stats.number_aidant_with_login, 2)
         self.assertEqual(stats.number_aidant_who_have_created_mandat, 1)
 
-    def test_computing_new_statistics(self):
-        orga_ad_two = OrganisationFactory(name="FService AD 2")
-        orga_ad_three = OrganisationFactory(name="FService AD 3")
 
-        orga_ad_four = OrganisationFactory(name="FService Autre")
+@tag("statistics")
+class AllStatisticsTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.region_one = Region.objects.create(insee_code="91", name="Region 1")
+        cls.region_two = Region.objects.create(insee_code="92", name="Region 2")
+        cls.dep_11 = Department.objects.create(
+            insee_code="911", region=cls.region_one, name="Dep 911"
+        )
+        cls.dep_12 = Department.objects.create(
+            insee_code="912", region=cls.region_one, name="Dep 912"
+        )
 
-        self.ad_with_totp_two = AidantFactory(
-            last_login=now(), organisation=orga_ad_two
+        cls.dep_21 = Department.objects.create(
+            insee_code="921", region=cls.region_two, name="Dep 921"
         )
-        CarteTOTPFactory(aidant=self.ad_with_totp_two)
-        self.ad_with_totp_three = AidantFactory(
-            last_login=now(), organisation=orga_ad_three
-        )
-        CarteTOTPFactory(aidant=self.ad_with_totp_three)
 
-        self.ad_with_totp_four = AidantFactory(
-            last_login=now(), organisation=orga_ad_four
+        staf_orga = OrganisationFactory(name=settings.STAFF_ORGANISATION_NAME)
+        orga_11 = OrganisationFactory(name="CCAS", department_insee_code="911")
+        orga_12 = OrganisationFactory(name="Orga dep 12", department_insee_code="912")
+        orga_21 = OrganisationFactory(name="Orga dep 21", department_insee_code="921")
+        # nb = 0
+        AidantFactory(organisation=staf_orga)
+        # nb = 0
+        AidantFactory(is_active=False, organisation=orga_12)
+        # nb = 1
+        AidantFactory(organisation=orga_21)
+        # nb = 2
+        ad_with_totp = AidantFactory()
+        CarteTOTPFactory(aidant=ad_with_totp)
+
+        # nb = 3
+        AidantFactory(
+            post__with_otp_device=True,
+            organisation=orga_11,
+            can_create_mandats=False,
+            post__is_organisation_manager=True,
         )
-        CarteTOTPFactory(aidant=self.ad_with_totp_four)
+        cls.orga_ad_dep_12 = OrganisationFactory(
+            name="FService AD 2", department_insee_code="912"
+        )
+        cls.orga_ad_dep_11 = OrganisationFactory(
+            name="FService AD 3", department_insee_code="911"
+        )
+
+        cls.orga_ad_dep_21 = OrganisationFactory(
+            name="FService Autre", department_insee_code="921"
+        )
+
+        cls.ad_with_totp_dep12 = AidantFactory(
+            last_login=now(), organisation=cls.orga_ad_dep_12
+        )
+        CarteTOTPFactory(aidant=cls.ad_with_totp_dep12)
+
+        cls.ad_with_totp_dep_11 = AidantFactory(
+            last_login=now(), organisation=cls.orga_ad_dep_11
+        )
+        CarteTOTPFactory(aidant=cls.ad_with_totp_dep_11)
+
+        cls.ad_with_totp_dep_21 = AidantFactory(
+            last_login=now(), organisation=cls.orga_ad_dep_21
+        )
+        CarteTOTPFactory(aidant=cls.ad_with_totp_dep_21)
 
         AttestationJournalFactory(
-            aidant=self.ad_with_totp_three,
-            organisation=self.ad_with_totp_three.organisation,
+            aidant=cls.ad_with_totp_dep_11,
+            organisation=cls.ad_with_totp_dep_11.organisation,
         )
 
         AttestationJournalFactory(
-            aidant=self.ad_with_totp_three,
-            organisation=self.ad_with_totp_three.organisation,
+            aidant=cls.ad_with_totp_dep_11,
+            organisation=cls.ad_with_totp_dep_11.organisation,
         )
 
         AttestationJournalFactory(
-            aidant=self.ad_with_totp_two,
-            organisation=self.ad_with_totp_two.organisation,
+            aidant=cls.ad_with_totp_dep12,
+            organisation=cls.ad_with_totp_dep12.organisation,
         )
 
         JournalFactory(
-            organisation=orga_ad_four,
-            aidant=self.ad_with_totp_four,
+            organisation=cls.ad_with_totp_dep_21.organisation,
+            aidant=cls.ad_with_totp_dep_21,
             action=JournalActionKeywords.USE_AUTORISATION,
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_VALIDATED, formation_done=True
+            status=HabilitationRequest.STATUS_VALIDATED,
+            formation_done=True,
+            organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_REFUSED, formation_done=True
+            status=HabilitationRequest.STATUS_REFUSED,
+            formation_done=True,
+            organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW, formation_done=True
+            status=HabilitationRequest.STATUS_NEW,
+            formation_done=True,
+            organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW, formation_done=True
+            status=HabilitationRequest.STATUS_NEW,
+            formation_done=True,
+            organisation=orga_12,
         )
-        HabilitationRequestFactory(status=HabilitationRequest.STATUS_NEW)
+        HabilitationRequestFactory(
+            status=HabilitationRequest.STATUS_NEW,
+            formation_done=True,
+            organisation=orga_12,
+        )
 
+        HabilitationRequestFactory(
+            status=HabilitationRequest.STATUS_NEW, organisation=orga_21
+        )
+
+    def test_global_computing_new_statistics(self):
         stats = compute_statistics(AidantStatistiques())
 
         self.assertEqual(stats.number_aidant_who_have_created_mandat, 2)
         self.assertEqual(stats.number_operational_aidants, 4)
-        self.assertEqual(stats.number_future_aidant, 3)
-        self.assertEqual(stats.number_future_trained_aidant, 3)
+        self.assertEqual(stats.number_future_aidant, 4)
+        self.assertEqual(stats.number_future_trained_aidant, 4)
         self.assertEqual(stats.number_trained_aidant_since_begining, 6)
 
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 4)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 3)
+
+    def test_by_department_computing_new_statistics(self):
+        stats = compute_statistics(
+            AidantStatistiquesbyDepartment(departement=self.dep_11)
+        )
+
+        self.assertEqual(stats.number_aidants, 2)
+        self.assertEqual(stats.number_aidants_is_active, 2)
+        self.assertEqual(stats.number_responsable, 1)
+
+        self.assertEqual(stats.number_aidant_who_have_created_mandat, 1)
+        self.assertEqual(stats.number_operational_aidants, 1)
+        self.assertEqual(stats.number_future_aidant, 1)
+        self.assertEqual(stats.number_future_trained_aidant, 2)
+        self.assertEqual(stats.number_trained_aidant_since_begining, 1)
+
+        self.assertEqual(stats.number_organisation_with_accredited_aidants, 1)
+        self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 1)
+
+        stats = compute_statistics(
+            AidantStatistiquesbyDepartment(departement=self.dep_12)
+        )
+
+        self.assertEqual(stats.number_aidants, 2)
+        self.assertEqual(stats.number_aidants_is_active, 1)
+        self.assertEqual(stats.number_responsable, 0)
+
+        self.assertEqual(stats.number_aidant_who_have_created_mandat, 1)
+        self.assertEqual(stats.number_operational_aidants, 1)
+        self.assertEqual(stats.number_future_aidant, 2)
+        self.assertEqual(stats.number_future_trained_aidant, 2)
+        self.assertEqual(stats.number_trained_aidant_since_begining, 2)
+
+        self.assertEqual(stats.number_organisation_with_accredited_aidants, 1)
+        self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 1)

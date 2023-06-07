@@ -1,6 +1,9 @@
-from django.conf import settings
+from typing import Union
 
-# from aidants_connect_common.models import Department, Region
+from django.conf import settings
+from django.db.models import Q
+
+from aidants_connect_common.models import Department
 from aidants_connect_common.utils.constants import (
     JournalActionKeywords,
     RequestStatusConstants,
@@ -19,20 +22,48 @@ from .models import (
 
 
 def compute_all_statistics():
-    pass
+    global_stat = compute_statistics(AidantStatistiques())
+    dep_stats = []
+    for one_dep in Department.objects.all():
+        dep_stats.append(
+            compute_statistics(AidantStatistiquesbyDepartment(departement=one_dep))
+        )
+    return [global_stat] + dep_stats
 
 
 def compute_statistics(
-    ostat: [
+    ostat: Union[
         AidantStatistiques,
         AidantStatistiquesbyDepartment,
         AidantStatistiquesbyRegion,
-    ]
-):
-
+    ],
+) -> Union[
+    AidantStatistiques, AidantStatistiquesbyDepartment, AidantStatistiquesbyRegion
+]:
     stafforg = settings.STAFF_ORGANISATION_NAME
-    ads = Aidant.objects.exclude(organisation__name=stafforg)
-    orgas = Organisation.objects.exclude(name=stafforg)
+    if isinstance(ostat, AidantStatistiques):
+        ads = Aidant.objects.exclude(organisation__name=stafforg)
+        orgas = Organisation.objects.exclude(name=stafforg)
+        hab_requests = HabilitationRequest.objects.all()
+        orga_requests = OrganisationRequest.objects.all()
+        journals = Journal.objects.all()
+    elif isinstance(ostat, AidantStatistiquesbyDepartment):
+        departement_insee_code = ostat.departement.insee_code
+        ads = Aidant.objects.exclude(organisation__name=stafforg).filter(
+            Q(organisation__department_insee_code=departement_insee_code)
+        )
+        orgas = Organisation.objects.exclude(name=stafforg).filter(
+            Q(department_insee_code=departement_insee_code)
+        )
+        hab_requests = HabilitationRequest.objects.filter(
+            Q(organisation__department_insee_code=departement_insee_code)
+        )
+        orga_requests = OrganisationRequest.objects.filter(
+            Q(organisation__department_insee_code=departement_insee_code)
+        )
+        journals = Journal.objects.all().filter(
+            Q(organisation__department_insee_code=departement_insee_code)
+        )
 
     number_aidants = ads.count()
     qs_aidants_is_active = ads.filter(is_active=True)
@@ -56,7 +87,7 @@ def compute_statistics(
 
     aids_id = set(
         list(
-            Journal.objects.filter(action="create_attestation").values_list(
+            journals.filter(action="create_attestation").values_list(
                 "aidant_id", flat=True
             )
         )
@@ -71,7 +102,7 @@ def compute_statistics(
     )
     number_operational_aidants = qs_operational_aidants.count()
 
-    qs_future_aidant = HabilitationRequest.objects.exclude(
+    qs_future_aidant = hab_requests.exclude(
         status__in=[
             HabilitationRequest.STATUS_REFUSED,
             HabilitationRequest.STATUS_CANCELLED,
@@ -83,9 +114,7 @@ def compute_statistics(
     qs_trained_aidant_since_begining = ads.filter(can_create_mandats=True)
     number_trained_aidant_since_begining = qs_trained_aidant_since_begining.count()
 
-    qs_future_trained_aidant = HabilitationRequest.objects.filter(
-        formation_done=True
-    ).exclude(
+    qs_future_trained_aidant = hab_requests.filter(formation_done=True).exclude(
         status__in=[
             HabilitationRequest.STATUS_VALIDATED,
         ],
@@ -94,12 +123,12 @@ def compute_statistics(
 
     nb_structures = orgas.count()
 
-    qs_orga_requests = OrganisationRequest.objects.exclude(
+    qs_orga_requests = orga_requests.exclude(
         status=RequestStatusConstants.VALIDATED.name
     )
     nb_orga_requests = qs_orga_requests.count()
 
-    qs_validated_orga_requests = OrganisationRequest.objects.filter(
+    qs_validated_orga_requests = orga_requests.filter(
         status=RequestStatusConstants.VALIDATED.name
     )
     nb_validated_orga_requests = qs_validated_orga_requests.count()
@@ -128,7 +157,7 @@ def compute_statistics(
         qs_organisation_with_at_least_one_ac_usage.count()
     )
 
-    qs_usage_of_ac = Journal.objects.filter(
+    qs_usage_of_ac = journals.filter(
         action__in=[JournalActionKeywords.USE_AUTORISATION]
     )
     number_usage_of_ac = qs_usage_of_ac.count()
@@ -139,15 +168,21 @@ def compute_statistics(
     ostat.number_aidant_can_create_mandat = number_aidant_can_create_mandat
     ostat.number_aidants_without_totp = number_aidants_without_totp
     ostat.number_aidant_with_login = number_aidant_with_login
-    ostat.number_aidant_who_have_created_mandat = number_aidant_who_have_created_mandat  # noqa
+    ostat.number_aidant_who_have_created_mandat = number_aidant_who_have_created_mandat
     ostat.number_operational_aidants = number_operational_aidants
     ostat.number_future_aidant = number_future_aidant
-    ostat.number_trained_aidant_since_begining = number_trained_aidant_since_begining  # noqa
+    ostat.number_trained_aidant_since_begining = number_trained_aidant_since_begining
     ostat.number_future_trained_aidant = number_future_trained_aidant
     ostat.number_organisation_requests = number_organisation_requests
-    ostat.number_validated_organisation_requests = number_validated_organisation_requests  # noqa
-    ostat.number_organisation_with_accredited_aidants = number_organisation_with_accredited_aidants  # noqa
-    ostat.number_organisation_with_at_least_one_ac_usage = number_organisation_with_at_least_one_ac_usage  # noqa
+    ostat.number_validated_organisation_requests = (
+        number_validated_organisation_requests
+    )
+    ostat.number_organisation_with_accredited_aidants = (
+        number_organisation_with_accredited_aidants
+    )
+    ostat.number_organisation_with_at_least_one_ac_usage = (
+        number_organisation_with_at_least_one_ac_usage
+    )
     ostat.number_usage_of_ac = number_usage_of_ac
     ostat.save()
 
