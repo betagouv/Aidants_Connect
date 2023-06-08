@@ -3,7 +3,7 @@ from typing import Union
 from django.conf import settings
 from django.db.models import Q
 
-from aidants_connect_common.models import Department
+from aidants_connect_common.models import Department, Region
 from aidants_connect_common.utils.constants import (
     JournalActionKeywords,
     RequestStatusConstants,
@@ -24,11 +24,18 @@ from .models import (
 def compute_all_statistics():
     global_stat = compute_statistics(AidantStatistiques())
     dep_stats = []
+    region_stats = []
     for one_dep in Department.objects.all():
         dep_stats.append(
             compute_statistics(AidantStatistiquesbyDepartment(departement=one_dep))
         )
-    return [global_stat] + dep_stats
+
+    for one_region in Region.objects.all():
+        region_stats.append(
+            compute_statistics(AidantStatistiquesbyRegion(region=one_region))
+        )
+
+    return [global_stat] + dep_stats + region_stats
 
 
 def compute_statistics(
@@ -38,7 +45,7 @@ def compute_statistics(
         AidantStatistiquesbyRegion,
     ],
 ) -> Union[
-    AidantStatistiques, AidantStatistiquesbyDepartment, AidantStatistiquesbyRegion
+    AidantStatistiques, AidantStatistiquesbyDepartment, AidantStatistiquesbyRegion, None
 ]:
     stafforg = settings.STAFF_ORGANISATION_NAME
     if isinstance(ostat, AidantStatistiques):
@@ -64,6 +71,27 @@ def compute_statistics(
         journals = Journal.objects.all().filter(
             Q(organisation__department_insee_code=departement_insee_code)
         )
+    elif isinstance(ostat, AidantStatistiquesbyRegion):
+        dpts_insee_code = list(
+            ostat.region.department.all().values_list("insee_code", flat=True)
+        )
+        ads = Aidant.objects.exclude(organisation__name=stafforg).filter(
+            Q(organisation__department_insee_code__in=dpts_insee_code)
+        )
+        orgas = Organisation.objects.exclude(name=stafforg).filter(
+            Q(department_insee_code__in=dpts_insee_code)
+        )
+        hab_requests = HabilitationRequest.objects.filter(
+            Q(organisation__department_insee_code__in=dpts_insee_code)
+        )
+        orga_requests = OrganisationRequest.objects.filter(
+            Q(organisation__department_insee_code__in=dpts_insee_code)
+        )
+        journals = Journal.objects.all().filter(
+            Q(organisation__department_insee_code__in=dpts_insee_code)
+        )
+    else:
+        return None
 
     number_aidants = ads.count()
     qs_aidants_is_active = ads.filter(is_active=True)

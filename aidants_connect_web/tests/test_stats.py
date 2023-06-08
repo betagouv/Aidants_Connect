@@ -8,6 +8,7 @@ from aidants_connect_web.models import (
     Aidant,
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
+    AidantStatistiquesbyRegion,
     HabilitationRequest,
 )
 from aidants_connect_web.statistics import compute_statistics
@@ -229,6 +230,37 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_operational_aidants, 1)
         self.assertEqual(stats.number_future_aidant, 2)
         self.assertEqual(stats.number_future_trained_aidant, 2)
+        self.assertEqual(stats.number_trained_aidant_since_begining, 2)
+
+        self.assertEqual(stats.number_organisation_with_accredited_aidants, 1)
+        self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 1)
+
+    def test_by_region_computing_new_statistics(self):
+        stats = compute_statistics(AidantStatistiquesbyRegion(region=self.region_one))
+
+        self.assertEqual(stats.number_aidants, 4)
+        self.assertEqual(stats.number_aidants_is_active, 3)
+        self.assertEqual(stats.number_responsable, 1)
+
+        self.assertEqual(stats.number_aidant_who_have_created_mandat, 2)
+        self.assertEqual(stats.number_operational_aidants, 2)
+        self.assertEqual(stats.number_future_aidant, 3)
+        self.assertEqual(stats.number_future_trained_aidant, 4)
+        self.assertEqual(stats.number_trained_aidant_since_begining, 3)
+
+        self.assertEqual(stats.number_organisation_with_accredited_aidants, 2)
+        self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 2)
+
+        stats = compute_statistics(AidantStatistiquesbyRegion(region=self.region_two))
+
+        self.assertEqual(stats.number_aidants, 2)
+        self.assertEqual(stats.number_aidants_is_active, 2)
+        self.assertEqual(stats.number_responsable, 0)
+
+        self.assertEqual(stats.number_aidant_who_have_created_mandat, 0)
+        self.assertEqual(stats.number_operational_aidants, 1)
+        self.assertEqual(stats.number_future_aidant, 1)
+        self.assertEqual(stats.number_future_trained_aidant, 0)
         self.assertEqual(stats.number_trained_aidant_since_begining, 2)
 
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 1)
