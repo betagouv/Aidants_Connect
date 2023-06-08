@@ -74,7 +74,6 @@ jobs:
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - v3-dependencies-{{ checksum "Pipfile.lock" }}
@@ -93,7 +92,7 @@ jobs:
             isort . --check
   test:
     executor: testbed
-    parallelism: 4
+    parallelism: 8
     working_directory: << pipeline.parameters.workingdir >>
 
     steps:
@@ -101,7 +100,6 @@ jobs:
       - browser-tools/install-firefox
       - browser-tools/install-geckodriver
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - v3-dependencies-{{ checksum "Pipfile.lock" }}
@@ -112,7 +110,9 @@ jobs:
           # https://circleci.com/docs/parallelism-faster-jobs/
           # https://support.circleci.com/hc/en-us/articles/360048786831-Use-test-splitting-with-Python-Django-tests
           command: |
-            circleci tests glob '**/test*.py' | tr "$IFS" '\n' | sort | uniq > test_filenames.txt
+            TESTFILES=$(circleci tests glob '**/test*.py' | grep test_functional | sort | uniq)
+            TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep -v test_functional | sort | uniq)
+            echo $TESTFILES | tr "$IFS" '\n' > test_filenames.txt
             TESTFILES=$(circleci tests split --split-by=timings test_filenames.txt | tr '/' '.' | sed 's/.py//g')
 
             mkdir -p staticfiles
