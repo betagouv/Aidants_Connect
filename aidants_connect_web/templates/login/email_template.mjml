@@ -9,9 +9,6 @@
     </mj-text>
     <mj-button
       href="https://{{ site.domain }}{% url 'magicauth-wait' token.key %}?next={{ next_url|urlencode }}"
-      border-radius="0"
-      background-color="#EF4056"
-      color="#FFF"
     >
       Connexion
     </mj-button>
