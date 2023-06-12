@@ -3,7 +3,7 @@
 @use "boxes";
 @use "detailed-radio-select";
 
-$font-stack: "Marianne-Regular", arial, sans-serif;
+$font-stack: "Marianne", arial, sans-serif;
 
 // basic layout -----------------------------------------
 
@@ -14,6 +14,7 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
+  font-weight: 400;  // Marianne-Regular
 }
 
 ul, ol {
