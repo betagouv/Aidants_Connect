@@ -1,13 +1,12 @@
-from binascii import unhexlify
+from unittest import mock
+from unittest.mock import Mock
 
 from django.contrib import messages as django_messages
-from django.test import TestCase, tag
+from django.test import TestCase, override_settings, tag
 from django.urls import resolve, reverse
-from django.utils import timezone
 
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from freezegun import freeze_time
 
 from aidants_connect_web.models import Aidant
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
@@ -15,6 +14,7 @@ from aidants_connect_web.views import espace_responsable
 
 
 @tag("responsable-structure")
+@override_settings(FF_OTP_APP=True)
 class AddAppOTPToAidantTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -36,7 +36,6 @@ class AddAppOTPToAidantTests(TestCase):
         TOTPDevice.objects.create(
             user=cls.aidant_sarah,
             name=TOTPDevice.APP_DEVICE_NAME % cls.aidant_sarah.pk,
-            tolerance=2,
         )
 
         cls.other_organisation = OrganisationFactory()
@@ -51,10 +50,22 @@ class AddAppOTPToAidantTests(TestCase):
         found = resolve(
             reverse(
                 "espace_responsable_aidant_add_app_otp",
-                kwargs={"aidant_id": self.aidant_ahmed.pk},
+                kwargs={"aidant_id": self.aidant_tim.pk},
             )
         )
         self.assertEqual(found.func.view_class, espace_responsable.AddAppOTPToAidant)
+
+    def test_renders_correct_template(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(
+            reverse(
+                "espace_responsable_aidant_add_app_otp",
+                kwargs={"aidant_id": self.aidant_tim.pk},
+            )
+        )
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_responsable/app_otp_confirm.html"
+        )
 
     def test_cant_add_otp_device_to_foreign_aidant(self):
         self.client.force_login(self.responsable_tom)
@@ -96,47 +107,55 @@ class AddAppOTPToAidantTests(TestCase):
         )
         self.assertEqual(1, self.aidant_sarah.totpdevice_set.count())
 
-    def test_can_add_unconfirmed_otp_device(self):
-        now = timezone.now()
-        with freeze_time(now):  # Freezing time to avoid submitting an expired token
-            self.assertEqual(0, self.aidant_tim.totpdevice_set.count())
+    @mock.patch.object(TOTP, "verify")
+    def test_can_add_otp_device(self, mock_verify: Mock):
+        self.assertEqual(0, self.aidant_tim.totpdevice_set.count())
 
-            self.client.force_login(self.responsable_tom)
+        self.client.force_login(self.responsable_tom)
 
-            self.client.get(
-                reverse(
-                    "espace_responsable_aidant_add_app_otp",
-                    kwargs={"aidant_id": self.aidant_tim.pk},
-                )
+        self.client.get(
+            reverse(
+                "espace_responsable_aidant_add_app_otp",
+                kwargs={"aidant_id": self.aidant_tim.pk},
             )
+        )
 
-            otp_device = self.client.session["otp_device"]
-            token = TOTP(
-                key=unhexlify(otp_device["key"].encode()),
-                step=otp_device["step"],
-                t0=otp_device["t0"],
-                digits=otp_device["digits"],
-                drift=otp_device["drift"],
-            ).token()
+        # Won't create a record if the challenge is not passed
+        mock_verify.return_value = False
+        response = self.client.post(
+            reverse(
+                "espace_responsable_aidant_add_app_otp",
+                kwargs={"aidant_id": self.aidant_tim.pk},
+            ),
+            data={"otp_token": "654321"},
+        )
 
-            response = self.client.post(
-                reverse(
-                    "espace_responsable_aidant_add_app_otp",
-                    kwargs={"aidant_id": self.aidant_tim.pk},
-                ),
-                data={"otp_token": token},
-            )
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_responsable/app_otp_confirm.html"
+        )
+        self.assertEqual(0, self.aidant_tim.totpdevice_set.count())
 
-            self.assertRedirects(
-                response,
-                reverse("espace_responsable_home"),
-                fetch_redirect_response=False,
-            )
-            self.assertEqual(1, self.aidant_tim.totpdevice_set.count())
-            self.assertTrue(self.aidant_tim.totpdevice_set.first().confirmed)
+        # Creates the record if the challenge is passed
+        mock_verify.return_value = True
+        response = self.client.post(
+            reverse(
+                "espace_responsable_aidant_add_app_otp",
+                kwargs={"aidant_id": self.aidant_tim.pk},
+            ),
+            data={"otp_token": "123456"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("espace_responsable_home"),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(1, self.aidant_tim.totpdevice_set.count())
+        self.assertTrue(self.aidant_tim.totpdevice_set.first().confirmed)
 
 
 @tag("responsable-structure")
+@override_settings(FF_OTP_APP=True)
 class RemoveAppOTPToAidantTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -179,11 +198,23 @@ class RemoveAppOTPToAidantTests(TestCase):
         found = resolve(
             reverse(
                 "espace_responsable_aidant_remove_app_otp",
-                kwargs={"aidant_id": self.aidant_ahmed.pk},
+                kwargs={"aidant_id": self.aidant_sarah.pk},
             )
         )
         self.assertEqual(
             found.func.view_class, espace_responsable.RemoveAppOTPFromAidant
+        )
+
+    def test_renders_correct_template(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(
+            reverse(
+                "espace_responsable_aidant_remove_app_otp",
+                kwargs={"aidant_id": self.aidant_sarah.pk},
+            )
+        )
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_responsable/app_otp_remove.html"
         )
 
     def test_cant_remove_otp_device_to_foreign_aidant(self):

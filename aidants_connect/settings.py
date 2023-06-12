@@ -703,3 +703,4 @@ REST_FRAMEWORK = {
 
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
+FF_OTP_APP = getenv_bool("FF_OTP_APP", False)
