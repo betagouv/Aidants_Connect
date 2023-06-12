@@ -11,7 +11,11 @@ from .mandat import (
 from .notification import Notification, NotificationType
 from .organisation import Organisation, OrganisationType, get_staff_organisation_name_id
 from .other_models import HabilitationRequest, IdGenerator
-from .stats import AidantStatistiques
+from .stats import (
+    AidantStatistiques,
+    AidantStatistiquesbyDepartment,
+    AidantStatistiquesbyRegion,
+)
 from .usager import Usager, UsagerQuerySet
 from .utils import delete_mandats_and_clean_journal
 
@@ -20,6 +24,8 @@ __all__ = [
     AidantManager,
     AidantType,
     AidantStatistiques,
+    AidantStatistiquesbyDepartment,
+    AidantStatistiquesbyRegion,
     Autorisation,
     AutorisationQuerySet,
     CarteTOTP,

@@ -23,7 +23,7 @@ from aidants_connect_web.models import (
     Mandat,
     Organisation,
 )
-from aidants_connect_web.statistics import compute_statistics
+from aidants_connect_web.statistics import compute_all_statistics
 
 
 @shared_task
@@ -271,7 +271,7 @@ def compute_aidants_statistics(*, logger=None):
     logger: Logger = logger or get_task_logger(__name__)
 
     logger.info("Compute Aidants Stastistics...")
-    compute_statistics()
+    compute_all_statistics()
 
 
 @shared_task

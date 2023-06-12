@@ -52,6 +52,8 @@ from aidants_connect_web.models import (
     Aidant,
     AidantManager,
     AidantStatistiques,
+    AidantStatistiquesbyDepartment,
+    AidantStatistiquesbyRegion,
     AidantType,
     Autorisation,
     CarteTOTP,
@@ -1651,9 +1653,37 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         )
 
 
-class AidantStatistiquesAdmin(ModelAdmin):
+class AidantStatistiquesAdmin(VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "created_at",
+        "number_aidants",
+        "number_aidants_is_active",
+        "number_responsable",
+        "number_aidants_without_totp",
+        "number_aidant_can_create_mandat",
+        "number_aidant_with_login",
+        "number_aidant_who_have_created_mandat",
+    )
+
+
+class AidantStatistiquesbyDepartmentAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "created_at",
+        "departement",
+        "number_aidants",
+        "number_aidants_is_active",
+        "number_responsable",
+        "number_aidants_without_totp",
+        "number_aidant_can_create_mandat",
+        "number_aidant_with_login",
+        "number_aidant_who_have_created_mandat",
+    )
+
+
+class AidantStatistiquesbyRegionAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "created_at",
+        "region",
         "number_aidants",
         "number_aidants_is_active",
         "number_responsable",
@@ -1676,6 +1706,9 @@ admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
 admin_site.register(AidantType)
 admin_site.register(AidantStatistiques, AidantStatistiquesAdmin)
+admin_site.register(AidantStatistiquesbyDepartment, AidantStatistiquesbyDepartmentAdmin)
+admin_site.register(AidantStatistiquesbyRegion, AidantStatistiquesbyRegionAdmin)
+
 admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)
 admin_site.register(Mandat, MandatAdmin)
