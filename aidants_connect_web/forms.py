@@ -11,6 +11,7 @@ from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
+from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 
@@ -678,9 +679,20 @@ class AddAppOTPToAidantForm(PatchedForm):
         self.otp_device = otp_device
         super().__init__(*args, **kwargs)
 
-    def clean_otp(self):
-        token = self.cleaned_data["otp_token"]
-        if not self.otp_device.verify_token(token):
+    def clean_otp_token(self):
+        try:
+            token = int(self.cleaned_data["otp_token"])
+        except Exception:
+            raise ValidationError("Le code OTP doit être composé de chiffres")
+
+        totp = TOTP(
+            self.otp_device.bin_key,
+            self.otp_device.step,
+            self.otp_device.t0,
+            self.otp_device.digits,
+            self.otp_device.drift,
+        )
+        if not totp.verify(token):
             raise ValidationError("La vérification du code OTP a échoué")
 
         return token

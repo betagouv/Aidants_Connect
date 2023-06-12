@@ -2,13 +2,14 @@ import base64
 import contextlib
 from io import BytesIO
 
+from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.forms import model_to_dict
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.views.generic import DeleteView, FormView, TemplateView
@@ -123,6 +124,7 @@ class OrganisationView(TemplateView):
             "organisation_active_aidants": organisation_active_aidants,
             "organisation_habilitation_requests": organisation_habilitation_requests,
             "organisation_inactive_aidants": organisation_inactive_aidants,
+            "FF_OTP_APP": settings.FF_OTP_APP,
         }
 
 
@@ -258,6 +260,9 @@ class AddAppOTPToAidant(FormView):
     success_url = reverse_lazy("espace_responsable_home")
 
     def dispatch(self, request, *args, **kwargs):
+        if not settings.FF_OTP_APP:
+            return HttpResponseRedirect(reverse("espace_responsable_home"))
+
         self.responsable: Aidant = request.user
         self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
 
@@ -332,6 +337,8 @@ class RemoveAppOTPFromAidant(DeleteView):
     success_url = reverse_lazy("espace_responsable_home")
 
     def dispatch(self, request, *args, **kwargs):
+        if not settings.FF_OTP_APP:
+            return HttpResponseRedirect(reverse("espace_responsable_home"))
         self.responsable: Aidant = request.user
         self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
 

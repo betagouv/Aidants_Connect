@@ -610,9 +610,15 @@ class CarteTOTP(models.Model):
     )
     is_functional = models.BooleanField("Fonctionne correctement", default=True)
 
+    @property
+    def totp_device_name(self):
+        return f"Carte n° {self.serial_number}"
+
     @cached_property
     def totp_device(self):
-        return TOTPDevice.objects.filter(user=self.aidant).first()
+        return TOTPDevice.objects.filter(
+            user=self.aidant, name=self.totp_device_name
+        ).first()
 
     class Meta:
         verbose_name = "carte TOTP"
@@ -628,5 +634,5 @@ class CarteTOTP(models.Model):
             step=60,  # todo: some devices may have a different step!
             confirmed=confirmed,
             tolerance=tolerance,
-            name=f"Carte n° {self.serial_number}",
+            name=self.totp_device_name,
         )
