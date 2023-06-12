@@ -2,6 +2,14 @@
 
 <mjml>
   <mj-head>
+    <mj-attributes>
+      <mj-button
+        border-radius="0"
+        background-color="#EF4056"
+        color="#FFF"
+      />
+      <mj-all font-family="Marianne,arial,sans-serif" font-weight="400" />
+    </mj-attributes>
     {% if email_title %}<mj-title>{{ email_title }}</mj-title>{% endif %}
     <mj-style inline="inline">
       .wrapper {
