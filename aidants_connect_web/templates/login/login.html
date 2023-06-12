@@ -1,70 +1,61 @@
-{% extends 'layouts/main.html' %}
-
-{% load static %}
+{% extends 'layouts/main-habilitation.html' %}
+{% load static ac_common form_extras %}
 
 {% block extracss %}
-<link href="{% static 'css/home.css' %}" rel="stylesheet">
+  <link href="{% static 'css/login.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block title %}
-  Connexion{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
+  Connectez-vous{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
 {% endblock %}
 
 {% block content %}
-<div class="notification full-width" role="alert"> Vous êtes une structure qui souhaite utiliser Aidants Connect ? Nous vous invitons à remplir <a href="{% url 'habilitation' %}">notre formulaire d'habilitation</a></div>
-<div class="hero">
-  <div class="hero__container">
-    <h1 class="text-center">
-      <img class="logo-in-title" src="{% static 'images/aidants-connect_logo.png' %}" alt="Aidants Connect" />
-      <br>
-      Connectez-vous
-    </h1>
-    <p>Vous êtes un ou une aidante professionnelle et faites partie d’une structure habilitée Aidants Connect&nbsp;?</p>
-  </div>
-</div>
-<section class="section section-grey">
-  <div class="container">
-    <form method="post">
-      {% csrf_token %}
-      {% if user.is_authenticated %}
-        <div class="notification" role="alert">
-          Vous êtes déjà connecté.
-        </div>
-        <div class="text-center">
-          <a href="{% url LOGGED_IN_REDIRECT_URL_NAME %}" class="btn btn-success">Accédez à l'accueil</a>
-          <a href="{% url LOGOUT_URL_NAME %}" class="btn btn-warning">Déconnectez-vous</a>
-        </div>
-      {% else %}
-        {% if messages %}
+  <div class="fr-container">
+
+    <div class="fr-grid-row">
+      <div class="fr-col-12 fr-col-md-8">
+        <h1>Connectez-vous</h1>
+        <p class="subtitle">
+          Vous êtes un ou une aidante professionnelle et vous faites partie d’une structure habilitée
+          Aidants Connect ? Retrouvez votre espace en vous connectant ci-dessous.
+        </p>
+
+        <section class="shadowed blue habilitation-notice">
+          <span class="strong">Vous êtes une structure qui souhaite utiliser Aidants Connect ?</span><br/>
+          Nous vous invitons à remplir <a href="{% url 'habilitation' %}">notre formulaire d'habilitation</a>
+        </section>
+        {% if user.is_authenticated %}
+          <div class="notification" role="alert">
+            Vous êtes déjà connecté.
+          </div>
+          <div class="text-center">
+            <a href="{% url 'LOGGED_IN_REDIRECT_URL_NAME' %}" class="btn btn-success">Accédez à l'accueil</a>
+            <a href="{% url 'LOGOUT_URL_NAME' %}" class="btn btn-warning">Déconnectez-vous</a>
+          </div>
+        {% else %}
           {% for message in messages %}
-            <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+            <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">
+              {{ message }}
+            </div>
           {% endfor %}
+
+          <form method="post" class="shadowed login-form">
+            {% csrf_token %}
+            {{ form.errors }}
+            {% field_as_fr_grid_row form.email label_size="medium" %}
+            {% field_as_fr_grid_row OTP_form.otp_token label_size="medium" %}
+
+            <div class="button-box">
+              <input type="submit" class="button primary" value="Se connecter"/>
+            </div>
+          </form>
         {% endif %}
-        <div class="form__group">
-          <label for="id_email">Votre adresse email :</label>
-          <input type="email" id="id_email" class="form-control {% if form.errors %}state-invalid{% endif %}"
-            name="email" aria-describedby="emailHelp" placeholder="votre@email.fr" required />
-          {% for error in form.email.errors %}
-            <div class="notification error" role="alert">{{ error }}</div>
-          {% endfor %}
+        <div class="shadowed red margin-bottom-2rem margin-top-2rem padding-0-5rem">
+          Un problème avec votre carte ou votre téléphone ?
+          Contactez-nous par courriel à l'adresse {% mailto "contact@aidantsconnect.beta.gouv.fr" %} en précisant
+          votre nom, structure, et la nature du problème.
         </div>
-        <div class="form__group">
-          <label for="id_otp_token">{{ OTP_form.otp_token.label_tag }}</label>
-          <div class="max-width-50">{{ OTP_form.otp_token }}</div>
-          {% for error in OTP_form.otp_token.errors %}
-            <div class="notification error" role="alert">{{ error }}</div>
-          {% endfor %}
-        </div>
-        <div class="form__group">
-          <button type="submit" class="button">Valider</button>
-        </div>
-        <div class="form__group lost-card">
-          Un problème avec votre carte ou votre téléphone&nbsp;?<br>
-          Contactez-nous par courriel à l'adresse contact (at) aidantsconnect.beta.gouv.fr en précisant votre nom, structure, et la nature du problème.
-        </div>
-      {% endif %}
-    </form>
+      </div>
+    </div>
   </div>
-</section>
-{% include 'public_website/section_link_faq_partial.html' %}
 {% endblock content %}
