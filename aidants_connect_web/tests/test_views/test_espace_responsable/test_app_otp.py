@@ -36,6 +36,7 @@ class AddAppOTPToAidantTests(TestCase):
         TOTPDevice.objects.create(
             user=cls.aidant_sarah,
             name=TOTPDevice.APP_DEVICE_NAME % cls.aidant_sarah.pk,
+            tolerance=2,
         )
 
         cls.other_organisation = OrganisationFactory()
