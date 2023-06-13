@@ -11,13 +11,14 @@ from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
 from aidants_connect_habilitation.tasks import update_pix_and_create_aidant
-from aidants_connect_web.models import Aidant, HabilitationRequest
+from aidants_connect_web.models import Aidant, CarteTOTP, HabilitationRequest
 from aidants_connect_web.tasks import (
     email_old_aidants,
     get_recipient_list_for_organisation,
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    CarteTOTPFactory,
     HabilitationRequestFactory,
     OrganisationFactory,
 )
@@ -163,6 +164,10 @@ class EmailOldAidants(TestCase):
                 is_active=True,
                 last_login=timezone.now() - relativedelta(months=5),
                 deactivation_warning_at=None,
+            )
+            warnable_totp = CarteTOTPFactory(aidant=cls.aidants_selected)
+            CarteTOTP.objects.filter(pk=warnable_totp.pk).update(
+                created_at=timezone.now() - relativedelta(months=7)
             )
 
     @freeze_time(NOW)
