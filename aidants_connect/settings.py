@@ -69,6 +69,8 @@ def getenv_bool(key: str, default: Optional[bool] = None) -> bool:
 
 
 HOST = os.environ["HOST"]
+SSL = getenv_bool("SSL", True)
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # FC as FI
@@ -626,7 +628,10 @@ EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT = os.getenv(
     "Aidants Connect - Vous avez reçu un nouveau message de l’équipe Aidants Connect",
 )
 
-EMAIL_WELCOME_AIDANT_SUBJECT = os.getenv("EMAIL_WELCOME_AIDANT_SUBJECT", "")
+EMAIL_WELCOME_AIDANT_SUBJECT = os.getenv(
+    "EMAIL_WELCOME_AIDANT_SUBJECT",
+    "Aidants Connect — Votre compte va être désactivé, réagissez !",
+)
 EMAIL_WELCOME_AIDANT_FROM = os.getenv("EMAIL_WELCOME_AIDANT_FROM", SUPPORT_EMAIL)
 
 EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT = os.getenv(
@@ -694,7 +699,9 @@ LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
 # else FAQ will be set from dynamic content of pico_cms.faq_section and faq_question
 FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
 
+# URLS
 SANDBOX_URL = os.getenv("SANDBOX_URL", "")
+WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
