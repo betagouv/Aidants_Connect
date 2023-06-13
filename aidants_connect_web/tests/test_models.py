@@ -21,6 +21,7 @@ from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
+    CarteTOTP,
     Connection,
     HabilitationRequest,
     Journal,
@@ -985,13 +986,43 @@ class AidantModelTests(TestCase):
                 + relativedelta(days=1),
             )
 
-            aidants_selected = [
-                AidantFactory(
-                    is_active=True,
-                    last_login=timezone.now() - relativedelta(months=5),
-                    deactivation_warning_at=None,
-                ),
-            ]
+            # Responsable aren't warnable
+            AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=None,
+                can_create_mandats=False,
+            )
+
+            # Aidant without ToTtp aren't warnable
+            AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=None,
+            )
+
+            # Aidant with a recent card aren't warnable
+            not_warnable = AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=None,
+            )
+            not_warnable_totp = CarteTOTPFactory(aidant=not_warnable)
+            CarteTOTP.objects.filter(pk=not_warnable_totp.pk).update(
+                created_at=timezone.now() - relativedelta(months=3)
+            )
+
+            warnable = AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=None,
+            )
+            warnable_totp = CarteTOTPFactory(aidant=warnable)
+            CarteTOTP.objects.filter(pk=warnable_totp.pk).update(
+                created_at=timezone.now() - relativedelta(months=7)
+            )
+
+            aidants_selected = [warnable]
 
             self.assertEqual(
                 aidants_selected, list(Aidant.objects.deactivation_warnable())

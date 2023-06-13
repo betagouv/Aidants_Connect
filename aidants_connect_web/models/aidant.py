@@ -32,7 +32,11 @@ class AidantManager(UserManager):
         )
 
     def deactivation_warnable(self):
-        return self.not_connected_recently().filter(deactivation_warning_at=None)
+        return self.not_connected_recently().filter(
+            deactivation_warning_at=None,
+            can_create_mandats=True,
+            carte_totp__created_at__lte=timezone.now() - relativedelta(months=5),
+        )
 
     def deactivable(self):
         return self.not_connected_recently().filter(
