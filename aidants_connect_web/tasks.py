@@ -16,6 +16,8 @@ from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
 from aidants_connect_common.models import Department
+from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils.urls import build_url
 from aidants_connect_web.models import (
     Aidant,
     Connection,
@@ -307,12 +309,14 @@ def email_old_aidants(*, logger=None):
 
     @shared_task
     def email_one_aidant(a: Aidant):
-        context = {}
-        text_message = loader.render_to_string(
-            "email/old_aidant_deactivation_warning.txt", context
-        )
-        html_message = loader.render_to_string(
-            "email/old_aidant_deactivation_warning.html", context
+        text_message, html_message = render_email(
+            "email/old_aidant_deactivation_warning.mjml",
+            {
+                "email_title": "Votre compte va être désactivé, réagissez !",
+                "user": a,
+                "cgu_url": build_url(reverse("cgu")),
+                "webinaire_sub_form": settings.WEBINAIRE_SUBFORM_URL,
+            },
         )
 
         send_mail(
