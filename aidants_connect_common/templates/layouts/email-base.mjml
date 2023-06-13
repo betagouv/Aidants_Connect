@@ -13,13 +13,12 @@
     {% if email_title %}<mj-title>{{ email_title }}</mj-title>{% endif %}
     <mj-style inline="inline">
       .wrapper {
-        border: 5px solid #FAD776;
         box-shadow: 10px 10px 0 #FAD776;
       }
     </mj-style>
   </mj-head>
   <mj-body>
-    <mj-wrapper padding="0" css-class="wrapper">
+    <mj-wrapper padding="0" css-class="wrapper" border="5px solid #FAD776">
       <mj-section padding="0">
         <mj-column padding="0">
           <mj-image
