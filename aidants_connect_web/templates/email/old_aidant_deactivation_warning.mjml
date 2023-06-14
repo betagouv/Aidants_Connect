@@ -26,6 +26,10 @@
       </mj-text>
       <mj-button href="{{ webinaire_sub_form }}">S’inscrire au wébinaire</mj-button>
       <mj-text>
+        Si le boutton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivant dans votre navigateur :
+        <a href="{{ webinaire_sub_form }}">{{ webinaire_sub_form }}</a>
+      </mj-text>
+      <mj-text>
         <p>
           Si vous ne souhaitez plus utiliser l’outil, merci de nous renvoyer les cartes Aidants Connect de votre
           structure à l’adresse suivante :
