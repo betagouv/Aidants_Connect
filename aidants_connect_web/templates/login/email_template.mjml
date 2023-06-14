@@ -7,12 +7,14 @@
       <p>Bonjour {{ user.first_name }} {{ user.last_name }},</p>
       <p>Pour accéder à Aidants Connect, cliquez sur :</p>
     </mj-text>
-    <mj-button
-      href="https://{{ site.domain }}{% url 'magicauth-wait' token.key %}?next={{ next_url|urlencode }}"
-    >
-      Connexion
-    </mj-button>
-    <mj-text>Ce lien n'est valable que {{ TOKEN_DURATION_MINUTES }} minutes. Il est à usage unique.</mj-text>
+    <mj-button href="{{ href }}">Connexion</mj-button>
+    <mj-text>
+      <p>
+        Si le boutton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivant dans votre navigateur :
+        <a href="{{ href }}">{{ href }}</a>
+      </p>
+      <p>Ce lien n'est valable que {{ TOKEN_DURATION_MINUTES }} minutes. Il est à usage unique.</p>
+    </mj-text>
   </mj-column>
 </mj-section>
 {% endblock %}
