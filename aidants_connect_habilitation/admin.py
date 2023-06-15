@@ -509,7 +509,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     def __require_changes_request_get(self, request, object_id):
         object = OrganisationRequest.objects.get(id=object_id)
         content = loader.render_to_string(
-            "email/modifications_demandees.txt", {"organisation": object}
+            "aidants_connect_habilitation/admin/organisation_request/modifications_demandees.txt",  # noqa
+            {"organisation": object},
         )
         initial = {"content": content}
         view_context = {

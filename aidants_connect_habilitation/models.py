@@ -9,7 +9,6 @@ from django.db.models import SET_NULL, Q
 from django.db.utils import IntegrityError
 from django.dispatch import Signal
 from django.http import HttpRequest
-from django.template import loader
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
@@ -21,6 +20,8 @@ from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
+from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils.urls import build_url
 from aidants_connect_web.models import (
     Aidant,
     HabilitationRequest,
@@ -323,15 +324,12 @@ class OrganisationRequest(models.Model):
         )
 
     def notify_issuer_request_submitted(self):
-        context = {
-            "url": f"https://{settings.HOST}{self.get_absolute_url()}",
-            "organisation": self,
-        }
-        text_message = loader.render_to_string(
-            "email/organisation_request_creation.txt", context
-        )
-        html_message = loader.render_to_string(
-            "email/organisation_request_creation.html", context
+        text_message, html_message = render_email(
+            "email/organisation_request_creation.mjml",
+            {
+                "url": build_url(self.get_absolute_url()),
+                "organisation": self,
+            },
         )
 
         send_mail(
@@ -343,15 +341,12 @@ class OrganisationRequest(models.Model):
         )
 
     def notify_issuer_request_modified(self):
-        context = {
-            "url": f"https://{settings.HOST}{self.get_absolute_url()}",
-            "organisation": self,
-        }
-        text_message = loader.render_to_string(
-            "email/organisation_request_modifications_done.txt", context
-        )
-        html_message = loader.render_to_string(
-            "email/organisation_request_modifications_done.html", context
+        text_message, html_message = render_email(
+            "email/organisation_request_modifications_done.mjml",
+            {
+                "url": build_url(self.get_absolute_url()),
+                "organisation": self,
+            },
         )
 
         send_mail(
@@ -604,16 +599,13 @@ class RequestMessage(models.Model):
         ordering = ("created_at",)
 
     def send_message_email(self):
-        context = {
-            "url": f"https://{settings.HOST}{self.organisation.get_absolute_url()}",
-            "organisation": self.organisation,
-            "message": self,
-        }
-        text_message = loader.render_to_string(
-            "email/new_message_received.txt", context
-        )
-        html_message = loader.render_to_string(
-            "email/new_message_received.html", context
+        text_message, html_message = render_email(
+            "email/new_message_received.mjml",
+            {
+                "url": build_url(self.organisation.get_absolute_url()),
+                "organisation": self.organisation,
+                "message": self,
+            },
         )
 
         send_mail(

@@ -6,7 +6,6 @@ from django.core.mail import send_mail
 from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template import loader
 from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
@@ -17,6 +16,7 @@ from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
+from aidants_connect_common.utils.email import render_email
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
@@ -195,17 +195,19 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
 
     def send_issuer_profile_reminder_mail(self, email: str):
         issuer: Issuer = Issuer.objects.get(email__iexact=email)
-        path = reverse(
-            "habilitation_issuer_page",
-            kwargs={"issuer_id": str(issuer.issuer_id)},
+
+        text_message, html_message = render_email(
+            "email/issuer_profile_reminder.mjml",
+            {
+                "url": self.request.build_absolute_uri(
+                    reverse(
+                        "habilitation_issuer_page",
+                        kwargs={"issuer_id": str(issuer.issuer_id)},
+                    )
+                ),
+            },
         )
-        context = {"url": self.request.build_absolute_uri(path)}
-        text_message = loader.render_to_string(
-            "email/issuer_profile_reminder.txt", context
-        )
-        html_message = loader.render_to_string(
-            "email/issuer_profile_reminder.html", context
-        )
+
         send_mail(
             from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
             recipient_list=[issuer.email],

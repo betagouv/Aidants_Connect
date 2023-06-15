@@ -10,23 +10,28 @@
           de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité. Ne capitulez pas si vite !
         </p>
         <p>
-          Nous vous proposons un <span style="font-weight: bold;">webinaire de ré-embarquement</span>, court et
-          interactif, où nous <span style="font-weight: bold;">lèverons les freins</span> liés à l’utilisation de
+          Nous vous proposons un<b>webinaire de ré-embarquement</b>, court et
+          interactif, où nous
+          <b>lèverons les freins</b>
+          liés à l’utilisation de
           l’outil pour que vous puissiez être en mesure d’avoir toutes les clés pour utiliser le service.
         </p>
         <p>
-          Sans <span style="font-weight: bold;">inscription au webinaire</span> ou
-          <span style="font-weight: bold;">connexion sur votre espace Aidants Connect</span>, conformément aux
-          <span style="font-weight: bold;"><a href="{{ cgu_url }}">CGU</a></span> de l’outil Aidants Connect, votre
-          compte sera <span style="font-weight: bold;">automatiquement désactivé dans un délai de 1 mois</span>.
+          Sans
+          <b>inscription au webinaire</b>
+          ou<b>connexion sur votre espace Aidants Connect</b>, conformément aux
+          <a href="{{ cgu_url }}">
+            <b>CGU</b>
+          </a>
+          de l’outil Aidants Connect, votre compte sera<b>automatiquement désactivé dans un délai de 1 mois</b>.
         </p>
-        <p style="font-style: italic;">
-          Pour rappel, les comptes Aidants Connect sont désactivés au bout de 6 mois d'inactivité.
+        <p >
+          <em>Pour rappel, les comptes Aidants Connect sont désactivés au bout de 6 mois d'inactivité.</em>
         </p>
       </mj-text>
       <mj-button href="{{ webinaire_sub_form }}">S’inscrire au wébinaire</mj-button>
       <mj-text>
-        Si le boutton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivant dans votre navigateur :
+        Si le boutton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
         <a href="{{ webinaire_sub_form }}">{{ webinaire_sub_form }}</a>
       </mj-text>
       <mj-text>
