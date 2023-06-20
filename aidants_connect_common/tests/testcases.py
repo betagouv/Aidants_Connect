@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -93,12 +94,12 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         submit_button.click()
         self.wait.until(self.path_matches("magicauth-email-sent"))
         self.assertEqual(len(mail.outbox), 1)
-        token_email = mail.outbox[0].body
-        line_containing_magic_link = token_email.split("\n")[2]
-        magic_link_https = line_containing_magic_link.split()[-1]
-        magic_link_http = magic_link_https.replace("https", "http", 1)
-        magic_link_no_wait = magic_link_http.replace("chargement/code", "code", 1)
-        self.selenium.get(magic_link_no_wait)
+        url = (
+            re.findall(r"https?://\S+", mail.outbox[0].body, flags=re.M)[0]
+            .replace("https", "http", 1)
+            .replace("chargement/code", "code", 1)
+        )
+        self.selenium.get(url)
 
     def path_matches(
         self, route_name: str, *, kwargs: dict = None, query_params: dict = None

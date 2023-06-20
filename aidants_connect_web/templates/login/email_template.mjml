@@ -4,7 +4,7 @@
 <mj-section>
   <mj-column>
     <mj-text>
-      <p>Bonjour {{ user.first_name }} {{ user.last_name }},</p>
+      <p>Bonjour {{ user.get_full_name }},</p>
       <p>Pour accéder à Aidants Connect, cliquez sur :</p>
     </mj-text>
     <mj-button href="{{ href }}">Connexion</mj-button>

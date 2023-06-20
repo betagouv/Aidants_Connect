@@ -181,17 +181,15 @@ class EmailOldAidants(TestCase):
 
         email_old_aidants(logger=logger)
 
-        self.assertEqual(3, logger.info.call_count)
-        self.assertEqual(
-            [
-                ("Sending warning notice for 1 aidants not connected recently",),
-                (
-                    "Sent warning notice for aidant "
-                    f"{self.aidants_selected.get_full_name()} not connected recently",
-                ),
-                ("Sent warning notice for 1 aidants not connected recently",),
-            ],
-            [item.args for item in logger.info.call_args_list],
+        logger.info.assert_any_call(
+            "Sending warning notice for 1 aidants not connected recently"
+        )
+        logger.info.assert_any_call(
+            "Sent warning notice for aidant "
+            f"{self.aidants_selected.get_full_name()} not connected recently"
+        )
+        logger.info.assert_any_call(
+            "Sent warning notice for 1 aidants not connected recently",
         )
 
         self.assertEqual(1, len(mail.outbox))

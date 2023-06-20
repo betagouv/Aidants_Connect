@@ -1,3 +1,4 @@
+import re
 from logging import getLogger
 
 from django.template import loader
@@ -16,8 +17,13 @@ def render_email(template_name: str, context: dict) -> tuple[str, str]:
     text_email = loader.render_to_string(text_template, context)
     html_email = mjml2html(html_email_str)
 
-    if "<mj-" in html_email:
-        logger.error(html_email_str)
-        logger.error(html_email)
+    logger.info(f"Rendering email with template {mjml_template}")
+
+    if re.findall(r"<mj-[^>]+>", html_email, re.M):
+        logger.error(
+            "MJML was not correctly rendered.\n"
+            f"Template email:{html_email_str},\n"
+            f"Rendered MJML: {html_email}"
+        )
 
     return text_email, html_email
