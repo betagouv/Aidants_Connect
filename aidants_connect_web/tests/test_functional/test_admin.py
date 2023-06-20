@@ -1,3 +1,4 @@
+from textwrap import dedent
 from typing import Collection, Sequence
 from unittest import mock
 from unittest.mock import Mock
@@ -12,8 +13,12 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.admin import MandatAdmin
-from aidants_connect_web.models import Mandat
-from aidants_connect_web.tests.factories import AidantFactory, MandatFactory
+from aidants_connect_web.models import Aidant, Mandat
+from aidants_connect_web.tests.factories import (
+    AdminFactory,
+    AidantFactory,
+    MandatFactory,
+)
 
 
 @tag("functional")
@@ -184,3 +189,66 @@ class ViewAutorisationsTests(FunctionalTestCase):
         field.send_keys("123456")
         submit_button = self.selenium.find_element(By.XPATH, "//input[@type='submit']")
         submit_button.click()
+
+
+@tag("functional")
+class AidantAdmin(FunctionalTestCase):
+    def setUp(self):
+        super().setUp()
+        self.password = "123456789"
+        self.otp = "123456"
+        self.aidant: Aidant = AdminFactory(
+            password=self.password, post__with_otp_device=self.otp
+        )
+
+        self.aidants_to_deactivate = [AdminFactory(), AdminFactory(is_active=False)]
+
+    def test_mass_deactivate_aidant_from_mail(self):
+        self.admin_login(self.aidant.email, self.password, self.otp)
+
+        self.open_live_url(reverse("otpadmin:aidants_connect_web_aidant_changelist"))
+
+        self.wait.until(
+            self.path_matches("otpadmin:aidants_connect_web_aidant_changelist")
+        )
+
+        self.selenium.find_element(
+            By.XPATH, "//a[normalize-space(text())='Désactiver en masse par email']"
+        ).click()
+
+        self.wait.until(
+            self.path_matches("otpadmin:aidants_connect_web_aidant_mass_deactivate")
+        )
+
+        self.selenium.find_element(By.ID, "id_email_list").send_keys(
+            "\n".join(
+                [
+                    "karl_marx@internationale.de",
+                    "friedrich_engels@internationale.de",
+                    *[aidant.email for aidant in self.aidants_to_deactivate],
+                ]
+            )
+        )
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[value="Valider"]').click()
+
+        for aidant in self.aidants_to_deactivate:
+            aidant.refresh_from_db()
+            self.assertFalse(aidant.is_active)
+
+        self.assertEqual(
+            dedent(
+                """
+                Nous n’avons trouvé aucun aidant à désactiver pour les 2 emails suivants :
+                friedrich_engels@internationale.de
+                karl_marx@internationale.de
+                Ces profils n’ont pas été désactivés.
+                """  # noqa: E501
+            ).strip(),
+            self.selenium.find_element(By.CSS_SELECTOR, ".messagelist .warning").text,
+        )
+
+        self.assertEqual(
+            "Nous avons désactivé 2 profils.",
+            self.selenium.find_element(By.CSS_SELECTOR, ".messagelist .success").text,
+        )
