@@ -525,7 +525,7 @@ class DatapassHabilitationForm(forms.ModelForm):
         return super().save(commit)
 
 
-class MassEmailHabilitatonForm(forms.Form):
+class MassEmailActionForm(forms.Form):
     email_list = forms.Field(widget=forms.Textarea)
 
     def clean_email_list(self):

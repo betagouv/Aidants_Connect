@@ -15,7 +15,7 @@ from aidants_connect_web.forms import (
     AidantCreationForm,
     DatapassHabilitationForm,
     MandatForm,
-    MassEmailHabilitatonForm,
+    MassEmailActionForm,
     RecapMandatForm,
     get_choices_for_remote_method,
 )
@@ -475,7 +475,7 @@ class DatapassAccreditationFormTests(TestCase):
 @tag("forms")
 class MassEmailHabilitatonFormTests(TestCase):
     def test_filter_empty_values(self):
-        form = MassEmailHabilitatonForm(
+        form = MassEmailActionForm(
             data={
                 "email_list": """toto@tata.net
 
@@ -488,7 +488,7 @@ class MassEmailHabilitatonFormTests(TestCase):
         )
 
     def test_ok_with_only_one_email(self):
-        form = MassEmailHabilitatonForm(
+        form = MassEmailActionForm(
             data={
                 "email_list": "toto@tata.net",
             }
@@ -497,7 +497,7 @@ class MassEmailHabilitatonFormTests(TestCase):
         self.assertEqual(form.cleaned_data["email_list"], {"toto@tata.net"})
 
     def test_reject_non_email_strings(self):
-        form = MassEmailHabilitatonForm(
+        form = MassEmailActionForm(
             data={
                 "email_list": """gabuzomeu
                 titi@lala.net""",
@@ -510,7 +510,7 @@ class MassEmailHabilitatonFormTests(TestCase):
         )
 
     def test_reject_invalid_emails(self):
-        form = MassEmailHabilitatonForm(
+        form = MassEmailActionForm(
             data={
                 "email_list": """josée@accent.com
                 titi@lala.net""",

@@ -1,8 +1,10 @@
 import logging
 from collections.abc import Collection
+from gettext import ngettext
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib import messages as django_messages
 from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline, register
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.exceptions import ValidationError
@@ -12,9 +14,10 @@ from django.forms import ChoiceField
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
-from django.urls import path, reverse
+from django.urls import path, reverse, reverse_lazy
 from django.utils.html import format_html_join, linebreaks
 from django.utils.safestring import mark_safe
+from django.views.generic import FormView
 
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.lib import add_static_token
@@ -46,7 +49,7 @@ from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
-    MassEmailHabilitatonForm,
+    MassEmailActionForm,
 )
 from aidants_connect_web.models import (
     Aidant,
@@ -495,7 +498,67 @@ class AidantRegionFilter(RegionFilter):
     filter_parameter_name = "organisations__zipcode"
 
 
+class AidantMassDeactivateFromMailFormView(FormView):
+    form_class = MassEmailActionForm
+    template_name = "aidants_connect_web/admin/aidants/mass_deactivation_form.html"
+    success_url = reverse_lazy("otpadmin:aidants_connect_web_aidant_mass_deactivate")
+
+    def get_context_data(self, **kwargs):
+        return {
+            **self.kwargs["model_admin"].admin_site.each_context(self.request),
+            **super().get_context_data(**kwargs),
+            "media": self.kwargs["model_admin"].media,
+        }
+
+    def form_valid(self, form):
+        email_list = form.cleaned_data.get("email_list")
+        processed_emails = set()
+
+        for aidant in Aidant.objects.filter(email__in=email_list).all():
+            aidant.deactivate()
+            processed_emails.add(aidant.email)
+
+        non_existing_emails = email_list - processed_emails
+
+        if nb_non_existing := len(non_existing_emails):
+            emails = (
+                "".join([f"<p>{email}</p>" for email in non_existing_emails])
+                if nb_non_existing > 1
+                else list(non_existing_emails)[0]
+            )
+
+            message = ngettext(
+                "Nous n’avons trouvé aucun aidant à désactiver portant l’email "
+                "suivant : %(emails)s.<br/>Ce profil n’a été désactivé.",
+                "Nous n’avons trouvé aucun aidant à désactiver pour les %(count)d "
+                "emails suivants : %(emails)s Ces profils n’ont pas été désactivés.",
+                nb_non_existing,
+            ) % {"count": nb_non_existing, "emails": emails}
+
+            django_messages.warning(
+                self.request,
+                mark_safe(f"<section>{message}</section>"),
+            )
+        else:
+            django_messages.success(
+                self.request,
+                ngettext(
+                    "Le profil correspondant à l’email %(email)s a été désactivé.",
+                    "Nous avons désactivé %(count)d profils.",
+                    len(non_existing_emails),
+                )
+                % {
+                    "count": len(non_existing_emails),
+                    "email": list(non_existing_emails)[0],
+                },
+            )
+
+        return super().form_valid(form)
+
+
 class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
+    change_list_template = "aidants_connect_web/admin/aidants/change_list.html"
+
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
@@ -508,6 +571,19 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 form.base_fields["is_staff"].disabled = True
 
         return form
+
+    def get_urls(self):
+        return [
+            path(
+                "deactivate-from-emails/",
+                self.admin_site.admin_view(
+                    AidantMassDeactivateFromMailFormView.as_view()
+                ),
+                {"model_admin": self},
+                name="aidants_connect_web_aidant_mass_deactivate",
+            ),
+            *super().get_urls(),
+        ]
 
     def display_totp_device_status(self, obj):
         return obj.has_a_totp_device
@@ -1015,7 +1091,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         context = {
             **self.admin_site.each_context(request),
             "media": self.media,
-            "form": MassEmailHabilitatonForm(),
+            "form": MassEmailActionForm(),
         }
 
         return render(
@@ -1025,7 +1101,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         )
 
     def __validate_from_email_post(self, request):
-        form = MassEmailHabilitatonForm(request.POST)
+        form = MassEmailActionForm(request.POST)
         context = {
             **self.admin_site.each_context(request),
             "media": self.media,
