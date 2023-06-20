@@ -522,16 +522,16 @@ class AidantMassDeactivateFromMailFormView(FormView):
 
         if nb_non_existing := len(non_existing_emails):
             emails = (
-                "".join([f"<p>{email}</p>" for email in non_existing_emails])
+                "".join([f"<p>{email}</p>" for email in sorted(non_existing_emails)])
                 if nb_non_existing > 1
                 else list(non_existing_emails)[0]
             )
 
             message = ngettext(
                 "Nous n’avons trouvé aucun aidant à désactiver portant l’email "
-                "suivant : %(emails)s.<br/>Ce profil n’a été désactivé.",
+                "suivant :%(emails)s.<br/>Ce profil n’a été désactivé.",
                 "Nous n’avons trouvé aucun aidant à désactiver pour les %(count)d "
-                "emails suivants : %(emails)s Ces profils n’ont pas été désactivés.",
+                "emails suivants :%(emails)s Ces profils n’ont pas été désactivés.",
                 nb_non_existing,
             ) % {"count": nb_non_existing, "emails": emails}
 
@@ -539,17 +539,18 @@ class AidantMassDeactivateFromMailFormView(FormView):
                 self.request,
                 mark_safe(f"<section>{message}</section>"),
             )
-        else:
+
+        if nb_processed_emails := len(processed_emails):
             django_messages.success(
                 self.request,
                 ngettext(
                     "Le profil correspondant à l’email %(email)s a été désactivé.",
                     "Nous avons désactivé %(count)d profils.",
-                    len(non_existing_emails),
+                    nb_processed_emails,
                 )
                 % {
-                    "count": len(non_existing_emails),
-                    "email": list(non_existing_emails)[0],
+                    "count": nb_processed_emails,
+                    "email": list(processed_emails)[0],
                 },
             )
 
