@@ -4,7 +4,7 @@ Bonjour {{ user.get_full_name }},
 
 Pour accéder à Aidants Connect, vous avez juste à coller le lien suivant dans votre navigateur :
 
-{{ href }}
+https://{{ site.domain }}{% url 'magicauth-wait' token.key %}?next={{ next_url|urlencode }}
 
 Ce lien n'est valable que {{ TOKEN_DURATION_MINUTES }} minutes. Il est à usage unique.
 

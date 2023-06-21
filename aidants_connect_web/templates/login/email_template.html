@@ -1,0 +1,51 @@
+{% extends "layouts/email_base.html" %}
+{% block email_body %}
+  <table border="0" cellpadding="0" cellspacing="0" class="body">
+    <tr>
+      <td>&nbsp;</td>
+      <td class="container">
+        <div class="content">
+
+          {# START CENTERED WHITE CONTAINER #}
+          <table class="main">
+
+            {# START MAIN CONTENT AREA #}
+            <tr>
+              <td class="wrapper">
+                <table border="0" cellpadding="6" cellspacing="0">
+                  <tr>
+                    <td>
+                      <p>Bonjour {{ user.first_name }} {{ user.last_name }},</p>
+                      <p>Pour accéder à Aidants Connect, cliquez sur :</p>
+                      <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+                        <tbody>
+                          <tr>
+                            <td align="center">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                <tbody>
+                                  <tr>
+                                    <td align="center"> <a href="https://{{ site.domain }}{% url 'magicauth-wait' token.key %}?next={{ next_url|urlencode }}" rel="notrack">Connexion</a> </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <p>Ce lien n'est valable que {{ TOKEN_DURATION_MINUTES }} minutes. Il est à usage unique.</p>
+                      <p>Bonne journée,</p>
+                      <p>L'équipe Aidants Connect</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+          {#  END MAIN CONTENT AREA #}
+          </table>
+        {# END CENTERED WHITE CONTAINER #}
+        </div>
+      </td>
+    </tr>
+  </table>
+{% endblock %}
