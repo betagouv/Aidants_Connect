@@ -88,19 +88,19 @@ class OrganisationView(TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        organisation_active_aidants = [
+        organisation_active_responsables = [
             self.aidant,
             *(
                 self.organisation.responsables.exclude(pk=self.aidant.pk)
                 .order_by("last_name")
                 .prefetch_related("carte_totp")
             ),
-            *(
-                self.organisation.aidants_not_responsables.filter(is_active=True)
-                .order_by("last_name")
-                .prefetch_related("carte_totp")
-            ),
         ]
+        organisation_active_aidants = (
+            self.organisation.aidants_not_responsables.filter(is_active=True)
+            .order_by("last_name")
+            .prefetch_related("carte_totp")
+        )
 
         organisation_habilitation_requests = (
             self.organisation.habilitation_requests.exclude(
@@ -117,10 +117,8 @@ class OrganisationView(TemplateView):
         return {
             **super().get_context_data(**kwargs),
             "responsable": self.aidant,
-            "responsables": list(
-                self.organisation.responsables.values_list("pk", flat=True)
-            ),
             "organisation": self.organisation,
+            "organisation_active_responsables": organisation_active_responsables,
             "organisation_active_aidants": organisation_active_aidants,
             "organisation_habilitation_requests": organisation_habilitation_requests,
             "organisation_inactive_aidants": organisation_inactive_aidants,

@@ -16,7 +16,7 @@
           {{ aidant.get_full_name }} (Responsable)
         {% else %}
           <a href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
-            {{ aidant.get_full_name }}{% if aidant.pk in responsables %} (Responsable){% endif %}
+            {{ aidant.get_full_name }}
           </a>
         {% endif %}
       </td>

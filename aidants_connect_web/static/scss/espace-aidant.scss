@@ -20,15 +20,17 @@ h3.home-section {
   color: #fff;
 }
 
-.aidants-list .inactive td,
-.aidants-list .inactive a {
-  color: grey;
-  font-style: italic;
+.habilitation-list, .aidants-list {
+  th, {
+    color: colors.$ac_mid_grey;
+    text-align: start;
+    font-weight: normal;
+    padding: 0.5rem 1rem;
+  }
 }
 
-.aidants-list .inactive a.button {
-  background: grey;
-  color: #fff;
+.habilitation-list th {
+  color: colors.$blue-aidants
 }
 
 .actions details {
