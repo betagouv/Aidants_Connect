@@ -1,10 +1,16 @@
 from django.template.defaultfilters import urlencode
 from django.urls import reverse
+from django.views.generic import RedirectView
 
 from magicauth import views as magicauth_views
 
 from aidants_connect_common.utils.email import render_email
 from aidants_connect_web.forms import LoginEmailForm
+
+
+class LoginRedirect(RedirectView):
+    pattern_name = "login"
+    permanent = True
 
 
 class LoginView(magicauth_views.LoginView):

@@ -1,6 +1,8 @@
 from django.core import mail
 from django.test import TestCase, tag
-from django.test.client import Client
+from django.urls import reverse
+
+from magicauth import settings as magicauth_settings
 
 from aidants_connect_web.tests.factories import AidantFactory
 
@@ -9,7 +11,6 @@ from aidants_connect_web.tests.factories import AidantFactory
 class LoginTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.client = Client()
         cls.aidant = AidantFactory(is_active=False, post__with_otp_device=True)
 
     def test_inactive_aidant_with_valid_totp_cannot_login(self):
@@ -23,3 +24,8 @@ class LoginTests(TestCase):
         )
         # Check no email was sent
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_magicauth_login_redirects(self):
+        response = self.client.get(f"/{magicauth_settings.LOGIN_URL}")
+
+        self.assertRedirects(response, reverse("login"), status_code=301)
