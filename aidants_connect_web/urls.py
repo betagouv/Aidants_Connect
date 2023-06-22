@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.urls import include, path, re_path
 
+from magicauth import settings as magicauth_settings
 from magicauth.urls import urlpatterns as magicauth_urls
 
 from aidants_connect_web.api.urls import router as api_router
@@ -23,6 +24,7 @@ from aidants_connect_web.views import (
 urlpatterns = [
     # service
     path("accounts/login/", login.LoginView.as_view(), name="login"),
+    path(magicauth_settings.LOGIN_URL, login.LoginRedirect.as_view()),
     path("logout-session/", service.logout_page, name="logout"),
     path("activity_check/", service.activity_check, name="activity_check"),
     # espace aidant : home, organisation
