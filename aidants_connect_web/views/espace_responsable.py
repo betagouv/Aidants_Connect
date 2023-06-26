@@ -122,7 +122,7 @@ class OrganisationView(TemplateView):
             "organisation_active_aidants": organisation_active_aidants,
             "organisation_habilitation_requests": organisation_habilitation_requests,
             "organisation_inactive_aidants": organisation_inactive_aidants,
-            "FF_OTP_APP": settings.FF_OTP_APP,
+            "FF_OTP_APP": settings.FF_OTP_APP and self.aidant.ff_otp_app,
         }
 
 

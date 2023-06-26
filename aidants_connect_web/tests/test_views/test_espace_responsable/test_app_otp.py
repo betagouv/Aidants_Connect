@@ -18,7 +18,9 @@ from aidants_connect_web.views import espace_responsable
 class AddAppOTPToAidantTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.responsable_tom: Aidant = AidantFactory(username="tom@tom.fr")
+        cls.responsable_tom: Aidant = AidantFactory(
+            username="tom@tom.fr", ff_otp_app=True
+        )
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(
             username="tim@tim.fr",
@@ -159,7 +161,9 @@ class AddAppOTPToAidantTests(TestCase):
 class RemoveAppOTPToAidantTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.responsable_tom: Aidant = AidantFactory(username="tom@tom.fr")
+        cls.responsable_tom: Aidant = AidantFactory(
+            username="tom@tom.fr", ff_otp_app=True
+        )
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(
             username="tim@tim.fr",
