@@ -7,16 +7,16 @@ name = "pypi"
 python_version = "3.11"
 
 [packages]
-celery = {version = "==5.2.7", extras = ["redis"]}
+celery = {version = "==5.3.1", extras = ["redis"]}
 django = "~=4.2.0"
 djangorestframework = "~=3.14.0"
 django-celery-beat = "==2.5.0"
 django-csp = "==3.7"
 django-extensions = "~=3.2.1"
-django-import-export = "==2.9.0"
+django-import-export = "~=3.2.0"
 django-magicauth = "==0.13"
-django-nested-admin = "==3.4.0"
-django-otp = "~=1.1.3"
+django-nested-admin = "~=4.0.2"
+django-otp = "~=1.2.2"
 django-phonenumber-field = {version = "~=7.0", extras = ["phonenumberslite"]}
 django-referrer-policy = "==1.0"
 django-reverse-admin = "==2.9.6"
