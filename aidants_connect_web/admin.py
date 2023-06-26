@@ -198,7 +198,7 @@ class OrganisationResource(resources.ModelResource):
         if new:
             instance.skip_new = True
 
-    def skip_row(self, instance, original):
+    def skip_row(self, instance, original, row, import_validation_errors=None):
         if getattr(instance, "skip_new", False):
             return True
         if original.data_pass_id and original.data_pass_id != instance.data_pass_id:
@@ -268,7 +268,7 @@ class OrganisationAdmin(
 
     # For bulk import
     resource_class = OrganisationResource
-    change_list_template = (
+    import_export_change_list_template = (
         "aidants_connect_web/admin/import_export/change_list_organisation_import.html"
     )
     import_template_name = (
@@ -558,7 +558,9 @@ class AidantMassDeactivateFromMailFormView(FormView):
 
 
 class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
-    change_list_template = "aidants_connect_web/admin/aidants/change_list.html"
+    import_export_change_list_template = (
+        "aidants_connect_web/admin/aidants/change_list.html"
+    )
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -822,7 +824,7 @@ class HabilitationRequestImportResource(resources.ModelResource):
         if new:
             instance.is_new = True
 
-    def skip_row(self, instance, original):
+    def skip_row(self, instance, original, row, import_validation_errors=None):
         # do not change existing rows in database
         return not getattr(instance, "is_new", False)
 
@@ -848,10 +850,10 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
         return super().before_import_row(row, row_number, **kwargs)
 
     # skip new rows
-    def skip_row(self, instance, original):
+    def skip_row(self, instance, original, row, import_validation_errors=None):
         if not original.id:
             return True
-        return super().skip_row(instance, original)
+        return super().skip_row(instance, original, row, import_validation_errors)
 
     def after_import_instance(self, instance, new, row_number=None, **kwargs):
         instance.formation_done = True
@@ -936,7 +938,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
 
     resource_class = HabilitationRequestResource
 
-    change_list_template = (
+    import_export_change_list_template = (
         "aidants_connect_web/admin/habilitation_request/change_list.html"
     )
 
