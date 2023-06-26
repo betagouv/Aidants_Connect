@@ -61,6 +61,11 @@
       </span>
     </h2>
 
+    {% if organisation_active_responsables %}
+      <h3>Responsables</h3>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_responsables table_class="shadowed blue-green" %}
+    {% endif %}
+
     {% if organisation_active_aidants %}
       <h3>Aidants actifs</h3>
       {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants table_class="shadowed" %}
@@ -69,7 +74,7 @@
     {% if organisation_habilitation_requests %}
       <h3>Demandes d’habilitation en cours</h3>
 
-      <table class="table">
+      <table class="table habilitation-list">
         <thead>
         <tr>
           <th>Nom</th>
