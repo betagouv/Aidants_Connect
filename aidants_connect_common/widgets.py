@@ -1,8 +1,19 @@
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.forms import Media, RadioSelect, Select
+from django.templatetags.static import static
+from django.utils.html import html_safe
 
 from aidants_connect_common.templatetags.form_extras import merge_html_attr_values
+
+
+@html_safe
+class JSModulePath:
+    def __init__(self, path):
+        self.path = path
+
+    def __str__(self):
+        return f'<script type="module" src="{static(self.path)}"></script>'
 
 
 class DetailedRadioSelect(RadioSelect):

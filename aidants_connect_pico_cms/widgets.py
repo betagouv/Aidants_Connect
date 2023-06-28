@@ -1,17 +1,8 @@
 from django.conf import settings
 from django.forms import Media, Textarea
-from django.templatetags.static import static
 from django.urls import reverse
-from django.utils.html import html_safe
 
-
-@html_safe
-class JSModulePath:
-    def __init__(self, path):
-        self.path = path
-
-    def __str__(self):
-        return f'<script type="module" src="{static(self.path)}" rel="stylesheet">'
+from aidants_connect_common.widgets import JSModulePath
 
 
 class MarkdownTextarea(Textarea):
