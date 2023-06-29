@@ -960,7 +960,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         elif import_choices and import_choices == "OLD_FILES_IMPORT":
             return HabilitationRequestImportResource
 
-        return self.get_resource_class()
+        return self.resource_class
 
     def get_import_form(self):
         return HabilitationRequestImportForm

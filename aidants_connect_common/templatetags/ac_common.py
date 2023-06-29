@@ -4,6 +4,7 @@ from urllib.parse import quote, urlencode
 from django import template
 from django.conf import settings
 from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
+from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
 
 register = template.Library()
@@ -162,3 +163,17 @@ def list_term(context, **kwargs):
     additionnal_cond = kwargs.get("additionnal_cond", False)
 
     return end_term if forloop["last"] and not additionnal_cond else more_term
+
+
+@register.filter
+@stringfilter
+def camel(value: str):
+    splitted = value.split("_")
+    if len(splitted) > 1:
+        splitted = [splitted[0], *[item.capitalize() for item in splitted[1:]]]
+
+    splitted = "".join(splitted).split("-")
+    if len(splitted) > 1:
+        splitted = [splitted[0], *[item.capitalize() for item in splitted[1:]]]
+
+    return "".join(splitted)

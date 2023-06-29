@@ -40,3 +40,26 @@ class Department(models.Model):
 
     class Meta:
         verbose_name = "Département"
+
+
+class Commune(models.Model):
+    insee_code = models.CharField(
+        "Code INSEE", max_length=5, unique=True, primary_key=True
+    )
+    name = models.TextField("Nom de la commune")
+    zrr = models.BooleanField("Commune classé en zone rurale restreinte", default=False)
+    department = models.ForeignKey(
+        Department, on_delete=CASCADE, related_name="commune"
+    )
+
+    def __str__(self):
+        return f"{self.name} ({self.insee_code})"
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        """
+        WARNING: Do not override, this logic won't be called when importing from
+        INSEE's CSV.
+        """
+        super().save(force_insert, force_update, using, update_fields)
