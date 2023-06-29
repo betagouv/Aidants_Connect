@@ -2,7 +2,7 @@ from django.conf import settings
 from django.test import TestCase, tag
 from django.utils.timezone import now
 
-from aidants_connect_common.models import Department, Region
+from aidants_connect_common.models import Commune, Department, Region
 from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.models import (
     Aidant,
@@ -90,10 +90,34 @@ class AllStatisticsTests(TestCase):
             insee_code="921", region=cls.region_two, name="Dep 921"
         )
 
+        cls.commune_11 = Commune.objects.create(
+            insee_code="91100", name="Com 911", zrr=False, department=cls.dep_11
+        )
+
+        cls.commune_12 = Commune.objects.create(
+            insee_code="91200", name="Com 911", zrr=True, department=cls.dep_11
+        )
+
+        cls.commune_21 = Commune.objects.create(
+            insee_code="92100", name="Com 911", zrr=False, department=cls.dep_11
+        )
+
         staf_orga = OrganisationFactory(name=settings.STAFF_ORGANISATION_NAME)
-        orga_11 = OrganisationFactory(name="CCAS", department_insee_code="911")
-        orga_12 = OrganisationFactory(name="Orga dep 12", department_insee_code="912")
-        orga_21 = OrganisationFactory(name="Orga dep 21", department_insee_code="921")
+        orga_11 = OrganisationFactory(
+            name="CCAS",
+            department_insee_code="911",
+            city_insee_code=cls.commune_11.insee_code,
+        )
+        orga_12 = OrganisationFactory(
+            name="Orga dep 12",
+            department_insee_code="912",
+            city_insee_code=cls.commune_12.insee_code,
+        )
+        orga_21 = OrganisationFactory(
+            name="Orga dep 21",
+            department_insee_code="921",
+            city_insee_code=cls.commune_21.insee_code,
+        )
         # nb = 0
         AidantFactory(organisation=staf_orga)
         # nb = 0
@@ -200,6 +224,9 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 4)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 3)
 
+        self.assertEqual(stats.number_orgas_in_zrr, 1)
+        self.assertEqual(stats.number_aidants_in_zrr, 1)
+
     def test_by_department_computing_new_statistics(self):
         stats = compute_statistics(
             AidantStatistiquesbyDepartment(departement=self.dep_11)
@@ -218,6 +245,9 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 1)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 1)
 
+        self.assertEqual(stats.number_orgas_in_zrr, 0)
+        self.assertEqual(stats.number_aidants_in_zrr, 0)
+
         stats = compute_statistics(
             AidantStatistiquesbyDepartment(departement=self.dep_12)
         )
@@ -235,6 +265,9 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 1)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 1)
 
+        self.assertEqual(stats.number_orgas_in_zrr, 1)
+        self.assertEqual(stats.number_aidants_in_zrr, 1)
+
     def test_by_region_computing_new_statistics(self):
         stats = compute_statistics(AidantStatistiquesbyRegion(region=self.region_one))
 
@@ -251,6 +284,9 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 2)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 2)
 
+        self.assertEqual(stats.number_orgas_in_zrr, 1)
+        self.assertEqual(stats.number_aidants_in_zrr, 1)
+
         stats = compute_statistics(AidantStatistiquesbyRegion(region=self.region_two))
 
         self.assertEqual(stats.number_aidants, 2)
@@ -265,3 +301,6 @@ class AllStatisticsTests(TestCase):
 
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 1)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 1)
+
+        self.assertEqual(stats.number_orgas_in_zrr, 0)
+        self.assertEqual(stats.number_aidants_in_zrr, 0)
