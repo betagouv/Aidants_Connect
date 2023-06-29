@@ -3,7 +3,7 @@ from typing import Union
 from django.conf import settings
 from django.db.models import Q
 
-from aidants_connect_common.models import Department, Region
+from aidants_connect_common.models import Commune, Department, Region
 from aidants_connect_common.utils.constants import (
     JournalActionKeywords,
     RequestStatusConstants,
@@ -190,6 +190,14 @@ def compute_statistics(
     )
     number_usage_of_ac = qs_usage_of_ac.count()
 
+    communes_in_zrr = list(
+        Commune.objects.filter(zrr=True).values_list("insee_code", flat=True)
+    )
+    number_orgas_in_zrr = orgas.filter(city_insee_code__in=communes_in_zrr).count()
+    number_aidants_in_zrr = ads.filter(
+        organisation__city_insee_code__in=communes_in_zrr
+    ).count()
+
     ostat.number_aidants = number_aidants
     ostat.number_aidants_is_active = number_aidants_is_active
     ostat.number_responsable = number_responsable
@@ -212,6 +220,8 @@ def compute_statistics(
         number_organisation_with_at_least_one_ac_usage
     )
     ostat.number_usage_of_ac = number_usage_of_ac
+    ostat.number_orgas_in_zrr = number_orgas_in_zrr
+    ostat.number_aidants_in_zrr = number_aidants_in_zrr
     ostat.save()
 
     return ostat

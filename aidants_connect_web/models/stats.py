@@ -70,6 +70,15 @@ class AbstractAidantStatistiques(models.Model):
         "Nombre d’accompagnements réalisés via AC", default=0
     )
 
+    number_orgas_in_zrr = models.PositiveIntegerField(
+        "Nombre de structures classées en zone de revitalisation rurale", default=0
+    )
+
+    number_aidants_in_zrr = models.PositiveIntegerField(
+        "Nombre d'aidant travaillant dans des stuctures classées en zone de revitalisation rurale",  # noqa
+        default=0,
+    )
+
     class Meta:
         abstract = True
         verbose_name = "Statistiques aidants abstraite"
