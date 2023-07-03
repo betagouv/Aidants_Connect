@@ -753,11 +753,13 @@ ol.messages-list {
 }
 
 .header-links {
+  align-items: center;
+  display: flex;
   list-style: none;
   text-align: right;
 
   li {
-    display: inline-block;
+    text-align: center;
 
     &:not(:first-child) {
       margin-left: 2rem;
@@ -776,6 +778,17 @@ ol.messages-list {
 
     &:hover {
       box-shadow: 0 .5rem 0 colors.$off-yellow-aidants;
+    }
+  }
+}
+
+@media (max-width: utils.$bp-lg) {
+  .header-links {
+    margin-top: 1rem;
+    flex-direction: column;
+
+    li:not(:first-child) {
+      margin: .5rem 0 0 0;
     }
   }
 }
