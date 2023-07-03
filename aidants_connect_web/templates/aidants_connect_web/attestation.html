@@ -23,11 +23,11 @@
 
     <div class="attestation-content">
       <header class="navbar fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
-        <div class="fr-col-12 fr-col-sm-5">
+        <div class="fr-col-8">
           {% include "layouts/_header_logos.html" %}
         </div>
         {% if qr_code_src %}
-          <div class="fr-col-12 fr-col-sm-7 clearfix">
+          <div class="fr-col-4 clearfix">
             <img alt="" class="float-right img-qrcode" src="{{ qr_code_src }}"/>
           </div>
         {% endif %}
