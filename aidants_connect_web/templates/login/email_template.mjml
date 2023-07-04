@@ -10,7 +10,7 @@
     <mj-button href="{{ href }}">Connexion</mj-button>
     <mj-text>
       <p>
-        Si le boutton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
         <a href="{{ href }}">{{ href }}</a>
       </p>
       <p>Ce lien n'est valable que {{ TOKEN_DURATION_MINUTES }} minutes. Il est à usage unique.</p>
