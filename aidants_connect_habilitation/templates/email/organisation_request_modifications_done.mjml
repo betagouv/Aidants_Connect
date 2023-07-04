@@ -12,7 +12,7 @@
       </mj-text>
       <mj-button href="{{ url }}">Retrouver tous les détails de cette demande</mj-button>
       <mj-text>
-        Si le boutton ci-dessus ne fonctionne pas, vous pouvez copier l’adresse suivante dans votre navigateur :
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l’adresse suivante dans votre navigateur :
         <a href="{{ url }}">{{ url }}</a>
       </mj-text>
     </mj-column>

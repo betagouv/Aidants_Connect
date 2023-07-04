@@ -31,7 +31,7 @@
       </mj-text>
       <mj-button href="{{ webinaire_sub_form }}">S’inscrire au wébinaire</mj-button>
       <mj-text>
-        Si le boutton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
         <a href="{{ webinaire_sub_form }}">{{ webinaire_sub_form }}</a>
       </mj-text>
       <mj-text>
