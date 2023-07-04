@@ -9,16 +9,18 @@ from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline, re
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.forms import ChoiceField
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
 from django.urls import path, reverse, reverse_lazy
+from django.utils import timezone
 from django.utils.html import format_html_join, linebreaks
 from django.utils.safestring import mark_safe
 from django.views.generic import FormView
 
+from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.lib import add_static_token
 from django_otp.plugins.otp_static.models import StaticDevice
@@ -44,6 +46,7 @@ from aidants_connect.admin import (
     VisibleToTechAdmin,
     admin_site,
 )
+from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.forms import (
@@ -494,6 +497,40 @@ class AidantDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisations__zipcode"
 
 
+class AidantGoneTooLong(SimpleListFilter):
+    title = "status de dernière connexion"
+    parameter_name = "gone_too_long"
+    relative_to = {"months": 5}
+
+    def value(self):
+        return strtobool(super().value(), None)
+
+    def lookups(self, request, model_admin):
+        return [
+            (False, "Connectés recemment"),
+            (True, "Actif mais non-connectés récemment"),
+        ]
+
+    def queryset(self, request, queryset: AidantManager):
+        queryset = queryset.filter(is_active=True)
+        match self.value():
+            case False:
+                return queryset.filter(
+                    last_login__gt=timezone.now() - relativedelta(**self.relative_to)
+                )
+            case True:
+                # Last connect more than 6 monts ago or never connected
+                return queryset.filter(
+                    Q(
+                        last_login__lte=timezone.now()
+                        - relativedelta(**self.relative_to)
+                    )
+                    | Q(last_login=None)
+                )
+            case _:
+                return queryset
+
+
 class AidantRegionFilter(RegionFilter):
     filter_parameter_name = "organisations__zipcode"
 
@@ -638,11 +675,12 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_active",
         "aidant_type",
         "can_create_mandats",
-        AidantRegionFilter,
-        AidantDepartmentFilter,
         AidantWithMandatsFilter,
+        AidantGoneTooLong,
         "is_staff",
         "is_superuser",
+        AidantRegionFilter,
+        AidantDepartmentFilter,
     )
     search_fields = ("id", "first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
