@@ -5,6 +5,7 @@ from django import template
 from django.conf import settings
 from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
 from django.template.defaultfilters import stringfilter
+from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
 register = template.Library()
@@ -50,7 +51,14 @@ def mailto(recipient: str, link_text: str = "", subject: str = "", body: str = "
 
 @register.simple_tag
 def stimulusjs():
-    return mark_safe(f'<script src="{settings.STIMULUS_JS_URL}"></script>')
+    return mark_safe(
+        "\n".join(
+            [
+                f'<script src="{settings.STIMULUS_JS_URL}"></script>',
+                f'<script type="module" src="{static("js/base-controller.js")}"></script>',  # noqa: E501
+            ]
+        )
+    )
 
 
 @register.tag
