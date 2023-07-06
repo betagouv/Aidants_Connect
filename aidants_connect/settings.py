@@ -15,7 +15,6 @@ import os
 import re
 import sys
 from datetime import datetime, timedelta
-from distutils.util import strtobool
 from pathlib import Path
 from typing import Optional, Union
 
@@ -28,6 +27,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 from aidants_connect.postgres_url import turn_psql_url_into_param
+from aidants_connect.utils import strtobool
 
 load_dotenv(verbose=True)
 
@@ -56,16 +56,7 @@ def getenv_bool(key: str, default: Optional[bool] = None) -> bool:
     if isinstance(var, bool):
         return var
 
-    try:
-        return bool(strtobool(var))
-    except ValueError:
-        if default is not None:
-            return default
-        else:
-            raise ValueError(
-                f"{key} does not have a valid boolean value; authorized values are "
-                'any casing of ["true", "yes", "false", "no"] as well as 0 and 1.'
-            )
+    return strtobool(var) if default is None else strtobool(var, default)
 
 
 HOST = os.environ["HOST"]
