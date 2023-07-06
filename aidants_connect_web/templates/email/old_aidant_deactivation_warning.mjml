@@ -6,8 +6,8 @@
       <mj-text>
         <p>Bonjour {{ user.get_full_name }},</p>
         <p>
-          Vous avez eu l’opportunité de participer au programme de formation Aidants Connect, néanmoins cela fait plus
-          de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité. Ne capitulez pas si vite !
+          Vous avez participé au programme de formation Aidants Connect, néanmoins cela fait plus
+          de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité. 
         </p>
         <p>
           Nous vous proposons un<b>webinaire de ré-embarquement</b>, court et
@@ -26,7 +26,7 @@
           de l’outil Aidants Connect, votre compte sera<b>automatiquement désactivé dans un délai de 1 mois</b>.
         </p>
         <p >
-          <em>Pour rappel, les comptes Aidants Connect sont désactivés au bout de 6 mois d'inactivité.</em>
+          <em>Pour rappel, pour des raisons de sécurité, les comptes Aidants Connect sont désactivés temporairement au bout de 6 mois d'inactivité. Passé ce délai, vous pouvez nous contacter pour réactiver votre compte à l'adresse suivante contact@aidantsconnect.beta.gouv.fr </em>
         </p>
       </mj-text>
       <mj-button href="{{ webinaire_sub_form }}">S’inscrire au wébinaire</mj-button>
