@@ -102,8 +102,8 @@ class TestOrganisationRequestForm(TestCase):
         self.assertEqual(
             form.errors["type_other"],
             [
-                f"Le champ « Type de structure si autre » doit être rempli "
-                f"si la structure est de type {RequestOriginConstants.OTHER.label}."
+                "Ce champ doit être rempli si la structure est de type "
+                f"{RequestOriginConstants.OTHER.label}."
             ],
         )
 
