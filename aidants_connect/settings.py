@@ -620,14 +620,13 @@ EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT = os.getenv(
 )
 
 EMAIL_WELCOME_AIDANT_SUBJECT = os.getenv(
-    "EMAIL_WELCOME_AIDANT_SUBJECT",
-    "Aidants Connect — Votre compte va être désactivé, réagissez !",
+    "EMAIL_WELCOME_AIDANT_SUBJECT", "Bienvenue dans la communauté Aidants Connect"
 )
 EMAIL_WELCOME_AIDANT_FROM = os.getenv("EMAIL_WELCOME_AIDANT_FROM", SUPPORT_EMAIL)
 
 EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT = os.getenv(
     "EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT",
-    "Désactivation prochaine de vos accès Aidants Connect",
+    "Aidants Connect — Réactivez votre compte",
 )
 EMAIL_AIDANT_DEACTIVATION_WARN_FROM = os.getenv(
     "EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT", SUPPORT_EMAIL

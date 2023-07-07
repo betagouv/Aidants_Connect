@@ -290,9 +290,9 @@ def email_welcome_aidant(aidant_email: str, *, logger=None):
     html_message = loader.render_to_string("email/aidant_bienvenue.html", context)
 
     send_mail(
-        from_email=settings.EMAIL_AIDANT_DEACTIVATION_WARN_FROM,
+        from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
+        subject=settings.EMAIL_WELCOME_AIDANT_SUBJECT,
         recipient_list=[aidant_email],
-        subject=settings.EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT,
         message=text_message,
         html_message=html_message,
     )
@@ -320,9 +320,9 @@ def email_old_aidants(*, logger=None):
         )
 
         send_mail(
-            from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
+            from_email=settings.EMAIL_AIDANT_DEACTIVATION_WARN_FROM,
+            subject=settings.EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT,
             recipient_list=[a.email],
-            subject=settings.EMAIL_WELCOME_AIDANT_SUBJECT,
             message=text_message,
             html_message=html_message,
         )
