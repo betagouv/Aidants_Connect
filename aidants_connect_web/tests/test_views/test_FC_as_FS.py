@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from unittest import mock
 from urllib.parse import urlencode
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -12,29 +13,68 @@ import jwt
 from freezegun import freeze_time
 
 from aidants_connect_common.utils.constants import AuthorizationDurationChoices
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.views.FC_as_FS import get_user_info
 
-fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
-
 
 @tag("new_mandat", "FC_as_FS")
 class FCAuthorize(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+        cls.consent_request_id = str(uuid4())
+
         Connection.objects.create(
             id=1,
             demarches=["argent", "papiers"],
             duree_keyword=AuthorizationDurationChoices.SHORT,
         )
 
+        cls.remote_connection = Connection.objects.create(
+            id=2,
+            aidant=cls.aidant,
+            organisation=cls.aidant.organisation,
+            demarches=["argent", "papiers"],
+            remote_constent_method=RemoteConsentMethodChoices.SMS.name,
+            duree_keyword=AuthorizationDurationChoices.SHORT,
+            mandat_is_remote=True,
+            user_phone="0 800 840 800",
+            consent_request_id=cls.consent_request_id,
+        )
+
     def test_well_formatted_request_fills_connection(self):
         session = self.client.session
         session["connection"] = 1
         session.save()
-        self.client.get("/fc_authorize/")
+        self.client.get(reverse("fc_authorize"))
         connection = Connection.objects.get(pk=1)
+        self.assertNotEqual(connection.state, "")
+
+    def test_prevent_redirect_on_no_consent(self):
+        session = self.client.session
+        session["connection"] = 2
+        session.save()
+
+        self.client.force_login(self.aidant)
+
+        response = self.client.get(reverse("fc_authorize"))
+        self.assertRedirects(response, reverse("new_mandat_waiting_room"))
+
+        Journal.log_user_consents_sms(
+            aidant=self.remote_connection.aidant,
+            demarche=self.remote_connection.demarche,
+            duree=self.remote_connection.duree_keyword,
+            remote_constent_method=self.remote_connection.remote_constent_method,
+            user_phone=self.remote_connection.user_phone,
+            consent_request_id=self.remote_connection.consent_request_id,
+            message="Oui",
+        )
+
+        self.client.get(reverse("fc_authorize"))
+        connection = Connection.objects.get(pk=2)
         self.assertNotEqual(connection.state, "")
 
 
@@ -188,11 +228,16 @@ class FCCallback(TestCase):
         connection = Connection.objects.get(pk=connection_number)
 
         self.assertEqual(connection.access_token, "test_access_token")
-        url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?"
-            f"id_token_hint={id_token}&state=test_state"
-            "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
+        parameters = urlencode(
+            {
+                "id_token_hint": id_token,
+                "state": "test_state",
+                "post_logout_redirect_uri": (
+                    f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
+                ),
+            }
         )
+        url = f"https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?{parameters}"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
         last_journal_entry = Journal.objects.last()
@@ -261,11 +306,16 @@ class FCCallback(TestCase):
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Joséphine")
 
-        url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?"
-            f"id_token_hint={encoded_token}&state=test_state"
-            "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
+        parameters = urlencode(
+            {
+                "id_token_hint": encoded_token,
+                "state": "test_state",
+                "post_logout_redirect_uri": (
+                    f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
+                ),
+            }
         )
+        url = f"https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?{parameters}"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
         last_journal_entry = Journal.objects.last()
