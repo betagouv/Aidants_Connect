@@ -203,6 +203,9 @@ class OrganisationRequestForm(
     PatchedModelForm, AddressValidatableMixin, CleanZipCodeMixin
 ):
     type = ChoiceField(required=True, choices=RequestOriginConstants.choices)
+    type_other = CharField(
+        label="Veuillez préciser le type d’organisation", required=False
+    )
 
     name = CharField(
         label="Nom de la structure",
@@ -242,20 +245,11 @@ class OrganisationRequestForm(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.widget_attrs(
-            "type_other",
-            {
-                "data-dynamic-form-target": "typeOtherInput",
-                "data-displayed-label": "Veuillez préciser le type d’organisation",
-            },
-        )
         self.widget_attrs(
             "type",
             {
                 "data-action": "change->dynamic-form#onTypeChange",
                 "data-dynamic-form-target": "typeInput",
-                "data-other-value": RequestOriginConstants.OTHER.value,
             },
         )
         self.widget_attrs(
@@ -281,9 +275,8 @@ class OrganisationRequestForm(
             return ""
 
         if not self.data["type_other"]:
-            label = self.fields["type_other"].label
             raise ValidationError(
-                f"Le champ « {label} » doit être rempli si la "
+                f"Ce champ doit être rempli si la "
                 f"structure est de type {RequestOriginConstants.OTHER.label}."
             )
 

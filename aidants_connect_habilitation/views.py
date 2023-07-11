@@ -327,6 +327,12 @@ class NewOrganisationRequestFormView(
         self.define_html_attributes(form)
         return form
 
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "type_other_value": RequestOriginConstants.OTHER.value,
+        }
+
 
 class ModifyOrganisationRequestFormView(
     OnlyNewRequestsView, NewOrganisationRequestFormView

@@ -1,7 +1,8 @@
 "use strict";
 
+import {BaseController} from "./base-controller.js"
+
 (function () {
-    // This JS code won't be executed on IE11, so we can write ES6 code
     class MessageForm extends Stimulus.Controller {
         initialize() {
             this.onGoingRequestValue = false;
@@ -27,7 +28,9 @@
             let response = await fetch(dest.toString(), {
                 method: this.formTarget.method.toUpperCase(),
                 body: new FormData(this.formTarget),
-            }).finally(() => {this.onGoingRequestValue = false});
+            }).finally(() => {
+                this.onGoingRequestValue = false
+            });
 
             if (response.ok) {
                 let html = await response.text();
@@ -54,9 +57,8 @@
         static values = {"onGoingRequest": Boolean}
     }
 
-    if (window.fetch) {
-        window.addEventListener("load", () =>
-            Stimulus.Application.start().register("message-form", MessageForm)
-        );
-    }
+    new Promise(resolve => window.addEventListener("load", resolve)).then(() => {
+        const application = Stimulus.Application.start();
+        application.register("message-form", MessageForm);
+    });
 })();
