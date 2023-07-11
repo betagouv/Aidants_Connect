@@ -169,7 +169,7 @@
               alt="S’identifier avec FranceConnect"
             />
           </section>
-        {% endblock input_submit_form %}
+        {% endblock %}
       </div>
     </form>
   </div>
@@ -177,6 +177,5 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script src="{% static 'js/utils.js' %}"></script>
-  <script src="{% static 'js/new_mandat.js' %}"></script>
+  <script defer type="module" src="{% static 'js/new-mandat.js' %}"></script>
 {% endblock %}

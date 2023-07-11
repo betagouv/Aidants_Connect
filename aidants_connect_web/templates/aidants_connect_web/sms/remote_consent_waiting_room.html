@@ -43,6 +43,5 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script src="{% static 'js/utils.js' %}"></script>
-  <script src="{% static 'js/remote_pending.js' %}"></script>
+  <script defer type="module" src="{% static 'js/remote-pending.js' %}"></script>
 {% endblock %}

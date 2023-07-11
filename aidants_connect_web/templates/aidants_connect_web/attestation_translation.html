@@ -97,7 +97,6 @@
 {% block extrajs %}
   {% if available_translations|length > 0 %}
     {% stimulusjs %}
-    <script src="{% static 'js/utils.js' %}"></script>
-    <script src="{% static 'js/mandate-translation.js' %}"></script>
+    <script defer type="module" src="{% static 'js/mandate-translation.js' %}"></script>
   {% endif %}
 {% endblock %}
