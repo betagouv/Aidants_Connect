@@ -104,6 +104,18 @@ class JournalQuerySet(models.QuerySet):
 
         return self.filter(**kwargs)
 
+    def find_demarches_for_organisation(self, org: Organisation):
+        return self.filter(
+            organisation=org,
+            action__in=[
+                JournalActionKeywords.CREATE_ATTESTATION,
+                JournalActionKeywords.USE_AUTORISATION,
+                JournalActionKeywords.CANCEL_MANDAT,
+                JournalActionKeywords.INIT_RENEW_MANDAT,
+                JournalActionKeywords.CANCEL_AUTORISATION,
+            ],
+        )
+
 
 class Journal(models.Model):
     INFO_REMOTE_MANDAT = "Mandat conclu à distance pendant l'état d'urgence sanitaire (23 mars 2020)"  # noqa

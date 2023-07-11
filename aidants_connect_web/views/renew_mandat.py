@@ -50,9 +50,6 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
 
         return super().dispatch(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
     def form_valid(self, form):
         data = form.cleaned_data
         access_token = make_password(token_urlsafe(64), settings.FC_AS_FI_HASH_SALT)

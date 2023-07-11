@@ -134,6 +134,10 @@ class Organisation(models.Model):
     def num_usagers(self):
         return self.mandats.distinct("usager").count()
 
+    @cached_property
+    def num_demarches(self):
+        return Journal.objects.find_demarches_for_organisation(self).count()
+
     @property
     def display_address(self):
         return self.address if self.address != "No address provided" else "__________"
