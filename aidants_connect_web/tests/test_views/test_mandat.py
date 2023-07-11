@@ -394,7 +394,7 @@ class NewMandatRecapTests(TestCase):
 
         self.assertEqual(Usager.objects.all().count(), 1)
         self.assertRedirects(
-            response, reverse("new_mandat_success", args=(created_mandat.pk,))
+            response, reverse("new_attestation_final", args=(created_mandat.pk,))
         )
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")

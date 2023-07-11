@@ -8,10 +8,10 @@
   <link href="{% static 'css/attestation.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-{% block nav %}{% endblock nav %}
+{# Display navigation only on final mandate #}
+{% block nav %}{% if final %}<div class="no-print">{{ block.super }}</div>{% endif %}{% endblock nav %}
 
 {% block content %}
-
   <div class="fr-container clearfix">
     {% if final %}
       <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle clearfix no-print margin-bottom-2rem">

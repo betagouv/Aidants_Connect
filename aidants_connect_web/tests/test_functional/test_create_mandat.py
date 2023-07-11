@@ -17,7 +17,7 @@ from selenium.webdriver.support.expected_conditions import url_matches
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.constants import RemoteConsentMethodChoices
-from aidants_connect_web.models import Aidant, Journal
+from aidants_connect_web.models import Aidant, Journal, Mandat
 from aidants_connect_web.tests.factories import AidantFactory
 
 UUID = "1f75d571-4127-445b-a141-ea837580da14"
@@ -124,17 +124,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Success page
         success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
-        go_to_usager_button = self.selenium.find_element(
-            By.CLASS_NAME, "tiles"
-        ).find_elements(By.TAG_NAME, "a")[1]
-        go_to_usager_button.click()
-
-        # See all mandats of usager page
-        active_mandats_after = self.selenium.find_elements(By.TAG_NAME, "table")[
-            0
-        ].find_elements(By.CSS_SELECTOR, "tbody tr")
-        self.assertEqual(len(active_mandats_after), 2)
+        self.assertEqual(
+            success_title,
+            "Mandat pour réaliser des démarches "
+            "en ligne avec le service « Aidants Connect »",
+        )
+        mandat_qs = Mandat.objects.filter(organisation=self.aidant.organisation)
+        self.assertEqual(1, mandat_qs.count())
+        self.assertEqual(2, mandat_qs[0].autorisations.count())
 
     def test_create_new_remote_mandat_with_legacy_consent(self):
         self.open_live_url("/usagers/")
@@ -252,17 +249,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Success page
         success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
-        go_to_usager_button = self.selenium.find_element(
-            By.CLASS_NAME, "tiles"
-        ).find_elements(By.TAG_NAME, "a")[1]
-        go_to_usager_button.click()
-
-        # See all mandats of usager page
-        active_mandats_after = self.selenium.find_elements(By.TAG_NAME, "table")[
-            0
-        ].find_elements(By.CSS_SELECTOR, "tbody tr")
-        self.assertEqual(len(active_mandats_after), 2)
+        self.assertEqual(
+            success_title,
+            "Mandat pour réaliser des démarches "
+            "en ligne avec le service « Aidants Connect »",
+        )
+        mandat_qs = Mandat.objects.filter(organisation=self.aidant.organisation)
+        self.assertEqual(1, mandat_qs.count())
+        self.assertEqual(2, mandat_qs[0].autorisations.count())
 
     @override_settings(
         SMS_API_DISABLED=False,
@@ -440,17 +434,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Success page
         success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
-        go_to_usager_button = self.selenium.find_element(
-            By.CLASS_NAME, "tiles"
-        ).find_elements(By.TAG_NAME, "a")[1]
-        go_to_usager_button.click()
-
-        # See all mandats of usager page
-        active_mandats_after = self.selenium.find_elements(By.TAG_NAME, "table")[
-            0
-        ].find_elements(By.CSS_SELECTOR, "tbody tr")
-        self.assertEqual(len(active_mandats_after), 2)
+        self.assertEqual(
+            success_title,
+            "Mandat pour réaliser des démarches en "
+            "ligne avec le service « Aidants Connect »",
+        )
+        mandat_qs = Mandat.objects.filter(organisation=self.aidant.organisation)
+        self.assertEqual(1, mandat_qs.count())
+        self.assertEqual(2, mandat_qs[0].autorisations.count())
 
     def _element_is_required(self, by: By, value: str):
         def _predicate(driver: WebDriver):

@@ -133,11 +133,6 @@ urlpatterns = [
         name="new_attestation_projet",
     ),
     path(
-        "creation_mandat/succes/<int:mandat_id>",
-        mandat.NewMandateSuccess.as_view(),
-        name="new_mandat_success",
-    ),
-    path(
         "creation_mandat/visualisation/final/<int:mandat_id>",
         mandat.Attestation.as_view(),
         name="new_attestation_final",

@@ -89,11 +89,11 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Success page
         success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
-        go_to_usager_button = self.selenium.find_element(
-            By.CLASS_NAME, "tiles"
-        ).find_elements(By.TAG_NAME, "a")[1]
-        go_to_usager_button.click()
+        self.assertEqual(
+            success_title,
+            "Mandat pour réaliser des démarches "
+            "en ligne avec le service « Aidants Connect »",
+        )
 
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 2)
 
@@ -177,11 +177,11 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Success page
         success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
-        go_to_usager_button = self.selenium.find_element(
-            By.CLASS_NAME, "tiles"
-        ).find_elements(By.TAG_NAME, "a")[1]
-        go_to_usager_button.click()
+        self.assertEqual(
+            success_title,
+            "Mandat pour réaliser des démarches "
+            "en ligne avec le service « Aidants Connect »",
+        )
 
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 2)
 
@@ -312,12 +312,11 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Success page
         success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(success_title, "Le mandat a été créé avec succès !")
-        go_to_usager_button = self.selenium.find_element(
-            By.CLASS_NAME, "tiles"
-        ).find_elements(By.TAG_NAME, "a")[1]
-        go_to_usager_button.click()
-
+        self.assertEqual(
+            success_title,
+            "Mandat pour réaliser des démarches "
+            "en ligne avec le service « Aidants Connect »",
+        )
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 2)
 
     def _element_is_required(self, by: By, value: str):
