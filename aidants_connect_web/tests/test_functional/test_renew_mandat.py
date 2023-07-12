@@ -88,7 +88,9 @@ class RenewMandatTests(FunctionalTestCase):
         submit_button.click()
 
         # Success page
-        success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
+        success_title = self.selenium.find_element(
+            By.CSS_SELECTOR, ".attestation-content h1"
+        ).text
         self.assertEqual(
             success_title,
             "Mandat pour réaliser des démarches "
@@ -176,7 +178,9 @@ class RenewMandatTests(FunctionalTestCase):
         submit_button.click()
 
         # Success page
-        success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
+        success_title = self.selenium.find_element(
+            By.CSS_SELECTOR, ".attestation-content h1"
+        ).text
         self.assertEqual(
             success_title,
             "Mandat pour réaliser des démarches "
@@ -311,7 +315,9 @@ class RenewMandatTests(FunctionalTestCase):
         submit_button.click()
 
         # Success page
-        success_title = self.selenium.find_element(By.TAG_NAME, "h1").text
+        success_title = self.selenium.find_element(
+            By.CSS_SELECTOR, ".attestation-content h1"
+        ).text
         self.assertEqual(
             success_title,
             "Mandat pour réaliser des démarches "

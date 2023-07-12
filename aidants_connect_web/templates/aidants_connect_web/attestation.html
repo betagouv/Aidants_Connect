@@ -14,15 +14,22 @@
 {% block content %}
   <div class="fr-container clearfix">
     {% if final %}
-      <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle clearfix no-print margin-bottom-2rem">
-        <section class="fr-col-12 fr-col-md-5 float-right">
+      <div class="fr-grid-row fr-grid-row--gutters no-print margin-bottom-4rem">
+        <h1 class="full-width margin-0">Mandat final</h1>
+        <section class="fr-col-12 fr-col-md-7">
+          <p class="subtitle">
+            Le mandat a été créé avec succès.<br/>
+            Veuillez l’imprimer afin de le faire signer par le mandant.
+          </p>
+        </section>
+        <section class="fr-col-12 fr-col-md-5">
           {% include 'aidants_connect_web/_attestation-print.html' %}
         </section>
       </div>
     {% endif %}
 
     <div class="attestation-content">
-      <header class="navbar fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+      <header class="navbar fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-8">
           {% include "layouts/_header_logos.html" %}
         </div>
