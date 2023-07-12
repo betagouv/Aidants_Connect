@@ -131,7 +131,7 @@ class OrganisationRequestAdminTests(TestCase):
 
         # check subject and email contents
         self.assertEqual(email_subject, acceptance_message.subject)
-        self.assertEqual(email_body, acceptance_message.body)
+        self.assertIn(email_body, acceptance_message.body)
 
         # check recipients are as expected
         self.assertEqual(
@@ -170,7 +170,7 @@ class OrganisationRequestAdminTests(TestCase):
 
         # check subject and email contents
         self.assertEqual(email_subject, refusal_message.subject)
-        self.assertEqual(email_body, refusal_message.body)
+        self.assertIn(email_body, refusal_message.body)
 
         # check recipients are as expected
         self.assertEqual(

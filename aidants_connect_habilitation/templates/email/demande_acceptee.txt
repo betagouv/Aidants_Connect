@@ -21,6 +21,3 @@ Enfin, une fois les aidants formés, le kit de bienvenue - contenant les accès 
 A l'attention de {{ organisation.manager }}
 {{ organisation.manager.address }}
 {{ organisation.manager.zipcode }} {{ organisation.manager.city }}
-
-Bien cordialement,
-L'équipe Aidants Connect
