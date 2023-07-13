@@ -603,26 +603,7 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse("new_mandat_success", kwargs={"mandat_id": self.mandat.pk})
-
-
-@aidant_logged_with_activity_required
-class NewMandateSuccess(TemplateView):
-    template_name = "aidants_connect_web/new_mandat/new_mandat_success.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.aidant: Aidant = request.user
-        self.mandat = get_object_or_404(
-            Mandat, pk=kwargs["mandat_id"], organisation=self.aidant.organisation
-        )
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "mandat": self.mandat,
-            "aidant": self.aidant,
-        }
+        return reverse("new_attestation_final", kwargs={"mandat_id": self.mandat.pk})
 
 
 @aidant_logged_with_activity_required

@@ -18,6 +18,9 @@ $bp-xl: 78em;
 .margin-bottom-2rem {
   margin-bottom: 2rem !important;
 }
+.margin-bottom-4rem {
+  margin-bottom: 4rem !important;
+}
 .margin-bottom-6rem {
   margin-bottom: 6rem !important;
 }
@@ -62,4 +65,7 @@ $bp-xl: 78em;
 }
 .align-middle {
   vertical-align: middle;
+}
+.full-width {
+  width: 100%;
 }

@@ -1,12 +1,58 @@
+@use "colors";
 
 .fr-container {
   margin: 1rem auto 1rem auto;
 
+  .subtitle {
+    color: colors.$blue-aidants;
+    font-weight: bold;
+    font-size: larger;
+    margin: 0;
+  }
+
   .attestation-content {
-    border: 1px solid black;
-    padding: 1rem;
+    .navbar {
+      @media not print {
+        display: none;
+      }
+    }
+
+    h1 {
+      color: black;
+      font-size: 2em;
+      line-height: 1.125em;
+      margin: 0 2em .6em;
+      text-transform: none;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    ul {
+      padding: 0 0 0 2rem;
+    }
+
+    .demarches {
+      font-size: .95em;
+    }
+
+    .demarches + p {
+      margin-top: .1em;
+    }
+
+    .organisation-address {
+      min-width: 15em;
+      display: inline-block;
+    }
+
+    .img-qrcode {
+      height: 10em;
+    }
 
     @media print {
+      border: 1px solid black;
+      padding: 1rem;
       font-size: 0.75em;
       line-height: 1.4em;
     }
@@ -16,41 +62,8 @@
     margin: 1rem 0 1rem 0;
   }
 
-  .img-qrcode {
-    height: 10em;
-  }
-
-  h1 {
-    color: black;
-    font-size: 2em;
-    line-height: 1.125em;
-    margin: 0 2em .6em;
-    text-transform: none;
-  }
-
   .text-center {
     text-align: center;
-  }
-
-  p {
-    margin: 0;
-  }
-
-  ul {
-    padding: 0 0 0 2rem;
-  }
-
-  .demarches {
-    font-size: .95em;
-  }
-
-  .demarches + p {
-    margin-top: .1em;
-  }
-
-  .organisation-address {
-    min-width: 15em;
-    display: inline-block;
   }
 
   /* Back compatibility with past mandat templates */
