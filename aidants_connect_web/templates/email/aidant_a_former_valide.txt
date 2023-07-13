@@ -1,5 +1,5 @@
 Bonjour,
 
-L’équipe Aidants Connect vous confirme avoir validé l’ajout de l'aidante ou l'aidant {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. Dans votre espace responsable, la personne a été ajoutée en bas de la liste des aidants avec un statut « en cours ».
+L’équipe Aidants Connect vous confirme avoir validé l’ajout de l'aidante ou l'aidant {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. Dans votre espace référent, la personne a été ajoutée en bas de la liste des aidants avec un statut « en cours ».
 
 Désormais, l’aidant ou l'aidante est invitée à poursuivre la procédure d’habilitation (participation à la journée de formation + passage du test PIX final). L’organisme de formation va prochainement prendre contact avec vous pour l’organisation de sa formation.

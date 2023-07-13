@@ -13,7 +13,7 @@
     <tr>
       <td>
         {% if aidant.pk == responsable.pk %}
-          {{ aidant.get_full_name }} (Responsable)
+          {{ aidant.get_full_name }} (Référent)
         {% else %}
           <a href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
             {{ aidant.get_full_name }}

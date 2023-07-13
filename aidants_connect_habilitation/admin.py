@@ -377,7 +377,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             (
                 f"Tout s'est bien passé. La demande {object.data_pass_id} a "
                 f"été acceptée. L'organisation {object.name} et le compte aidant "
-                f"du responsable ont été créés. Les {aidant_count} aidants à former "
+                f"du référent ont été créés. Les {aidant_count} aidants à former "
                 "nécessaires ont été créés également."
             ),
         )

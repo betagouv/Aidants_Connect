@@ -218,4 +218,4 @@ class OrganisationRequestAdminTests(TestCase):
         url_root = f"admin:{OrganisationRequest._meta.app_label}_{OrganisationRequest.__name__.lower()}"  # noqa
         url = reverse(url_root + "_change", args=(org_request.pk,))
         response = self.amac_client.get(url)
-        self.assertContains(response, "<h2>Responsable</h2>")
+        self.assertContains(response, "<h2>Référent</h2>")

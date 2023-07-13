@@ -26,13 +26,13 @@
       <li>
         {{ object.issuer }} {{ object.issuer.email }}
         {% if object.issuer.email == object.manager.email %}
-          (Demandeur et responsable structure)
+          (Demandeur et référent structure)
         {% else %}
           (Demandeur)
         {% endif %}
       </li>
       {% if object.issuer.email != object.manager.email %}
-        <li>{{ object.manager }} {{ object.manager.email }} (Responsable structure)</li>
+        <li>{{ object.manager }} {{ object.manager.email }} (Référent structure)</li>
       {% endif %}
       {% if object.aidant_requests %}
         <li>

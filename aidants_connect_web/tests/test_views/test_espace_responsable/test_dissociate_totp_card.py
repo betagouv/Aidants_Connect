@@ -13,7 +13,7 @@ class DissociateCarteTOTPTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        # Create one responsable : Tom
+        # Create one référent : Tom
         cls.responsable_tom = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.org_id = cls.responsable_tom.organisation.id

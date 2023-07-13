@@ -541,9 +541,9 @@ def validate_aidant_carte_totp(request, aidant_id):
                 Journal.log_card_validation(
                     responsable, aidant, aidant.carte_totp.serial_number
                 )
-                # check if the validation request is for the responsable
+                # check if the validation request is for the référent
                 if responsable.id == aidant.id:
-                    # get all organisations aidant is responsable
+                    # get all organisations aidant is référent
                     valid_organisation_requests = OrganisationRequest.objects.filter(
                         organisation__in=responsable.responsable_de.all()
                     )

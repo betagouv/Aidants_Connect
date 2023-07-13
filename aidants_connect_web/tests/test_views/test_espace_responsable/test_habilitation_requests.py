@@ -16,7 +16,7 @@ class HabilitationRequestsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        # Tom is responsable of organisations A and B
+        # Tom is référent of organisations A and B
         cls.responsable_tom = AidantFactory()
         cls.org_a = cls.responsable_tom.organisation
         cls.org_b = OrganisationFactory(name="B")

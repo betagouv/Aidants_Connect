@@ -47,12 +47,12 @@
     <h2 class="clearfix">
       Aidants
       <span class="float-right">
-        {% if organisation_active_aidants|length > 1 %}{# Organisation has more aidants than just the responsable #}
+        {% if organisation_active_aidants|length > 1 %}{# Organisation has more aidants than just the référent #}
           <a
             href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}"
             class="button"
           >
-            <span aria-hidden="true">⚙️ </span>Désigner un responsable
+            <span aria-hidden="true">⚙️ </span>Désigner un ou une référente
           </a>
         {% endif %}
         <a href="{% url "espace_responsable_aidant_new" %}" class="button">
@@ -62,7 +62,7 @@
     </h2>
 
     {% if organisation_active_responsables %}
-      <h3>Responsables</h3>
+      <h3>Référents</h3>
       {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_responsables table_class="shadowed blue-green" %}
     {% endif %}
 
@@ -97,7 +97,7 @@
                     Les prochaines sessions de formation sur votre territoire sont complètes.
                     Nous contacterons cet aidant dès que possible.
                   {% elif request.status|lower == "new" %}
-                    Cet aidant vient d’être ajouté sur l’espace du Responsable Aidants Connect
+                    Cet aidant vient d’être ajouté sur l’espace du référent Aidants Connect
                   {% elif request.status|lower == "processing" %}
                     L’équipe Aidants Connect a validé l’ajout de cet aidant, il est en cours de formation.
                   {% elif request.status|lower == "refused" %}

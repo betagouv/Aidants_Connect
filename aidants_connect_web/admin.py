@@ -313,7 +313,7 @@ class OrganisationAdmin(
     def display_responsables(self, obj):
         return self.format_list_of_aidants(obj.responsables.order_by("last_name").all())
 
-    display_responsables.short_description = "Responsables"
+    display_responsables.short_description = "Référents"
 
     def display_aidants(self, obj):
         return self.format_list_of_aidants(obj.aidants.order_by("last_name").all())
