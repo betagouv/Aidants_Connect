@@ -986,7 +986,7 @@ class AidantModelTests(TestCase):
                 + relativedelta(days=1),
             )
 
-            # Responsable aren't warnable
+            # Référents aren't warnable
             AidantFactory(
                 is_active=True,
                 last_login=timezone.now() - relativedelta(months=5),
@@ -1356,9 +1356,9 @@ class AidantModelMethodsTests(TestCase):
         )
 
     def test_is_responsable_structure(self):
-        # an aidant without further modification is not responsable structure
+        # an aidant without further modification is not référent structure
         self.assertFalse(self.aidant_lisa.is_responsable_structure())
-        # however Juliette is responsable structure
+        # however Juliette is référente structure
         self.assertTrue(self.respo_juliette.is_responsable_structure())
 
     def test_can_see_aidant(self):

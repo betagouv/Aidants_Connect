@@ -15,7 +15,7 @@ class AbstractAidantStatistiques(models.Model):
     number_aidants_is_active = models.PositiveIntegerField(
         "Nb d'aidants 'actif au sens django' ", default=0
     )
-    number_responsable = models.PositiveIntegerField("Nb de responsable", default=0)
+    number_responsable = models.PositiveIntegerField("Nb de référent", default=0)
 
     number_aidant_can_create_mandat = models.PositiveIntegerField(
         "Nombre d’aidants formés et habilités (pouvant créer des mandats)", default=0

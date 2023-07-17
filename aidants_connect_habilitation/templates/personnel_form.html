@@ -27,7 +27,7 @@
 
       {{ form.aidants_formset.management_form }}
 
-      <h3>Responsables</h3>
+      <h3>Référents</h3>
 
       <div class="fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
@@ -51,13 +51,13 @@
             data-controller="address-autocomplete"
             data-address-autocomplete-api-base-url-value="{{ GOUV_ADDRESS_SEARCH_API_BASE_URL }}"
           >
-            <h4 class="h2">Responsable Aidants Connect</h4>
+            <h4 class="h2">Référents Aidants Connect</h4>
             {{ form.manager_form.non_field_errors }}
             <fieldset
               id="manager-subform"
               data-personnel-form-target="managerSubform"
             >
-              <legend class="sr-only">Responsable Aidants Connect</legend>
+              <legend class="sr-only">Référents Aidants Connect</legend>
               <button
                 id="its-me-manager"
                 class="primary"

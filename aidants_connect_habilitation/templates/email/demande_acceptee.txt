@@ -13,9 +13,9 @@ Dans un premier temps, les aidantes et les aidants vont être contactés pour su
  - {{ aidant }}{% endfor %}
 {% if organisation.manager.is_aidant %} - {{ organisation.manager }}{% endif %}
 
-En parallèle, le responsable Aidants Connect est invité à participer à un webinaire de 30 minutes qui explique en détail son rôle dans l’habilitation. Pour s’inscrire, c’est ici : https://app.livestorm.co/incubateur-des-territoires/responsable-aidants-connect.
+En parallèle, le ou la référente Aidants Connect est invité à participer à un webinaire de 30 minutes qui explique en détail son rôle dans l’habilitation. Pour s’inscrire, c’est ici : https://app.livestorm.co/incubateur-des-territoires/responsable-aidants-connect.
 
-Enfin, une fois les aidants formés, le kit de bienvenue - contenant les accès au compte Aidants Connect - sera livré par voie postale au/à la responsable de la structure à l'adresse suivante :
+Enfin, une fois les aidants formés, le kit de bienvenue - contenant les accès au compte Aidants Connect - sera livré par voie postale au/à la référente de la structure à l'adresse suivante :
 
 {{ organisation.name }}
 A l'attention de {{ organisation.manager }}

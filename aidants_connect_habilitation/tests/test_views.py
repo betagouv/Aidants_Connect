@@ -1048,7 +1048,7 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertIn(
-            "Veuillez ajouter le responsable de la structure avant validation.",
+            "Veuillez ajouter le ou la référente de la structure avant validation.",
             str(response.context_data["form"].errors),
         )
 

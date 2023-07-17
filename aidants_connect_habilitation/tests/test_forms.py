@@ -244,7 +244,7 @@ class TestPersonnelForm(TestCase):
         self.assertEqual(
             form.errors,
             [
-                "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+                "Vous devez déclarer au moins 1 aidant si le ou la référente de "
                 "l'organisation n'est pas elle-même déclarée comme aidante"
             ],
         )
@@ -363,7 +363,7 @@ class TestPersonnelForm(TestCase):
         self.assertEqual(
             [
                 "Cette personne a le même email que la personne que vous avez "
-                "déclarée comme responsable. Chaque aidant doit avoir "
+                "déclarée comme référente. Chaque aidant doit avoir "
                 "une adresse email unique."
             ],
             form.aidants_formset.forms[0].errors["email"],
@@ -489,7 +489,7 @@ class TestAidantRequestForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             [
-                "Le ou la responsable de cette organisation est aussi déclarée"
+                "Le ou la référente de cette organisation est aussi déclarée"
                 f"comme aidante avec l'email '{organisation.manager.email}'. "
                 "Chaque aidant ou aidante doit avoir son propre e-mail nominatif."
             ],

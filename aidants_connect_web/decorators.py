@@ -51,7 +51,7 @@ def user_is_aidant(view=None, redirect_field_name="next"):
 def user_is_responsable_structure(view=None, redirect_field_name="next"):
     """
     Similar to :func:`~django.contrib.auth.decorators.login_required`, but
-    requires the user to be :term:`responsable structure`.
+    requires the user to be :term:`référent structure`.
     By default, this redirects users to home of espace aidants.
     """
 

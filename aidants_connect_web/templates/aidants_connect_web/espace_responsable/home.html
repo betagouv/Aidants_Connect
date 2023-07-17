@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Aidants Connect - Espace Responsable{% endblock %}
+{% block title %}Aidants Connect - Espace référent{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
@@ -16,9 +16,9 @@
           <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
         {% endfor %}
       {% endif %}
-      <h1 class="section__title">Bienvenue sur votre Espace Responsable, {{ responsable.first_name }}&nbsp!</h1>
+      <h1 class="section__title">Bienvenue sur votre Espace référent, {{ responsable.first_name }}&nbsp!</h1>
       {% include "aidants_connect_web/espace_aidant/notifications.html" with user=responsable %}
-      <h2>Les structures dont vous êtes responsable</h2>
+      <h2>Les structures dont vous êtes référent</h2>
       <ul class="grid cards structures">
         {% for org in organisations %}
           <li class="card">

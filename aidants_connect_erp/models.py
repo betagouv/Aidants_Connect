@@ -82,14 +82,14 @@ class CardSending(models.Model):
             return self.responsable.email
         return "NC"
 
-    get_responsable_email.short_description = "Email Responsable"
+    get_responsable_email.short_description = "Email référent"
 
     def get_responsable_phone(self):
         if self.responsable:
             return self.responsable.phone
         return "NC"
 
-    get_responsable_phone.short_description = "Téléphone Responsable"
+    get_responsable_phone.short_description = "Téléphone référent"
 
     def get_organisation_address(self):
         return self.organisation.address

@@ -189,8 +189,8 @@ class Manager(PersonWithResponsibilities):
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
 
     class Meta:
-        verbose_name = "Responsable structure"
-        verbose_name_plural = "Responsables structure"
+        verbose_name = "Référent structure"
+        verbose_name_plural = "Référents structure"
 
 
 class OrganisationRequest(models.Model):
@@ -216,7 +216,7 @@ class OrganisationRequest(models.Model):
         Manager,
         on_delete=models.CASCADE,
         related_name="organisation",
-        verbose_name="Responsable",
+        verbose_name="Référent",
         default=None,
         null=True,
     )

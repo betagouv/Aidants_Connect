@@ -161,7 +161,7 @@ urlpatterns = [
         id_provider.end_session_endpoint,
         name="end_session_endpoint",
     ),
-    # Espace responsable structure
+    # Espace référent structure
     path(
         "espace-responsable/", espace_responsable.home, name="espace_responsable_home"
     ),

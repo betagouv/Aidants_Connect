@@ -34,7 +34,7 @@ class HabilitationRequest(models.Model):
 
     ORIGIN_LABELS = {
         ORIGIN_DATAPASS: "Datapass",
-        ORIGIN_RESPONSABLE: "Responsable Structure",
+        ORIGIN_RESPONSABLE: "Référent Structure",
         ORIGIN_OTHER: "Autre",
         ORIGIN_HABILITATION: "Formulaire Habilitation",
     }

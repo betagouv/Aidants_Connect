@@ -436,7 +436,7 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
         if self.organisation.manager is None:
             form.add_error(
                 None,
-                "Veuillez ajouter le responsable de la structure avant validation.",
+                "Veuillez ajouter le ou la référente de la structure avant validation.",
             )
         if form.is_valid():
             return self.form_valid(form)

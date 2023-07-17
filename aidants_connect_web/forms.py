@@ -157,7 +157,7 @@ class LoginEmailForm(MagicAuthEmailForm):
             raise ValidationError(
                 "Votre compte existe mais il n’est pas encore actif. "
                 "Si vous pensez que c’est une erreur, prenez contact avec votre "
-                "responsable ou avec Aidants Connect."
+                "référent ou avec Aidants Connect."
             )
         return user_email
 

@@ -137,7 +137,7 @@ class Aidant(AbstractUser):
     )
 
     ff_otp_app = models.BooleanField(
-        "Le responsable peut ajouter une application "
+        "Le ou la référente peut ajouter une application "
         "OTP aux aidants de son organisation",
         default=False,
     )
@@ -286,7 +286,7 @@ class Aidant(AbstractUser):
 
     def is_responsable_structure(self):
         """
-        :return: True if the Aidant is responsable of at least one organisation
+        :return: True if the Aidant is référent of at least one organisation
         """
         return self.responsable_de.count() >= 1
 
