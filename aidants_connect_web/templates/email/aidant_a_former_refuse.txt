@@ -1,5 +1,12 @@
 Bonjour,
 
-L’équipe Aidants Connect vous confirme avoir refusé l'ajout de l'aidant ou l'aidante {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. En général, cela signifie que l’adresse mail de la personne à ajouter ne correspond pas aux pré-requis de l’outil : l’adresse mail doit être nominative et accessible par une seule personne.
+L’équipe Aidants Connect vous confirme avoir refusé l'ajout de l'aidant ou l'aidante {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. En général, cela signifie que l’adresse mail de la personne à ajouter ne correspond pas aux pré-requis de l’outil : l’adresse mail doit être nominative et accessible par une seule personne.
 
 Pour plus d'information, n’hésitez pas à nous envoyer un mail à notre support à l'adresse  contact@aidantsconnect.beta.gouv.fr.
+
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Facilement « faire pour le compte de » en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr

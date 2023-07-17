@@ -14,7 +14,8 @@ class DebugEmailBackend(EmailBackend):
                 for content, mime_type in message.alternatives
                 if mime_type == "text/html"
             ]
-            with open(path, "a") as f:
-                f.writelines(alternatives[0])
+            if len(alternatives) == 1:
+                with open(path, "a") as f:
+                    f.writelines(alternatives[0])
 
         super().write_message(message)

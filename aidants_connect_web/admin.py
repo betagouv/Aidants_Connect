@@ -13,10 +13,9 @@ from django.db.models import Q, QuerySet
 from django.forms import ChoiceField
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
-from django.template import loader
 from django.urls import path, reverse, reverse_lazy
 from django.utils import timezone
-from django.utils.html import format_html_join, linebreaks
+from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from django.views.generic import FormView
 
@@ -49,6 +48,7 @@ from aidants_connect.admin import (
 from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.utils.email import render_email
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
@@ -1039,11 +1039,8 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         self.message_user(request, f"{rows_updated} demandes ont été refusées.")
 
     def send_refusal_email(self, aidant):
-        text_message = loader.render_to_string(
-            "email/aidant_a_former_refuse.txt", {"aidant": aidant}
-        )
-        html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+        text_message, html_message = render_email(
+            "email/aidant_a_former_refuse.mjml", {"aidant": aidant}
         )
 
         subject = (
@@ -1086,21 +1083,18 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
 
     mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
 
-    def send_validation_email(self, object):
-        text_message = loader.render_to_string(
-            "email/aidant_a_former_valide.txt", {"aidant": object}
-        )
-        html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+    def send_validation_email(self, aidant):
+        text_message, html_message = render_email(
+            "email/aidant_a_former_valide.mjml", {"aidant": aidant}
         )
 
         subject = (
             "Aidants Connect - La demande d'ajout de l'aidant(e) "
-            f"{object.first_name} {object.last_name} a été validée !"
+            f"{aidant.first_name} {aidant.last_name} a été validée !"
         )
 
         recipients = [
-            manager.email for manager in object.organisation.responsables.all()
+            manager.email for manager in aidant.organisation.responsables.all()
         ]
 
         send_mail(

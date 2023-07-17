@@ -21,6 +21,7 @@ from aidants_connect.admin import (
     VisibleToTechAdmin,
     admin_site,
 )
+from aidants_connect_common.utils.email import render_email
 from aidants_connect_habilitation.forms import (
     AdminAcceptationOrRefusalForm,
     RequestMessageForm,
@@ -332,13 +333,13 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         return HttpResponseRedirect(redirect_path)
 
     def __accept_request_get(self, request, object_id):
-        object = OrganisationRequest.objects.get(id=object_id)
+        organisation = OrganisationRequest.objects.get(id=object_id)
         email_body = loader.render_to_string(
-            "email/demande_acceptee.txt", {"organisation": object}
+            "email/demande_acceptee.txt", {"organisation": organisation}
         )
         email_subject = (
             "Aidants Connect - la demande d'habilitation n° "
-            f"{object.data_pass_id} a été acceptée"
+            f"{organisation.data_pass_id} a été acceptée"
         )
         initial = {
             "email_subject": email_subject,
@@ -348,8 +349,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             **self.admin_site.each_context(request),
             "media": self.media,
             "object_id": object_id,
-            "object": object,
-            "form": AdminAcceptationOrRefusalForm(object, initial=initial),
+            "object": organisation,
+            "form": AdminAcceptationOrRefusalForm(organisation, initial=initial),
         }
 
         return render(
@@ -392,26 +393,26 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         return HttpResponseRedirect(redirect_path)
 
-    def send_acceptance_email(self, object, body_text=None, subject=None):
-        if body_text:
-            text_message = body_text
-        else:
-            text_message = loader.render_to_string(
-                "email/demande_acceptee.txt", {"organisation": object}
-            )
-        html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+    def send_acceptance_email(self, organisation, body_text=None, subject=None):
+        body_text = body_text or loader.render_to_string(
+            "email/demande_acceptee.txt", {"organisation": organisation}
+        )
+
+        text_message, html_message = render_email(
+            "email/empty.mjml",
+            mjml_context={"content": mark_safe(linebreaks(body_text))},
+            text_context={"content": body_text},
         )
 
         if subject is None:
             subject = (
                 "Aidants Connect - la demande d'habilitation n° "
-                f"{object.data_pass_id} a été acceptée"
+                f"{organisation.data_pass_id} a été acceptée"
             )
 
-        recipients = set(object.aidant_requests.values_list("email", flat=True))
-        recipients.add(object.manager.email)
-        recipients.add(object.issuer.email)
+        recipients = set(organisation.aidant_requests.values_list("email", flat=True))
+        recipients.add(organisation.manager.email)
+        recipients.add(organisation.issuer.email)
 
         send_mail(
             from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
@@ -422,13 +423,13 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
 
     def __refuse_request_get(self, request, object_id):
-        object = OrganisationRequest.objects.get(id=object_id)
+        organisation = OrganisationRequest.objects.get(id=object_id)
         email_body = loader.render_to_string(
-            "email/demande_refusee.txt", {"organisation": object}
+            "email/demande_refusee.txt", {"organisation": organisation}
         )
         email_subject = (
             "Aidants Connect - la demande d'habilitation n° "
-            f"{object.data_pass_id} a été refusée"
+            f"{organisation.data_pass_id} a été refusée"
         )
         initial = {
             "email_subject": email_subject,
@@ -438,8 +439,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             **self.admin_site.each_context(request),
             "media": self.media,
             "object_id": object_id,
-            "object": object,
-            "form": AdminAcceptationOrRefusalForm(object, initial=initial),
+            "object": organisation,
+            "form": AdminAcceptationOrRefusalForm(organisation, initial=initial),
         }
 
         return render(
@@ -477,26 +478,26 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         return HttpResponseRedirect(redirect_path)
 
-    def send_refusal_email(self, object, body_text=None, subject=None):
-        if body_text:
-            text_message = body_text
-        else:
-            text_message = loader.render_to_string(
-                "email/demande_refusee.txt", {"organisation": object}
-            )
-        html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+    def send_refusal_email(self, organisation, body_text=None, subject=None):
+        body_text = body_text or loader.render_to_string(
+            "email/demande_refusee.txt", {"organisation": organisation}
+        )
+
+        text_message, html_message = render_email(
+            "email/empty.mjml",
+            mjml_context={"content": mark_safe(linebreaks(body_text))},
+            text_context={"content": body_text},
         )
 
         if subject is None:
             subject = (
                 "Aidants Connect - la demande d'habilitation n° "
-                f"{object.data_pass_id} a été refusée"
+                f"{organisation.data_pass_id} a été refusée"
             )
 
-        recipients = set(object.aidant_requests.values_list("email", flat=True))
-        recipients.add(object.manager.email)
-        recipients.add(object.issuer.email)
+        recipients = set(organisation.aidant_requests.values_list("email", flat=True))
+        recipients.add(organisation.manager.email)
+        recipients.add(organisation.issuer.email)
 
         send_mail(
             from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,

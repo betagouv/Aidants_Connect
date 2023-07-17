@@ -1,5 +1,3 @@
-{% load ac_common %}
-
 Bonjour,
 
 Bonne nouvelle ! Il existe déjà un espace demandeur associé à cet email chez nous.
@@ -12,4 +10,4 @@ Vous pouvez suivre le lien suivant pour retrouver toutes vos demandes en cours e
 
 L’équipe Aidants Connect
 Facilement « faire pour le compte de » en toute sécurité
-Pour toute demande : {% mailto "contact@aidantsconnect.beta.gouv.fr" %}
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr
