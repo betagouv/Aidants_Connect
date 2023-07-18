@@ -12,18 +12,6 @@
   {# Extra styles #}
   {% block extracss %}{% endblock %}
 
-  {# Polyfills #}
-  <script type="text/javascript">
-      if (/MSIE \d|Trident.*rv:/.test(navigator.userAgent)) {
-          {# ES2023+ polyfill (Promise, Array.from, Object.assign, generators) #}
-          {# https://github.com/zloirock/core-js #}
-          document.write(
-              '<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.25.0/minified.js" ' +
-              'integrity="sha512-Fx4zhNQxNeS/0IXsWj0GGbX5Y20ssWbrr2fioNdL2PvuKEhueF8tyownbHtHbbf3MzIVX7fZ4nx3JCIdrE9YJw==" ' +
-              'crossorigin="anonymous" referrerpolicy="no-referrer"><\/script>'
-          );
-      }
-  </script>
   <!-- Search Engine -->
   <meta name="title" content="Aidants Connect - aidantsconnect.beta.gouv.fr">
   <meta name="description" content="{{ SITE_DESCRIPTION }}">
