@@ -14,13 +14,8 @@ from django.utils.safestring import mark_safe
 
 from django_reverse_admin import ReverseInlineModelAdmin, ReverseModelAdmin
 
-from aidants_connect.admin import (
-    DepartmentFilter,
-    RegionFilter,
-    VisibleToAdminMetier,
-    VisibleToTechAdmin,
-    admin_site,
-)
+from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin, admin_site
+from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.utils.email import render_email
 from aidants_connect_habilitation.forms import (
     AdminAcceptationOrRefusalForm,
@@ -129,7 +124,7 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
 
 
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
-    list_filter = ("status", RegionFilter, DepartmentFilter)
+    list_filter = (RegionFilter, DepartmentFilter, "status")
     list_display = ("name", "issuer", "status", "data_pass_id", "created_at")
     search_fields = ("data_pass_id", "name", "uuid")
     raw_id_fields = ("issuer", "organisation")

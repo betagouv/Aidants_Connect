@@ -2,6 +2,7 @@ from django.conf import settings
 from django.test import tag
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.models import Region
@@ -83,8 +84,12 @@ class OrganisationFilterTests(RegionFilterTestCase):
         self.assertTrue("Orga des Yvelines" in self.selenium.page_source)
         self.assertTrue("Orga du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("Sans Code Postal" in self.selenium.page_source)
-        idf_link = self.selenium.find_element(By.LINK_TEXT, "Île-de-France")
-        idf_link.click()
+
+        Select(
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "[data-filter-title='Région'] select"
+            )
+        ).select_by_visible_text("Île-de-France")
 
         self.assertTrue(
             "Orga des Yvelines" in self.selenium.page_source,
@@ -93,8 +98,13 @@ class OrganisationFilterTests(RegionFilterTestCase):
             "Orga du Bas-Rhin" in self.selenium.page_source,
         )
         self.assertFalse("Sans Code Postal" in self.selenium.page_source)
-        grandest_link = self.selenium.find_element(By.LINK_TEXT, "Grand Est")
-        grandest_link.click()
+
+        Select(
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "[data-filter-title='Région'] select"
+            )
+        ).select_by_visible_text("Grand Est")
+
         self.assertFalse(
             "Orga des Yvelines" in self.selenium.page_source,
             "Orga des Yvelines should not appear after filter on grand est",
@@ -107,8 +117,13 @@ class OrganisationFilterTests(RegionFilterTestCase):
             "Orga du Haut-Rhin" in self.selenium.page_source,
             "Orga du Haut-Rhin is not there, it should",
         )
-        other_link = self.selenium.find_element(By.XPATH, "//a[@href='?region=other']")
-        other_link.click()
+
+        Select(
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "[data-filter-title='Région'] select"
+            )
+        ).select_by_visible_text("Autre")
+
         self.assertFalse("Orga du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("Sans Code Postal" in self.selenium.page_source)
 
@@ -142,12 +157,22 @@ class AidantFilterTestCase(RegionFilterTestCase):
         self.open_live_url(self.aidant_url)
         self.assertTrue("Du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
-        other_link = self.selenium.find_element(By.LINK_TEXT, "Autre")
-        other_link.click()
+
+        Select(
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "[data-filter-title='Région'] select"
+            )
+        ).select_by_visible_text("Autre")
+
         self.assertFalse("Du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
-        grand_est_link = self.selenium.find_element(By.LINK_TEXT, "Grand Est")
-        grand_est_link.click()
+
+        Select(
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "[data-filter-title='Région'] select"
+            )
+        ).select_by_visible_text("Grand Est")
+
         self.assertTrue("Du Bas-Rhin" in self.selenium.page_source)
         self.assertFalse("D'on ne sait où" in self.selenium.page_source)
 
@@ -175,13 +200,20 @@ class HabilitationRequestTestCase(RegionFilterTestCase):
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
         # cannot simply click on "Autre" because there is another "Autre" option
         # (in "origin" filter)
-        other_link = self.selenium.find_element(By.XPATH, "//a[@href='?region=other']")
-        other_link.click()
+        Select(
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "[data-filter-title='Région'] select"
+            )
+        ).select_by_visible_text("Autre")
 
         self.assertFalse("Du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
-        grand_est_link = self.selenium.find_element(By.LINK_TEXT, "Grand Est")
-        grand_est_link.click()
+
+        Select(
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "[data-filter-title='Région'] select"
+            )
+        ).select_by_visible_text("Grand Est")
 
         self.assertTrue("Du Bas-Rhin" in self.selenium.page_source)
         self.assertFalse("D'on ne sait où" in self.selenium.page_source)
