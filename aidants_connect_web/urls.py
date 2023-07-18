@@ -126,7 +126,7 @@ urlpatterns = [
         mandat.WaitingRoomJson.as_view(),
         name="new_mandat_waiting_room_json",
     ),
-    path("logout-callback/", mandat.NewMandatRecap.as_view(), name="new_mandat_recap"),
+    path("logout-callback/", mandat.NewMandatRecap.as_view(), name="logout_callback"),
     path(
         "creation_mandat/visualisation/projet/",
         mandat.AttestationProject.as_view(),
@@ -224,7 +224,7 @@ urlpatterns = [
         name="espace_responsable_validate_totp",
     ),
     # FC_as_FS
-    path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
+    path("fc_authorize/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # public_website
     path("", service.home_page, name="home_page"),

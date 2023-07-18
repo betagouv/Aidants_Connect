@@ -1,11 +1,12 @@
 import logging
 from datetime import timedelta
 from secrets import token_urlsafe
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.db import IntegrityError
+from django.http import HttpRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
@@ -13,6 +14,8 @@ import jwt
 import requests as python_request
 from jwt.api_jwt import ExpiredSignatureError
 
+from aidants_connect_common.views import RequireConnectionView
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.utilities import generate_sha256_hash
 
@@ -20,43 +23,54 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
-def fc_authorize(request):
-    connection = Connection.objects.get(pk=request.session["connection"])
+class FCAuthorize(RequireConnectionView):
+    def get(self, request: HttpRequest, *args, **kwargs):
+        if (
+            self.connection.mandat_is_remote
+            and self.connection.remote_constent_method
+            in RemoteConsentMethodChoices.blocked_methods()
+            and not Journal.objects.find_sms_user_consent(
+                self.connection.user_phone, self.connection.consent_request_id
+            ).exists()
+        ):
+            return redirect(reverse("new_mandat_waiting_room"))
 
-    connection.state = token_urlsafe(16)
-    connection.nonce = token_urlsafe(16)
-    connection.connection_type = "FS"
-    connection.save()
+        self.connection.state = token_urlsafe(16)
+        self.connection.nonce = token_urlsafe(16)
+        self.connection.connection_type = "FS"
+        self.connection.save()
 
-    fc_base = settings.FC_AS_FS_BASE_URL
-    fc_id = settings.FC_AS_FS_ID
-    fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
-    fc_scopes = [
-        "openid",
-        "email",
-        "gender",
-        "birthdate",
-        "birthplace",
-        "given_name",
-        "family_name",
-        "birthcountry",
-    ]
-    if settings.GET_PREFERRED_USERNAME_FROM_FC:
-        fc_scopes.append("preferred_username")
+        fc_scopes = [
+            "openid",
+            "email",
+            "gender",
+            "birthdate",
+            "birthplace",
+            "given_name",
+            "family_name",
+            "birthcountry",
+        ]
 
-    parameters = (
-        f"response_type=code"
-        f"&client_id={fc_id}"
-        f"&redirect_uri={fc_callback_uri}"
-        f"&scope={'%20'.join(fc_scopes)}"
-        f"&state={connection.state}"
-        f"&nonce={connection.nonce}"
-        f"&acr_values=eidas1"
-    )
+        if settings.GET_PREFERRED_USERNAME_FROM_FC:
+            fc_scopes.append("preferred_username")
 
-    authorize_url = f"{fc_base}/authorize?{parameters}"
+        redirect_uri = f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('fc_callback')}"
+        parameters = urlencode(
+            {
+                "response_type": "code",
+                "client_id": settings.FC_AS_FS_ID,
+                "redirect_uri": redirect_uri,
+                "scope": " ".join(fc_scopes),
+                "state": self.connection.state,
+                "nonce": self.connection.nonce,
+                "acr_values": "eidas1",
+            },
+            quote_via=quote,
+        )
 
-    return redirect(authorize_url)
+        authorize_url = f"{settings.FC_AS_FS_BASE_URL}/authorize?{parameters}"
+
+        return redirect(authorize_url)
 
 
 def fc_callback(request):
@@ -76,8 +90,6 @@ def fc_callback(request):
         return redirect(f"{reverse('new_mandat')}{query_params}")
 
     fc_base = settings.FC_AS_FS_BASE_URL
-    fc_callback_uri = f"{settings.FC_AS_FS_CALLBACK_URL}/callback"
-    fc_callback_uri_logout = f"{settings.FC_AS_FS_CALLBACK_URL}/logout-callback"
     fc_id = settings.FC_AS_FS_ID
     fc_secret = settings.FC_AS_FS_SECRET
     state = request.GET.get("state")
@@ -102,9 +114,10 @@ def fc_callback(request):
         return fc_error("FC AS FS: no code has been provided", connection.pk)
 
     token_url = f"{fc_base}/token"
+    redirect_uri = f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('fc_callback')}"
     payload = {
         "grant_type": "authorization_code",
-        "redirect_uri": fc_callback_uri,
+        "redirect_uri": redirect_uri,
         "client_id": fc_id,
         "client_secret": fc_secret,
         "code": code,
@@ -168,6 +181,10 @@ def fc_callback(request):
     logout_base = f"{fc_base}/logout"
     logout_id_token = f"id_token_hint={fc_id_token}"
     logout_state = f"state={state}"
+
+    fc_callback_uri_logout = (
+        f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
+    )
     logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
     logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
     return redirect(logout_url)

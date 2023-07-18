@@ -103,7 +103,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
         self.wait.until(
-            self.path_matches("new_mandat_recap", query_params={"state": ".+"})
+            self.path_matches("logout_callback", query_params={"state": ".+"})
         )
 
         # Recap all the information for the Mandat
@@ -230,7 +230,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
         self.wait.until(
-            self.path_matches("new_mandat_recap", query_params={"state": ".+"})
+            self.path_matches("logout_callback", query_params={"state": ".+"})
         )
 
         # Recap all the information for the Mandat
@@ -417,7 +417,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         submit_button = self.selenium.find_element(By.TAG_NAME, "button")
         submit_button.click()
         self.wait.until(
-            self.path_matches("new_mandat_recap", query_params={"state": ".+"})
+            self.path_matches("logout_callback", query_params={"state": ".+"})
         )
 
         # Recap all the information for the Mandat
