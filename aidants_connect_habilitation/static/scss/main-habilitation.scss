@@ -284,21 +284,6 @@ dl {
   }
 }
 
-.float-right {
-  float: right;
-}
-
-.clearfix {
-  display: flow-root;
-
-  &:after {
-    // Remove after en of support for IE11
-    content: "";
-    display: table;
-    clear: both;
-  }
-}
-
 // forms -----------------------------------------------
 
 input[type=text], input[type=number], input[type=email], input[type=tel], input[type=url] {
@@ -686,6 +671,10 @@ fieldset {
 }
 
 // messages -------------------------------------------
+
+.notification {
+  margin-bottom: 2rem;
+}
 
 .messages-list-container {
   min-height: 15rem;
