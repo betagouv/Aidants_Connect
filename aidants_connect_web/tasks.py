@@ -6,7 +6,6 @@ from typing import List
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Count, Q
-from django.template import loader
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
@@ -103,15 +102,9 @@ def notify_soon_expired_mandates():
             mandates_qset.filter(organisation=organisation)
         )
 
-        context = {"mandates": org_mandates}
-
-        text_message = loader.render_to_string(
-            "aidants_connect_web/managment/notify_soon_expired_mandates.txt",
-            context,
-        )
-        html_message = loader.render_to_string(
-            "aidants_connect_web/managment/notify_soon_expired_mandates.html",
-            context,
+        text_message, html_message = render_email(
+            "email/notify_soon_expired_mandates.mjml",
+            {"mandates": org_mandates},
         )
 
         send_mail(
@@ -177,22 +170,16 @@ def notify_new_habilitation_requests(*, logger=None):
     if habilitation_requests_count == 0 and new_test_pix_count == 0:
         return
 
-    context = {
-        "organisations": organisations,
-        "organisations_per_region": orga_per_region,
-        "total_requests": habilitation_requests_count,
-        "interval": 7,
-        "nb_new_test_pix": new_test_pix_count,
-        "aidants_with_test_pix": aidants_with_test_pix,
-    }
-
-    text_message = loader.render_to_string(
-        "aidants_connect_web/managment/notify_new_habilitation_requests.txt",
-        context,
-    )
-    html_message = loader.render_to_string(
-        "aidants_connect_web/managment/notify_new_habilitation_requests.html",
-        context,
+    text_message, html_message = render_email(
+        "email/notify_new_habilitation_requests.mjml",
+        {
+            "organisations": organisations,
+            "organisations_per_region": orga_per_region,
+            "total_requests": habilitation_requests_count,
+            "interval": 7,
+            "nb_new_test_pix": new_test_pix_count,
+            "aidants_with_test_pix": aidants_with_test_pix,
+        },
     )
 
     send_mail(
@@ -251,12 +238,8 @@ def notify_no_totp_workers():
             workers_without_totp_dict[manager_email]["users"].append(item)
 
     for manager_email, context in workers_without_totp_dict.items():
-        text_message = loader.render_to_string(
-            "aidants_connect_web/managment/notify_no_totp_workers.txt", context
-        )
-
-        html_message = loader.render_to_string(
-            "aidants_connect_web/managment/notify_no_totp_workers.html", context
+        text_message, html_message = render_email(
+            "email/notify_no_totp_workers.mjml", context
         )
 
         send_mail(
@@ -283,11 +266,7 @@ def email_welcome_aidant(aidant_email: str, *, logger=None):
 
     logger: Logger = logger or get_task_logger(__name__)
 
-    context = {}
-
-    text_message = loader.render_to_string("email/aidant_bienvenue.txt", context)
-
-    html_message = loader.render_to_string("email/aidant_bienvenue.html", context)
+    text_message, html_message = render_email("email/aidant_bienvenue.mjml", {})
 
     send_mail(
         from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
