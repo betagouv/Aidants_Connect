@@ -63,8 +63,8 @@ class MandatCreationJsFormView(FormView):
         form.widget_attrs(
             "is_remote",
             {
-                "data-action": "is-remote-controller#isRemoteInputTriggered",
-                "data-is-remote-controller-target": "isRemoteInput",
+                "data-action": "mandate-form-controller#isRemoteInputTriggered",
+                "data-mandate-form-controller-target": "isRemoteInput",
             },
         )
 
@@ -391,6 +391,7 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             **super().get_context_data(**kwargs),
             "aidant": self.aidant,
             "has_mandate_translations": MandateTranslation.objects.exists(),
+            "warn_scope": {**settings.DEMARCHES["argent"], "value": "argent"},
         }
 
     def get_initial(self):
@@ -508,6 +509,11 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
                     )
                     for name in self.connection.demarches
                 },
+                "warn_scope": (
+                    {**settings.DEMARCHES["argent"], "value": "argent"}
+                    if "argent" in self.connection.demarches
+                    else None
+                ),
                 "is_remote": self.connection.mandat_is_remote,
             }
         except TypeError as e:

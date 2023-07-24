@@ -20,6 +20,10 @@
         </div>
       </li>
     {% endfor %}
+
+    {% if warn_scope %}
+      {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
+    {% endif %}
   </ul>
   <p><strong>{{ duree|capfirst }}.</strong></p>
 </section>
