@@ -69,3 +69,16 @@ $bp-xl: 78em;
 .full-width {
   width: 100%;
 }
+.float-right {
+  float: right;
+}
+.clearfix {
+  display: flow-root;
+
+  &:after {
+    // Remove after en of support for IE11
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
