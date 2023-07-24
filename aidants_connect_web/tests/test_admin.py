@@ -4,7 +4,7 @@ from django.test import TestCase, tag
 from django.test.client import RequestFactory
 from django.utils.timezone import now
 
-from aidants_connect.admin import DepartmentFilter, RegionFilter
+from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.models import Region
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_web.admin import (

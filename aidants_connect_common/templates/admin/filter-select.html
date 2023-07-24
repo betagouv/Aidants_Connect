@@ -1,0 +1,20 @@
+{% load i18n static ac_common %}
+<details data-controller="admin-filter-select" data-filter-title="{{ title }}" open>
+  <summary>
+    {% blocktranslate with filter_title=title %} By {{ filter_title }} {% endblocktranslate %}
+  </summary>
+  <ul>
+    <li>
+      <select data-action="admin-filter-select#onChange" name="state">
+        {% for choice in choices %}
+          <option value="{{ choice.query_string|iriencode }}"{% if choice.selected %} selected{% endif %}>
+            {{ choice.display }}
+          </option>
+        {% endfor %}
+      </select>
+    </li>
+  </ul>
+</details>
+
+{% stimulusjs %}
+<script defer type="module" src="{% static 'js/admin-select.js' %}"></script>
