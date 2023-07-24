@@ -259,10 +259,13 @@ class UsagerAdminPageTests(TestCase):
 @tag("admin")
 class TOTPCardAdminPageTests(TestCase):
     @classmethod
-    def setUpTestData(cls):
+    def setUpClass(cls):
+        super().setUpClass()
         cls.admin = OTPAdminSite(OTPAdminSite.name)
         cls.tested = CarteTOTPAdmin(CarteTOTP, cls.admin)
 
+    @classmethod
+    def setUpTestData(cls):
         cls.bizdev_user = AidantFactory(
             is_staff=True,
             is_superuser=False,
@@ -549,6 +552,22 @@ class HabilitationRequestAdminPageTests(TestCase):
     def test_mass_habilitation_on_only_valid_addresses(self):
         for _ in range(2):
             HabilitationRequestFactory()
+        emails = tuple(obj.email for obj in HabilitationRequest.objects.all())
+        response = self.bizdev_client.post(self.url, {"email_list": "\n".join(emails)})
+        self.assertRedirects(response, self.list_url, fetch_redirect_response=False)
+        response = self.bizdev_client.get(self.list_url)
+        self.assertContains(response, "Les 2 demandes ont bien été validées.")
+        for email in emails:
+            habilitation_request = HabilitationRequest.objects.get(email=email)
+            self.assertEqual(
+                habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+            )
+            self.assertTrue(Aidant.objects.filter(email=email).exists())
+
+    def test_mass_habilitation_on_canceled_status(self):
+        for _ in range(2):
+            HabilitationRequestFactory(status=HabilitationRequest.STATUS_CANCELLED)
+        self.assertEqual(2, HabilitationRequest.objects.all().count())
         emails = tuple(obj.email for obj in HabilitationRequest.objects.all())
         response = self.bizdev_client.post(self.url, {"email_list": "\n".join(emails)})
         self.assertRedirects(response, self.list_url, fetch_redirect_response=False)

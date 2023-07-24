@@ -1,0 +1,20 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+  <mj-section>
+    <mj-column>
+      <mj-text>
+        <p>Bonjour,</p>
+        <p>
+          Vous venez de créer <b>une nouvelle demande d’habilitation à Aidants Connect pour
+          l’organisation {{ organisation.name }}.</b>
+        </p>
+      </mj-text>
+      <mj-button href="{{ url }}">Retrouver toutes vos demandes en cours</mj-button>
+      <mj-text>
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l’adresse suivante dans votre navigateur :
+        <a href="{{ url }}">{{ url }}</a>
+      </mj-text>
+    </mj-column>
+  </mj-section>
+{% endblock %}

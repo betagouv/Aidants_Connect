@@ -1,0 +1,55 @@
+.markdown-editor {
+    display: flex;
+    flex-direction: column;
+}
+
+.EasyMDEContainer {
+    z-index: 100;
+}
+
+.editor-toolbar, .editor-toolbar.fullscreen {
+    background-color: var(--body-bg);
+}
+
+.editor-toolbar button {
+    background-color: var(--button-bg);
+    color: var(--button-fg);
+    font-size: large;
+    padding: 0 7px;
+    margin: 0 .25rem;
+}
+
+.editor-toolbar button:hover, .editor-toolbar button:active, .editor-toolbar button.active {
+    background-color: var(--button-hover-bg);
+}
+
+.editor-toolbar i.separator {
+    margin: 0 .225rem;
+}
+
+.editor-toolbar button {
+    border-color: var(--button-fg);
+}
+
+.editor-toolbar button .fa {
+    color: var(--body-fg);
+}
+
+.EasyMDEContainer .CodeMirror, .editor-preview {
+    color: var(--body-fg);
+    background-color: var(--body-bg);
+
+}
+
+.CodeMirror-cursor {
+    border-left: 1px solid var(--body-fg);
+}
+
+.editor-preview ul, .editor-preview ol {
+    padding: revert !important;
+    margin: revert !important;
+}
+
+.editor-preview li {
+    list-style: revert !important;
+}

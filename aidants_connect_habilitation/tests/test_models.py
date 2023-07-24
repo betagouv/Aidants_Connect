@@ -127,14 +127,14 @@ class OrganisationRequestTests(TestCase):
             # verify if organisation was added to organisation_request
             self.assertEqual(organisation_request.organisation, organisation)
 
-            # verify if responsable aidant account was properly created and added to org
+            # verify if référent aidant account was properly created and added to org
             self.assertEqual(
                 1,
                 Aidant.objects.filter(email=organisation_request.manager.email).count(),
             )
             responsable = Aidant.objects.get(email=organisation_request.manager.email)
 
-            # verify if responsable was added to organisation
+            # verify if référent was added to organisation
             self.assertIn(responsable, organisation.responsables.all())
             self.assertFalse(responsable.can_create_mandats)
 
@@ -151,7 +151,7 @@ class OrganisationRequestTests(TestCase):
                     ).exists(),
                     f"Habilitation request was not created for {aidant_request.email}",
                 )
-            # check if responsable is on the list of aidants too
+            # check if référent is on the list of aidants too
             self.assertTrue(
                 HabilitationRequest.objects.filter(
                     organisation=organisation,
@@ -322,6 +322,17 @@ class OrganisationRequestTests(TestCase):
         self.assertEqual(
             organisation_request.status,
             RequestStatusConstants.REFUSED.name,
+        )
+
+    def test_go_in_waiting_again(self):
+        organisation_request = OrganisationRequestFactory(
+            status=RequestStatusConstants.REFUSED.name
+        )
+        organisation_request.go_in_waiting_again()
+
+        self.assertEqual(
+            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
+            organisation_request.status,
         )
 
 

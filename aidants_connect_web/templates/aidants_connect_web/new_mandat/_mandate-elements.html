@@ -1,0 +1,25 @@
+<section
+  id="recap-text"
+  class="shadowed padding-1-5rem margin-bottom-2rem mandate-summary-block mandate-elements-summary"
+>
+  {% block summary %}
+    <p>
+      {% with demarches.items|length as nb_demarches %}
+        <strong>{{ usager.get_full_name }}</strong> autorise <strong>{{ organisation.name }}</strong> à réaliser à sa
+        place {{ nb_demarches|pluralize:"la démarche,les démarches" }} administrative{{ nb_demarches|pluralize }}
+        suivante{{ nb_demarches|pluralize }} :
+      {% endwith %}
+    </p>
+  {% endblock %}
+  <ul>
+    {% for title, description in demarches.items %}
+      <li>
+        <div class="fr-grid-row">
+          <strong class="fr-col-12 fr-col-md-4">{{ title }}</strong>
+          <span class="fr-col-12 fr-col-md-8">{{ description }}</span>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  <p><strong>{{ duree|capfirst }}.</strong></p>
+</section>

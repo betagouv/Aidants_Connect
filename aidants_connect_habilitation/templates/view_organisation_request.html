@@ -22,7 +22,7 @@ Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
   {% if display_modify_button %}
   <a
   id="modify-btn"
-  class="button primary margin-bottom-1"
+  class="button primary margin-bottom-1rem"
   href="{% url 'habilitation_validation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
   >
     Modifier votre demande
@@ -44,5 +44,5 @@ Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script src="{% static 'js/message_form.js' %}"></script>
+  <script defer src="{% static 'js/message-form.js' %}"></script>
 {% endblock %}

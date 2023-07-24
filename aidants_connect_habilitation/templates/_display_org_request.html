@@ -95,7 +95,7 @@
   {% if display_add_aidants_button %}
    <a
     id="add-aidants-btn"
-    class="button primary margin-bottom-1"
+    class="button primary margin-bottom-1rem"
     href="{% url 'habilitation_organisation_add_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
   >
     Ajouter des aidants
@@ -104,11 +104,11 @@
 </h3>
 
 <div class="form-in-3-cols">
-  {# first row: responsable #}
+  {# first row: référent #}
   <div class="fr-grid-row fr-grid-row--gutters">
     <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
       <div class="shadowed with-button-box">
-        <h4 class="h2">Responsable de structure</h4>
+        <h4 class="h2">Référent de structure</h4>
         {% if organisation.manager %}
         <div>
           <p>
@@ -123,11 +123,11 @@
             {{ organisation.manager.zipcode }}
             {{ organisation.manager.city }}
           </p>
-          <p>Ce responsable est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
+          <p>Ce ou cette référente est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
         </div>
         {% else %}
         <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-          Ajouter un responsable</a>
+          Ajouter un ou une référente</a>
         {% endif %}
         {% if show_all_buttons %}
           <div class="button-box">

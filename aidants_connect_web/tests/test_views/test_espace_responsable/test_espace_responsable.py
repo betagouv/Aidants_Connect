@@ -13,12 +13,12 @@ class EspaceResponsableHomePageTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        # Tom is responsable of 2 structures
+        # Tom is référent of 2 structures
         cls.responsable_tom = AidantFactory()
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.responsable_tom.responsable_de.add(OrganisationFactory())
         cls.responsable_tom.can_create_mandats = False
-        # Tim is responsable of only one structure
+        # Tim is référent of only one structure
         cls.responsable_tim = AidantFactory()
         cls.responsable_tim.responsable_de.add(cls.responsable_tim.organisation)
         # John is a simple aidant
@@ -33,7 +33,7 @@ class EspaceResponsableHomePageTests(TestCase):
         response = self.client.get("/espace-responsable/")
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "Mon espace Responsable",
+            "Mon espace référent",
             response_content,
             (
                 "Link to espace responsable is invisible to a responsable, "
@@ -97,7 +97,7 @@ class EspaceResponsableOrganisationPage(TestCase):
     def test_espace_responsable_organisation_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
         found = resolve(f"/espace-responsable/organisation/{self.id_organisation}/")
-        self.assertEqual(found.func, espace_responsable.organisation)
+        self.assertEqual(found.func.view_class, espace_responsable.OrganisationView)
 
     def test_espace_responsable_organisation_url_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
@@ -362,14 +362,14 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         orga = OrganisationFactory()
-        # Mario is a responsable without TOTP Device activated
+        # Mario is a référent without TOTP Device activated
         # => He should see the messages
         cls.responsable_mario = AidantFactory(
             username="mario@brosse.fr", organisation=orga
         )
         cls.responsable_mario.responsable_de.add(cls.responsable_mario.organisation)
         cls.responsable_mario.responsable_de.add(OrganisationFactory())
-        # Mickey is a responsable with a TOTP Device activated
+        # Mickey is a référent with a TOTP Device activated
         # => He should not see the messages
         cls.responsable_mickey = AidantFactory(
             username="mickey@mousse.fr", organisation=orga
@@ -378,7 +378,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
         cls.responsable_mickey.responsable_de.add(OrganisationFactory())
         device = TOTPDevice(user=cls.responsable_mickey)
         device.save()
-        # Roger is a responsable with an *inactive* TOTP Device
+        # Roger is a référent with an *inactive* TOTP Device
         # (e.g. after an unfinished card activation)
         # => He should see the messages
         cls.responsable_hubert = AidantFactory(
@@ -473,13 +473,13 @@ class DesignationOfAnotherResponsable(TestCase):
     def test_link_is_hidden_if_there_is_no_aidant_to_become_responsable(self):
         self.client.force_login(self.respo)
         response = self.client.get(self.orga_url)
-        self.assertNotContains(response, "Désigner un responsable")
+        self.assertNotContains(response, "Désigner un ou une référente")
 
     def test_link_is_visible_if_there_is_an_aidant_to_become_responsable(self):
         self._create_two_aidantes()
         self.client.force_login(self.respo)
         response = self.client.get(self.orga_url)
-        self.assertContains(response, "Désigner un responsable")
+        self.assertContains(response, "Désigner un ou une référente")
 
     def test_current_aidant_can_become_responsable(self):
         self._create_two_aidantes()
@@ -501,6 +501,15 @@ class DesignationOfAnotherResponsable(TestCase):
 
     def test_unrelated_aidant_cannot_become_responsable(self):
         self.aidante_bidule = AidantFactory()
+        self.client.force_login(self.respo)
+        self.assertFalse(self.aidante_bidule.is_responsable_structure())
+        self.client.post(self.url, data={"candidate": self.aidante_bidule.id})
+        self.aidante_bidule.refresh_from_db()
+        self.assertFalse(self.aidante_bidule.is_responsable_structure())
+        self.assertNotIn(self.orga, self.aidante_bidule.responsable_de.all())
+
+    def test_disabled_aidant_cannot_become_responsable(self):
+        self.aidante_bidule = AidantFactory(is_active=False)
         self.client.force_login(self.respo)
         self.assertFalse(self.aidante_bidule.is_responsable_structure())
         self.client.post(self.url, data={"candidate": self.aidante_bidule.id})

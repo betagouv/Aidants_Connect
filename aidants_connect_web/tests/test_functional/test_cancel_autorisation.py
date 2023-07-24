@@ -14,7 +14,6 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     UsagerFactory,
 )
-from aidants_connect_web.tests.test_functional.utilities import login_aidant
 
 
 @tag("functional")
@@ -52,7 +51,7 @@ class CancelAutorisationTests(FunctionalTestCase):
     def test_cancel_autorisation_of_active_mandat(self):
         self.open_live_url(f"/usagers/{self.usager_josephine.id}/")
 
-        login_aidant(self)
+        self.login_aidant(self.aidant_thierry)
 
         # See all mandats of usager page
         active_mandats_before = self.selenium.find_elements(

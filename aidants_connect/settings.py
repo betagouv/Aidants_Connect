@@ -15,9 +15,11 @@ import os
 import re
 import sys
 from datetime import datetime, timedelta
-from distutils.util import strtobool
 from pathlib import Path
 from typing import Optional, Union
+
+from django.conf import global_settings
+from django.utils.translation import gettext_noop
 
 import sentry_sdk
 from dotenv import load_dotenv
@@ -25,6 +27,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 from aidants_connect.postgres_url import turn_psql_url_into_param
+from aidants_connect.utils import strtobool
 
 load_dotenv(verbose=True)
 
@@ -53,19 +56,12 @@ def getenv_bool(key: str, default: Optional[bool] = None) -> bool:
     if isinstance(var, bool):
         return var
 
-    try:
-        return bool(strtobool(var))
-    except ValueError:
-        if default is not None:
-            return default
-        else:
-            raise ValueError(
-                f"{key} does not have a valid boolean value; authorized values are "
-                'any casing of ["true", "yes", "false", "no"] as well as 0 and 1.'
-            )
+    return strtobool(var) if default is None else strtobool(var, default)
 
 
 HOST = os.environ["HOST"]
+SSL = getenv_bool("SSL", True)
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # FC as FI
@@ -132,6 +128,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "django_otp",
     "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
@@ -146,6 +143,7 @@ INSTALLED_APPS = [
     "aidants_connect_habilitation",
     "aidants_connect_pico_cms",
     "aidants_connect_sandbox",
+    "aidants_connect_erp",
 ]
 
 # Additionnal app to execute only during tests
@@ -235,7 +233,9 @@ if ssl_option:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        "NAME": (
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        )
     },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
@@ -246,6 +246,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
 LANGUAGE_CODE = "fr"
+LANGUAGES = global_settings.LANGUAGES + [
+    # Add language using ISO 639-3 language code
+    # https://fr.wikipedia.org/wiki/ISO_639-3
+    ("pus", gettext_noop("Pachto")),
+    ("prs", gettext_noop("Dari")),
+]
+
+# ISO 639-1 language code for language that write right-to-left
+LANGUAGES_BIDI = global_settings.LANGUAGES_BIDI + ["pus", "prs"]
 
 TIME_ZONE = "Europe/Paris"
 
@@ -273,14 +282,14 @@ AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 
 DEMARCHES = {
     "papiers": {
-        "titre": "Papiers - Citoyenneté",
+        "titre": "Papiers - Citoyenneté - Élections",
         "titre_court": "Papiers",
-        "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",
+        "description": "État-civil, Passeport, Élections, Papiers à conserver, Carte d'identité…",  # NOQA
         "service_exemples": ["ANTS", "Défenseur des droits"],
         "icon": "/static/images/icons/papiers.svg",
     },
     "famille": {
-        "titre": "Famille",
+        "titre": "Famille - Scolarité",
         "titre_court": "Famille",
         "description": "Allocations familiales, Naissance, Mariage, Pacs, Scolarité…",
         "service_exemples": ["CAF", "ameli.fr", "EduConnect"],
@@ -294,7 +303,7 @@ DEMARCHES = {
         "icon": "/static/images/icons/social.svg",
     },
     "travail": {
-        "titre": "Travail",
+        "titre": "Travail - Formation",
         "titre_court": "Travail",
         "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
         "service_exemples": ["Pôle emploi", "Mon compte formation", "info-retraite.fr"],
@@ -303,19 +312,19 @@ DEMARCHES = {
     "logement": {
         "titre": "Logement",
         "titre_court": "Logement",
-        "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",
+        "description": "Allocations logement, Permis de construire, Logement social, Fin de bail…",  # NOQA
         "service_exemples": ["CAF", "Enedis"],
         "icon": "/static/images/icons/logement.svg",
     },
     "transports": {
-        "titre": "Transports",
+        "titre": "Transports - Mobilité",
         "titre_court": "Transports",
-        "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",
+        "description": "Carte grise, Permis de conduire, Contrôle technique, Infractions…",  # NOQA
         "service_exemples": ["ANTS", "ANTAI", "Crit'air"],
         "icon": "/static/images/icons/transports.svg",
     },
     "argent": {
-        "titre": "Argent",
+        "titre": "Argent - Impôts - Consomation",
         "titre_court": "Argent",
         "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
         "Surendettement…",
@@ -330,14 +339,14 @@ DEMARCHES = {
         "icon": "/static/images/icons/justice.svg",
     },
     "etranger": {
-        "titre": "Étranger",
+        "titre": "Étranger - Europe",
         "titre_court": "Étranger",
-        "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",
+        "description": "Titres de séjour, Attestation d’accueil, Regroupement familial…",  # NOQA
         "service_exemples": ["OFPRA"],
         "icon": "/static/images/icons/etranger.svg",
     },
     "loisirs": {
-        "titre": "Loisirs",
+        "titre": "Loisirs - Sport - Culture",
         "titre_court": "Loisirs",
         "description": "Animaux, Permis bateau, Tourisme, Permis de chasser…",
         "service_exemples": ["Ariane"],
@@ -349,7 +358,7 @@ DEMARCHES = {
 CGU_CURRENT_VERSION = "0.2"
 
 MANDAT_TEMPLATE_DIR = "aidants_connect_web/mandat_templates"
-MANDAT_TEMPLATE_CURRENT_FILE = "20210308_mandat.html"
+MANDAT_TEMPLATE_CURRENT_FILE = "20230530_mandat.html"
 MANDAT_TEMPLATE_PATH = os.path.join(MANDAT_TEMPLATE_DIR, MANDAT_TEMPLATE_CURRENT_FILE)
 ATTESTATION_SALT = os.getenv("ATTESTATION_SALT", "")
 
@@ -359,13 +368,12 @@ MAGICAUTH_FROM_EMAIL = os.getenv("MAGICAUTH_FROM_EMAIL")
 MAGICAUTH_LOGGED_IN_REDIRECT_URL_NAME = "espace_aidant_home"
 MAGICAUTH_LOGIN_VIEW_TEMPLATE = "login/login.html"
 MAGICAUTH_EMAIL_SENT_VIEW_TEMPLATE = "login/email_sent.html"
-MAGICAUTH_EMAIL_HTML_TEMPLATE = "login/email_template.html"
+MAGICAUTH_EMAIL_HTML_TEMPLATE = "login/email_template.mjml"
 MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
 MAGICAUTH_WAIT_VIEW_TEMPLATE = "login/wait.html"
 MAGICAUTH_ENABLE_2FA = True
 
-# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py
-# #L54  # noqa
+# https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py  # NOQA
 MAGICAUTH_TOKEN_DURATION_SECONDS = int(
     os.getenv("MAGICAUTH_TOKEN_DURATION_SECONDS", 5 * 60)
 )
@@ -379,9 +387,9 @@ EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
 
-# if file based email backend is used (debug)
+# # if file based email backend is used (debug)
 EMAIL_FILE_PATH = Path(os.path.dirname(__file__)).parent / "tmp_email_as_file"
-## if smtp backend is used
+# # if smtp backend is used
 EMAIL_HOST = os.getenv("EMAIL_HOST", None)
 EMAIL_PORT = os.getenv("EMAIL_PORT", None)
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", None)
@@ -389,11 +397,11 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", None)
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", None)
 
-## if email backend is aidants_connect_web.mail.ForceSpecificSenderBackend
+# # if email backend is aidants_connect_web.mail.ForceSpecificSenderBackend
 EMAIL_EXTRA_HEADERS = os.getenv("EMAIL_EXTRA_HEADERS", None)
 EMAIL_SENDER = os.getenv("EMAIL_SENDER", os.getenv("ADMIN_EMAIL"))
 
-## Emails from the server
+# Emails from the server
 SERVER_EMAIL = os.getenv("SERVER_EMAIL", os.getenv("ADMIN_EMAIL"))
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
 # ADMIN_HONEYPOT_EMAIL_ADMINS = os.getenv("ADMIN_HONEYPOT_EMAIL_ADMINS", SERVER_EMAIL)
@@ -405,6 +413,8 @@ X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
 STIMULUS_JS_URL = "https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"
+MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
+MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
@@ -417,25 +427,31 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
+    MD_EDITOR_JS_URL,
     "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
     "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
-    "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",  # NOQA
     "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
     "'sha256-NR0PzgaeuNCaj2DbnvXN6W2GoemNJ9jQE4tqs/H7O0c='",  # ie-deprecation.html
+    "'sha256-TzFaIqy7u6q6ovMbU59mz7pAL/g930THGxhG6dg/cHQ='",  # _attestation-print.html
 )
 
-CSP_STYLE_SRC = ("'self'",)
+CSP_STYLE_SRC = (
+    "'self'",
+    MD_EDITOR_CSS_URL,
+)
 
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
     "https://www.youtube.com/embed/hATrqHG4zYQ",
     "https://www.youtube.com/embed/WTHj_kQXnzs",
     "https://www.youtube.com/embed/ihsm-36I-fE",
+    "https://www.youtube.com/embed/AJGo6bydQss",
 )
 
 # Admin Page settings
@@ -573,7 +589,7 @@ EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY = os.getenv(
     "EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY",
     """Bonjour,
 
-    Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.""",
+    Je vous contacte car je ne reçois pas les emails de confirmation de mon adresse email.""",  # NOQA
 )
 
 EMAIL_ORGANISATION_REQUEST_FROM = os.getenv(
@@ -607,6 +623,19 @@ EMAIL_ORGANISATION_REQUEST_MODIFICATION_SUBJECT = os.getenv(
 EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT = os.getenv(
     "EMAIL_NEW_MESSAGE_RECEIVED_SUBJECT",
     "Aidants Connect - Vous avez reçu un nouveau message de l’équipe Aidants Connect",
+)
+
+EMAIL_WELCOME_AIDANT_SUBJECT = os.getenv(
+    "EMAIL_WELCOME_AIDANT_SUBJECT", "Bienvenue dans la communauté Aidants Connect"
+)
+EMAIL_WELCOME_AIDANT_FROM = os.getenv("EMAIL_WELCOME_AIDANT_FROM", SUPPORT_EMAIL)
+
+EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT = os.getenv(
+    "EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT",
+    "Aidants Connect — Réactivez votre compte",
+)
+EMAIL_AIDANT_DEACTIVATION_WARN_FROM = os.getenv(
+    "EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT", SUPPORT_EMAIL
 )
 
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
@@ -664,6 +693,29 @@ LM_SMS_SERVICE_OAUTH2_ENDPOINT = os.getenv("LM_SMS_SERVICE_OAUTH2_ENDPOINT")
 LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
 
 
-# ########################" SANDBOX SETTING ############################
+
+# ######################## SANDBOX SETTING ############################
 
 ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
+
+# ######################## END SANDBOX SETTING ############################
+
+
+# If set to False, FAQ content will be fetched from aidants_connect_web
+# else FAQ will be set from dynamic content of pico_cms.faq_section and faq_question
+FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
+
+# URLS
+SANDBOX_URL = os.getenv("SANDBOX_URL", "")
+
+WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,
+}
+
+FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
+FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
+FF_OTP_APP = getenv_bool("FF_OTP_APP", False)
+

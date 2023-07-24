@@ -33,7 +33,6 @@ class Command(BaseCommand):
         parser.add_argument("aidant_files", nargs="+")
 
     def handle(self, *args, **options):
-
         for file in options["aidant_files"]:
             with open(file, newline="") as csvfile:
                 csv_reader = csv.reader(csvfile, delimiter=";", quotechar='"')

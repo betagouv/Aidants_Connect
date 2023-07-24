@@ -1,43 +1,59 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block title %}Aidants Connect - Sélectionnez la démarche{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/id_provider.css' %}" rel="stylesheet">
+<link href="{% static 'css/id-provider.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 
 {% block content %}
-<section class="section section-grey">
-  <div class="container">
+<div class="fr-container">
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-12 fr-col-md-8">
     <form method="post">
-      <h2>Sélectionnez le type de démarche que vous allez effectuer à la place de {{ usager.given_name }} {{ usager.family_name }}</h2>
-      <p id="instructions">
-        En selectionnant une démarche, vous allez FranceConnecter <strong>{{ usager.given_name }} {{ usager.family_name }}</strong>.<br>
-        Si vous souhaitez changer d'usager, retournez à la page précédente.
-      </p>
-      <div id="demarches_list" class="grid">
-        {% for demarche, demarche_info in demarches.items %}
-          <div id="{{ demarche }}" class="tile">
-            <input id="button-{{ demarche }}" type="submit" value="{{ demarche }}" name="chosen_demarche" />
-            <label id="label_demarche" for="button-{{ demarche }}">
-              <img src="{{ demarche_info.icon }}" alt="Icon {{ demarche_info.titre }}" />
-              <h3>{{ demarche_info.titre }}</h3>
-              <p>{{ demarche_info.description }}</p>
-            </label>
-          </div>
-        {% endfor %}
-        {% csrf_token %}
-        <input type="hidden" name="connection_id" value="{{ connection_id }}" />
+      <h2 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h2>
+      <div class="select-demarche-info container shadowed clearfix padding-1rem">
+        <h4 class="h4-prime">Sélectionnez le type de démarche que vous allez effectuer</h4>
+        <p class="instructions">
+          En sélectionnant une démarche, vous allez FranceConnecter
+          <em>{{ usager.given_name }} {{ usager.family_name }}</em>
+        </p>
+        {% if change_user_url %}
+        <a class="button primary float-right change-user" href="{{ change_user_url }}">Changer d'usager</a>
+        {% endif %}
       </div>
+
+      <h2>Type de démarche</h2>
+      {% for demarche, demarche_info in demarches.items %}
+      <div class="container shadowed" id="{{ demarche }}">
+        <div class="fr-grid-row fr-grid-row--middle padding-1rem">
+          <div class="fr-col-3">
+            <img src="{{ demarche_info.icon }}" alt="Icon {{ demarche_info.titre }}" />
+          </div>
+          <div class="fr-col-5 demarche-infos">
+            <strong class="demarche-title">{{ demarche_info.titre }}</strong>
+            <p>{{ demarche_info.description }}</p>
+          </div>
+          <div class="fr-col-4">
+            <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="primary" type="submit">
+              Sélectionner cette démarche
+            </button>
+          </div>
+        </div>
+      </div>
+      <br>
+      {% endfor %}
+      {% csrf_token %}
       <br>
       <div class="notification" role="alert">
         Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat ait expiré.<br>
         Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}">Espace Aidant</a>.
       </div>
     </form>
+    </div>
   </div>
-</section>
+</div>
 {% endblock content %}

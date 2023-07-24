@@ -21,6 +21,7 @@ from aidants_connect.admin import (
     VisibleToTechAdmin,
     admin_site,
 )
+from aidants_connect_common.utils.email import render_email
 from aidants_connect_habilitation.forms import (
     AdminAcceptationOrRefusalForm,
     RequestMessageForm,
@@ -39,7 +40,7 @@ from aidants_connect_web.models import Organisation
 class OrganisationRequestInline(VisibleToAdminMetier, TabularInline):
     model = OrganisationRequest
     show_change_link = True
-    fields = ("id", "status", "name", "type", "address", "zipcode", "city")
+    fields = ("id", "uuid", "status", "name", "type", "address", "zipcode", "city")
     readonly_fields = fields
     extra = 0
     can_delete = False
@@ -136,6 +137,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "issuer",
         "created_at",
         "updated_at",
+        "uuid",
         "data_pass_id",
         "status",
         "organisation",
@@ -254,8 +256,21 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
                 self.admin_site.admin_view(self.require_changes_one_request),
                 name="aidants_connect_habilitation_organisationrequest_requirechanges",
             ),
+            path(
+                "<path:object_id>/waiting/",
+                self.admin_site.admin_view(self.in_waiting_one_request),
+                name="aidants_connect_habilitation_organisationrequest_waiting",
+            ),
             *super().get_urls(),
         ]
+
+    def in_waiting_one_request(self, request, object_id):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__in_waiting_request_get(request, object_id)
+        else:
+            return self.__in_waiting_request_post(request, object_id)
 
     def accept_one_request(self, request, object_id):
         if request.method not in ["GET", "POST"]:
@@ -281,14 +296,50 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         else:
             return self.__require_changes_request_post(request, object_id)
 
+    def __in_waiting_request_get(self, request, object_id):
+        orga_request = OrganisationRequest.objects.get(id=object_id)
+        view_context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "object_id": object_id,
+            "object": orga_request,
+        }
+
+        return render(
+            request,
+            "aidants_connect_habilitation/admin/organisation_request/in_waiting_form.html",  # noqa
+            view_context,
+        )
+
+    def __in_waiting_request_post(self, request, object_id):
+        orga_request = OrganisationRequest.objects.get(id=object_id)
+        orga_request.go_in_waiting_again()
+        self.message_user(
+            request,
+            (
+                f"Tout s'est bien passé. La demande {orga_request.data_pass_id} a "
+                f"été remise en attente"
+            ),
+        )
+
+        redirect_path = reverse(
+            "otpadmin:aidants_connect_habilitation_organisationrequest_changelist"
+        )
+        preserved_filters = self.get_preserved_filters(request)
+        opts = self.model._meta
+        redirect_path = add_preserved_filters(
+            {"preserved_filters": preserved_filters, "opts": opts}, redirect_path
+        )
+        return HttpResponseRedirect(redirect_path)
+
     def __accept_request_get(self, request, object_id):
-        object = OrganisationRequest.objects.get(id=object_id)
+        organisation = OrganisationRequest.objects.get(id=object_id)
         email_body = loader.render_to_string(
-            "email/demande_acceptee.txt", {"organisation": object}
+            "email/demande_acceptee.txt", {"organisation": organisation}
         )
         email_subject = (
             "Aidants Connect - la demande d'habilitation n° "
-            f"{object.data_pass_id} a été acceptée"
+            f"{organisation.data_pass_id} a été acceptée"
         )
         initial = {
             "email_subject": email_subject,
@@ -298,8 +349,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             **self.admin_site.each_context(request),
             "media": self.media,
             "object_id": object_id,
-            "object": object,
-            "form": AdminAcceptationOrRefusalForm(object, initial=initial),
+            "object": organisation,
+            "form": AdminAcceptationOrRefusalForm(organisation, initial=initial),
         }
 
         return render(
@@ -327,7 +378,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             (
                 f"Tout s'est bien passé. La demande {object.data_pass_id} a "
                 f"été acceptée. L'organisation {object.name} et le compte aidant "
-                f"du responsable ont été créés. Les {aidant_count} aidants à former "
+                f"du référent ont été créés. Les {aidant_count} aidants à former "
                 "nécessaires ont été créés également."
             ),
         )
@@ -342,26 +393,26 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         return HttpResponseRedirect(redirect_path)
 
-    def send_acceptance_email(self, object, body_text=None, subject=None):
-        if body_text:
-            text_message = body_text
-        else:
-            text_message = loader.render_to_string(
-                "email/demande_acceptee.txt", {"organisation": object}
-            )
-        html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+    def send_acceptance_email(self, organisation, body_text=None, subject=None):
+        body_text = body_text or loader.render_to_string(
+            "email/demande_acceptee.txt", {"organisation": organisation}
+        )
+
+        text_message, html_message = render_email(
+            "email/empty.mjml",
+            mjml_context={"content": mark_safe(linebreaks(body_text))},
+            text_context={"content": body_text},
         )
 
         if subject is None:
             subject = (
                 "Aidants Connect - la demande d'habilitation n° "
-                f"{object.data_pass_id} a été acceptée"
+                f"{organisation.data_pass_id} a été acceptée"
             )
 
-        recipients = set(object.aidant_requests.values_list("email", flat=True))
-        recipients.add(object.manager.email)
-        recipients.add(object.issuer.email)
+        recipients = set(organisation.aidant_requests.values_list("email", flat=True))
+        recipients.add(organisation.manager.email)
+        recipients.add(organisation.issuer.email)
 
         send_mail(
             from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
@@ -372,13 +423,13 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
 
     def __refuse_request_get(self, request, object_id):
-        object = OrganisationRequest.objects.get(id=object_id)
+        organisation = OrganisationRequest.objects.get(id=object_id)
         email_body = loader.render_to_string(
-            "email/demande_refusee.txt", {"organisation": object}
+            "email/demande_refusee.txt", {"organisation": organisation}
         )
         email_subject = (
             "Aidants Connect - la demande d'habilitation n° "
-            f"{object.data_pass_id} a été refusée"
+            f"{organisation.data_pass_id} a été refusée"
         )
         initial = {
             "email_subject": email_subject,
@@ -388,8 +439,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             **self.admin_site.each_context(request),
             "media": self.media,
             "object_id": object_id,
-            "object": object,
-            "form": AdminAcceptationOrRefusalForm(object, initial=initial),
+            "object": organisation,
+            "form": AdminAcceptationOrRefusalForm(organisation, initial=initial),
         }
 
         return render(
@@ -427,26 +478,26 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         return HttpResponseRedirect(redirect_path)
 
-    def send_refusal_email(self, object, body_text=None, subject=None):
-        if body_text:
-            text_message = body_text
-        else:
-            text_message = loader.render_to_string(
-                "email/demande_refusee.txt", {"organisation": object}
-            )
-        html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+    def send_refusal_email(self, organisation, body_text=None, subject=None):
+        body_text = body_text or loader.render_to_string(
+            "email/demande_refusee.txt", {"organisation": organisation}
+        )
+
+        text_message, html_message = render_email(
+            "email/empty.mjml",
+            mjml_context={"content": mark_safe(linebreaks(body_text))},
+            text_context={"content": body_text},
         )
 
         if subject is None:
             subject = (
                 "Aidants Connect - la demande d'habilitation n° "
-                f"{object.data_pass_id} a été refusée"
+                f"{organisation.data_pass_id} a été refusée"
             )
 
-        recipients = set(object.aidant_requests.values_list("email", flat=True))
-        recipients.add(object.manager.email)
-        recipients.add(object.issuer.email)
+        recipients = set(organisation.aidant_requests.values_list("email", flat=True))
+        recipients.add(organisation.manager.email)
+        recipients.add(organisation.issuer.email)
 
         send_mail(
             from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
@@ -459,7 +510,8 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     def __require_changes_request_get(self, request, object_id):
         object = OrganisationRequest.objects.get(id=object_id)
         content = loader.render_to_string(
-            "email/modifications_demandees.txt", {"organisation": object}
+            "aidants_connect_habilitation/admin/organisation_request/modifications_demandees.txt",  # noqa
+            {"organisation": object},
         )
         initial = {"content": content}
         view_context = {

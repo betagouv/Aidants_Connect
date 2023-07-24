@@ -1,12 +1,20 @@
 @use "colors";
-@import "boxes.css";
+@use "boxes";
 
 .detailed-radio-select {
-  $tick-size: 32px;
+  transition: all .1s ease-in;
+  width: 100%;
 
-  background-color: white;
-  margin-bottom: 1rem;
-  padding: 1rem;
+  .detailed-radio-select-label {
+    display: flex;
+  }
+
+  .detailed-radio-select-label-text-and-description {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    width: 100%;
+  }
 
   .detailed-radio-select-label-text {
     color: colors.$blue-aidants;
@@ -19,22 +27,26 @@
   }
 
   .detailed-radio-select-description {
+    display: flex;
     margin-bottom: 0;
     margin-top: 1rem;
     padding-bottom: 0;
     padding-top: 0;
   }
 
-  > input {
+  > input[type="checkbox"],
+  > input[type="radio"] {
     cursor: pointer;
     float: right;
+    left: 0;
     order: 1;
+    position: absolute;
     visibility: hidden;
+    top: 0;
     z-index: 2;
 
     &:checked ~ label::after {
-      background-color: #003b80;
-      border-color: white;
+      content: url("/static/images/icons/tick-checked.svg");
     }
   }
 
@@ -45,26 +57,23 @@
     height: 100%;
     width: 100%;
 
-    & * {
-      margin-right: 45px;
-    }
-
     &::after {
-      background-color: white;
-      background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.414 11L4 12.414l5.414 5.414L20.828 6.414 19.414 5l-10 10z' fill='%23fff' fill-rule='nonzero'/%3E%3C/svg%3E ");
-      background-repeat: no-repeat;
-      background-position: 3px 5px;
-      border: 2px solid #003b80;
-      border-radius: 50%;
-      content: '';
       cursor: pointer;
-      height: 32px;
+      height: 24px;
       position: absolute;
       right: 0;
-      top: calc(50% - ($tick-size / 2));
-      transition: all 100ms ease-in;
-      width: 32px;
+      top: 0;
+      width: 24px;
       z-index: 2;
+    }
+  }
+
+  &.detailed-radio-select-multiselect {
+    > input[type="checkbox"],
+    > input[type="radio"] {
+      &:not(:checked) ~ label::after {
+        content: url("/static/images/icons/tick-unchecked.svg");
+      }
     }
   }
 }

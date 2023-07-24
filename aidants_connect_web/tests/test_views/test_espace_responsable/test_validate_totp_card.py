@@ -19,7 +19,7 @@ class ValidateCarteTOTPTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        # Create one responsable
+        # Create one référent
         cls.responsable_tom = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         # Create one aidant

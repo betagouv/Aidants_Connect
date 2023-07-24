@@ -1,0 +1,59 @@
+{% extends "admin/import_export/import.html" %}
+
+{% load i18n ac_common %}
+
+{% block import_form %}
+  <form
+    action=""
+    method="post"
+    enctype="multipart/form-data"
+    data-controller="commune-import-form"
+    data-commune-import-form-zrr-resource-name-value="{{ zrr_resource_name }}"
+  >
+    {% csrf_token %}
+
+    <section>
+      {% for resource, fields in fields_list %}
+        {% if resource == communes_resource_name %}
+          <h2>Communes</h2>
+          <p>
+            La liste des communes françaises publiée par l’INSEE
+            <a href="https://www.insee.fr/fr/information/2560452">est disponible ici</a>.<br>
+            Les champs suivants doivent être présents dans le fichier : <code>{{ fields|join:", " }}</code>
+          </p>
+        {% elif resource == zrr_resource_name %}
+          <h2>Communes</h2>
+          <p>
+            Le classement en zone de revitalisation rurale
+            <a href="https://www.data.gouv.fr/fr/datasets/zones-de-revitalisation-rurale-zrr/">est disponible ici</a>.
+          </p>
+          <p>
+            <span aria-hidden="true">⚠️</span>Ce fichier peut contenir une en-tête.
+            Les champs suivants doivent être présents dans sur la première ligne du fichier :
+            <code>{{ fields|join:", " }}</code>
+          </p>
+        {% endif %}
+      {% endfor %}
+    </section>
+
+    <fieldset class="module aligned">
+      {% for field in form %}
+        <div class="form-row" data-commune-import-form-target="{{ field.name|camel }}Wrapper">
+          {{ field.errors }}
+
+          {{ field.label_tag }}
+
+          {{ field }}
+
+          {% if field.field.help_text %}
+            <p class="help">{{ field.field.help_text|safe }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </fieldset>
+
+    <div class="submit-row">
+      <input type="submit" class="default" value="{% trans "Submit" %}">
+    </div>
+  </form>
+{% endblock %}

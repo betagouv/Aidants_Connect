@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from unittest import mock
+from urllib.parse import urlencode
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -11,29 +13,68 @@ import jwt
 from freezegun import freeze_time
 
 from aidants_connect_common.utils.constants import AuthorizationDurationChoices
+from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory
 from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.views.FC_as_FS import get_user_info
 
-fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
-
 
 @tag("new_mandat", "FC_as_FS")
 class FCAuthorize(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+        cls.consent_request_id = str(uuid4())
+
         Connection.objects.create(
             id=1,
             demarches=["argent", "papiers"],
             duree_keyword=AuthorizationDurationChoices.SHORT,
         )
 
+        cls.remote_connection = Connection.objects.create(
+            id=2,
+            aidant=cls.aidant,
+            organisation=cls.aidant.organisation,
+            demarches=["argent", "papiers"],
+            remote_constent_method=RemoteConsentMethodChoices.SMS.name,
+            duree_keyword=AuthorizationDurationChoices.SHORT,
+            mandat_is_remote=True,
+            user_phone="0 800 840 800",
+            consent_request_id=cls.consent_request_id,
+        )
+
     def test_well_formatted_request_fills_connection(self):
         session = self.client.session
         session["connection"] = 1
         session.save()
-        self.client.get("/fc_authorize/")
+        self.client.get(reverse("fc_authorize"))
         connection = Connection.objects.get(pk=1)
+        self.assertNotEqual(connection.state, "")
+
+    def test_prevent_redirect_on_no_consent(self):
+        session = self.client.session
+        session["connection"] = 2
+        session.save()
+
+        self.client.force_login(self.aidant)
+
+        response = self.client.get(reverse("fc_authorize"))
+        self.assertRedirects(response, reverse("new_mandat_waiting_room"))
+
+        Journal.log_user_consents_sms(
+            aidant=self.remote_connection.aidant,
+            demarche=self.remote_connection.demarche,
+            duree=self.remote_connection.duree_keyword,
+            remote_constent_method=self.remote_connection.remote_constent_method,
+            user_phone=self.remote_connection.user_phone,
+            consent_request_id=self.remote_connection.consent_request_id,
+            message="Oui",
+        )
+
+        self.client.get(reverse("fc_authorize"))
+        connection = Connection.objects.get(pk=2)
         self.assertNotEqual(connection.state, "")
 
 
@@ -63,7 +104,7 @@ class FCCallback(TestCase):
             aidant=self.aidant,
             organisation=self.aidant.organisation,
         )
-        Connection.objects.create(
+        self.connection2 = Connection.objects.create(
             state="test_another_state",
             connection_type="FS",
             nonce="test_another_nonce",
@@ -77,8 +118,8 @@ class FCCallback(TestCase):
 
     @freeze_time(date)
     def test_no_code_triggers_fc_error(self):
-        response = self.client.get("/callback/", data={"state": "test_state"})
-        self.check_fc_error_with_message(response)
+        response = self.client.get("/callback/", data={"state": self.connection.state})
+        self.check_fc_error_with_message(response, self.connection.pk)
 
     @freeze_time(date)
     def test_no_state_triggers_fc_error(self):
@@ -94,9 +135,15 @@ class FCCallback(TestCase):
 
     date_expired = DATE + timedelta(seconds=TEST_FC_CONNECTION_AGE + 1)
 
-    def check_fc_error_with_message(self, response):
+    def check_fc_error_with_message(self, response, connection_id=None):
+        query_params = (
+            f"?{urlencode({'connection_id': connection_id})}" if connection_id else ""
+        )
+
         self.assertRedirects(
-            response, reverse("new_mandat"), fetch_redirect_response=False
+            response,
+            f"{reverse('new_mandat')}{query_params}",
+            fetch_redirect_response=False,
         )
         response = self.client.get(reverse("new_mandat"))
         self.assertContains(response, "Nous avons rencontré une erreur")
@@ -104,9 +151,9 @@ class FCCallback(TestCase):
     @freeze_time(date_expired)
     def test_expired_connection_yields_fc_error(self):
         response = self.client.get(
-            "/callback/", data={"state": "test_state", "code": "test_code"}
+            "/callback/", data={"state": self.connection.state, "code": "test_code"}
         )
-        self.check_fc_error_with_message(response)
+        self.check_fc_error_with_message(response, self.connection.pk)
 
     @freeze_time(date)
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
@@ -128,9 +175,9 @@ class FCCallback(TestCase):
 
         mock_post.return_value = mock_response
         response = self.client.get(
-            "/callback/", data={"state": "test_another_state", "code": "test_code"}
+            "/callback/", data={"state": self.connection2.state, "code": "test_code"}
         )
-        self.check_fc_error_with_message(response)
+        self.check_fc_error_with_message(response, self.connection2.pk)
 
     @freeze_time(date)
     @mock.patch("aidants_connect_web.views.FC_as_FS.python_request.post")
@@ -156,14 +203,14 @@ class FCCallback(TestCase):
             "nonce": "test_nonce",
         }
 
+        id_token = jwt.encode(id_token, settings.FC_AS_FS_SECRET, algorithm="HS256")
+
         mock_response.json = mock.Mock(
             return_value={
                 "access_token": "test_access_token",
                 "token_type": "Bearer",
                 "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
+                "id_token": id_token,
             }
         )
 
@@ -181,16 +228,16 @@ class FCCallback(TestCase):
         connection = Connection.objects.get(pk=connection_number)
 
         self.assertEqual(connection.access_token, "test_access_token")
-        url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?"
-            "id_token_hint=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhd"
-            "WQiOiIyMTEyODY0MzNlMzljY2UwMWRiNDQ4ZDgwMTgxYmRmZDAwNTU1NGI"
-            "xOWNkNTFiM2ZlNzk0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ3NDMzMDM0L"
-            "jAsImlhdCI6MTU0NzQzMTgzNC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29u"
-            "bmVjdC5nb3V2LmZyIiwic3ViIjoiMTIzIiwibm9uY2UiOiJ0ZXN0X25vbmNl"
-            "In0.xKAPSsCaTVN29-PeC11j6XMSJnzrT44-OLZ7Nlt7jtE&state=test_state"
-            "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
+        parameters = urlencode(
+            {
+                "id_token_hint": id_token,
+                "state": "test_state",
+                "post_logout_redirect_uri": (
+                    f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
+                ),
+            }
         )
+        url = f"https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?{parameters}"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
         last_journal_entry = Journal.objects.last()
@@ -218,14 +265,17 @@ class FCCallback(TestCase):
             "sub": "9b754782705c55ebfe10371c909f62e73a3e09fb566fc5d23040a29fae4e0ebb",
             "nonce": "test_nonce",
         }
+
+        encoded_token = jwt.encode(
+            id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
+        )
+
         mock_response.json = mock.Mock(
             return_value={
                 "access_token": "test_access_token",
                 "token_type": "Bearer",
                 "expires_in": 60,
-                "id_token": jwt.encode(
-                    id_token, settings.FC_AS_FS_SECRET, algorithm="HS256"
-                ),
+                "id_token": encoded_token,
             }
         )
 
@@ -256,17 +306,16 @@ class FCCallback(TestCase):
         connection = Connection.objects.get(pk=connection_number)
         self.assertEqual(connection.usager.given_name, "Joséphine")
 
-        url = (
-            "https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?"
-            "id_token_hint=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMT"
-            "EyODY0MzNlMzljY2UwMWRiNDQ4ZDgwMTgxYmRmZDAwNTU1NGIxOWNkNTFiM2ZlNzk"
-            "0M2Y2YjNiODZhYjZlIiwiZXhwIjoxNTQ3NDMzMDM0LjAsImlhdCI6MTU0NzQzMTgz"
-            "NC4wLCJpc3MiOiJodHRwOi8vZnJhbmNlY29ubmVjdC5nb3V2LmZyIiwic3ViIjoiO"
-            "WI3NTQ3ODI3MDVjNTVlYmZlMTAzNzFjOTA5ZjYyZTczYTNlMDlmYjU2NmZjNWQyMz"
-            "A0MGEyOWZhZTRlMGViYiIsIm5vbmNlIjoidGVzdF9ub25jZSJ9.HjK5vaK2zrzmSN"
-            "zB103TN7ft0t_RX-C5vdupICFccc0&state=test_state"
-            "&post_logout_redirect_uri=http://localhost:3000/logout-callback"
+        parameters = urlencode(
+            {
+                "id_token_hint": encoded_token,
+                "state": "test_state",
+                "post_logout_redirect_uri": (
+                    f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
+                ),
+            }
         )
+        url = f"https://fcp.integ01.dev-franceconnect.fr/api/v1/logout?{parameters}"
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
         last_journal_entry = Journal.objects.last()

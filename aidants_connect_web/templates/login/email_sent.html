@@ -1,16 +1,21 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block title %}Aidants Connect - Email envoyé (connexion){% endblock %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    <h1>Un email vous a été envoyé pour vous connecter.</h1>
+  <div class="fr-container">
+    <h1>Lien de connexion envoyé</h1>
+    <p class="subtitle">Un email vous a été envoyé pour vous connecter.</p>
+    <img
+      class="full-width margin-bottom-1rem margin-top-1rem"
+      src="{% static 'images/email-connection-banner.svg' %}"
+      alt=""
+    >
+    <p>
+      Si vous ne le recevez pas, vous pouvez
+      <a href="{% url 'magicauth-login' %}" class="btn btn-secondary">réessayer</a>.
+    </p>
   </div>
-  <div class="container">
-    Si vous ne le recevez pas, vous pouvez <a href="{% url 'magicauth-login' %}" class="btn btn-secondary">réessayer</a>.
-  </div>
-</section>
 {% endblock content %}

@@ -1,7 +1,32 @@
+from django.template.defaultfilters import urlencode
+from django.urls import reverse
+from django.views.generic import RedirectView
+
 from magicauth import views as magicauth_views
 
+from aidants_connect_common.utils.email import render_email
 from aidants_connect_web.forms import LoginEmailForm
+
+
+class LoginRedirect(RedirectView):
+    pattern_name = "login"
+    permanent = True
 
 
 class LoginView(magicauth_views.LoginView):
     form_class = LoginEmailForm
+
+    def render_email(self, context):
+        return render_email(self.html_template, context)
+
+    def get_email_context(self, user, token, extra_context=None):
+        context = super().get_email_context(user, token, extra_context)
+        return {
+            **context,
+            "email_title": "Votre lien de connexion à Aidants Connect",
+            "href": (
+                f"https://{context['site'].domain}"
+                f"{reverse('magicauth-wait', args=(context['token'].key,))}"
+                f"?next={urlencode(context['next_url'])}"
+            ),
+        }

@@ -17,6 +17,19 @@ class PatchedErrorList(ErrorList):
     template_name = template_name_ul = "forms/errors/list/ul.html"
     template_name_text = "forms/errors/list/text.txt"
 
+    def __init__(self, initlist=None, error_class=None, renderer=None):
+        super().__init__(initlist, error_class, renderer)
+        self._error_codes = None
+
+    @property
+    def error_codes(self):
+        if not self._error_codes:
+            self._error_codes = [error.code for error in self.data]
+        return self._error_codes
+
+    def get_error_by_code(self, error_code):
+        return next((error for error in self.data if error.code == error_code), None)
+
 
 class WidgetAttrMixin:
     def widget_attrs(self, widget_name: str, attrs: dict):
@@ -28,7 +41,7 @@ class PatchedModelForm(ModelForm, WidgetAttrMixin):
     def __init__(self, *args, **kwargs):
         sig = signature(super().__init__).bind_partial(*args, **kwargs)
         sig.arguments.setdefault("label_suffix", "")
-        sig.arguments.setdefault("error_class", PatchedErrorList)
+        sig.arguments["error_class"] = PatchedErrorList
 
         super().__init__(*sig.args, **sig.kwargs)
 
@@ -37,7 +50,7 @@ class PatchedForm(Form, WidgetAttrMixin):
     def __init__(self, *args, **kwargs):
         sig = signature(super().__init__).bind_partial(*args, **kwargs)
         sig.arguments.setdefault("label_suffix", "")
-        sig.arguments.setdefault("error_class", PatchedErrorList)
+        sig.arguments["error_class"] = PatchedErrorList
 
         super().__init__(*sig.args, **sig.kwargs)
 

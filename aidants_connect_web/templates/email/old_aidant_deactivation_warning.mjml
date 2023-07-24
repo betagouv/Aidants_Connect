@@ -1,0 +1,50 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+  <mj-section>
+    <mj-column>
+      <mj-text>
+        <p>Bonjour {{ user.get_full_name }},</p>
+        <p>
+          Vous avez participé au programme de formation Aidants Connect, néanmoins cela fait plus
+          de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité. 
+        </p>
+        <p>
+          Nous vous proposons un<b>webinaire de ré-embarquement</b>, court et
+          interactif, où nous
+          <b>lèverons les freins</b>
+          liés à l’utilisation de
+          l’outil pour que vous puissiez être en mesure d’avoir toutes les clés pour utiliser le service.
+        </p>
+        <p>
+          Sans
+          <b>inscription au webinaire</b>
+          ou<b>connexion sur votre espace Aidants Connect</b>, conformément aux
+          <a href="{{ cgu_url }}">
+            <b>CGU</b>
+          </a>
+          de l’outil Aidants Connect, votre compte sera<b>automatiquement désactivé dans un délai de 1 mois</b>.
+        </p>
+        <p >
+          <em>Pour rappel, pour des raisons de sécurité, les comptes Aidants Connect sont désactivés temporairement au bout de 6 mois d'inactivité. Passé ce délai, vous pouvez nous contacter pour réactiver votre compte à l'adresse suivante contact@aidantsconnect.beta.gouv.fr </em>
+        </p>
+      </mj-text>
+      <mj-button href="{{ webinaire_sub_form }}">S’inscrire au wébinaire</mj-button>
+      <mj-text>
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
+        <a href="{{ webinaire_sub_form }}">{{ webinaire_sub_form }}</a>
+      </mj-text>
+      <mj-text>
+        <p>
+          Si vous ne souhaitez plus utiliser l’outil, merci de nous renvoyer les cartes Aidants Connect de votre
+          structure à l’adresse suivante :
+        </p>
+        <p style="font-style: italic; font-weight: bold; text-align: center;">
+          A l’attention de Marine Jouan, ANCT, 20 avenue de Ségur, Paris 75007
+        </p>
+        <p>en indiquant vos coordonnées sur le dos de l’enveloppe.</p>
+        <p>Merci pour votre compréhension et votre réactivité.</p>
+      </mj-text>
+    </mj-column>
+  </mj-section>
+{% endblock %}

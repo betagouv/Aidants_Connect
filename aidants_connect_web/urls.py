@@ -1,7 +1,10 @@
-from django.urls import path, re_path
+from django.conf import settings
+from django.urls import include, path, re_path
 
+from magicauth import settings as magicauth_settings
 from magicauth.urls import urlpatterns as magicauth_urls
 
+from aidants_connect_web.api.urls import router as api_router
 from aidants_connect_web.views import (
     FC_as_FS,
     datapass,
@@ -10,7 +13,9 @@ from aidants_connect_web.views import (
     id_provider,
     login,
     mandat,
+    notifications,
     renew_mandat,
+    sandbox,
     service,
     sms,
     usagers,
@@ -19,13 +24,14 @@ from aidants_connect_web.views import (
 urlpatterns = [
     # service
     path("accounts/login/", login.LoginView.as_view(), name="login"),
+    path(magicauth_settings.LOGIN_URL, login.LoginRedirect.as_view()),
     path("logout-session/", service.logout_page, name="logout"),
     path("activity_check/", service.activity_check, name="activity_check"),
     # espace aidant : home, organisation
     path("espace-aidant/", espace_aidant.home, name="espace_aidant_home"),
     path(
         "espace-aidant/organisation/",
-        espace_aidant.organisation,
+        espace_aidant.OrganisationView.as_view(),
         name="espace_aidant_organisation",
     ),
     path(
@@ -74,7 +80,7 @@ urlpatterns = [
     ),
     path(
         "mandats/<int:mandat_id>/visualisation",
-        mandat.attestation_visualisation,
+        mandat.Attestation.as_view(),
         name="mandat_visualisation",
     ),
     # renew mandat
@@ -82,6 +88,11 @@ urlpatterns = [
         "renew_mandat/<int:usager_id>",
         renew_mandat.RenewMandat.as_view(),
         name="renew_mandat",
+    ),
+    path(
+        "renew_mandat/a_distance/demande_consentement/",
+        renew_mandat.RemoteConsentSecondStepView.as_view(),
+        name="renew_remote_second_step",
     ),
     path(
         "renew_mandat/attente_consentement/",
@@ -101,53 +112,62 @@ urlpatterns = [
         name="new_mandat_recap",
     ),
     path(
-        "creation_mandat/attente_consentement/",
+        "creation_mandat/a_distance/demande_consentement/",
+        mandat.RemoteConsentSecondStepView.as_view(),
+        name="new_mandat_remote_second_step",
+    ),
+    path(
+        "creation_mandat/a_distance/attente_consentement/",
         mandat.WaitingRoom.as_view(),
         name="new_mandat_waiting_room",
     ),
     path(
-        "creation_mandat/attente_consentement.json/",
+        "creation_mandat/a_distance/attente_consentement.json/",
         mandat.WaitingRoomJson.as_view(),
         name="new_mandat_waiting_room_json",
     ),
-    path("logout-callback/", mandat.NewMandatRecap.as_view(), name="new_mandat_recap"),
+    path("logout-callback/", mandat.NewMandatRecap.as_view(), name="logout_callback"),
     path(
         "creation_mandat/visualisation/projet/",
         mandat.AttestationProject.as_view(),
         name="new_attestation_projet",
     ),
     path(
-        "creation_mandat/succes/",
-        mandat.NewMandateSuccess.as_view(),
-        name="new_mandat_success",
-    ),
-    path(
-        "creation_mandat/visualisation/final/",
-        mandat.attestation_final,
+        "creation_mandat/visualisation/final/<int:mandat_id>",
+        mandat.Attestation.as_view(),
         name="new_attestation_final",
     ),
-    path(
-        "creation_mandat/qrcode/",
-        mandat.attestation_qrcode,
+    re_path(
+        "creation_mandat/qrcode/(?P<mandat_id>[0-9]+)?/?",
+        mandat.AttestationQRCode.as_view(),
         name="new_attestation_qrcode",
     ),
+    path(
+        "creation_mandat/traduction/",
+        mandat.Translation.as_view(),
+        name="mandate_translation",
+    ),
     # id_provider
-    path("authorize/", id_provider.authorize, name="authorize"),
+    path("authorize/", id_provider.Authorize.as_view(), name="authorize"),
     path("token/", id_provider.token, name="token"),
     path("userinfo/", id_provider.user_info, name="user_info"),
-    path("select_demarche/", id_provider.fi_select_demarche, name="fi_select_demarche"),
+    path(
+        "select_demarche/",
+        id_provider.FISelectDemarche.as_view(),
+        name="fi_select_demarche",
+    ),
     path(
         "logout/",
         id_provider.end_session_endpoint,
         name="end_session_endpoint",
     ),
-    # Espace responsable structure
+    # Espace référent structure
     path(
         "espace-responsable/", espace_responsable.home, name="espace_responsable_home"
     ),
     path(
         "espace-responsable/organisation/<int:organisation_id>/",
-        espace_responsable.organisation,
+        espace_responsable.OrganisationView.as_view(),
         name="espace_responsable_organisation",
     ),
     path(
@@ -167,8 +187,18 @@ urlpatterns = [
     ),
     path(
         "espace-responsable/aidant/<int:aidant_id>/supprimer-carte/",
-        espace_responsable.remove_card_from_aidant,
+        espace_responsable.RemoveCardFromAidant.as_view(),
         name="espace_responsable_aidant_remove_card",
+    ),
+    path(
+        "espace-responsable/aidant/<int:aidant_id>/ajouter-otp-app/",
+        espace_responsable.AddAppOTPToAidant.as_view(),
+        name="espace_responsable_aidant_add_app_otp",
+    ),
+    path(
+        "espace-responsable/aidant/<int:aidant_id>/supprimer-otp-app/",
+        espace_responsable.RemoveAppOTPFromAidant.as_view(),
+        name="espace_responsable_aidant_remove_app_otp",
     ),
     path(
         "espace-responsable/aidant/<int:aidant_id>/changer-organisations/",
@@ -194,7 +224,7 @@ urlpatterns = [
         name="espace_responsable_validate_totp",
     ),
     # FC_as_FS
-    path("fc_authorize/", FC_as_FS.fc_authorize, name="fc_authorize"),
+    path("fc_authorize/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # public_website
     path("", service.home_page, name="home_page"),
@@ -205,19 +235,6 @@ urlpatterns = [
     path("habilitation", service.habilitation, name="habilitation"),
     path("ressources/", service.ressources, name="ressources"),
     path("accessibilite/", service.accessibilite, name="accessibilite"),
-    # # FAQ
-    path("faq/", service.faq_generale, name="faq_generale"),
-    path("faq/mandat/", service.faq_mandat, name="faq_mandat"),
-    path(
-        "faq/donnees-personnelles/",
-        service.faq_donnees_personnelles,
-        name="faq_donnees_personnelles",
-    ),
-    path(
-        "faq/habilitation/",
-        service.faq_habilitation,
-        name="faq_habilitation",
-    ),
     # # Datapass
     path(
         "datapass_receiver/",
@@ -229,9 +246,47 @@ urlpatterns = [
         datapass.habilitation_receiver,
         name="datapass_habilitation",
     ),
+    path(
+        "notifications/",
+        notifications.Notifications.as_view(),
+        name="notification_list",
+    ),
+    path(
+        "notifications/<int:notification_id>/",
+        notifications.NotificationDetail.as_view(),
+        name="notification_detail",
+    ),
+    path(
+        "notifications/<int:notification_id>/marquer/",
+        notifications.MarkNotification.as_view(),
+        name="notification_mark",
+    ),
     # # SMS
     # SMS provider may misconfigure the trailing slash so we need to respond on both
     re_path(r"sms/callback/?$", sms.Callback.as_view(), name="sms_callback"),
+    # # Bac à sable
+    path(
+        "bac-a-sable/presentation",
+        sandbox.Sandbox.as_view(),
+        name="sandbox_presentation",
+    ),
+    path("api/", include(api_router.urls)),
 ]
+
+if not settings.FF_USE_PICO_CMS_FOR_FAQ:
+    faq_urls = [
+        path("faq/mandat/", service.faq_mandat, name="faq_mandat"),
+        path(
+            "faq/donnees-personnelles/",
+            service.faq_donnees_personnelles,
+            name="faq_donnees_personnelles",
+        ),
+        path(
+            "faq/habilitation/",
+            service.faq_habilitation,
+            name="faq_habilitation",
+        ),
+    ]
+    urlpatterns.extend(faq_urls)
 
 urlpatterns.extend(magicauth_urls)

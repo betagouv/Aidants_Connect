@@ -5,7 +5,7 @@
 {% block title %}Aidants Connect - Sélectionnez l'usager{% endblock %}
 
 {% block extracss %}
-  <link href="{% static 'css/id_provider.css' %}" rel="stylesheet"/>
+  <link href="{% static 'css/id-provider.css' %}" rel="stylesheet"/>
   <link href="{% static 'css/autocomplete.css' %}" rel="stylesheet"/>
 {% endblock extracss %}
 
@@ -13,42 +13,59 @@
   <div class="fr-container">
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8">
-        <h1 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
-        <div class="container shadowed">
-          <h1>Sélectionnez l'usager que vous souhaitez FranceConnecter</h1>
-          <p id="instructions" class="subtitle">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
+        <h2 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h2>
+        <div class="container shadowed padding-1rem margin-bottom-2rem">
+          <h4 class="h4-prime">Sélectionnez l'usager que vous souhaitez FranceConnecter</h4>
+          <p class="subtitle">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
           {% if usagers %}
-            <form method="post">
+            <form class="clearfix" method="post">
               <div class="form-grid-row fr-grid-row fr-grid-row--gutters">
+                {% if errors %}<div class="fr-col-12">{{ errors }}</div>{% endif %}
                 <div class="fr-col-12">
-                  <label id="filter-input-label" for="filter-input">
-                    Rechercher un usager :
-                  </label>
-                </div>
-                <div class="fr-col-12">
-                  {% if errors %}{{ errors }}{% endif %}
-                </div>
-                <div class="fr-col-12">
-                  <input type="text" id="filter-input" required/>
-                  <input id="filter-input-id" name="chosen_usager" hidden/>
+                  <label id="filter-input-label" for="anonymous-filter-input">Rechercher un usager :</label>
+                  <input type="text" id="anonymous-filter-input" required/>
+                  <input id="anonymous-filter-input-id" name="chosen_usager" type="hidden"/>
                   <div id="autocomplete" class="autocomplete-input_wrapper input-spinner-wrapper"></div>
                 </div>
+                {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
+                <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
                 {% csrf_token %}
-                <input type="hidden" name="connection_id" value="{{ connection_id }}"/>
-
               </div>
-              <div class="button-box">
-                <button id="submit-button" class="primary" type="submit">Séléctionner</button>
-              </div>
+              <button id="submit-button" class="primary float-right" type="submit">Séléctionner</button>
             </form>
           {% else %}
             <div class="notification" role="alert">
               Vous n’avez pas d'usagers avec au moins un mandat en cours.<br>
-              Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}">Espace
-              Aidant</a>.
+              Pour créer un nouveau mandat, rendez-vous sur votre
+              <a href="{% url 'espace_aidant_home' %}">Espace Aidant</a>.
             </div>
           {% endif %}
         </div>
+
+        {% if usagers %}
+          <details class="container shadowed padding-1rem user-detail">
+            <summary>
+              <h4 class="h4-prime">Tous les usagers</h4>
+            </summary>
+
+            {% for usager in usagers %}
+              <form class="user-detail-item" method="post">
+                {% csrf_token %}
+                {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
+                  <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
+                <span>{{ usager.get_full_name }}</span>
+                <input
+                  id="filter-input-id"
+                  name="chosen_usager"
+                  value="{{ usager.id }}"
+                  type="hidden"
+                />
+                <button class="primary" type="submit" data-user-id="{{ usager.id }}">Sélectionner</button>
+              </form>
+            {% endfor %}
+          </details>
+        {% endif %}
+
       </div>
     </div>
   </div>
@@ -60,7 +77,4 @@
   <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
   <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
   <script src="{% static 'js/hidden_users_search.js' %}"></script>
-  <script>
-
-  </script>
 {% endblock %}

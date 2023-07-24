@@ -1,21 +1,31 @@
-from typing import Collection
+import base64
+import contextlib
+from io import BytesIO
 
+from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import Http404, HttpRequest, HttpResponse
+from django.forms import model_to_dict
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.views.generic import DeleteView, FormView, TemplateView
 
+import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.decorators import (
     activity_required,
+    aidant_logged_with_activity_required,
     user_is_responsable_structure,
 )
 from aidants_connect_web.forms import (
+    AddAppOTPToAidantForm,
     AddOrganisationResponsableForm,
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
@@ -61,38 +71,59 @@ def home(request):
     )
 
 
-@require_GET
-@login_required
-@user_is_responsable_structure
-@activity_required
-def organisation(request: HttpRequest, organisation_id: int):
-    responsable: Aidant = request.user
-    organisation: Organisation = get_object_or_404(Organisation, pk=organisation_id)
-    check_organisation_and_responsable(responsable, organisation)
+@method_decorator(
+    [login_required, user_is_responsable_structure, activity_required], name="dispatch"
+)
+class OrganisationView(TemplateView):
+    template_name = "aidants_connect_web/espace_responsable/organisation.html"
 
-    aidants: Collection[Aidant] = organisation.aidants.order_by(
-        "-is_active", "last_name"
-    ).prefetch_related("carte_totp")
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        self.organisation: Organisation = get_object_or_404(
+            Organisation, pk=kwargs.get("organisation_id")
+        )
 
-    habilitation_requests = organisation.habilitation_requests.exclude(
-        status=HabilitationRequest.STATUS_VALIDATED
-    ).order_by("status", "last_name")
-    totp_devices_users = {
-        device.user.id: device.confirmed
-        for device in TOTPDevice.objects.filter(user__in=aidants)
-    }
+        check_organisation_and_responsable(self.aidant, self.organisation)
 
-    return render(
-        request,
-        "aidants_connect_web/espace_responsable/organisation.html",
-        {
-            "responsable": responsable,
-            "organisation": organisation,
-            "aidants": aidants,
-            "totp_devices_users": totp_devices_users,
-            "habilitation_requests": habilitation_requests,
-        },
-    )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        organisation_active_responsables = [
+            self.aidant,
+            *(
+                self.organisation.responsables.exclude(pk=self.aidant.pk)
+                .order_by("last_name")
+                .prefetch_related("carte_totp")
+            ),
+        ]
+        organisation_active_aidants = (
+            self.organisation.aidants_not_responsables.filter(is_active=True)
+            .order_by("last_name")
+            .prefetch_related("carte_totp")
+        )
+
+        organisation_habilitation_requests = (
+            self.organisation.habilitation_requests.exclude(
+                status=HabilitationRequest.STATUS_VALIDATED
+            ).order_by("status", "last_name")
+        )
+
+        organisation_inactive_aidants = (
+            self.organisation.aidants_not_responsables.filter(is_active=False)
+            .order_by("last_name")
+            .prefetch_related("carte_totp")
+        )
+
+        return {
+            **super().get_context_data(**kwargs),
+            "responsable": self.aidant,
+            "organisation": self.organisation,
+            "organisation_active_responsables": organisation_active_responsables,
+            "organisation_active_aidants": organisation_active_aidants,
+            "organisation_habilitation_requests": organisation_habilitation_requests,
+            "organisation_inactive_aidants": organisation_inactive_aidants,
+            "FF_OTP_APP": settings.FF_OTP_APP and self.aidant.ff_otp_app,
+        }
 
 
 @require_http_methods(["GET", "POST"])
@@ -161,7 +192,6 @@ def aidant(request, aidant_id):
         "aidants_connect_web/espace_responsable/aidant.html",
         {
             "aidant": aidant,
-            "organisation": organisation,
             "form": form,
             "orga_form": orga_form,
             "responsable": responsable,
@@ -169,55 +199,159 @@ def aidant(request, aidant_id):
     )
 
 
-@require_POST
-@login_required
-@user_is_responsable_structure
-@activity_required
-def remove_card_from_aidant(request, aidant_id):
-    responsable: Aidant = request.user
-    aidant = get_object_or_404(Aidant, pk=aidant_id)
-    if not responsable.can_see_aidant(aidant):
-        raise Http404
+@aidant_logged_with_activity_required
+class RemoveCardFromAidant(FormView):
+    template_name = "aidants_connect_web/espace_responsable/aidant_remove_card.html"
+    form_class = RemoveCardFromAidantForm
+    success_url = reverse_lazy("espace_responsable_home")
 
-    if not aidant.has_a_carte_totp:
-        return redirect(
-            "espace_responsable_aidant",
-            aidant_id=aidant.id,
+    def dispatch(self, request, *args, **kwargs):
+        self.responsable: Aidant = request.user
+        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs.get("aidant_id"))
+
+        if not self.responsable.can_see_aidant(self.aidant):
+            raise Http404
+
+        if not self.aidant.has_a_carte_totp:
+            return HttpResponseRedirect(self.get_success_url())
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
+            "responsable": self.responsable,
+        }
+
+    def form_valid(self, form):
+        sn = self.aidant.carte_totp.serial_number
+
+        with transaction.atomic():
+            carte = CarteTOTP.objects.get(serial_number=sn)
+
+            with contextlib.suppress(TOTPDevice.DoesNotExist):
+                TOTPDevice.objects.get(key=carte.seed, user=self.aidant).delete()
+
+            carte.aidant = None
+            carte.save()
+
+            Journal.log_card_dissociation(
+                self.responsable, self.aidant, sn, form.cleaned_data["reason"]
+            )
+
+        django_messages.success(
+            self.request,
+            (
+                f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
+                f"de l’aidant {self.aidant.get_full_name()}."
+            ),
         )
 
-    form = RemoveCardFromAidantForm(request.POST)
+        return super().form_valid(form)
 
-    if not form.is_valid():
-        raise Exception("Invalid form for card/aidant dissociation")
 
-    data = form.cleaned_data
-    reason = data.get("reason")
-    if reason == "autre":
-        reason = data.get("other_reason")
-    sn = aidant.carte_totp.serial_number
-    with transaction.atomic():
-        carte = CarteTOTP.objects.get(serial_number=sn)
-        try:
-            device = TOTPDevice.objects.get(key=carte.seed, user=aidant)
-            device.delete()
-        except TOTPDevice.DoesNotExist:
-            pass
-        carte.aidant = None
-        carte.save()
-        Journal.log_card_dissociation(responsable, aidant, sn, reason)
+@aidant_logged_with_activity_required
+class AddAppOTPToAidant(FormView):
+    template_name = "aidants_connect_web/espace_responsable/app_otp_confirm.html"
+    form_class = AddAppOTPToAidantForm
+    success_url = reverse_lazy("espace_responsable_home")
 
-    django_messages.success(
-        request,
-        (
-            f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
-            f"de l’aidant {aidant.get_full_name()}."
-        ),
-    )
+    def dispatch(self, request, *args, **kwargs):
+        if not settings.FF_OTP_APP:
+            return HttpResponseRedirect(reverse("espace_responsable_home"))
 
-    return redirect(
-        "espace_responsable_aidant",
-        aidant_id=aidant.id,
-    )
+        self.responsable: Aidant = request.user
+        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
+
+        if not self.responsable.can_see_aidant(self.aidant):
+            raise Http404()
+
+        if self.aidant.totpdevice_set.filter(
+            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk
+        ).exists():
+            django_messages.warning(
+                request,
+                "Il existe déjà une application OTP liée à ce profil. Si vous voulez "
+                "en attacher une nouvelle, veuillez supprimer l'anciennne.",
+            )
+            return HttpResponseRedirect(self.get_success_url())
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.otp_device = TOTPDevice(
+            user=self.aidant,
+            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk,
+            confirmed=False,
+        )
+        request.session["otp_device"] = model_to_dict(self.otp_device)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.otp_device = TOTPDevice(
+            **self.get_model_kwargs(request.session["otp_device"])
+        )
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.otp_device.confirmed = True
+        self.otp_device.save()
+        return super().form_valid(form)
+
+    @staticmethod
+    def get_model_kwargs(fields: dict):
+        result = {}
+        for field_name, field_value in fields.items():
+            field = TOTPDevice._meta.get_field(field_name)
+
+            if field.many_to_one:
+                result[field.attname] = int(field_value)
+            else:
+                result[field_name] = field_value
+        return result
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "otp_device": self.otp_device}
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "otp_device_qr_code_href": (
+                f"data:image/png;base64,{self.get_image_base_64()}"
+            ),
+        }
+
+    def get_image_base_64(self):
+        stream = BytesIO()
+        img = qrcode.make(self.otp_device.config_url, box_size=7, border=4)
+        img.save(stream, "PNG")
+        return base64.b64encode(stream.getvalue()).decode("utf-8")
+
+
+@aidant_logged_with_activity_required
+class RemoveAppOTPFromAidant(DeleteView):
+    template_name = "aidants_connect_web/espace_responsable/app_otp_remove.html"
+    success_url = reverse_lazy("espace_responsable_home")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not settings.FF_OTP_APP:
+            return HttpResponseRedirect(reverse("espace_responsable_home"))
+        self.responsable: Aidant = request.user
+        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
+
+        if not self.responsable.can_see_aidant(self.aidant):
+            raise Http404()
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {**super().get_context_data(**kwargs), "aidant": self.aidant}
+
+    def get_object(self, queryset=None):
+        return self.aidant.totpdevice_set.filter(
+            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk
+        )
 
 
 @require_http_methods(["GET", "POST"])
@@ -358,7 +492,6 @@ def associate_aidant_carte_totp(request, aidant_id):
         "aidants_connect_web/espace_responsable/write-carte-totp-sn.html",
         {
             "aidant": aidant,
-            "organisation": organisation,
             "responsable": responsable,
             "form": form,
         },
@@ -408,9 +541,9 @@ def validate_aidant_carte_totp(request, aidant_id):
                 Journal.log_card_validation(
                     responsable, aidant, aidant.carte_totp.serial_number
                 )
-                # check if the validation request is for the responsable
+                # check if the validation request is for the référent
                 if responsable.id == aidant.id:
-                    # get all organisations aidant is responsable
+                    # get all organisations aidant is référent
                     valid_organisation_requests = OrganisationRequest.objects.filter(
                         organisation__in=responsable.responsable_de.all()
                     )
@@ -441,7 +574,7 @@ def validate_aidant_carte_totp(request, aidant_id):
     return render(
         request,
         "aidants_connect_web/espace_responsable/validate-carte-totp.html",
-        {"aidant": aidant, "organisation": organisation, "form": form},
+        {"aidant": aidant, "form": form},
     )
 
 
@@ -471,7 +604,7 @@ def new_habilitation_request(request):
     habilitation_request = form.save(commit=False)
 
     if Aidant.objects.filter(
-        email=habilitation_request.email,
+        email__iexact=habilitation_request.email,
         organisation__in=responsable.responsable_de.all(),
     ).exists():
         django_messages.warning(

@@ -1,21 +1,25 @@
 import logging
 from collections.abc import Collection
+from gettext import ngettext
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline
+from django.contrib import messages as django_messages
+from django.contrib.admin import ModelAdmin, SimpleListFilter, TabularInline, register
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.forms import ChoiceField
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
-from django.template import loader
-from django.urls import path, reverse
-from django.utils.html import format_html_join, linebreaks
+from django.urls import path, reverse, reverse_lazy
+from django.utils import timezone
+from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
+from django.views.generic import FormView
 
+from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
 from django_otp.plugins.otp_static.lib import add_static_token
 from django_otp.plugins.otp_static.models import StaticDevice
@@ -41,22 +45,29 @@ from aidants_connect.admin import (
     VisibleToTechAdmin,
     admin_site,
 )
+from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.utils.email import render_email
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
-    MassEmailHabilitatonForm,
+    MassEmailActionForm,
 )
 from aidants_connect_web.models import (
     Aidant,
     AidantManager,
+    AidantStatistiques,
+    AidantStatistiquesbyDepartment,
+    AidantStatistiquesbyRegion,
+    AidantType,
     Autorisation,
     CarteTOTP,
     Connection,
     HabilitationRequest,
     Journal,
     Mandat,
+    Notification,
     Organisation,
     Usager,
 )
@@ -190,7 +201,7 @@ class OrganisationResource(resources.ModelResource):
         if new:
             instance.skip_new = True
 
-    def skip_row(self, instance, original):
+    def skip_row(self, instance, original, row, import_validation_errors=None):
         if getattr(instance, "skip_new", False):
             return True
         if original.data_pass_id and original.data_pass_id != instance.data_pass_id:
@@ -240,6 +251,7 @@ class OrganisationAdmin(
         "is_active",
         "id",
         "data_pass_id",
+        "france_services_label",
     )
     readonly_fields = (
         "display_responsables",
@@ -249,6 +261,7 @@ class OrganisationAdmin(
     search_fields = ("name", "siret", "data_pass_id")
     list_filter = (
         "is_active",
+        "france_services_label",
         "type",
         WithoutDatapassIdFilter,
         RegionFilter,
@@ -258,7 +271,7 @@ class OrganisationAdmin(
 
     # For bulk import
     resource_class = OrganisationResource
-    change_list_template = (
+    import_export_change_list_template = (
         "aidants_connect_web/admin/import_export/change_list_organisation_import.html"
     )
     import_template_name = (
@@ -300,7 +313,7 @@ class OrganisationAdmin(
     def display_responsables(self, obj):
         return self.format_list_of_aidants(obj.responsables.order_by("last_name").all())
 
-    display_responsables.short_description = "Responsables"
+    display_responsables.short_description = "Référents"
 
     def display_aidants(self, obj):
         return self.format_list_of_aidants(obj.aidants.order_by("last_name").all())
@@ -484,11 +497,108 @@ class AidantDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisations__zipcode"
 
 
+class AidantGoneTooLong(SimpleListFilter):
+    title = "status de dernière connexion"
+    parameter_name = "gone_too_long"
+    relative_to = {"months": 5}
+
+    def value(self):
+        return strtobool(super().value(), None)
+
+    def lookups(self, request, model_admin):
+        return [
+            (False, "Connectés recemment"),
+            (True, "Actif mais non-connectés récemment"),
+        ]
+
+    def queryset(self, request, queryset: AidantManager):
+        queryset = queryset.filter(is_active=True)
+        match self.value():
+            case False:
+                return queryset.filter(
+                    last_login__gt=timezone.now() - relativedelta(**self.relative_to)
+                )
+            case True:
+                # Last connect more than 6 monts ago or never connected
+                return queryset.filter(
+                    Q(
+                        last_login__lte=timezone.now()
+                        - relativedelta(**self.relative_to)
+                    )
+                    | Q(last_login=None)
+                )
+            case _:
+                return queryset
+
+
 class AidantRegionFilter(RegionFilter):
     filter_parameter_name = "organisations__zipcode"
 
 
+class AidantMassDeactivateFromMailFormView(FormView):
+    form_class = MassEmailActionForm
+    template_name = "aidants_connect_web/admin/aidants/mass_deactivation_form.html"
+    success_url = reverse_lazy("otpadmin:aidants_connect_web_aidant_mass_deactivate")
+
+    def get_context_data(self, **kwargs):
+        return {
+            **self.kwargs["model_admin"].admin_site.each_context(self.request),
+            **super().get_context_data(**kwargs),
+            "media": self.kwargs["model_admin"].media,
+        }
+
+    def form_valid(self, form):
+        email_list = form.cleaned_data.get("email_list")
+        processed_emails = set()
+
+        for aidant in Aidant.objects.filter(email__in=email_list).all():
+            aidant.deactivate()
+            processed_emails.add(aidant.email)
+
+        non_existing_emails = email_list - processed_emails
+
+        if nb_non_existing := len(non_existing_emails):
+            emails = (
+                "".join([f"<p>{email}</p>" for email in sorted(non_existing_emails)])
+                if nb_non_existing > 1
+                else list(non_existing_emails)[0]
+            )
+
+            message = ngettext(
+                "Nous n’avons trouvé aucun aidant à désactiver portant l’email "
+                "suivant :%(emails)s.<br/>Ce profil n’a été désactivé.",
+                "Nous n’avons trouvé aucun aidant à désactiver pour les %(count)d "
+                "emails suivants :%(emails)s Ces profils n’ont pas été désactivés.",
+                nb_non_existing,
+            ) % {"count": nb_non_existing, "emails": emails}
+
+            django_messages.warning(
+                self.request,
+                mark_safe(f"<section>{message}</section>"),
+            )
+
+        if nb_processed_emails := len(processed_emails):
+            django_messages.success(
+                self.request,
+                ngettext(
+                    "Le profil correspondant à l’email %(email)s a été désactivé.",
+                    "Nous avons désactivé %(count)d profils.",
+                    nb_processed_emails,
+                )
+                % {
+                    "count": nb_processed_emails,
+                    "email": list(processed_emails)[0],
+                },
+            )
+
+        return super().form_valid(form)
+
+
 class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
+    import_export_change_list_template = (
+        "aidants_connect_web/admin/aidants/change_list.html"
+    )
+
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
@@ -501,6 +611,19 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 form.base_fields["is_staff"].disabled = True
 
         return form
+
+    def get_urls(self):
+        return [
+            path(
+                "deactivate-from-emails/",
+                self.admin_site.admin_view(
+                    AidantMassDeactivateFromMailFormView.as_view()
+                ),
+                {"model_admin": self},
+                name="aidants_connect_web_aidant_mass_deactivate",
+            ),
+            *super().get_urls(),
+        ]
 
     def display_totp_device_status(self, obj):
         return obj.has_a_totp_device
@@ -550,11 +673,14 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     )
     list_filter = (
         "is_active",
-        AidantRegionFilter,
-        AidantDepartmentFilter,
+        "aidant_type",
+        "can_create_mandats",
         AidantWithMandatsFilter,
+        AidantGoneTooLong,
         "is_staff",
         "is_superuser",
+        AidantRegionFilter,
+        AidantDepartmentFilter,
     )
     search_fields = ("id", "first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
@@ -569,6 +695,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             {
                 "fields": (
                     "username",
+                    "aidant_type",
                     "first_name",
                     "last_name",
                     "email",
@@ -599,6 +726,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "is_staff",
                     "is_superuser",
                     "responsable_de",
+                    "ff_otp_app",
                 )
             },
         ),
@@ -735,7 +863,7 @@ class HabilitationRequestImportResource(resources.ModelResource):
         if new:
             instance.is_new = True
 
-    def skip_row(self, instance, original):
+    def skip_row(self, instance, original, row, import_validation_errors=None):
         # do not change existing rows in database
         return not getattr(instance, "is_new", False)
 
@@ -761,10 +889,10 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
         return super().before_import_row(row, row_number, **kwargs)
 
     # skip new rows
-    def skip_row(self, instance, original):
+    def skip_row(self, instance, original, row, import_validation_errors=None):
         if not original.id:
             return True
-        return super().skip_row(instance, original)
+        return super().skip_row(instance, original, row, import_validation_errors)
 
     def after_import_instance(self, instance, new, row_number=None, **kwargs):
         instance.formation_done = True
@@ -849,7 +977,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
 
     resource_class = HabilitationRequestResource
 
-    change_list_template = (
+    import_export_change_list_template = (
         "aidants_connect_web/admin/habilitation_request/change_list.html"
     )
 
@@ -870,7 +998,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         elif import_choices and import_choices == "OLD_FILES_IMPORT":
             return HabilitationRequestImportResource
 
-        return self.get_resource_class()
+        return self.resource_class
 
     def get_import_form(self):
         return HabilitationRequestImportForm
@@ -910,21 +1038,18 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             self.send_refusal_email(habilitation_request)
         self.message_user(request, f"{rows_updated} demandes ont été refusées.")
 
-    def send_refusal_email(self, object):
-        text_message = loader.render_to_string(
-            "email/aidant_a_former_refuse.txt", {"aidant": object}
-        )
-        html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+    def send_refusal_email(self, aidant):
+        text_message, html_message = render_email(
+            "email/aidant_a_former_refuse.mjml", {"aidant": aidant}
         )
 
         subject = (
             "Aidants Connect - La demande d'ajout de l'aidant(e) "
-            f"{object.first_name} {object.last_name} a été refusée."
+            f"{aidant.first_name} {aidant.last_name} a été refusée."
         )
 
         recipients = [
-            manager.email for manager in object.organisation.responsables.all()
+            manager.email for manager in aidant.organisation.responsables.all()
         ]
 
         send_mail(
@@ -958,21 +1083,18 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
 
     mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
 
-    def send_validation_email(self, object):
-        text_message = loader.render_to_string(
-            "email/aidant_a_former_valide.txt", {"aidant": object}
-        )
-        html_message = loader.render_to_string(
-            "email/empty.html", {"content": mark_safe(linebreaks(text_message))}
+    def send_validation_email(self, aidant):
+        text_message, html_message = render_email(
+            "email/aidant_a_former_valide.mjml", {"aidant": aidant}
         )
 
         subject = (
             "Aidants Connect - La demande d'ajout de l'aidant(e) "
-            f"{object.first_name} {object.last_name} a été validée !"
+            f"{aidant.first_name} {aidant.last_name} a été validée !"
         )
 
         recipients = [
-            manager.email for manager in object.organisation.responsables.all()
+            manager.email for manager in aidant.organisation.responsables.all()
         ]
 
         send_mail(
@@ -1005,7 +1127,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         context = {
             **self.admin_site.each_context(request),
             "media": self.media,
-            "form": MassEmailHabilitatonForm(),
+            "form": MassEmailActionForm(),
         }
 
         return render(
@@ -1015,7 +1137,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         )
 
     def __validate_from_email_post(self, request):
-        form = MassEmailHabilitatonForm(request.POST)
+        form = MassEmailActionForm(request.POST)
         context = {
             **self.admin_site.each_context(request),
             "media": self.media,
@@ -1036,6 +1158,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 HabilitationRequest.STATUS_NEW,
                 HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
                 HabilitationRequest.STATUS_VALIDATED,
+                HabilitationRequest.STATUS_CANCELLED,
             )
         )
         treated_emails = set()
@@ -1285,6 +1408,19 @@ class MandatAdmin(VisibleToTechAdmin, ModelAdmin):
 
 class ConnectionAdmin(ModelAdmin):
     list_display = ("id", "usager", "aidant", "complete")
+    raw_id_fields = ("usager", "aidant", "organisation")
+    readonly_fields = ("autorisation",)
+    search_fields = (
+        "id",
+        "aidant__first_name",
+        "aidant__last_name",
+        "aidant__email",
+        "usager__family_name",
+        "usager__given_name",
+        "usager__email",
+        "consent_request_id",
+        "organisation__name",
+    )
 
 
 class JournalAdmin(VisibleToTechAdmin, ModelAdmin):
@@ -1401,7 +1537,13 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 
     totp_devices_diagnostic.short_description = "Diagnostic Carte/TOTP Device"
 
-    list_display = ("serial_number", "aidant", get_email_user_for_device)
+    list_display = (
+        "serial_number",
+        "aidant",
+        get_email_user_for_device,
+        "is_functional",
+    )
+    list_filter = ("is_functional",)
     search_fields = ("serial_number", "aidant__email")
     raw_id_fields = ("aidant",)
     readonly_fields = ("totp_devices_diagnostic",)
@@ -1623,9 +1765,62 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         )
 
 
+class AidantStatistiquesAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "created_at",
+        "number_aidants",
+        "number_aidants_is_active",
+        "number_responsable",
+        "number_aidants_without_totp",
+        "number_aidant_can_create_mandat",
+        "number_aidant_with_login",
+        "number_aidant_who_have_created_mandat",
+    )
+
+
+class AidantStatistiquesbyDepartmentAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "created_at",
+        "departement",
+        "number_aidants",
+        "number_aidants_is_active",
+        "number_responsable",
+        "number_aidants_without_totp",
+        "number_aidant_can_create_mandat",
+        "number_aidant_with_login",
+        "number_aidant_who_have_created_mandat",
+    )
+
+
+class AidantStatistiquesbyRegionAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "created_at",
+        "region",
+        "number_aidants",
+        "number_aidants_is_active",
+        "number_responsable",
+        "number_aidants_without_totp",
+        "number_aidant_can_create_mandat",
+        "number_aidant_with_login",
+        "number_aidant_who_have_created_mandat",
+    )
+
+
+@register(Notification, site=admin_site)
+class NotificationAdmin(ModelAdmin):
+    date_hierarchy = "date"
+    raw_id_fields = ("aidant",)
+    list_display = ("type", "aidant", "date", "auto_ack_date", "was_ack")
+
+
 # Display the following tables in the admin
 admin_site.register(Organisation, OrganisationAdmin)
 admin_site.register(Aidant, AidantAdmin)
+admin_site.register(AidantType)
+admin_site.register(AidantStatistiques, AidantStatistiquesAdmin)
+admin_site.register(AidantStatistiquesbyDepartment, AidantStatistiquesbyDepartmentAdmin)
+admin_site.register(AidantStatistiquesbyRegion, AidantStatistiquesbyRegionAdmin)
+
 admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)
 admin_site.register(Mandat, MandatAdmin)

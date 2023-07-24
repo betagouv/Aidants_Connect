@@ -24,6 +24,7 @@ from aidants_connect_web.models import (
     HabilitationRequest,
     Journal,
     Mandat,
+    Notification,
     Organisation,
     OrganisationType,
     Usager,
@@ -77,12 +78,24 @@ class AidantFactory(DjangoModelFactory):
         with_otp_device = kwargs.get("with_otp_device", False)
         if with_otp_device:
             device = self.staticdevice_set.create(id=self.id)
-            with_otp_device = str(with_otp_device)
-            value = with_otp_device if with_otp_device.isnumeric() else "123456"
-            device.token_set.create(token=value)
+            if not isinstance(with_otp_device, Iterable) or isinstance(
+                with_otp_device, str
+            ):
+                with_otp_device = [with_otp_device]
+
+            default = 123456
+            for item in with_otp_device:
+                value = str(item) if str(item).isnumeric() else str(default)
+                device.token_set.create(token=value)
+                default += 1
 
         if kwargs.get("is_organisation_manager", False):
             self.responsable_de.add(self.organisation)
+
+        if kwargs.get("with_carte_totp", False):
+            confirmed = kwargs.get("with_carte_totp_confirmed", True)
+            carte: CarteTOTP = CarteTOTPFactory(aidant=self)
+            carte.createTOTPDevice(confirmed=confirmed).save()
 
     @post_generation
     def password(self, create, value, **_):
@@ -237,3 +250,10 @@ class AttestationJournalFactory(JournalFactory):
     is_remote_mandat = False
     access_token = Faker("md5")
     duree = 6
+
+
+class NotificationFactory(DjangoModelFactory):
+    aidant = SubFactory(AidantFactory)
+
+    class Meta:
+        model = Notification

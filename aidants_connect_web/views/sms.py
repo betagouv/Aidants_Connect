@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 from django.conf import settings
 from django.http import HttpResponse, QueryDict
@@ -95,10 +96,10 @@ class Callback(View):
             "remote_constent_method": consent_request.remote_constent_method,
             "user_phone": consent_request.user_phone,
             "consent_request_id": consent_request.consent_request_id,
+            "message": sms_response.message,
         }
 
-        consent_response = settings.SMS_RESPONSE_CONSENT.lower().strip()
-        if sms_response.message.lower() != consent_response:  # No consent case
+        if not self._check_user_consents(sms_response.message):  # No consent case
             Journal.log_user_denies_sms(**kwargs)
             api.send_sms(
                 consent_request.user_phone,
@@ -117,3 +118,17 @@ class Callback(View):
 
     def get(self, request, *args, **kwargs):
         return HttpResponse("Status=0")
+
+    def _check_user_consents(self, user_response: str) -> bool:
+        """
+        Matches user response against parametered consent response.
+
+        User response will be trimmed and any existing period, removed
+        :returns: True if user response matches the parametered consent response,
+                  False otherwise.
+        """
+        # Regex to strip spaces and remove possible final period.
+        # Test on https://regex101.com/ for explanation
+        actual_response = re.sub(r"(^\s*)|(\s*\.?\s*$)", "", user_response).lower()
+        expected_response = settings.SMS_RESPONSE_CONSENT.lower().strip()
+        return actual_response == expected_response

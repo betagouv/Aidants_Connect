@@ -1,3 +1,5 @@
+import re
+
 from django.core import mail
 from django.test import tag
 
@@ -22,18 +24,17 @@ class CancelAutorisationTests(FunctionalTestCase):
         login_field.send_keys(self.aidant_thierry.email)
         otp_field = self.selenium.find_element(By.ID, "id_otp_token")
         otp_field.send_keys("123456")
-        submit_button = self.selenium.find_element(By.XPATH, "//button")
+        submit_button = self.selenium.find_element(
+            By.CSS_SELECTOR, "input[type='submit']"
+        )
         submit_button.click()
         email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(
-            email_sent_title, "Un email vous a été envoyé pour vous connecter."
-        )
+        self.assertEqual("LIEN DE CONNEXION ENVOYÉ", email_sent_title)
         self.assertEqual(len(mail.outbox), 1)
-        token_email = mail.outbox[0].body
-        line_containing_magic_link = token_email.split("\n")[2]
-        magic_link_https = line_containing_magic_link.split()[-1]
-        magic_link_http = magic_link_https.replace("https", "http", 1)
-        self.selenium.get(magic_link_http)
+        url = re.findall(r"https?://\S+", mail.outbox[0].body, flags=re.M)[0].replace(
+            "https", "http", 1
+        )
+        self.selenium.get(url)
         WebDriverWait(self.selenium, 5).until(
             lambda selenium: "chargement" not in selenium.current_url,
             message="The magicauth wait JavaScript did not work - check CSP compliance",

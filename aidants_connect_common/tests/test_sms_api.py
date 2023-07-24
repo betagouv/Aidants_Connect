@@ -8,9 +8,18 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from phonenumbers import parse as parse_phone
+from redis import Redis
+from redis.exceptions import ConnectionError
 from requests import Response
 
-from aidants_connect_common.utils.sms_api import SmsApi, SmsApiImpl, SmsApiMock
+from aidants_connect_common.utils import sms_api
+from aidants_connect_common.utils.sms_api import (
+    AuthInfos,
+    OAuthMiddleware,
+    SmsApi,
+    SmsApiImpl,
+    SmsApiMock,
+)
 
 
 @override_settings(
@@ -74,3 +83,48 @@ class TestSmsApi(TestCase):
                 "encoding": "Unicode",
             },
         )
+
+
+class TestOAuthMiddleware(TestCase):
+    def setUp(self):
+        if hasattr(OAuthMiddleware, "_redis_client"):
+            del OAuthMiddleware._redis_client
+
+    @mock.patch("aidants_connect_common.utils.sms_api.Redis.ping")
+    @mock.patch(
+        "aidants_connect_common.utils.sms_api.Redis.from_url",
+        side_effect=Redis.from_url,
+    )
+    def test_redis_client_is_cached(self, redis_ping: Mock, redis_from_url: Mock):
+        redis_ping.return_value = None
+
+        target = OAuthMiddleware(AuthInfos("user", "pass", "http://localhost"))
+
+        self.assertFalse(hasattr(OAuthMiddleware, "_redis_client"))
+
+        client = target.redis_client
+        redis_from_url.assert_called()
+        redis_from_url.reset_mock()
+
+        self.assertIsNotNone(client)
+        self.assertIsInstance(OAuthMiddleware.redis_client, Redis)
+        self.assertEqual(client, OAuthMiddleware.redis_client)
+        # Redis instance is cached on class
+        redis_from_url.assert_not_called()
+
+    @mock.patch("aidants_connect_common.utils.sms_api.Redis.ping")
+    @mock.patch("aidants_connect_common.utils.sms_api.logger.warning")
+    def test_redis_client_is_not_created_when_no_redis_instance_is_available(
+        self, logger_warning: Mock, redis_ping: Mock
+    ):
+        redis_ping.side_effect = ConnectionError()
+
+        target = OAuthMiddleware(AuthInfos("user", "pass", "http://localhost"))
+
+        self.assertFalse(hasattr(OAuthMiddleware, "_redis_client"))
+        self.assertIsNone(target.redis_client)
+        self.assertTrue(hasattr(OAuthMiddleware, "_redis_client"))
+        logger_warning.assert_called_with(
+            f"{sms_api.__file__}: No Redis connection available"
+        )
+        self.assertIsNone(OAuthMiddleware.redis_client)

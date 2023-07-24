@@ -1,0 +1,17 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+  <mj-section>
+    <mj-column>
+      <mj-text>
+        <p>Bonjour,</p>
+        <p>Bonne nouvelle ! Il existe déjà un espace demandeur associé à cet email chez nous.</p>
+      </mj-text>
+      <mj-button href="{{ url }}">Retrouver toutes vos demandes en cours et en déposer de nouvelles</mj-button>
+      <mj-text>
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l’adresse suivante dans votre navigateur :
+        <a href="{{ url }}">{{ url }}</a>
+      </mj-text>
+    </mj-column>
+  </mj-section>
+{% endblock %}

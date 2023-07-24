@@ -15,7 +15,7 @@
         <form
           method="post"
           data-controller="dynamic-form"
-          data-dynamic-form-type-input-container-class="type-input-container"
+          data-dynamic-form-type-other-value="{{ type_other_value }}"
         >
           <h2>Structure d’accueil</h2>
           <p class="subtitle">Vous pouvez faire autant de demandes qu’il existe de structures d’accueil. Tous les champs
@@ -106,8 +106,7 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script src="{% static 'js/utils.js' %}"></script>
-  <script src="{% static 'js/organisation_form.js' %}"></script>
+  <script defer type="module" src="{% static 'js/organisation-form.js' %}"></script>
 {% endblock %}
 
 {% block extracss %}

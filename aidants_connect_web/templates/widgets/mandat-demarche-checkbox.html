@@ -1,0 +1,8 @@
+{% extends "widgets/detailed_radio_option.html" %}
+{% block widget_description %}
+  <span class="scope">{{ widget.description }}</span>
+  <small class="scope-examples">
+    Exemples :<br/>
+    {% for service in option.service_exemples %}<span class="example">{{ service }}</span>{% endfor %}
+  </small>
+{% endblock %}

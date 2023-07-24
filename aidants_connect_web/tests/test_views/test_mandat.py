@@ -1,27 +1,213 @@
-from datetime import datetime, timedelta
+import re
+from datetime import date, datetime, timedelta
+from textwrap import dedent
+from typing import List
+from unittest import mock
+from unittest.mock import ANY, MagicMock, Mock
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib import messages as django_messages
+from django.db import transaction
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
-from django.utils import timezone
+from django.utils import formats, timezone
 
 from freezegun import freeze_time
 
+from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.forms import MandatForm
-from aidants_connect_web.models import Autorisation, Connection, Journal, Usager
+from aidants_connect_web.models import (
+    Aidant,
+    Autorisation,
+    Connection,
+    Journal,
+    Mandat,
+    Usager,
+)
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    ConnectionFactory,
     MandatFactory,
     OrganisationFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import mandat
+from aidants_connect_web.views.mandat import RemoteMandateMixin
+from aidants_connect_web.views.service import humanize_demarche_names
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
+
+UUID = "7ce05928-979c-49ab-8e10-a1a221d39acb"
+
+
+@tag("new_mandat")
+class TestRemoteMandateMixin(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.phone_number = "0 800 840 800"
+        cls.aidant_thierry = AidantFactory()
+
+    def test_process_consent_returns_none_if_not_remote_or_not_blocked_method(self):
+        target = RemoteMandateMixin()
+
+        form = self._get_form(["papiers", "logement"])
+
+        for method in RemoteConsentMethodChoices.blocked_methods():
+            setattr(target, f"_process_{method}_first_step", MagicMock())
+
+        result = target.process_consent_first_step(
+            self.aidant_thierry, self.aidant_thierry.organisation, form
+        )
+
+        for method in RemoteConsentMethodChoices.blocked_methods():
+            getattr(target, f"_process_{method}_first_step").assert_not_called()
+
+        self.assertIs(None, result)
+
+        form = self._get_form(
+            ["papiers", "logement"], RemoteConsentMethodChoices.LEGACY
+        )
+
+        for method in RemoteConsentMethodChoices.blocked_methods():
+            setattr(target, f"_process_{method}_first_step", MagicMock())
+
+        result = target.process_consent_first_step(
+            self.aidant_thierry, self.aidant_thierry.organisation, form
+        )
+
+        for method in RemoteConsentMethodChoices.blocked_methods():
+            getattr(target, f"_process_{method}_first_step").assert_not_called()
+
+        self.assertIs(None, result)
+
+    @mock.patch("aidants_connect_web.views.mandat.uuid4")
+    @mock.patch("aidants_connect_common.utils.sms_api.SmsApiMock.send_sms")
+    def test_process_sms_first_step_template(
+        self, send_sms_mock: Mock, uuid4_mock: Mock
+    ):
+        uuid4_mock.return_value = UUID
+
+        form = self._get_form(
+            list(settings.DEMARCHES.keys()), RemoteConsentMethodChoices.SMS
+        )
+
+        RemoteMandateMixin().process_consent_first_step(
+            self.aidant_thierry, self.aidant_thierry.organisation, form
+        )
+
+        send_sms_mock.assert_called_once_with(
+            ANY,
+            UUID,
+            self._trim_margin(
+                """Aidant Connect, bonjour.
+                |
+                |L'organisation COMMUNE D'HOULBEC COCHEREL va créer un mandat\
+                | pour une durée d'un mois (31 jours) en votre nom pour les démarches\
+                | suivantes :
+                |
+                |- Argent - impôts - consomation,
+                |- Étranger - europe,
+                |- Famille - scolarité,
+                |- Justice,
+                |- Logement,
+                |- Loisirs - sport - culture,
+                |- Papiers - citoyenneté - élections,
+                |- Social - santé,
+                |- Transports - mobilité,
+                |- Travail - formation."""
+            ),
+        )
+
+        send_sms_mock.reset_mock()
+
+        with transaction.atomic():
+            Journal.objects.filter(consent_request_id=UUID).delete()
+
+        form = self._get_form(["papiers"], RemoteConsentMethodChoices.SMS)
+
+        RemoteMandateMixin().process_consent_first_step(
+            self.aidant_thierry, self.aidant_thierry.organisation, form
+        )
+
+        send_sms_mock.assert_called_once_with(
+            ANY,
+            UUID,
+            self._trim_margin(
+                """Aidant Connect, bonjour.
+                |
+                |L'organisation COMMUNE D'HOULBEC COCHEREL va\
+                | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
+                | la démarche Papiers - citoyenneté - élections."""
+            ),
+        )
+
+    @mock.patch("aidants_connect_common.utils.sms_api.SmsApiMock.send_sms")
+    def test_process_sms_second_step_template(self, send_sms_mock: Mock):
+        connection: Connection = ConnectionFactory(
+            aidant=self.aidant_thierry,
+            organisation=self.aidant_thierry.organisation,
+            mandat_is_remote=True,
+            remote_constent_method=RemoteConsentMethodChoices.SMS.name,
+            consent_request_id=UUID,
+            user_phone="0 800 840 800",
+            duree_keyword="SHORT",
+        )
+
+        Journal.log_user_mandate_recap_sms_sent(
+            aidant=connection.aidant,
+            demarche=connection.demarche,
+            duree=connection.duree_keyword,
+            remote_constent_method=connection.remote_constent_method,
+            user_phone=connection.user_phone,
+            consent_request_id=connection.consent_request_id,
+            message="message=0",
+        )
+
+        RemoteMandateMixin().process_consent_second_step(connection)
+
+        send_sms_mock.assert_called_once_with(
+            ANY,
+            UUID,
+            self._trim_margin(
+                """Aidant Connect, bonjour.
+                |
+                |Donnez-vous votre accord pour la création de ce mandat ?\
+                | Répondez « Oui » pour accepter le mandat."""
+            ),
+        )
+
+    def _trim_margin(self, message):
+        return re.sub(r"[\r\t\f\v  ]+\|", "", message, flags=re.MULTILINE)
+
+    def _get_form(
+        self,
+        demarche: List[str],
+        remote_constent_method: RemoteConsentMethodChoices | None = None,
+    ):
+        data = {
+            "demarche": demarche,
+            "duree": "MONTH",
+            "is_remote": remote_constent_method is not None,
+            "user_phone": self.phone_number,
+            "user_remote_contact_verified": True,
+        }
+
+        if remote_constent_method:
+            data["remote_constent_method"] = remote_constent_method.value
+
+        form = MandatForm(data=data)
+
+        if not form.is_valid():
+            self.fail(
+                f"Test form is invalid because of the following errors: {form.errors}"
+            )
+
+        return form
 
 
 @tag("new_mandat")
@@ -109,8 +295,11 @@ class NewMandatTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data["user_phone"] = self.phone_number
+        data["user_remote_contact_verified"] = True
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/creation_mandat/attente_consentement/")
+        self.assertRedirects(
+            response, "/creation_mandat/a_distance/demande_consentement/"
+        )
 
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
         response = self.client.post("/creation_mandat/", data=data)
@@ -121,11 +310,12 @@ class NewMandatTests(TestCase):
             "is_remote": True,
             "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
             "user_phone": self.phone_number,
+            "user_remote_contact_verified": True,
         }
         response = self.client.post("/creation_mandat/", data=data)
         self.assertRedirects(
             response,
-            "/creation_mandat/attente_consentement/",
+            "/creation_mandat/a_distance/demande_consentement/",
         )
 
 
@@ -184,21 +374,28 @@ class NewMandatRecapTests(TestCase):
 
     def test_post_to_recap_with_correct_data_redirects_to_success(self):
         self.client.force_login(self.aidant_thierry)
+        uuid = str(uuid4())
         mandat_builder = Connection.objects.create(
             demarches=["papiers", "logement"],
             duree_keyword="LONG",
             usager=self.test_usager,
+            consent_request_id=uuid,
         )
         session = self.client.session
         session["connection"] = mandat_builder.id
         session.save()
 
         response = self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
+
+        created_mandat = Mandat.objects.get(consent_request_id=uuid)
+
         self.assertEqual(Usager.objects.all().count(), 1)
-        self.assertRedirects(response, "/creation_mandat/succes/")
+        self.assertRedirects(
+            response, reverse("new_attestation_final", args=(created_mandat.pk,))
+        )
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")
 
@@ -328,12 +525,13 @@ class NewMandatRecapTests(TestCase):
             self.assertEqual(Autorisation.objects.count(), 3)
 
             last_usager_organisation_papiers_autorisations = (
-                Autorisation.objects.filter(  # noqa
+                Autorisation.objects.filter(
                     demarche="papiers",
                     mandat__usager=self.test_usager,
                     mandat__organisation=self.aidant_thierry.organisation,
                 ).order_by("-mandat__creation_date")
             )
+
             new_papiers_autorisation = last_usager_organisation_papiers_autorisations[0]
             old_papiers_autorisation = last_usager_organisation_papiers_autorisations[1]
             self.assertEqual(new_papiers_autorisation.duration_for_humans, 366)  # noqa
@@ -580,17 +778,9 @@ class GenerateAttestationTests(TestCase):
             usager=cls.test_usager,
         )
 
-    def test_attestation_projet_url_triggers_the_correct_view(self):
-        found = resolve("/creation_mandat/visualisation/projet/")
-        self.assertEqual(found.func.view_class, mandat.AttestationProject)
-
-    def test_attestation_final_url_triggers_the_correct_view(self):
-        found = resolve("/creation_mandat/visualisation/final/")
-        self.assertEqual(found.func, mandat.attestation_final)
-
     def test_autorisation_qrcode_url_triggers_the_correct_view(self):
         found = resolve("/creation_mandat/qrcode/")
-        self.assertEqual(found.func, mandat.attestation_qrcode)
+        self.assertEqual(found.func.view_class, mandat.AttestationQRCode)
 
     def test_new_mandat_waiting_room_url_triggers_the_correct_view(self):
         found = resolve(reverse("new_mandat_waiting_room"))
@@ -600,7 +790,7 @@ class GenerateAttestationTests(TestCase):
         found = resolve(reverse("new_mandat_waiting_room_json"))
         self.assertEqual(found.func.view_class, mandat.WaitingRoomJson)
 
-    def test_autorisation_qrcode_ok_with_connection_and_mandat_id(self):
+    def test_autorisation_qrcode_ok_with_and_without_mandat_id(self):
         mandat = MandatFactory(
             organisation=self.aidant_thierry.organisation,
             usager=self.test_usager,
@@ -609,12 +799,10 @@ class GenerateAttestationTests(TestCase):
 
         self.client.force_login(self.aidant_thierry)
 
-        session = self.client.session
-        session["connection"] = 1
-        session["qr_code_mandat_id"] = mandat.pk
-        session.save()
+        response = self.client.get(reverse("new_attestation_qrcode", args=(mandat.pk,)))
+        self.assertEqual(response.status_code, 200)
 
-        response = self.client.get("/creation_mandat/qrcode/")
+        response = self.client.get(reverse("new_attestation_qrcode"))
         self.assertEqual(response.status_code, 200)
 
     def test_autorisation_qrcode_ok_with_mandat_id(self):
@@ -626,11 +814,7 @@ class GenerateAttestationTests(TestCase):
 
         self.client.force_login(self.aidant_thierry)
 
-        session = self.client.session
-        session["qr_code_mandat_id"] = mandat.pk
-        session.save()
-
-        response = self.client.get("/creation_mandat/qrcode/")
+        response = self.client.get(reverse("new_attestation_qrcode", args=(mandat.pk,)))
         self.assertEqual(response.status_code, 200)
 
     def test_response_is_the_print_page(self):
@@ -664,3 +848,310 @@ class GenerateAttestationTests(TestCase):
         self.assertIn("COMMUNE", response_content)
         # if this fails, check if info is not on second page
         self.assertIn("18 juillet 2020", response_content)
+
+
+class TranslationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_thierry: Aidant = AidantFactory()
+        cls.pachto_language: MandateTranslation = MandateTranslation.objects.create(
+            lang="pus", body="# Test title\n\nTest"
+        )
+        cls.breton_language: MandateTranslation = MandateTranslation.objects.create(
+            lang="br", body="# Test title\n\nTest"
+        )
+
+    def test_get_triggers_the_correct_view(self):
+        found = resolve(reverse("mandate_translation"))
+        self.assertEqual(found.func.view_class, mandat.Translation)
+
+    def test_get_renders_the_correct_template(self):
+        self.client.force_login(self.aidant_thierry)
+
+        response = self.client.get(reverse("mandate_translation"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/attestation_translation.html"
+        )
+
+    def test_post_returns_404_on_unknown_lang(self):
+        self.client.force_login(self.aidant_thierry)
+
+        response = self.client.post(
+            reverse("mandate_translation"), data={"lang_code": "aaaaaaaaaaaaa"}
+        )
+
+        self.assertEqual(404, response.status_code)
+
+    def test_post_returns_html_translation_on_known_lang(self):
+        self.client.force_login(self.aidant_thierry)
+
+        response = self.client.post(
+            reverse("mandate_translation"),
+            data={"lang_code": self.pachto_language.lang},
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertHTMLEqual(
+            '<section class="container" dir="rtl">'
+            "<h1>Test title</h1><p>Test</p></<section>",
+            response.content.decode("utf-8"),
+        )
+
+        response = self.client.post(
+            reverse("mandate_translation"),
+            data={"lang_code": self.breton_language.lang},
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertHTMLEqual(
+            '<section class="container"><h1>Test title</h1><p>Test</p></<section>',
+            response.content.decode("utf-8"),
+        )
+
+
+class AttestationVisualisationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_1: Aidant = AidantFactory()
+        cls.aidant_2: Aidant = AidantFactory()
+        cls.mandat: Mandat = MandatFactory(organisation=cls.aidant_1.organisation)
+        cls.mandat_no_template: Mandat = MandatFactory(
+            organisation=cls.aidant_1.organisation, template_path=None
+        )
+        cls.mandat_aidant_2: Mandat = MandatFactory(
+            organisation=cls.aidant_2.organisation, template_path=None
+        )
+
+    def test_get_triggers_the_correct_view(self):
+        found = resolve(
+            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+        )
+        self.assertEqual(found.func.view_class, mandat.Attestation)
+
+    def test_raises_404_on_mandate_not_found(self):
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse("mandat_visualisation", kwargs={"mandat_id": 10_000_000})
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_raises_404_on_mandate_found_for_another_organisation(self):
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse(
+                "mandat_visualisation", kwargs={"mandat_id": self.mandat_aidant_2.pk}
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_variables_set_for_mandate_with_template(self):
+        """
+        Should set ``modified=False`` in ``request.context``
+        """
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+        )
+
+        self.assertFalse(
+            response.context["modified"],
+            "'modified' should be set to False in context when the mandate has "
+            "a template path set",
+        )
+
+    def test_variables_set_for_mandate_without_template(self):
+        """
+        Should set ``modified=True`` in ``request.context``
+        """
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse(
+                "mandat_visualisation", kwargs={"mandat_id": self.mandat_no_template.pk}
+            )
+        )
+
+        self.assertTrue(
+            response.context["modified"],
+            "'modified' should be set to True in context when the mandate doesn't "
+            "have a template path set",
+        )
+
+    def test_get_renders_the_template_on_mandate_found(self):
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
+
+        expected_context = {
+            "usager": self.mandat.usager,
+            "aidant": self.aidant_1,
+            "date": formats.date_format(self.mandat.creation_date.date(), "l j F Y"),
+            "demarches": [
+                humanize_demarche_names(it.demarche)
+                for it in self.mandat.autorisations.all()
+            ],
+            "duree": self.mandat.get_duree_keyword_display(),
+            "current_mandat_template": self.mandat.get_mandate_template_path(),
+            "final": True,
+            "modified": False,
+        }
+
+        for key, expected in expected_context.items():
+            self.assertEqual(
+                expected,
+                response.context[key],
+                dedent(
+                    f"""
+                    Context for variable {key!r} is different from expected
+                    expected: {expected}
+                    got: {response.context[key]}"""
+                ),
+            )
+
+
+class AttestationProjectTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.connection: Connection = ConnectionFactory(
+            duree_keyword="SHORT", demarches=["argent", "papiers"]
+        )
+        cls.aidant_1: Aidant = AidantFactory()
+
+    def test_get_triggers_the_correct_view(self):
+        found = resolve(reverse("new_attestation_projet"))
+        self.assertEqual(found.func.view_class, mandat.AttestationProject)
+
+    def test_logout_on_no_connection(self):
+        self.client.force_login(self.aidant_1)
+
+        session = self.client.session
+        session["connection"] = 10_000_000
+        session.save()
+
+        self.assertTrue(self.aidant_1.is_authenticated)
+
+        response = self.client.get(reverse("new_attestation_projet"))
+
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+        self.assertEqual(response.status_code, 403)
+
+    @freeze_time("2020-01-01 07:00:00")
+    def test_renders_attestation(self):
+        self.client.force_login(self.aidant_1)
+
+        session = self.client.session
+        session["connection"] = self.connection.pk
+        session.save()
+
+        response = self.client.get(reverse("new_attestation_projet"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
+
+        expected_context = {
+            "usager": self.connection.usager,
+            "aidant": self.aidant_1,
+            "date": formats.date_format(date.today(), "l j F Y"),
+            "demarches": [humanize_demarche_names(it) for it in ["argent", "papiers"]],
+            "duree": "pour une durée de 1 jour",
+            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
+            "final": False,
+            "modified": False,
+        }
+
+        for key, expected in expected_context.items():
+            self.assertEqual(
+                expected,
+                response.context[key],
+                dedent(
+                    f"""
+                    Context for variable {key!r} is different from expected
+                    expected: {expected}
+                    got: {response.context[key]}"""
+                ),
+            )
+
+    def test_displays_warning(self):
+        self.client.force_login(self.aidant_1)
+
+        session = self.client.session
+        session["connection"] = self.connection.pk
+        session.save()
+
+        response = self.client.get(reverse("new_attestation_projet"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            b"Attention\xc2\xa0! Ceci est un projet de mandat. "
+            b"Il n'a aucune valeur juridique",
+            response.content,
+        )
+
+
+class AttestationFinalTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_1: Aidant = AidantFactory()
+        cls.mandat: Mandat = MandatFactory(
+            post__create_authorisations=["argent", "papiers"],
+            organisation=cls.aidant_1.organisation,
+        )
+
+    def test_get_triggers_the_correct_view(self):
+        found = resolve(reverse("new_attestation_final", args=(self.mandat.pk,)))
+        self.assertEqual(found.func.view_class, mandat.Attestation)
+
+    def test_404_on_mandat_not_found(self):
+        self.client.force_login(self.aidant_1)
+        self.assertTrue(self.aidant_1.is_authenticated)
+
+        response = self.client.get(
+            reverse("new_attestation_final", args=(self.mandat.pk + 10_000,))
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_renders_attestation(self):
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse("new_attestation_final", args=(self.mandat.pk,))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
+
+        expected_context = {
+            "usager": self.mandat.usager,
+            "aidant": self.aidant_1,
+            "date": formats.date_format(self.mandat.creation_date.date(), "l j F Y"),
+            "demarches": [humanize_demarche_names(it) for it in ["argent", "papiers"]],
+            "duree": "pour une durée de 1 jour",
+            "current_mandat_template": settings.MANDAT_TEMPLATE_PATH,
+            "final": True,
+            "modified": False,
+        }
+
+        for key, expected in expected_context.items():
+            self.assertEqual(
+                expected,
+                response.context[key],
+                dedent(
+                    f"""
+                    Context for variable {key!r} is different from expected
+                    expected: {expected}
+                    got: {response.context[key]}"""
+                ),
+            )

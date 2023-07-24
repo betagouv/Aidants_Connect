@@ -1,14 +1,21 @@
+from unittest import mock
+from unittest.mock import Mock
+
 from django.forms.models import model_to_dict
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 
+from django_otp.oath import TOTP
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.forms import (
+    AddAppOTPToAidantForm,
     AidantChangeForm,
     AidantCreationForm,
     DatapassHabilitationForm,
     MandatForm,
-    MassEmailHabilitatonForm,
+    MassEmailActionForm,
     RecapMandatForm,
     get_choices_for_remote_method,
 )
@@ -400,11 +407,6 @@ class RecapMandatFormTests(TestCase):
         device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 
-    def test_form_renders_item_text_input(self):
-        self.client.force_login(self.aidant_thierry)
-        form = RecapMandatForm(aidant=self.aidant_thierry)
-        self.assertIn("autorise", form.as_p())
-
     def test_valid_form(self):
         self.client.force_login(self.aidant_thierry)
         form_1 = RecapMandatForm(
@@ -473,7 +475,7 @@ class DatapassAccreditationFormTests(TestCase):
 @tag("forms")
 class MassEmailHabilitatonFormTests(TestCase):
     def test_filter_empty_values(self):
-        form = MassEmailHabilitatonForm(
+        form = MassEmailActionForm(
             data={
                 "email_list": """toto@tata.net
 
@@ -486,7 +488,7 @@ class MassEmailHabilitatonFormTests(TestCase):
         )
 
     def test_ok_with_only_one_email(self):
-        form = MassEmailHabilitatonForm(
+        form = MassEmailActionForm(
             data={
                 "email_list": "toto@tata.net",
             }
@@ -495,7 +497,7 @@ class MassEmailHabilitatonFormTests(TestCase):
         self.assertEqual(form.cleaned_data["email_list"], {"toto@tata.net"})
 
     def test_reject_non_email_strings(self):
-        form = MassEmailHabilitatonForm(
+        form = MassEmailActionForm(
             data={
                 "email_list": """gabuzomeu
                 titi@lala.net""",
@@ -508,7 +510,7 @@ class MassEmailHabilitatonFormTests(TestCase):
         )
 
     def test_reject_invalid_emails(self):
-        form = MassEmailHabilitatonForm(
+        form = MassEmailActionForm(
             data={
                 "email_list": """josée@accent.com
                 titi@lala.net""",
@@ -519,3 +521,55 @@ class MassEmailHabilitatonFormTests(TestCase):
             form.errors["email_list"],
             ["Veuillez saisir uniquement des adresses e-mail valides."],
         )
+
+
+class TestAddAppOTPToAidantForm(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+        cls.otp_device = TOTPDevice(
+            user=cls.aidant,
+            name=TOTPDevice.APP_DEVICE_NAME % cls.aidant.pk,
+            confirmed=False,
+        )
+
+    @mock.patch.object(TOTP, "verify")
+    def test_clean_otp_token(self, mock_verify: Mock):
+        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "1"})
+        self.assertFalse(form.is_valid())
+
+        self.assertEqual(
+            [
+                (
+                    "Assurez-vous que cette valeur comporte "
+                    "au moins 6 caractères (actuellement 1)."
+                )
+            ],
+            form.errors["otp_token"],
+        )
+
+        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "12345678910"})
+        self.assertFalse(form.is_valid())
+
+        self.assertEqual(
+            [
+                (
+                    "Assurez-vous que cette valeur comporte "
+                    "au plus 8 caractères (actuellement 11)."
+                )
+            ],
+            form.errors["otp_token"],
+        )
+
+        mock_verify.return_value = False
+        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "654321"})
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            ["La vérification du code OTP a échoué"], form.errors["otp_token"]
+        )
+
+        mock_verify.return_value = True
+        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "123456"})
+
+        self.assertTrue(form.is_valid())

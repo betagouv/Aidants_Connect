@@ -9,7 +9,6 @@ from django.db.models import SET_NULL, Q
 from django.db.utils import IntegrityError
 from django.dispatch import Signal
 from django.http import HttpRequest
-from django.template import loader
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
@@ -21,6 +20,8 @@ from aidants_connect_common.utils.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
+from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils.urls import build_url
 from aidants_connect_web.models import (
     Aidant,
     HabilitationRequest,
@@ -66,6 +67,8 @@ class Person(models.Model):
     ):
         if self.email:
             self.email = self.email.lower()
+        if update_fields is not None:
+            update_fields = {"email"}.union(update_fields)
         super().save(force_insert, force_update, using, update_fields)
 
     def get_full_name(self):
@@ -89,6 +92,12 @@ class Issuer(PersonWithResponsibilities):
     )
 
     email_verified = models.BooleanField(verbose_name="Email vérifié", default=False)
+
+    def get_absolute_url(self):
+        return reverse(
+            "habilitation_issuer_page",
+            kwargs={"issuer_id": self.issuer_id},
+        )
 
     class Meta:
         verbose_name = "Demandeur"
@@ -180,8 +189,8 @@ class Manager(PersonWithResponsibilities):
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
 
     class Meta:
-        verbose_name = "Responsable structure"
-        verbose_name_plural = "Responsables structure"
+        verbose_name = "Référent structure"
+        verbose_name_plural = "Référents structure"
 
 
 class OrganisationRequest(models.Model):
@@ -207,7 +216,7 @@ class OrganisationRequest(models.Model):
         Manager,
         on_delete=models.CASCADE,
         related_name="organisation",
-        verbose_name="Responsable",
+        verbose_name="Référent",
         default=None,
         null=True,
     )
@@ -315,15 +324,12 @@ class OrganisationRequest(models.Model):
         )
 
     def notify_issuer_request_submitted(self):
-        context = {
-            "url": f"https://{settings.HOST}{self.get_absolute_url()}",
-            "organisation": self,
-        }
-        text_message = loader.render_to_string(
-            "email/organisation_request_creation.txt", context
-        )
-        html_message = loader.render_to_string(
-            "email/organisation_request_creation.html", context
+        text_message, html_message = render_email(
+            "email/organisation_request_creation.mjml",
+            {
+                "url": build_url(self.get_absolute_url()),
+                "organisation": self,
+            },
         )
 
         send_mail(
@@ -335,15 +341,12 @@ class OrganisationRequest(models.Model):
         )
 
     def notify_issuer_request_modified(self):
-        context = {
-            "url": f"https://{settings.HOST}{self.get_absolute_url()}",
-            "organisation": self,
-        }
-        text_message = loader.render_to_string(
-            "email/organisation_request_modifications_done.txt", context
-        )
-        html_message = loader.render_to_string(
-            "email/organisation_request_modifications_done.html", context
+        text_message, html_message = render_email(
+            "email/organisation_request_modifications_done.mjml",
+            {
+                "url": build_url(self.get_absolute_url()),
+                "organisation": self,
+            },
         )
 
         send_mail(
@@ -368,6 +371,11 @@ class OrganisationRequest(models.Model):
             self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
             self.save()
             self.notify_issuer_request_modified()
+
+    @transaction.atomic
+    def go_in_waiting_again(self):
+        self.status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
+        self.save()
 
     @transaction.atomic
     def accept_request_and_create_organisation(self):
@@ -399,7 +407,7 @@ class OrganisationRequest(models.Model):
         self.status = RequestStatusConstants.VALIDATED.name
         self.save()
 
-        responsable_query = Aidant.objects.filter(username=self.manager.email)
+        responsable_query = Aidant.objects.filter(username__iexact=self.manager.email)
 
         if not responsable_query.exists():
             responsable = Aidant.objects.create(
@@ -591,16 +599,13 @@ class RequestMessage(models.Model):
         ordering = ("created_at",)
 
     def send_message_email(self):
-        context = {
-            "url": f"https://{settings.HOST}{self.organisation.get_absolute_url()}",
-            "organisation": self.organisation,
-            "message": self,
-        }
-        text_message = loader.render_to_string(
-            "email/new_message_received.txt", context
-        )
-        html_message = loader.render_to_string(
-            "email/new_message_received.html", context
+        text_message, html_message = render_email(
+            "email/new_message_received.mjml",
+            {
+                "url": build_url(self.organisation.get_absolute_url()),
+                "organisation": self.organisation,
+                "message": self,
+            },
         )
 
         send_mail(

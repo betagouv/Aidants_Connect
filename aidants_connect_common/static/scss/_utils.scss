@@ -1,0 +1,71 @@
+// break points -----------------------------------------
+
+$bp-xs: 20em;
+$bp-sm: 36em;
+$bp-md: 48em;
+$bp-lg: 62em;
+$bp-xl: 78em;
+
+.margin-left-1em {
+  margin-left: 1em !important;
+}
+.margin-bottom-50 {
+  margin-bottom: 50px !important;
+}
+.margin-bottom-1rem {
+  margin-bottom: 1rem !important;
+}
+.margin-bottom-2rem {
+  margin-bottom: 2rem !important;
+}
+.margin-bottom-4rem {
+  margin-bottom: 4rem !important;
+}
+.margin-bottom-6rem {
+  margin-bottom: 6rem !important;
+}
+.margin-bottom-0 {
+  margin-bottom: 0 !important;
+}
+.margin-top-10 {
+  margin-top: 10px !important;
+}
+.margin-top-1rem {
+  margin-top: 1rem !important;
+}
+.margin-top-2rem {
+  margin-top: 2rem !important;
+}
+.margin-top-0 {
+  margin-top: 0 !important;
+}
+.margin-0 {
+  margin: 0 !important;
+}
+.padding-0 {
+  padding: 0 !important;
+}
+.padding-0-5rem {
+  padding: .5rem !important;
+}
+.padding-1rem {
+  padding: 1rem !important;
+}
+.padding-1-5rem {
+  padding: 1.5rem !important;
+}
+.padding-2rem {
+  padding: 2rem !important;
+}
+.remove-footer-margin footer {
+  margin: 0;
+}
+.padding-1rem-lr {
+  padding: 0 1rem;
+}
+.align-middle {
+  vertical-align: middle;
+}
+.full-width {
+  width: 100%;
+}
