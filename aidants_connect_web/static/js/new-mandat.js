@@ -3,15 +3,33 @@
 import {BaseController} from "./base-controller.js"
 
 (function () {
-    const REMOTE_METHOD_EVENT_NAME = "remoteconsent:changed"
+    const REMOTE_METHOD_EVENT_NAME = "changed"
+    const REMOTE_METHOD_EVENT_NAME_PREFIX = "remoteconsent"
 
-    class IsRemoteController extends BaseController {
+    class MandateFormController extends BaseController {
         connect () {
             this.isRemoteValue = this.isRemoteInputTarget.checked;
             this.consentMethodValue = "";
             this.requiredInputTargets
                 .filter(elt => elt.checked)
                 .forEach(elt => { this.consentMethodValue = elt.value; });
+
+            const scopesValue = this.scopesValue;
+            document.querySelectorAll(".mandat-demarche input").forEach(it => {
+                it.dataset.action = `${ this.identifier }#scopeSelected`;
+                scopesValue[it.value] = it.checked;
+            });
+            this.scopesValue = scopesValue
+        }
+
+        scopeSelected (evt) {
+            const scopesValue = this.scopesValue;
+            scopesValue[evt.target.value] = evt.target.checked;
+            this.scopesValue = scopesValue;
+        }
+
+        scopesValueChanged (val) {
+            this.mutateVisibility(this.scopesValue[this.bdfWarningValue], this.bdfWarningTarget);
         }
 
         isRemoteInputTriggered (evt) {
@@ -19,8 +37,10 @@ import {BaseController} from "./base-controller.js"
         }
 
         consentMethodValueChanged (value) {
-            const event = new CustomEvent(REMOTE_METHOD_EVENT_NAME, {detail: {method: value.trim()}});
-            this.element.dispatchEvent(event);
+            this.dispatch(
+                REMOTE_METHOD_EVENT_NAME,
+                {detail: {method: value.trim()}, prefix: REMOTE_METHOD_EVENT_NAME_PREFIX}
+            )
         }
 
         remoteMethodTriggered (evt) {
@@ -37,12 +57,15 @@ import {BaseController} from "./base-controller.js"
             "isRemoteInput",
             "requiredInput",
             "remoteLabelText",
-            "remoteConsentSection"
+            "remoteConsentSection",
+            "bdfWarning",
         ];
 
         static values = {
-            "isRemote": Boolean,
-            "consentMethod": String,
+            isRemote: Boolean,
+            consentMethod: String,
+            bdfWarning: String,
+            scopes: {type: Object, default: {}},
         }
     }
 
@@ -50,8 +73,8 @@ import {BaseController} from "./base-controller.js"
         connect () {
             if (this.hasRequiredInputsTarget) {
                 this.boundRemoteMethodTriggered = this.remoteMethodTriggered.bind(this);
-                document.querySelector("[data-controller='is-remote-controller']").addEventListener(
-                    REMOTE_METHOD_EVENT_NAME, this.boundRemoteMethodTriggered
+                document.querySelector("[data-controller='mandate-form-controller']").addEventListener(
+                    `${REMOTE_METHOD_EVENT_NAME_PREFIX}:${REMOTE_METHOD_EVENT_NAME}`, this.boundRemoteMethodTriggered
                 );
             }
         }
@@ -64,7 +87,9 @@ import {BaseController} from "./base-controller.js"
 
         disconnect () {
             if (this.hasRequiredInputsTarget) {
-                this.element.removeEventListener(REMOTE_METHOD_EVENT_NAME, this.boundRemoteMethodTriggered);
+                this.element.removeEventListener(
+                    `${REMOTE_METHOD_EVENT_NAME_PREFIX}:${REMOTE_METHOD_EVENT_NAME}`, this.boundRemoteMethodTriggered
+                );
             }
         }
 
@@ -75,7 +100,7 @@ import {BaseController} from "./base-controller.js"
 
     new Promise(resolve => window.addEventListener("load", resolve)).then(() => {
         const application = Stimulus.Application.start();
-        application.register("is-remote-controller", IsRemoteController);
+        application.register("mandate-form-controller", MandateFormController);
         application.register("remote-method-controller", RemoteMethodController);
     });
 })();

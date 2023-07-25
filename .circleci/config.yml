@@ -9,13 +9,16 @@ orbs:
 parameters:
   python-img-tag:
     type: string
-    default: "3.10.4-browsers"
+    default: "3.11-browsers"
   db-img-tag:
     type: string
     default: "12.12"
   workingdir:
     type: string
     default: "~/repo"
+  cache-version:
+    type: string
+    default: "v4-dependencies"
 
 executors:
   testbed:
@@ -51,14 +54,14 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v3-dependencies-
+            - << pipeline.parameters.cache-version >>-
 
       - run:
           name: install dependencies
           command: |
-            python3 -m venv /tmp/venv
+            python -m venv /tmp/venv
             . /tmp/venv/bin/activate
             pip install pipenv
             pipenv install --dev
@@ -66,7 +69,7 @@ jobs:
       - save_cache:
           paths:
             - /tmp/venv
-          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
+          key: << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
   code-checks:
     executor: testbed
     working_directory: << pipeline.parameters.workingdir >>
@@ -76,7 +79,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: check Django missing migrations
@@ -102,7 +105,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run unit tests
@@ -125,7 +128,7 @@ jobs:
           paths: [".coverage*"]
   coverage:
     docker:
-      - image: cimg/python:3.10.4-browsers
+      - image: cimg/python:<< pipeline.parameters.python-img-tag >>
     working_directory: ~/repo
 
     steps:
@@ -133,7 +136,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
 
       - attach_workspace:
           at: .

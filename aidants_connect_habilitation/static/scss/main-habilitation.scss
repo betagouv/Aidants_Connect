@@ -284,21 +284,6 @@ dl {
   }
 }
 
-.float-right {
-  float: right;
-}
-
-.clearfix {
-  display: flow-root;
-
-  &:after {
-    // Remove after en of support for IE11
-    content: "";
-    display: table;
-    clear: both;
-  }
-}
-
 // forms -----------------------------------------------
 
 input[type=text], input[type=number], input[type=email], input[type=tel], input[type=url] {
@@ -598,6 +583,14 @@ fieldset {
   border: 1px solid colors.$red-aidants;
   box-sizing: border-box;
   box-shadow: 10px 10px 0 colors.$red-aidants;
+
+  .color-initial {
+    color: initial;
+  }
+
+  p {
+    margin: .5rem 0;
+  }
 }
 
 @media screen {
@@ -686,6 +679,10 @@ fieldset {
 }
 
 // messages -------------------------------------------
+
+.notification {
+  margin-bottom: 2rem;
+}
 
 .messages-list-container {
   min-height: 15rem;

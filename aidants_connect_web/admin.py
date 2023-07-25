@@ -38,14 +38,9 @@ from import_export.results import RowResult
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from nested_admin import NestedModelAdmin, NestedTabularInline
 
-from aidants_connect.admin import (
-    DepartmentFilter,
-    RegionFilter,
-    VisibleToAdminMetier,
-    VisibleToTechAdmin,
-    admin_site,
-)
+from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin, admin_site
 from aidants_connect.utils import strtobool
+from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_common.utils.email import render_email
@@ -260,12 +255,12 @@ class OrganisationAdmin(
     )
     search_fields = ("name", "siret", "data_pass_id")
     list_filter = (
+        RegionFilter,
+        DepartmentFilter,
         "is_active",
         "france_services_label",
         "type",
         WithoutDatapassIdFilter,
-        RegionFilter,
-        DepartmentFilter,
         "is_experiment",
     )
 
@@ -672,6 +667,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_superuser",
     )
     list_filter = (
+        AidantRegionFilter,
+        AidantDepartmentFilter,
         "is_active",
         "aidant_type",
         "can_create_mandats",
@@ -679,8 +676,6 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantGoneTooLong,
         "is_staff",
         "is_superuser",
-        AidantRegionFilter,
-        AidantDepartmentFilter,
     )
     search_fields = ("id", "first_name", "last_name", "email", "organisation__name")
     ordering = ("email",)
@@ -960,11 +955,11 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused", "mark_processing")
     list_filter = (
+        HabilitationRequestRegionFilter,
+        HabilitationDepartmentFilter,
         "status",
         "origin",
         "test_pix_passed",
-        HabilitationRequestRegionFilter,
-        HabilitationDepartmentFilter,
     )
     search_fields = (
         "first_name",

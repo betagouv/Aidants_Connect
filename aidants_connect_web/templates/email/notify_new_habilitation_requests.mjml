@@ -1,0 +1,33 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>
+      <p>Bonjour,</p>
+      <p>
+        Durant les {{ interval }} derniers jours, il y a eu sur Aidants Connect {{ total_requests }} nouveaux aidants
+        à former dans {{ organisations.count }} structures différentes :
+      </p>
+      {% for reg, orgs in organisations_per_region.items %}
+      <p>
+        <b>{{ reg }}</b>
+      </p>
+      <ul>
+        {% for org in orgs %}<li>{{ org.name }} : {{ org.num_requests }} aidants</li>{% endfor %}
+      </ul>
+      {% endfor %}
+      <p>{{ nb_new_test_pix }} aidants à former ont passé le test PIX.</p>
+      {% if nb_new_test_pix > 0 %}
+        <ul>
+          {% for aidant in aidants_with_test_pix %}<li>{{ aidant.email }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+      <p>
+        Afin de les traiter, vous pouvez les retrouver dans l'administration Django,
+        dans la rubrique « aidants à former ».
+      </p>
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock %}

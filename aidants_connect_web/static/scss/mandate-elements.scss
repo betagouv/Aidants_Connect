@@ -39,6 +39,7 @@
   }
 }
 
-.mandate-elements-summary > ul > li::before {
+.mandate-elements-summary > ul > li > .item::before {
   content: url("/static/images/icons/tick-checked.svg");
+  margin-right: 2rem;
 }

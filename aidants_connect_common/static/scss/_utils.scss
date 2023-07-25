@@ -6,6 +6,12 @@ $bp-md: 48em;
 $bp-lg: 62em;
 $bp-xl: 78em;
 
+.margin-top-0-5-rem {
+  margin-top: .5rem !important;
+}
+.margin-bottom-0-5-rem {
+  margin-bottom: .5rem !important;
+}
 .margin-left-1em {
   margin-left: 1em !important;
 }
@@ -68,4 +74,23 @@ $bp-xl: 78em;
 }
 .full-width {
   width: 100%;
+}
+.float-right {
+  float: right;
+}
+.clearfix {
+  display: flow-root;
+
+  &:after {
+    // Remove after en of support for IE11
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+.upper {
+  text-transform: uppercase;
+}
+.bold {
+  font-weight: bold;
 }

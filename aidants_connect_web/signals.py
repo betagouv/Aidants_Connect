@@ -5,11 +5,11 @@ from django.core.mail import send_mail
 from django.db import connection
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
-from django.template import loader
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import RequestOriginConstants
+from aidants_connect_common.utils.email import render_email
 from aidants_connect_web.models import Aidant, Journal, aidants__organisations_changed
 
 
@@ -34,12 +34,9 @@ def lower_totp_tolerance_on_login(sender, user: Aidant, request, **kwargs):
 
 @receiver(aidants__organisations_changed)
 def send_mail_aidant__organisations_changed(instance: Aidant, diff: dict, **_):
-    context = {"aidant": instance, **diff}
-    text_message = loader.render_to_string(
-        "signals/aidant__organisations_changed.txt", context
-    )
-    html_message = loader.render_to_string(
-        "signals/aidant__organisations_changed.html", context
+    text_message, html_message = render_email(
+        "email/aidant__organisations_changed.mjml",
+        {"aidant": instance, **diff},
     )
 
     send_mail(
