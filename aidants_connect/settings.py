@@ -413,10 +413,16 @@ REFERRER_POLICY = "strict-origin"
 STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.1/dist/stimulus.umd.js"
 MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
+SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
+SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert?listID=09a44be1-412f-4190-a3fe-6eaac71c9f00&formID=gJOzUSbKRDWeSVyadSRTTw&timezone=Europe/Paris&timezoneOffset=+2"  # noqa
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'", "https://stats.data.gouv.fr/matomo.php")
+CSP_CONNECT_SRC = (
+    "'self'",
+    "https://stats.data.gouv.fr/matomo.php",
+    SARBACANE_CONNECT_URL,
+)
 CSP_IMG_SRC = (
     "'self'",
     "data:",
@@ -426,6 +432,7 @@ CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
     MD_EDITOR_JS_URL,
+    SARBACANE_SCRIPT_URL,
     "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
