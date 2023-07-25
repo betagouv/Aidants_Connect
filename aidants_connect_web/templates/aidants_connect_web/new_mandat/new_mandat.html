@@ -65,7 +65,11 @@
 
     <h3 class="h3-prime">{% block form_title %}Création de mandat{% endblock %}</h3>
 
-    <form method="post" data-controller="is-remote-controller">
+    <form
+      method="post"
+      data-controller="mandate-form-controller"
+      data-mandate-form-controller-bdf-warning-value="{{ warn_scope.value }}"
+    >
       {% if form.errors %}
         <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
       {% endif %}
@@ -73,6 +77,8 @@
 
       <h4 class="step-title">Sélectionnez la ou les démarche(s)</h4>
       {% fields_as_fieldset form.demarche fieldset_classes="demarches-section" legend_classes="sr-only" %}
+
+      {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
 
       <div class="fr-col-12 fr-col-lg-8">
         <h4 class="step-title">Choisissez la durée du mandat</h4>
@@ -88,7 +94,7 @@
             class="mandate-remote-method-section"
             hidden
             aria-hidden="true"
-            data-is-remote-controller-target="remoteConsentSection"
+            data-mandate-form-controller-target="remoteConsentSection"
           >
             {% if form.remote_constent_method.errors %}
               <div class="notification error" role="alert">
@@ -108,8 +114,8 @@
                   type="radio"
                   name="{{ subfield.data.name }}"
                   value="{{ subfield.data.value }}"
-                  data-is-remote-controller-target="requiredInput"
-                  data-action="is-remote-controller#remoteMethodTriggered"
+                  data-mandate-form-controller-target="requiredInput"
+                  data-action="mandate-form-controller#remoteMethodTriggered"
                 >
 
                 <label for="{{ subfield.id_for_label }}" {% class_attr subfield.data.label_classes %}>

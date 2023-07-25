@@ -26,25 +26,30 @@
         {% endif %}
       </div>
 
-      <h2>Type de démarche</h2>
+      <h3>Type de démarche</h3>
+
+      {% if warn_scope %}
+        {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
+      {% endif %}
+
       {% for demarche, demarche_info in demarches.items %}
-      <div class="container shadowed" id="{{ demarche }}">
-        <div class="fr-grid-row fr-grid-row--middle padding-1rem">
-          <div class="fr-col-3">
-            <img src="{{ demarche_info.icon }}" alt="Icon {{ demarche_info.titre }}" />
-          </div>
-          <div class="fr-col-5 demarche-infos">
-            <strong class="demarche-title">{{ demarche_info.titre }}</strong>
-            <p>{{ demarche_info.description }}</p>
-          </div>
-          <div class="fr-col-4">
-            <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="primary" type="submit">
-              Sélectionner cette démarche
-            </button>
+        <div class="container shadowed" id="{{ demarche }}">
+          <div class="fr-grid-row fr-grid-row--middle padding-1rem">
+            <div class="fr-col-3">
+              <img src="{{ demarche_info.icon }}" alt="Icon {{ demarche_info.titre }}" />
+            </div>
+            <div class="fr-col-5 demarche-infos">
+              <strong class="demarche-title">{{ demarche_info.titre }}</strong>
+              <p>{{ demarche_info.description }}</p>
+            </div>
+            <div class="fr-col-4">
+              <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="primary" type="submit">
+                Sélectionner cette démarche
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <br>
+        <br>
       {% endfor %}
       {% csrf_token %}
       <br>

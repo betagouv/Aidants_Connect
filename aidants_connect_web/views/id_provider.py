@@ -294,6 +294,11 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
                 for demarche_name in self.user_demarches
             },
             "change_user_url": change_user_url,
+            "warn_scope": (
+                {**settings.DEMARCHES["argent"], "value": "argent"}
+                if "argent" in self.user_demarches
+                else None
+            ),
         }
 
     def get_success_url(self):
