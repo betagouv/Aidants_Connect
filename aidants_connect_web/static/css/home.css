@@ -237,13 +237,14 @@ a.btn-homepage, a.btn-homepage:visited {
 }
 
 .contact-title {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 500;
   font-size: 1.5rem;
   line-height: 2rem;
   display: flex;
   align-items: center;
+  color: #FFFFFF;
+}
+
+.message-div {
   color: #FFFFFF;
 }
 
