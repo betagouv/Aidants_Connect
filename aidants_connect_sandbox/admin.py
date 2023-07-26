@@ -93,7 +93,6 @@ def get_import_resource_kwargs(self, request, form, *args, **kwargs):
         or isinstance(form, AidantImportForm)
         and cleaned_data
     ):
-
         self.import_choices = cleaned_data["import_choices"]
     return kwargs
 
