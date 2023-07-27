@@ -156,13 +156,6 @@ class Aidant(AbstractUser):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if self.is_active is False:
-            self.deactivation_warning_at = None
-
-            if update_fields:
-                update_fields = set(update_fields)
-                update_fields.add("deactivation_warning_at")
-
         super().save(
             force_insert=force_insert,
             force_update=force_update,

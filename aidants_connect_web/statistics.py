@@ -198,6 +198,13 @@ def compute_statistics(
         organisation__city_insee_code__in=communes_in_zrr
     ).count()
 
+    number_old_aidants_warned = ads.filter(
+        deactivation_warning_at__isnull=False, is_active=True
+    ).count()
+    number_old_inactive_aidants_warned = ads.filter(
+        deactivation_warning_at__isnull=False, is_active=False
+    ).count()
+
     ostat.number_aidants = number_aidants
     ostat.number_aidants_is_active = number_aidants_is_active
     ostat.number_responsable = number_responsable
@@ -222,6 +229,8 @@ def compute_statistics(
     ostat.number_usage_of_ac = number_usage_of_ac
     ostat.number_orgas_in_zrr = number_orgas_in_zrr
     ostat.number_aidants_in_zrr = number_aidants_in_zrr
+    ostat.number_old_aidants_warned = number_old_aidants_warned
+    ostat.number_old_inactive_aidants_warned = number_old_inactive_aidants_warned
     ostat.save()
 
     return ostat
