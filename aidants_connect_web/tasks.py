@@ -335,9 +335,29 @@ def deactivate_warned_aidants(*, logger=None):
 
     logger: Logger = logger or get_task_logger(__name__)
 
+    @shared_task
+    def email_one_aidant(a: Aidant):
+        text_message, html_message = render_email(
+            "email/old_aidant_deactivation_notice.mjml",
+            {
+                "email_title": "Votre compte a été désactivé",
+                "user": a,
+                "cgu_url": build_url(reverse("cgu")),
+            },
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_AIDANT_DEACTIVATION_NOTICE_FROM,
+            subject=settings.EMAIL_AIDANT_DEACTIVATION_NOTICE_SUBJECT,
+            recipient_list=[a.email],
+            message=text_message,
+            html_message=html_message,
+        )
+
     deactivable = Aidant.objects.deactivable()
 
     for aidant in deactivable:
         aidant.deactivate()
+        email_one_aidant(aidant)
 
     logger.info(f"Deactivated {len(deactivable)} aidants")
