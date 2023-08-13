@@ -309,9 +309,15 @@ class OrganisationResourceExportForSandboxTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.rf = RequestFactory()
-        cls.organisation1 = OrganisationFactory(name="MAIRIE", siret="121212121")
-        cls.organisation2 = OrganisationFactory(name="MAIRIE2", siret="121212122")
-        cls.organisation3 = OrganisationFactory(name="MAIRIE3", siret="121212123")
+        cls.organisation1 = OrganisationFactory(
+            name="MAIRIE", siret="121212121", data_pass_id=1
+        )
+        cls.organisation2 = OrganisationFactory(
+            name="MAIRIE2", siret="121212122", data_pass_id=2
+        )
+        cls.organisation3 = OrganisationFactory(
+            name="MAIRIE3", siret="121212123", data_pass_id=3
+        )
 
         cls.aidant_marge = AidantFactory(
             first_name="Marge", organisation=cls.organisation1
@@ -355,15 +361,16 @@ class OrganisationResourceExportForSandboxTestCase(TestCase):
         )
         orga_admin = OrganisationAdmin(Organisation, AdminSite())
         data = orga_admin.get_data_for_export(request, orgas)
-        self.assertEqual(data[0][12], self.organisation1.data_pass_id)
-        self.assertEqual(data[1][12], '')
+        self.assertEqual(data[0][12], f"{self.organisation1.data_pass_id}|")
+        self.assertEqual(data[1][12], "")
 
         self.aidant_marge.responsable_de.add(self.organisation2)
         data = orga_admin.get_data_for_export(request, orgas)
-        self.assertEqual(data[0][12],
-                         f"{self.organisation1.data_pass_id}|{self.organisation1.data_pass_id}")  # noqa
-        self.assertEqual(data[1][12], '')
-
+        self.assertEqual(
+            data[0][12],
+            f"{self.organisation1.data_pass_id}|{self.organisation2.data_pass_id}|",
+        )
+        self.assertEqual(data[1][12], "")
 
 
 @tag("admin")
