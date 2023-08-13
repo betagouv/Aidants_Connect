@@ -109,6 +109,15 @@ class SpecificDeleteActionsMixin:
 class ExportHabilitationRequestAndAidantAndOrganisationResource(
     resources.ModelResource
 ):
+
+    def dehydrate_responsable_de_data_pass_id(self, habilitation_or_aidant):
+        if habilitation_or_aidant.__class__ == HabilitationRequest:
+            return ""
+
+        q_orgas = habilitation_or_aidant.responsable_de
+        return "|".join([one_orga.data_pass_id for one_orga in q_orgas.all()])
+
+
     class Meta:
         """We need a resources.ModelResource, so we define Aidant.
         But we will use this resource for Aidant and HabilitationRequest.
@@ -130,7 +139,9 @@ class ExportHabilitationRequestAndAidantAndOrganisationResource(
             "organisation__zipcode",
             "organisation__type__id",
             "organisation__type__name",
+            "responsable_de_data_pass_id"
         )
+
 
 
 class OrganisationResource(resources.ModelResource):
