@@ -265,7 +265,7 @@ class OrganisationAdmin(
     )
 
     # For bulk import
-    resource_class = OrganisationResource
+    resource_classes = [OrganisationResource]
     import_export_change_list_template = (
         "aidants_connect_web/admin/import_export/change_list_organisation_import.html"
     )
@@ -280,8 +280,8 @@ class OrganisationAdmin(
         "specific_delete_action",
     )
 
-    def get_export_resource_class(self):
-        return ExportHabilitationRequestAndAidantAndOrganisationResource
+    def get_export_resource_classes(self):
+        return [ExportHabilitationRequestAndAidantAndOrganisationResource]
 
     @classmethod
     def get_list_for_export_sandbox(cls, queryset):
@@ -294,10 +294,10 @@ class OrganisationAdmin(
 
     def get_data_for_export(self, request, queryset, *args, **kwargs):
         export_list = self.get_list_for_export_sandbox(queryset)
-        resource_class = self.get_export_resource_class()
-        return resource_class(
+        export_form = kwargs.pop("export_form", None)
+        return self.choose_export_resource_class(export_form)(
             **self.get_export_resource_kwargs(request, *args, **kwargs)
-        ).export(export_list, *args, **kwargs)
+        ).export(*args, queryset=export_list, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = list(self.readonly_fields)
@@ -646,7 +646,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     )
 
     # For bulk import
-    resource_class = AidantResource
+    resource_classes = [AidantResource]
     import_template_name = "aidants_connect_web/admin/import_export/import_aidant.html"
 
     # The fields to be used in displaying the `Aidant` model.
@@ -970,7 +970,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     )
     ordering = ("email",)
 
-    resource_class = HabilitationRequestResource
+    resource_classes = [HabilitationRequestResource]
 
     import_export_change_list_template = (
         "aidants_connect_web/admin/habilitation_request/change_list.html"
@@ -986,14 +986,14 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             self.import_choices = cleaned_data["import_choices"]
         return kwargs
 
-    def get_import_resource_class(self):
+    def get_import_resource_classes(self):
         import_choices = getattr(self, "import_choices", False)
         if import_choices and import_choices == "FORMATION_DATE":
-            return HabilitationRequestImportDateFormationResource
+            return [HabilitationRequestImportDateFormationResource]
         elif import_choices and import_choices == "OLD_FILES_IMPORT":
-            return HabilitationRequestImportResource
+            return [HabilitationRequestImportResource]
 
-        return self.resource_class
+        return self.resource_classes
 
     def get_import_form(self):
         return HabilitationRequestImportForm
@@ -1543,7 +1543,7 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     raw_id_fields = ("aidant",)
     readonly_fields = ("totp_devices_diagnostic",)
     ordering = ("-created_at",)
-    resource_class = CarteTOTPResource
+    resource_classes = [CarteTOTPResource]
     import_template_name = "aidants_connect_web/admin/import_export/import.html"
     change_form_template = "aidants_connect_web/admin/carte_totp/change_form.html"
 
