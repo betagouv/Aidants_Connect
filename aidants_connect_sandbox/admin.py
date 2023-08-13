@@ -97,11 +97,11 @@ def get_import_resource_kwargs(self, request, form, *args, **kwargs):
     return kwargs
 
 
-def get_import_resource_class(self):
+def get_import_resource_classes(self):
     import_choices = getattr(self, "import_choices", False)
     if import_choices and import_choices == "IMPORT_FOR_SANDBOX":
-        return AidantSandboxResource
-    return self.get_resource_class()
+        return [AidantSandboxResource]
+    return self.get_resource_classes()
 
 
 def get_import_form(self):
@@ -124,4 +124,4 @@ AidantAdmin.actions.append("add_static_token_for_aidants")
 AidantAdmin.get_confirm_import_form = get_confirm_import_form
 AidantAdmin.get_import_form = get_import_form
 AidantAdmin.get_import_resource_kwargs = get_import_resource_kwargs
-AidantAdmin.get_import_resource_class = get_import_resource_class
+AidantAdmin.get_import_resource_classes = get_import_resource_classes
