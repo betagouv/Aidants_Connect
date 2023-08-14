@@ -164,7 +164,7 @@ class UsagersDetailsPageTests(TestCase):
 
     def test_usager_details_url_triggers_the_usager_details_view(self):
         found = resolve(f"/usagers/{self.usager.id}/")
-        self.assertEqual(found.func, usagers.usager_details)
+        self.assertIs(found.func.view_class, usagers.UsagerView)
 
     def test_usager_detail_isnt_visible_for_anonymous_user(self):
         response = self.client.get(f"/usagers/{self.usager.id}/")
