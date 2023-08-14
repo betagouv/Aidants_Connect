@@ -9,6 +9,7 @@ from aidants_connect_common.models import Region
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_web.admin import (
     AidantAdmin,
+    AidantInPreDesactivationZoneFilter,
     AidantWithMandatsFilter,
     HabilitationRequestAdmin,
     OrganisationAdmin,
@@ -26,6 +27,63 @@ from aidants_connect_web.tests.factories import (
     MandatFactory,
     OrganisationFactory,
 )
+
+
+@tag("admin")
+class TestAidantInPreDesactivationZoneFilter(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation1 = OrganisationFactory()
+
+        cls.aidant1 = AidantFactory(
+            organisation=cls.organisation1, deactivation_warning_at=None
+        )
+
+        cls.aidant2 = AidantFactory(
+            organisation=cls.organisation1, deactivation_warning_at=now()
+        )
+
+    def test_queryset(self):
+        all_filter = AidantInPreDesactivationZoneFilter(
+            self.client.get("/"), {}, Aidant, AidantAdmin
+        )
+
+        self.assertEqual(
+            set(Aidant.objects.all()),
+            set(all_filter.queryset(self.client.get("/"), Aidant.objects.all())),
+        )
+
+        not_in_desactivation_zone = AidantInPreDesactivationZoneFilter(
+            self.client.get("/"),
+            {AidantInPreDesactivationZoneFilter.parameter_name: "false"},
+            Aidant,
+            AidantAdmin,
+        )
+
+        self.assertEqual(
+            {self.aidant1},
+            set(
+                not_in_desactivation_zone.queryset(
+                    self.client.get("/"), Aidant.objects.all()
+                )
+            ),
+        )
+
+        in_desactivation_zone = AidantInPreDesactivationZoneFilter(
+            self.client.get("/"),
+            {AidantInPreDesactivationZoneFilter.parameter_name: "true"},
+            Aidant,
+            AidantAdmin,
+        )
+        self.assertEqual(
+            {self.aidant2},
+            set(
+                in_desactivation_zone.queryset(
+                    self.client.get("/"),
+                    Aidant.objects.filter(organisation=self.organisation1),
+                ).order_by("pk")
+            ),
+        )
 
 
 @tag("admin")

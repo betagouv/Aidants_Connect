@@ -492,6 +492,30 @@ class AidantDepartmentFilter(DepartmentFilter):
     filter_parameter_name = "organisations__zipcode"
 
 
+class AidantInPreDesactivationZoneFilter(SimpleListFilter):
+    title = "En attente de désactivation"
+    parameter_name = "in_desactivation_zone"
+
+    def value(self):
+        return strtobool(super().value(), None)
+
+    def lookups(self, request, model_admin):
+        return [
+            (False, "ne risque pas la désactivation"),
+            (True, "Dans la zone de pré désactivation"),
+        ]
+
+    def queryset(self, request, queryset: AidantManager):
+        queryset = queryset.filter(is_active=True)
+        match self.value():
+            case False:
+                return queryset.filter(deactivation_warning_at__isnull=True)
+            case True:
+                return queryset.filter(deactivation_warning_at__isnull=False)
+            case _:
+                return queryset
+
+
 class AidantGoneTooLong(SimpleListFilter):
     title = "status de dernière connexion"
     parameter_name = "gone_too_long"
@@ -643,6 +667,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "display_totp_device_status",
         "carte_totp",
         "display_mandates_count",
+        "deactivation_warning_at",
     )
 
     # For bulk import
@@ -661,8 +686,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "carte_totp",
         "is_active",
         "can_create_mandats",
+        "deactivation_warning_at",
         "created_at",
-        "updated_at",
         "is_staff",
         "is_superuser",
     )
@@ -672,6 +697,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_active",
         "aidant_type",
         "can_create_mandats",
+        AidantInPreDesactivationZoneFilter,
         AidantWithMandatsFilter,
         AidantGoneTooLong,
         "is_staff",
@@ -698,6 +724,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "password",
                     "carte_totp",
                     "display_totp_device_status",
+                    "deactivation_warning_at",
                 )
             },
         ),
