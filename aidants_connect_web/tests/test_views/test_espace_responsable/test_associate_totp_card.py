@@ -14,7 +14,7 @@ class AssociateCarteTOTPTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        # Create one responsable
+        # Create one référent
         cls.responsable_tom = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         # Create one aidant
@@ -81,7 +81,7 @@ class AssociateCarteTOTPTests(TestCase):
         response = self.client.get(f"/espace-responsable/organisation/{self.org_id}/")
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "Le fonctionnement de cette carte n'a pas été vérifié.",
+            "Le fonctionnement de cette carte n’a pas été vérifié.",
             response_content,
             "Organization page should display a warning about activation.",
         )

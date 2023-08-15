@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+{% load static admin_extras ac_extras i18n %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+    {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media.js }}
+{% endblock %}
+
+{% block content %}
+    <h1>Remettre en attente la demande d'habilitation n° {{ object.data_pass_id }}</h1>
+    <h2>La demande est celle de l'organisation {{ object.name }}</h2>
+    <h2> La demande est actuellement en statut : {{ object.status_label }}</h2>
+    <form action="{% qurl 'otpadmin:aidants_connect_habilitation_organisationrequest_waiting' object_id=object_id %}"
+          method="POST">
+
+        <div class="submit-row">
+            <input type="submit" value="Remettre en attente la demande" class="default" name="_save">
+            <p class="deletelink-box">
+                <a href="{% url 'otpadmin:aidants_connect_habilitation_organisationrequest_change' object_id=object_id %}"
+                   class="closelink">Annuler</a>
+            </p>
+        </div>
+        {% csrf_token %}
+    </form>
+
+
+{% endblock %}

@@ -77,6 +77,5 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script src="{% static 'js/utils.js' %}"></script>
-  <script src="{% static 'js/users_search.js' %}"></script>
+  <script defer type="module" src="{% static 'js/users-search.js' %}"></script>
 {% endblock %}

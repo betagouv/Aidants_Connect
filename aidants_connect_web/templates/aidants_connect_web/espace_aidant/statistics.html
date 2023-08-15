@@ -1,38 +1,45 @@
-<div class="tiles">
-  <div class="grid">
-    <div class="tile background-color-grey">
-      <h3>
-        <span aria-hidden="true">📍</span>
-        Adresse
-      </h3>
-      <p>
+<div class="fr-grid-row fr-grid-row--gutters organisation-summary">
+  <div class="fr-col-12 fr-col-md-4 ">
+    <section class="shadowed padding-2rem">
+      {% if organisation.data_pass_id %}
+        <h3>Numéro d’habilitation</h3>
+        <p>{{ organisation.data_pass_id }}</p>
+      {% endif %}
+      <h3>Adresse</h3>
+      <address>
         {{ organisation.address }}<br>
         {{ organisation.zipcode }} {{ organisation.city|default_if_none:"" }}
-      </p>
-    </div>
-    {% if organisation.data_pass_id %}
-      <div class="tile background-color-grey">
-        <h3>Numéro d’habilitation</h3>
-        <p>
-          {{ organisation.data_pass_id }}
-        </p>
+      </address>
+    </section>
+  </div>
+  <div class="fr-col-12 fr-col-md-8">
+    <section class="shadowed padding-2rem organisation-stats">
+      <div class="fr-grid-row">
+        <div class="fr-col-12 fr-col-md-6">
+          <h3>Mandats créés</h3>
+          <p class="h2 margin-top-1rem">{{ organisation.num_mandats }}</p>
+        </div>
+        <div class="fr-col-12 fr-col-md-6">
+          <h3>Aidants actifs</h3>
+          <p class="h2 margin-top-1rem">{{ organisation.num_active_aidants }}</p>
+        </div>
       </div>
-    {% endif %}
-    <div class="tile background-color-grey">
-      <h3>Aidants actifs</h3>
-      <p class="font-weight-bold">{{ organisation.num_active_aidants }}</p>
-    </div>
-    <div class="tile background-color-grey">
-      <h3>Mandats créés</h3>
-      <p class="font-weight-bold"> {{ organisation.num_mandats }} </p>
-    </div>
-    <div class="tile background-color-grey">
-      <h3>Mandats actifs</h3>
-      <p class="font-weight-bold"> {{ organisation.num_active_mandats }}</p>
-    </div>
-    <div class="tile background-color-grey">
-      <h3>Usagers accompagnés</h3>
-      <p class="font-weight-bold">{{ organisation.num_usagers }}</p>
-    </div>
+      <div class="fr-grid-row">
+        <div class="fr-col-12 fr-col-md-6">
+          <h3>Mandats actifs</h3>
+          <p class="h2 margin-top-1rem">{{ organisation.num_active_mandats }}</p>
+        </div>
+        <div class="fr-col-12 fr-col-md-6">
+          <h3>Usagers accompagnés</h3>
+          <p class="h2 margin-top-1rem">{{ organisation.num_usagers }}</p>
+        </div>
+      </div>
+      <div class="fr-grid-row">
+        <div class="fr-col-12 fr-col-md-6">
+          <h3>Démarches réalisées</h3>
+          <p class="h2 margin-top-1rem">{{ organisation.num_demarches }}</p>
+        </div>
+      </div>
+    </section>
   </div>
 </div>

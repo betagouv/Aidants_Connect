@@ -1,13 +1,18 @@
+import re
+
 from django import forms
 from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
+from django.db.models import Q
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
+from django_otp.oath import TOTP
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 
 from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
@@ -17,11 +22,12 @@ from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
-    Connection,
     HabilitationRequest,
     Organisation,
     Usager,
+    UsagerQuerySet,
 )
+from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
 
 class AidantCreationForm(forms.ModelForm):
@@ -128,9 +134,9 @@ class AidantChangeForm(forms.ModelForm):
 
         if data_email != initial_email:
             if (
-                Aidant.objects.filter(email=data_email).exists()
+                Aidant.objects.filter(email__iexact=data_email).exists()
                 or Aidant.objects.exclude(id=initial_id)
-                .filter(username=data_email)
+                .filter(username__iexact=data_email)
                 .exists()
             ):
                 self.add_error(
@@ -147,11 +153,11 @@ class LoginEmailForm(MagicAuthEmailForm):
 
     def clean_email(self):
         user_email = super().clean_email()
-        if not Aidant.objects.filter(email=user_email, is_active=True).exists():
+        if not Aidant.objects.filter(email__iexact=user_email, is_active=True).exists():
             raise ValidationError(
                 "Votre compte existe mais il n’est pas encore actif. "
                 "Si vous pensez que c’est une erreur, prenez contact avec votre "
-                "responsable ou avec Aidants Connect."
+                "référent ou avec Aidants Connect."
             )
         return user_email
 
@@ -174,7 +180,7 @@ class MandatForm(PatchedForm):
     demarche = forms.MultipleChoiceField(
         choices=[(key, value) for key, value in settings.DEMARCHES.items()],
         required=True,
-        widget=forms.CheckboxSelectMultiple,
+        widget=MandatDemarcheSelect,
         error_messages={
             "required": _("Vous devez sélectionner au moins une démarche.")
         },
@@ -183,35 +189,41 @@ class MandatForm(PatchedForm):
     DUREES = [
         (
             ADKW.SHORT,
-            {"title": "Mandat court", "description": "(expire demain)"},
+            {"label": "Mandat court", "description": "(expire demain)"},
         ),
         (
             ADKW.MONTH,
             {
-                "title": "Mandat d'un mois",
+                "label": "Mandat d'un mois",
                 "description": f"({ADKW.DAYS[ADKW.MONTH]} jours)",
             },
         ),
         (
             ADKW.LONG,
-            {"title": "Mandat long", "description": "(12 mois)"},
+            {"label": "Mandat long", "description": "(12 mois)"},
         ),
         (
             ADKW.SEMESTER,
             {
-                "title": "Mandat de 6 mois",
+                "label": "Mandat de 6 mois",
                 "description": f"({ADKW.DAYS[ADKW.SEMESTER]} jours)",
             },
         ),
     ]
     duree = forms.ChoiceField(
+        label="Choisissez la durée du mandat",
         choices=DUREES,
         required=True,
         initial=3,
         error_messages={"required": _("Veuillez sélectionner la durée du mandat.")},
+        widget=MandatDureeRadioSelect,
     )
 
-    is_remote = forms.BooleanField(required=False)
+    is_remote = forms.BooleanField(
+        label="Signature à distance du mandat",
+        label_suffix="",
+        required=False,
+    )
 
     remote_constent_method = forms.ChoiceField(
         label="Sélectionnez une méthode de consentement à distance",
@@ -222,7 +234,7 @@ class MandatForm(PatchedForm):
                 "Veuillez sélectionner la méthode de consentement à distance."
             )
         },
-        widget=DetailedRadioSelect(attrs={"input_wrapper_classes": "shadowed"}),
+        widget=DetailedRadioSelect,
     )
 
     user_phone = AcPhoneNumberField(
@@ -232,13 +244,14 @@ class MandatForm(PatchedForm):
         required=False,
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["remote_constent_method"].widget.add_compagnon_field(
-            RemoteConsentMethodChoices.SMS.value,
-            self,
-            "aidants_connect_web/new_mandat/user_phone_widget.html",
-        )
+    user_remote_contact_verified = forms.BooleanField(
+        required=False,
+        label=(
+            "Je certifie avoir validé l’identité de l’usager répondant au numéro de "
+            "téléphone qui recevra la demande de consentement par SMS."
+        ),
+        label_suffix="",
+    )
 
     def clean_remote_constent_method(self):
         if not self.cleaned_data["is_remote"]:
@@ -276,6 +289,22 @@ class MandatForm(PatchedForm):
 
         return self.cleaned_data["user_phone"]
 
+    def clean_user_remote_contact_verified(self):
+        if (
+            not self.cleaned_data["is_remote"]
+            or self.cleaned_data.get("remote_constent_method")
+            not in RemoteConsentMethodChoices.blocked_methods()
+        ):
+            return True
+
+        if not self.cleaned_data.get("user_remote_contact_verified"):
+            raise ValidationError(
+                self.fields["user_remote_contact_verified"].error_messages["required"],
+                code="required",
+            )
+
+        return True
+
 
 class OTPForm(forms.Form):
     otp_token = forms.CharField(
@@ -304,9 +333,7 @@ class OTPForm(forms.Form):
 
 
 class RecapMandatForm(OTPForm, forms.Form):
-    personal_data = forms.BooleanField(
-        label="J’autorise mon aidant à utiliser mes données à caractère personnel."
-    )
+    personal_data = forms.BooleanField()
 
 
 class CarteOTPSerialNumberForm(forms.Form):
@@ -334,21 +361,42 @@ class CarteTOTPValidationForm(forms.Form):
     )
 
 
-class RemoveCardFromAidantForm(forms.Form):
+class RemoveCardFromAidantForm(PatchedForm):
     reason = forms.ChoiceField(
         choices=(
-            ("perte", "Perte : La carte a été perdue."),
-            ("casse", "Casse : La carte a été détériorée."),
+            ("perte", "Perte : La carte a été perdue."),
+            ("casse", "Casse : La carte a été détériorée."),
             (
                 "dysfonctionnement",
-                "Dysfonctionnement : La carte ne fonctionne pas ou plus.",
+                "Disfonctionnement : La carte ne fonctionne pas ou plus.",
             ),
-            ("depart", "Départ : L’aidant concerné quitte la structure."),
-            ("erreur", "Erreur : J’ai lié cette carte à ce compte par erreur."),
-            ("autre", "Autre : Je complète ci-dessous."),
+            ("depart", "Départ : L’aidant concerné quitte la structure."),
+            ("erreur", "Erreur : J’ai lié cette carte à ce compte par erreur."),
+            ("autre", "Autre : Je complète ci-dessous."),
         )
     )
     other_reason = forms.CharField(required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        reason = cleaned_data.get("reason").lower()
+        other_reason = cleaned_data.get("other_reason")
+
+        if reason != "autre":
+            return cleaned_data
+
+        if not other_reason:
+            self.add_error(
+                "other_reason",
+                ValidationError(
+                    "Vous devez remplir ce champ si la raison indiquée est autre.",
+                    code="required",
+                ),
+            )
+        else:
+            cleaned_data["reason"] = other_reason
+
+        return cleaned_data
 
 
 class SwitchMainAidantOrganisationForm(forms.Form):
@@ -374,7 +422,7 @@ class AddOrganisationResponsableForm(forms.Form):
     def __init__(self, organisation: Organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["candidate"].queryset = organisation.aidants.exclude(
-            responsable_de=organisation
+            Q(responsable_de=organisation) | Q(is_active=False)
         ).order_by("last_name")
 
 
@@ -477,7 +525,7 @@ class DatapassHabilitationForm(forms.ModelForm):
         return super().save(commit)
 
 
-class MassEmailHabilitatonForm(forms.Form):
+class MassEmailActionForm(forms.Form):
     email_list = forms.Field(widget=forms.Textarea)
 
     def clean_email_list(self):
@@ -499,7 +547,6 @@ class MassEmailHabilitatonForm(forms.Form):
 
 
 class AuthorizeSelectUsagerForm(PatchedForm):
-    connection_id = forms.IntegerField(required=True)
     chosen_usager = forms.IntegerField(
         required=True,
         error_messages={
@@ -514,16 +561,138 @@ class AuthorizeSelectUsagerForm(PatchedForm):
         },
     )
 
-    def clean_connection_id(self):
-        connection_id = self.cleaned_data.get("connection_id")
-        try:
-            return Connection.objects.get(pk=connection_id)
-        except (Connection.DoesNotExist, Connection.MultipleObjectsReturned):
-            raise ValidationError("", code="connection_error")
+    def __init__(self, usager_with_active_auth: UsagerQuerySet, *args, **kwargs):
+        self.usager_with_active_auth = usager_with_active_auth
+        super().__init__(*args, **kwargs)
 
     def clean_chosen_usager(self):
         chosen_usager = self.cleaned_data.get("chosen_usager")
         try:
-            return Usager.objects.get(pk=chosen_usager)
+            user = Usager.objects.get(pk=chosen_usager)
+            if user not in self.usager_with_active_auth:
+                raise ValidationError("", code="unauthorized_user")
+            return user
         except (Usager.DoesNotExist, Usager.MultipleObjectsReturned):
-            return None
+            raise ValidationError(
+                "La personne sélectionnée ne semble pas exister", code="invalid"
+            )
+
+
+class OAuthParametersForm(PatchedForm):
+    state = forms.CharField()
+    nonce = forms.CharField()
+    response_type = forms.CharField()
+    client_id = forms.CharField()
+    redirect_uri = forms.CharField()
+    scope = forms.CharField()
+    acr_values = forms.CharField()
+
+    def clean_nonce(self):
+        result = self.cleaned_data.get("nonce")
+        if result and not result.isalnum():
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_state(self):
+        result = self.cleaned_data.get("state")
+        if result and not result.isalnum():
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_response_type(self):
+        result = self.cleaned_data.get("response_type")
+        if result != "code":
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_client_id(self):
+        result = self.cleaned_data.get("client_id")
+        if result != settings.FC_AS_FI_ID:
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_redirect_uri(self):
+        result = self.cleaned_data.get("redirect_uri")
+        if result != settings.FC_AS_FI_CALLBACK_URL:
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_scope(self):
+        result = self.cleaned_data.get("scope")
+        splitted = re.split(r"\s+", result)
+        splitted.sort()
+        if splitted != ["address", "birth", "email", "openid", "phone", "profile"]:
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_acr_values(self):
+        result = self.cleaned_data.get("acr_values")
+        if result != "eidas1":
+            raise ValidationError("", "invalid")
+        return result
+
+    def __init__(self, *args, relaxed=False, **kwargs):
+        self.relaxed = relaxed
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if self.relaxed:
+            return cleaned_data
+
+        additionnal_keys = set(self.data.keys()) - set(self.fields.keys())
+
+        for additionnal_key in additionnal_keys:
+            self.add_error(None, ValidationError(additionnal_key, "additionnal_key"))
+
+        return cleaned_data
+
+
+class SelectDemarcheForm(PatchedForm):
+    chosen_demarche = forms.CharField()
+
+    def __init__(self, aidant: Aidant, user: Usager, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.aidant = aidant
+        self.user = user
+
+    def clean_chosen_demarche(self):
+        result = self.cleaned_data["chosen_demarche"]
+        if not self.aidant.get_valid_autorisation(result, self.user):
+            raise ValidationError("", code="unauthorized_demarche")
+        return result
+
+
+class AddAppOTPToAidantForm(PatchedForm):
+    otp_token = forms.CharField(
+        label=(
+            "Entrez ici le code de vérification donné par "
+            "votre application pour valider la création"
+        ),
+        label_suffix=" :",
+        min_length=6,
+        max_length=8,
+    )
+
+    def __init__(self, otp_device: TOTPDevice, *args, **kwargs):
+        self.otp_device = otp_device
+        super().__init__(*args, **kwargs)
+
+    def clean_otp_token(self):
+        try:
+            token = int(self.cleaned_data["otp_token"])
+        except Exception:
+            raise ValidationError("Le code OTP doit être composé de chiffres")
+
+        totp = TOTP(
+            self.otp_device.bin_key,
+            self.otp_device.step,
+            self.otp_device.t0,
+            self.otp_device.digits,
+            self.otp_device.drift,
+        )
+        if not totp.verify(token):
+            raise ValidationError("La vérification du code OTP a échoué")
+
+        return token

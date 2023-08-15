@@ -1,18 +1,15 @@
 import hashlib
-import io
+import time
 from datetime import date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
-from urllib.parse import quote, urlencode
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 
-import qrcode
-
 if TYPE_CHECKING:
-    from aidants_connect_web.models import Aidant, Usager
+    from aidants_connect_web.models import Aidant, Connection, Usager
 
 
 @transaction.atomic
@@ -63,13 +60,6 @@ def validate_attestation_hash(attestation_string, attestation_hash):
     return new_attestation_hash == attestation_hash
 
 
-def generate_qrcode_png(string: str):
-    stream = io.BytesIO()
-    img = qrcode.make(string)
-    img.save(stream, "PNG")
-    return stream.getvalue()
-
-
 def generate_attestation_hash(
     aidant: "Aidant",
     usager: "Usager",
@@ -106,13 +96,19 @@ def generate_attestation_hash(
     return generate_sha256_hash(attestation_string_with_salt.encode("utf-8"))
 
 
-def generate_mailto_link(recipient: str, subject: str, body: str):
-    urlencoded = urlencode(
-        {"subject": subject, "body": body},
-        quote_via=lambda x, _, enc, err: quote(x, "", enc, err),
-    )
-    return f"mailto:{recipient}?{urlencoded}"
-
-
 def mandate_template_path():
     return settings.MANDAT_TEMPLATE_PATH
+
+
+def generate_id_token(connection: "Connection"):
+    return {
+        # The audience, the Client ID of your Auth0 Application
+        "aud": settings.FC_AS_FI_ID,
+        # The expiration time. in the format "seconds since epoch"
+        # TODO Check if 10 minutes is not too much
+        "exp": int(time.time()) + settings.FC_CONNECTION_AGE,  # The issued at time
+        "iat": int(time.time()),  # The issuer,  the URL of your Auth0 tenant
+        "iss": settings.HOST,  # The unique identifier of the user
+        "sub": connection.usager.sub,
+        "nonce": connection.nonce,
+    }

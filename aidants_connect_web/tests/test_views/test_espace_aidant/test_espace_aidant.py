@@ -183,7 +183,10 @@ class UsagersDetailsPageTests(TestCase):
         response = self.client.get(f"/usagers/{self.usager.id}/")
         response_content = response.content.decode("utf-8")
         self.assertIn("Renouveler le mandat", response_content)
-        self.assertIn(reverse("renew_mandat", args=(self.usager.pk,)), response_content)
+        self.assertIn(
+            reverse("renew_mandat", kwargs={"usager_id": self.usager.id}),
+            response_content,
+        )
 
 
 @tag("responsable-structure")

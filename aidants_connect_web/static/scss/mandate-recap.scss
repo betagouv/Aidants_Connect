@@ -1,0 +1,22 @@
+@use "colors";
+
+.mandate-summary-block > ul > li {
+  &.i-handshake::before {
+    content: "🤝";
+    font-size: 24px;
+  }
+  &.i-eyes::before {
+    content: "👀";
+    font-size: 24px;
+  }
+  &.i-warning::before {
+    content: "⚠️";
+    font-size: 24px;
+  }
+}
+
+.reminder-title {
+  color: colors.$red-aidants;
+  font-weight: bold;
+  text-transform: uppercase;
+}

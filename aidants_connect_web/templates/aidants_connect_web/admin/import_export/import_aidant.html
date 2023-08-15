@@ -12,7 +12,7 @@
         Si vous donnez ce numéro, <code>organisation_id</code> ne doit pas être présente.
       </dd>
       <dt>respo_de_datapass_id</dt>
-      <dd>Numéros de demande datapass des organisations dont l'aidant est responsable.
+      <dd>Numéros de demande datapass des organisations dont l'aidant est référent.
         Séparez ces numéros par des <strong>POINTS-VIRGULES</strong>, par exemple : <code>4587;5933</code>.<br>
         Si vous remplissez cette colonne, ne mettez pas de colonne <code>responsable_de</code>.
       </dd>
@@ -21,11 +21,11 @@
         Organisations de l'admin Django.
       </dd>
       <dt>responsable_de</dt>
-      <dd>Identifiants internes Django des organisations dont l'aidant est responsable.<br>
+      <dd>Identifiants internes Django des organisations dont l'aidant est référent.<br>
         Séparez les identifiants par des points-virgules, par exemple&nbsp;: <code>4;5;6</code></dd>
       <dt>can_create_mandats</dt>
       <dd>
-        Entrer <code>0</code> (zéro) ou <code>False</code> permet de créer un compte «&nbsp;responsable seulement&nbsp;»
+        Entrer <code>0</code> (zéro) ou <code>False</code> permet de créer un compte «&nbsp;référent seulement&nbsp;»
         qui ne peut pas créer de mandat.<br>
         Entrer <code>1</code> ou <code>True</code> permet de créer un compte Aidant classique, qui peut créer des
         mandats auprès des usagers.<br>
@@ -33,13 +33,13 @@
         créer des mandats.
       </dd>
       <dt>token</dt>
-      <dd>Code à 6 chiffres, à usage unique, permettant à un responsable de se connecter sans carte TOTP.</dd>
+      <dd>Code à 6 chiffres, à usage unique, permettant à un référent de se connecter sans carte TOTP.</dd>
       <dt>carte_ac</dt>
       <dd>Numéro de série de la carte Aidants Connect (TOTP) que vous voulez assigner à l'aidant.</dd>
       <dt>first_name, last_name</dt>
       <dd>Prénom et nom de famille de l'aidant, respectivement.</dd>
       <dt>phone</dt>
-      <dd>Numéro de téléphone de l'aidant (utilisé uniquement pour les responsables structure)</dd>
+      <dd>Numéro de téléphone de l'aidant (utilisé uniquement pour les référents structure)</dd>
       <dt>is_active</dt>
       <dd>
         Permet d'activer ou de désactiver le compte de l'aidant.<br>

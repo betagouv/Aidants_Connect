@@ -5,21 +5,28 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
+from django.db import transaction
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
 from django.utils import timezone
 
+from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from freezegun import freeze_time
+from phonenumbers import PhoneNumberFormat, format_number
+from phonenumbers import parse as parse_number
 
+from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
+    CarteTOTP,
     Connection,
     HabilitationRequest,
     Journal,
     Mandat,
+    Notification,
     Organisation,
     OrganisationType,
     Usager,
@@ -31,6 +38,7 @@ from aidants_connect_web.tests.factories import (
     CarteTOTPFactory,
     HabilitationRequestFactory,
     MandatFactory,
+    NotificationFactory,
     OrganisationFactory,
     OrganisationTypeFactory,
     RevokedMandatFactory,
@@ -743,7 +751,7 @@ class OrganisationModelTests(TestCase):
         organisation_no_address.save()
         organisation_address.save()
 
-        self.assertEqual(organisation_no_address.display_address, "")
+        self.assertEqual(organisation_no_address.display_address, "__________")
         self.assertNotEqual(
             organisation_no_address.display_address,
             Organisation._meta.get_field("address").default,
@@ -917,6 +925,12 @@ class AidantModelTests(TestCase):
         Aidant.objects.create(username="Marge", organisation=self.superuser_org)
         self.assertRaises(IntegrityError, Aidant.objects.create, username="Marge")
 
+    def test_what_happens_when_an_aidant_tries_to_use_same_email(self):
+        Aidant.objects.create(email="Test@test.test", organisation=self.superuser_org)
+        self.assertRaises(
+            IntegrityError, Aidant.objects.create, username="TEST@TEST.TEST"
+        )
+
     def test_get_aidant_organisation(self):
         orga = OrganisationFactory(
             name="COMMUNE DE HOULBEC COCHEREL",
@@ -930,6 +944,89 @@ class AidantModelTests(TestCase):
         AidantFactory()
         AidantFactory(is_active=False)
         self.assertEqual(Aidant.objects.active().count(), 1)
+
+    def test_get_aidants_not_connected_recently(self):
+        now = timezone.now()
+
+        with freeze_time(now):
+            AidantFactory(is_active=True, last_login=timezone.now())
+            AidantFactory(
+                is_active=True,
+                last_login=timezone.now()
+                - relativedelta(months=5)
+                + relativedelta(days=1),
+            )
+            AidantFactory(
+                is_active=False, last_login=timezone.now() - relativedelta(year=1)
+            )
+
+            aidants_selected = [
+                AidantFactory(
+                    is_active=True,
+                    last_login=timezone.now() - relativedelta(months=5),
+                ),
+                AidantFactory(
+                    is_active=True, last_login=timezone.now() - relativedelta(year=1)
+                ),
+            ]
+
+            self.assertEqual(
+                aidants_selected, list(Aidant.objects.not_connected_recently())
+            )
+
+    def test_get_aidants_warnable(self):
+        now = timezone.now()
+
+        with freeze_time(now):
+            AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=timezone.now()
+                - relativedelta(months=5)
+                + relativedelta(days=1),
+            )
+
+            # Référents aren't warnable
+            AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=None,
+                can_create_mandats=False,
+            )
+
+            # Aidant without ToTtp aren't warnable
+            AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=None,
+            )
+
+            # Aidant with a recent card aren't warnable
+            not_warnable = AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=None,
+            )
+            not_warnable_totp = CarteTOTPFactory(aidant=not_warnable)
+            CarteTOTP.objects.filter(pk=not_warnable_totp.pk).update(
+                created_at=timezone.now() - relativedelta(months=3)
+            )
+
+            warnable = AidantFactory(
+                is_active=True,
+                last_login=timezone.now() - relativedelta(months=5),
+                deactivation_warning_at=None,
+            )
+            warnable_totp = CarteTOTPFactory(aidant=warnable)
+            CarteTOTP.objects.filter(pk=warnable_totp.pk).update(
+                created_at=timezone.now() - relativedelta(months=7)
+            )
+
+            aidants_selected = [warnable]
+
+            self.assertEqual(
+                aidants_selected, list(Aidant.objects.deactivation_warnable())
+            )
 
 
 @tag("models", "aidant")
@@ -1259,9 +1356,9 @@ class AidantModelMethodsTests(TestCase):
         )
 
     def test_is_responsable_structure(self):
-        # an aidant without further modification is not responsable structure
+        # an aidant without further modification is not référent structure
         self.assertFalse(self.aidant_lisa.is_responsable_structure())
-        # however Juliette is responsable structure
+        # however Juliette is référente structure
         self.assertTrue(self.respo_juliette.is_responsable_structure())
 
     def test_can_see_aidant(self):
@@ -1634,6 +1731,134 @@ class JournalModelTests(TestCase):
             validate_attestation_hash(attestation_string, entry.attestation_hash)
         )
 
+    def test_infos_set_remote_mandate_by_sms_constraint(self):
+        # Journal logged
+        journal = Journal._log_sms_event(
+            JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+            self.aidant_thierry,
+            "logement,transports",
+            "SHORT",
+            RemoteConsentMethodChoices.SMS.value,
+            parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION),
+            str(uuid4()),
+            "message",
+        )
+
+        self.assertEqual("message=message", journal.additional_information)
+
+        # Test I can't create a SMS related journal without a aidant
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+                    aidant=None,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=True,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    consent_request_id=str(uuid4()),
+                    additional_information="message",
+                )
+
+        # Test I can't create a SMS related journal with remote field false
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+                    aidant=None,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=False,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    consent_request_id=str(uuid4()),
+                    additional_information="message",
+                )
+
+        # Test I can't create a SMS related journal without a phone number
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+                    aidant=None,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=False,
+                    user_phone="",
+                    consent_request_id=str(uuid4()),
+                    additional_information="message",
+                )
+
+        # Test I can't create a SMS related journal with another remote method
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
+                    aidant=None,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.LEGACY.value,
+                    is_remote_mandat=False,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    consent_request_id=str(uuid4()),
+                    additional_information="message",
+                )
+
+        # Test I can't create a SMS related journal without a message
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
+                    aidant=self.aidant_thierry,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=True,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    consent_request_id=str(uuid4()),
+                )
+
+        # Test I can't create a SMS related journal without a consent request ID
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Journal.objects.create(
+                    action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+                    aidant=self.aidant_thierry,
+                    demarche="logement,transports",
+                    duree=365,
+                    remote_constent_method=RemoteConsentMethodChoices.SMS.value,
+                    is_remote_mandat=True,
+                    user_phone=format_number(
+                        parse_number(
+                            "0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION
+                        ),
+                        PhoneNumberFormat.E164,
+                    ),
+                    additional_information="message",
+                )
+
 
 @tag("models", "habilitation_request")
 class HabilitationRequestMethodTests(TestCase):
@@ -1696,20 +1921,18 @@ class HabilitationRequestMethodTests(TestCase):
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
 
     def test_do_not_validate_if_invalid_status(self):
-        for status in (
-            HabilitationRequest.STATUS_REFUSED,
-            HabilitationRequest.STATUS_CANCELLED,
-        ):
-            habilitation_request = HabilitationRequestFactory(status=status)
-            self.assertEqual(
-                0, Aidant.objects.filter(email=habilitation_request.email).count()
-            )
-            self.assertFalse(habilitation_request.validate_and_create_aidant())
-            self.assertEqual(
-                0, Aidant.objects.filter(email=habilitation_request.email).count()
-            )
-            db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
-            self.assertEqual(db_hab_request.status, status)
+        habilitation_request = HabilitationRequestFactory(
+            status=HabilitationRequest.STATUS_REFUSED
+        )
+        self.assertEqual(
+            0, Aidant.objects.filter(email=habilitation_request.email).count()
+        )
+        self.assertFalse(habilitation_request.validate_and_create_aidant())
+        self.assertEqual(
+            0, Aidant.objects.filter(email=habilitation_request.email).count()
+        )
+        db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
+        self.assertEqual(db_hab_request.status, HabilitationRequest.STATUS_REFUSED)
 
 
 @tag("models", "manndat", "usager", "journal")
@@ -1797,3 +2020,89 @@ class OrganisationDeleteTests(TestCase):
         self.assertEqual(len(Organisation.objects.all()), 1)
         self.assertEqual(len(Mandat.objects.all()), 0)
         self.assertEqual(len(Journal.objects.all()), 4)
+
+
+class TestNotification(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.notification_type = ""
+        cls.aidant: Aidant = AidantFactory()
+
+    def test_constraints(self):
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                Notification.objects.create(
+                    type=self.notification_type,
+                    aidant=self.aidant,
+                    must_ack=True,
+                    was_ack=None,
+                )
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                Notification.objects.create(
+                    type=self.notification_type,
+                    aidant=self.aidant,
+                    must_ack=False,
+                    auto_ack_date=None,
+                    was_ack=None,
+                )
+        with transaction.atomic():
+            Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today(),
+                was_ack=None,
+            )
+
+        with transaction.atomic():
+            Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=True,
+                auto_ack_date=date.today(),
+                was_ack=False,
+            )
+
+        with transaction.atomic():
+            Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=True,
+                auto_ack_date=None,
+                was_ack=False,
+            )
+
+
+class NotificationTests(TestCase):
+    def test_constraints(self):
+        with transaction.atomic():
+            self.assertRaises(
+                IntegrityError, NotificationFactory, must_ack=True, was_ack=None
+            )
+
+        with transaction.atomic():
+            self.assertRaises(
+                IntegrityError, NotificationFactory, must_ack=False, was_ack=False
+            )
+
+        with transaction.atomic():
+            self.assertRaises(
+                IntegrityError, NotificationFactory, auto_ack_date=None, was_ack=None
+            )
+
+    def test_mark_read(self):
+        notification: Notification = NotificationFactory(was_ack=False)
+        notification.refresh_from_db()
+        self.assertFalse(notification.was_ack)
+        notification.mark_read()
+        notification.refresh_from_db()
+        self.assertTrue(notification.was_ack)
+
+    def test_mark_unread(self):
+        notification: Notification = NotificationFactory(was_ack=True)
+        notification.refresh_from_db()
+        self.assertTrue(notification.was_ack)
+        notification.mark_unread()
+        notification.refresh_from_db()
+        self.assertFalse(notification.was_ack)

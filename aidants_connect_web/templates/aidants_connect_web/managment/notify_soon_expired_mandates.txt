@@ -1,7 +1,0 @@
-Bonjour,
-
-L’équipe Aidants Connect vous informe que les mandats suivants vont bientôt expirer :
-{% for mandate in mandates %}{% with auths_count=mandate.autorisations.count %}
-  — le mandat réalisé avec {{ mandate.usager.get_full_name }} qui expire le {{ mandate.expiration_date|date:"l j F Y" }} ({{ auths_count }} autorisation{{ auths_count|pluralize }}),
-    [{{forloop.counter}}] : {{ mandate.get_absolute_url }}{% if forloop.last %}.{% else %} ;{% endif %}
-{% endwith %}{% endfor %}

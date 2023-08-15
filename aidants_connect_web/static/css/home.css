@@ -164,6 +164,38 @@ a.btn-homepage, a.btn-homepage:visited {
   color: #FFFFFF;
 }
 
+/*-- Hyperliens vid --*/
+.hyperliens-video {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.hyperliens-video div {
+  display: block;
+  max-width: 350px;
+}
+
+.hyperliens-video iframe {
+  flex-grow: 1;
+}
+
+@media (max-width: 36em) {
+  .hyperliens-video {
+    flex-direction: column;
+  }
+
+  .hyperliens-video div {
+    max-width: 100%;
+  }
+}
+
+/*-- testimonies --*/
+.testimony-quote {
+  font-style: italic;
+  color: #5770BE;
+}
+
 /*-- contact --*/
 .contact-container {
   min-height: 31.438rem;
@@ -205,13 +237,14 @@ a.btn-homepage, a.btn-homepage:visited {
 }
 
 .contact-title {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 500;
   font-size: 1.5rem;
   line-height: 2rem;
   display: flex;
   align-items: center;
+  color: #FFFFFF;
+}
+
+.message-div {
   color: #FFFFFF;
 }
 

@@ -418,7 +418,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.assertEqual(
             error_element.text,
-            "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+            "Vous devez déclarer au moins 1 aidant si le ou la référente de "
             "l'organisation n'est pas elle-même déclarée comme aidante",
         )
 
@@ -437,7 +437,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.assertEqual(
             error_element.text,
-            "Vous devez déclarer au moins 1 aidant si le ou la responsable de "
+            "Vous devez déclarer au moins 1 aidant si le ou la référente de "
             "l'organisation n'est pas elle-même déclarée comme aidante",
         )
 

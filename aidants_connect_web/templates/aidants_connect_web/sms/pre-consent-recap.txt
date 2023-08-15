@@ -1,0 +1,18 @@
+{% load ac_common %}
+
+Aidant Connect, bonjour.
+
+{% linebreakless dont_rstrip=True %}
+{% autoescape off %}{# Turn off HTML autoescape. That would mess with apostrophies #}
+L'organisation {{ organisation.name }} va créer un mandat {{ duree_text }} en votre nom
+{% if demarches|length == 1 %}
+ pour la démarche {{ demarches.0 }}.
+{% else %}
+ pour les démarches suivantes :{% keeplinebreak %}
+{% for demarche in demarches %}
+{% keeplinebreak %}
+- {{ demarche }}{% list_term %}
+{% endfor %}
+{% endif %}
+{% endautoescape %}
+{% endlinebreakless %}

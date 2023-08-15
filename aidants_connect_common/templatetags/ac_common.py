@@ -3,14 +3,16 @@ from urllib.parse import quote, urlencode
 
 from django import template
 from django.conf import settings
-from django.template.base import Node, NodeList, Parser, TextNode, Token
+from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
+from django.template.defaultfilters import stringfilter
+from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
 register = template.Library()
 
 
 @register.simple_tag
-def mailto(link_text: str, recipient: str, subject: str, body: str):
+def mailto_href(recipient: str, subject: str = "", body: str = ""):
     def quote_via(string, _, encoding, errors):
         """
         Custom quote function for urlencode
@@ -23,13 +25,40 @@ def mailto(link_text: str, recipient: str, subject: str, body: str):
         """
         return quote(string, "", encoding, errors)
 
-    urlencoded = urlencode({"subject": subject, "body": body}, quote_via=quote_via)
-    return mark_safe(f'<a href="mailto:{recipient}?{urlencoded}">{link_text}</a>')
+    query = {}
+
+    if subject:
+        query["subject"] = subject
+    if body:
+        query["body"] = body
+
+    urlencoded = (
+        urlencode({"subject": subject, "body": body}, quote_via=quote_via)
+        if query
+        else ""
+    )
+
+    return f"mailto:{recipient}{'?' + urlencoded if urlencoded else ''}"
+
+
+@register.simple_tag
+def mailto(recipient: str, link_text: str = "", subject: str = "", body: str = ""):
+    link_text = link_text or recipient
+    return mark_safe(
+        f'<a href="{mailto_href(recipient, subject, body)}">{link_text}</a>'
+    )
 
 
 @register.simple_tag
 def stimulusjs():
-    return mark_safe(f'<script src="{settings.STIMULUS_JS_URL}"></script>')
+    return mark_safe(
+        "\n".join(
+            [
+                f'<script src="{settings.STIMULUS_JS_URL}"></script>',
+                f'<script type="module" src="{static("js/base-controller.js")}"></script>',  # noqa: E501
+            ]
+        )
+    )
 
 
 @register.tag
@@ -39,7 +68,7 @@ def linebreakless(parser: Parser, token: Token):
     parser.add_library(library)
     nodelist = parser.parse(("endlinebreakless",))
     parser.delete_first_token()
-    return LinebreaklessNode(token, nodelist)
+    return LinebreaklessNode(parser, token, nodelist)
 
 
 class LinebreaklessNode(Node):
@@ -57,11 +86,19 @@ class LinebreaklessNode(Node):
     def keeplinebreak(_, token: Token):
         return LinebreaklessNode.KeepLineBreak(token)
 
-    def __init__(self, token: Token, nodelist: NodeList):
+    def __init__(self, parser: Parser, token: Token, nodelist: NodeList):
+        self.parser = parser
         self.token = token
         self.nodelist = nodelist
 
     def render(self, context):
+        tag_name, *bits = self.token.contents.split()
+        kwargs = {
+            k: v.resolve(context) for k, v in token_kwargs(bits, self.parser).items()
+        }
+        dont_rstrip = kwargs.get("dont_rstrip", False)
+        dont_lstrip = kwargs.get("dont_lstrip", False)
+
         for i, node in enumerate(self.nodelist):
             if isinstance(node, LinebreaklessNode.KeepLineBreak) and (
                 len(self.nodelist) <= i + 1
@@ -74,8 +111,16 @@ class LinebreaklessNode(Node):
                     f'  File "{node.origin.name}", line {node.token.lineno}'
                 )
 
+        # Prevent eliminating spaces respectively after and before the newline
+        # May be useful when parsing purely text files
+        regex = r"\n+"
+        if not dont_rstrip:
+            regex = rf"{regex}\s*"
+        if not dont_lstrip:
+            regex = rf"\s*{regex}"
+
         return re.sub(
-            "\\s*\n+\\s*",
+            regex,
             "",
             self.nodelist.render(context).strip(),
         ).replace(self.KEEP_LINEBREAK_MARKUP, "\n")
@@ -126,3 +171,17 @@ def list_term(context, **kwargs):
     additionnal_cond = kwargs.get("additionnal_cond", False)
 
     return end_term if forloop["last"] and not additionnal_cond else more_term
+
+
+@register.filter
+@stringfilter
+def camel(value: str):
+    splitted = value.split("_")
+    if len(splitted) > 1:
+        splitted = [splitted[0], *[item.capitalize() for item in splitted[1:]]]
+
+    splitted = "".join(splitted).split("-")
+    if len(splitted) > 1:
+        splitted = [splitted[0], *[item.capitalize() for item in splitted[1:]]]
+
+    return "".join(splitted)

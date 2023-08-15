@@ -2,7 +2,7 @@
 {% if errors %}<div class="notification error" role="alert">
   {{ errors }}
 </div>{% endif %}
-<p{% class_attr field.css_classes %}>
+<p{% class_attr p_classes %}>
   {% if field.label %}{{ field.label_tag }}{% endif %}
   {{ field }}
   {% if field.help_text %}

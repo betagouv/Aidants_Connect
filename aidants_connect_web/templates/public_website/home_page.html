@@ -51,9 +51,6 @@
       </div>
       <div class="fr-grid-row fr-grid-row--right aidants-btn-container">
         <div class="fr-grid-col aidants-btn-col">
-          <a class="btn-homepage" href="https://app.livestorm.co/incubateur-des-territoires/aidants-connect">Participer à une démo</a>
-        </div>
-        <div class="fr-grid-col aidants-btn-col">
           <a class="btn-homepage" href="{% url 'habilitation' %}">Être habilité Aidants Connect</a>
         </div>
       </div>
@@ -82,6 +79,33 @@
     </div>
   </div>
 </div>
+
+
+  {# Video #}
+  <div class="fr-container testimony-container">
+    <div class="fr-grid-row">
+      <section class="hyperliens-video shadowed margin-top-1rem">
+        <iframe
+          src="https://www.youtube.com/embed/AJGo6bydQss"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+        <div class="padding-1rem">
+          <h4 class="h4-prime">Hyperliens</h4>
+          <p class="testimony-quote">
+            « On associe souvent le numérique à l’innovation technologique et aux startups des grandes villes.
+            Pourtant,ailleurs en France, le numérique est aussi synonyme de lien social, de mise en commun et
+            d’inclusion. »
+          </p>
+          <p>
+            L’équipe d’HYPERLIENS est allée à la rencontre de Yoann Herrero, responsable Espace Numérique au Centre
+            Socio-Culturel Andréa Malraux à Nîmes.
+          </p>
+        </div>
+      </section>
+    </div>
+  </div>
+
 <div class="fr-container contact-container">
   <div class="fr-grid-row">
     <div class="fr-col-md-4 contact-col">
@@ -93,10 +117,10 @@
           </div>
           <div class="fr-grid-row fr-grid-row--right fr-grid-row--bottom questions-btn-container">
             <div class="fr-grid-col aidants-btn-col">
-              <a class="btn-homepage" href="{% url 'habilitation' %}">Premiers pas</a>
+              <a class="btn-homepage" href="{% url 'habilitation' %}">Habilitation</a>
             </div>
             <div class="fr-grid-col aidants-btn-col">
-              <a class="btn-homepage" href="{% url 'faq_generale' %}">Aide</a>
+              <a class="btn-homepage" href="{% url 'faq_generale' %}">FAQ</a>
             </div>
           </div>
         </div>
@@ -106,18 +130,30 @@
     <div class="fr-col-md-8 contact-col">
       <div class="fr-grid-row contact-div">
         <div class="fr-col">
-          <p class="contact-title">Restons en contact !</p>
-          <form method="post" action="https://app.mailjet.com/widget/iframe/4t3L/E8z" id="newsletter">
-            <input type="hidden" id="csrf_token" name="csrf_token" value="YWZhOWVmNGEwNzY4NjViZmQyMDk0ZjUxZjg0Y2Q2ZGU3NTVjN2NmNjFmY2JmYjZkZmI1MWEwZjkxZTIyNGMzNQ==" />
-            <label class="contact-text" for="subscribe-email">Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :</label>
-            <div class="form__group">
-              <div class="input__group">
-                <input type="email" id="subscribe-email" name="w-field-field-154291-1000274-1065021-email" placeholder="votre@email.fr" autocomplete="on" required />
-                <button class="btn-contact" type="submit" name="subscribe" id="form-submit" title="Je m'abonne à l'infolettre">Je m'abonne</button>
+          <p class="contact-title">Restons en contact !</p>
+          <div class="newsletter-form-container">
+            <form
+              id="sb_form"
+              method="post"
+              data-connect-url="{{ SARBACANE_CONNECT_URL }}"
+            >
+              <label class="contact-text" for="input-email">
+                Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :
+              </label>
+              <div class="form__group">
+                <div class="input__group">
+                  <input id="input-email" type="text" name="email" placeholder="votre@email.fr" required sb-form-input>
+                  <button id="submitInput" class="btn-contact" type="submit" value="Je m&#x27;abonne">
+                    Je m'abonne
+                  </button>
+                </div>
+                <div class="loader"></div>
               </div>
-            </div>
-          </form>
-          <p class="contact-text">Besoin d’informations précises ou d’assistance ? Contactez-nous à l’adresse suivante : <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a></p>
+            </form>
+          </div>
+          <p class="contact-text">Besoin d’informations précises ou d’assistance ? Contactez-nous à l’adresse suivante :
+            <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a>
+          </p>
         </div>
       </div>
     </div>
@@ -154,4 +190,6 @@
   `).show()
   }
 </script>
+<script type="text/javascript" src="{{ SARBACANE_SCRIPT_URL }}"></script>
+<script type="text/javascript" src="{% static 'js/newsletter-form.js' %}"></script>
 {% endblock extrajs %}

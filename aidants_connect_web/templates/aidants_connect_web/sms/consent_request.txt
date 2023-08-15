@@ -1,6 +1,10 @@
+{% load ac_common %}
+
 Aidant Connect, bonjour.
 
-Un aidant a créé un mandat en votre nom. Confirmez-vous la création de ce mandat ?
-Répondez « {{ sms_response_consent }} » sans ponctuation à ce message pour confirmer votre consentement.
-
-Notez que toute autre réponse que « oui » sera interprétée comme un refus explicite.
+{% linebreakless dont_rstrip=True %}
+{% autoescape off %}{# Turn off HTML autoescape. That would mess with apostrophies #}
+Donnez-vous votre accord pour la création de ce mandat ?
+ Répondez « {{ sms_response_consent }} » pour accepter le mandat.
+{% endautoescape %}
+{% endlinebreakless %}

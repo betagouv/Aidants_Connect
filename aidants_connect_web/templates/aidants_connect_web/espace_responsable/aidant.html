@@ -5,11 +5,6 @@
 
 {% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
 
-{% block extracss %}
-  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
-  <link href="{% static 'css/form.css' %}" rel="stylesheet">
-{% endblock extracss %}
-
 {% block content %}
   <section class="section">
     <div class="container">
@@ -45,26 +40,7 @@
         {% if aidant.carte_totp.serial_number %}
           <details class="background-color-grey">
             <summary>Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte</summary>
-            <form method="post"
-                  action="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}">
-              {% csrf_token %}
-              <p>
-                Pour supprimer l'association entre la carte {{ aidant.carte_totp.serial_number }}
-                et le compte de l'aidant {{ aidant.get_full_name }},
-                cliquez sur le bouton «&nbsp;Dissocier&nbsp;».
-              </p>
-              <div class="form__group">
-                <label for="{{ form.reason.id_for_label }}">Pourquoi séparer cette carte du compte ?</label>
-                {{ form.reason }}
-              </div>
-              <p>
-                <label for="{{ form.other_reason.id_for_label }}">Autre raison :</label>
-                {{ form.other_reason }}
-              </p>
-              <p>
-                <button class="button warning" type="submit">Dissocier</button>
-              </p>
-            </form>
+            {% include "aidants_connect_web/espace_responsable/_aidant_remove_card.html" %}
           </details>
         {% else %}
           <p>

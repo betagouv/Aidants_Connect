@@ -169,7 +169,6 @@ class AutorisationCancellationConfirmPageTests(TestCase):
         self.error_case_tester(bad_combo_for_our_aidant)
 
     def test_wrong_usager_autorisation_triggers_redirect(self):
-
         bad_combo_for_our_aidant = {
             "usager": self.our_usager.id,
             "autorisation": self.unrelated_autorisation.id,
@@ -222,7 +221,6 @@ class MandatCancellationConfirmPageTests(TestCase):
         )
 
     def test_complete_post_triggers_redirect(self):
-
         self.assertTrue(self.valid_mandat.is_active)
 
         self.client.force_login(self.our_aidant)

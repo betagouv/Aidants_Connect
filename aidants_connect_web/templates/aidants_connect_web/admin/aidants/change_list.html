@@ -1,0 +1,11 @@
+{% extends "admin/import_export/change_list_import_export.html" %}
+{% load i18n static %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'otpadmin:aidants_connect_web_aidant_mass_deactivate' %}" class="btn btn-high btn-success">
+      Désactiver en masse par email
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}

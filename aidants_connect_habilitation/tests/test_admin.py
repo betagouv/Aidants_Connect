@@ -20,6 +20,13 @@ from aidants_connect_web.tests.factories import AidantFactory
 @tag("admin")
 class OrganisationRequestAdminTests(TestCase):
     @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.org_request_admin = OrganisationRequestAdmin(
+            OrganisationRequest, AdminSite()
+        )
+
+    @classmethod
     def setUpTestData(cls):
         cls.amac_user = AidantFactory(
             is_staff=True,
@@ -33,10 +40,6 @@ class OrganisationRequestAdminTests(TestCase):
         amac_session = cls.amac_client.session
         amac_session[DEVICE_ID_SESSION_KEY] = cls.amac_device.persistent_id
         amac_session.save()
-
-        cls.org_request_admin = OrganisationRequestAdmin(
-            OrganisationRequest, AdminSite()
-        )
 
     def test_send_default_email(self):
         self.assertEqual(len(mail.outbox), 0)
@@ -92,9 +95,14 @@ class OrganisationRequestAdminTests(TestCase):
         acceptance_message = mail.outbox[1]
 
         self.assertIn(
-            "formations sont complètes pour les prochains mois", acceptance_message.body
+            "les formations peuvent être complètes pour les prochaines semaines",
+            acceptance_message.body,
         )
-        self.assertIn("Vous êtes sur liste d'attente", acceptance_message.body)
+        self.assertIn(
+            "Vous serez contactés prochainement par l'organisme de formation qui vous "
+            "communiquera les dates disponibles pour les formations à venir. ",
+            acceptance_message.body,
+        )
         self.assertNotIn(
             "Vous pouvez vous inscrire sur liste d’attente ici", acceptance_message.body
         )
@@ -123,7 +131,7 @@ class OrganisationRequestAdminTests(TestCase):
 
         # check subject and email contents
         self.assertEqual(email_subject, acceptance_message.subject)
-        self.assertEqual(email_body, acceptance_message.body)
+        self.assertIn(email_body, acceptance_message.body)
 
         # check recipients are as expected
         self.assertEqual(
@@ -162,7 +170,7 @@ class OrganisationRequestAdminTests(TestCase):
 
         # check subject and email contents
         self.assertEqual(email_subject, refusal_message.subject)
-        self.assertEqual(email_body, refusal_message.body)
+        self.assertIn(email_body, refusal_message.body)
 
         # check recipients are as expected
         self.assertEqual(
@@ -210,4 +218,4 @@ class OrganisationRequestAdminTests(TestCase):
         url_root = f"admin:{OrganisationRequest._meta.app_label}_{OrganisationRequest.__name__.lower()}"  # noqa
         url = reverse(url_root + "_change", args=(org_request.pk,))
         response = self.amac_client.get(url)
-        self.assertContains(response, "<h2>Responsable</h2>")
+        self.assertContains(response, "<h2>Référent</h2>")

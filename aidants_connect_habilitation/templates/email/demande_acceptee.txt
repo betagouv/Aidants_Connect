@@ -4,7 +4,7 @@ Bienvenue sur Aidants Connect !
 
 La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}, a été acceptée.
 
-⚠️ Attention : un grand nombre d’aidants sont en attente d’une formation Aidants Connect et les formations sont complètes pour les prochains mois. Vous êtes sur liste d'attente et nous vous contacterons en cas de désistement.
+⚠️ Attention : un nombre important d’aidants sont en attente d’une formation Aidants Connect et les formations peuvent être complètes pour les prochaines semaines. Vous serez contactés prochainement par l'organisme de formation qui vous communiquera les dates disponibles pour les formations à venir. 
 
 Pour rappel, ci-dessous les étapes de la procédure d’habilitation Aidants Connect :
 
@@ -13,9 +13,9 @@ Dans un premier temps, les aidantes et les aidants vont être contactés pour su
  - {{ aidant }}{% endfor %}
 {% if organisation.manager.is_aidant %} - {{ organisation.manager }}{% endif %}
 
-En parallèle, le responsable Aidants Connect est invité à participer à un webinaire de 30 minutes qui explique en détail son rôle dans l’habilitation. Pour s’inscrire, c’est ici : https://app.livestorm.co/incubateur-des-territoires/responsable-aidants-connect.
+En parallèle, le ou la référente Aidants Connect est invité à participer à un webinaire de 30 minutes qui explique en détail son rôle dans l’habilitation. Pour s’inscrire, c’est ici : https://app.livestorm.co/incubateur-des-territoires/responsable-aidants-connect.
 
-Enfin, une fois les aidants formés, le kit de bienvenue - contenant les accès au compte Aidants Connect - sera livré par voie postale au/à la responsable de la structure à l'adresse suivante :
+Enfin, une fois les aidants formés, le kit de bienvenue - contenant les accès au compte Aidants Connect - sera livré par voie postale au/à la référente de la structure à l'adresse suivante :
 
 {{ organisation.name }}
 A l'attention de {{ organisation.manager }}

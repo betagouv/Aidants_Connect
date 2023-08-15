@@ -1,0 +1,22 @@
+{% extends 'layouts/main-habilitation.html' %}
+
+{% load static form_extras %}
+
+{% block title %}Aidants Connect - Ajout d’une application OTP pour {{ aidant.get_full_name }}{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <img src="{{ otp_device_qr_code_href }}" alt="OTP QR code à flasher dans votre application">
+      {% field_as_p form.otp_token %}
+      <a href="{% url 'espace_responsable_home' %}" class="button">Annuler</a>
+      <input type="submit" class="button" value="Confirmer">
+    </form>
+  </div>
+{% endblock content %}

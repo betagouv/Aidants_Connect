@@ -1,0 +1,9 @@
+{% extends "widgets/detailed_radio_option.html" %}
+{% block widget_label %}
+  {{ widget.label }}
+  <span
+    data-mandate-form-controller-target="remoteLabelText"
+    hidden
+    aria-hidden="true"
+  > à distance</span>
+{% endblock %}

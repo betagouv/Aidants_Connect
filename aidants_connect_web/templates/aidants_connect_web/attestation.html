@@ -1,24 +1,60 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block title %}Aidants Connect - Impression du mandat{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/attestation.css' %}" rel="stylesheet">
+  <link href="{% static 'css/attestation.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-{% block nav %}
-{% endblock nav %}
+{# Display navigation only on final mandate #}
+{% block nav %}{% if final %}<div class="no-print">{{ block.super }}</div>{% endif %}{% endblock nav %}
 
 {% block content %}
-{% include "aidants_connect_web/attestation_print.html" %}
+  <div class="fr-container clearfix">
+    {% if final %}
+      <div class="fr-grid-row fr-grid-row--gutters no-print margin-bottom-4rem">
+        <h1 class="full-width margin-0">Mandat final</h1>
+        <section class="fr-col-12 fr-col-md-7">
+          <p class="subtitle">
+            Le mandat a été créé avec succès.<br/>
+            Veuillez l’imprimer afin de le faire signer par le mandant.
+          </p>
+        </section>
+        <section class="fr-col-12 fr-col-md-5">
+          {% include 'aidants_connect_web/_attestation-print.html' %}
+        </section>
+      </div>
+    {% endif %}
 
-{% include current_mandat_template %}
+    <div class="attestation-content">
+      <header class="navbar fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-8">
+          {% include "layouts/_header_logos.html" %}
+        </div>
+        {% if qr_code_src %}
+          <div class="fr-col-4 clearfix">
+            <img alt="" class="float-right img-qrcode" src="{{ qr_code_src }}"/>
+          </div>
+        {% endif %}
+      </header>
+
+      {% if not final %}
+        <section class="notification warning" role="alert">
+          Attention ! Ceci est un projet de mandat. Il n'a aucune valeur juridique.
+        </section>
+      {% endif %}
+      {% include current_mandat_template %}
+    </div>
+  </div>
 {% endblock content %}
 
 {% block footer %}
   {% if modified %}
-    <em class="text-center margin-bottom-1em">Ce contrat est mis à jour régulièrement pour des raisons légales. Il peut avoir été modifié depuis votre dernière visite.</em>
+    <em class="text-center margin-bottom-1rem">
+      Ce contrat est mis à jour régulièrement pour des raisons légales.
+      Il peut avoir été modifié depuis votre dernière visite.
+    </em>
   {% endif %}
 {% endblock footer %}

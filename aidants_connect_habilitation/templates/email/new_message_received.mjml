@@ -1,0 +1,23 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+  <mj-section>
+    <mj-column>
+      <mj-text>
+        <p>Bonjour,</p>
+        <p>
+          Vous avez <b>reçu un nouveau message</b> sur la demande d'habilitation Aidants Connect déposée par
+          {{ organisation.issuer }}, concernant la structure <b>{{ organisation.name }}</b> :
+        </p>
+        <p style="margin-left: 5px;border-left: 3px solid #c5c5c5;padding: 5px;">
+          <em>{{ message.content }}</em>
+        </p>
+      </mj-text>
+      <mj-button href="{{ url }}">Retrouver tous les détails de cette demande</mj-button>
+      <mj-text>
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l’adresse suivante dans votre navigateur :
+        <a href="{{ url }}">{{ url }}</a>
+      </mj-text>
+    </mj-column>
+  </mj-section>
+{% endblock %}

@@ -1,17 +1,9 @@
 @use "colors";
-@import "detailed-radio-select.css";
-@import "boxes.css";
-@import "utils.css";
+@use "utils";
+@use "boxes";
+@use "detailed-radio-select";
 
 $font-stack: "Marianne", arial, sans-serif;
-
-// break points -----------------------------------------
-
-$bp-xs: 20em;
-$bp-sm: 36em;
-$bp-md: 48em;
-$bp-lg: 62em;
-$bp-xl: 78em;
 
 // basic layout -----------------------------------------
 
@@ -22,11 +14,13 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
+  font-weight: 400;  // Marianne-Regular
 }
 
 ul, ol {
   margin: 0;
   padding: 0;
+  list-style-position: inside;
 }
 
 svg.previews {
@@ -43,6 +37,10 @@ main {
     color: colors.$red-aidants;
     font-weight: bold;
   }
+}
+
+[hidden] {
+  display: none !important;
 }
 
 // Accessibility ------------------------------------------------------
@@ -86,20 +84,33 @@ main {
 }
 
 h1, .h1 {
+  $margin-top: 2.5rem;
+
   display: block;
   font-size: 3rem;
   font-weight: bold;
   color: colors.$red-aidants;
-  margin: 2.5rem 0;
+  margin: $margin-top 0;
   text-transform: uppercase;
   line-height: 1.25;
 
+  + h2 {
+    margin-top: -$margin-top;
+  }
+}
+
+h1, .h1, h2, .h2, h3, .h3, h4, .h4, .subtitle-container {
   + .subtitle {
     font-size: 1.25rem;
     color: colors.$light-blue-anct;
     line-height: 2rem;
   }
+
+  .button {
+    text-transform: none;
+  }
 }
+
 
 h2, .h2 {
   display: block;
@@ -121,8 +132,8 @@ h2, .h2 {
 }
 
 h3, .h3 {
-  font-size: 1.5rem;
   color: colors.$light-blue-anct;
+  font-size: 1.5rem;
   font-weight: normal;
   margin: 2.5rem 0 1.5rem;
   line-height: 1.25;
@@ -130,6 +141,28 @@ h3, .h3 {
   &:first-child, legend + & {
     margin-top: 0;
   }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  &.upper {
+    text-transform: uppercase;
+  }
+}
+
+h3.h3-prime {
+  // Like h2 but with with text size of h3. To use on <h3> that visually places between <h2> and <h3>
+  display: block;
+  color: colors.$blue-aidants;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 2rem 0;
+}
+
+.h4-prime {
+  display: block;
+  color: colors.$blue-aidants;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 .shadowed {
@@ -503,7 +536,7 @@ fieldset {
   }
 }
 
-@media (max-width: $bp-md) {
+@media (max-width: utils.$bp-md) {
   .form-grid-row {
     .fr-col-md-5 {
       padding-bottom: .25rem;
@@ -518,7 +551,7 @@ fieldset {
   }
 }
 
-@media (min-width: $bp-lg) {
+@media (min-width: utils.$bp-lg) {
   .form-grid-row-narrow {
     .fr-col-md-5 {
       padding-bottom: .25rem;
@@ -550,7 +583,29 @@ fieldset {
   border: 1px solid colors.$red-aidants;
   box-sizing: border-box;
   box-shadow: 10px 10px 0 colors.$red-aidants;
+
+  .color-initial {
+    color: initial;
+  }
+
+  p {
+    margin: .5rem 0;
+  }
 }
+
+@media screen {
+  .print-only {
+    display: none;
+  }
+}
+
+@media print {
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+}
+
 
 // habilitation form breadcrumbs -----------------------
 
@@ -625,6 +680,10 @@ fieldset {
 
 // messages -------------------------------------------
 
+.notification {
+  margin-bottom: 2rem;
+}
+
 .messages-list-container {
   min-height: 15rem;
   max-height: 25rem;
@@ -687,19 +746,24 @@ ol.messages-list {
 }
 
 .header-links {
+  align-items: center;
+  display: flex;
+  justify-content: right;
   list-style: none;
   text-align: right;
 
   li {
-    display: inline-block;
-    margin-left: 2rem;
+    text-align: center;
+
+    &:not(:first-child) {
+      margin-left: 2rem;
+    }
   }
 
   a {
     text-decoration: none;
     color: colors.$dark-grey-aidants;
     display: block;
-    padding: .25rem 0;
 
     &.active {
       color: colors.$red-aidants;
@@ -709,9 +773,16 @@ ol.messages-list {
     &:hover {
       box-shadow: 0 .5rem 0 colors.$off-yellow-aidants;
     }
+  }
+}
 
-    &.button {
-      padding: .25rem .5rem;
+@media (max-width: utils.$bp-lg) {
+  .header-links {
+    margin-top: 1rem;
+    flex-direction: column;
+
+    li:not(:first-child) {
+      margin: .5rem 0 0 0;
     }
   }
 }
@@ -767,10 +838,33 @@ footer {
   }
 }
 
-// utilities ----------------------------------------------
+// FAQ
+.more-questions {
+  background: colors.$blue-aidants;
+  color: #fff;
+  position: relative;
+  padding: 1.5rem 1.5rem 2rem;
+  margin: 3rem 0 2rem;
 
-.margin-bottom-1 {
-  margin-bottom: 1rem;
+  h2 {
+    font-size: 1.5rem;
+    text-transform: none;
+    font-weight: normal;
+    color: #fff;
+  }
+
+  .questions-cta {
+    display: flex;
+    height: 3rem;
+    padding: 0 1rem;
+    background: colors.$red-aidants;
+    position: absolute;
+    right: 1.5rem;
+    bottom: -1.5rem;
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 // testimonies
@@ -858,7 +952,7 @@ footer {
   }
 
   .testimony-content {
-    h1,h2,h3,h4 {
+    h1, h2, h3, h4 {
       font-weight: bold;
       font-size: 1rem;
       margin: 2em 0 1em;

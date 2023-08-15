@@ -6,6 +6,8 @@ from django.http import HttpRequest
 from django.template import loader
 from django.urls import reverse
 
+from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils.urls import build_url
 from aidants_connect_habilitation.models import (
     IssuerEmailConfirmation,
     OrganisationRequest,
@@ -43,20 +45,17 @@ def notify_issuer_draft_request_saved(
     if not created:
         return
 
-    path = reverse(
-        "habilitation_issuer_page",
-        kwargs={"issuer_id": str(instance.issuer.issuer_id)},
-    )
-
-    context = {
-        "url": f"https://{settings.HOST}{path}",
-        "organisation": instance,
-    }
-    text_message = loader.render_to_string(
-        "email/draft_organisation_request_saved.txt", context
-    )
-    html_message = loader.render_to_string(
-        "email/draft_organisation_request_saved.html", context
+    text_message, html_message = render_email(
+        "email/draft_organisation_request_saved.mjml",
+        {
+            "url": build_url(
+                reverse(
+                    "habilitation_issuer_page",
+                    kwargs={"issuer_id": str(instance.issuer.issuer_id)},
+                )
+            ),
+            "organisation": instance,
+        },
     )
 
     send_mail(

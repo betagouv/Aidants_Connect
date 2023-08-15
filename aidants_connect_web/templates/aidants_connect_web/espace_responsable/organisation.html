@@ -1,144 +1,129 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
+{% load ac_common %}
+{% load static ac_extras %}
 
-{% load static %}
-{% load ac_extras %}
-
-{% block title %}Aidants Connect - Mon organisation : {{ organisation.name }}{% endblock %}
+{% block title %}Aidants Connect - Mon organisation{% endblock %}
 
 {% block extracss %}
-  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-      <h1>Mon organisation : {{ organisation.name }}</h1>
-      {% include "aidants_connect_web/espace_aidant/notifications.html" with user=responsable %}
-      <div class="bandeau shadowed">
-        <p>
-          <span aria-hidden="true">⚠️</span> Attention : un grand nombre d’aidants sont en attente d’une formation Aidants Connect et les formations sont
-          complètes pour les prochains mois. Vous pouvez ajouter sur votre compte Responsable un montant maximum de
-          trois aidants à la fois. Au-delà de trois aidants, les aidants seront mis sur liste d’attente.
-        </p>
-      </div>
-      {% include "aidants_connect_web/espace_aidant/statistics.html" with organisation=organisation %}
-    </div>
-  </section>
+  <div class="fr-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h1>Mon organisation</h1>
+    <h2>{{ organisation.name }}</h2>
+    <p class="subtitle">
+      Retrouvez ici des outils à votre disposition, externes à Aidants Connect mais susceptibles de vous aider dans vos
+      démarches d’accompagnement.
+    </p>
 
-  <section class="section section-grey">
-    <div class="container">
-      <h2>Aidants</h2>
-      <p class="text-right">
-        {% if organisation.aidants_not_responsables|length > 0 %}
-        <a href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}" class="button">
-          <span aria-hidden="true">⚙️</span>
-          Désigner un responsable
-        </a>
+    <div class="fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
+      <div class="fr-col-12">
+        {% include "aidants_connect_web/espace_aidant/notifications.html" with user=responsable %}
+      </div>
+    </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
+      <div class="fr-col-12">
+        <div class="bandeau shadowed">
+          <p>
+            <span aria-hidden="true">⚠️</span> Attention : Aidants Connect travaille actuellement sur la
+            pérennisation du service et l’adaptation des contenus de la formation. L’équipe Aidants Connect mènera
+            d’ici fin 2023 des expérimentations pour former des cohortes d’aidants selon des nouvelles modalités et en
+            fonction des métiers des personnes concernées. Nous reviendrons vers vous si votre structure fait partie
+            des structures concernées par les premières expérimentations.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {% include "aidants_connect_web/espace_aidant/statistics.html" %}
+
+    <h2 class="clearfix">
+      Aidants
+      <span class="float-right">
+        {% if organisation_active_aidants|length > 1 %}{# Organisation has more aidants than just the référent #}
+          <a
+            href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}"
+            class="button"
+          >
+            <span aria-hidden="true">⚙️ </span>Désigner un ou une référente
+          </a>
         {% endif %}
         <a href="{% url "espace_responsable_aidant_new" %}" class="button">
-          <span aria-hidden="true">👩</span>
-          Ajouter un aidant
+          <span aria-hidden="true">👩 </span>Ajouter un aidant
         </a>
-      </p>
-      {% if aidants %}
-        <table class="table aidants-list">
-          <thead>
+      </span>
+    </h2>
+
+    {% if organisation_active_responsables %}
+      <h3>Référents</h3>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_responsables table_class="shadowed blue-green" %}
+    {% endif %}
+
+    {% if organisation_active_aidants %}
+      <h3>Aidants actifs</h3>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants table_class="shadowed" %}
+    {% endif %}
+
+    {% if organisation_habilitation_requests %}
+      <h3>Demandes d’habilitation en cours</h3>
+
+      <table class="table habilitation-list">
+        <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Profession</th>
+          <th>État de la demande</th>
+        </tr>
+        </thead>
+        <tbody class="shadowed blue">
+        {% for request in organisation_habilitation_requests %}
           <tr>
-            <th scope="col">Nom</th>
-            <th scope="col">Email</th>
-            <th scope="col">Carte Aidants Connect</th>
+            <td>{{ request.aidant_full_name }}</td>
+            <td>{% mailto recipient=request.email %}</td>
+            <td>{{ request.profession }}</td>
+            <td>
+              <div class="tooltip request-status-{{ request.status|lower }}">
+                {{ request.get_status_display }}
+                <div class="tooltiptext request-status-{{ request.status|lower }}">
+                  {% if request.status|lower == "habilitation_waitling_list" %}
+                    Les prochaines sessions de formation sur votre territoire sont complètes.
+                    Nous contacterons cet aidant dès que possible.
+                  {% elif request.status|lower == "new" %}
+                    Cet aidant vient d’être ajouté sur l’espace du référent Aidants Connect
+                  {% elif request.status|lower == "processing" %}
+                    L’équipe Aidants Connect a validé l’ajout de cet aidant, il est en cours de formation.
+                  {% elif request.status|lower == "refused" %}
+                    La demande d’ajout de cet aidant est refusée pour l’une des raisons suivantes :
+                    <ul>
+                      <li>l’aidant n’est pas éligible au dispositif (ex: infirmier),</li>
+                      <li>
+                        l’adresse email ne respecte pas les critères d’éligibilité (nominative et professionnelle),
+                      </li>
+                      <li>l’aidant est déjà identifié dans la base de données.</li>
+                    </ul>
+                  {% elif request.status|lower == "cancelled" %}
+                    À la demande de l’aidant, l’habilitation est annulée
+                  {% endif %}
+                </div>
+              </div>
+            </td>
           </tr>
-          </thead>
-          <tbody>
-          {% for aidant in aidants %}
-            <tr {% if not aidant.is_active %}class="inactive"{% endif %}>
-              <th scope="row">
-                <a href="{% url "espace_responsable_aidant" aidant_id=aidant.id %}">
-                  {{ aidant.get_full_name }}
-                  {% if aidant in organisation.responsables.all %}
-                    <br>(Responsable)
-                  {% endif %}
-                  {% if not aidant.is_active %}
-                    <br>(Compte désactivé)
-                  {% endif %}
-                </a>
-              </th>
-              <td>{{ aidant.email }}</td>
-              <td>
-                {% with aidant.carte_totp.serial_number as sn %}
-                  {% if sn %}
-                    {{ sn }}
-                    {% if not totp_devices_users|get_dict_key:aidant.id %}
-                      <div class="notification warning">
+        {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
 
-                        <span aria-hidden="true">⚠️ </span>Le fonctionnement de cette carte n'a pas été vérifié.<br>
-                        Vous devez
-                        <a href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}">
-                          valider la carte</a>
-                        pour permettre à {{ aidant.get_full_name }} de se connecter à Aidants Connect.
-                      </div>
-
-                    {% endif %}
-                  {% else %}
-                    <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}" class="button">
-                      Lier une carte
-                    </a>
-                  {% endif %}
-                {% endwith %}
-                {% if aidant.id != responsable.id and aidant.is_active %}
-                  <a
-                    id="remove-aidant-{{ aidant.id }}-from-organisation"
-                    href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
-                    class="button warning"
-                  >
-                    {% if aidant.organisations.count > 1 %}
-                      Retirer l'aidant de {{ organisation.name }}
-                    {% else %}
-                      Désactiver l'aidant
-                    {% endif %}
-                  </a>
-                {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <div class="notification" role="alert">L'organisation n'a pas encore d'aidants.</div>
-      {% endif %}
-    </div>
-  </section>
-
-  {% if habilitation_requests %}
-    <section class="section">
-      <div class="container">
-        <h2>Demandes d’habilitation en cours</h2>
-        <table class="table aidants-list">
-          <thead>
-          <tr>
-            <th scope="col">Nom</th>
-            <th scope="col">E-mail</th>
-            <th scope="col">Profession</th>
-            <th scope="col">État de la demande</th>
-          </tr>
-          </thead>
-          <tbody>
-          {% for hab_request in habilitation_requests %}
-            <tr>
-              <th scope="row">{{ hab_request.first_name }} {{ hab_request.last_name }}</th>
-              <td>{{ hab_request.email }}</td>
-              <td>{{ hab_request.profession }}</td>
-              <td>{{ hab_request.status_label }}</td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  {% endif %}
+    {% if organisation_inactive_aidants %}
+      <h3>Aidants désactivés</h3>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_aidants table_class="shadowed grey" %}
+    {% endif %}
+  </div>
 {% endblock content %}

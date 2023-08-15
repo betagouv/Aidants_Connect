@@ -3,7 +3,7 @@ from typing import Set
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
-from aidants_connect_common.utils.constants import DictChoices
+from aidants_connect_common.utils.constants import DictChoices, TextChoicesEnum
 
 
 class RemoteConsentMethodChoices(DictChoices):
@@ -14,6 +14,7 @@ class RemoteConsentMethodChoices(DictChoices):
             "la personne accompagnée aussi vite que possible. "
             "Ce mandat vous protège légalement."
         ),
+        "img_src": "images/icons/Papier.svg",
     }
 
     SMS = {
@@ -23,6 +24,7 @@ class RemoteConsentMethodChoices(DictChoices):
             "son consentement. L'exécution du mandat est bloqué tant que "
             "la personne n'a pas répondu positivement."
         ),
+        "img_src": "images/icons/SMS.svg",
     }
 
     @staticmethod
@@ -34,4 +36,8 @@ class RemoteConsentMethodChoices(DictChoices):
         if settings.FF_ACTIVATE_SMS_CONSENT:
             return {RemoteConsentMethodChoices.SMS.name}
         else:
-            return {}
+            return set()
+
+
+class NotificationType(TextChoicesEnum):
+    pass

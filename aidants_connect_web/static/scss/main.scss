@@ -1,6 +1,6 @@
 /* Override/Extend template.min.css */
-@import "detailed-radio-select.css";
-@import "utils.css";
+@use "detailed-radio-select";
+@use "utils";
 
 .hero__container {
   min-height: 10em;
