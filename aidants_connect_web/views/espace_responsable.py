@@ -92,6 +92,7 @@ class OrganisationView(TemplateView):
             self.aidant,
             *(
                 self.organisation.responsables.exclude(pk=self.aidant.pk)
+                .filter(is_active=True)
                 .order_by("last_name")
                 .prefetch_related("carte_totp")
             ),
