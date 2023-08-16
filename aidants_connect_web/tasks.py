@@ -266,7 +266,19 @@ def email_welcome_aidant(aidant_email: str, *, logger=None):
 
     logger: Logger = logger or get_task_logger(__name__)
 
-    text_message, html_message = render_email("email/aidant_bienvenue.mjml", {})
+    text_message, html_message = render_email(
+        "email/aidant_bienvenue.mjml",
+        {
+            "EMAIL_WELCOME_AIDANT_GUIDE_URL": settings.EMAIL_WELCOME_AIDANT_GUIDE_URL,
+            "EMAIL_WELCOME_AIDANT_RESSOURCES_URL": (
+                settings.EMAIL_WELCOME_AIDANT_RESSOURCES_URL
+            ),
+            "EMAIL_WELCOME_AIDANT_FAQ_URL": settings.EMAIL_WELCOME_AIDANT_FAQ_URL,
+            "EMAIL_WELCOME_AIDANT_CONTACT_URL": (
+                settings.EMAIL_WELCOME_AIDANT_CONTACT_URL
+            ),
+        },
+    )
 
     send_mail(
         from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
