@@ -109,6 +109,42 @@ class SpecificDeleteActionsMixin:
 class ExportHabilitationRequestAndAidantAndOrganisationResource(
     resources.ModelResource
 ):
+    def dehydrate_responsable_de_data_pass_id(self, habilitation_or_aidant):
+        if habilitation_or_aidant.__class__ == HabilitationRequest:
+            return ""
+        q_orgas = habilitation_or_aidant.responsable_de
+        str_list_data_pass_id = ""
+        for one_orga in q_orgas.all():
+            if one_orga.data_pass_id:
+                str_list_data_pass_id += f"{one_orga.data_pass_id}|"
+        return str_list_data_pass_id
+
+    id = Field(attribute="id", column_name="ID")
+    first_name = Field(attribute="first_name", column_name="Prénom")
+    last_name = Field(attribute="last_name", column_name="Nom")
+    email = Field(attribute="email", column_name="email")
+    organisation__data_pass_id = Field(
+        attribute="organisation__data_pass_id", column_name="data_pass_id"
+    )
+    organisation__name = Field(
+        attribute="organisation__name", column_name="Nom Organisation"
+    )
+    organisation__siret = Field(attribute="organisation__siret", column_name="siret")
+    organisation__address = Field(
+        attribute="organisation__address", column_name="address"
+    )
+    organisation__city = Field(attribute="organisation__city", column_name="ville")
+    organisation__zipcode = Field(
+        attribute="organisation__zipcode", column_name="Code postal"
+    )
+    organisation__type__id = Field(
+        attribute="organisation__type__id", column_name="Type ID"
+    )
+    organisation__type__name = Field(
+        attribute="organisation__type__name", column_name="Nom Type"
+    )
+    responsable_de_data_pass_id = Field(column_name="Data pass Id Orga Responsable")
+
     class Meta:
         """We need a resources.ModelResource, so we define Aidant.
         But we will use this resource for Aidant and HabilitationRequest.
@@ -130,6 +166,7 @@ class ExportHabilitationRequestAndAidantAndOrganisationResource(
             "organisation__zipcode",
             "organisation__type__id",
             "organisation__type__name",
+            "responsable_de_data_pass_id",
         )
 
 
