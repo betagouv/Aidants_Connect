@@ -155,6 +155,7 @@ class UsagersDetailsPageTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.aidant = AidantFactory()
+        cls.other_aidant = AidantFactory()
         cls.usager = UsagerFactory()
         cls.mandat = MandatFactory(
             organisation=cls.aidant.organisation, usager=cls.usager
@@ -163,7 +164,18 @@ class UsagersDetailsPageTests(TestCase):
 
     def test_usager_details_url_triggers_the_usager_details_view(self):
         found = resolve(f"/usagers/{self.usager.id}/")
-        self.assertEqual(found.func, usagers.usager_details)
+        self.assertIs(found.func.view_class, usagers.UsagerView)
+
+    def test_usager_detail_isnt_visible_for_anonymous_user(self):
+        response = self.client.get(f"/usagers/{self.usager.id}/")
+        str_redirect = f"{reverse('login')}?next=/usagers/{self.usager.id}/"
+        self.assertRedirects(response, str_redirect)
+
+    def test_usager_details_isnt_visible_for_another_aidant(self):
+        self.client.force_login(self.other_aidant)
+        response = self.client.get(f"/usagers/{self.usager.id}/")
+        self.assertTemplateNotUsed(response, "aidants_connect_web/usager_details.html")
+        self.assertRedirects(response, reverse("espace_aidant_home"))
 
     def test_usager_details_url_triggers_the_usager_details_template(self):
         self.client.force_login(self.aidant)

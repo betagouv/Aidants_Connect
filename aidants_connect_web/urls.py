@@ -46,7 +46,9 @@ urlpatterns = [
     ),
     # usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
-    path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),
+    path(
+        "usagers/<int:usager_id>/", usagers.UsagerView.as_view(), name="usager_details"
+    ),
     path(
         "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_confirm",
         usagers.confirm_autorisation_cancelation,
