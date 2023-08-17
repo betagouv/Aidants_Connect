@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
-from django.views.generic import DeleteView, FormView, TemplateView
+from django.views.generic import DeleteView, DetailView, FormView
 
 import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -74,20 +74,25 @@ def home(request):
 @method_decorator(
     [login_required, user_is_responsable_structure, activity_required], name="dispatch"
 )
-class OrganisationView(TemplateView):
+class OrganisationView(DetailView):
     template_name = "aidants_connect_web/espace_responsable/organisation.html"
+    pk_url_kwarg = "organisation_id"
+    context_object_name = "organisation"
+    model = Organisation
 
-    def dispatch(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.organisation: Organisation = self.object
         self.aidant: Aidant = request.user
-        self.organisation: Organisation = get_object_or_404(
-            Organisation, pk=kwargs.get("organisation_id")
-        )
 
         check_organisation_and_responsable(self.aidant, self.organisation)
 
-        return super().dispatch(request, *args, **kwargs)
+        context = self.get_context_data(
+            object=self.object, **self.get_organisation_context_data()
+        )
+        return self.render_to_response(context)
 
-    def get_context_data(self, **kwargs):
+    def get_organisation_context_data(self):
         organisation_active_responsables = [
             self.aidant,
             *(
@@ -116,9 +121,7 @@ class OrganisationView(TemplateView):
         )
 
         return {
-            **super().get_context_data(**kwargs),
             "responsable": self.aidant,
-            "organisation": self.organisation,
             "organisation_active_responsables": organisation_active_responsables,
             "organisation_active_aidants": organisation_active_aidants,
             "organisation_habilitation_requests": organisation_habilitation_requests,

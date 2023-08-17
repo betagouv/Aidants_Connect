@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
-from django.views.generic import TemplateView
+from django.views.generic import DetailView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
 from aidants_connect_web.decorators import activity_required, user_is_aidant
@@ -40,26 +40,34 @@ def home(request):
 
 
 @method_decorator(login_required, name="dispatch")
-class OrganisationView(TemplateView):
+class OrganisationView(DetailView):
     template_name = "aidants_connect_web/espace_aidant/organisation.html"
+    context_object_name = "organisation"
+    model = Organisation
 
-    def dispatch(self, request, *args, **kwargs):
-        self.aidant: Aidant = request.user
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        context = self.get_context_data(
+            object=self.object, **self.get_organisation_context_data()
+        )
+        return self.render_to_response(context)
+
+    def get_object(self, queryset=None):
+        self.aidant: Aidant = self.request.user
         self.organisation: Organisation = self.aidant.organisation
 
         if not self.organisation:
             django_messages.error(
-                request, "Vous n'êtes pas rattaché à une organisation."
+                self.request, "Vous n'êtes pas rattaché à une organisation."
             )
             return redirect("espace_aidant_home")
+        return self.organisation
 
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
+    def get_organisation_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
             "aidant": self.aidant,
-            "organisation": self.organisation,
             "organisation_active_aidants": (
                 self.organisation.aidants.active().order_by("last_name")
             ),
