@@ -7,12 +7,11 @@ from django.test.client import RequestFactory
 import pytz
 import tablib
 
-from aidants_connect_web.admin import (
-    HabilitationRequestAdmin,
+from aidants_connect_web.admin import HabilitationRequestAdmin, OrganisationAdmin
+from aidants_connect_web.admin.habilitation_request import (
     HabilitationRequestImportDateFormationResource,
-    OrganisationAdmin,
-    OrganisationResource,
 )
+from aidants_connect_web.admin.organisation import OrganisationResource
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,

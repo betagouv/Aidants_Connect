@@ -10,11 +10,8 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export.results import Result
 
-from aidants_connect_web.admin import (
-    CarteTOTPAdmin,
-    VisibleToAdminMetier,
-    VisibleToTechAdmin,
-)
+from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin
+from aidants_connect_web.admin import CarteTOTPAdmin
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,

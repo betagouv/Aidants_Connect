@@ -9,10 +9,12 @@ from aidants_connect_common.models import Region
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_web.admin import (
     AidantAdmin,
-    AidantInPreDesactivationZoneFilter,
-    AidantWithMandatsFilter,
     HabilitationRequestAdmin,
     OrganisationAdmin,
+)
+from aidants_connect_web.admin.aidant import (
+    AidantInPreDesactivationZoneFilter,
+    AidantWithMandatsFilter,
 )
 from aidants_connect_web.models import (
     Aidant,
