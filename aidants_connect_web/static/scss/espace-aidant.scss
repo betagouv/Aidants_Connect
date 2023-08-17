@@ -132,9 +132,7 @@ table.table {
     tr:not(:last-child) td {
       border-bottom: 1px solid colors.$light-grey-aidants;
     }
-  }
 
-  &.aidants-list {
     tr td:last-child {
       text-align: right;
 

@@ -225,6 +225,11 @@ urlpatterns = [
         espace_responsable.validate_aidant_carte_totp,
         name="espace_responsable_validate_totp",
     ),
+    path(
+        "espace-responsable/aidant-a-former/<int:request_id>/annuler-demande",
+        espace_responsable.CancelHabilitationRequestView.as_view(),
+        name="espace_responsable_cancel_habilitation",
+    ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),

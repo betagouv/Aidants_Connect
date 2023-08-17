@@ -7,12 +7,12 @@ from dateutil.relativedelta import relativedelta
 
 from aidants_connect_common.models import Commune, Department, Region
 from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_web.constants import HabilitationRequestStatuses
 from aidants_connect_web.models import (
     Aidant,
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
-    HabilitationRequest,
 )
 from aidants_connect_web.statistics import compute_statistics
 from aidants_connect_web.tests.factories import (
@@ -197,33 +197,33 @@ class AllStatisticsTests(TestCase):
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_VALIDATED,
+            status=HabilitationRequestStatuses.STATUS_VALIDATED.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_REFUSED,
+            status=HabilitationRequestStatuses.STATUS_REFUSED.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW,
+            status=HabilitationRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW,
+            status=HabilitationRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_12,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW,
+            status=HabilitationRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_12,
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW, organisation=orga_21
+            status=HabilitationRequestStatuses.STATUS_NEW.value, organisation=orga_21
         )
 
     def test_global_computing_new_statistics(self):
