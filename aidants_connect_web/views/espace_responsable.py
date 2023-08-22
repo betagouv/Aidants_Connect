@@ -19,9 +19,11 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
+from aidants_connect_web.constants import HabilitationRequestStatuses
 from aidants_connect_web.decorators import (
     activity_required,
     aidant_logged_with_activity_required,
+    responsable_logged_with_activity_required,
     user_is_responsable_structure,
 )
 from aidants_connect_web.forms import (
@@ -110,7 +112,7 @@ class OrganisationView(DetailView):
 
         organisation_habilitation_requests = (
             self.organisation.habilitation_requests.exclude(
-                status=HabilitationRequest.STATUS_VALIDATED
+                status=HabilitationRequestStatuses.STATUS_VALIDATED.value
             ).order_by("status", "last_name")
         )
 
@@ -649,3 +651,30 @@ def new_habilitation_request(request):
         "espace_responsable_organisation",
         organisation_id=habilitation_request.organisation.id,
     )
+
+
+@responsable_logged_with_activity_required
+class CancelHabilitationRequestView(DetailView):
+    pk_url_kwarg = "request_id"
+    model = HabilitationRequest
+    context_object_name = "request"
+    template_name = "aidants_connect_web/espace_responsable/cancel-habilitation-request.html"  # noqa: E501
+
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        org_ids = self.aidant.responsable_de.values_list("id", flat=True)
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                organisation__in=org_ids,
+                status__in=HabilitationRequestStatuses.cancellable_by_responsable(),
+            )
+        )
+
+    def post(self, request, *args, **kwargs):
+        self.get_object().cancel_by_responsable()
+        return redirect(reverse("espace_responsable_home"))

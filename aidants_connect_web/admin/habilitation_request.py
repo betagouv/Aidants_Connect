@@ -19,6 +19,7 @@ from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils.email import render_email
+from aidants_connect_web.constants import HabilitationRequestStatuses
 from aidants_connect_web.forms import MassEmailActionForm
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 
@@ -287,11 +288,11 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     def mark_refused(self, request, queryset):
         rows_updated = queryset.filter(
             status__in=(
-                HabilitationRequest.STATUS_PROCESSING,
-                HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
-                HabilitationRequest.STATUS_NEW,
+                HabilitationRequestStatuses.STATUS_PROCESSING,
+                HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
+                HabilitationRequestStatuses.STATUS_NEW,
             )
-        ).update(status=HabilitationRequest.STATUS_REFUSED)
+        ).update(status=HabilitationRequestStatuses.STATUS_REFUSED)
         for habilitation_request in queryset:
             self.send_refusal_email(habilitation_request)
         self.message_user(request, f"{rows_updated} demandes ont été refusées.")
@@ -323,13 +324,13 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     def mark_processing(self, request, queryset):
         habilitation_requests = queryset.filter(
             status__in=[
-                HabilitationRequest.STATUS_NEW,
-                HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
+                HabilitationRequestStatuses.STATUS_NEW,
+                HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
             ]
         )
 
         for habilitation_request in habilitation_requests:
-            habilitation_request.status = HabilitationRequest.STATUS_PROCESSING
+            habilitation_request.status = HabilitationRequestStatuses.STATUS_PROCESSING
             habilitation_request.save()
         for habilitation_request in habilitation_requests:
             self.send_validation_email(habilitation_request)
@@ -412,11 +413,11 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             email__in=email_list
         ).filter(
             status__in=(
-                HabilitationRequest.STATUS_PROCESSING,
-                HabilitationRequest.STATUS_NEW,
-                HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
-                HabilitationRequest.STATUS_VALIDATED,
-                HabilitationRequest.STATUS_CANCELLED,
+                HabilitationRequestStatuses.STATUS_PROCESSING,
+                HabilitationRequestStatuses.STATUS_NEW,
+                HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
+                HabilitationRequestStatuses.STATUS_VALIDATED,
+                HabilitationRequestStatuses.STATUS_CANCELLED,
             )
         )
         treated_emails = set()
@@ -453,8 +454,8 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             HabilitationRequest.objects.filter(
                 email__in=existing_emails,
                 status__in=(
-                    HabilitationRequest.STATUS_REFUSED,
-                    HabilitationRequest.STATUS_CANCELLED,
+                    HabilitationRequestStatuses.STATUS_REFUSED,
+                    HabilitationRequestStatuses.STATUS_CANCELLED,
                 ),
             ).values_list("email", flat=True)
         )

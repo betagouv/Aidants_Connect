@@ -1,6 +1,5 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load ac_common %}
-{% load static ac_extras %}
+{% load static ac_common ac_extras %}
 
 {% block title %}Aidants Connect - Mon organisation{% endblock %}
 
@@ -81,6 +80,7 @@
           <th>Email</th>
           <th>Profession</th>
           <th>État de la demande</th>
+          <th><span class="sr-only">Actions sur la demande d’habilitation</span></th>
         </tr>
         </thead>
         <tbody class="shadowed blue">
@@ -111,9 +111,22 @@
                     </ul>
                   {% elif request.status|lower == "cancelled" %}
                     À la demande de l’aidant, l’habilitation est annulée
+                  {% elif request.status|lower == "status_cancelled_by_responsable" %}
+                    À votre demande, l’habilitation est annulée
                   {% endif %}
                 </div>
               </div>
+            </td>
+            <td>
+              {% if request.status_cancellable_by_responsable %}
+                <a
+                  id="cancel-habilitation-request-{{ request.id }}"
+                  href="{% url "espace_responsable_cancel_habilitation" request_id=request.id %}"
+                  class="button"
+                >
+                  Annuler la demande
+                </a>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
