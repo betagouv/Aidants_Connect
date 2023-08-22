@@ -266,7 +266,19 @@ def email_welcome_aidant(aidant_email: str, *, logger=None):
 
     logger: Logger = logger or get_task_logger(__name__)
 
-    text_message, html_message = render_email("email/aidant_bienvenue.mjml", {})
+    text_message, html_message = render_email(
+        "email/aidant_bienvenue.mjml",
+        {
+            "EMAIL_WELCOME_AIDANT_GUIDE_URL": settings.EMAIL_WELCOME_AIDANT_GUIDE_URL,
+            "EMAIL_WELCOME_AIDANT_RESSOURCES_URL": (
+                settings.EMAIL_WELCOME_AIDANT_RESSOURCES_URL
+            ),
+            "EMAIL_WELCOME_AIDANT_FAQ_URL": settings.EMAIL_WELCOME_AIDANT_FAQ_URL,
+            "EMAIL_WELCOME_AIDANT_CONTACT_URL": (
+                settings.EMAIL_WELCOME_AIDANT_CONTACT_URL
+            ),
+        },
+    )
 
     send_mail(
         from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
@@ -335,9 +347,29 @@ def deactivate_warned_aidants(*, logger=None):
 
     logger: Logger = logger or get_task_logger(__name__)
 
+    @shared_task
+    def email_one_aidant(a: Aidant):
+        text_message, html_message = render_email(
+            "email/old_aidant_deactivation_notice.mjml",
+            {
+                "email_title": "Votre compte a été désactivé",
+                "user": a,
+                "cgu_url": build_url(reverse("cgu")),
+            },
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_AIDANT_DEACTIVATION_NOTICE_FROM,
+            subject=settings.EMAIL_AIDANT_DEACTIVATION_NOTICE_SUBJECT,
+            recipient_list=[a.email],
+            message=text_message,
+            html_message=html_message,
+        )
+
     deactivable = Aidant.objects.deactivable()
 
     for aidant in deactivable:
         aidant.deactivate()
+        email_one_aidant(aidant)
 
     logger.info(f"Deactivated {len(deactivable)} aidants")

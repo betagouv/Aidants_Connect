@@ -10,6 +10,7 @@ from aidants_connect_common.utils.constants import (
 )
 from aidants_connect_habilitation.models import OrganisationRequest
 
+from .constants import HabilitationRequestStatuses
 from .models import (
     Aidant,
     AidantStatistiques,
@@ -132,9 +133,9 @@ def compute_statistics(
 
     qs_future_aidant = hab_requests.exclude(
         status__in=[
-            HabilitationRequest.STATUS_REFUSED,
-            HabilitationRequest.STATUS_CANCELLED,
-            HabilitationRequest.STATUS_VALIDATED,
+            HabilitationRequestStatuses.STATUS_REFUSED,
+            HabilitationRequestStatuses.STATUS_CANCELLED,
+            HabilitationRequestStatuses.STATUS_VALIDATED,
         ]
     )
     number_future_aidant = qs_future_aidant.count()
@@ -144,7 +145,7 @@ def compute_statistics(
 
     qs_future_trained_aidant = hab_requests.filter(formation_done=True).exclude(
         status__in=[
-            HabilitationRequest.STATUS_VALIDATED,
+            HabilitationRequestStatuses.STATUS_VALIDATED,
         ],
     )
     number_future_trained_aidant = qs_future_trained_aidant.count()
@@ -198,6 +199,13 @@ def compute_statistics(
         organisation__city_insee_code__in=communes_in_zrr
     ).count()
 
+    number_old_aidants_warned = ads.filter(
+        deactivation_warning_at__isnull=False, is_active=True
+    ).count()
+    number_old_inactive_aidants_warned = ads.filter(
+        deactivation_warning_at__isnull=False, is_active=False
+    ).count()
+
     ostat.number_aidants = number_aidants
     ostat.number_aidants_is_active = number_aidants_is_active
     ostat.number_responsable = number_responsable
@@ -222,6 +230,8 @@ def compute_statistics(
     ostat.number_usage_of_ac = number_usage_of_ac
     ostat.number_orgas_in_zrr = number_orgas_in_zrr
     ostat.number_aidants_in_zrr = number_aidants_in_zrr
+    ostat.number_old_aidants_warned = number_old_aidants_warned
+    ostat.number_old_inactive_aidants_warned = number_old_inactive_aidants_warned
     ostat.save()
 
     return ostat

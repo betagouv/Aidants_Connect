@@ -46,7 +46,9 @@ urlpatterns = [
     ),
     # usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
-    path("usagers/<int:usager_id>/", usagers.usager_details, name="usager_details"),
+    path(
+        "usagers/<int:usager_id>/", usagers.UsagerView.as_view(), name="usager_details"
+    ),
     path(
         "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_confirm",
         usagers.confirm_autorisation_cancelation,
@@ -222,6 +224,11 @@ urlpatterns = [
         "espace-responsable/aidant/<int:aidant_id>/valider-carte",
         espace_responsable.validate_aidant_carte_totp,
         name="espace_responsable_validate_totp",
+    ),
+    path(
+        "espace-responsable/aidant-a-former/<int:request_id>/annuler-demande",
+        espace_responsable.CancelHabilitationRequestView.as_view(),
+        name="espace_responsable_cancel_habilitation",
     ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorize"),

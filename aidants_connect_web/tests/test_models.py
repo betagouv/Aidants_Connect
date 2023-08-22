@@ -17,7 +17,10 @@ from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
-from aidants_connect_web.constants import RemoteConsentMethodChoices
+from aidants_connect_web.constants import (
+    HabilitationRequestStatuses,
+    RemoteConsentMethodChoices,
+)
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
@@ -1868,10 +1871,14 @@ class HabilitationRequestMethodTests(TestCase):
 
     def test_validate_when_all_is_fine(self):
         for habilitation_request in (
-            HabilitationRequestFactory(status=HabilitationRequest.STATUS_PROCESSING),
-            HabilitationRequestFactory(status=HabilitationRequest.STATUS_NEW),
             HabilitationRequestFactory(
-                status=HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+                status=HabilitationRequestStatuses.STATUS_PROCESSING.value
+            ),
+            HabilitationRequestFactory(
+                status=HabilitationRequestStatuses.STATUS_NEW.value
+            ),
+            HabilitationRequestFactory(
+                status=HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value  # noqa: E501
             ),
         ):
             self.assertEqual(
@@ -1883,13 +1890,15 @@ class HabilitationRequestMethodTests(TestCase):
             )
             db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
             self.assertEqual(
-                db_hab_request.status, HabilitationRequest.STATUS_VALIDATED
+                db_hab_request.status,
+                HabilitationRequestStatuses.STATUS_VALIDATED.value,
             )
 
     def test_validate_if_active_aidant_already_exists(self):
         aidant = AidantFactory()
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_PROCESSING, email=aidant.email
+            status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+            email=aidant.email,
         )
         self.assertTrue(habilitation_request.validate_and_create_aidant())
         self.assertEqual(
@@ -1897,7 +1906,8 @@ class HabilitationRequestMethodTests(TestCase):
         )
         habilitation_request.refresh_from_db()
         self.assertEqual(
-            habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+            habilitation_request.status,
+            HabilitationRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
@@ -1906,7 +1916,8 @@ class HabilitationRequestMethodTests(TestCase):
         aidant = AidantFactory(is_active=False)
         self.assertFalse(aidant.is_active)
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_PROCESSING, email=aidant.email
+            status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+            email=aidant.email,
         )
         self.assertTrue(habilitation_request.validate_and_create_aidant())
         self.assertEqual(
@@ -1914,7 +1925,8 @@ class HabilitationRequestMethodTests(TestCase):
         )
         habilitation_request.refresh_from_db()
         self.assertEqual(
-            habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+            habilitation_request.status,
+            HabilitationRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
         self.assertTrue(aidant.is_active)
@@ -1922,7 +1934,7 @@ class HabilitationRequestMethodTests(TestCase):
 
     def test_do_not_validate_if_invalid_status(self):
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_REFUSED
+            status=HabilitationRequestStatuses.STATUS_REFUSED.value
         )
         self.assertEqual(
             0, Aidant.objects.filter(email=habilitation_request.email).count()
@@ -1932,7 +1944,9 @@ class HabilitationRequestMethodTests(TestCase):
             0, Aidant.objects.filter(email=habilitation_request.email).count()
         )
         db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
-        self.assertEqual(db_hab_request.status, HabilitationRequest.STATUS_REFUSED)
+        self.assertEqual(
+            db_hab_request.status, HabilitationRequestStatuses.STATUS_REFUSED.value
+        )
 
 
 @tag("models", "manndat", "usager", "journal")
