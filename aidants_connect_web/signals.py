@@ -4,20 +4,41 @@ from django.contrib.auth.signals import user_logged_in
 from django.core.mail import send_mail
 from django.db import connection
 from django.db.models.signals import post_migrate
-from django.dispatch import receiver
+from django.dispatch import Signal, receiver
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import RequestOriginConstants
 from aidants_connect_common.utils.email import render_email
-from aidants_connect_web.models import Aidant, Journal, aidants__organisations_changed
+from aidants_connect_web.models import Aidant, Journal
+
+aidants__organisations_changed = Signal()
+otp_challenge_failed = Signal()
+
+
+@receiver(otp_challenge_failed)
+def increase_tolerence_on_otp_challenge_failed(sender, user: Aidant, **_):
+    totp_device: TOTPDevice = getattr(
+        getattr(user, "carte_totp", None), "totp_device", None
+    )
+    if totp_device and totp_device.throttling_failure_count >= 3:
+        totp_device.tolerance = settings.DRIFTED_OTP_CARD_TOLERANCE
+        totp_device.save(update_fields={"tolerance"})
 
 
 @receiver(user_logged_in)
-def log_connection_on_login(sender, user: Aidant, request, **kwargs):
+def actions_on_login(sender, user: Aidant, request, **kwargs):
     Journal.log_connection(user)
+
     user.deactivation_warning_at = None
     user.save()
+
+    totp_device: TOTPDevice = getattr(
+        getattr(user, "carte_totp", None), "totp_device", None
+    )
+    if totp_device:
+        totp_device.tolerance = totp_device._meta.get_field("tolerance").default
+        totp_device.save(update_fields={"tolerance"})
 
 
 @receiver(user_logged_in)

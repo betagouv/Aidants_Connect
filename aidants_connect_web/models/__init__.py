@@ -1,4 +1,4 @@
-from .aidant import Aidant, AidantManager, AidantType, aidants__organisations_changed
+from .aidant import Aidant, AidantManager, AidantType
 from .journal import Journal
 from .mandat import (
     Autorisation,
@@ -40,7 +40,6 @@ __all__ = [
     Mandat,
     Usager,
     UsagerQuerySet,
-    aidants__organisations_changed,
     default_connection_expiration_date,
     delete_mandats_and_clean_journal,
     get_staff_organisation_name_id,

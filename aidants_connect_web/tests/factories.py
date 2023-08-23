@@ -95,7 +95,7 @@ class AidantFactory(DjangoModelFactory):
         if kwargs.get("with_carte_totp", False):
             confirmed = kwargs.get("with_carte_totp_confirmed", True)
             carte: CarteTOTP = CarteTOTPFactory(aidant=self)
-            carte.createTOTPDevice(confirmed=confirmed).save()
+            carte.get_or_create_totp_device(confirmed=confirmed)
 
     @post_generation
     def password(self, create, value, **_):

@@ -6,7 +6,6 @@ from typing import Collection, Optional
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.functional import cached_property
 
@@ -82,9 +81,6 @@ class AidantManager(UserManager):
                 kwargs["username"] = email
 
         return super().create(**kwargs)
-
-
-aidants__organisations_changed = Signal()
 
 
 class AidantType(models.Model):
@@ -328,6 +324,8 @@ class Aidant(AbstractUser):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
 
+        from aidants_connect_web.signals import aidants__organisations_changed
+
         aidants__organisations_changed.send(
             sender=self.__class__,
             instance=self,
@@ -358,6 +356,8 @@ class Aidant(AbstractUser):
         if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
+
+        from aidants_connect_web.signals import aidants__organisations_changed
 
         aidants__organisations_changed.send(
             sender=self.__class__,

@@ -1465,7 +1465,7 @@ class AidantModelMethodsTests(TestCase):
 
         self.assertEqual(aidant.organisation, supplementary_organisation_1)
 
-    @patch("aidants_connect_web.models.aidants__organisations_changed.send")
+    @patch("aidants_connect_web.signals.aidants__organisations_changed.send")
     def test_remove_user_from_organisation_sends_signal(self, send: Mock):
         aidant: Aidant = AidantFactory()
         supplementary_organisation_1 = OrganisationFactory()
@@ -1549,7 +1549,7 @@ class AidantModelMethodsTests(TestCase):
 
         self.assertEqual(aidant.organisation, supplementary_organisation_1)
 
-    @patch("aidants_connect_web.models.aidants__organisations_changed.send")
+    @patch("aidants_connect_web.signals.aidants__organisations_changed.send")
     def test_set_organisations_sends_signal(self, send: Mock):
         aidant: Aidant = AidantFactory()
         previous_organisation = aidant.organisation

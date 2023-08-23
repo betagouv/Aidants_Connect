@@ -231,13 +231,14 @@ class RemoveCardFromAidant(FormView):
     def form_valid(self, form):
         sn = self.aidant.carte_totp.serial_number
 
-        with transaction.atomic():
-            carte = CarteTOTP.objects.get(serial_number=sn)
+        carte = CarteTOTP.objects.get(serial_number=sn)
 
+        with transaction.atomic():
             with contextlib.suppress(TOTPDevice.DoesNotExist):
                 TOTPDevice.objects.get(key=carte.seed, user=self.aidant).delete()
 
             carte.aidant = None
+            carte.totp_device = None
             carte.save()
 
             Journal.log_card_dissociation(
@@ -476,8 +477,7 @@ def associate_aidant_carte_totp(request, aidant_id):
                 with transaction.atomic():
                     carte_totp.aidant = aidant
                     carte_totp.save()
-                    totp_device = carte_totp.createTOTPDevice()
-                    totp_device.save()
+                    carte_totp.get_or_create_totp_device()
                     Journal.log_card_association(responsable, aidant, serial_number)
 
                 return redirect(
