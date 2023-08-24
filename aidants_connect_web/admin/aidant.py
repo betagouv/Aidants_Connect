@@ -124,7 +124,7 @@ class AidantResource(resources.ModelResource):
                 )
             carte_totp.aidant = instance
             carte_totp.save()
-            totp_device = carte_totp.createTOTPDevice(confirmed=True)
+            totp_device = carte_totp.get_or_create_totp_device(confirmed=True)
             totp_device.save()
 
 

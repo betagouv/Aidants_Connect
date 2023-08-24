@@ -727,6 +727,12 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 100,
 }
 
+try:
+    DRIFTED_OTP_CARD_TOLERANCE = int(os.getenv("DRIFTED_OTP_CARD_TOLERANCE", 30))
+except ValueError:
+    DRIFTED_OTP_CARD_TOLERANCE = 20
+
+
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
 FF_OTP_APP = getenv_bool("FF_OTP_APP", False)

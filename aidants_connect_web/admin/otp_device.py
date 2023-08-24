@@ -258,8 +258,7 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
                 return redirect_to_object(object_id)
             else:
                 # No Device exists: crate the TOTP Device and save everything
-                new_device = carte.createTOTPDevice(confirmed=True)
-                new_device.save()
+                carte.get_or_create_totp_device(confirmed=True)
                 Journal.log_card_association(
                     request.user, target_aidant, carte.serial_number
                 )

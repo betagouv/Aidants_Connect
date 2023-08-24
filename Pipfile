@@ -14,7 +14,7 @@ django-celery-beat = "==2.5.0"
 django-csp = "==3.7"
 django-extensions = "~=3.2.1"
 django-import-export = "~=3.2.0"
-django-magicauth = "==0.13"
+django-magicauth = "==1.0.0"
 django-nested-admin = "~=4.0.2"
 django-otp = "~=1.2.2"
 django-phonenumber-field = {version = "~=7.0", extras = ["phonenumberslite"]}

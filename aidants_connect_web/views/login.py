@@ -16,6 +16,15 @@ class LoginRedirect(RedirectView):
 class LoginView(magicauth_views.LoginView):
     form_class = LoginEmailForm
 
+    def otp_form_invalid(self, form, otp_form):
+        from aidants_connect_web.signals import otp_challenge_failed
+
+        otp_challenge_failed.send(
+            sender=self.__class__, user=otp_form.user, request=self.request
+        )
+
+        return super().otp_form_invalid(form, otp_form)
+
     def render_email(self, context):
         return render_email(self.html_template, context)
 

@@ -609,16 +609,14 @@ class CarteTOTP(models.Model):
         related_name="carte_totp",
     )
     is_functional = models.BooleanField("Fonctionne correctement", default=True)
-
-    @property
-    def totp_device_name(self):
-        return f"Carte n° {self.serial_number}"
-
-    @cached_property
-    def totp_device(self):
-        return TOTPDevice.objects.filter(
-            user=self.aidant, name=self.totp_device_name
-        ).first()
+    totp_device = models.ForeignKey(
+        TOTPDevice,
+        on_delete=SET_NULL,
+        related_name="totp_card",
+        null=True,
+        blank=True,
+        default=None,
+    )
 
     class Meta:
         verbose_name = "carte TOTP"
@@ -627,12 +625,19 @@ class CarteTOTP(models.Model):
     def __str__(self):
         return self.serial_number
 
-    def createTOTPDevice(self, confirmed=False, tolerance=30):
-        return TOTPDevice(
+    @transaction.atomic
+    def get_or_create_totp_device(self, confirmed=False):
+        if self.totp_device:
+            return self.totp_device
+
+        device = TOTPDevice(
             key=self.seed,
             user=self.aidant,
             step=60,  # todo: some devices may have a different step!
             confirmed=confirmed,
-            tolerance=tolerance,
-            name=self.totp_device_name,
+            name=f"Carte n° {self.serial_number}",
         )
+        device.save()
+        self.totp_device = device
+        self.save()
+        return device
