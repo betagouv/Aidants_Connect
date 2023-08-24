@@ -12,16 +12,18 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
-from django.views.generic import DeleteView, FormView, TemplateView
+from django.views.generic import DeleteView, DetailView, FormView
 
 import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
+from aidants_connect_web.constants import HabilitationRequestStatuses
 from aidants_connect_web.decorators import (
     activity_required,
     aidant_logged_with_activity_required,
+    responsable_logged_with_activity_required,
     user_is_responsable_structure,
 )
 from aidants_connect_web.forms import (
@@ -74,54 +76,56 @@ def home(request):
 @method_decorator(
     [login_required, user_is_responsable_structure, activity_required], name="dispatch"
 )
-class OrganisationView(TemplateView):
+class OrganisationView(DetailView):
     template_name = "aidants_connect_web/espace_responsable/organisation.html"
+    pk_url_kwarg = "organisation_id"
+    context_object_name = "organisation"
+    model = Organisation
 
-    def dispatch(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.organisation: Organisation = self.object
         self.aidant: Aidant = request.user
-        self.organisation: Organisation = get_object_or_404(
-            Organisation, pk=kwargs.get("organisation_id")
-        )
 
         check_organisation_and_responsable(self.aidant, self.organisation)
 
-        return super().dispatch(request, *args, **kwargs)
+        context = self.get_context_data(
+            object=self.object, **self.get_organisation_context_data()
+        )
+        return self.render_to_response(context)
 
-    def get_context_data(self, **kwargs):
-        organisation_active_responsables = [
-            self.aidant,
-            *(
-                self.organisation.responsables.exclude(pk=self.aidant.pk)
-                .order_by("last_name")
-                .prefetch_related("carte_totp")
-            ),
-        ]
-        organisation_active_aidants = (
-            self.organisation.aidants_not_responsables.filter(is_active=True)
+    def get_organisation_context_data(self):
+        referents_qs = (
+            self.organisation.responsables.exclude(pk=self.aidant.pk)
             .order_by("last_name")
             .prefetch_related("carte_totp")
         )
+        organisation_active_referents = [
+            self.aidant,
+            *referents_qs.filter(is_active=True),
+        ]
+        organisation_inactive_referents = referents_qs.filter(is_active=False)
+
+        aidantq_qs = self.organisation.aidants_not_responsables.order_by(
+            "last_name"
+        ).prefetch_related("carte_totp")
+
+        organisation_active_aidants = aidantq_qs.filter(is_active=True)
+        organisation_inactive_aidants = aidantq_qs.filter(is_active=False)
 
         organisation_habilitation_requests = (
             self.organisation.habilitation_requests.exclude(
-                status=HabilitationRequest.STATUS_VALIDATED
+                status=HabilitationRequestStatuses.STATUS_VALIDATED.value
             ).order_by("status", "last_name")
         )
 
-        organisation_inactive_aidants = (
-            self.organisation.aidants_not_responsables.filter(is_active=False)
-            .order_by("last_name")
-            .prefetch_related("carte_totp")
-        )
-
         return {
-            **super().get_context_data(**kwargs),
             "responsable": self.aidant,
-            "organisation": self.organisation,
-            "organisation_active_responsables": organisation_active_responsables,
+            "organisation_active_referents": organisation_active_referents,
+            "organisation_inactive_referents": organisation_inactive_referents,
             "organisation_active_aidants": organisation_active_aidants,
-            "organisation_habilitation_requests": organisation_habilitation_requests,
             "organisation_inactive_aidants": organisation_inactive_aidants,
+            "organisation_habilitation_requests": organisation_habilitation_requests,
             "FF_OTP_APP": settings.FF_OTP_APP and self.aidant.ff_otp_app,
         }
 
@@ -645,3 +649,30 @@ def new_habilitation_request(request):
         "espace_responsable_organisation",
         organisation_id=habilitation_request.organisation.id,
     )
+
+
+@responsable_logged_with_activity_required
+class CancelHabilitationRequestView(DetailView):
+    pk_url_kwarg = "request_id"
+    model = HabilitationRequest
+    context_object_name = "request"
+    template_name = "aidants_connect_web/espace_responsable/cancel-habilitation-request.html"  # noqa: E501
+
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        org_ids = self.aidant.responsable_de.values_list("id", flat=True)
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                organisation__in=org_ids,
+                status__in=HabilitationRequestStatuses.cancellable_by_responsable(),
+            )
+        )
+
+    def post(self, request, *args, **kwargs):
+        self.get_object().cancel_by_responsable()
+        return redirect(reverse("espace_responsable_home"))

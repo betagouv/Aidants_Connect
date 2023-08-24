@@ -79,6 +79,16 @@ class AbstractAidantStatistiques(models.Model):
         default=0,
     )
 
+    number_old_aidants_warned = models.PositiveIntegerField(
+        "Nombre d'aidant actifs qui ne se sont pas connectés depuis longtemps et qui ont été alertés",  # noqa
+        default=0,
+    )
+
+    number_old_inactive_aidants_warned = models.PositiveIntegerField(
+        "Nombre d'aidant inactifs qui ne se sont pas connectés depuis longtemps et qui ont été alertés",  # noqa
+        default=0,
+    )
+
     class Meta:
         abstract = True
         verbose_name = "Statistiques aidants abstraite"

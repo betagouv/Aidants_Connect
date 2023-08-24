@@ -4,6 +4,7 @@ import logging
 
 from django.db import models, transaction
 
+from ..constants import HabilitationRequestStatuses
 from .aidant import Aidant
 from .organisation import Organisation
 
@@ -11,26 +12,10 @@ logger = logging.getLogger()
 
 
 class HabilitationRequest(models.Model):
-    STATUS_WAITING_LIST_HABILITATION = "habilitation_waitling_list"
-    STATUS_NEW = "new"
-    STATUS_PROCESSING = "processing"
-    STATUS_VALIDATED = "validated"
-    STATUS_REFUSED = "refused"
-    STATUS_CANCELLED = "cancelled"
-
     ORIGIN_DATAPASS = "datapass"
     ORIGIN_RESPONSABLE = "responsable"
     ORIGIN_OTHER = "autre"
     ORIGIN_HABILITATION = "habilitation"
-
-    STATUS_LABELS = {
-        STATUS_WAITING_LIST_HABILITATION: "Liste d'attente",
-        STATUS_NEW: "Nouvelle",
-        STATUS_PROCESSING: "En cours",
-        STATUS_VALIDATED: "Validée",
-        STATUS_REFUSED: "Refusée",
-        STATUS_CANCELLED: "Annulée",
-    }
 
     ORIGIN_LABELS = {
         ORIGIN_DATAPASS: "Datapass",
@@ -55,8 +40,8 @@ class HabilitationRequest(models.Model):
         "État",
         blank=False,
         max_length=150,
-        default=STATUS_WAITING_LIST_HABILITATION,
-        choices=((status, label) for status, label in STATUS_LABELS.items()),
+        default=HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+        choices=HabilitationRequestStatuses.choices,
     )
     origin = models.CharField(
         "Origine",
@@ -91,11 +76,11 @@ class HabilitationRequest(models.Model):
 
     def validate_and_create_aidant(self):
         if self.status not in (
-            self.STATUS_PROCESSING,
-            self.STATUS_NEW,
-            self.STATUS_WAITING_LIST_HABILITATION,
-            self.STATUS_VALIDATED,
-            self.STATUS_CANCELLED,
+            HabilitationRequestStatuses.STATUS_PROCESSING,
+            HabilitationRequestStatuses.STATUS_NEW,
+            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
+            HabilitationRequestStatuses.STATUS_VALIDATED,
+            HabilitationRequestStatuses.STATUS_CANCELLED,
         ):
             return False
 
@@ -106,7 +91,7 @@ class HabilitationRequest(models.Model):
                 aidant.is_active = True
                 aidant.can_create_mandats = True
                 aidant.save()
-                self.status = self.STATUS_VALIDATED
+                self.status = HabilitationRequestStatuses.STATUS_VALIDATED
                 self.save()
                 return True
 
@@ -118,7 +103,7 @@ class HabilitationRequest(models.Model):
                 email=self.email,
                 username=self.email,
             )
-            self.status = self.STATUS_VALIDATED
+            self.status = HabilitationRequestStatuses.STATUS_VALIDATED
             self.save()
 
         # Prevent circular import
@@ -128,9 +113,23 @@ class HabilitationRequest(models.Model):
 
         return True
 
+    def cancel_by_responsable(self):
+        if not self.status_cancellable_by_responsable:
+            return
+
+        self.status = HabilitationRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
+        self.save(update_fields={"status"})
+
     @property
     def status_label(self):
-        return self.STATUS_LABELS[self.status]
+        return HabilitationRequestStatuses(self.status).label
+
+    @property
+    def status_cancellable_by_responsable(self):
+        return (
+            HabilitationRequestStatuses(self.status)
+            in HabilitationRequestStatuses.cancellable_by_responsable()
+        )
 
     @property
     def origin_label(self):

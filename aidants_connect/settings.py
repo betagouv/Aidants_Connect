@@ -636,6 +636,20 @@ EMAIL_WELCOME_AIDANT_SUBJECT = os.getenv(
     "EMAIL_WELCOME_AIDANT_SUBJECT", "Bienvenue dans la communauté Aidants Connect"
 )
 EMAIL_WELCOME_AIDANT_FROM = os.getenv("EMAIL_WELCOME_AIDANT_FROM", SUPPORT_EMAIL)
+EMAIL_WELCOME_AIDANT_GUIDE_URL = os.getenv(
+    "EMAIL_WELCOME_AIDANT_GUIDE_URL",
+    "https://aidantsconnect.beta.gouv.fr/guide_utilisation/",
+)
+EMAIL_WELCOME_AIDANT_RESSOURCES_URL = os.getenv(
+    "EMAIL_WELCOME_AIDANT_RESSOURCES_URL",
+    "https://aidantsconnect.beta.gouv.fr/ressources/",
+)
+EMAIL_WELCOME_AIDANT_FAQ_URL = os.getenv(
+    "EMAIL_WELCOME_AIDANT_FAQ_URL", "https://aidantsconnect.beta.gouv.fr/faq/"
+)
+EMAIL_WELCOME_AIDANT_CONTACT_URL = os.getenv(
+    "EMAIL_WELCOME_AIDANT_CONTACT_URL", "contact@aidantsconnect.beta.gouv.fr"
+)
 
 EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT = os.getenv(
     "EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT",
@@ -643,6 +657,14 @@ EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT = os.getenv(
 )
 EMAIL_AIDANT_DEACTIVATION_WARN_FROM = os.getenv(
     "EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT", SUPPORT_EMAIL
+)
+
+EMAIL_AIDANT_DEACTIVATION_NOTICE_SUBJECT = os.getenv(
+    "EMAIL_AIDANT_DEACTIVATION_NOTICE_SUBJECT",
+    "Aidants Connect — Votre compte a été désactivé",
+)
+EMAIL_AIDANT_DEACTIVATION_NOTICE_FROM = os.getenv(
+    "EMAIL_AIDANT_DEACTIVATION_NOTICE_FROM", SUPPORT_EMAIL
 )
 
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
