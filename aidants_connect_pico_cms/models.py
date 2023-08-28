@@ -1,4 +1,5 @@
 from django.db import models
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import mark_safe
 
@@ -39,9 +40,18 @@ class CmsContent(MarkdownContentMixin, models.Model):
 class Testimony(CmsContent):
     name = models.CharField("Nom de l'aidant·e qui témoigne", max_length=255)
     job = models.CharField("Fonction de l'aidant·e qui témoigne", max_length=255)
+    profile_picture_url = models.URLField(
+        "URL vers la photo de profil de la personne qui témoigne",
+        null=True,
+        default=None,
+    )
 
     def __str__(self):
         return self.name
+
+    @property
+    def profile_picture(self):
+        return self.profile_picture_url or static("images/default-profile-picture.png")
 
     def get_absolute_url(self):
         return reverse("temoignage-detail", kwargs={"slug": self.slug})

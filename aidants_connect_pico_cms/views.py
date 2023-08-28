@@ -1,13 +1,23 @@
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic.base import View
+from django.views.generic.base import RedirectView, View
 from django.views.generic.detail import DetailView
 
 from aidants_connect_pico_cms.models import FaqCategory, FaqQuestion, Testimony
 from aidants_connect_pico_cms.utils import render_markdown
+
+
+class TestimoniesView(RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        testimony_qs = Testimony.objects.filter(published=True).order_by("sort_order")
+        if not testimony_qs.exists():
+            return reverse("espace_aidant_home")
+
+        return reverse("temoignage-detail", kwargs={"slug": testimony_qs.first().slug})
 
 
 class TestimonyView(DetailView):
