@@ -28,7 +28,7 @@ urlpatterns = [
     path("logout-session/", service.logout_page, name="logout"),
     path("activity_check/", service.activity_check, name="activity_check"),
     # espace aidant : home, organisation
-    path("espace-aidant/", espace_aidant.home, name="espace_aidant_home"),
+    path("espace-aidant/", espace_aidant.Home.as_view(), name="espace_aidant_home"),
     path(
         "espace-aidant/organisation/",
         espace_aidant.OrganisationView.as_view(),
@@ -36,12 +36,12 @@ urlpatterns = [
     ),
     path(
         "espace-aidant/valider-cgu",
-        espace_aidant.validate_cgus,
+        espace_aidant.ValidateCGU.as_view(),
         name="espace_aidant_cgu",
     ),
     path(
         "espace-aidant/organisations/switch_main",
-        espace_aidant.switch_main_organisation,
+        espace_aidant.SwitchMainOrganisation.as_view(),
         name="espace_aidant_switch_main_organisation",
     ),
     # usagers
