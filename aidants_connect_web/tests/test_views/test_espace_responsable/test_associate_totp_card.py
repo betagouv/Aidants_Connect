@@ -1,10 +1,10 @@
 from django.test import TestCase, tag
 from django.test.client import Client
-from django.urls import resolve
+from django.urls import resolve, reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.models import CarteTOTP, Journal
+from aidants_connect_web.models import Aidant, Journal
 from aidants_connect_web.tests.factories import AidantFactory, CarteTOTPFactory
 from aidants_connect_web.views import espace_responsable
 
@@ -18,11 +18,20 @@ class AssociateCarteTOTPTests(TestCase):
         cls.responsable_tom = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         # Create one aidant
-        cls.aidant_tim = AidantFactory(
+        cls.aidant_tim: Aidant = AidantFactory(
             username="tim@tim.fr",
             organisation=cls.responsable_tom.organisation,
             first_name="Tim",
             last_name="Onier",
+        )
+        # Aidant with valid TOTP card
+        cls.aidant_sarah: Aidant = AidantFactory(
+            username="sarah@sarah.fr",
+            organisation=cls.responsable_tom.organisation,
+            first_name="Sarah",
+            last_name="Onier",
+            post__with_carte_totp=True,
+            post__with_carte_totp_confirmed=True,
         )
         # Create one carte TOTP
         cls.carte = CarteTOTPFactory(serial_number="A123", seed="zzzz")
@@ -36,7 +45,9 @@ class AssociateCarteTOTPTests(TestCase):
 
     def test_association_page_triggers_the_right_view(self):
         found = resolve(self.association_url)
-        self.assertEqual(found.func, espace_responsable.associate_aidant_carte_totp)
+        self.assertEqual(
+            found.func.view_class, espace_responsable.AssociateAidantCarteTOTP
+        )
 
     def test_association_page_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
@@ -45,8 +56,34 @@ class AssociateCarteTOTPTests(TestCase):
             response, "aidants_connect_web/espace_responsable/write-carte-totp-sn.html"
         )
 
+    def test_redirect_if_aidant_has_a_totp_card(self):
+        self.client.force_login(self.responsable_tom)
+        expected_card = self.aidant_sarah.carte_totp.pk
+        response = self.client.post(
+            reverse(
+                "espace_responsable_associate_totp",
+                kwargs={"aidant_id": self.aidant_sarah.pk},
+            ),
+            data={"serial_number": self.carte.serial_number},
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "espace_responsable_aidant", kwargs={"aidant_id": self.aidant_sarah.id}
+            ),
+        )
+        self.aidant_sarah.refresh_from_db()
+        self.assertEqual(
+            expected_card,
+            self.aidant_sarah.carte_totp.pk,
+            "TOTP shoudln'd have been modified",
+        )
+
     def test_post_a_sn_creates_a_totp_device(self):
         self.client.force_login(self.responsable_tom)
+
+        previous_count = TOTPDevice.objects.count()
+        self.assertFalse(self.aidant_tim.has_a_carte_totp)
 
         # Submit post and check redirection is correct
         response = self.client.post(
@@ -57,16 +94,18 @@ class AssociateCarteTOTPTests(TestCase):
             response, self.validation_url, fetch_redirect_response=False
         )
         # Check a TOTP Device was created
-        self.assertEqual(TOTPDevice.objects.count(), 1, "No TOTP Device was created")
+        self.assertEqual(
+            previous_count + 1, TOTPDevice.objects.count(), "No TOTP Device was created"
+        )
 
         # Check TOTP device is correct
-        totp_device = TOTPDevice.objects.first()
-        self.assertEqual(totp_device.key, self.carte.seed)
-        self.assertEqual(totp_device.user, self.aidant_tim)
-        self.assertFalse(totp_device.confirmed)
+        self.aidant_tim.refresh_from_db()
+        card = self.aidant_tim.carte_totp
+        self.assertEqual(card.totp_device.key, self.carte.seed)
+        self.assertEqual(card.totp_device.user, self.aidant_tim)
+        self.assertFalse(card.totp_device.confirmed)
 
         # Check CarteTOTP object has been updated too
-        card = CarteTOTP.objects.first()
         self.assertEqual(card.aidant, self.aidant_tim)
 
         # Check journal entry creation

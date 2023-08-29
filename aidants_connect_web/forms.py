@@ -437,13 +437,13 @@ class ChangeAidantOrganisationsForm(forms.Form):
 
 
 class HabilitationRequestCreationForm(forms.ModelForm):
-    def __init__(self, responsable, *args, **kwargs):
+    def __init__(self, referent, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.responsable = responsable
+        self.referent = referent
         self.fields["organisation"] = forms.ModelChoiceField(
-            queryset=Organisation.objects.filter(
-                responsables=self.responsable
-            ).order_by("name"),
+            queryset=Organisation.objects.filter(responsables=self.referent).order_by(
+                "name"
+            ),
             empty_label="Choisir...",
         )
 
