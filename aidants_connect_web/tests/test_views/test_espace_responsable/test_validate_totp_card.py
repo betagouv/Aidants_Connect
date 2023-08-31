@@ -65,7 +65,9 @@ class ValidateCarteTOTPTests(TestCase):
 
     def test_validation_page_triggers_the_right_view(self):
         found = resolve(self.validation_url)
-        self.assertEqual(found.func, espace_responsable.validate_aidant_carte_totp)
+        self.assertEqual(
+            found.func.view_class, espace_responsable.ValidateAidantCarteTOTP
+        )
 
     def test_validation_page_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)

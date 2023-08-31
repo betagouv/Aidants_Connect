@@ -137,7 +137,8 @@ def responsable_logged_with_activity_required(
         more = more_decorators or []
 
         fun = method_decorator(
-            [login_required, user_is_responsable_structure, *more], **kwargs
+            [login_required, user_is_responsable_structure, activity_required, *more],
+            **kwargs
         )
 
         return fun(decorated)
