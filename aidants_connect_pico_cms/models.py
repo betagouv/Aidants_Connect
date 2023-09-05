@@ -1,3 +1,5 @@
+from typing import Self
+
 from django.db import models
 from django.templatetags.static import static
 from django.urls import reverse
@@ -24,6 +26,7 @@ class CmsContent(MarkdownContentMixin, models.Model):
     published = models.BooleanField("Publié")
     slug = models.SlugField(
         "Clé d’URL",
+        unique=True,
         help_text=(
             "Par exemple <code>questions-generales</code> pour "
             "« Questions générales ».<br>"
@@ -37,6 +40,11 @@ class CmsContent(MarkdownContentMixin, models.Model):
         abstract = True
 
 
+class TestimonyQuerySet(models.QuerySet):
+    def for_display(self) -> Self:
+        return self.filter(published=True).order_by("sort_order", "slug")
+
+
 class Testimony(CmsContent):
     name = models.CharField("Nom de l'aidant·e qui témoigne", max_length=255)
     job = models.CharField("Fonction de l'aidant·e qui témoigne", max_length=255)
@@ -45,6 +53,11 @@ class Testimony(CmsContent):
         null=True,
         default=None,
     )
+    quote = models.CharField(
+        "Citation à afficher sur la page d'accueil", max_length=255
+    )
+
+    objects = TestimonyQuerySet.as_manager()
 
     def __str__(self):
         return self.name
