@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 from datetime import datetime, timedelta
 from os import walk as os_walk
@@ -624,6 +625,14 @@ class CarteTOTP(models.Model):
 
     def __str__(self):
         return self.serial_number
+
+    def unlink_aidant(self):
+        # AttributeError is thrown if totp_device is null
+        with contextlib.suppress(AttributeError):
+            self.totp_device.delete()
+        self.aidant = None
+        self.totp_device = None
+        self.save(update_fields={"aidant", "totp_device"})
 
     @transaction.atomic
     def get_or_create_totp_device(self, confirmed=False):

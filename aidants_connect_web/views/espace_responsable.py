@@ -1,5 +1,4 @@
 import base64
-import contextlib
 import logging
 from gettext import ngettext as _
 from io import BytesIO
@@ -214,12 +213,7 @@ class RemoveCardFromAidant(FormView):
         carte = CarteTOTP.objects.get(serial_number=sn)
 
         with transaction.atomic():
-            with contextlib.suppress(TOTPDevice.DoesNotExist):
-                TOTPDevice.objects.get(key=carte.seed, user=self.aidant).delete()
-
-            carte.aidant = None
-            carte.totp_device = None
-            carte.save()
+            carte.unlink_aidant()
 
             Journal.log_card_dissociation(
                 self.responsable, self.aidant, sn, form.cleaned_data["reason"]

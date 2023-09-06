@@ -307,26 +307,22 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
 
     def __dissociate_from_aidant_post(self, request, object_id):
         try:
-            object = CarteTOTP.objects.get(id=object_id)
-            aidant = object.aidant
+            card = CarteTOTP.objects.get(id=object_id)
+            aidant = card.aidant
             if aidant is None:
                 self.message_user(
                     request,
-                    f"Aucun aidant n’est associé à la carte {object.serial_number}.",
+                    f"Aucun aidant n’est associé à la carte {card.serial_number}.",
                     messages.ERROR,
                 )
                 return HttpResponseRedirect(
                     reverse("otpadmin:aidants_connect_web_cartetotp_changelist")
                 )
 
-            totp_devices = TOTPDevice.objects.filter(user=aidant, key=object.seed)
-            for d in totp_devices:
-                d.delete()
-            object.aidant = None
-            object.save()
+            card.unlink_aidant()
 
             Journal.log_card_dissociation(
-                request.user, aidant, object.serial_number, "Admin action"
+                request.user, aidant, card.serial_number, "Admin action"
             )
 
             self.message_user(request, "Tout s'est bien passé.")
