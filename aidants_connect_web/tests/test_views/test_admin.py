@@ -440,8 +440,8 @@ class TOTPCardAdminPageTests(TestCase):
 
     def test_dissociate_aidant_whith_totp_device(self):
         aidant = AidantFactory()
-        totp_device = TOTPDeviceFactory(user=aidant)
-        card = CarteTOTPFactory(aidant=aidant, seed=totp_device.key)
+        card: CarteTOTP = CarteTOTPFactory(aidant=aidant)
+        card.get_or_create_totp_device()
         card_dissociate_url = reverse(
             "otpadmin:aidants_connect_web_carte_totp_dissociate",
             args=(card.id,),
@@ -455,8 +455,12 @@ class TOTPCardAdminPageTests(TestCase):
     def test_do_not_destroy_unrelated_totp_device(self):
         aidant_tim = AidantFactory()
         aidant_tom = AidantFactory()
-        totp_device = TOTPDeviceFactory(user=aidant_tim)
-        card = CarteTOTPFactory(aidant=aidant_tom, seed=totp_device.key)
+        CarteTOTPFactory(aidant=aidant_tim).get_or_create_totp_device()
+        card = CarteTOTPFactory(aidant=aidant_tom)
+        card.get_or_create_totp_device()
+
+        self.assertEqual(1, TOTPDevice.objects.filter(user=aidant_tim).count())
+
         card_dissociate_url = reverse(
             "otpadmin:aidants_connect_web_carte_totp_dissociate",
             args=(card.id,),
