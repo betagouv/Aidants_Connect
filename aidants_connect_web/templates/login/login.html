@@ -22,14 +22,14 @@
 
         <section class="shadowed blue habilitation-notice">
           <span class="strong">Vous êtes une structure qui souhaite utiliser Aidants Connect ?</span><br/>
-          Nous vous invitons à remplir <a href="{% url 'habilitation' %}">notre formulaire d'habilitation</a>
+          Nous vous invitons à remplir <a href="{% url 'habilitation' %}">notre formulaire d’habilitation</a>
         </section>
         {% if user.is_authenticated %}
           <div class="notification" role="alert">
             Vous êtes déjà connecté.
           </div>
           <div class="text-center">
-            <a href="{% url 'LOGGED_IN_REDIRECT_URL_NAME' %}" class="btn btn-success">Accédez à l'accueil</a>
+            <a href="{% url 'LOGGED_IN_REDIRECT_URL_NAME' %}" class="btn btn-success">Accédez à l’accueil</a>
             <a href="{% url 'LOGOUT_URL_NAME' %}" class="btn btn-warning">Déconnectez-vous</a>
           </div>
         {% else %}
@@ -51,9 +51,9 @@
           </form>
         {% endif %}
         <div class="shadowed red margin-bottom-2rem margin-top-2rem padding-0-5rem">
-          Un problème avec votre carte ou votre téléphone ?
-          Contactez-nous par courriel à l'adresse {% mailto "contact@aidantsconnect.beta.gouv.fr" %} en précisant
-          votre nom, structure, et la nature du problème.
+          Si la connexion ne fonctionne pas, <b>merci d’essayer au moins 4 fois</b> avant de contacter l’équipe support
+          à l’adresse {% mailto "contact@aidantsconnect.beta.gouv.fr" %} en précisant votre nom, structure, et la
+          nature du problème.
         </div>
       </div>
     </div>
