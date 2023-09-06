@@ -1,8 +1,10 @@
+from unittest import mock
+from unittest.mock import Mock
+
 from django.core import mail
 from django.test import TestCase, override_settings, tag
 from django.urls import reverse
 
-from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from magicauth import settings as magicauth_settings
 
@@ -36,22 +38,18 @@ class LoginTests(TestCase):
         response = self.client.get(f"/{magicauth_settings.LOGIN_URL}")
         self.assertRedirects(response, reverse("login"), status_code=301)
 
-    @override_settings(OTP_TOTP_THROTTLE_FACTOR=0)
-    def test_tolerance_on_otp_challenge(self):
+    @override_settings(MAGICAUTH_ENABLE_2FA=True)
+    @mock.patch("magicauth.views.OTPForm.is_valid")
+    def test_tolerance_on_otp_challenge(self, is_valid_mock: Mock):
         totp_device: TOTPDevice = self.aidant_with_totp_card.carte_totp.totp_device
-        token_generator = TOTP(
-            totp_device.bin_key,
-            totp_device.step,
-            totp_device.t0,
-            totp_device.digits,
-            totp_device.drift,
-        )
+
+        is_valid_mock.return_value = False
 
         response = self.client.post(
             reverse("login"),
             {
                 "email": self.aidant_with_totp_card.email,
-                "otp_token": token_generator.token() + 1,
+                "otp_token": 123456,
             },
         )
 
@@ -67,7 +65,7 @@ class LoginTests(TestCase):
             reverse("login"),
             {
                 "email": self.aidant_with_totp_card.email,
-                "otp_token": token_generator.token() + 1,
+                "otp_token": 123456,
             },
         )
 
@@ -76,11 +74,12 @@ class LoginTests(TestCase):
         self.assertEqual(30, totp_device.tolerance)
 
         # Login with correct token
+        is_valid_mock.return_value = True
         response = self.client.post(
             reverse("login"),
             {
                 "email": self.aidant_with_totp_card.email,
-                "otp_token": token_generator.token(),
+                "otp_token": 123456,
             },
         )
 
