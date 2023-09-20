@@ -10,8 +10,7 @@
           de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité. 
         </p>
         <p>
-          Nous vous proposons un<b>webinaire de ré-embarquement</b>, court et
-          interactif, où nous
+          Nous vous proposons un<b>temps d'échange sous la forme d'un wébinaire</b>, où nous
           <b>lèverons les freins</b>
           liés à l’utilisation de
           l’outil pour que vous puissiez être en mesure d’avoir toutes les clés pour utiliser le service.
@@ -26,7 +25,7 @@
           de l’outil Aidants Connect, votre compte sera<b>automatiquement désactivé dans un délai de 1 mois</b>.
         </p>
         <p >
-          <em>Pour rappel, pour des raisons de sécurité, les comptes Aidants Connect sont désactivés temporairement au bout de 6 mois d'inactivité. Passé ce délai, vous pouvez nous contacter pour réactiver votre compte à l'adresse suivante contact@aidantsconnect.beta.gouv.fr </em>
+          <em>Pour rappel, pour des raisons de sécurité, les comptes Aidants Connect sont désactivés au bout de 6 mois d'inactivité. Passé ce délai, vous pouvez nous contacter pour réactiver votre compte à l'adresse suivante contact@aidantsconnect.beta.gouv.fr </em>
         </p>
       </mj-text>
       <mj-button href="{{ webinaire_sub_form }}">S’inscrire au wébinaire</mj-button>
