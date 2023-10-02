@@ -31,7 +31,7 @@ class CmsAdmin(VisibleToAdminMetier, ModelAdmin):
 @register(Testimony, site=admin_site)
 class TestimonyAdmin(CmsAdmin):
     fieldsets = (
-        ("Contenu", {"fields": ("name", "job", "body")}),
+        ("Contenu", {"fields": ("name", "job", "quote", "body")}),
         (
             "Publication",
             {
