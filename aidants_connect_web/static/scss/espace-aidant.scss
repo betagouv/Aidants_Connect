@@ -120,8 +120,8 @@ h3.home-section {
 table.table {
   border-collapse: collapse;
   margin-bottom: 2rem;
+  table-layout: fixed;
   width: 100%;
-
 
   tbody.shadowed {
     td {
