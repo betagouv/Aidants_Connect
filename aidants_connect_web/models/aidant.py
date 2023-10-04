@@ -10,10 +10,10 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 
 from dateutil.relativedelta import relativedelta
-from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
 
+from ..constants import OTP_APP_DEVICE_NAME
 from .mandat import Autorisation, Mandat
 from .organisation import Organisation
 from .usager import Usager
@@ -301,9 +301,7 @@ class Aidant(AbstractUser):
 
     @cached_property
     def has_otp_app(self) -> bool:
-        return self.totpdevice_set.filter(
-            name=TOTPDevice.APP_DEVICE_NAME % self.pk
-        ).exists()
+        return self.totpdevice_set.filter(name=OTP_APP_DEVICE_NAME % self.pk).exists()
 
     @cached_property
     def number_totp_card(self) -> str:

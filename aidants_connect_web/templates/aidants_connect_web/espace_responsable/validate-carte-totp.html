@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
@@ -9,56 +9,53 @@
 {% endblock extracss %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-10">
+        {% if messages %}
+          {% for message in messages %}
+            <div
+              class="notification {% if message.tags %}{{ message.tags }}{% endif %}"
+              role="alert"
+            >{{ message }}</div>
+          {% endfor %}
+        {% endif %}
 
-      <ul class="steps-form">
-        <li class="done">
-          <div>
-            Création du compte aidant
-          </div>
-        </li>
-        <li class="done">
-          <div>
-            Saisie du numéro de série<br>de la carte
-          </div>
-        </li>
-        <li class="active">
-          <div>
-            Validation de la carte
-          </div>
-        </li>
-      </ul>
-      <h1>Étape 3/3 : validation de la carte de {{ aidant.get_full_name }}</h1>
-      <div class="row">
-        <div>
-          <form method="post">
-            {% csrf_token %}
-            <div class="form__group">
-              <label for="{{ form.otp_token.id_for_label }}">
-                Pour valider le fonctionnement de la carte n°{{ aidant.carte_totp.serial_number }},
-                écrivez le code à six chiffres obtenu en appuyant sur le bouton de celle-ci :
-              </label>
-              <div class="max-width-50">
+        <h1>Espace référent</h1>
+        <h2>Lier une carte</h2>
+        <p class="subtitle">Affectez une carte Aidant & {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
+
+        <div class="fr-grid-row fr-grid-row--gutters">
+          <div class="fr-col-12 fr-col-md-8 margin-bottom-1rem">
+            <p class="bold blue-text">Validation de la carte</p>
+
+            <form class="margin-bottom-4rem" method="post">
+              {% csrf_token %}
+              <div class="shadowed margin-bottom-2rem padding-1rem">
+                <label
+                  class="margin-bottom-1rem"
+                  for="{{ form.otp_token.id_for_label }}"
+                >
+                  Entrez le code à 6 chiffres fourni par votre carte.*
+                </label>
                 {{ form.otp_token }}
+                {% if form.errors.otp_token %}
+                  <div id="{{ form.otp_token.id_for_label }}-errors">
+                    {{ form.errors.otp_token }}
+                  </div>
+                {% endif %}
               </div>
-              {{ form.otp_token.errors }}
-            </div>
-            <div class="form__group">
-              <button class="button" type="submit">Vérifier</button>
-            </div>
-          </form>
-        </div>
-        <div class="min-width-35">
-          <img src="{% static 'images/AC_CarteOTP_Recto.svg' %}" alt="">
+
+              <button class="button primary" type="submit">Valider cette carte</button>
+            </form>
+            <p class="em bold">* Aide</p>
+            <p class="em">
+              <span class="bold">Carte physique</span> Appuyez sur le bouton « PRESS » pour afficher le code.<br />
+              <span class="bold">Carte numérique</span> Appuyez sur la ligne Aidant Connect dans l’application.
+            </p>
+          </div>
         </div>
       </div>
-
     </div>
-  </section>
+  </div>
 {% endblock content %}

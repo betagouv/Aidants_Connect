@@ -1,69 +1,69 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
-{% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
+{% block title %}Aidants Connect - Associer la carte à {{ aidant.get_full_name }}{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-10">
+        {% if messages %}
+          {% for message in messages %}
+            <div
+              class="notification {% if message.tags %}{{ message.tags }}{% endif %}"
+              role="alert"
+            >{{ message }}</div>
+          {% endfor %}
+        {% endif %}
 
-      <ul class="steps-form">
-        <li class="done">
-          <div>
-            Création du compte aidant
-          </div>
-        </li>
-        <li class="active">
-          <div>
-            Saisie du numéro de série<br>de la carte
-          </div>
-        </li>
-        <li>
-          <div>
-            Validation de la carte
-          </div>
-        </li>
-      </ul>
-      <h1>Étape 2/3 : saisie du numéro de série</h1>
+        <h1>Espace référent</h1>
+        <h2>Lier une carte</h2>
+        <p class="subtitle">Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
 
-      <div class="row">
+        <div class="fr-grid-row fr-grid-row--gutters">
+          <div class="fr-col-12 fr-col-md-8 margin-bottom-1rem">
+            <p class="bold blue-text">Munissez-vous de la carte Aidant à affecter et consultez le verso.</p>
 
-        <div>
-          <form method="post">
-            {% csrf_token %}
-            <div class="form__group">
-              <label for="{{ form.serial_number.id_for_label }}">
-                Entrez le numéro de série (de la forme <code>GADT000XXXXX</code>) présent sur le verso de la carte
-                que vous allez lier à
-                {% if aidant.id == responsable.id %}votre compte{% else %}{{ aidant.get_full_name }}{% endif %}&nbsp;:
-              </label>
-              {{ form.serial_number }}
-              {% if form.errors.serial_number %}
-                <div id="{{ form.serial_number.id_for_label }}__errors">
-                  {{ form.errors.serial_number }}
+            <form method="post">
+              {% csrf_token %}
+              <div class="shadowed margin-bottom-2rem">
+                <div class="fr-grid-row padding-1rem">
+                  <div class="fr-col-12 fr-col-md-6">
+                    <label
+                      class="margin-bottom-1rem"
+                      for="{{ form.serial_number.id_for_label }}"
+                    >
+                      Entrez le numéro de série
+                    </label>
+                    <div class="margin-top-1rem">
+                      <span>GADT000 </span>{{ form.serial_number }}
+                    </div>
+                    {% if form.errors.serial_number %}
+                      <div id="{{ form.serial_number.id_for_label }}__errors">
+                        {{ form.errors.serial_number }}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="fr-col-12 fr-col-md-6">
+                    <img
+                      class="float-right"
+                      src="{% static 'images/aidant-card-instructions.png' %}"
+                      alt="Exemple de carte Aidants connect figurant le numéro de série sous la forme GADT000XXXX"
+                    />
+                  </div>
                 </div>
-              {% endif %}
-            </div>
-            <div class="form__group">
-              <button type="submit" class="button">Valider</button>
-            </div>
-          </form>
-        </div>
-        <div class="min-width-35">
-          <img src="{% static 'images/AC_CarteOTP_Verso.svg' %}" alt="">
+              </div>
+
+              <button class="button primary" type="submit">Passer à la validation</button>
+            </form>
+          </div>
         </div>
       </div>
-
     </div>
-  </section>
+  </div>
 {% endblock content %}

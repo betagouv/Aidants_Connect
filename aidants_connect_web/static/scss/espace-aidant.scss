@@ -1,4 +1,5 @@
 @use "colors";
+@use "boxes";
 
 // aidants_connect_web/espace_aidant/home.html
 h3.home-section {
@@ -205,4 +206,55 @@ table.table {
 
 main a[href^="mailto:"] {
   font-weight: normal;
+}
+
+.totp-card-section {
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  &.disabled {
+    .shadowed {
+      box-shadow: 10px 10px 0 colors.$ac_mid_grey;
+      border-color: colors.$ac_mid_grey;
+    }
+
+    img {
+      filter: grayscale(100%)
+    }
+
+    a {
+      cursor: not-allowed;
+      border-color: colors.$shadow-grey;
+      background-color: colors.$ac_mid_grey;
+      color: colors.$shadow-grey;
+    }
+  }
+
+  .shadowed {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1rem;
+
+    * {
+      margin: auto;
+    }
+
+    .icon-container {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+      margin: 2rem auto;
+
+      img {
+        height: 8rem;
+      }
+    }
+
+    a {
+      margin-bottom: 1rem;
+    }
+  }
 }

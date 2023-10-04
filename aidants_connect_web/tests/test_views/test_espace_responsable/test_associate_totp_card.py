@@ -1,3 +1,4 @@
+from django.contrib import messages as django_messages
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
@@ -33,14 +34,24 @@ class AssociateCarteTOTPTests(TestCase):
             post__with_carte_totp=True,
             post__with_carte_totp_confirmed=True,
         )
-        # Create one carte TOTP
-        cls.carte = CarteTOTPFactory(serial_number="A123", seed="zzzz")
-        cls.org_id = cls.responsable_tom.organisation.id
-        cls.association_url = (
-            f"/espace-responsable/aidant/{cls.aidant_tim.id}/lier-carte"
+        # Aidant deactivated aidant
+        cls.deactivated_aidant: Aidant = AidantFactory(
+            username="deactivated@deactivated.fr",
+            organisation=cls.responsable_tom.organisation,
+            first_name="Deactivated",
+            last_name="Onier",
+            is_active=False,
         )
-        cls.validation_url = (
-            f"/espace-responsable/aidant/{cls.aidant_tim.id}/valider-carte"
+        # Create one carte TOTP
+        cls.carte = CarteTOTPFactory(seed="zzzz")
+        cls.org_id = cls.responsable_tom.organisation.id
+        cls.association_url = reverse(
+            "espace_responsable_associate_totp",
+            kwargs={"aidant_id": cls.aidant_tim.pk},
+        )
+        cls.validation_url = reverse(
+            "espace_responsable_validate_totp",
+            kwargs={"aidant_id": cls.aidant_tim.pk},
         )
 
     def test_association_page_triggers_the_right_view(self):
@@ -77,6 +88,35 @@ class AssociateCarteTOTPTests(TestCase):
             expected_card,
             self.aidant_sarah.carte_totp.pk,
             "TOTP shoudln'd have been modified",
+        )
+
+    def test_redirect_if_aidant_is_deactivated(self):
+        self.client.force_login(self.responsable_tom)
+
+        self.assertFalse(self.deactivated_aidant.has_a_carte_totp)
+
+        response = self.client.post(
+            reverse(
+                "espace_responsable_associate_totp",
+                kwargs={"aidant_id": self.deactivated_aidant.pk},
+            ),
+            data={"serial_number": self.carte.serial_number},
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "espace_responsable_aidant",
+                kwargs={"aidant_id": self.deactivated_aidant.id},
+            ),
+        )
+        self.deactivated_aidant.refresh_from_db()
+        self.assertFalse(self.deactivated_aidant.has_a_carte_totp)
+
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            f"Le compte de {self.deactivated_aidant.get_full_name()} est désactivé. "
+            f"Il est impossible de lui attacher une nouvelle carte Aidant Connect",
+            messages[0].message,
         )
 
     def test_post_a_sn_creates_a_totp_device(self):

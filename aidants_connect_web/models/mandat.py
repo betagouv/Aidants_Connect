@@ -595,9 +595,6 @@ class Connection(models.Model):
         return self.expires_on < timezone.now()
 
 
-TOTPDevice.APP_DEVICE_NAME = "OTP App for user %s"
-
-
 class CarteTOTP(models.Model):
     serial_number = models.CharField(max_length=100, unique=True)
     seed = models.CharField(max_length=40)
