@@ -305,7 +305,6 @@ def email_old_aidants(*, logger=None):
             {
                 "email_title": "Votre compte va être désactivé, réagissez !",
                 "user": a,
-                "cgu_url": build_url(reverse("cgu")),
                 "webinaire_sub_form": settings.WEBINAIRE_SUBFORM_URL,
             },
         )
