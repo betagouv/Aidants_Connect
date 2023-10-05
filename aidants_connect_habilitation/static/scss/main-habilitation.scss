@@ -209,6 +209,27 @@ h3.h3-prime {
   }
 }
 
+.internal-ressource .card-ressource {
+  .card-content {
+    padding: 1rem;
+  }
+
+  .h1 {
+    color: colors.$blue-aidants;
+    flex-grow: 1;
+    font-weight: normal;
+    margin: 1rem 0;
+
+    .red-text {
+      color: colors.$red-aidants;
+    }
+  }
+
+  .button-box {
+    transform: translateY(3rem);
+  }
+}
+
 
 .tag {
   display: flex;
