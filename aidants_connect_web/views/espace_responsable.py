@@ -19,7 +19,10 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
-from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.constants import (
+    OTP_APP_DEVICE_NAME,
+    HabilitationRequestStatuses,
+)
 from aidants_connect_web.decorators import (
     responsable_logged_with_activity_required,
     user_is_responsable_structure,
@@ -237,22 +240,31 @@ class AddAppOTPToAidant(FormView):
     success_url = reverse_lazy("espace_responsable_home")
 
     def dispatch(self, request, *args, **kwargs):
-        if not settings.FF_OTP_APP:
+        self.referent: Aidant = request.user
+
+        if not settings.FF_OTP_APP or not self.referent.ff_otp_app:
             return HttpResponseRedirect(reverse("espace_responsable_home"))
 
-        self.responsable: Aidant = request.user
         self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
 
-        if not self.responsable.can_see_aidant(self.aidant):
+        if not self.referent.can_see_aidant(self.aidant):
             raise Http404()
 
-        if self.aidant.totpdevice_set.filter(
-            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk
-        ).exists():
+        if self.aidant.has_otp_app:
             django_messages.warning(
                 request,
-                "Il existe déjà une application OTP liée à ce profil. Si vous voulez "
-                "en attacher une nouvelle, veuillez supprimer l'anciennne.",
+                "Il existe déjà une carte OTP numérique liée à ce profil. "
+                "Si vous voulez en attacher une nouvelle, veuillez supprimer "
+                "l’anciennne.",
+            )
+            return HttpResponseRedirect(self.get_success_url())
+
+        if not self.aidant.is_active:
+            django_messages.warning(
+                request,
+                f"Le profil de {self.aidant.get_full_name()} désactivé. "
+                "Il est impossible de lui lier attacher une nouvelle carte OTP "
+                "numérique.",
             )
             return HttpResponseRedirect(self.get_success_url())
 
@@ -261,7 +273,7 @@ class AddAppOTPToAidant(FormView):
     def get(self, request, *args, **kwargs):
         self.otp_device = TOTPDevice(
             user=self.aidant,
-            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk,
+            name=OTP_APP_DEVICE_NAME % self.aidant.pk,
             confirmed=False,
         )
         request.session["otp_device"] = model_to_dict(self.otp_device)
@@ -276,6 +288,8 @@ class AddAppOTPToAidant(FormView):
     def form_valid(self, form):
         self.otp_device.confirmed = True
         self.otp_device.save()
+        # Clean session
+        self.request.session.pop("otp_device")
         return super().form_valid(form)
 
     @staticmethod
@@ -314,13 +328,18 @@ class RemoveAppOTPFromAidant(DeleteView):
     success_url = reverse_lazy("espace_responsable_home")
 
     def dispatch(self, request, *args, **kwargs):
-        if not settings.FF_OTP_APP:
-            return HttpResponseRedirect(reverse("espace_responsable_home"))
-        self.responsable: Aidant = request.user
+        self.referent: Aidant = request.user
         self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
 
-        if not self.responsable.can_see_aidant(self.aidant):
+        if not self.referent.can_see_aidant(self.aidant):
             raise Http404()
+
+        if (
+            not self.aidant.has_otp_app
+            or not settings.FF_OTP_APP
+            or not self.referent.ff_otp_app
+        ):
+            return HttpResponseRedirect(reverse("espace_responsable_home"))
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -329,7 +348,7 @@ class RemoveAppOTPFromAidant(DeleteView):
 
     def get_object(self, queryset=None):
         return self.aidant.totpdevice_set.filter(
-            name=TOTPDevice.APP_DEVICE_NAME % self.aidant.pk
+            name=OTP_APP_DEVICE_NAME % self.aidant.pk
         )
 
 
@@ -431,6 +450,51 @@ class ChangeAidantOrganisations(FormView):
 
 
 @responsable_logged_with_activity_required
+class ChooseTOTPDevice(TemplateView):
+    template_name = "aidants_connect_web/espace_responsable/choose-totp-device.html"
+
+    def dispatch(self, request, aidant_id: int, *args, **kwargs):
+        self.referent: Aidant = request.user
+        self.aidant = get_object_or_404(Aidant, pk=aidant_id)
+        if not self.referent.can_see_aidant(self.aidant):
+            raise Http404
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        option_unavailable_text = (
+            "Ce profil est désactivé et n'est associé à aucune carte %s."
+            "Aucune action n'est disponible."
+        )
+        physical_option_available = (
+            self.aidant.is_active or self.aidant.has_a_carte_totp
+        )
+        physical_option_unavailable_text = option_unavailable_text % "physique"
+
+        can_use_digital_option = settings.FF_OTP_APP and self.referent.ff_otp_app
+        digital_option_available = (
+            self.aidant.has_otp_app or self.aidant.is_active and can_use_digital_option
+        )
+        digital_option_unavailable_text = (
+            option_unavailable_text % "numérique"
+            if can_use_digital_option
+            else "Cette option est désactivée pour vous actuellement"
+        )
+
+        kwargs.update(
+            {
+                "aidant": self.aidant,
+                "referent": self.referent,
+                "physical_option_available": physical_option_available,
+                "physical_option_unavailable_text": physical_option_unavailable_text,
+                "digital_option_available": digital_option_available,
+                "digital_option_unavailable_text": digital_option_unavailable_text,
+            }
+        )
+        return super().get_context_data(**kwargs)
+
+
+@responsable_logged_with_activity_required
 class AssociateAidantCarteTOTP(FormView):
     form_class = CarteOTPSerialNumberForm
     template_name = "aidants_connect_web/espace_responsable/write-carte-totp-sn.html"
@@ -448,6 +512,18 @@ class AssociateAidantCarteTOTP(FormView):
                     f"Le compte de {self.aidant.get_full_name()} est déjà lié à une "
                     f"carte Aidants Connect. Vous devez d’abord retirer la carte de "
                     f"son compte avant de pouvoir en lier une nouvelle."
+                ),
+            )
+
+            return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
+
+        if not self.aidant.is_active:
+            django_messages.error(
+                request,
+                (
+                    f"Le compte de {self.aidant.get_full_name()} est désactivé. "
+                    "Il est impossible de lui attacher une nouvelle carte "
+                    "Aidant Connect"
                 ),
             )
 
@@ -507,6 +583,18 @@ class ValidateAidantCarteTOTP(FormView):
 
             return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
 
+        if not self.aidant.is_active:
+            django_messages.error(
+                request,
+                (
+                    f"Le profil de {self.aidant.get_full_name()} est désactivé. "
+                    "Il est impossible de valider la carte Aidants Connect qui lui est "
+                    "associée."
+                ),
+            )
+
+            return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -517,7 +605,7 @@ class ValidateAidantCarteTOTP(FormView):
     def form_valid(self, form):
         token = form.cleaned_data["otp_token"]
         totp_device = TOTPDevice.objects.get(
-            key=self.aidant.carte_totp.seed, user_id=self.aidant.id
+            key=self.aidant.carte_totp.seed, user=self.aidant
         )
 
         if not totp_device.verify_token(token):

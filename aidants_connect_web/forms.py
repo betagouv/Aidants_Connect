@@ -27,6 +27,7 @@ from aidants_connect_web.models import (
     Usager,
     UsagerQuerySet,
 )
+from aidants_connect_web.utilities import normalize_totp_cart_serial
 from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
 
@@ -340,7 +341,7 @@ class CarteOTPSerialNumberForm(forms.Form):
     serial_number = forms.CharField()
 
     def clean_serial_number(self):
-        serial_number = self.cleaned_data["serial_number"]
+        serial_number = normalize_totp_cart_serial(self.cleaned_data["serial_number"])
         try:
             carte = CarteTOTP.objects.get(serial_number=serial_number)
         except CarteTOTP.DoesNotExist:

@@ -1,5 +1,6 @@
-// break points -----------------------------------------
+@use "colors";
 
+// break points -----------------------------------------
 $bp-xs: 20em;
 $bp-sm: 36em;
 $bp-md: 48em;
@@ -51,6 +52,9 @@ $bp-xl: 78em;
 .padding-0 {
   padding: 0 !important;
 }
+.padding-1rem {
+  padding: 1rem !important;
+}
 .padding-0-5rem {
   padding: .5rem !important;
 }
@@ -93,4 +97,14 @@ $bp-xl: 78em;
 }
 .bold {
   font-weight: bold;
+}
+.em {
+  font-style: italic;
+}
+.blue-text {
+  color: colors.$blue-aidants
+}
+.centering {
+  display: block;
+  margin: auto;
 }

@@ -112,3 +112,8 @@ def generate_id_token(connection: "Connection"):
         "sub": connection.usager.sub,
         "nonce": connection.nonce,
     }
+
+
+def normalize_totp_cart_serial(serial):
+    serial = int(f"{serial}".removeprefix("GADT000"))
+    return f"GADT000{serial:04}"

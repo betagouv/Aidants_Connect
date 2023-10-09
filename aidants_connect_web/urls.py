@@ -218,6 +218,11 @@ urlpatterns = [
         name="espace_responsable_remove_aidant_from_organisation",
     ),
     path(
+        "espace-responsable/aidant/<int:aidant_id>/type-carte",
+        espace_responsable.ChooseTOTPDevice.as_view(),
+        name="espace_responsable_choose_totp",
+    ),
+    path(
         "espace-responsable/aidant/<int:aidant_id>/lier-carte",
         espace_responsable.AssociateAidantCarteTOTP.as_view(),
         name="espace_responsable_associate_totp",

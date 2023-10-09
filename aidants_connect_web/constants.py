@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 
 from aidants_connect_common.utils.constants import DictChoices, TextChoicesEnum
 
+OTP_APP_DEVICE_NAME = "OTP App for user %s"
+
 
 class RemoteConsentMethodChoices(DictChoices):
     LEGACY = {
