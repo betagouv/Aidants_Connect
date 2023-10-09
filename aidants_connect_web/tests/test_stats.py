@@ -106,7 +106,7 @@ class AllStatisticsTests(TestCase):
         )
 
         staf_orga = OrganisationFactory(name=settings.STAFF_ORGANISATION_NAME)
-        orga_11 = OrganisationFactory(
+        cls.orga_11 = orga_11 = OrganisationFactory(
             name="CCAS",
             department_insee_code="911",
             city_insee_code=cls.commune_11.insee_code,
@@ -225,6 +225,16 @@ class AllStatisticsTests(TestCase):
         HabilitationRequestFactory(
             status=HabilitationRequestStatuses.STATUS_NEW.value, organisation=orga_21
         )
+
+    def test_number_organisation_with_accredited_aidants(self):
+        stats = compute_statistics(AidantStatistiques())
+        self.assertEqual(stats.number_organisation_with_accredited_aidants, 4)
+
+        new_ad = AidantFactory(last_login=now(), organisation=self.orga_ad_dep_11)
+        CarteTOTPFactory(aidant=new_ad)
+
+        nstats = compute_statistics(AidantStatistiques())
+        self.assertEqual(nstats.number_organisation_with_accredited_aidants, 4)
 
     def test_global_computing_new_statistics(self):
         stats = compute_statistics(AidantStatistiques())
