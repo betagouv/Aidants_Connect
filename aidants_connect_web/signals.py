@@ -1,3 +1,5 @@
+import logging
+
 from django.apps import AppConfig
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
@@ -14,6 +16,19 @@ from aidants_connect_web.models import Aidant, Journal
 
 aidants__organisations_changed = Signal()
 otp_challenge_failed = Signal()
+card_associated_to_aidant = Signal()
+
+
+logger = logging.getLogger()
+
+
+@receiver(card_associated_to_aidant)
+def send_user_welcome_email(sender, otp_device: TOTPDevice, **_):
+    aidant: Aidant = otp_device.user
+    if Journal.objects.find_card_association_logs_for_user(aidant).count() <= 1:
+        from aidants_connect_web.tasks import email_welcome_aidant
+
+        email_welcome_aidant(aidant.email, logger=logger)
 
 
 @receiver(otp_challenge_failed)
@@ -31,7 +46,7 @@ def actions_on_login(sender, user: Aidant, request, **kwargs):
     Journal.log_connection(user)
 
     user.deactivation_warning_at = None
-    user.save()
+    user.save(update_fields={"deactivation_warning_at"})
 
     totp_device: TOTPDevice = getattr(
         getattr(user, "carte_totp", None), "totp_device", None

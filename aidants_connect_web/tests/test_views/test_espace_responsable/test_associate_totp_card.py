@@ -1,3 +1,6 @@
+from unittest import mock
+from unittest.mock import Mock
+
 from django.contrib import messages as django_messages
 from django.test import TestCase, tag
 from django.test.client import Client
@@ -119,7 +122,8 @@ class AssociateCarteTOTPTests(TestCase):
             messages[0].message,
         )
 
-    def test_post_a_sn_creates_a_totp_device(self):
+    @mock.patch("aidants_connect_web.signals.card_associated_to_aidant.send")
+    def test_post_a_sn_creates_a_totp_device(self, signal_send_mock: Mock):
         self.client.force_login(self.responsable_tom)
 
         previous_count = TOTPDevice.objects.count()
@@ -155,6 +159,9 @@ class AssociateCarteTOTPTests(TestCase):
             "card_association",
             "A Journal entry should have been created on card association.",
         )
+
+        # Check signal of associated card is sent
+        signal_send_mock.assert_called_with(None, otp_device=card.totp_device)
 
         # Check organisation page warns about activation
         response = self.client.get(f"/espace-responsable/organisation/{self.org_id}/")
