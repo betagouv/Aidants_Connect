@@ -4,22 +4,15 @@ Bonjour, {{ user.get_full_name }}
 
 Vous avez participé au programme de formation Aidants Connect, néanmoins cela fait plus de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité. 
 
-Nous vous proposons un temps d'échange sous la forme d'un webinaire, où nous lèverons les freins liés à l’utilisation de l’outil pour que vous puissiez être en mesure d’avoir toutes les clés pour utiliser le service.
+Vous souhaitez garder votre compte actif et ne rencontrez pas de difficultés particulière à l'utilisation ? Il vous suffit de vous connecter à votre espace personnel dans un délai de 30 jours pour conserver vos accès.
 
-Sans inscription au webinaire ou connexion sur votre espace Aidants Connect, conformément aux CGU ({{ cgu_url }}) de l’outil Aidants Connect, votre compte sera automatiquement désactivé dans un délai de 1 mois.
+Vous avez besoin de reprendre en main l'outil, échanger avec d'autres professionnels ou vous rencontrez des difficultés techniques ? Nous vous proposons un temps d’échange sous la forme d’un webinaire : {{ webinaire_sub_form }}
 
-Pour rappel, pour des raisons de sécurité, les comptes Aidants Connect sont désactivés au bout de 6 mois d'inactivité. Passé ce délai, vous pouvez nous contacter pour réactiver votre compte à l'adresse suivante contact@aidantsconnect.beta.gouv.fr
+La plateforme ne vous est finalement pas utile et vous ne souhaitez pas garder votre compte actif ? Merci de nous renvoyer votre carte Aidants Connect à l’adresse suivante :
 
-Vous pouvez vous inscrire au wébinaire en suivant le lien suivant : {{ webinaire_sub_form }}
-
-Si vous ne souhaitez plus utiliser l’outil, merci de nous renvoyer les cartes Aidants Connect de votre structure à l’adresse suivante :
-
-        A l’attention de Marine Jouan, ANCT, 20 avenue de Ségur, Paris 75007
-
-en indiquant vos coordonnées sur le dos de l’enveloppe.
+         ANCT, 20 avenue de Ségur, Paris 75007 A l’attention de Marine Jouan (en indiquant vos coordonnées sur le dos de l’enveloppe.)
 
 Merci pour votre compréhension et votre réactivité.
-
 
 À bientôt sur Aidants Connect !
 
