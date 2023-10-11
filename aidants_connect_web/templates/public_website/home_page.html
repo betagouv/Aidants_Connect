@@ -1,4 +1,4 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'public_website/layout/main.html' %}
 
 {% load static %}
 
@@ -14,7 +14,7 @@
   {% endfor %}
 {% endif %}
 <div class="fr-container--fluid hero-container">
-  <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center fr-grid-row--middle hero-row">
+  <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle hero-row">
     <div class="fr-col">
       <div class="fr-grid-row fr-grid-row--center">
         <img class="hero-logo" alt="Logo Aidants Connect" src="{% static 'images/logo-aidants.svg' %}"/>
@@ -23,15 +23,15 @@
         <h1 class="hero-subtitle">Facilement « faire pour le compte de » en toute sécurité</h1>
       </div>
       <div class="fr-grid-row fr-grid-row--center">
-        <button class="lightbox-video btn-hero">
-          <span class="img-play"><img alt="Lire la vidéo" src="{% static 'images/play.svg' %}"/></span>Aidants Connect, c’est quoi ?
+        <button class="lightbox-video margin-top-5rem fr-btn fr-btn--lg fr-btn--icon-left fr-icon-play-circle-line">
+          Aidants Connect, c’est quoi ?
         </button>
       </div>
     </div>
   </div>
 </div>
 <div class="fr-container--fluid aidants-container">
-  <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center aidants-row">
+  <div class="fr-container fr-grid-row fr-grid-row--center aidants-row">
     <div class="fr-col-md-4 aidants-col">
       <div class="fr-grid-row fr-grid-row--right aidants-img-container">
         <img class="aidants-img" alt="Deux personnes se saluent" src="{% static 'images/aidants.svg' %}"/>
@@ -51,7 +51,7 @@
       </div>
       <div class="fr-grid-row fr-grid-row--right aidants-btn-container">
         <div class="fr-grid-col aidants-btn-col">
-          <a class="btn-homepage" href="{% url 'habilitation' %}">Être habilité Aidants Connect</a>
+          <a class="fr-btn" href="{% url 'habilitation' %}">Être habilité Aidants Connect</a>
         </div>
       </div>
     </div>
@@ -122,7 +122,7 @@
               <div class="person-name">{{ testimony.name }}</div>
               <div class="person-job">{{ testimony.job }}</div>
               <div class="person-quote">« {{ testimony.quote }} »</div>
-              <a class="button primary" href="{{ testimony.get_absolute_url }}">Lire la suite du témoignage</a>
+              <a class="fr-btn" href="{{ testimony.get_absolute_url }}">Lire la suite du témoignage</a>
             </div>
           </div>
         </section>
@@ -140,7 +140,7 @@
             <div class="infos">
               <div class="person-name">Plus de témoigagnes…</div>
               <div>Aidants Connect a aidé vos homologues dans leur démarche d’accompagnement</div>
-              <a class="button primary" href="{% url 'temoignages' %}">Voir tous les témoignages</a>
+              <a class="fr-btn" href="{% url 'temoignages' %}">Voir tous les témoignages</a>
             </div>
           </div>
         </section>
@@ -157,13 +157,15 @@
             <p class="question-title">Toujours des questions ?</p>
             <p>Consultez notre procédure d’habilitation ou encore notre aide si vous avez besoin de plus d’informations.</p>
           </div>
-          <div class="fr-grid-row fr-grid-row--right fr-grid-row--bottom questions-btn-container">
-            <div class="fr-grid-col aidants-btn-col">
-              <a class="btn-homepage" href="{% url 'habilitation' %}">Habilitation</a>
-            </div>
-            <div class="fr-grid-col aidants-btn-col">
-              <a class="btn-homepage" href="{% url 'faq_generale' %}">FAQ</a>
-            </div>
+          <div class="fr-grid-row fr-grid-row--right fr-grid-row--bottom">
+            <ul class="fr-btns-group fr-btns-group--inline">
+              <li>
+                <a class="fr-btn" href="{% url 'habilitation' %}">Habilitation</a>
+              </li>
+              <li>
+                <a class="fr-btn" href="{% url 'faq_generale' %}">FAQ</a>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -185,7 +187,7 @@
               <div class="form__group">
                 <div class="input__group">
                   <input id="input-email" type="text" name="email" placeholder="votre@email.fr" required sb-form-input>
-                  <button id="submitInput" class="btn-contact" type="submit" value="Je m&#x27;abonne">
+                  <button id="submitInput" class="fr-btn" type="submit" value="Je m&#x27;abonne">
                     Je m'abonne
                   </button>
                 </div>

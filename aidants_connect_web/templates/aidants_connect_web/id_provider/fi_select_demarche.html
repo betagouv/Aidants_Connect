@@ -22,7 +22,7 @@
           <em>{{ usager.given_name }} {{ usager.family_name }}</em>
         </p>
         {% if change_user_url %}
-        <a class="button primary float-right change-user" href="{{ change_user_url }}">Changer d'usager</a>
+        <a class="fr-btn float-right change-user" href="{{ change_user_url }}">Changer d'usager</a>
         {% endif %}
       </div>
 
@@ -43,7 +43,7 @@
               <p>{{ demarche_info.description }}</p>
             </div>
             <div class="fr-col-4">
-              <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="primary" type="submit">
+              <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="fr-btn" type="submit">
                 Sélectionner cette démarche
               </button>
             </div>

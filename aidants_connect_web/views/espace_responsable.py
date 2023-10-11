@@ -2,6 +2,7 @@ import base64
 import logging
 from gettext import ngettext as _
 from io import BytesIO
+from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -54,6 +55,8 @@ class Home(TemplateView):
     template_name = "aidants_connect_web/espace_responsable/home.html"
 
     def dispatch(self, request, *args, **kwargs):
+        self.fragment = quote(request.GET.get("fragment", ""))
+        self.fragment = f"#{self.fragment}" if self.fragment else ""
         self.referent: Aidant = request.user
         self.organisations = (
             Organisation.objects.filter(responsables=self.referent)
@@ -74,6 +77,7 @@ class Home(TemplateView):
             **super().get_context_data(**kwargs),
             "responsable": self.referent,
             "organisations": self.organisations,
+            "fragment": self.fragment,
         }
 
 

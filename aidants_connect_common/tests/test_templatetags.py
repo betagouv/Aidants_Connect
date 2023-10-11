@@ -17,7 +17,8 @@ class Test(TestCase):
             mailto(
                 link_text=mail_link, recipient=recipient, subject=subject, body=body
             ),
-            f'<a href="mailto:{recipient}?subject={quote(subject, "")}&'
+            f'<a class="fr-link" href="mailto:{recipient}?'
+            f'subject={quote(subject, "")}&'
             f'body={quote(body, "")}">{mail_link}</a>',
         )
 

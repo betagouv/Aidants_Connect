@@ -136,6 +136,8 @@ INSTALLED_APPS = [
     "django_extensions",
     "import_export",
     "phonenumber_field",
+    "widget_tweaks",
+    "dsfr",
     "aidants_connect",
     "aidants_connect_common",
     "aidants_connect_web",

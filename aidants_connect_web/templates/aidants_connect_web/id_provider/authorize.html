@@ -11,12 +11,12 @@
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-grid-row">
       <div class="fr-col-12 fr-col-md-8">
-        <h2 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h2>
+        <h1 id="welcome_aidant" class="h2 fr-mt-8v">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
         <div class="container shadowed padding-1rem margin-bottom-2rem">
-          <h4 class="h4-prime">Sélectionnez l'usager que vous souhaitez FranceConnecter</h4>
-          <p class="subtitle">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
+          <p class="h4-prime">Sélectionnez l'usager que vous souhaitez FranceConnecter</p>
+          <p class="light-blue-text">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
           {% if usagers %}
             <form class="clearfix" method="post">
               <div class="form-grid-row fr-grid-row fr-grid-row--gutters">
@@ -31,7 +31,7 @@
                 <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
                 {% csrf_token %}
               </div>
-              <button id="submit-button" class="primary float-right" type="submit">Séléctionner</button>
+              <button id="submit-button" class="fr-btn float-right" type="submit">Séléctionner</button>
             </form>
           {% else %}
             <div class="notification" role="alert">
@@ -45,22 +45,22 @@
         {% if usagers %}
           <details class="container shadowed padding-1rem user-detail">
             <summary>
-              <h4 class="h4-prime">Tous les usagers</h4>
+              <p class="h4-prime fr-m-0">Tous les usagers</p>
             </summary>
 
             {% for usager in usagers %}
-              <form class="user-detail-item" method="post">
+              <form class="user-detail-item fr-mt-4v" method="post">
                 {% csrf_token %}
                 {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
                   <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
-                <span>{{ usager.get_full_name }}</span>
+                <p class="fr-m-0">{{ usager.get_full_name }}</p>
                 <input
                   id="filter-input-id"
                   name="chosen_usager"
                   value="{{ usager.id }}"
                   type="hidden"
                 />
-                <button class="primary" type="submit" data-user-id="{{ usager.id }}">Sélectionner</button>
+                <button class="fr-btn" type="submit" data-user-id="{{ usager.id }}">Sélectionner</button>
               </form>
             {% endfor %}
           </details>

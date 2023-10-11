@@ -104,7 +104,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         deactivated_add_button = self.selenium.find_element(
             By.ID, f"add-totp-card-to-aidant-{self.aidant_inactive_without_card.pk}"
         )
-        self.assertEqual("", deactivated_add_button.get_attribute("href"))
+        self.assertEqual(None, deactivated_add_button.get_attribute("href"))
         self.assertElementNotFound(
             By.ID,
             f"validate-totp-card-for-aidant-{self.aidant_inactive_without_card.pk}",

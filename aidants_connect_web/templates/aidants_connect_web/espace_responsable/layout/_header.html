@@ -1,0 +1,26 @@
+{% extends 'layouts/_header.html' %}
+
+{% load ac_common %}
+
+{% block nav_menu %}
+  <li class="fr-nav__item">
+    <a class="fr-nav__link" target="_self" href="{% url 'espace_responsable_home' %}?fragment=active-referents">Aidants</a>
+  </li>
+  <li class="fr-nav__item">
+    <a class="fr-nav__link" target="_self" href="{% url 'espace_responsable_home' %}?fragment=active-referents">Référents</a>
+  </li>
+  <li class="fr-nav__item">
+    <a class="fr-nav__link" target="_self" href="{% url 'espace_responsable_home' %}?fragment=habilitation-requests">Demandes en cours</a>
+  </li>
+  <li class="fr-nav__item">
+    <a class="fr-nav__link" target="_self" href="{% url 'espace_responsable_home' %}">Mon organisation</a>
+  </li>
+  <li class="fr-nav__item">
+    <a class="fr-nav__link" target="_self" href="{% url 'ressources' %}">Ressources</a>
+  </li>
+  <li class="fr-nav__item">
+    <a class="fr-nav__link" target="_self" href="{% mailto_href "contact@aidantsconnect.beta.gouv.fr" %}">
+      Contacter lʼéquipe
+    </a>
+  </li>
+{% endblock %}
