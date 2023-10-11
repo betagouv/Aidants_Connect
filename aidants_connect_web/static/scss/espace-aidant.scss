@@ -209,7 +209,6 @@ main a[href^="mailto:"] {
 }
 
 .totp-card-section {
-
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -255,6 +254,17 @@ main a[href^="mailto:"] {
 
     a {
       margin-bottom: 1rem;
+    }
+  }
+}
+
+.otp-app-instructions {
+  a {
+    display: block;
+    margin: .5rem 0;
+
+    &:not(:hover) {
+      text-decoration: none;
     }
   }
 }
