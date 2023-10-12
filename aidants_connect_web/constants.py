@@ -43,7 +43,9 @@ class RemoteConsentMethodChoices(DictChoices):
 
 
 class NotificationType(TextChoicesEnum):
-    pass
+    INFORMATION = "Information"
+    NEW_FEATURE = "Nouveauté sur Aidants Connect"
+    WARNING = "Alerte"
 
 
 class HabilitationRequestStatuses(TextChoices):

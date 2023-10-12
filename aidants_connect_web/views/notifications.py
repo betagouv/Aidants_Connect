@@ -1,9 +1,9 @@
 import contextlib
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView
 
 from aidants_connect_web.constants import NotificationType
@@ -47,10 +47,8 @@ class NotificationDetail(DetailView):
         )
 
 
-@aidant_logged_required
+@aidant_logged_required(more_decorators=[csrf_exempt])
 class MarkNotification(View):
-    success_url = reverse_lazy("notification_list")
-
     def dispatch(self, request, *args, **kwargs):
         self.notification = get_object_or_404(
             Notification, pk=kwargs.get("notification_id"), aidant=request.user
@@ -58,9 +56,9 @@ class MarkNotification(View):
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.notification.mark_read()
-        return HttpResponseRedirect(str(self.success_url))
+        self.notification.mark_unread()
+        return HttpResponse(status=200)
 
     def delete(self, request, *args, **kwargs):
-        self.notification.mark_unread()
-        return HttpResponseRedirect(str(self.success_url))
+        self.notification.mark_read()
+        return HttpResponse(status=200)
