@@ -9,7 +9,7 @@ from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
-from aidants_connect_web.models import Aidant
+from aidants_connect_web.models import Aidant, Journal
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from aidants_connect_web.views import espace_responsable
 
@@ -223,6 +223,43 @@ class RemoveAppOTPToAidantTests(TestCase):
         )
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_responsable/app_otp_remove.html"
+        )
+
+    @mock.patch("aidants_connect_web.signals.card_associated_to_aidant.send")
+    @mock.patch(
+        "aidants_connect_web.views.espace_responsable.AddAppOTPToAidantForm.is_valid",
+        return_value=True,
+    )
+    def test_add_otp_app(self, form_is_valid_mock, signal_send_mock: Mock):
+        self.client.force_login(self.responsable_tom)
+
+        self.assertEqual(0, self.aidant_tim.totpdevice_set.count())
+
+        self.client.get(
+            reverse(
+                "espace_responsable_aidant_add_app_otp",
+                kwargs={"aidant_id": self.aidant_tim.pk},
+            )
+        )
+
+        self.client.post(
+            reverse(
+                "espace_responsable_aidant_add_app_otp",
+                kwargs={"aidant_id": self.aidant_tim.pk},
+            )
+        )
+
+        self.assertEqual(1, self.aidant_tim.totpdevice_set.count())
+
+        journal_entry = Journal.objects.last()
+        self.assertEqual(
+            journal_entry.action,
+            "card_association",
+            "A Journal entry should have been created on card association.",
+        )
+
+        signal_send_mock.assert_called_with(
+            None, otp_device=self.aidant_tim.totpdevice_set.first()
         )
 
     def test_cant_remove_otp_device_to_foreign_aidant(self):

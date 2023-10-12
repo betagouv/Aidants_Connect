@@ -1,16 +1,17 @@
 Bienvenue sur Aidants Connect !
 
-Votre compte vient d’être créé. Pour y accéder, vous devez utiliser la carte Aidants Connect que votre référent a reçu ou recevra dans les prochains jours. Celle-ci doit être activée par le référent Aidants Connect de votre structure. Vous pourrez ensuite créer vos premiers mandats et accompagner les usagers dans la réalisation de leurs démarches en ligne.
+Votre carte vient d’être activée par le référent Aidants Connect de votre structure. Vous pouvez dès maintenant accéder à votre compte et créer vos premiers mandats pour accompagner les usagers dans la réalisation de leurs démarches.
 
 Voici quelques ressources à disposition :
 
     Guide de prise en main de l’outil : {{ EMAIL_WELCOME_AIDANT_GUIDE_URL }}
     Page ressources du site Aidants Connect : {{ EMAIL_WELCOME_AIDANT_RESSOURCES_URL }}
     Page FAQ du site Aidants Connect : {{ EMAIL_WELCOME_AIDANT_FAQ_URL }}
+    Fiches tangibles etsijaccompagnais.fr : {{ EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES }}
 
-Si vous souhaitez recevoir notre infolettre mensuelle, n’hésitez pas à vous inscrire ici : https://aidantsconnect.beta.gouv.fr/
+Chaque mois, une newsletter avec des informations et nouveautés sur le dispositif est envoyée. Pour la recevoir, n’hésitez pas à vous inscrire 👉 ici : https://aidantsconnect.beta.gouv.fr/
 
-Si vous rencontrez des difficultés de connexion, ou pour toute autre question, nous vous invitons à nous contacter à l’adresse suivante {{ EMAIL_WELCOME_AIDANT_CONTACT_URL }}.
+⚙️ Si vous rencontrez des difficultés de connexion, ou pour toute autre question, nous vous invitons à nous contacter à l’adresse suivante {{ EMAIL_WELCOME_AIDANT_CONTACT_URL }}.
 
 
 À bientôt sur Aidants Connect !

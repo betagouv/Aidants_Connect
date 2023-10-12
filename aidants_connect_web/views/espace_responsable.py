@@ -286,10 +286,28 @@ class AddAppOTPToAidant(FormView):
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
-        self.otp_device.confirmed = True
-        self.otp_device.save()
-        # Clean session
-        self.request.session.pop("otp_device")
+        try:
+            with transaction.atomic():
+                self.otp_device.confirmed = True
+                self.otp_device.save()
+
+                Journal.log_card_association(
+                    self.referent, self.aidant, self.otp_device.name
+                )
+            # Clean session
+            self.request.session.pop("otp_device")
+
+            from aidants_connect_web.signals import card_associated_to_aidant
+
+            card_associated_to_aidant.send(None, otp_device=self.otp_device)
+
+        except Exception:
+            message = (
+                "Une erreur s’est produite lors de la sauvegarde de la carte numérique."
+            )
+            logger.exception(message)
+            django_messages.error(self.request, message)
+
         return super().form_valid(form)
 
     @staticmethod
@@ -350,6 +368,14 @@ class RemoveAppOTPFromAidant(DeleteView):
         return self.aidant.totpdevice_set.filter(
             name=OTP_APP_DEVICE_NAME % self.aidant.pk
         )
+
+    def form_valid(self, form):
+        card_name = self.object.first().name
+        response = super().form_valid(form)
+        Journal.log_card_dissociation(
+            self.referent, self.aidant, card_name, "no reason"
+        )
+        return response
 
 
 @responsable_logged_with_activity_required
@@ -548,6 +574,10 @@ class AssociateAidantCarteTOTP(FormView):
                 Journal.log_card_association(
                     self.responsable, self.aidant, serial_number
                 )
+
+            from aidants_connect_web.signals import card_associated_to_aidant
+
+            card_associated_to_aidant.send(None, otp_device=carte_totp.totp_device)
 
         except Exception:
             message = "Une erreur s’est produite lors de la sauvegarde de la carte."

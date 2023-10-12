@@ -274,6 +274,9 @@ def email_welcome_aidant(aidant_email: str, *, logger=None):
                 settings.EMAIL_WELCOME_AIDANT_RESSOURCES_URL
             ),
             "EMAIL_WELCOME_AIDANT_FAQ_URL": settings.EMAIL_WELCOME_AIDANT_FAQ_URL,
+            "EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES": (
+                settings.EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES
+            ),
             "EMAIL_WELCOME_AIDANT_CONTACT_URL": (
                 settings.EMAIL_WELCOME_AIDANT_CONTACT_URL
             ),

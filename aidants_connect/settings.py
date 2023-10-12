@@ -641,6 +641,10 @@ EMAIL_WELCOME_AIDANT_RESSOURCES_URL = os.getenv(
 EMAIL_WELCOME_AIDANT_FAQ_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_FAQ_URL", "https://aidantsconnect.beta.gouv.fr/faq/"
 )
+EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES = os.getenv(
+    "EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES",
+    "https://www.etsijaccompagnais.fr/ressources-des-aidants",
+)
 EMAIL_WELCOME_AIDANT_CONTACT_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_CONTACT_URL", "contact@aidantsconnect.beta.gouv.fr"
 )
