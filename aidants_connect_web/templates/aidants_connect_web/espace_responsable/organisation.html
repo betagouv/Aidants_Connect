@@ -5,6 +5,7 @@
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'dsfr/alert.min.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
@@ -23,20 +24,32 @@
 
     <div class="fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
       <div class="fr-col-12">
-        {% include "aidants_connect_web/espace_aidant/notifications.html" with user=responsable %}
+        {% include "aidants_connect_web/espace_aidant/notifications.html" with user=referent %}
       </div>
     </div>
 
     <div class="fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
-      <div class="fr-col-12">
-        <div class="bandeau shadowed">
-          <p>
-            <span aria-hidden="true">⚠️</span> Attention : Aucune formation Aidants Connect n'est disponible pour le moment. 
-            De nouvelles modalités de formation seront expérimentées d'ici fin 2023. Nous reviendrons vers vous si votre demande 
-            est concernée par les premières expérimentations.
-          </p>
+      {% for notification in referent_notifications %}
+        <div class="fr-col-12">
+          <div
+            class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}"
+            data-controller="notification"
+            data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
+          >
+            <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
+            <p>{{ notification.body }}</p>
+            {% if notification.must_ack %}
+              <button
+                class="fr-btn--close fr-btn"
+                title="Masquer le message"
+                data-action="notification#markRead"
+              >
+                Masquer le message
+              </button>
+            {% endif %}
+          </div>
         </div>
-      </div>
+      {% endfor %}
     </div>
 
     {% include "aidants_connect_web/espace_aidant/statistics.html" %}
@@ -143,3 +156,8 @@
     {% endif %}
   </div>
 {% endblock content %}
+
+{% block extrajs %}
+  {% stimulusjs %}
+  <script defer type="module" src="{% static 'js/notifications.js' %}"></script>
+{% endblock %}

@@ -22,6 +22,7 @@ from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.constants import (
     OTP_APP_DEVICE_NAME,
     HabilitationRequestStatuses,
+    NotificationType,
 )
 from aidants_connect_web.decorators import (
     responsable_logged_with_activity_required,
@@ -41,6 +42,7 @@ from aidants_connect_web.models import (
     CarteTOTP,
     HabilitationRequest,
     Journal,
+    Notification,
     Organisation,
 )
 
@@ -114,7 +116,11 @@ class OrganisationView(DetailView):
 
         return {
             **super().get_context_data(**kwargs),
-            "responsable": self.referent,
+            "referent": self.referent,
+            "referent_notifications": Notification.objects.get_displayable_for_user(
+                self.referent
+            ),
+            "notification_type": NotificationType,
             "organisation_active_referents": organisation_active_referents,
             "organisation_inactive_referents": organisation_inactive_referents,
             "organisation_active_aidants": organisation_active_aidants,

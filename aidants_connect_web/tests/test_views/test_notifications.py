@@ -89,9 +89,9 @@ class MarkNotificationTests(TestCase):
                 kwargs={"notification_id": self.unread_notification.pk},
             )
         )
-        self.assertRedirects(response, reverse("notification_list"))
+        self.assertEqual(200, response.status_code)
         self.unread_notification.refresh_from_db()
-        self.assertTrue(self.unread_notification.was_ack)
+        self.assertFalse(self.unread_notification.was_ack)
 
     def test_post_fails_on_other_aidant_notification(self):
         self.client.force_login(self.aidant2)
@@ -112,9 +112,9 @@ class MarkNotificationTests(TestCase):
                 kwargs={"notification_id": self.read_notification.pk},
             )
         )
-        self.assertRedirects(response, reverse("notification_list"))
+        self.assertEqual(200, response.status_code)
         self.read_notification.refresh_from_db()
-        self.assertFalse(self.read_notification.was_ack)
+        self.assertTrue(self.read_notification.was_ack)
 
     def test_delete_fails_on_other_aidant_notification(self):
         self.client.force_login(self.aidant2)

@@ -39,7 +39,7 @@
         {% endif %}
       </td>
       <td>
-        {% if aidant.pk != responsable.pk and aidant.is_active %}
+        {% if aidant.pk != referent.pk and aidant.is_active %}
           <a
             id="remove-aidant-{{ aidant.id }}-from-organisation"
             href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
