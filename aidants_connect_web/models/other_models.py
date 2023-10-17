@@ -106,6 +106,10 @@ class HabilitationRequest(models.Model):
             self.status = HabilitationRequestStatuses.STATUS_VALIDATED
             self.save()
 
+        from aidants_connect_web.signals import aidant_activated
+
+        aidant_activated.send(self.__class__, aidant=aidant)
+
         return True
 
     def cancel_by_responsable(self):

@@ -17,9 +17,37 @@ from aidants_connect_web.models import Aidant, Journal
 aidants__organisations_changed = Signal()
 otp_challenge_failed = Signal()
 card_associated_to_aidant = Signal()
+aidant_activated = Signal()
 
 
 logger = logging.getLogger()
+
+
+@receiver(aidant_activated)
+def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
+    for referent in aidant.organisation.responsables.all():
+        text_message, html_message = render_email(
+            "email/aidant_activated.mjml",
+            {
+                "referent": referent,
+                "aidant": aidant,
+                "EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE": (
+                    settings.EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE
+                ),
+                "EMAIL_AIDANT_ACTIVATED_CONTACT_URL": (
+                    settings.EMAIL_AIDANT_ACTIVATED_CONTACT_URL
+                ),
+            },
+        )
+        send_mail(
+            from_email=settings.EMAIL_AIDANT_ACTIVATED_FROM,
+            recipient_list=[referent.email],
+            subject=settings.EMAIL_AIDANT_ACTIVATED_SUBJECT.format(
+                aidant_name=aidant.get_full_name()
+            ),
+            message=text_message,
+            html_message=html_message,
+        )
 
 
 @receiver(card_associated_to_aidant)
