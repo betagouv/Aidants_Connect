@@ -1,0 +1,27 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour {{ referent.get_full_name }},</mj-text>
+    <mj-text>
+      👏 {{ aidant.get_full_name }} a finalisé sa formation Aidants Connect. Vous pouvez lui attribuer une carte
+      physique, génératrice de code, ou une carte numérique, sous la forme d’une application mobile, depuis votre
+      espace référent. Il pourra ensuite réaliser ses premiers mandats et accompagner ses premiers usagers avec
+      Aidants Connect.
+    </mj-text>
+    <mj-text>
+      📚 Si vous avez besoin d’un rappel pour lier les cartes,
+      <a href="{{ EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE }}">
+        retrouvez la procédure via ce lien.
+      </a>
+    </mj-text>
+    <mj-text>
+      ⚙️ Si vous rencontrez des difficultés techniques, contactez-nous à l’adresse suivante
+      {% mailto EMAIL_AIDANT_ACTIVATED_CONTACT_URL %}
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock %}
