@@ -63,3 +63,10 @@ class Commune(models.Model):
         INSEE's CSV.
         """
         super().save(force_insert, force_update, using, update_fields)
+
+
+class EmailDebug(models.Model):
+    text_email = models.TextField("Contenu de l'email au format texte")
+    html_email = models.TextField("Contenu de l'email au format HTML")
+    created_at = models.DateTimeField("Date de création", auto_now_add=True)
+    email_adress = models.CharField("Adresse email", max_length=250)
