@@ -84,6 +84,9 @@ class Organisation(models.Model):
 
     is_active = models.BooleanField("Est active", default=True, editable=False)
 
+    created_at = models.DateTimeField("Date création", auto_now_add=True)
+    updated_at = models.DateTimeField("Date modification", auto_now=True)
+
     objects = OrganisationManager()
 
     def __str__(self):
