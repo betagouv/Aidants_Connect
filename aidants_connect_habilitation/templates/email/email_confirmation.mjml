@@ -1,0 +1,19 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+  <mj-section>
+    <mj-column>
+      <mj-text>Madame, Monsieur,</mj-text>
+      <mj-text>
+        Afin de pouvoir vous contacter lors du processus d'habilitation, nous vous demandons de confirmer cette adresse
+        email.
+      </mj-text>
+      <mj-button href="{{ confirmation_link }}">Confirmer votre adresse email</mj-button>
+      <mj-text>
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l’adresse suivante dans votre navigateur :
+        <a href="{{ confirmation_link }}">{{ confirmation_link }}</a>
+      </mj-text>
+      <mj-text>Vous pourrez ensuite reprendre le cours de votre demande.</mj-text>
+    </mj-column>
+  </mj-section>
+{% endblock %}

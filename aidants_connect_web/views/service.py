@@ -36,10 +36,15 @@ def home_page(request):
         django_messages.success(
             request, "Votre inscription à l'infolettre a bien été prise en compte."
         )
+
+    testimonies_qs = Testimony.objects.for_display()
     return render(
         request,
         "public_website/home_page.html",
-        context={"testimonies": Testimony.objects.for_display()[:3]},
+        context={
+            "testimonies": testimonies_qs[:3],
+            "has_more_testimonies": testimonies_qs.count() > 3,
+        },
     )
 
 

@@ -3,7 +3,6 @@ from django.core.mail import send_mail
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.http import HttpRequest
-from django.template import loader
 from django.urls import reverse
 
 from aidants_connect_common.utils.email import render_email
@@ -25,9 +24,9 @@ def send_email_confirmation(
     )
     confirmation_link = request.build_absolute_uri(confirmation_link)
 
-    context = {"confirmation_link": confirmation_link}
-    text_message = loader.render_to_string("signals/email_confirmation.txt", context)
-    html_message = loader.render_to_string("signals/email_confirmation.html", context)
+    text_message, html_message = render_email(
+        "email/email_confirmation.mjml", {"confirmation_link": confirmation_link}
+    )
 
     send_mail(
         from_email=settings.EMAIL_CONFIRMATION_EXPIRE_DAYS_EMAIL_FROM,
