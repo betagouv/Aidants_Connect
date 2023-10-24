@@ -382,7 +382,7 @@ LOWER_TOTP_TOLERANCE_ON_LOGIN = getenv_bool("LOWER_TOTP_TOLERANCE_ON_LOGIN", Tru
 
 # Emails
 EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+    "EMAIL_BACKEND", "aidants_connect.email_backend.LoggedEmailBackend"
 )
 
 # # if file based email backend is used (debug)
