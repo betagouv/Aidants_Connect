@@ -7,6 +7,7 @@ from django.core.mail import send_mail
 from django.db import connection
 from django.db.models.signals import post_migrate, post_save
 from django.dispatch import Signal, receiver
+from django.templatetags.static import static
 from django.urls import reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -59,8 +60,8 @@ def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
             {
                 "referent": referent,
                 "aidant": aidant,
-                "EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE": (
-                    settings.EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE
+                "card_association_guide_url": build_url(
+                    static("guides_aidants_connect/AC_Guide_LierUneCarte.pdf")
                 ),
                 "EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL": (
                     settings.EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL
