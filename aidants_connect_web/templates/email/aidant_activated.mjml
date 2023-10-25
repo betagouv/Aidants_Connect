@@ -20,7 +20,7 @@
     </mj-text>
     <mj-text>
       ⚙️ Si vous rencontrez des difficultés techniques, contactez-nous à l’adresse suivante
-      {% mailto EMAIL_AIDANT_ACTIVATED_CONTACT_URL %}
+      {% mailto EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL %}
     </mj-text>
   </mj-column>
 </mj-section>

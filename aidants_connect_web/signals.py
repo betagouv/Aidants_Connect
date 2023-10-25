@@ -5,14 +5,17 @@ from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.core.mail import send_mail
 from django.db import connection
-from django.db.models.signals import post_migrate
+from django.db.models.signals import post_migrate, post_save
 from django.dispatch import Signal, receiver
+from django.urls import reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import RequestOriginConstants
 from aidants_connect_common.utils.email import render_email
-from aidants_connect_web.models import Aidant, Journal
+from aidants_connect_common.utils.urls import build_url
+from aidants_connect_web.constants import NotificationType
+from aidants_connect_web.models import Aidant, Journal, Notification
 
 aidants__organisations_changed = Signal()
 otp_challenge_failed = Signal()
@@ -21,6 +24,31 @@ aidant_activated = Signal()
 
 
 logger = logging.getLogger()
+
+
+@receiver(post_save, sender=Notification)
+def send_email_on_new_notification(sender, instance: Notification, created: bool, **_):
+    if instance.type != NotificationType.NEW_FEATURE or not created:
+        return
+
+    text_message, html_message = render_email(
+        "email/new_feature.mjml",
+        {
+            "aidant": instance.aidant,
+            "espace_aidant": build_url(
+                reverse("espace_responsable_home")
+                if instance.aidant.is_responsable_structure()
+                else reverse("espace_aidant_home")
+            ),
+        },
+    )
+    send_mail(
+        from_email=settings.EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_FROM,
+        recipient_list=[instance.aidant.email],
+        subject=settings.EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_SUBJECT,
+        message=text_message,
+        html_message=html_message,
+    )
 
 
 @receiver(aidant_activated)
@@ -34,8 +62,8 @@ def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
                 "EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE": (
                     settings.EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE
                 ),
-                "EMAIL_AIDANT_ACTIVATED_CONTACT_URL": (
-                    settings.EMAIL_AIDANT_ACTIVATED_CONTACT_URL
+                "EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL": (
+                    settings.EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL
                 ),
             },
         )
