@@ -4,7 +4,6 @@ from gettext import ngettext as _
 from io import BytesIO
 from urllib.parse import quote
 
-from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -130,7 +129,6 @@ class OrganisationView(DetailView):
             "organisation_active_aidants": organisation_active_aidants,
             "organisation_inactive_aidants": organisation_inactive_aidants,
             "organisation_habilitation_requests": organisation_habilitation_requests,
-            "FF_OTP_APP": settings.FF_OTP_APP and self.referent.ff_otp_app,
         }
 
 
@@ -251,10 +249,6 @@ class AddAppOTPToAidant(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
-
-        if not settings.FF_OTP_APP or not self.referent.ff_otp_app:
-            return HttpResponseRedirect(reverse("espace_responsable_home"))
-
         self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
 
         if not self.referent.can_see_aidant(self.aidant):
@@ -362,11 +356,7 @@ class RemoveAppOTPFromAidant(DeleteView):
         if not self.referent.can_see_aidant(self.aidant):
             raise Http404()
 
-        if (
-            not self.aidant.has_otp_app
-            or not settings.FF_OTP_APP
-            or not self.referent.ff_otp_app
-        ):
+        if not self.aidant.has_otp_app:
             return HttpResponseRedirect(reverse("espace_responsable_home"))
 
         return super().dispatch(request, *args, **kwargs)
@@ -507,15 +497,8 @@ class ChooseTOTPDevice(TemplateView):
         )
         physical_option_unavailable_text = option_unavailable_text % "physique"
 
-        can_use_digital_option = settings.FF_OTP_APP and self.referent.ff_otp_app
-        digital_option_available = (
-            self.aidant.has_otp_app or self.aidant.is_active and can_use_digital_option
-        )
-        digital_option_unavailable_text = (
-            option_unavailable_text % "numérique"
-            if can_use_digital_option
-            else "Cette option est désactivée pour vous actuellement"
-        )
+        digital_option_available = self.aidant.has_otp_app or self.aidant.is_active
+        digital_option_unavailable_text = option_unavailable_text % "numérique"
 
         kwargs.update(
             {
