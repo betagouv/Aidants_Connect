@@ -3,21 +3,11 @@ from typing import Self
 from django.db import models
 from django.templatetags.static import static
 from django.urls import reverse
-from django.utils.html import mark_safe
 
+from aidants_connect_common.models import MarkdownContentMixin
 from aidants_connect_pico_cms.constants import MANDATE_TRANSLATION_LANGUAGE_AVAILABLE
 from aidants_connect_pico_cms.fields import MarkdownField
-from aidants_connect_pico_cms.utils import is_lang_rtl, render_markdown
-
-
-class MarkdownContentMixin(models.Model):
-    body = MarkdownField("Contenu")
-
-    def to_html(self):
-        return mark_safe(render_markdown(self.body))
-
-    class Meta:
-        abstract = True
+from aidants_connect_pico_cms.utils import is_lang_rtl
 
 
 class CmsContent(MarkdownContentMixin, models.Model):

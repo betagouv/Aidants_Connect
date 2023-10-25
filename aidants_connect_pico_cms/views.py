@@ -7,8 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import RedirectView, View
 from django.views.generic.detail import DetailView
 
+from aidants_connect_common.utils.render_markdown import render_markdown
 from aidants_connect_pico_cms.models import FaqCategory, FaqQuestion, Testimony
-from aidants_connect_pico_cms.utils import render_markdown
 
 
 class TestimoniesView(RedirectView):
