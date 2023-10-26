@@ -4,7 +4,7 @@ Bonjour {{ referent.get_full_name }},
 
 📚 Si vous avez besoin d’un rappel pour lier les cartes, retrouvez la procédure via ce lien : {{ EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE }}
 
-⚙️ Si vous rencontrez des difficultés techniques, contactez-nous à l’adresse suivante : {{ EMAIL_AIDANT_ACTIVATED_CONTACT_URL }}
+⚙️ Si vous rencontrez des difficultés techniques, contactez-nous à l’adresse suivante : {{ EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL }}
 
 
 À bientôt sur Aidants Connect !

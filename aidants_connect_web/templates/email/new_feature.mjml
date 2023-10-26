@@ -1,0 +1,18 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour {{ aidant.get_full_name }},</mj-text>
+    <mj-text>
+      La plateforme Aidants Connect s’améliore chaque jour en mettant en place de nouvelles fonctionnalités.
+    </mj-text>
+    <mj-text>
+      Rendez-vous dans votre espace pour découvrir les nouveautés Aidants Connect :
+    </mj-text>
+    <mj-button href="{{ espace_aidant }}">Découvrir</mj-button>
+  </mj-column>
+</mj-section>
+{% endblock %}
