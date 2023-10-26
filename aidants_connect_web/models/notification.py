@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from aidants_connect_common.models import MarkdownContentMixin
 from aidants_connect_web.constants import NotificationType
 
 from .aidant import Aidant
@@ -21,7 +22,7 @@ class NotificationQuerySet(models.QuerySet):
         )
 
 
-class Notification(models.Model):
+class Notification(MarkdownContentMixin):
     type = models.CharField(choices=NotificationType.choices)
     aidant = models.ForeignKey(
         Aidant, on_delete=models.CASCADE, related_name="notifications"
@@ -30,7 +31,6 @@ class Notification(models.Model):
     must_ack = models.BooleanField("Doit être acquité pour disparaître", default=True)
     auto_ack_date = models.DateField("Échéance", blank=True, null=True, default=None)
     was_ack = models.BooleanField("A été acquité", null=True, default=False)
-    body = models.TextField("Contenu de la notification", blank=True, default="")
 
     objects = NotificationQuerySet.as_manager()
 
