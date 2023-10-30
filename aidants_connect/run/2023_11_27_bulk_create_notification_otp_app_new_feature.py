@@ -1,4 +1,4 @@
-def __2023_10_30_bulk_create_notification_otp_app_new_feature():
+def __2023_11_27_bulk_create_notification_otp_app_new_feature():
     from django.templatetags.static import static
 
     from aidants_connect_common.utils.urls import build_url
