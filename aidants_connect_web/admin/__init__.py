@@ -14,6 +14,7 @@ from aidants_connect_web.models import (
     Journal,
     Mandat,
     Organisation,
+    ReboardingAidantStatistiques,
     Usager,
 )
 
@@ -29,6 +30,7 @@ from .statistiques import (
     AidantStatistiquesAdmin,
     AidantStatistiquesbyDepartmentAdmin,
     AidantStatistiquesbyRegionAdmin,
+    ReboardingAidantStatistiquesAdmin,
 )
 from .usager import UsagerAdmin
 
@@ -39,6 +41,7 @@ admin_site.register(AidantType)
 admin_site.register(AidantStatistiques, AidantStatistiquesAdmin)
 admin_site.register(AidantStatistiquesbyDepartment, AidantStatistiquesbyDepartmentAdmin)
 admin_site.register(AidantStatistiquesbyRegion, AidantStatistiquesbyRegionAdmin)
+admin_site.register(ReboardingAidantStatistiques, ReboardingAidantStatistiquesAdmin)
 
 admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)
