@@ -14,7 +14,7 @@
     </mj-text>
     <mj-text>
       📚 Si vous avez besoin d’un rappel pour lier les cartes,
-      <a href="{{ EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE }}">
+      <a href="{{ card_association_guide_url }}">
         retrouvez la procédure via ce lien.
       </a>
     </mj-text>
