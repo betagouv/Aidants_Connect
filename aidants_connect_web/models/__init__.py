@@ -15,6 +15,7 @@ from .stats import (
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
+    ReboardingAidantStatistiques,
 )
 from .usager import Usager, UsagerQuerySet
 from .utils import delete_mandats_and_clean_journal
@@ -38,6 +39,7 @@ __all__ = [
     Organisation,
     OrganisationType,
     Mandat,
+    ReboardingAidantStatistiques,
     Usager,
     UsagerQuerySet,
     default_connection_expiration_date,
