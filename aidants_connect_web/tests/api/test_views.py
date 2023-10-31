@@ -44,6 +44,12 @@ class OrganisationViewSetTests(APITestCase):
                         "pivot": orga.siret,
                         "nom": orga.name,
                         "commune": orga.city,
+                        "date_de_creation": (
+                            f"{orga.created_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ')}"
+                        ),
+                        "date_de_modification": (
+                            f"{orga.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ')}"
+                        ),
                         "code_postal": orga.zipcode,
                         "code_insee": orga.city_insee_code,
                         "adresse": orga.address,
@@ -87,6 +93,12 @@ class OrganisationViewSetTests(APITestCase):
                 ),
                 "nom": self.orgas[1].name,
                 "commune": self.orgas[1].city,
+                "date_de_creation": (
+                    f"{self.orgas[1].created_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ')}"
+                ),
+                "date_de_modification": (
+                    f"{self.orgas[1].updated_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ')}"
+                ),
                 "pivot": self.orgas[1].siret,
                 "code_postal": self.orgas[1].zipcode,
                 "code_insee": self.orgas[1].city_insee_code,
