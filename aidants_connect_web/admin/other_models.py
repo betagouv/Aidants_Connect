@@ -1,9 +1,6 @@
 import logging
 
-from django.contrib.admin import ModelAdmin, register
-
-from aidants_connect.admin import admin_site
-from aidants_connect_web.models import Notification
+from django.contrib.admin import ModelAdmin
 
 logger = logging.getLogger()
 
@@ -23,10 +20,3 @@ class ConnectionAdmin(ModelAdmin):
         "consent_request_id",
         "organisation__name",
     )
-
-
-@register(Notification, site=admin_site)
-class NotificationAdmin(ModelAdmin):
-    date_hierarchy = "date"
-    raw_id_fields = ("aidant",)
-    list_display = ("type", "aidant", "date", "auto_ack_date", "was_ack")
