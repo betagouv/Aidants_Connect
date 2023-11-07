@@ -22,8 +22,8 @@ from .aidant import AidantAdmin
 from .habilitation_request import HabilitationRequestAdmin
 from .journal import JournalAdmin
 from .mandat import MandatAdmin
+from .notification import NotificationAdmin  # noqa: F401
 from .organisation import OrganisationAdmin
-from .other_models import NotificationAdmin  # noqa
 from .other_models import ConnectionAdmin
 from .otp_device import CarteTOTPAdmin, StaticDeviceStaffAdmin, TOTPDeviceStaffAdmin
 from .statistiques import (

@@ -22,6 +22,7 @@ from aidants_connect_web.models import (
     Connection,
     HabilitationRequest,
     Mandat,
+    Notification,
     Organisation,
 )
 from aidants_connect_web.statistics import compute_all_statistics
@@ -375,3 +376,10 @@ def deactivate_warned_aidants(*, logger=None):
         email_one_aidant(aidant)
 
     logger.info(f"Deactivated {len(deactivable)} aidants")
+
+
+@shared_task
+def send_email_on_new_notification_task(notification: Notification):
+    from aidants_connect_web.signals import send_email_on_new_notification
+
+    send_email_on_new_notification(sender=None, instance=notification, created=True)
