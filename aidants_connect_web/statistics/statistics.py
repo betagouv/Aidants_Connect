@@ -10,8 +10,8 @@ from aidants_connect_common.utils.constants import (
 )
 from aidants_connect_habilitation.models import OrganisationRequest
 
-from .constants import HabilitationRequestStatuses
-from .models import (
+from ..constants import HabilitationRequestStatuses
+from ..models import (
     Aidant,
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
