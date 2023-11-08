@@ -18,7 +18,11 @@ logger = logging.getLogger()
 class NotificationQuerySet(models.QuerySet):
     def get_displayable_for_user(self, aidant: Aidant) -> Self:
         return self.filter(
-            Q(was_ack=False) ^ Q(auto_ack_date__gt=timezone.now()), aidant=aidant
+            (
+                (Q(must_ack=True) & Q(was_ack=False))
+                | Q(auto_ack_date__gt=timezone.now())
+            ),
+            aidant=aidant,
         )
 
 
@@ -30,7 +34,7 @@ class Notification(MarkdownContentMixin):
     date = models.DateField(auto_now_add=True)
     must_ack = models.BooleanField("Doit être acquité pour disparaître", default=True)
     auto_ack_date = models.DateField("Échéance", blank=True, null=True, default=None)
-    was_ack = models.BooleanField("A été acquité", null=True, default=False)
+    was_ack = models.BooleanField("A été acquité", default=False)
 
     objects = NotificationQuerySet.as_manager()
 
@@ -53,10 +57,10 @@ class Notification(MarkdownContentMixin):
         constraints = [
             models.CheckConstraint(
                 check=(
-                    # Must be aknowlegeable if it has to be aknowleged
-                    (Q(must_ack=False) ^ Q(was_ack__isnull=False))
+                    # Can't be manually acknowledged if manual ack is disabled
+                    ~(Q(must_ack=False) & Q(was_ack=True))
                     # Can't both have no expiration date and be not acknoledgeable
-                    & (Q(auto_ack_date__isnull=False) | Q(was_ack__isnull=False))
+                    & (Q(auto_ack_date__isnull=False) ^ Q(must_ack=True))
                 ),
                 name="must_ack_conditions",
             )
