@@ -2048,8 +2048,8 @@ class TestNotification(TestCase):
                 Notification.objects.create(
                     type=self.notification_type,
                     aidant=self.aidant,
-                    must_ack=True,
-                    was_ack=None,
+                    must_ack=False,
+                    was_ack=True,
                 )
         with transaction.atomic():
             with self.assertRaises(IntegrityError):
@@ -2058,25 +2058,16 @@ class TestNotification(TestCase):
                     aidant=self.aidant,
                     must_ack=False,
                     auto_ack_date=None,
-                    was_ack=None,
                 )
-        with transaction.atomic():
-            Notification.objects.create(
-                type=self.notification_type,
-                aidant=self.aidant,
-                must_ack=False,
-                auto_ack_date=date.today(),
-                was_ack=None,
-            )
 
         with transaction.atomic():
-            Notification.objects.create(
-                type=self.notification_type,
-                aidant=self.aidant,
-                must_ack=True,
-                auto_ack_date=date.today(),
-                was_ack=False,
-            )
+            with self.assertRaises(IntegrityError):
+                Notification.objects.create(
+                    type=self.notification_type,
+                    aidant=self.aidant,
+                    must_ack=True,
+                    auto_ack_date=date.today(),
+                )
 
         with transaction.atomic():
             Notification.objects.create(
@@ -2087,22 +2078,13 @@ class TestNotification(TestCase):
                 was_ack=False,
             )
 
-
-class NotificationTests(TestCase):
-    def test_constraints(self):
         with transaction.atomic():
-            self.assertRaises(
-                IntegrityError, NotificationFactory, must_ack=True, was_ack=None
-            )
-
-        with transaction.atomic():
-            self.assertRaises(
-                IntegrityError, NotificationFactory, must_ack=False, was_ack=False
-            )
-
-        with transaction.atomic():
-            self.assertRaises(
-                IntegrityError, NotificationFactory, auto_ack_date=None, was_ack=None
+            Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today(),
+                was_ack=False,
             )
 
     def test_mark_read(self):
@@ -2120,3 +2102,46 @@ class NotificationTests(TestCase):
         notification.mark_unread()
         notification.refresh_from_db()
         self.assertFalse(notification.was_ack)
+
+    def test_get_displayable_for_user(self):
+        with transaction.atomic():
+            self.notif_1 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=True,
+                auto_ack_date=None,
+                was_ack=False,
+            )
+            self.notif_2 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=True,
+                auto_ack_date=None,
+                was_ack=True,
+            )
+            self.notif_3 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today(),
+                was_ack=False,
+            )
+            self.notif_4 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today() + timedelta(days=1),
+                was_ack=False,
+            )
+            self.notif_5 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today() - timedelta(days=1),
+                was_ack=False,
+            )
+
+        self.assertEqual(
+            {self.notif_1, self.notif_4},
+            set(Notification.objects.get_displayable_for_user(self.aidant)),
+        )
