@@ -135,44 +135,44 @@ class ReboardingAidantStatistiques(models.Model):
     )
 
     connexions_before_reboarding = models.PositiveIntegerField(
-        "Nb connexion avant réembarquement"
+        "Nb connexion avant réembarquement", default=0
     )
 
     connexions_j30_after = models.PositiveIntegerField(
-        "Nb connexion J30 après réembarquement"
+        "Nb connexion J30 après réembarquement", default=0
     )
     connexions_j90_after = models.PositiveIntegerField(
-        "Nb connexion J90 après réembarquement"
+        "Nb connexion J90 après réembarquement", default=0
     )
 
     created_mandats_before_reboarding = models.PositiveIntegerField(
-        "Nb mandats créés avant réembarquement"
+        "Nb mandats créés avant réembarquement", default=0
     )
     created_mandats_j30_after = models.PositiveIntegerField(
-        "Nb mandats créés J30 après réembarquement"
+        "Nb mandats créés J30 après réembarquement", default=0
     )
     created_mandats_j90_after = models.PositiveIntegerField(
-        "Nb mandats créés J90 après réembarquement"
+        "Nb mandats créés J90 après réembarquement", default=0
     )
 
     demarches_before_reboarding = models.PositiveIntegerField(
-        "Nb démarches avant réembarquement"
+        "Nb démarches avant réembarquement", default=0
     )
     demarches_j30_after = models.PositiveIntegerField(
-        "Nb démarches J30 après réembarquement"
+        "Nb démarches J30 après réembarquement", default=0
     )
     demarches_j90_after = models.PositiveIntegerField(
-        "Nb démarches J90 après réembarquement"
+        "Nb démarches J90 après réembarquement", default=0
     )
 
     usagers_before_reboarding = models.PositiveIntegerField(
-        "Nb usagers accompagnés avant réembarquement"
+        "Nb usagers accompagnés avant réembarquement", default=0
     )
     usagers_j30_after = models.PositiveIntegerField(
-        "Nb usagers accompagnés J30 après réembarquement"
+        "Nb usagers accompagnés J30 après réembarquement", default=0
     )
     usagers_j90_after = models.PositiveIntegerField(
-        "Nb usagers accompagnés J90 après réembarquement"
+        "Nb usagers accompagnés J90 après réembarquement", default=0
     )
 
 

@@ -25,7 +25,10 @@ from aidants_connect_web.models import (
     Notification,
     Organisation,
 )
-from aidants_connect_web.statistics import compute_all_statistics
+from aidants_connect_web.statistics import (
+    compute_all_statistics,
+    compute_reboarding_statistics_and_synchro_grist,
+)
 
 
 @shared_task
@@ -258,6 +261,14 @@ def compute_aidants_statistics(*, logger=None):
 
     logger.info("Compute Aidants Stastistics...")
     compute_all_statistics()
+
+
+@shared_task
+def compute_reboarding_statistics_and_synchro_grist_task(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    logger.info("compute_reboarding_statistics_and_synchro_grist ...")
+    compute_reboarding_statistics_and_synchro_grist()
 
 
 @shared_task
