@@ -60,44 +60,9 @@ h3.home-section {
   margin-top: 5rem;
 }
 
-.aidant-home-services {
-  a {
-    font-size: 1.5em;
-    line-height: 1.3;
-    font-weight: bold;
-
-    &, &:visited {
-      text-decoration: none;
-      color: black;
-    }
-
-    &:hover {
-      background-color: #0053b3;
-      color: white;
-    }
-  }
-
-  .tile {
-    color: #000;
-    align-items: center;
-    background-color: colors.$light-grey-aidants;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 1rem;
-    transform: none;
-    transition: all .1s ease-in;
-    width: 100%;
-
-    &:hover {
-      transform: scale(1.03)
-    }
-
-    .icon {
-      height: 1em;
-      width: 1em;
-    }
-  }
+.fr-tile__pictogram {
+  font-size: 2.5rem;
+  width: auto;
 }
 
 // aidants_connect_web/espace_aidant/organisation.html
@@ -222,13 +187,6 @@ main a[href^="mailto:"] {
     img {
       filter: grayscale(100%)
     }
-
-    a {
-      cursor: not-allowed;
-      border-color: colors.$shadow-grey;
-      background-color: colors.$ac_mid_grey;
-      color: colors.$shadow-grey;
-    }
   }
 
   .shadowed {
@@ -236,10 +194,6 @@ main a[href^="mailto:"] {
     flex-direction: column;
     height: 100%;
     padding: 1rem;
-
-    * {
-      margin: auto;
-    }
 
     .icon-container {
       display: flex;
@@ -251,20 +205,11 @@ main a[href^="mailto:"] {
         height: 8rem;
       }
     }
-
-    a {
-      margin-bottom: 1rem;
-    }
   }
 }
 
 .otp-app-instructions {
-  a {
-    display: block;
-    margin: .5rem 0;
-
-    &:not(:hover) {
-      text-decoration: none;
-    }
+  p:not(:last-child) {
+    margin-bottom: .5rem;
   }
 }

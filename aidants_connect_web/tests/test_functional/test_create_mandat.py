@@ -71,7 +71,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, "#id_duree_short ~ label").click()
 
         # FranceConnect
-        fc_button = self.selenium.find_element(By.ID, "submit_button")
+        fc_button = self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect")
         fc_button.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
         fc_title = self.selenium.title
@@ -200,7 +200,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
 
         # FranceConnect
-        fc_button = self.selenium.find_element(By.ID, "submit_button")
+        fc_button = self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect")
         fc_button.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
@@ -344,7 +344,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "id_user_remote_contact_verified").click()
 
         # # Send recap mandate and go to second step
-        self.selenium.find_element(By.ID, "submit_button").click()
+        self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect").click()
         self.wait.until(self.path_matches("new_mandat_remote_second_step"))
 
         # # Send user consent request

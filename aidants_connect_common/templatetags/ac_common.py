@@ -44,9 +44,8 @@ def mailto_href(recipient: str, subject: str = "", body: str = ""):
 @register.simple_tag
 def mailto(recipient: str, link_text: str = "", subject: str = "", body: str = ""):
     link_text = link_text or recipient
-    return mark_safe(
-        f'<a href="{mailto_href(recipient, subject, body)}">{link_text}</a>'
-    )
+    href = mailto_href(recipient, subject, body)
+    return mark_safe(f'<a class="fr-link" href="{href}">{link_text}</a>')
 
 
 @register.simple_tag
@@ -185,3 +184,10 @@ def camel(value: str):
         splitted = [splitted[0], *[item.capitalize() for item in splitted[1:]]]
 
     return "".join(splitted)
+
+
+@register.filter("startswith")
+def startswith(text, starts):
+    if isinstance(text, str):
+        return text.startswith(starts)
+    return False

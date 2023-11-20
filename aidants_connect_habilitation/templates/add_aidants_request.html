@@ -24,7 +24,7 @@
         <span data-personnel-form-target="addAidantButtonContainer">
           <button
             id="add-aidant-btn"
-            class="primary"
+            class="fr-btn fr-btn--icon-left fr-icon-user-add-line"
             type="button"
             data-action="click->personnel-form#onAddAidantButtonClicked"
           >
@@ -44,11 +44,13 @@
       </section>
 
       <div class="button-box standalone">
-        <a class="button"
-           href="{% url 'habilitation_organisation_view' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+        <a
+          class="fr-btn fr-btn--secondary"
+           href="{% url 'habilitation_organisation_view' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+        >
           Revenir à l’étape précédente
         </a>
-        <button type="submit" class="primary">Ajouter les aidants à ma demande</button>
+        <button type="submit" class="fr-btn">Ajouter les aidants à ma demande</button>
       </div>
     </form>
 

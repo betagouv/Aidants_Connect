@@ -1,0 +1,41 @@
+{% load ac_common %}
+<li class="fr-nav__item">
+  <a
+    class="fr-nav__link"
+    target="_self"
+    href="{% url 'home_page' %}"
+    {% if view_name == 'home_page' %}aria-current="true"{% endif %}
+  >
+    Accueil
+  </a>
+</li>
+<li class="fr-nav__item">
+  <a
+    class="fr-nav__link"
+    target="_self"
+    href="{% url 'habilitation' %}"
+    {% if view_name|startswith:'habilitation' %}aria-current="true"{% endif %}
+  >
+    Habilitation
+  </a>
+</li>
+<li class="fr-nav__item">
+  <a
+    class="fr-nav__link"
+    target="_self"
+    href="{% url 'ressources' %}"
+    {% if view_name == 'ressources' %}aria-current="true"{% endif %}
+  >
+    Ressources
+  </a>
+</li>
+<li class="fr-nav__item">
+  <a
+    class="fr-nav__link"
+    target="_self"
+    href="{% url 'faq_generale' %}"
+    {% if view_name == 'faq_generale' %}aria-current="true"{% endif %}
+  >
+    Aide
+  </a>
+</li>

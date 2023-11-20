@@ -1,4 +1,4 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
 {% load static form_extras %}
 
@@ -11,12 +11,12 @@
         <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
       {% endfor %}
     {% endif %}
-    <form method="post">
+    <form class="fr-mt-8v" method="post">
       {% csrf_token %}
       <p>Vous vous apprêtez à supprimer l’application OTP du profil de {{ aidant.get_full_name }}.</p>
       <p>Confirmez-vous cette action ?</p>
-      <a href="{% url 'espace_responsable_home' %}" class="button">Annuler</a>
-      <input type="submit" class="button" value="Confirmer">
+      <a href="{% url 'espace_responsable_home' %}" class="fr-btn fr-btn--secondary">Annuler</a>
+      <input type="submit" class="fr-btn" value="Confirmer">
     </form>
   </div>
 {% endblock content %}

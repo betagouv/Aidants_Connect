@@ -22,7 +22,10 @@
       <ul class="grid cards structures">
         {% for org in organisations %}
           <li class="card">
-            <a href="{% url 'espace_responsable_organisation' organisation_id=org.id %}" class="card__content">
+            <a
+              href="{% url 'espace_responsable_organisation' organisation_id=org.id %}{{ fragment }}"
+              class="card__content"
+            >
               <h3>{{ org.name }}</h3>
               <p>
                 <span aria-hidden="true">📍</span>

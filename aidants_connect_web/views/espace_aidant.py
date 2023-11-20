@@ -10,9 +10,10 @@ from django.utils.decorators import method_decorator
 from django.views.generic import DetailView, FormView, TemplateView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
+from aidants_connect_web.constants import NotificationType
 from aidants_connect_web.decorators import aidant_logged_with_activity_required
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
-from aidants_connect_web.models import Aidant, Journal, Organisation
+from aidants_connect_web.models import Aidant, Journal, Notification, Organisation
 
 
 @method_decorator(login_required, name="dispatch")
@@ -24,6 +25,8 @@ class Home(TemplateView):
         return {
             **super().get_context_data(**kwargs),
             "aidant": user,
+            "notifications": Notification.objects.get_displayable_for_user(user),
+            "notification_type": NotificationType,
             "sos_href": mailto_href(
                 recipient="contact@aidantsconnect.beta.gouv.fr",
                 subject="sos",

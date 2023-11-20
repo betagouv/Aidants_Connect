@@ -32,13 +32,6 @@ svg.previews {
   flex-grow: 100;
 }
 
-main {
-  a[href] {
-    color: colors.$red-aidants;
-    font-weight: bold;
-  }
-}
-
 [hidden] {
   display: none !important;
 }
@@ -205,7 +198,7 @@ h3.h3-prime {
   }
 
   .button-box {
-    transform: translateY(4rem);
+    transform: translateY(3.5rem);
   }
 }
 
@@ -226,7 +219,7 @@ h3.h3-prime {
   }
 
   .button-box {
-    transform: translateY(3rem);
+    transform: translateY(2.5rem);
   }
 }
 
@@ -401,34 +394,31 @@ input[type=radio] {
 }
 
 button, .button {
-  background: #fff;
-  border: 1px solid colors.$red-aidants;
-  color: colors.$red-aidants;
-  cursor: pointer;
-  display: inline-block;
-  font-family: $font-stack;
-  font-size: 1rem;
-  font-weight: bold;
-  line-height: 1.3;
-  margin: 0;
-  padding: .75rem;
-  text-decoration: none;
-  vertical-align: baseline;
+  &:not(.fr-btn):not(.fr-connect) {
+    background: #fff;
+    border: 1px solid colors.$red-aidants;
+    color: colors.$red-aidants;
+    cursor: pointer;
+    display: inline-block;
+    font-family: $font-stack;
+    font-size: 1rem;
+    font-weight: bold;
+    line-height: 1.3;
+    margin: 0;
+    padding: .75rem;
+    text-decoration: none;
+    vertical-align: baseline;
 
-  &.primary {
-    background: colors.$red-aidants;
-    color: #fff;
+    &.primary {
+      background: colors.$red-aidants;
+      color: #fff;
+    }
+
+    &:focus-visible {
+      background: colors.$off-yellow-aidants;
+      color: colors.$dark-grey-aidants;
+    }
   }
-
-  &:focus-visible {
-    background: colors.$off-yellow-aidants;
-    color: colors.$dark-grey-aidants;
-  }
-}
-
-button a {
-  color: #fff !important;
-  text-decoration: none;
 }
 
 fieldset {
@@ -484,8 +474,12 @@ fieldset {
   display: flex;
   justify-content: space-between;
 
+  .fr-btn--secondary {
+    background-color: var(--background-default-grey);
+  }
+
   > :only-child {
-    margin-left: auto;
+    margin-left: auto !important;
   }
 
   &.standalone {
@@ -494,7 +488,7 @@ fieldset {
 }
 
 .shadowed .button-box {
-  transform: translateY(4rem);
+  transform: translateY(3.5rem);
 }
 
 .form-in-3-cols .shadowed .button-box {
@@ -644,17 +638,6 @@ fieldset {
     text-align: center;
     position: relative;
     transform: translateY(.5rem);
-
-    a {
-      text-decoration: none;
-      color: colors.$dark-grey-aidants;
-      font-weight: normal;
-
-      &:hover {
-        box-shadow: 0 .5rem 0 colors.$off-yellow-aidants;
-        color: colors.$red-aidants;
-      }
-    }
 
     &:after {
       content: "";
