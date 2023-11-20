@@ -124,7 +124,7 @@ class AidantResource(resources.ModelResource):
                 )
             carte_totp.aidant = instance
             carte_totp.save()
-            totp_device = carte_totp.createTOTPDevice(confirmed=True)
+            totp_device = carte_totp.get_or_create_totp_device(confirmed=True)
             totp_device.save()
 
 
@@ -313,6 +313,12 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
 
     display_mandates_count.short_description = "Nombre de mandats créés"
 
+    def has_otp_app(self, obj):
+        return obj.has_otp_app
+
+    has_otp_app.short_description = "Application OTP"
+    has_otp_app.boolean = True
+
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
@@ -340,6 +346,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "organisation",
         "display_mandates_count",
         "carte_totp",
+        "has_otp_app",
         "is_active",
         "can_create_mandats",
         "deactivation_warning_at",

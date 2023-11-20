@@ -22,9 +22,13 @@ from aidants_connect_web.models import (
     Connection,
     HabilitationRequest,
     Mandat,
+    Notification,
     Organisation,
 )
-from aidants_connect_web.statistics import compute_all_statistics
+from aidants_connect_web.statistics import (
+    compute_all_statistics,
+    compute_reboarding_statistics_and_synchro_grist,
+)
 
 
 @shared_task
@@ -260,6 +264,14 @@ def compute_aidants_statistics(*, logger=None):
 
 
 @shared_task
+def compute_reboarding_statistics_and_synchro_grist_task(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    logger.info("compute_reboarding_statistics_and_synchro_grist ...")
+    compute_reboarding_statistics_and_synchro_grist()
+
+
+@shared_task
 def email_welcome_aidant(aidant_email: str, *, logger=None):
     if not settings.FF_WELCOME_AIDANT:
         return
@@ -274,6 +286,9 @@ def email_welcome_aidant(aidant_email: str, *, logger=None):
                 settings.EMAIL_WELCOME_AIDANT_RESSOURCES_URL
             ),
             "EMAIL_WELCOME_AIDANT_FAQ_URL": settings.EMAIL_WELCOME_AIDANT_FAQ_URL,
+            "EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES": (
+                settings.EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES
+            ),
             "EMAIL_WELCOME_AIDANT_CONTACT_URL": (
                 settings.EMAIL_WELCOME_AIDANT_CONTACT_URL
             ),
@@ -305,7 +320,6 @@ def email_old_aidants(*, logger=None):
             {
                 "email_title": "Votre compte va être désactivé, réagissez !",
                 "user": a,
-                "cgu_url": build_url(reverse("cgu")),
                 "webinaire_sub_form": settings.WEBINAIRE_SUBFORM_URL,
             },
         )
@@ -373,3 +387,10 @@ def deactivate_warned_aidants(*, logger=None):
         email_one_aidant(aidant)
 
     logger.info(f"Deactivated {len(deactivable)} aidants")
+
+
+@shared_task
+def send_email_on_new_notification_task(notification: Notification):
+    from aidants_connect_web.signals import send_email_on_new_notification
+
+    send_email_on_new_notification(sender=None, instance=notification, created=True)

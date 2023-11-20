@@ -6,15 +6,14 @@ from typing import Collection, Optional
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.functional import cached_property
 
 from dateutil.relativedelta import relativedelta
-from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
 
+from ..constants import OTP_APP_DEVICE_NAME
 from .mandat import Autorisation, Mandat
 from .organisation import Organisation
 from .usager import Usager
@@ -82,9 +81,6 @@ class AidantManager(UserManager):
                 kwargs["username"] = email
 
         return super().create(**kwargs)
-
-
-aidants__organisations_changed = Signal()
 
 
 class AidantType(models.Model):
@@ -305,9 +301,7 @@ class Aidant(AbstractUser):
 
     @cached_property
     def has_otp_app(self) -> bool:
-        return self.totpdevice_set.filter(
-            name=TOTPDevice.APP_DEVICE_NAME % self.pk
-        ).exists()
+        return self.totpdevice_set.filter(name=OTP_APP_DEVICE_NAME % self.pk).exists()
 
     @cached_property
     def number_totp_card(self) -> str:
@@ -327,6 +321,8 @@ class Aidant(AbstractUser):
         if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
+
+        from aidants_connect_web.signals import aidants__organisations_changed
 
         aidants__organisations_changed.send(
             sender=self.__class__,
@@ -358,6 +354,8 @@ class Aidant(AbstractUser):
         if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
+
+        from aidants_connect_web.signals import aidants__organisations_changed
 
         aidants__organisations_changed.send(
             sender=self.__class__,

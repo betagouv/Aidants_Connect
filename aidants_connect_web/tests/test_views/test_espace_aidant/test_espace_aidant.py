@@ -6,7 +6,7 @@ from django.urls import resolve, reverse
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
-from aidants_connect_web.models import Journal
+from aidants_connect_web.models import Aidant, Journal
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
@@ -25,42 +25,111 @@ class EspaceAidantHomePageTests(TestCase):
         cls.aidant = AidantFactory()
 
     def test_anonymous_user_cannot_access_espace_aidant_view(self):
-        response = self.client.get("/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant_home"))
         self.assertRedirects(response, "/accounts/login/?next=/espace-aidant/")
 
     def test_espace_aidant_home_url_triggers_the_right_view(self):
-        found = resolve("/espace-aidant/")
-        self.assertEqual(found.func, espace_aidant.home)
+        found = resolve(reverse("espace_aidant_home"))
+        self.assertEqual(found.func.view_class, espace_aidant.Home)
 
     def test_espace_aidant_home_url_triggers_the_right_template(self):
         self.client.force_login(self.aidant)
-        response = self.client.get("/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant_home"))
         self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
+
+
+@tag("usagers")
+class ValidateCGU(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Riri has never validated any CGU
+        cls.aidant_riri: Aidant = AidantFactory(username="riri")
+        # Fifi has validated previous a previous CGU version
+        cls.aidant_fifi: Aidant = AidantFactory(
+            username="fifi", validated_cgu_version="0.1"
+        )
+        # Loulou is up to date
+        cls.aidant_loulou: Aidant = AidantFactory(
+            username="loulou", validated_cgu_version=settings.CGU_CURRENT_VERSION
+        )
+
+    def test_triggers_correct_view(self):
+        found = resolve(reverse("espace_aidant_cgu"))
+        self.assertEqual(found.func.view_class, espace_aidant.ValidateCGU)
+
+    def test_renders_correct_template(self):
+        self.client.force_login(self.aidant_riri)
+        response = self.client.get(reverse("espace_aidant_cgu"))
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_aidant/validate_cgu.html"
+        )
+
+    def test_must_accept_cgus(self):
+        self.client.force_login(self.aidant_riri)
+        response = self.client.post(reverse("espace_aidant_cgu"), {"agree": False})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "Ce champ est obligatoire.",
+            response.context_data["form"].errors["agree"][0],
+        )
+
+    def test_accepts_cgus(self):
+        self.client.force_login(self.aidant_riri)
+        self.assertIsNone(self.aidant_riri.validated_cgu_version)
+        response = self.client.post(reverse("espace_aidant_cgu"), {"agree": True})
+        self.assertIsNone(self.aidant_riri.validated_cgu_version)
+        self.assertRedirects(response, reverse("espace_aidant_home"))
+
+    def test_ask_to_validate_cgu_if_no_cgu_validated(self):
+        self.client.force_login(self.aidant_riri)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "valider les conditions générales d’utilisation",
+            response_content,
+            "CGU message is hidden, it should be visible",
+        )
+
+    def test_ask_to_validate_cgu_if_obsolete_cgu_validated(self):
+        self.client.force_login(self.aidant_fifi)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertIn(
+            "valider les conditions générales d’utilisation",
+            response_content,
+            "CGU message is hidden, it should be visible",
+        )
+
+    def test_dont_ask_to_validate_cgu_if_no_need(self):
+        self.client.force_login(self.aidant_loulou)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertNotIn(
+            "valider les conditions générales d’utilisation",
+            response_content,
+            "CGU message is shown, it should be hidden",
+        )
 
 
 @tag("usagers")
 class SwitchOrganisationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.url = "/espace-aidant/organisations/switch_main"
         cls.home_url = "/espace-aidant/"
-        cls.client = Client()
         cls.aidant = AidantFactory()
 
-    def create_aidant_with_two_organisations(self):
-        first_org = OrganisationFactory(name="First")
-        second_org = OrganisationFactory(name="Second")
-        aidant = AidantFactory(organisation=first_org)
-        aidant.organisations.set((first_org, second_org))
-        return aidant
+        cls.first_org = OrganisationFactory(name="First")
+        cls.second_org = OrganisationFactory(name="Second")
+        cls.aidant_with_orgs = AidantFactory(organisation=cls.first_org)
+        cls.aidant_with_orgs.organisations.set((cls.first_org, cls.second_org))
 
     def test_switch_url_triggers_the_right_view(self):
-        found = resolve(self.url)
-        self.assertEqual(found.func, espace_aidant.switch_main_organisation)
+        found = resolve(reverse("espace_aidant_switch_main_organisation"))
+        self.assertEqual(found.func.view_class, espace_aidant.SwitchMainOrganisation)
 
     def test_switch_url_triggers_the_right_template(self):
         self.client.force_login(self.aidant)
-        response = self.client.get(self.url)
+        response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_aidant/switch_main_organisation.html"
         )
@@ -77,19 +146,21 @@ class SwitchOrganisationTests(TestCase):
         self.assertContains(response, "Changer d'organisation")
 
     def test_aidant_can_switch_to_an_org_they_belong_to(self):
-        aidant = self.create_aidant_with_two_organisations()
-        orgas = aidant.organisations.all()
-        self.client.force_login(aidant)
+        orgas = self.aidant_with_orgs.organisations.all()
+        self.client.force_login(self.aidant_with_orgs)
         self.assertEqual(
             Journal.objects.filter(
                 action=JournalActionKeywords.SWITCH_ORGANISATION
             ).count(),
             0,
         )
-        response = self.client.post(self.url, {"organisation": orgas[1].id})
+        response = self.client.post(
+            reverse("espace_aidant_switch_main_organisation"),
+            {"organisation": orgas[1].id},
+        )
         self.assertRedirects(response, self.home_url, fetch_redirect_response=False)
-        aidant.refresh_from_db()
-        self.assertEqual(aidant.organisation.id, orgas[1].id)
+        self.aidant_with_orgs.refresh_from_db()
+        self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[1].id)
         self.assertEqual(
             Journal.objects.filter(
                 action=JournalActionKeywords.SWITCH_ORGANISATION
@@ -98,38 +169,40 @@ class SwitchOrganisationTests(TestCase):
         )
 
     def test_aidant_cannot_switch_to_an_unexisting_orga(self):
-        aidant = self.create_aidant_with_two_organisations()
-        orgas = aidant.organisations.all()
-        self.client.force_login(aidant)
+        orgas = self.aidant_with_orgs.organisations.all()
+        self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
-            self.url,
-            {
-                "organisation": 9876543,
-            },
+            reverse("espace_aidant_switch_main_organisation"),
+            {"organisation": 9876543},
         )
-        self.assertRedirects(response, self.url, fetch_redirect_response=False)
-        response = self.client.get(self.url)
+        self.assertRedirects(
+            response,
+            reverse("espace_aidant_switch_main_organisation"),
+            fetch_redirect_response=False,
+        )
+        response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
         self.assertContains(response, "Il est impossible")
-        aidant.refresh_from_db()
-        self.assertEqual(aidant.organisation.id, orgas[0].id)
+        self.aidant_with_orgs.refresh_from_db()
+        self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
 
     def test_aidant_cannot_switch_to_an_org_they_dont_belong(self):
-        aidant = self.create_aidant_with_two_organisations()
-        orgas = aidant.organisations.all()
+        orgas = self.aidant_with_orgs.organisations.all()
         unrelated_org = OrganisationFactory(name="Totally unrelated people")
-        self.client.force_login(aidant)
+        self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
-            self.url,
-            {
-                "organisation": unrelated_org.id,
-            },
+            reverse("espace_aidant_switch_main_organisation"),
+            {"organisation": unrelated_org.id},
         )
-        self.assertRedirects(response, self.url, fetch_redirect_response=False)
-        response = self.client.get(self.url)
+        self.assertRedirects(
+            response,
+            reverse("espace_aidant_switch_main_organisation"),
+            fetch_redirect_response=False,
+        )
+        response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
         self.assertContains(response, "Il est impossible")
         self.assertNotContains(response, unrelated_org.name)
-        aidant.refresh_from_db()
-        self.assertEqual(aidant.organisation.id, orgas[0].id)
+        self.aidant_with_orgs.refresh_from_db()
+        self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
 
 
 @tag("usagers")
@@ -198,50 +271,6 @@ class UsagersDetailsPageTests(TestCase):
         self.assertIn(
             reverse("renew_mandat", kwargs={"usager_id": self.usager.id}),
             response_content,
-        )
-
-
-@tag("responsable-structure")
-class InsistOnValidatingCGUsTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        # Riri has never validated any CGU
-        cls.aidant_riri = AidantFactory(username="riri")
-        # Fifi has validated previous a previous CGU version
-        cls.aidant_fifi = AidantFactory(username="fifi", validated_cgu_version="0.1")
-        # Loulou is up to date
-        cls.aidant_loulou = AidantFactory(
-            username="loulou", validated_cgu_version=settings.CGU_CURRENT_VERSION
-        )
-
-    def test_ask_to_validate_cgu_if_no_cgu_validated(self):
-        self.client.force_login(self.aidant_riri)
-        response = self.client.get("/espace-aidant/")
-        response_content = response.content.decode("utf-8")
-        self.assertIn(
-            "valider les conditions générales d’utilisation",
-            response_content,
-            "CGU message is hidden, it should be visible",
-        )
-
-    def test_ask_to_validate_cgu_if_obsolete_cgu_validated(self):
-        self.client.force_login(self.aidant_fifi)
-        response = self.client.get("/espace-aidant/")
-        response_content = response.content.decode("utf-8")
-        self.assertIn(
-            "valider les conditions générales d’utilisation",
-            response_content,
-            "CGU message is hidden, it should be visible",
-        )
-
-    def test_dont_ask_to_validate_cgu_if_no_need(self):
-        self.client.force_login(self.aidant_loulou)
-        response = self.client.get("/espace-aidant/")
-        response_content = response.content.decode("utf-8")
-        self.assertNotIn(
-            "valider les conditions générales d’utilisation",
-            response_content,
-            "CGU message is shown, it should be hidden",
         )
 
 

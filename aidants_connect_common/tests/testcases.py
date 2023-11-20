@@ -27,7 +27,11 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         super().setUpClass()
 
         firefox_options = FirefoxOptions()
+
         firefox_options.headless = settings.HEADLESS_FUNCTIONAL_TESTS
+        if settings.HEADLESS_FUNCTIONAL_TESTS:
+            firefox_options.add_argument("--headless")
+
         firefox_options.set_preference("javascript.enabled", cls.js)
 
         cls.selenium = WebDriver(options=firefox_options)

@@ -262,6 +262,15 @@ a.button-outline, a.button-outline:active, a.button-outline:focus, a.button-outl
     font-family: Evolventa,Trebuchet MS,sans-serif;
 }
 
+.input-container {
+  input:not(:checked) ~ label:before {
+    content: url("/static/images/icons/tick-unchecked.svg");
+  }
+  input:checked ~ label:before {
+    content: url("/static/images/icons/tick-checked.svg");
+  }
+}
+
 select {
     /* cancel "appearance:none from template because AC's CSP prevents SVG background from display: */
     -webkit-appearance: auto;

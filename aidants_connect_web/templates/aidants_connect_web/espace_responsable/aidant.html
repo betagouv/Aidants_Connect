@@ -60,20 +60,20 @@
                 <legend>
                   Cochez la ou les organisations auxquelles rattacher {{ aidant }}.
                   Cela lui permettra de créer des mandats en leur nom.
-                  {% if orga_form.errors.organisations %}
-                    {{ orga_form.errors.organisations }}
+                  {% if form.errors.organisations %}
+                    {{ form.errors.organisations }}
                   {% endif %}
                 </legend>
                 <ul class="grid checkbox-list small-checkboxes">
-                  {% for value, label in orga_form.organisations.field.choices %}
-                    <li class="tile">
+                  {% for value, label in form.organisations.field.choices %}
+                    <li class="tile input-container">
                       <input
                           type="checkbox"
                           class="sr-only"
                           name="organisations"
                           value="{{ value }}"
                           id="org_{{ value }}"
-                          {% if value in orga_form.organisations.value or value in orga_form.organisations.initial %}
+                          {% if value in form.organisations.value or value in form.organisations.initial %}
                           checked
                           {% endif %}
                       >

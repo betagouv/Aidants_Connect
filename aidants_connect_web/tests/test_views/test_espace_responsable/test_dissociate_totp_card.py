@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.models import CarteTOTP, Journal
+from aidants_connect_web.models import Aidant, CarteTOTP, Journal
 from aidants_connect_web.tests.factories import AidantFactory, CarteTOTPFactory
 
 
@@ -14,11 +14,11 @@ class DissociateCarteTOTPTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         # Create one référent : Tom
-        cls.responsable_tom = AidantFactory(username="tom@tom.fr")
+        cls.responsable_tom: Aidant = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.org_id = cls.responsable_tom.organisation.id
         # Create one aidant : Tim
-        cls.aidant_tim = AidantFactory(
+        cls.aidant_tim: Aidant = AidantFactory(
             username="tim@tim.fr",
             organisation=cls.responsable_tom.organisation,
             first_name="Tim",
@@ -34,14 +34,7 @@ class DissociateCarteTOTPTests(TestCase):
         )
 
     def create_device_for_tim(self, confirmed=True):
-        self.device = TOTPDevice(
-            tolerance=30,
-            key=self.carte.seed,
-            user=self.aidant_tim,
-            step=60,
-            confirmed=confirmed,
-        )
-        self.device.save()
+        self.device = self.aidant_tim.carte_totp.get_or_create_totp_device()
 
     def do_the_checks(self):
         # Submit post and check redirection is correct

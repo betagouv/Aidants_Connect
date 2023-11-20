@@ -20,6 +20,12 @@ class OrganisationSerializer(serializers.HyperlinkedModelSerializer):
         model_field=_organisation_meta.get_field("address")
     )
     service = serializers.SerializerMethodField()
+    date_de_creation = serializers.ModelField(
+        model_field=_organisation_meta.get_field("created_at")
+    )
+    date_de_modification = serializers.ModelField(
+        model_field=_organisation_meta.get_field("updated_at")
+    )
 
     def get_service(self, _):
         return "Réaliser des démarches administratives avec un accompagnement"
@@ -36,5 +42,7 @@ class OrganisationSerializer(serializers.HyperlinkedModelSerializer):
             "code_insee",
             "adresse",
             "service",
+            "date_de_creation",
+            "date_de_modification",
         ]
         extra_kwargs = {"url": {"lookup_field": "uuid"}}

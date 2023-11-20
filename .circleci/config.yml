@@ -9,7 +9,7 @@ orbs:
 parameters:
   python-img-tag:
     type: string
-    default: "3.11-browsers"
+    default: "3.11.4-browsers"
   db-img-tag:
     type: string
     default: "12.12"

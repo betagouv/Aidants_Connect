@@ -1,6 +1,6 @@
 from django.test import TestCase, tag
 from django.test.client import Client
-from django.urls import resolve
+from django.urls import resolve, reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
@@ -66,7 +66,7 @@ class EspaceResponsableHomePageTests(TestCase):
 
     def test_espace_responsable_home_url_triggers_the_right_view(self):
         found = resolve("/espace-responsable/")
-        self.assertEqual(found.func, espace_responsable.home)
+        self.assertEqual(found.func.view_class, espace_responsable.Home)
 
     def test_espace_responsable_home_url_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
@@ -178,7 +178,7 @@ class EspaceResponsableAidantPage(TestCase):
     def test_espace_responsable_aidant_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
         found = resolve(self.aidant_tim_url)
-        self.assertEqual(found.func, espace_responsable.aidant)
+        self.assertEqual(found.func.view_class, espace_responsable.AidantView)
 
     def test_espace_responsable_aidant_url_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
@@ -340,7 +340,9 @@ class EspaceResponsableAddAidant(TestCase):
     def test_add_aidant_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
         found = resolve(self.add_aidant_url)
-        self.assertEqual(found.func, espace_responsable.new_habilitation_request)
+        self.assertEqual(
+            found.func.view_class, espace_responsable.NewHabilitationRequest
+        )
 
     def test_add_aidant_url_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
@@ -448,20 +450,33 @@ class DesignationOfAnotherResponsable(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.orga = OrganisationFactory()
-        responsable = AidantFactory(organisation=cls.orga)
-        responsable.responsable_de.add(cls.orga)
-        cls.respo = responsable
-        cls.url = f"/espace-responsable/organisation/{cls.orga.id}/responsables/"
-        cls.orga_url = f"/espace-responsable/organisation/{cls.orga.id}/"
+        cls.respo = AidantFactory(organisation=cls.orga)
+        cls.respo.responsable_de.add(cls.orga)
+        cls.orga2 = OrganisationFactory()
 
-    def _create_two_aidantes(self):
-        self.aidante_maxine = AidantFactory(organisation=self.orga)
-        self.aidante_ariane = AidantFactory()
-        self.aidante_ariane.organisations.add(self.orga)
+        cls.respo_without_aidants = AidantFactory()
+        cls.respo_without_aidants.responsable_de.add(
+            cls.respo_without_aidants.organisation
+        )
+
+        cls.url = reverse(
+            "espace_responsable_organisation_responsables",
+            kwargs={"organisation_id": cls.orga.pk},
+        )
+        cls.orga_url = reverse(
+            "espace_responsable_organisation",
+            kwargs={"organisation_id": cls.orga.pk},
+        )
+
+        cls.aidante_maxine = AidantFactory(organisation=cls.orga)
+        cls.aidante_ariane = AidantFactory()
+        cls.aidante_ariane.organisations.add(cls.orga)
 
     def test_url_triggers_the_right_view(self):
         found = resolve(self.url)
-        self.assertEqual(found.func, espace_responsable.organisation_responsables)
+        self.assertEqual(
+            found.func.view_class, espace_responsable.OrganisationResponsables
+        )
 
     def test_url_triggers_the_right_template(self):
         self.client.force_login(self.respo)
@@ -470,19 +485,32 @@ class DesignationOfAnotherResponsable(TestCase):
             response, "aidants_connect_web/espace_responsable/responsables.html"
         )
 
-    def test_link_is_hidden_if_there_is_no_aidant_to_become_responsable(self):
+    def test_404_on_foreign_organisation(self):
         self.client.force_login(self.respo)
-        response = self.client.get(self.orga_url)
+        response = self.client.get(
+            reverse(
+                "espace_responsable_organisation_responsables",
+                kwargs={"organisation_id": self.orga2.pk},
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_link_is_hidden_if_there_is_no_aidant_to_become_responsable(self):
+        self.client.force_login(self.respo_without_aidants)
+        response = self.client.get(
+            reverse(
+                "espace_responsable_organisation_responsables",
+                kwargs={"organisation_id": self.respo_without_aidants.organisation.pk},
+            )
+        )
         self.assertNotContains(response, "Désigner un ou une référente")
 
     def test_link_is_visible_if_there_is_an_aidant_to_become_responsable(self):
-        self._create_two_aidantes()
         self.client.force_login(self.respo)
         response = self.client.get(self.orga_url)
         self.assertContains(response, "Désigner un ou une référente")
 
     def test_current_aidant_can_become_responsable(self):
-        self._create_two_aidantes()
         self.client.force_login(self.respo)
         self.assertFalse(self.aidante_maxine.is_responsable_structure())
         self.client.post(self.url, data={"candidate": self.aidante_maxine.id})
@@ -491,7 +519,6 @@ class DesignationOfAnotherResponsable(TestCase):
         self.assertIn(self.orga, self.aidante_maxine.responsable_de.all())
 
     def test_aidant_can_become_responsable(self):
-        self._create_two_aidantes()
         self.client.force_login(self.respo)
         self.assertFalse(self.aidante_ariane.is_responsable_structure())
         self.client.post(self.url, data={"candidate": self.aidante_ariane.id})
