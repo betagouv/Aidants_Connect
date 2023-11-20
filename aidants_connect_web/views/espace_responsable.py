@@ -95,20 +95,23 @@ class OrganisationView(DetailView):
         return self.render_to_response(context)
 
     def get_organisation_context_data(self):
-        organisation_active_responsables = [
-            self.aidant,
-            *(
-                self.organisation.responsables.exclude(pk=self.aidant.pk)
-                .filter(is_active=True)
-                .order_by("last_name")
-                .prefetch_related("carte_totp")
-            ),
-        ]
-        organisation_active_aidants = (
-            self.organisation.aidants_not_responsables.filter(is_active=True)
+        referents_qs = (
+            self.organisation.responsables.exclude(pk=self.aidant.pk)
             .order_by("last_name")
             .prefetch_related("carte_totp")
         )
+        organisation_active_referents = [
+            self.aidant,
+            *referents_qs.filter(is_active=True),
+        ]
+        organisation_inactive_referents = referents_qs.filter(is_active=False)
+
+        aidantq_qs = self.organisation.aidants_not_responsables.order_by(
+            "last_name"
+        ).prefetch_related("carte_totp")
+
+        organisation_active_aidants = aidantq_qs.filter(is_active=True)
+        organisation_inactive_aidants = aidantq_qs.filter(is_active=False)
 
         organisation_habilitation_requests = (
             self.organisation.habilitation_requests.exclude(
@@ -116,18 +119,13 @@ class OrganisationView(DetailView):
             ).order_by("status", "last_name")
         )
 
-        organisation_inactive_aidants = (
-            self.organisation.aidants_not_responsables.filter(is_active=False)
-            .order_by("last_name")
-            .prefetch_related("carte_totp")
-        )
-
         return {
             "responsable": self.aidant,
-            "organisation_active_responsables": organisation_active_responsables,
+            "organisation_active_referents": organisation_active_referents,
+            "organisation_inactive_referents": organisation_inactive_referents,
             "organisation_active_aidants": organisation_active_aidants,
-            "organisation_habilitation_requests": organisation_habilitation_requests,
             "organisation_inactive_aidants": organisation_inactive_aidants,
+            "organisation_habilitation_requests": organisation_habilitation_requests,
             "FF_OTP_APP": settings.FF_OTP_APP and self.aidant.ff_otp_app,
         }
 

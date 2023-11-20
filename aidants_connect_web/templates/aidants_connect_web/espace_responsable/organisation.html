@@ -60,9 +60,9 @@
       </span>
     </h2>
 
-    {% if organisation_active_responsables %}
+    {% if organisation_active_referents %}
       <h3>Référents</h3>
-      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_responsables table_class="shadowed blue-green" %}
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_referents table_class="shadowed blue-green" %}
     {% endif %}
 
     {% if organisation_active_aidants %}
@@ -132,6 +132,11 @@
         {% endfor %}
         </tbody>
       </table>
+    {% endif %}
+
+    {% if organisation_inactive_referents %}
+      <h3>Référents désactivés</h3>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_referents table_class="shadowed grey" %}
     {% endif %}
 
     {% if organisation_inactive_aidants %}
