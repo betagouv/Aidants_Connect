@@ -1,0 +1,14 @@
+Bonjour {{ referent.get_full_name }},
+
+👏 {{ aidant.get_full_name }} a finalisé sa formation Aidants Connect. Vous pouvez lui attribuer une carte physique, génératrice de code, ou une carte numérique, sous la forme d’une application mobile, depuis votre espace référent. Il pourra ensuite réaliser ses premiers mandats et accompagner ses premiers usagers avec Aidants Connect.
+
+📚 Si vous avez besoin d’un rappel pour lier les cartes, retrouvez la procédure via ce lien : {{ EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE }}
+
+⚙️ Si vous rencontrez des difficultés techniques, contactez-nous à l’adresse suivante : {{ EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL }}
+
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Facilement « faire pour le compte de » en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr

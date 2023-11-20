@@ -2,7 +2,7 @@ Bonjour {{ user.get_full_name }},
 
 Suite à notre relance du mois dernier, comme annoncé, votre compte a été désactivé pour des raisons de sécurité, conformément aux CGU d’Aidants Connect ({{ cgu_url }}).
 
-Cette désactivation demeure temporaire. Si vous souhaitez réactiver votre compte, nous vous invitons à nous contacter à l’adresse suivante : contact@aidantsconnect.beta.gouv.fr
+Si vous souhaitez réactiver votre compte, nous vous invitons à nous contacter à l’adresse suivante : contact@aidantsconnect.beta.gouv.fr
 Nous pourrons ainsi réactiver votre compte, afin que vous puissiez y accéder à nouveau.
 
 

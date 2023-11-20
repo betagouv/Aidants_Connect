@@ -82,7 +82,7 @@
 
 
   {# Video #}
-  <div class="fr-container testimony-container">
+  <div class="fr-container hyperliens-container">
     <div class="fr-grid-row">
       <section class="hyperliens-video shadowed margin-top-1rem">
         <iframe
@@ -105,6 +105,48 @@
       </section>
     </div>
   </div>
+
+  {% if testimonies|length > 0 %}
+    <div class="fr-container testimonies-container margin-top-2rem">
+      {% for testimony in testimonies %}
+        <section class="testimony-container">
+          <div class="shadowed">
+            <img
+              class="testimony-profile-picture"
+              src="{{ testimony.profile_picture }}"
+              alt="Portrait de {{ testimony.name }}"
+              width="150"
+              height="150"
+            />
+            <div class="infos">
+              <div class="person-name">{{ testimony.name }}</div>
+              <div class="person-job">{{ testimony.job }}</div>
+              <div class="person-quote">« {{ testimony.quote }} »</div>
+              <a class="button primary" href="{{ testimony.get_absolute_url }}">Lire la suite du témoignage</a>
+            </div>
+          </div>
+        </section>
+      {% endfor %}
+      {% if has_more_testimonies %}
+        <section class="testimony-container">
+          <div class="shadowed">
+            <img
+              class="testimony-profile-picture"
+              src="{% static 'images/more-testimonies.png' %}"
+              alt=""
+              width="150"
+              height="150"
+            />
+            <div class="infos">
+              <div class="person-name">Plus de témoigagnes…</div>
+              <div>Aidants Connect a aidé vos homologues dans leur démarche d’accompagnement</div>
+              <a class="button primary" href="{% url 'temoignages' %}">Voir tous les témoignages</a>
+            </div>
+          </div>
+        </section>
+      {% endif %}
+    </div>
+  {% endif %}
 
 <div class="fr-container contact-container">
   <div class="fr-grid-row">

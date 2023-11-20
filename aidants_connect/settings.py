@@ -384,7 +384,7 @@ LOWER_TOTP_TOLERANCE_ON_LOGIN = getenv_bool("LOWER_TOTP_TOLERANCE_ON_LOGIN", Tru
 
 # Emails
 EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+    "EMAIL_BACKEND", "aidants_connect.email_backend.LoggedEmailBackend"
 )
 
 # # if file based email backend is used (debug)
@@ -647,6 +647,10 @@ EMAIL_WELCOME_AIDANT_RESSOURCES_URL = os.getenv(
 EMAIL_WELCOME_AIDANT_FAQ_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_FAQ_URL", "https://aidantsconnect.beta.gouv.fr/faq/"
 )
+EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES = os.getenv(
+    "EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES",
+    "https://www.etsijaccompagnais.fr/ressources-des-aidants",
+)
 EMAIL_WELCOME_AIDANT_CONTACT_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_CONTACT_URL", "contact@aidantsconnect.beta.gouv.fr"
 )
@@ -665,6 +669,23 @@ EMAIL_AIDANT_DEACTIVATION_NOTICE_SUBJECT = os.getenv(
 )
 EMAIL_AIDANT_DEACTIVATION_NOTICE_FROM = os.getenv(
     "EMAIL_AIDANT_DEACTIVATION_NOTICE_FROM", SUPPORT_EMAIL
+)
+
+EMAIL_AIDANT_ACTIVATED_SUBJECT = os.getenv(
+    "EMAIL_AIDANT_ACTIVATED_SUBJECT",
+    "Aidants Connect — Le compte de {aidant_name} vient d’être activé !",
+)
+EMAIL_AIDANT_ACTIVATED_FROM = os.getenv("EMAIL_AIDANT_ACTIVATED_FROM", SUPPORT_EMAIL)
+EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL = os.getenv(
+    "EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL", SUPPORT_EMAIL
+)
+
+EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_FROM = os.getenv(
+    "EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_FROM", SUPPORT_EMAIL
+)
+EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_SUBJECT = os.getenv(
+    "EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_SUBJECT",
+    "De nouvelles fonctionnalités vous attendent dans votre espace !",
 )
 
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
@@ -742,6 +763,18 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
 }
+
+try:
+    DRIFTED_OTP_CARD_TOLERANCE = int(os.getenv("DRIFTED_OTP_CARD_TOLERANCE", 30))
+except ValueError:
+    DRIFTED_OTP_CARD_TOLERANCE = 20
+
+
+GRIST_URL_SERVER = os.getenv("GRIST_URL_SERVER", "")
+GRIST_DOCUMENT_ID = os.getenv("GRIST_DOCUMENT_ID", "")
+GRIST_REBORDING_TABLE_ID = os.getenv("GRIST_REBORDING_TABLE_ID", "")
+GRIST_API_KEY = os.getenv("GRIST_API_KEY", "")
+
 
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)

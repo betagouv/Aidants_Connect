@@ -27,10 +27,11 @@ from aidants_connect_common.utils.constants import (
     AuthorizationDurationChoices,
     AuthorizationDurations,
 )
+from aidants_connect_common.utils.render_markdown import render_markdown
 from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
 from aidants_connect_pico_cms.models import MandateTranslation
-from aidants_connect_pico_cms.utils import is_lang_rtl, render_markdown
+from aidants_connect_pico_cms.utils import is_lang_rtl
 from aidants_connect_web.decorators import (
     aidant_logged_required,
     aidant_logged_with_activity_required,

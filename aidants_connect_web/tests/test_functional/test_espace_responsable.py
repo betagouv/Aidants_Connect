@@ -76,35 +76,60 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         self.login_aidant(self.aidant_responsable)
         self.wait.until(url_matches(f"^.+{root_path}$"))
 
-        # Can't link card to inactive aidants
+        # Can't add or validate card for inactive aidant with card; can remove card
+        self.open_live_url(
+            reverse(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_inactive_with_card.id},
+            )
+        )
         self.assertElementNotFound(
             By.ID, f"add-totp-card-to-aidant-{self.aidant_inactive_with_card.pk}"
         )
         self.assertElementNotFound(
+            By.ID, f"validate-totp-card-for-aidant-{self.aidant_inactive_with_card.pk}"
+        )
+        self.selenium.find_element(
+            By.ID, f"remove-totp-card-from-aidant-{self.aidant_inactive_with_card.pk}"
+        )
+
+        # Can't add or validate card or remove card for inactive aidant without card
+        # Add button is displayed disabled in this case
+        self.open_live_url(
+            reverse(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_inactive_without_card.id},
+            )
+        )
+        deactivated_add_button = self.selenium.find_element(
             By.ID, f"add-totp-card-to-aidant-{self.aidant_inactive_without_card.pk}"
+        )
+        self.assertEqual("", deactivated_add_button.get_attribute("href"))
+        self.assertElementNotFound(
+            By.ID,
+            f"validate-totp-card-for-aidant-{self.aidant_inactive_without_card.pk}",
+        )
+        self.assertElementNotFound(
+            By.ID,
+            f"remove-totp-card-from-aidant-{self.aidant_inactive_without_card.pk}",
+        )
+
+        # Can unlink card for inactive aidant inactive with confirmed card
+        # # Can't add or verify
+        self.open_live_url(
+            reverse(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_inactive_with_card_confirmed.id},
+            )
         )
         self.assertElementNotFound(
             By.ID,
             f"add-totp-card-to-aidant-{self.aidant_inactive_with_card_confirmed.pk}",
         )
-
-        # Can't validate card for inactive aidants
-        self.assertElementNotFound(
-            By.ID, f"validate-totp-card-for-aidant-{self.aidant_inactive_with_card.pk}"
-        )
-        self.assertElementNotFound(
-            By.ID,
-            "validate-totp-card-for-aidant-" f"{self.aidant_inactive_without_card.pk}",
-        )
         self.assertElementNotFound(
             By.ID,
             "validate-totp-card-for-aidant-"
             f"{self.aidant_inactive_with_card_confirmed.pk}",
-        )
-
-        # Can unlink card from inactive aidant
-        self.selenium.find_element(
-            By.ID, f"remove-totp-card-from-aidant-{self.aidant_inactive_with_card.pk}"
         )
         self.selenium.find_element(
             By.ID,
@@ -112,38 +137,61 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             f"{self.aidant_inactive_with_card_confirmed.pk}",
         )
 
-        # Can't unlink card from aidants without card
-        self.assertElementNotFound(
-            By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_without_card.pk}"
+        # Can add card for active aidants without card, can't remove or validate
+        self.open_live_url(
+            reverse(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_active_without_card.id},
+            )
         )
-        self.assertElementNotFound(
-            By.ID,
-            f"remove-totp-card-from-aidant-{self.aidant_inactive_without_card.pk}",
-        )
-
-        # Can add card to active aidant without card
         self.selenium.find_element(
             By.ID, f"add-totp-card-to-aidant-{self.aidant_active_without_card.pk}"
         )
         self.assertElementNotFound(
+            By.ID,
+            f"validate-totp-card-for-aidant-{self.aidant_active_without_card.pk}",
+        )
+        self.assertElementNotFound(
+            By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_without_card.pk}"
+        )
+
+        # Can verify and remove card for aidants with unconfirmed card, can't add
+        self.open_live_url(
+            reverse(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_active_with_card.id},
+            )
+        )
+        self.assertElementNotFound(
             By.ID, f"add-totp-card-to-aidant-{self.aidant_active_with_card.pk}"
+        )
+        self.selenium.find_element(
+            By.ID,
+            f"validate-totp-card-for-aidant-{self.aidant_active_with_card.pk}",
+        )
+        self.selenium.find_element(
+            By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_with_card.pk}"
+        )
+
+        # Can unlink card for aidants with confirmed card, can't add or validate
+        self.open_live_url(
+            reverse(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_active_with_card_confirmed.id},
+            )
         )
         self.assertElementNotFound(
             By.ID,
             f"add-totp-card-to-aidant-{self.aidant_active_with_card_confirmed.pk}",
         )
-
-        # Can verify card for active aidant with card
-        self.selenium.find_element(
-            By.ID, f"validate-totp-card-for-aidant-{self.aidant_active_with_card.pk}"
-        )
-        self.assertElementNotFound(
-            By.ID, f"validate-totp-card-for-aidant-{self.aidant_active_without_card.pk}"
-        )
         self.assertElementNotFound(
             By.ID,
             "validate-totp-card-for-aidant-"
             f"{self.aidant_active_with_card_confirmed.pk}",
+        )
+        self.selenium.find_element(
+            By.ID,
+            f"remove-totp-card-from-aidant-{self.aidant_active_with_card_confirmed.pk}",
         )
 
     def test_grouped_autorisations(self):
@@ -230,11 +278,22 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
 
         # First aidant: disabled
         self.assertIsNotNone(self.aidant_inactive_with_card.carte_totp)
+
+        self.selenium.find_element(
+            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_inactive_with_card.pk}"
+        ).click()
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_inactive_with_card.id},
+            )
+        )
+
         button1 = self.selenium.find_element(
             By.ID,
             f"remove-totp-card-from-aidant-{ self.aidant_inactive_with_card.pk }",
         )
-        self.assertEqual("Délier la carte", button1.text)
+        self.assertEqual("Délier la carte physique", button1.text)
 
         button1.click()
         self.wait.until(
@@ -255,6 +314,16 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             )
         )
 
+        # Return on manage cards page
+        self.selenium.find_element(
+            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_inactive_with_card.pk}"
+        ).click()
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_inactive_with_card.id},
+            )
+        )
         self.assertElementNotFound(
             By.ID, f"remove-totp-card-from-aidant-{self.aidant_inactive_with_card.pk}"
         )
@@ -263,11 +332,26 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         with self.assertRaises(Aidant.carte_totp.RelatedObjectDoesNotExist):
             self.aidant_inactive_with_card.carte_totp
 
+        self.open_live_url(
+            reverse(
+                "espace_responsable_organisation",
+                kwargs={"organisation_id": self.aidant_responsable.organisation.pk},
+            )
+        )
+        self.selenium.find_element(
+            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
+        ).click()
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_active_with_card.id},
+            )
+        )
         self.assertIsNotNone(self.aidant_active_with_card.carte_totp)
         button2 = self.selenium.find_element(
             By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_with_card.pk}"
         )
-        self.assertEqual("Délier la carte", button2.text)
+        self.assertEqual("Délier la carte physique", button2.text)
 
         # First aidant: active
         button2.click()
@@ -289,6 +373,15 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             )
         )
 
+        self.selenium.find_element(
+            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
+        ).click()
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_active_with_card.id},
+            )
+        )
         self.assertElementNotFound(
             By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_with_card.pk}"
         )

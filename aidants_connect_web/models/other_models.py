@@ -106,10 +106,9 @@ class HabilitationRequest(models.Model):
             self.status = HabilitationRequestStatuses.STATUS_VALIDATED
             self.save()
 
-        # Prevent circular import
-        from aidants_connect_web.tasks import email_welcome_aidant
+        from aidants_connect_web.signals import aidant_activated
 
-        email_welcome_aidant(aidant.email, logger=logger)
+        aidant_activated.send(self.__class__, aidant=aidant)
 
         return True
 

@@ -206,7 +206,7 @@ a.btn-homepage, a.btn-homepage:visited {
 }
 
 .contact-col {
-  margin-top : 6rem;
+  margin-top: 6rem;
 }
 
 .question-div {
@@ -320,7 +320,64 @@ footer {
   .aidants-btn-col {
     margin-top: 2rem;
   }
+
   .hero-logo {
     width: 18.75rem;
   }
+}
+
+.testimonies-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36rem, 1fr));
+  grid-gap: 1.5rem;
+  justify-items: center;
+  justify-content: space-evenly;
+  margin-bottom: 2rem;
+}
+
+.testimony-container {
+  width: 100%;
+}
+
+.testimony-container .shadowed {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 2rem;
+  margin-left: 75px;
+  padding: 2rem;
+  position: relative;
+}
+
+.testimony-container .shadowed .testimony-profile-picture {
+  margin-left: calc(-2rem - 75px);
+  margin-right: 2rem;
+}
+
+.testimony-container .shadowed .infos {
+  align-self: stretch;
+  flex-grow: 1;
+}
+
+.testimony-container .shadowed .person-name {
+  color: #5770BE;
+  font-size: 1.5rem;
+  font-style: oblique;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.testimony-container .shadowed .person-job {
+  font-style: oblique;
+  color: #EF4056;
+  margin-bottom: 1rem;
+}
+
+.testimony-container .shadowed .person-quote {
+  font-style: oblique;
+}
+
+.testimony-container a.button {
+  position: absolute;
+  bottom: -2rem;
+  right: 2rem;
 }

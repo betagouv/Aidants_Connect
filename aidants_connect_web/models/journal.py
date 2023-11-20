@@ -116,6 +116,12 @@ class JournalQuerySet(models.QuerySet):
             ],
         )
 
+    def find_card_association_logs_for_user(self, user: Aidant):
+        return self.filter(
+            additional_information__contains=f"aidant.id = {user.id}",
+            action=JournalActionKeywords.CARD_ASSOCIATION,
+        )
+
 
 class Journal(models.Model):
     INFO_REMOTE_MANDAT = "Mandat conclu à distance pendant l'état d'urgence sanitaire (23 mars 2020)"  # noqa

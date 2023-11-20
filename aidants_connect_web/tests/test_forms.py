@@ -8,7 +8,10 @@ from django.test.client import Client
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.constants import RemoteConsentMethodChoices
+from aidants_connect_web.constants import (
+    OTP_APP_DEVICE_NAME,
+    RemoteConsentMethodChoices,
+)
 from aidants_connect_web.forms import (
     AddAppOTPToAidantForm,
     AidantChangeForm,
@@ -529,7 +532,7 @@ class TestAddAppOTPToAidantForm(TestCase):
         cls.aidant = AidantFactory()
         cls.otp_device = TOTPDevice(
             user=cls.aidant,
-            name=TOTPDevice.APP_DEVICE_NAME % cls.aidant.pk,
+            name=OTP_APP_DEVICE_NAME % cls.aidant.pk,
             confirmed=False,
         )
 

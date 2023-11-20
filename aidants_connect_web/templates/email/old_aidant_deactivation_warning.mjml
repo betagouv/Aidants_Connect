@@ -6,29 +6,18 @@
       <mj-text>
         <p>Bonjour {{ user.get_full_name }},</p>
         <p>
-          Vous avez participé au programme de formation Aidants Connect, néanmoins cela fait plus
-          de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité. 
+          Vous avez participé au programme de formation Aidants Connect, néanmoins cela fait plus de 5 mois que votre
+          compte Aidants Connect n’a enregistré aucune activité.
         </p>
         <p>
-          Nous vous proposons un<b>webinaire de ré-embarquement</b>, court et
-          interactif, où nous
-          <b>lèverons les freins</b>
-          liés à l’utilisation de
-          l’outil pour que vous puissiez être en mesure d’avoir toutes les clés pour utiliser le service.
+          Vous souhaitez garder votre compte actif et ne rencontrez pas de difficulté particulière à l’utilisation ?
+          Il vous suffit de vous connecter à votre espace personnel dans un délai de 30 jours pour conserver vos accès.
         </p>
         <p>
-          Sans
-          <b>inscription au webinaire</b>
-          ou<b>connexion sur votre espace Aidants Connect</b>, conformément aux
-          <a href="{{ cgu_url }}">
-            <b>CGU</b>
-          </a>
-          de l’outil Aidants Connect, votre compte sera<b>automatiquement désactivé dans un délai de 1 mois</b>.
+          Vous avez besoin de reprendre en main de l’outil, échanger avec d’autres professionnels ou vous rencontrez
+          des difficultés techniques ? Nous vous proposons un temps d’échange sous la forme d’un webinaire :
         </p>
-        <p >
-          <em>Pour rappel, pour des raisons de sécurité, les comptes Aidants Connect sont désactivés temporairement au bout de 6 mois d'inactivité. Passé ce délai, vous pouvez nous contacter pour réactiver votre compte à l'adresse suivante contact@aidantsconnect.beta.gouv.fr </em>
-        </p>
-      </mj-text>
+       </mj-text>
       <mj-button href="{{ webinaire_sub_form }}">S’inscrire au wébinaire</mj-button>
       <mj-text>
         Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
@@ -36,8 +25,8 @@
       </mj-text>
       <mj-text>
         <p>
-          Si vous ne souhaitez plus utiliser l’outil, merci de nous renvoyer les cartes Aidants Connect de votre
-          structure à l’adresse suivante :
+          La plateforme ne vous est finalement pas utile et vous ne souhaitez pas garder votre compte actif ?
+          Merci de nous renvoyer les cartes Aidants Connect de votre structure à l’adresse suivante :
         </p>
         <p style="font-style: italic; font-weight: bold; text-align: center;">
           A l’attention de Marine Jouan, ANCT, 20 avenue de Ségur, Paris 75007

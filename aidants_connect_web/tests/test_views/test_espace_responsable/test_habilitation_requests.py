@@ -30,7 +30,9 @@ class HabilitationRequestsTests(TestCase):
 
     def test_add_aidant_triggers_the_right_view(self):
         found = resolve(self.add_aidant_url)
-        self.assertEqual(found.func, espace_responsable.new_habilitation_request)
+        self.assertEqual(
+            found.func.view_class, espace_responsable.NewHabilitationRequest
+        )
 
     def test_add_aidant_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
@@ -160,10 +162,9 @@ class HabilitationRequestsTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200, "Response should not be redirected")
-        response_content = response.content.decode("utf-8")
         self.assertIn(
             "Une demande d’habilitation est déjà en cours",
-            response_content,
+            response.context_data["form"].errors["email"][0],
             "Error message should be displayed.",
         )
 
@@ -183,10 +184,9 @@ class HabilitationRequestsTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200, "Response should not be redirected")
-        response_content = response.content.decode("utf-8")
         self.assertIn(
             "Il existe déjà un compte aidant",
-            response_content,
+            response.context_data["form"].errors["email"][0],
             "Error message should be displayed.",
         )
 

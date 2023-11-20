@@ -4,7 +4,7 @@
   <td>
     <a href="{% url 'usager_details' usager_id=usager.id %}">
       {% if usager.preferred_username %}
-        {{ usager.preferred_username }}<br/>
+        {{ usager.preferred_username }}<br />
         Né(e)
       {% endif %}
       {{ usager.family_name }}
@@ -27,8 +27,15 @@
     </td>
   {% endif %}
   {% if has_no_autorisations %}
-  <td></td>
+    <td></td>
   {% else %}
-  <td><a href="{{ usager.renew_mandate_url }}">Renouveler le mandat</a></td>
+    <td>
+      <div>
+        <a href="{{ usager.renew_mandate_url }}">Renouveler le mandat</a>
+      </div>
+      <div>
+        <a href="{% url 'usager_details' usager_id=usager.id %}">Révoquer le mandat</a>
+      </div>
+    </td>
   {% endif %}
 </tr>

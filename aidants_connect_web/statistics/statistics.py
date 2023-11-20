@@ -10,8 +10,8 @@ from aidants_connect_common.utils.constants import (
 )
 from aidants_connect_habilitation.models import OrganisationRequest
 
-from .constants import HabilitationRequestStatuses
-from .models import (
+from ..constants import HabilitationRequestStatuses
+from ..models import (
     Aidant,
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
@@ -169,7 +169,7 @@ def compute_statistics(
         aidants__in=qs_operational_aidants
     )
     number_organisation_with_accredited_aidants = (
-        qs_organisation_with_accredited_aidants.count()
+        qs_organisation_with_accredited_aidants.distinct().count()
     )
 
     qs_organisation_with_at_least_one_ac_usage = orgas.filter(

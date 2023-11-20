@@ -28,7 +28,7 @@ urlpatterns = [
     path("logout-session/", service.logout_page, name="logout"),
     path("activity_check/", service.activity_check, name="activity_check"),
     # espace aidant : home, organisation
-    path("espace-aidant/", espace_aidant.home, name="espace_aidant_home"),
+    path("espace-aidant/", espace_aidant.Home.as_view(), name="espace_aidant_home"),
     path(
         "espace-aidant/organisation/",
         espace_aidant.OrganisationView.as_view(),
@@ -36,12 +36,12 @@ urlpatterns = [
     ),
     path(
         "espace-aidant/valider-cgu",
-        espace_aidant.validate_cgus,
+        espace_aidant.ValidateCGU.as_view(),
         name="espace_aidant_cgu",
     ),
     path(
         "espace-aidant/organisations/switch_main",
-        espace_aidant.switch_main_organisation,
+        espace_aidant.SwitchMainOrganisation.as_view(),
         name="espace_aidant_switch_main_organisation",
     ),
     # usagers
@@ -165,7 +165,9 @@ urlpatterns = [
     ),
     # Espace référent structure
     path(
-        "espace-responsable/", espace_responsable.home, name="espace_responsable_home"
+        "espace-responsable/",
+        espace_responsable.Home.as_view(),
+        name="espace_responsable_home",
     ),
     path(
         "espace-responsable/organisation/<int:organisation_id>/",
@@ -174,17 +176,17 @@ urlpatterns = [
     ),
     path(
         "espace-responsable/organisation/<int:organisation_id>/responsables/",
-        espace_responsable.organisation_responsables,
+        espace_responsable.OrganisationResponsables.as_view(),
         name="espace_responsable_organisation_responsables",
     ),
     path(
         "espace-responsable/aidant/<int:aidant_id>/",
-        espace_responsable.aidant,
+        espace_responsable.AidantView.as_view(),
         name="espace_responsable_aidant",
     ),
     path(
         "espace-responsable/aidant/ajouter/",
-        espace_responsable.new_habilitation_request,
+        espace_responsable.NewHabilitationRequest.as_view(),
         name="espace_responsable_aidant_new",
     ),
     path(
@@ -204,7 +206,7 @@ urlpatterns = [
     ),
     path(
         "espace-responsable/aidant/<int:aidant_id>/changer-organisations/",
-        espace_responsable.change_aidant_organisations,
+        espace_responsable.ChangeAidantOrganisations.as_view(),
         name="espace_responsable_aidant_change_organisations",
     ),
     path(
@@ -212,17 +214,22 @@ urlpatterns = [
             "espace-responsable/aidant/<int:aidant_id>/"
             "supprimer-organisation/<int:organisation_id>/"
         ),
-        espace_responsable.remove_aidant_from_organisation,
+        espace_responsable.RemoveAidantFromOrganisationView.as_view(),
         name="espace_responsable_remove_aidant_from_organisation",
     ),
     path(
+        "espace-responsable/aidant/<int:aidant_id>/type-carte",
+        espace_responsable.ChooseTOTPDevice.as_view(),
+        name="espace_responsable_choose_totp",
+    ),
+    path(
         "espace-responsable/aidant/<int:aidant_id>/lier-carte",
-        espace_responsable.associate_aidant_carte_totp,
+        espace_responsable.AssociateAidantCarteTOTP.as_view(),
         name="espace_responsable_associate_totp",
     ),
     path(
         "espace-responsable/aidant/<int:aidant_id>/valider-carte",
-        espace_responsable.validate_aidant_carte_totp,
+        espace_responsable.ValidateAidantCarteTOTP.as_view(),
         name="espace_responsable_validate_totp",
     ),
     path(

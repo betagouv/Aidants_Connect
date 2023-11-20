@@ -27,6 +27,7 @@ from aidants_connect_web.models import (
     Usager,
     UsagerQuerySet,
 )
+from aidants_connect_web.utilities import normalize_totp_cart_serial
 from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
 
@@ -340,7 +341,7 @@ class CarteOTPSerialNumberForm(forms.Form):
     serial_number = forms.CharField()
 
     def clean_serial_number(self):
-        serial_number = self.cleaned_data["serial_number"]
+        serial_number = normalize_totp_cart_serial(self.cleaned_data["serial_number"])
         try:
             carte = CarteTOTP.objects.get(serial_number=serial_number)
         except CarteTOTP.DoesNotExist:
@@ -406,15 +407,6 @@ class SwitchMainAidantOrganisationForm(forms.Form):
     )
     next_url = forms.CharField(required=False)
 
-    def __init__(self, aidant: Aidant, next_url="", *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.aidant = aidant
-        self.fields["organisation"].queryset = Organisation.objects.filter(
-            aidants=self.aidant
-        ).order_by("name")
-        self.initial["organisation"] = self.aidant.organisation
-        self.initial["next_url"] = next_url
-
 
 class AddOrganisationResponsableForm(forms.Form):
     candidate = forms.ModelChoiceField(queryset=Aidant.objects.none())
@@ -446,13 +438,13 @@ class ChangeAidantOrganisationsForm(forms.Form):
 
 
 class HabilitationRequestCreationForm(forms.ModelForm):
-    def __init__(self, responsable, *args, **kwargs):
+    def __init__(self, referent, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.responsable = responsable
+        self.referent = referent
         self.fields["organisation"] = forms.ModelChoiceField(
-            queryset=Organisation.objects.filter(
-                responsables=self.responsable
-            ).order_by("name"),
+            queryset=Organisation.objects.filter(responsables=self.referent).order_by(
+                "name"
+            ),
             empty_label="Choisir...",
         )
 
