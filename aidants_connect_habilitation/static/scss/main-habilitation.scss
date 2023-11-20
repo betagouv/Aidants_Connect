@@ -136,6 +136,12 @@ h3, .h3 {
   }
 }
 
+h5, .h5 {
+  font-size: 1rem;
+  font-weight: bold;
+
+}
+
 h1, h2, h3, h4, h5, h6 {
   &.upper {
     text-transform: uppercase;
@@ -296,6 +302,26 @@ dl {
   dt {
     font-weight: bold;
   }
+}
+
+.tooltip {
+  display: inline-block;
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  background-color: #FFF;
+  display: inline-block;
+  list-style-position: inside;
+  padding: 1rem;
+  position: absolute;
+  top: 2rem;
+  visibility: hidden;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }
 
 // forms -----------------------------------------------
@@ -716,6 +742,33 @@ ol.messages-list {
   margin-top: 0;
   font-style: italic;
   color: colors.$light-blue-anct;
+}
+
+// guides tooltip ----------------------------------------
+
+.title-with-item {
+  display: flex;
+  flex-direction: row;
+
+  h1, h2, h3 {
+    flex-grow: 10;
+  }
+}
+
+.aidants-guide-links {
+  &, & .tooltiptext {
+    border: 1px solid colors.$blue-aidants;
+    right: -1px;
+    width: max-content;
+  }
+
+  color: colors.$blue-aidants;
+  font-weight: normal;
+  padding: .25rem .5rem;
+
+  .tooltiptext {
+    padding: .5rem;
+  }
 }
 
 // header ----------------------------------------------
