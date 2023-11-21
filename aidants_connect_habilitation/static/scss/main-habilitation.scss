@@ -14,7 +14,7 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
-  font-weight: 400;  // Marianne-Regular
+  font-weight: 400; // Marianne-Regular
 }
 
 ul, ol {
@@ -885,6 +885,7 @@ footer {
 
     a {
       display: flex;
+      background: none;
       border-radius: 6rem;
       text-decoration: none;
       color: colors.$blue-aidants;
@@ -909,13 +910,15 @@ footer {
     }
 
     .portrait {
+      background-color: white;
+      border-radius: 100%;
       display: flex;
 
       img {
         width: $radius;
         height: $radius;
-        border-radius: 100%;
         border: 2px solid #fff;
+        border-radius: 100%;
       }
     }
   }
