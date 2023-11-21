@@ -93,7 +93,9 @@ class AddAppOTPToAidantTests(TestCase):
         )
 
         self.assertRedirects(
-            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_organisation"),
+            fetch_redirect_response=False,
         )
         self.assertEqual(
             "Il existe déjà une carte OTP numérique liée à ce profil. Si vous "
@@ -142,7 +144,7 @@ class AddAppOTPToAidantTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse("espace_responsable_home"),
+            reverse("espace_responsable_organisation"),
             fetch_redirect_response=False,
         )
         self.assertEqual(1, self.aidant_tim.totpdevice_set.count())
@@ -284,7 +286,9 @@ class RemoveAppOTPToAidantTests(TestCase):
         )
 
         self.assertRedirects(
-            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_organisation"),
+            fetch_redirect_response=False,
         )
         self.assertEqual(0, self.aidant_tim.totpdevice_set.count())
 
@@ -301,7 +305,9 @@ class RemoveAppOTPToAidantTests(TestCase):
         )
 
         self.assertRedirects(
-            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_organisation"),
+            fetch_redirect_response=False,
         )
         self.assertEqual(0, self.aidant_sarah.totpdevice_set.count())
 
@@ -318,7 +324,7 @@ class RemoveAppOTPToAidantTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_home"),
+            reverse("espace_responsable_organisation"),
             fetch_redirect_response=False,
         )
         self.deactivated_aidant.refresh_from_db()

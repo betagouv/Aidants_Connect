@@ -2,16 +2,13 @@ import base64
 import logging
 from gettext import ngettext as _
 from io import BytesIO
-from urllib.parse import quote
 
 from django.contrib import messages as django_messages
-from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.forms import model_to_dict
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.utils.decorators import method_decorator
 from django.views.generic import DeleteView, DetailView, FormView, TemplateView
 
 import qrcode
@@ -24,10 +21,7 @@ from aidants_connect_web.constants import (
     HabilitationRequestStatuses,
     NotificationType,
 )
-from aidants_connect_web.decorators import (
-    responsable_logged_with_activity_required,
-    user_is_responsable_structure,
-)
+from aidants_connect_web.decorators import responsable_logged_with_activity_required
 from aidants_connect_web.forms import (
     AddAppOTPToAidantForm,
     AddOrganisationResponsableForm,
@@ -49,41 +43,9 @@ from aidants_connect_web.models import (
 logger = logging.getLogger()
 
 
-@method_decorator([login_required, user_is_responsable_structure], name="dispatch")
-class Home(TemplateView):
-    template_name = "aidants_connect_web/espace_responsable/home.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.fragment = quote(request.GET.get("fragment", ""))
-        self.fragment = f"#{self.fragment}" if self.fragment else ""
-        self.referent: Aidant = request.user
-        self.organisations = (
-            Organisation.objects.filter(responsables=self.referent)
-            .prefetch_related("current_aidants")
-            .order_by("name")
-        )
-
-        if self.organisations.count() == 1:
-            return redirect(
-                "espace_responsable_organisation",
-                organisation_id=self.organisations[0].id,
-            )
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "responsable": self.referent,
-            "organisations": self.organisations,
-            "fragment": self.fragment,
-        }
-
-
 @responsable_logged_with_activity_required
 class OrganisationView(DetailView):
     template_name = "aidants_connect_web/espace_responsable/organisation.html"
-    pk_url_kwarg = "organisation_id"
     context_object_name = "organisation"
     model = Organisation
 
@@ -91,8 +53,15 @@ class OrganisationView(DetailView):
         self.referent: Aidant = request.user
         return super().dispatch(request, *args, **kwargs)
 
-    def get_queryset(self):
-        return super().get_queryset().filter(responsables=self.referent)
+    def get_object(self, queryset=None):
+        self.organisation: Organisation = self.referent.organisation
+
+        if not self.organisation:
+            django_messages.error(
+                self.request, "Vous n'êtes pas rattaché à une organisation."
+            )
+            return redirect("espace_aidant_home")
+        return self.organisation
 
     def get_context_data(self, **kwargs):
         referents_qs = (
@@ -161,10 +130,7 @@ class OrganisationResponsables(FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse(
-            "espace_responsable_organisation",
-            kwargs={"organisation_id": self.organisation.pk},
-        )
+        return reverse("espace_responsable_organisation")
 
     def get_context_data(self, **kwargs):
         kwargs.update({"user": self.referent, "organisation": self.organisation})
@@ -197,7 +163,7 @@ class AidantView(TemplateView):
 class RemoveCardFromAidant(FormView):
     template_name = "aidants_connect_web/espace_responsable/aidant_remove_card.html"
     form_class = RemoveCardFromAidantForm
-    success_url = reverse_lazy("espace_responsable_home")
+    success_url = reverse_lazy("espace_responsable_organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.responsable: Aidant = request.user
@@ -245,7 +211,7 @@ class RemoveCardFromAidant(FormView):
 class AddAppOTPToAidant(FormView):
     template_name = "aidants_connect_web/espace_responsable/app_otp_confirm.html"
     form_class = AddAppOTPToAidantForm
-    success_url = reverse_lazy("espace_responsable_home")
+    success_url = reverse_lazy("espace_responsable_organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -347,7 +313,7 @@ class AddAppOTPToAidant(FormView):
 @responsable_logged_with_activity_required
 class RemoveAppOTPFromAidant(DeleteView):
     template_name = "aidants_connect_web/espace_responsable/app_otp_remove.html"
-    success_url = reverse_lazy("espace_responsable_home")
+    success_url = reverse_lazy("espace_responsable_organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -357,7 +323,7 @@ class RemoveAppOTPFromAidant(DeleteView):
             raise Http404()
 
         if not self.aidant.has_otp_app:
-            return HttpResponseRedirect(reverse("espace_responsable_home"))
+            return HttpResponseRedirect(reverse("espace_responsable_organisation"))
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -407,9 +373,7 @@ class RemoveAidantFromOrganisationView(TemplateView):
                 request, f"Le profil de {self.aidant.get_full_name()} a été désactivé."
             )
 
-        return redirect(
-            "espace_responsable_organisation", organisation_id=self.organisation.id
-        )
+        return redirect("espace_responsable_organisation")
 
     def get_context_data(self, **kwargs):
         kwargs.update({"aidant": self.aidant, "organisation": self.organisation})
@@ -686,10 +650,7 @@ class NewHabilitationRequest(FormView):
         return {**super().get_form_kwargs(), "referent": self.referent}
 
     def get_success_url(self):
-        return reverse(
-            "espace_responsable_organisation",
-            kwargs={"organisation_id": self.habilitation_request.organisation.id},
-        )
+        return reverse("espace_responsable_organisation")
 
     def form_valid(self, form):
         self.habilitation_request = form.save(commit=False)
@@ -759,4 +720,4 @@ class CancelHabilitationRequestView(DetailView):
 
     def post(self, request, *args, **kwargs):
         self.get_object().cancel_by_responsable()
-        return redirect(reverse("espace_responsable_home"))
+        return redirect(reverse("espace_responsable_organisation"))

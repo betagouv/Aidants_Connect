@@ -223,7 +223,7 @@ def notify_no_totp_workers():
                 "users": [],
                 "notify_self": False,
                 "espace_responsable_url": (
-                    f"{settings.HOST}{reverse('espace_responsable_home')}"
+                    f"{settings.HOST}{reverse('espace_responsable_organisation')}"
                 ),
             }
 

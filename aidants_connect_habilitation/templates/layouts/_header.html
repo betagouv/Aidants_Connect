@@ -34,7 +34,7 @@
                   {% if user_is_responsable_structure %}
                     <a
                       class="fr-btn fr-icon-arrow-right-line"
-                      href="{% url 'espace_responsable_home' %}"
+                      href="{% url 'espace_responsable_organisation' %}"
                       {% if view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
                     >
                       Espace référent
@@ -79,14 +79,7 @@
                   <a
                     class="fr-nav__link"
                     target="_self"
-                    href="
-
-
-
-
-
-
-                      {% if user_is_responsable_structure %}{% url 'espace_responsable_home' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
+                    href="{% if user_is_responsable_structure %}{% url 'espace_responsable_organisation' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
                     {% if view_name|startswith:'espace_aidant' or view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
                   >
                     Mon organisation
@@ -145,7 +138,7 @@
               {% if user_is_authenticated and user_organisations|length > 1 %}
                 <div class="spacer"></div>
                 <li class="fr-nav__item fr-nav__item--align-right">
-                  <button class="fr-nav__btn" aria-expanded="false" aria-controls="menu-776" aria-current="true">
+                  <button class="fr-nav__btn" aria-expanded="false" aria-controls="menu-776">
                     {{ request.user.organisation }}
                   </button>
                   <div class="fr-collapse fr-menu" id="menu-776">
