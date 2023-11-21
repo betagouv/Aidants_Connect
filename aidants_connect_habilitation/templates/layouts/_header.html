@@ -79,7 +79,14 @@
                   <a
                     class="fr-nav__link"
                     target="_self"
-                    href="{% if user_is_responsable_structure %}{% url 'espace_responsable_home' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
+                    href="
+
+
+
+
+
+
+                      {% if user_is_responsable_structure %}{% url 'espace_responsable_home' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
                     {% if view_name|startswith:'espace_aidant' or view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
                   >
                     Mon organisation
@@ -134,6 +141,37 @@
                 </li>
               {% endif %}
             {% endblock %}
+            {% with user_organisations=request.user.organisations.all %}
+              {% if user_is_authenticated and user_organisations|length > 1 %}
+                <div class="spacer"></div>
+                <li class="fr-nav__item fr-nav__item--align-right">
+                  <button class="fr-nav__btn" aria-expanded="false" aria-controls="menu-776" aria-current="true">
+                    {{ request.user.organisation }}
+                  </button>
+                  <div class="fr-collapse fr-menu" id="menu-776">
+                    <ul class="fr-menu__list">
+                      <li><p class="fr-px-4v fr-py-3v fr-text--bold">Mes organisations</p></li>
+                      {% for organisation in user_organisations %}
+                        <li>
+                          <form method="post" action="{% url 'espace_aidant_switch_main_organisation' %}">
+                            {% csrf_token %}
+                            <input name="organisation" value="{{ organisation.pk }}" type="hidden">
+                            <input name="next_url" value="{{ request.get_full_path|urlencode:'' }}" type="hidden">
+                            <button
+                              class="fr-nav__link"
+                              type="submit"
+                              {% if organisation.pk == request.user.organisation.pk %}aria-current="page"{% endif %}
+                            >
+                              {{ organisation.name }}
+                            </button>
+                          </form>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </li>
+              {% endif %}
+            {% endwith %}
           </ul>
         </nav>
       </div>
