@@ -162,12 +162,15 @@ class AidantInPreDesactivationZoneFilter(SimpleListFilter):
         ]
 
     def queryset(self, request, queryset: AidantManager):
-        queryset = queryset.filter(is_active=True)
         match self.value():
             case False:
-                return queryset.filter(deactivation_warning_at__isnull=True)
+                return queryset.filter(
+                    is_active=True, deactivation_warning_at__isnull=True
+                )
             case True:
-                return queryset.filter(deactivation_warning_at__isnull=False)
+                return queryset.filter(
+                    is_active=True, deactivation_warning_at__isnull=False
+                )
             case _:
                 return queryset
 
@@ -187,15 +190,14 @@ class AidantGoneTooLong(SimpleListFilter):
         ]
 
     def queryset(self, request, queryset: AidantManager):
-        queryset = queryset.filter(is_active=True)
         match self.value():
             case False:
-                return queryset.filter(
+                return queryset.filter(is_active=True).filter(
                     last_login__gt=timezone.now() - relativedelta(**self.relative_to)
                 )
             case True:
                 # Last connect more than 6 monts ago or never connected
-                return queryset.filter(
+                return queryset.filter(is_active=True).filter(
                     Q(
                         last_login__lte=timezone.now()
                         - relativedelta(**self.relative_to)
