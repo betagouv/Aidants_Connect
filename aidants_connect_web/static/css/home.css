@@ -132,12 +132,12 @@
   width: 100%;
 }
 
-.hyperliens-video div {
+.hyperliens-video .video-presentation {
   display: block;
   max-width: 350px;
 }
 
-.hyperliens-video iframe {
+.hyperliens-video .youtube_player {
   flex-grow: 1;
 }
 
