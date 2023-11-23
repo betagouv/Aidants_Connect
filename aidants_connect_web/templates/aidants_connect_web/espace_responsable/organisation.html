@@ -60,9 +60,9 @@
 
     {% include "aidants_connect_web/espace_aidant/statistics.html" %}
 
-    <h2 class="clearfix">
-      Membres
-      <span class="float-right">
+    <div class="title-with-item margin-top-2rem">
+      <h2 class="clearfix">Aidants</h2>
+      <div>
         {% if organisation_active_aidants|length > 1 %}{# Organisation has more aidants than just the référent #}
           <a
             href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}"
@@ -71,20 +71,39 @@
             Désigner un ou une référente
           </a>
         {% endif %}
-        <a
-          href="{% url "espace_responsable_aidant_new" %}"
-          class="fr-btn fr-btn--icon-left fr-icon-user-add-fill"
-        >
+        <a href="{% url "espace_responsable_aidant_new" %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
           Ajouter un aidant
         </a>
-      </span>
-    </h2>
+      </div>
+    </div>
 
     {% if organisation_active_referents %}
-      <section id="active-referents">
-        <h3>Référents actifs</h3>
-        {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_referents table_class="shadowed blue-green" %}
-      </section>
+      <div class="title-with-item margin-bottom-2rem">
+        <h3 class="margin-0">Référents actifs</h3>
+        <div class="tooltip aidants-guide-links">
+          Guides
+          <div class="tooltiptext">
+            <a
+              href="{% static "guides_aidants_connect/AC_Guide_LierUneCarte.pdf" %}"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              Comment lier une carte ?
+            </a>
+            <span> — pdf</span>
+            <br />
+            <a
+              href="{% static "guides_aidants_connect/AC_Guide_Sauthentifier.pdf" %}"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              Sʼauthentifier avec Aidants Connect
+            </a>
+            <span> — pdf</span>
+          </div>
+        </div>
+      </div>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_referents table_class="shadowed blue-green" %}
     {% endif %}
 
     {% if organisation_active_aidants %}

@@ -10,7 +10,7 @@
 {% block content %}
   <div class="fr-container">
     <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-10">
+      <div class="fr-col-12 fr-col-md-8">
         {% if messages %}
           {% for message in messages %}
             <div
@@ -22,10 +22,38 @@
 
         <h1>Espace référent</h1>
         <h2>Lier une carte</h2>
-        <p class="subtitle">Gérez les cartes Aidant de {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
+        <p class="subtitle margin-bottom-4rem">
+          Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.
+        </p>
+
+        <div class="title-with-item margin-bottom-2rem">
+          <h3 class="margin-0 h5">Sélectionnez le type de carte que vous souhaitez lier à Angela :</h3>
+          <div class="tooltip aidants-guide-links">
+            Guides
+            <div class="tooltiptext">
+              <a
+                href="{% static "guides_aidants_connect/AC_Guide_LierUneCarte.pdf" %}"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Comment lier une carte ?
+              </a>
+              <span> — pdf</span>
+              <br />
+              <a
+                href="{% static "guides_aidants_connect/AC_Guide_Sauthentifier.pdf" %}"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Sʼauthentifier avec Aidants Connect
+              </a>
+              <span> — pdf</span>
+            </div>
+          </div>
+        </div>
 
         <div class="fr-grid-row fr-grid-row--gutters">
-          <div class="fr-col-12 fr-col-md-8">
+          <div class="fr-col-12">
             <div class="fr-grid-row fr-grid-row--gutters margin-bottom-1rem">
               <div
                 class="fr-col-12 fr-col-md-6 totp-card-section{% if not physical_option_available %} disabled{% endif %}"
