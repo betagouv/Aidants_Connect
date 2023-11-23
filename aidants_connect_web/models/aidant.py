@@ -132,12 +132,6 @@ class Aidant(AbstractUser):
         "Date d'envoi de l’email d’alerte de désactivation", null=True, default=None
     )
 
-    ff_otp_app = models.BooleanField(
-        "Le ou la référente peut ajouter une application "
-        "OTP aux aidants de son organisation",
-        default=False,
-    )
-
     objects = AidantManager()
 
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]

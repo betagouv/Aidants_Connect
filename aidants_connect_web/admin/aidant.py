@@ -413,7 +413,6 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "is_staff",
                     "is_superuser",
                     "responsable_de",
-                    "ff_otp_app",
                 )
             },
         ),

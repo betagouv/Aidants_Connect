@@ -2,7 +2,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 from django.contrib import messages as django_messages
-from django.test import TestCase, override_settings, tag
+from django.test import TestCase, tag
 from django.urls import resolve, reverse
 
 from django_otp.oath import TOTP
@@ -15,13 +15,10 @@ from aidants_connect_web.views import espace_responsable
 
 
 @tag("responsable-structure")
-@override_settings(FF_OTP_APP=True)
 class AddAppOTPToAidantTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.responsable_tom: Aidant = AidantFactory(
-            username="tom@tom.fr", ff_otp_app=True
-        )
+        cls.responsable_tom: Aidant = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(
             username="tim@tim.fr",
@@ -153,13 +150,10 @@ class AddAppOTPToAidantTests(TestCase):
 
 
 @tag("responsable-structure")
-@override_settings(FF_OTP_APP=True)
 class RemoveAppOTPToAidantTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.responsable_tom: Aidant = AidantFactory(
-            username="tom@tom.fr", ff_otp_app=True
-        )
+        cls.responsable_tom: Aidant = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(
             username="tim@tim.fr",
