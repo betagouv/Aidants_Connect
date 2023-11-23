@@ -165,12 +165,7 @@ urlpatterns = [
     ),
     # Espace référent structure
     path(
-        "espace-responsable/",
-        espace_responsable.Home.as_view(),
-        name="espace_responsable_home",
-    ),
-    path(
-        "espace-responsable/organisation/<int:organisation_id>/",
+        "espace-responsable/organisation/",
         espace_responsable.OrganisationView.as_view(),
         name="espace_responsable_organisation",
     ),

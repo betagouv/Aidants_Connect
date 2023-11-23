@@ -1,6 +1,7 @@
 from django.core import mail
 from django.test import TestCase, tag
 from django.test.client import Client
+from django.urls import reverse
 
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 
@@ -28,9 +29,6 @@ class EspaceResponsableRemoveAidantOrganisationsTest(TestCase):
             f"supprimer-organisation/{organisation.id}/"
         )
 
-    def get_organisation_url(self, organisation):
-        return f"/espace-responsable/organisation/{organisation.id}/"
-
     def test_remove_from_organisation(self):
         responsable = self.responsable_of_2
         aidant = self.aidant
@@ -40,9 +38,7 @@ class EspaceResponsableRemoveAidantOrganisationsTest(TestCase):
         response = self.client.post(
             self.get_form_url(aidant, responsable.organisation),
         )
-        self.assertRedirects(
-            response, self.get_organisation_url(responsable.organisation)
-        )
+        self.assertRedirects(response, reverse("espace_responsable_organisation"))
         aidant.refresh_from_db()
         self.assertEqual(len(aidant.organisations.all()), 2)
 

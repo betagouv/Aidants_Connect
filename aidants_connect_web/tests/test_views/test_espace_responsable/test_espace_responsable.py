@@ -9,82 +9,6 @@ from aidants_connect_web.views import espace_responsable
 
 
 @tag("responsable-structure")
-class EspaceResponsableHomePageTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.client = Client()
-        # Tom is référent of 2 structures
-        cls.responsable_tom = AidantFactory()
-        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
-        cls.responsable_tom.responsable_de.add(OrganisationFactory())
-        cls.responsable_tom.can_create_mandats = False
-        # Tim is référent of only one structure
-        cls.responsable_tim = AidantFactory()
-        cls.responsable_tim.responsable_de.add(cls.responsable_tim.organisation)
-        # John is a simple aidant
-        cls.aidant_john = AidantFactory()
-
-    def test_anonymous_user_cannot_access_espace_aidant_view(self):
-        response = self.client.get("/espace-responsable/")
-        self.assertRedirects(response, "/accounts/login/?next=/espace-responsable/")
-
-    def test_navigation_menu_contains_a_link_for_the_responsable_structure(self):
-        self.client.force_login(self.responsable_tom)
-        response = self.client.get("/espace-responsable/")
-        response_content = response.content.decode("utf-8")
-        self.assertIn(
-            "Mon espace référent",
-            response_content,
-            (
-                "Link to espace responsable is invisible to a responsable, "
-                "it should be visible"
-            ),
-        )
-
-    def test_hide_espace_aidant_from_responsable_who_cannot_create_mandats(self):
-        self.client.force_login(self.responsable_tom)
-        response = self.client.get("/")
-        response_content = response.content.decode("utf-8")
-        self.assertNotIn(
-            "Mon espace Aidant",
-            response_content,
-            (
-                "Link to espace aidant is visible to a responsable without "
-                " mandats permission, it should be invisible"
-            ),
-        )
-
-    def test_navigation_menu_does_not_contain_a_link_for_the_aidant(self):
-        self.client.force_login(self.aidant_john)
-        response = self.client.get("/")
-        response_content = response.content.decode("utf-8")
-        self.assertNotIn(
-            "Mon espace Responsable",
-            response_content,
-            "Link to espace responsable is visible to an aidant, it should not",
-        )
-
-    def test_espace_responsable_home_url_triggers_the_right_view(self):
-        found = resolve("/espace-responsable/")
-        self.assertEqual(found.func.view_class, espace_responsable.Home)
-
-    def test_espace_responsable_home_url_triggers_the_right_template(self):
-        self.client.force_login(self.responsable_tom)
-        response = self.client.get("/espace-responsable/")
-        self.assertTemplateUsed(
-            response, "aidants_connect_web/espace_responsable/home.html"
-        )
-
-    def test_responsable_is_redirected_if_has_only_one_structure(self):
-        self.client.force_login(self.responsable_tim)
-        response = self.client.get("/espace-responsable/")
-        self.assertRedirects(
-            response,
-            f"/espace-responsable/organisation/{self.responsable_tim.organisation.id}/",
-        )
-
-
-@tag("responsable-structure")
 class EspaceResponsableOrganisationPage(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -96,30 +20,20 @@ class EspaceResponsableOrganisationPage(TestCase):
 
     def test_espace_responsable_organisation_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
-        found = resolve(f"/espace-responsable/organisation/{self.id_organisation}/")
+        found = resolve("/espace-responsable/organisation/")
         self.assertEqual(found.func.view_class, espace_responsable.OrganisationView)
 
     def test_espace_responsable_organisation_url_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(
-            f"/espace-responsable/organisation/{self.id_organisation}/"
-        )
+        response = self.client.get("/espace-responsable/organisation/")
         self.assertEqual(
             response.status_code,
             200,
-            "trying to get "
-            f"/espace-responsable/organisation/{self.id_organisation}/",
+            "trying to get " "/espace-responsable/organisation/",
         )
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_responsable/organisation.html"
         )
-
-    def test_responsable_cannot_see_an_organisation_they_are_not_responsible_for(self):
-        self.client.force_login(self.responsable_tom)
-        response = self.client.get(
-            f"/espace-responsable/organisation/{self.autre_organisation.id}/"
-        )
-        self.assertEqual(response.status_code, 404)
 
     def test_display_all_active_aidants(self):
         self.client.force_login(self.responsable_tom)
@@ -130,9 +44,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         aidant_b.organisations.set(
             (aidant_b.organisation, self.responsable_tom.organisation)
         )
-        response = self.client.get(
-            f"/espace-responsable/organisation/{self.id_organisation}/"
-        )
+        response = self.client.get("/espace-responsable/organisation/")
         self.assertContains(response, aidant_a.first_name)
         self.assertContains(response, aidant_b.first_name)
 
@@ -140,26 +52,20 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.client.force_login(self.responsable_tom)
         organisation = OrganisationFactory(city=None)
         self.responsable_tom.responsable_de.add(organisation)
-        response = self.client.get(
-            f"/espace-responsable/organisation/{organisation.id}/"
-        )
+        response = self.client.get("/espace-responsable/organisation/")
         self.assertNotContains(response, "None")
 
     def test_display_data_pass_id(self):
         self.client.force_login(self.responsable_tom)
         self.responsable_tom.organisation.data_pass_id = 4242
         self.responsable_tom.organisation.save()
-        response = self.client.get(
-            f"/espace-responsable/organisation/{self.id_organisation}/"
-        )
+        response = self.client.get("/espace-responsable/organisation/")
         self.assertContains(response, "Numéro d’habilitation")
         self.assertContains(response, "4242")
 
     def test_hide_block_if_no_data_pass_id(self):
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(
-            f"/espace-responsable/organisation/{self.id_organisation}/"
-        )
+        response = self.client.get("/espace-responsable/organisation/")
         self.assertNotContains(response, "Numéro d’habilitation")
 
 
@@ -396,8 +302,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
 
         cls.urls_responsables = (
             "/espace-aidant/",
-            "/espace-responsable/",
-            f"/espace-responsable/organisation/{orga.id}/",
+            "/espace-responsable/organisation/",
         )
 
     def test_display_messages_to_reponsable_if_no_totp_device_exists(self):
@@ -463,10 +368,7 @@ class DesignationOfAnotherResponsable(TestCase):
             "espace_responsable_organisation_responsables",
             kwargs={"organisation_id": cls.orga.pk},
         )
-        cls.orga_url = reverse(
-            "espace_responsable_organisation",
-            kwargs={"organisation_id": cls.orga.pk},
-        )
+        cls.orga_url = reverse("espace_responsable_organisation")
 
         cls.aidante_maxine = AidantFactory(organisation=cls.orga)
         cls.aidante_ariane = AidantFactory()

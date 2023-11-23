@@ -420,7 +420,7 @@ input[type=radio] {
 }
 
 button, .button {
-  &:not(.fr-btn):not(.fr-connect) {
+  &:not(.fr-btn):not(.fr-connect):not(.fr-nav__btn):not(.fr-nav__link) {
     background: #fff;
     border: 1px solid colors.$red-aidants;
     color: colors.$red-aidants;

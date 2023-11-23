@@ -37,7 +37,7 @@ def send_email_on_new_notification(sender, instance: Notification, created: bool
         {
             "aidant": instance.aidant,
             "espace_aidant": build_url(
-                reverse("espace_responsable_home")
+                reverse("espace_responsable_organisation")
                 if instance.aidant.is_responsable_structure()
                 else reverse("espace_aidant_home")
             ),
