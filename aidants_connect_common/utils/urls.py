@@ -14,7 +14,7 @@ def join_url_parts(base: str, *args):
     return f"{base.removesuffix('/')}/{parts}"
 
 
-def build_url(path: None):
+def build_url(path: None | str):
     path = path or ""
     return (
         f"http{'s' if settings.SSL else ''}://{settings.HOST.removesuffix('/')}"
