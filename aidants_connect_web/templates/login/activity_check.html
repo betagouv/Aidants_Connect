@@ -1,26 +1,20 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
-{% load static %}
+{% load static dsfr_tags %}
 
 {% block title %}Aidants Connect - Session expirée{% endblock %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    <h1 class="section__title">Bonjour {{ aidant.get_full_name }}, votre session a expiré</h1>
-    <form method="post" class="panel">
-      {% if form.errors %}
-        <div class="notification warning">Ce code n'est pas valide</div>
-      {% endif %}
-      {% csrf_token %}
-      <div class="form__group">
-        <label for="id_otp_token">{{ form.otp_token.label_tag }}</label>
-        <div class="max-width-50">{{ form.otp_token }}</div>
+  <section class="section">
+    <div class="fr-container">
+      <div class="fr-grid-row fr-grid-row--center">
+        <h2 class="fr-mt-16v">Bonjour {{ aidant.get_full_name }}, votre session a expiré</h2>
+        <form method="post" class="fr-col-12 fr-col-sm-6 fr-col-md-4">
+          {% dsfr_form %}
+          {% csrf_token %}
+          <button type="submit" class="fr-btn">Valider</button>
+        </form>
       </div>
-      <div class="form__group">
-        <button type="submit" class="button">Valider</button>
-      </div>
-    </form>
-  </div>
-</section>
+    </div>
+  </section>
 {% endblock content %}
