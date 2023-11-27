@@ -8,6 +8,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import DetailView, FormView, TemplateView
+from django.views.generic.edit import BaseFormView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
 from aidants_connect_web.constants import NotificationType
@@ -99,8 +100,7 @@ class ValidateCGU(FormView):
 
 
 @aidant_logged_with_activity_required
-class SwitchMainOrganisation(FormView):
-    template_name = "aidants_connect_web/espace_aidant/switch_main_organisation.html"
+class SwitchMainOrganisation(BaseFormView):
     form_class = SwitchMainAidantOrganisationForm
     success_url = reverse_lazy("espace_aidant_home")
     next_url = None
@@ -108,6 +108,9 @@ class SwitchMainOrganisation(FormView):
     def dispatch(self, request, *args, **kwargs):
         self.aidant: Aidant = request.user
         return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return super().http_method_not_allowed(request, *args, **kwargs)
 
     def get_initial(self):
         return {
@@ -122,20 +125,12 @@ class SwitchMainOrganisation(FormView):
         )
         return form
 
-    def get_context_data(self, **kwargs):
-        kwargs.update(
-            aidant=self.aidant,
-            organisations=self.aidant.organisations,
-            disable_change_organisation=True,
-        )
-        return super().get_context_data(**kwargs)
-
     def form_invalid(self, form):
         django_messages.error(
             self.request,
             "Il est impossible de vous déplacer dans cette organisation.",
         )
-        return redirect("espace_aidant_switch_main_organisation")
+        return redirect("espace_aidant_home")
 
     def form_valid(self, form):
         with transaction.atomic():

@@ -172,26 +172,6 @@
             </div>
           </div>
         </div>
-        {% if request.user.organisations.count > 1 and not disable_change_organisation %}
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="fr-tile fr-enlarge-link">
-              <div class="fr-tile__body">
-                <div class="fr-tile__content">
-                  <h3 class="fr-tile__title">
-                    <a
-                      href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
-                    >
-                      Changer d'organisation
-                    </a>
-                  </h3>
-                </div>
-              </div>
-              <div class="fr-tile__header">
-                <div class="fr-tile__pictogram">🏢 &rarr;️ 🏢</div>
-              </div>
-            </div>
-          </div>
-        {% endif %}
 
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <div class="fr-tile fr-enlarge-link">
