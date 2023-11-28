@@ -1,18 +1,27 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
+{% load ac_common %}
 {% block title %}Aidants Connect - TimeOut (erreur 408){% endblock %}
 {% block content %}
-<section class="section">
-  <div class="container">
-    <h1><span aria-hidden="true">🤔</span> Le temps imparti à la connexion FranceConnect est dépassé</h1>
-    <h2><span aria-hidden="true">👩🏽‍💻</span> Code 408 : Timeout</h2>
-    <p>Vous pouvez nous envoyer un mail à support@aidantsconnect.beta.gouv.fr avec: </p>
+  <div class="fr-container">
+    <h4 class="fr-mt-8v"><span aria-hidden="true">🤔 </span>
+      Le temps imparti à la connexion FranceConnect est dépassé
+    </h4>
+    <p class="fr-text--bold"><span aria-hidden="true">👩🏽‍💻 </span>Code 408 : Timeout</p>
+    <p>Vous pouvez
+      <a
+        class="fr-link"
+        href="mailto:support@aidantsconnect.beta.gouv.fr?&subject=Erreur%20403&body=Bonjour,%20%0D%0A%0D%0AJ'ai%20vu%20une%20erreur%20sur%20Aidants%20Connect.%20%0D%0A%0D%0AVoici les informations sur l'erreur%20(À%20compléter)%20%0D%0A%0D%0A-%20La%20date,%20l'heure%20et%20fuseau%20horaire%20:%0D%0A%0D%0A-%20L'URL%20de%20cette%20page%20:%0D%0A%0D%0A-%20Ce%20que%20vous%20faisiez%20juste%20avant%20que%20cette%20erreur%20s'affiche%20:"
+      >
+        cliquer sur ce lien
+      </a>
+      pour avoir un email pré-rempli
+    </p>
+    <p>ou nous envoyer un mail à {% mailto "support@aidantsconnect.beta.gouv.fr" %} avec:</p>
     <ul>
       <li>Type d'erreur : 408</li>
       <li>La date, l'heure et votre fuseau horaire</li>
       <li>L'URL de cette page</li>
       <li>Ce que vous faisiez juste avant que cette erreur s'affiche</li>
     </ul>
-    <p>ou cliquer sur <a href="mailto:support@aidantsconnect.beta.gouv.fr?&subject=Erreur%20408&body=Bonjour,%20%0D%0A%0D%0AJ'ai%20vu%20une%20erreur%20sur%20Aidants%20Connect.%20%0D%0A%0D%0AVoici les informations sur l'erreur%20(À%20compléter)%20%0D%0A%0D%0A-%20La%20date,%20l'heure%20et%20fuseau%20horaire%20:%0D%0A%0D%0A-%20L'URL%20de%20cette%20page%20:%0D%0A%0D%0A-%20Ce%20que%20vous%20faisiez%20juste%20avant%20que%20cette%20erreur%20s'affiche%20:">ce lien</a> pour avoir un email pré-rempli</p>
   </div>
-</section>
 {% endblock content %}

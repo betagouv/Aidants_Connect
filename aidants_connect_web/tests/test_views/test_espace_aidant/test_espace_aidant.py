@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib import messages as django_messages
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
@@ -127,23 +128,10 @@ class SwitchOrganisationTests(TestCase):
         found = resolve(reverse("espace_aidant_switch_main_organisation"))
         self.assertEqual(found.func.view_class, espace_aidant.SwitchMainOrganisation)
 
-    def test_switch_url_triggers_the_right_template(self):
+    def test_switch_url_triggers_http_method_not_allowed(self):
         self.client.force_login(self.aidant)
         response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
-        self.assertTemplateUsed(
-            response, "aidants_connect_web/espace_aidant/switch_main_organisation.html"
-        )
-
-    def test_aidant_does_not_see_the_switch_if_they_cannot_change_orgs(self):
-        self.client.force_login(self.aidant)
-        response = self.client.get("/")
-        self.assertNotContains(response, "Changer d'organisation")
-
-    def test_aidant_can_see_the_switch_if_they_can_change_orgs(self):
-        self.aidant.organisations.set((self.aidant.organisation, OrganisationFactory()))
-        self.client.force_login(self.aidant)
-        response = self.client.get("/espace-aidant/")
-        self.assertContains(response, "Changer d'organisation")
+        self.assertEqual(405, response.status_code)
 
     def test_aidant_can_switch_to_an_org_they_belong_to(self):
         orgas = self.aidant_with_orgs.organisations.all()
@@ -177,11 +165,15 @@ class SwitchOrganisationTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_aidant_switch_main_organisation"),
+            reverse("espace_aidant_home"),
             fetch_redirect_response=False,
         )
         response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
-        self.assertContains(response, "Il est impossible")
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Il est impossible de vous déplacer dans cette organisation.",
+            messages[0].message,
+        )
         self.aidant_with_orgs.refresh_from_db()
         self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
 
@@ -195,12 +187,14 @@ class SwitchOrganisationTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_aidant_switch_main_organisation"),
+            reverse("espace_aidant_home"),
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
-        self.assertContains(response, "Il est impossible")
-        self.assertNotContains(response, unrelated_org.name)
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Il est impossible de vous déplacer dans cette organisation.",
+            messages[0].message,
+        )
         self.aidant_with_orgs.refresh_from_db()
         self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
 

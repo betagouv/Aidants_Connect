@@ -1,12 +1,10 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% block title %}Aidants Connect - Cette page n'existe pas (erreur 404){% endblock %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    <h1>Cette page n’existe pas (404)</h1>
-    <a id="to-home" href="{% url 'home_page' %}">Retourner à l’accueil</a>
+  <div class="fr-container">
+    <h4 class="fr-pt-8v">Cette page n’existe pas (404)</h4>
+    <a id="to-home" class="fr-link" href="{% url 'home_page' %}">Retourner à l’accueil</a>
   </div>
-</section>
 {% endblock content %}
