@@ -116,7 +116,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.assertIn("Révoqué", revoked_mandat_autorisation_after.text)
 
         auth_revocation_attestation_button = self.selenium.find_elements(
-            By.CSS_SELECTOR, ".button.auth-revocation-attestation"
+            By.CSS_SELECTOR, ".auth-revocation-attestation"
         )
         self.assertEqual(len(auth_revocation_attestation_button), 1)
         self.assertIn("Voir la révocation", auth_revocation_attestation_button[0].text)
