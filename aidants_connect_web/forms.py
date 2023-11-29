@@ -362,8 +362,10 @@ class CarteTOTPValidationForm(forms.Form):
     )
 
 
-class RemoveCardFromAidantForm(PatchedForm):
+class RemoveCardFromAidantForm(DsfrBaseForm2):
     reason = forms.ChoiceField(
+        label="Pourquoi séparer cette carte du compte ?",
+        label_suffix=" :",
         choices=(
             ("perte", "Perte : La carte a été perdue."),
             ("casse", "Casse : La carte a été détériorée."),
@@ -374,9 +376,11 @@ class RemoveCardFromAidantForm(PatchedForm):
             ("depart", "Départ : L’aidant concerné quitte la structure."),
             ("erreur", "Erreur : J’ai lié cette carte à ce compte par erreur."),
             ("autre", "Autre : Je complète ci-dessous."),
-        )
+        ),
     )
-    other_reason = forms.CharField(required=False)
+    other_reason = forms.CharField(
+        label="Autre raison", label_suffix=" :", required=False
+    )
 
     def clean(self):
         cleaned_data = super().clean()

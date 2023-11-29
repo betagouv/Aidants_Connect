@@ -1,5 +1,0 @@
-Bonjour,
-
-j’ai rencontré aujourd’hui un problème en tentant d’afficher le mandat n°{{ mandat_id }} pour l’usager [[ veuillez insérer le nom et prénom de l’usager ]] réalisé le [[ veuillez insérer la date de réalisation du mandat ]].
-
-Merci.

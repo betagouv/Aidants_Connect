@@ -2,7 +2,7 @@
 
 <tr data-search-target="item" data-search-terms='{{ usager.search_terms|json_attribute }}'>
   <td>
-    <a href="{% url 'usager_details' usager_id=usager.id %}">
+    <a class="fr-link" href="{% url 'usager_details' usager_id=usager.id %}">
       {% if usager.preferred_username %}
         {{ usager.preferred_username }}<br />
         Né(e)
@@ -31,10 +31,10 @@
   {% else %}
     <td>
       <div>
-        <a href="{{ usager.renew_mandate_url }}">Renouveler le mandat</a>
+        <a class="fr-link" href="{{ usager.renew_mandate_url }}">Renouveler le mandat</a>
       </div>
       <div>
-        <a href="{% url 'usager_details' usager_id=usager.id %}">Révoquer le mandat</a>
+        <a class="fr-link" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer le mandat</a>
       </div>
     </td>
   {% endif %}
