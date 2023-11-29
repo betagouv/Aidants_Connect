@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'public_website/layout/main.html' %}
 
 {% load static %}
 
@@ -10,18 +10,21 @@
 
 {% block content %}
 <section class="section">
-  <div class="container">
-    <h1 class="section__title">Mentions légales</h1>
+  <div class="fr-container">
 
-    <h2>Éditeur</h2>
+      <div class="fr-grid-row fr-grid-row--center">
+        <h1 class="fr-mt-16v">Mentions légales</h1>
+      </div>
+        <h2>Éditeur</h2>
 
-    <p><a href="https://incubateur.anct.gouv.fr/">Incubateur des Territoires</a> de l'Agence Nationale de la Cohésion des Territoires (<a href="https://agence-cohesion-territoires.gouv.fr/">ANCT</a>). 20, avenue de Ségur - 75007 Paris.
+        <p><a href="https://incubateur.anct.gouv.fr/">Incubateur des Territoires</a> de l'Agence Nationale de la Cohésion des Territoires (<a href="https://agence-cohesion-territoires.gouv.fr/">ANCT</a>). 20, avenue de Ségur - 75007 Paris.
 
-    <p>Directeur de la publication : le directeur général de l'Agence Nationale de la Cohésion des Territoires, Stanislas Bourron </p>
+        <p>Directeur de la publication : le directeur général de l'Agence Nationale de la Cohésion des Territoires, Stanislas Bourron </p>
 
-    <h2>Hébergeur</h2>
+        <h2>Hébergeur</h2>
 
-    <p>Scalingo. 15 avenue du Rhin, 67100 Strasbourg, France.</p>
+        <p>Scalingo. 15 avenue du Rhin, 67100 Strasbourg, France.</p>
+
   </div>
 </section>
 {% endblock content %}
