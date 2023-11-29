@@ -615,7 +615,31 @@ fieldset {
   padding: 1rem;
 }
 
-.warning {
+.fr-btn {
+  &.warning {
+    border-color: colors.$red-aidants;
+    color: colors.$red-aidants;
+    box-shadow: inset 0 0 0 1px colors.$red-aidants;
+
+    &:not(.fr-btn--secondary), &:not(.fr-btn--tertiary) {
+      background-color: colors.$red-aidants;
+      color: white;
+    }
+  }
+
+  &.warning:active, &.warning:focus, &.warning:hover {
+    border-color: #ab2b1e;
+    color: #ab2b1e;
+    box-shadow: inset 0 0 0 1px #ab2b1e;
+
+    &:not(.fr-btn--secondary), &:not(.fr-btn--tertiary) {
+      background-color: #ab2b1e;
+      color: white;
+    }
+  }
+}
+
+.warning:not(.fr-btn) {
   background: white;
   color: colors.$red-aidants;
   padding: 1rem;
