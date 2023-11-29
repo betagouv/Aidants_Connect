@@ -1,75 +1,29 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
-{% load static %}
+{% load static dsfr_tags %}
 
 {% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
 
-{% block extracss %}
-  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
-{% endblock extracss %}
-
 {% block content %}
-  <section class="section">
-    <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+  <div class="fr-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
 
-      <h1>Ajouter un aidant à une de vos organisations</h1>
+    <div class="fr-grid-row fr-grid-row--center">
+      <h2 class="fr-mt-8v">Ajouter un aidant à une de vos organisations</h2>
       <p>
         Pour ajouter un aidant, vous devez formuler une demande d'habilitation à l'aide du
         formulaire ci-dessous. Tous les champs sont obligatoires.
       </p>
-      <form method="post">
+      <form method="post" class="fr-col-12 fr-col-lg-6 fr-col-md-8">
+        <section class="fr-my-4v">{{ form.non_field_errors }}</section>
         {% csrf_token %}
-        {% with form.non_field_errors as errors %}
-          {% if errors %}
-            <div class="notification warning">
-              {{ form.non_field_errors }}
-            </div>
-          {% endif %}
-        {% endwith %}
-        <div class="form__group">
-          <label for="{{ form.organisation.id_for_label }}">Organisation</label>
-          <div>
-            {{ form.organisation }}
-          </div>
-          {{ form.organisation.errors }}
-        </div>
-        <div class="form__group">
-          <label for="{{ form.first_name.id_for_label }}">Prénom de l’aidant</label>
-          <div>
-            {{ form.first_name }}
-          </div>
-          {{ form.first_name.errors }}
-        </div>
-        <div class="form__group">
-          <label for="{{ form.last_name.id_for_label }}">Nom de l’aidant</label>
-          <div>
-            {{ form.last_name }}
-          </div>
-          {{ form.last_name.errors }}
-        </div>
-        <div class="form__group">
-          <label for="{{ form.email.id_for_label }}">Email professionnel de l’aidant</label>
-          <div>
-            {{ form.email }}
-          </div>
-          {{ form.email.errors }}
-        </div>
-        <div class="form__group">
-          <label for="{{ form.profession.id_for_label }}">Profession de l’aidant</label>
-          <div>
-            {{ form.profession }}
-          </div>
-          {{ form.profession.errors }}
-        </div>
-        <div class="form__group">
-          <button class="button" type="submit">Demander l'habilitation</button>
-        </div>
+        {% dsfr_form %}
+        <button class="fr-btn" type="submit">Demander l'habilitation</button>
       </form>
     </div>
-  </section>
+  </div>
 {% endblock content %}
