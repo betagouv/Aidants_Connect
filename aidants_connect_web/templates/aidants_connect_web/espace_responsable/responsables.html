@@ -1,59 +1,44 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
-{% load static %}
+{% load static dsfr_tags %}
 
 {% block title %}Aidants Connect - Désigner un nouveau référent pour {{ organisation }}{% endblock %}
 
-{% block extracss %}
-  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
-{% endblock extracss %}
-
 {% block content %}
-  <section class="section">
-    <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+  <div class="fr-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
 
-      <h1>Désigner un nouveau référent pour {{ organisation }}</h1>
-      {% if organisation.responsables.all|length == 1 %}
-        <p>
-          Actuellement, votre organisation {{ organisation }} compte un seul référent :
-          {{ organisation.responsables.first }}.
-        </p>
-      {% else %}
-        <p>Actuellement, votre organisation {{ organisation }} compte {{ organisation.responsables.all|length }}
-          référents :</p>
-        <ul>
-          {% for responsable in organisation.responsables.all %}
-            <li>{{ responsable.get_full_name }} ({{ responsable.email }})</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-      <p>Vous pouvez désigner un référent supplémentaire grâce au formulaire ci-dessous.</p>
-      <form method="post">
-        {% csrf_token %}
-        {% with form.non_field_errors as errors %}
-          {% if errors %}
-            <div class="notification warning">
-              {{ form.non_field_errors }}
-            </div>
-          {% endif %}
-        {% endwith %}
-        <div class="form__group">
-          <label for="{{ form.candidate.id_for_label }}">Nouveau référent :</label>
-          <div>
-            {{ form.candidate }}
-          </div>
-          {{ form.candidate.errors }}
-        </div>
+    <div class="fr-grid-row fr-grid-row--center">
+      <h2 class="fr-mt-8v">Désigner un nouveau référent pour {{ organisation }}</h2>
+      <div class="fr-col-12 fr-col-lg-6 fr-col-md-8">
+        {% if organisation.responsables.all|length == 1 %}
+          <p>
+            Actuellement, votre organisation {{ organisation }} compte un seul référent :
+            {{ organisation.responsables.first }}.
+          </p>
+        {% else %}
+          <p>
+            Actuellement, votre organisation {{ organisation }} compte {{ organisation.responsables.all|length }}
+            référents :
+          </p>
+          <ul>
+            {% for responsable in organisation.responsables.all %}
+              <li>{{ responsable.get_full_name }} ({{ responsable.email }})</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <p class="fr-mt-8v">Vous pouvez désigner un référent supplémentaire grâce au formulaire ci-dessous.</p>
 
-        <div class="form__group">
-          <button class="button" type="submit">Valider</button>
-        </div>
-      </form>
+        <form method="post">
+          {% csrf_token %}
+          {% dsfr_form %}
+          <button class="fr-btn" type="submit">Dissocier</button>
+        </form>
+      </div>
     </div>
-  </section>
+  </div>
 {% endblock content %}

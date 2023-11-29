@@ -412,8 +412,10 @@ class SwitchMainAidantOrganisationForm(forms.Form):
     next_url = forms.CharField(required=False)
 
 
-class AddOrganisationResponsableForm(forms.Form):
-    candidate = forms.ModelChoiceField(queryset=Aidant.objects.none())
+class AddOrganisationResponsableForm(DsfrBaseForm2):
+    candidate = forms.ModelChoiceField(
+        label="Nouveau référent", label_suffix=" :", queryset=Aidant.objects.none()
+    )
 
     def __init__(self, organisation: Organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)
