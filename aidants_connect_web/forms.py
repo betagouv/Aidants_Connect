@@ -15,7 +15,7 @@ from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 
-from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
+from aidants_connect_common.forms import AcPhoneNumberField, DsfrBaseForm2, PatchedForm
 from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.widgets import DetailedRadioSelect
 from aidants_connect_web.constants import RemoteConsentMethodChoices
@@ -307,7 +307,7 @@ class MandatForm(PatchedForm):
         return True
 
 
-class OTPForm(forms.Form):
+class OTPForm(DsfrBaseForm2):
     otp_token = forms.CharField(
         max_length=6,
         min_length=6,
