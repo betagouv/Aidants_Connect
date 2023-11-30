@@ -131,7 +131,7 @@ class SwitchOrganisationTests(TestCase):
     def test_switch_url_triggers_http_method_not_allowed(self):
         self.client.force_login(self.aidant)
         response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
-        self.assertEqual(405, response.status_code)
+        self.assertRedirects(response, reverse("espace_aidant_home"))
 
     def test_aidant_can_switch_to_an_org_they_belong_to(self):
         orgas = self.aidant_with_orgs.organisations.all()

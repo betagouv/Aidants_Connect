@@ -33,11 +33,7 @@
             <a href="{% url 'LOGOUT_URL_NAME' %}" class="btn btn-warning">Déconnectez-vous</a>
           </div>
         {% else %}
-          {% for message in messages %}
-            <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">
-              {{ message }}
-            </div>
-          {% endfor %}
+          {% include "layouts/_messages.html" %}
 
           <form method="post" class="shadowed login-form">
             {% csrf_token %}

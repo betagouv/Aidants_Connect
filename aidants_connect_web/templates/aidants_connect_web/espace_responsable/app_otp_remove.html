@@ -6,11 +6,7 @@
 
 {% block content %}
   <div class="fr-container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% include "layouts/_messages.html" %}
     <form class="fr-mt-8v" method="post">
       {% csrf_token %}
       <p>Vous vous apprêtez à supprimer l’application OTP du profil de {{ aidant.get_full_name }}.</p>

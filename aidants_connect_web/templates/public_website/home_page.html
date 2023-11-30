@@ -8,14 +8,10 @@
 {% endblock extracss %}
 
 {% block content %}
-  {% if messages %}
-    {% for message in messages %}
-      <div
-        class="notification {% if message.tags %}{{ message.tags }}{% endif %} full-width"
-        role="alert"
-      >{{ message }}</div>
-    {% endfor %}
-  {% endif %}
+  <div class="fr-container">
+    {% include "layouts/_messages.html" %}
+  </div>
+
   <div class="fr-container--fluid hero-container">
     <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle hero-row">
       <div class="fr-col">

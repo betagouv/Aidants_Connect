@@ -1,9 +1,8 @@
-from urllib.parse import unquote
-
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
@@ -12,7 +11,7 @@ from django.views.generic.edit import BaseFormView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
 from aidants_connect_web.constants import NotificationType
-from aidants_connect_web.decorators import aidant_logged_with_activity_required
+from aidants_connect_web.decorators import aidant_logged_required
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
 from aidants_connect_web.models import Aidant, Journal, Notification, Organisation
 
@@ -99,7 +98,7 @@ class ValidateCGU(FormView):
         return super().form_valid(form)
 
 
-@aidant_logged_with_activity_required
+@aidant_logged_required
 class SwitchMainOrganisation(BaseFormView):
     form_class = SwitchMainAidantOrganisationForm
     success_url = reverse_lazy("espace_aidant_home")
@@ -110,13 +109,7 @@ class SwitchMainOrganisation(BaseFormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        return super().http_method_not_allowed(request, *args, **kwargs)
-
-    def get_initial(self):
-        return {
-            "next_url": self.request.GET.get("next", ""),
-            "organisation": self.aidant.organisation,
-        }
+        return redirect("espace_aidant_home")
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -130,7 +123,8 @@ class SwitchMainOrganisation(BaseFormView):
             self.request,
             "Il est impossible de vous déplacer dans cette organisation.",
         )
-        return redirect("espace_aidant_home")
+        self.next_url = form.cleaned_data["next_url"]
+        return HttpResponseRedirect(self.get_success_url())
 
     def form_valid(self, form):
         with transaction.atomic():
@@ -139,8 +133,8 @@ class SwitchMainOrganisation(BaseFormView):
             self.aidant.save(update_fields={"organisation"})
             Journal.log_switch_organisation(self.aidant, previous_org)
 
-        self.next_url = form.cleaned_data.get("next_url")
+        self.next_url = form.cleaned_data["next_url"]
         return super().form_valid(form)
 
     def get_success_url(self):
-        return unquote(self.next_url) if self.next_url else super().get_success_url()
+        return self.next_url or super().get_success_url()

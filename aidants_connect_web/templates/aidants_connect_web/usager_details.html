@@ -18,11 +18,7 @@
       {% endif %}
     </div>
     <h2>&nbsp;↳ {{ usager.get_full_name }}</h2>
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% include "layouts/_messages.html" %}
   </div>
 </section>
 
