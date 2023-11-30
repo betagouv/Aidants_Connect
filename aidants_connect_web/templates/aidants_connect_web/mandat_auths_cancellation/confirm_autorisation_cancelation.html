@@ -1,36 +1,32 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block title %}Aidants Connect - Confirmer la révocation de l'autorisation{% endblock %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    <h1 class="section__title">Confirmer la révocation de l'autorisation</h1>
-    <div class="tiles">
-      <form method="post" class="panel">
-        {% if error %}
-          <div class="notification error" role="alert">{{ error }}</div>
-        {% endif %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--center fr-my-8v">
+      <h2>Confirmer la révocation de l'autorisation</h2>
+
+      <form method="post" class="fr-col-12 fr-col-md-6">
+        {% if error %}<div class="fr-alert fr-alert--error" role="alert">{{ error }}</div>{% endif %}
+
+        <p>
+          L'autorisation avec l'usager <strong>{{ usager }}</strong>,
+          pour la démarche <strong>{{ autorisation.demarche }}</strong>,
+          créé le <strong>{{ autorisation.creation_date | date:"d F Y" }}</strong> et expirant le
+          <strong>{{ autorisation.expiration_date | date:"d F Y" }}</strong>,
+          va être <strong>révoquée</strong>.
+        </p>
+        <p>
+          Cliquez sur le bouton "Je confirme" pour confirmer l'action.
+        </p>
+
         {% csrf_token %}
-        <div class="form__group">
-          <p>
-            L'autorisation avec l'usager <strong>{{ usager }}</strong>,
-            pour la démarche <strong>{{ autorisation.demarche }}</strong>,
-            créé le <strong>{{ autorisation.creation_date | date:"d F Y" }}</strong> et expirant le <strong>{{ autorisation.expiration_date | date:"d F Y" }}</strong>,
-            va être <strong>révoquée</strong>.
-          </p>
-          <p>
-            Cliquez sur le bouton "Je confirme" pour confirmer l'action.
-          </p>
-        </div>
-        <div class="form__group">
-          <input type="submit" class="button" value="Je confirme" />
-          <a href="{% url 'usager_details' usager_id=usager.id %}" class="button-outline primary float-right">Retour</a>
-        </div>
+        <a href="{% url 'espace_responsable_organisation' %}" class="fr-btn">Annuler</a>
+        <button class="warning fr-btn float-right" type="submit">Confirmer</button>
       </form>
     </div>
   </div>
-</section>
 {% endblock content %}

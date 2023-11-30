@@ -291,8 +291,7 @@ def autorisation_cancelation_attestation(request, usager_id, autorisation_id):
 
     return render(
         request,
-        "aidants_connect_web/mandat_auths_cancellation/"
-        "authorization_cancellation_attestation.html",
+        "aidants_connect_web/mandat_auths_cancellation/authorization_cancellation_attestation.html",  # noqa: E501
         {
             "aidant": aidant,
             "authorization": humanize_demarche_names(autorisation.demarche),

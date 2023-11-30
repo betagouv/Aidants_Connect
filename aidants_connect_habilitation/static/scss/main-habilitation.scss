@@ -1045,3 +1045,10 @@ footer {
     }
   }
 }
+
+// D'ont display cookie related element on print
+[id^='tarteaucitron'] {
+  @media print {
+    display: none;
+  }
+}
