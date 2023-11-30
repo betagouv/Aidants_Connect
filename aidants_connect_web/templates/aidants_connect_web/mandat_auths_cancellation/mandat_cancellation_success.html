@@ -1,36 +1,33 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static %}
 
 {% block title %}Aidants Connect - Mandat révoqué !{% endblock %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
-    <h1>
+  <div class="fr-container">
+    <h2 class="fr-my-8v">Le mandat a été révoqué avec succès !</h2>
+
+    <p class="subtitle">
       Le mandat créé le <strong>{{ mandat.creation_date | date:"d F Y" }}</strong>
       et expirant le <strong>{{ mandat.expiration_date | date:"d F Y" }}</strong>
-      a été révoqué avec succès !
-    </h1>
+      a été révoqué avec succès !
+    </p>
 
-    <div class="tiles">
-      <p>
-        {% spaceless %}
-          <a class="button"
-             href="{% url 'mandat_cancellation_attestation' mandat_id=mandat.id %}"
-             target="_blank"
-             rel="noopener noreferrer"
-          >
-            <span aria-hidden="true">🖨 </span>Imprimer l'attestation de révocation
-          </a>
-        {% endspaceless %}
-      </p>
-      <p>
-        <a href="{% url 'usager_details' usager_id=usager.id %}">
-          Voir le profil de {{ usager.get_full_name }}.
-        </a>
-      </p>
+    <div class="fr-my-8v">
+      <a
+        class="fr-btn fr-btn--icon-left fr-icon-printer-fill"
+        href="{% url 'mandat_cancellation_attestation' mandat_id=mandat.id %}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Imprimer l'attestation de révocation
+      </a>
+    </div>
+    <div>
+      <a href="{% url 'usager_details' usager_id=usager.id %}" class="fr-link">
+        Voir le profil de {{ usager.get_full_name }}.
+      </a>
     </div>
   </div>
-</section>
 {% endblock content %}
