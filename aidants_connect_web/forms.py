@@ -441,7 +441,7 @@ class ChangeAidantOrganisationsForm(forms.Form):
         self.initial["organisations"] = self.aidant.organisations.all()
 
 
-class HabilitationRequestCreationForm(forms.ModelForm):
+class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm2):
     def __init__(self, referent, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.referent = referent
