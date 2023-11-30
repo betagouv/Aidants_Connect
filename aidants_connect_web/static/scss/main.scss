@@ -362,6 +362,12 @@ input:focus, select:focus, textarea:focus {
     color: #d63626;
     color: var(--red);
     box-shadow: inset 0 0 0 1px var(--red);
+
+    &:not(.fr-btn--secondary), &:not(.fr-btn--tertiary) {
+      background-color: #d63626;
+      background-color: var(--red);
+      color: white;
+    }
   }
 
   &.warning:active, &.warning:focus, &.warning:hover {
@@ -370,6 +376,12 @@ input:focus, select:focus, textarea:focus {
     color: #ab2b1e;
     color: var(--dark-red);
     box-shadow: inset 0 0 0 1px var(--dark-red);
+
+    &:not(.fr-btn--secondary), &:not(.fr-btn--tertiary) {
+      background-color: #ab2b1e;
+      background-color: var(--dark-red);
+      color: white;
+    }
   }
 }
 
