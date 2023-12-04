@@ -1,4 +1,5 @@
 import re
+from urllib.parse import unquote
 
 from django import forms
 from django.conf import settings
@@ -410,6 +411,13 @@ class SwitchMainAidantOrganisationForm(forms.Form):
         widget=forms.RadioSelect,
     )
     next_url = forms.CharField(required=False)
+
+    def __init__(self, aidant: Aidant, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["organisation"].queryset = aidant.organisations.order_by("name")
+
+    def clean_next_url(self):
+        return unquote(self.cleaned_data.get("next_url", ""))
 
 
 class AddOrganisationResponsableForm(DsfrBaseForm2):

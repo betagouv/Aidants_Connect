@@ -10,17 +10,10 @@
 
 {% block content %}
   <div class="fr-container">
+    {% include "layouts/_messages.html" %}
+
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-10">
-        {% if messages %}
-          {% for message in messages %}
-            <div
-              class="notification {% if message.tags %}{{ message.tags }}{% endif %}"
-              role="alert"
-            >{{ message }}</div>
-          {% endfor %}
-        {% endif %}
-
         <h1>Espace référent</h1>
         <h2>Lier une carte</h2>
         <p class="subtitle">Affectez une carte Aidant & {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>

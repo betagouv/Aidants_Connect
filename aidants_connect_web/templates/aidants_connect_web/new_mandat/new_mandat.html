@@ -10,11 +10,7 @@
 
 {% block content %}
   <div class="fr-container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% include "layouts/_messages.html" %}
 
     <h1>
       Créer ou renouveler un mandat{% if aidant.organisations.count > 1 %} pour {{ aidant.organisation }}{% endif %}

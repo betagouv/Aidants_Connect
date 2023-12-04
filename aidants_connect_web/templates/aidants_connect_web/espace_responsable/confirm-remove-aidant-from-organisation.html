@@ -8,11 +8,7 @@
 
 {% block content %}
   <div class="fr-container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% include "layouts/_messages.html" %}
 
     <div class="fr-grid-row fr-grid-row--center fr-my-8v">
       <h2>

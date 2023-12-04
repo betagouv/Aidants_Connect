@@ -25,13 +25,8 @@
         </a>
       </div>
       {% include "aidants_connect_web/users_search_bar.html" %}
-      {% if messages %}
-        <div class="notification success" role="alert">
-          {% for message in messages %}
-            {{ message }}
-          {% endfor %}
-        </div>
-      {% endif %}
+      {% include "layouts/_messages.html" %}
+
       <div class="tiles">
         {% if usagers_dict.total == 0 %}
         <div class="notification" role="alert">Il n'y a encore personne avec qui vous avez un mandat.</div>

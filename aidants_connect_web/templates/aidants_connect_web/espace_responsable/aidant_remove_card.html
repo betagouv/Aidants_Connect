@@ -6,11 +6,7 @@
 {% block content %}
   <section class="section">
     <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+      {% include "layouts/_messages.html" %}
       <h1>
         Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte
         de lʼaidant {{ aidant.get_full_name }}, {{ aidant.profession }}

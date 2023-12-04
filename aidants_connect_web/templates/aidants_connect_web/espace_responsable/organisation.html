@@ -9,11 +9,8 @@
 
 {% block content %}
   <div class="fr-container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% include "layouts/_messages.html" %}
+
     <h1>Mon organisation</h1>
     <h2>{{ organisation.name }}</h2>
     <p class="subtitle">
