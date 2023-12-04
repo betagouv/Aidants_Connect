@@ -79,7 +79,7 @@
 
     {% if organisation_active_referents %}
       <div class="title-with-item margin-bottom-2rem">
-        <h3 class="margin-0">Référents actifs</h3>
+        <h3 id="active-referents" class="fr-m-0">Référents actifs</h3>
         <div class="tooltip aidants-guide-links">
           Guides
           <div class="tooltiptext">
@@ -107,17 +107,13 @@
     {% endif %}
 
     {% if organisation_active_aidants %}
-      <section id="active-aidants">
-        <h3>Aidants actifs</h3>
-        {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants table_class="shadowed" %}
-      </section>
+      <h3 id="active-aidants">Aidants actifs</h3>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants table_class="shadowed" %}
     {% endif %}
 
     {% if organisation_habilitation_requests %}
-      <section id="habilitation-requests">
-        <h3>Demandes d’habilitation en cours</h3>
-
-        <table class="table habilitation-list">
+      <h3 id="habilitation-requests">Demandes d’habilitation en cours</h3>
+      <table class="table habilitation-list">
           <thead>
           <tr>
             <th>Nom</th>
@@ -176,21 +172,16 @@
           {% endfor %}
           </tbody>
         </table>
-      </section>
     {% endif %}
 
     {% if organisation_inactive_referents %}
-      <section id="inactive-referents">
-        <h3>Référents désactivés</h3>
-        {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_referents table_class="shadowed grey" %}
-      </section>
+      <h3 id="inactive-referents">Référents désactivés</h3>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_referents table_class="shadowed grey" %}
     {% endif %}
 
     {% if organisation_inactive_aidants %}
-      <section id="inactive-aidants">
-        <h3>Aidants désactivés</h3>
-        {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_aidants table_class="shadowed grey" %}
-      </section>
+      <h3 id="inactive-aidants">Aidants désactivés</h3>
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_aidants table_class="shadowed grey" %}
     {% endif %}
   </div>
 {% endblock content %}
