@@ -12,8 +12,8 @@
         <a id="retour_usagers" class="fr-link fr-link--lg" href="{% url 'usagers' %}">Vos usagers</a>
       </h1>
       {% if aidant.can_create_mandats %}
-        <a id="add_mandat" class="fr-btn float-right" href="{% url 'new_mandat' %}">
-            <span aria-hidden="true">📝&nbsp;</span>Créer un mandat
+        <a id="add_mandat" class="fr-btn fr-btn--icon-left fr-icon-edit-fill float-right" href="{% url 'new_mandat' %}">
+            Créer un mandat
         </a>
       {% endif %}
     </div>
@@ -118,7 +118,7 @@
         </div>
       {% endfor %}
     {% else %}
-      <div class="notification" role="alert">Vous n’avez pas de mandats en cours avec cet usager.</div>
+      <div class="fr-alert fr-alert--info" role="alert">Vous n’avez pas de mandats en cours avec cet usager.</div>
     {% endif %}
 
     <br />
@@ -193,10 +193,10 @@
                     <td class="btn-group-right-with-gap">
                       {% if autorisation.was_separately_revoked %}{% spaceless %}
                         <a
-                          class="button small float-right auth-revocation-attestation"
+                          class="fr-btn fr-btn--icon-left fr-icon-printer-fill fr-btn--sm auth-revocation-attestation auth-revocation-attestation"
                           href="{% url 'autorisation_cancelation_attestation' autorisation_id=autorisation.id usager_id=mandat.usager.id %}"
                         >
-                          <span aria-hidden="true">🖨&nbsp;</span>Voir la révocation
+                          Voir la révocation
                         </a>
                       {% endspaceless %}{% endif %}
                     </td>

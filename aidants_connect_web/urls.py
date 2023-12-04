@@ -60,8 +60,7 @@ urlpatterns = [
         name="autorisation_cancelation_success",
     ),
     path(
-        "usagers/<int:usager_id>/autorisations/"
-        "<int:autorisation_id>/cancel_attestation",
+        "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_attestation",  # noqa: E501
         usagers.autorisation_cancelation_attestation,
         name="autorisation_cancelation_attestation",
     ),
