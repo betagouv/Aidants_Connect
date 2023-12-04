@@ -59,7 +59,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         )
 
         # Confirm cancellation
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[1]
+        submit_button = self.selenium.find_element(By.CSS_SELECTOR, "[type='submit']")
         submit_button.click()
 
         # Display attestation
@@ -75,7 +75,8 @@ class CancelAutorisationTests(FunctionalTestCase):
 
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(
-            recap_title, "Révocation d'un mandat via le service « Aidants Connect »"
+            "révocation d'un mandat via le service « aidants connect »",
+            recap_title.casefold(),
         )
 
         self.selenium.close()
