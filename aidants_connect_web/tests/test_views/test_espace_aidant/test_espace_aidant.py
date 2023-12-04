@@ -171,7 +171,7 @@ class SwitchOrganisationTests(TestCase):
         response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Il est impossible de vous déplacer dans cette organisation.",
+            "Il est impossible de sélectionner cette organisation.",
             messages[0].message,
         )
         self.aidant_with_orgs.refresh_from_db()
@@ -192,7 +192,7 @@ class SwitchOrganisationTests(TestCase):
         )
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Il est impossible de vous déplacer dans cette organisation.",
+            "Il est impossible de sélectionner cette organisation.",
             messages[0].message,
         )
         self.aidant_with_orgs.refresh_from_db()

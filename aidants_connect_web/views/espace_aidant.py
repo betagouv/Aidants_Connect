@@ -111,17 +111,13 @@ class SwitchMainOrganisation(BaseFormView):
     def get(self, request, *args, **kwargs):
         return redirect("espace_aidant_home")
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        form.fields["organisation"].queryset = self.aidant.organisations.order_by(
-            "name"
-        )
-        return form
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "aidant": self.aidant}
 
     def form_invalid(self, form):
         django_messages.error(
             self.request,
-            "Il est impossible de vous déplacer dans cette organisation.",
+            "Il est impossible de sélectionner cette organisation.",
         )
         self.next_url = form.cleaned_data["next_url"]
         return HttpResponseRedirect(self.get_success_url())
@@ -132,6 +128,11 @@ class SwitchMainOrganisation(BaseFormView):
             self.aidant.organisation = form.cleaned_data["organisation"]
             self.aidant.save(update_fields={"organisation"})
             Journal.log_switch_organisation(self.aidant, previous_org)
+
+        django_messages.success(
+            self.request,
+            f"Organisation {self.aidant.organisation.name} selectionnée",
+        )
 
         self.next_url = form.cleaned_data["next_url"]
         return super().form_valid(form)

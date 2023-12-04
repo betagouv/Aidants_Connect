@@ -412,6 +412,10 @@ class SwitchMainAidantOrganisationForm(forms.Form):
     )
     next_url = forms.CharField(required=False)
 
+    def __init__(self, aidant: Aidant, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["organisation"].queryset = aidant.organisations.order_by("name")
+
     def clean_next_url(self):
         return unquote(self.cleaned_data.get("next_url", ""))
 
