@@ -23,6 +23,7 @@ from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect.utils import strtobool
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
@@ -126,6 +127,27 @@ class AidantResource(resources.ModelResource):
             carte_totp.save()
             totp_device = carte_totp.get_or_create_totp_device(confirmed=True)
             totp_device.save()
+
+
+class AidantWithOTPAppFilter(SimpleListFilter):
+    title = "Avec/sans application OTP"
+    parameter_name = "with_otp_app"
+
+    def lookups(self, request, model_admin):
+        return [(True, "Avec une app OTP"), (False, "Sans app OTP")]
+
+    def queryset(self, request, queryset: AidantManager):
+        match strtobool(self.value(), None):
+            case True:
+                return queryset.filter(
+                    totpdevice__name__startswith=OTP_APP_DEVICE_NAME % ""
+                )
+            case False:
+                return queryset.filter(
+                    ~Q(totpdevice__name__startswith=OTP_APP_DEVICE_NAME % "")
+                )
+            case _:
+                return queryset
 
 
 class AidantWithMandatsFilter(SimpleListFilter):
@@ -365,6 +387,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantInPreDesactivationZoneFilter,
         AidantWithMandatsFilter,
         AidantGoneTooLong,
+        AidantWithOTPAppFilter,
         "is_staff",
         "is_superuser",
     )
