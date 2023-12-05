@@ -6,7 +6,7 @@ from io import BytesIO
 from django.contrib import messages as django_messages
 from django.db import transaction
 from django.forms import model_to_dict
-from django.http import Http404, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import DeleteView, DetailView, FormView, TemplateView
@@ -41,6 +41,17 @@ from aidants_connect_web.models import (
 )
 
 logger = logging.getLogger()
+
+
+class ReferentCannotManageAidantResponseMixin:
+    def referent_cannot_manage_aidant_response(self):
+        django_messages.error(
+            self.request,
+            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
+            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "veuillez changer dʼorganisation pour le gérer.",
+        )
+        return redirect("espace_responsable_organisation")
 
 
 @responsable_logged_with_activity_required
@@ -138,14 +149,15 @@ class OrganisationResponsables(FormView):
 
 
 @responsable_logged_with_activity_required
-class AidantView(TemplateView):
+class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
     template_name = "aidants_connect_web/espace_responsable/aidant.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
-        self.aidant = get_object_or_404(Aidant, pk=kwargs.get("aidant_id"))
-        if not self.referent.can_see_aidant(self.aidant):
-            raise Http404
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            return self.referent_cannot_manage_aidant_response()
+
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -160,17 +172,17 @@ class AidantView(TemplateView):
 
 
 @responsable_logged_with_activity_required
-class RemoveCardFromAidant(FormView):
+class RemoveCardFromAidant(ReferentCannotManageAidantResponseMixin, FormView):
     template_name = "aidants_connect_web/espace_responsable/aidant_remove_card.html"
     form_class = RemoveCardFromAidantForm
     success_url = reverse_lazy("espace_responsable_organisation")
 
     def dispatch(self, request, *args, **kwargs):
-        self.responsable: Aidant = request.user
-        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs.get("aidant_id"))
+        self.referent: Aidant = request.user
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            return self.referent_cannot_manage_aidant_response()
 
-        if not self.responsable.can_see_aidant(self.aidant):
-            raise Http404
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
 
         if not self.aidant.has_a_carte_totp:
             return HttpResponseRedirect(self.get_success_url())
@@ -181,7 +193,7 @@ class RemoveCardFromAidant(FormView):
         return {
             **super().get_context_data(**kwargs),
             "aidant": self.aidant,
-            "responsable": self.responsable,
+            "responsable": self.referent,
         }
 
     def form_valid(self, form):
@@ -193,7 +205,7 @@ class RemoveCardFromAidant(FormView):
             carte.unlink_aidant()
 
             Journal.log_card_dissociation(
-                self.responsable, self.aidant, sn, form.cleaned_data["reason"]
+                self.referent, self.aidant, sn, form.cleaned_data["reason"]
             )
 
         django_messages.success(
@@ -208,17 +220,17 @@ class RemoveCardFromAidant(FormView):
 
 
 @responsable_logged_with_activity_required
-class AddAppOTPToAidant(FormView):
+class AddAppOTPToAidant(ReferentCannotManageAidantResponseMixin, FormView):
     template_name = "aidants_connect_web/espace_responsable/app_otp_confirm.html"
     form_class = AddAppOTPToAidantForm
     success_url = reverse_lazy("espace_responsable_organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
-        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            return self.referent_cannot_manage_aidant_response()
 
-        if not self.referent.can_see_aidant(self.aidant):
-            raise Http404()
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
 
         if self.aidant.has_otp_app:
             django_messages.warning(
@@ -311,16 +323,16 @@ class AddAppOTPToAidant(FormView):
 
 
 @responsable_logged_with_activity_required
-class RemoveAppOTPFromAidant(DeleteView):
+class RemoveAppOTPFromAidant(ReferentCannotManageAidantResponseMixin, DeleteView):
     template_name = "aidants_connect_web/espace_responsable/app_otp_remove.html"
     success_url = reverse_lazy("espace_responsable_organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
-        self.aidant: Aidant = get_object_or_404(Aidant, pk=kwargs["aidant_id"])
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            return self.referent_cannot_manage_aidant_response()
 
-        if not self.referent.can_see_aidant(self.aidant):
-            raise Http404()
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
 
         if not self.aidant.has_otp_app:
             return HttpResponseRedirect(reverse("espace_responsable_organisation"))
@@ -345,18 +357,19 @@ class RemoveAppOTPFromAidant(DeleteView):
 
 
 @responsable_logged_with_activity_required
-class RemoveAidantFromOrganisationView(TemplateView):
+class RemoveAidantFromOrganisationView(
+    ReferentCannotManageAidantResponseMixin, TemplateView
+):
     template_name = "aidants_connect_web/espace_responsable/confirm-remove-aidant-from-organisation.html"  # noqa: E501
 
-    def dispatch(self, request, aidant_id: int, organisation_id: int, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
-        self.aidant: Aidant = get_object_or_404(Aidant, pk=aidant_id)
         self.organisation: Organisation = get_object_or_404(
-            Organisation, pk=organisation_id
+            Organisation, pk=kwargs["organisation_id"]
         )
-
-        if not self.referent.can_see_aidant(self.aidant):
-            raise Http404()
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            self.referent_cannot_manage_aidant_response()
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -381,14 +394,15 @@ class RemoveAidantFromOrganisationView(TemplateView):
 
 
 @responsable_logged_with_activity_required
-class ChangeAidantOrganisations(FormView):
+class ChangeAidantOrganisations(ReferentCannotManageAidantResponseMixin, FormView):
     form_class = ChangeAidantOrganisationsForm
+    success_url = reverse_lazy("espace_responsable_organisation")
 
-    def dispatch(self, request, aidant_id: int, *args, **kwargs):
-        self.responsable: Aidant = request.user
-        self.aidant = get_object_or_404(Aidant, pk=aidant_id)
-        if not self.responsable.can_see_aidant(self.aidant):
-            raise Http404
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            self.referent_cannot_manage_aidant_response()
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -400,7 +414,7 @@ class ChangeAidantOrganisations(FormView):
         return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
 
     def form_valid(self, form):
-        responsable_organisations = self.responsable.responsable_de.all()
+        responsable_organisations = self.referent.responsable_de.all()
         aidant_organisations = self.aidant.organisations.all()
         posted_organisations = form.cleaned_data["organisations"]
 
@@ -429,25 +443,20 @@ class ChangeAidantOrganisations(FormView):
     def get_form_kwargs(self):
         return {
             **super().get_form_kwargs(),
-            "responsable": self.responsable,
+            "responsable": self.referent,
             "aidant": self.aidant,
         }
 
-    def get_success_url(self):
-        return reverse(
-            "espace_responsable_aidant", kwargs={"aidant_id": self.aidant.id}
-        )
-
 
 @responsable_logged_with_activity_required
-class ChooseTOTPDevice(TemplateView):
+class ChooseTOTPDevice(ReferentCannotManageAidantResponseMixin, TemplateView):
     template_name = "aidants_connect_web/espace_responsable/choose-totp-device.html"
 
-    def dispatch(self, request, aidant_id: int, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
-        self.aidant = get_object_or_404(Aidant, pk=aidant_id)
-        if not self.referent.can_see_aidant(self.aidant):
-            raise Http404
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            self.referent_cannot_manage_aidant_response()
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -478,15 +487,16 @@ class ChooseTOTPDevice(TemplateView):
 
 
 @responsable_logged_with_activity_required
-class AssociateAidantCarteTOTP(FormView):
+class AssociateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView):
     form_class = CarteOTPSerialNumberForm
     template_name = "aidants_connect_web/espace_responsable/write-carte-totp-sn.html"
 
-    def dispatch(self, request, aidant_id: int, *args, **kwargs):
-        self.responsable: Aidant = request.user
-        self.aidant = get_object_or_404(Aidant, pk=aidant_id)
-        if not self.responsable.can_see_aidant(self.aidant):
-            raise Http404
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            self.referent_cannot_manage_aidant_response()
+
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
 
         if self.aidant.has_a_carte_totp:
             django_messages.error(
@@ -528,9 +538,7 @@ class AssociateAidantCarteTOTP(FormView):
                 carte_totp.aidant = self.aidant
                 carte_totp.save()
                 carte_totp.get_or_create_totp_device()
-                Journal.log_card_association(
-                    self.responsable, self.aidant, serial_number
-                )
+                Journal.log_card_association(self.referent, self.aidant, serial_number)
 
             from aidants_connect_web.signals import card_associated_to_aidant
 
@@ -543,20 +551,21 @@ class AssociateAidantCarteTOTP(FormView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        kwargs.update({"aidant": self.aidant, "responsable": self.responsable})
+        kwargs.update({"aidant": self.aidant, "responsable": self.referent})
         return super().get_context_data(**kwargs)
 
 
 @responsable_logged_with_activity_required
-class ValidateAidantCarteTOTP(FormView):
+class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView):
     form_class = CarteTOTPValidationForm
     template_name = "aidants_connect_web/espace_responsable/validate-carte-totp.html"
 
-    def dispatch(self, request, aidant_id: int, *args, **kwargs):
-        self.responsable: Aidant = request.user
-        self.aidant = get_object_or_404(Aidant, pk=aidant_id)
-        if not self.responsable.can_see_aidant(self.aidant):
-            raise Http404
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            self.referent_cannot_manage_aidant_response()
+
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
 
         if not self.aidant.has_a_carte_totp:
             django_messages.error(
@@ -604,13 +613,13 @@ class ValidateAidantCarteTOTP(FormView):
             totp_device.confirmed = True
             totp_device.save()
             Journal.log_card_validation(
-                self.responsable, self.aidant, self.aidant.carte_totp.serial_number
+                self.referent, self.aidant, self.aidant.carte_totp.serial_number
             )
             # check if the validation request is for the référent
-            if self.responsable.pk == self.aidant.pk:
+            if self.referent.pk == self.aidant.pk:
                 # get all organisations aidant is référent
                 valid_organisation_requests = OrganisationRequest.objects.filter(
-                    organisation__in=self.responsable.responsable_de.all()
+                    organisation__in=self.referent.responsable_de.all()
                 )
                 # close all validated requests
                 for organisation_request in valid_organisation_requests:

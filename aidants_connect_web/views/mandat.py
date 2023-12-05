@@ -714,9 +714,13 @@ class Attestation(RenderAttestationAbstract):
 
     def dispatch(self, request, *args, **kwargs):
         self.aidant: Aidant = request.user
-        self.mandat = get_object_or_404(
-            Mandat, pk=kwargs["mandat_id"], organisation=self.aidant.organisation
-        )
+        try:
+            self.mandat = Mandat.objects.get(
+                pk=kwargs["mandat_id"], organisation=self.aidant.organisation
+            )
+        except Mandat.DoesNotExist:
+            django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+            return redirect("espace_aidant_home")
         self.template = self.mandat.get_mandate_template_path()
         self.modified = not self.template
 

@@ -1,3 +1,4 @@
+from django.contrib import messages as django_messages
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
@@ -103,7 +104,14 @@ class EspaceResponsableAidantPage(TestCase):
         response = self.client.get(
             f"/espace-responsable/aidant/{self.autre_aidant.id}/"
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
+            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "veuillez changer dʼorganisation pour le gérer.",
+            messages[0].message,
+        )
 
 
 @tag("responsable-structure")
@@ -157,7 +165,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
             self.get_form_url(aidant),
             {"organisations": [org.id for org in responsable.responsable_de.all()]},
         )
-        self.assertRedirects(response, self.get_aidant_url(aidant))
+        self.assertRedirects(response, reverse("espace_responsable_organisation"))
         aidant.refresh_from_db()
         self.assertEqual(len(aidant.organisations.all()), 2)
         self.assertTrue(
@@ -180,7 +188,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
             self.get_form_url(aidant),
             {"organisations": [other_org.id]},
         )
-        self.assertRedirects(response, self.get_aidant_url(aidant))
+        self.assertRedirects(response, reverse("espace_responsable_organisation"))
 
         aidant.refresh_from_db()
         self.assertEqual(
@@ -228,7 +236,14 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
             self.get_form_url(aidant),
             {"organisations": [responsable.organisation.id]},
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
+            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "veuillez changer dʼorganisation pour le gérer.",
+            messages[0].message,
+        )
 
 
 @tag("responsable-structure")

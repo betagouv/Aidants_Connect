@@ -76,7 +76,14 @@ class AddAppOTPToAidantTests(TestCase):
             )
         )
 
-        self.assertEqual(404, response.status_code)
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
+            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "veuillez changer dʼorganisation pour le gérer.",
+            messages[0].message,
+        )
+
         self.assertEqual(0, self.aidant_ahmed.totpdevice_set.count())
 
     def test_cant_add_otp_device_twice(self):
@@ -270,7 +277,13 @@ class RemoveAppOTPToAidantTests(TestCase):
             )
         )
 
-        self.assertEqual(404, response.status_code)
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
+            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "veuillez changer dʼorganisation pour le gérer.",
+            messages[0].message,
+        )
         self.assertEqual(1, self.aidant_ahmed.totpdevice_set.count())
 
     def test_remove_otp_app_from_aidant_without_top_app(self):
