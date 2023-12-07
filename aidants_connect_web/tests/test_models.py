@@ -1037,7 +1037,7 @@ class AidantModelMethodsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Aidants : Marge & Lisa belong to the same organisation, Patricia does not
-        cls.aidant_marge = AidantFactory(validated_cgu_version="0.1")
+        cls.aidant_marge: Aidant = AidantFactory(validated_cgu_version="0.1")
         cls.aidant_lisa = AidantFactory(
             organisation=cls.aidant_marge.organisation,
             validated_cgu_version=settings.CGU_CURRENT_VERSION,
@@ -1045,10 +1045,17 @@ class AidantModelMethodsTests(TestCase):
         cls.aidant_patricia = AidantFactory()
 
         # Juliette is responsible in the same structure as Marge & Lisa
-        cls.respo_juliette = AidantFactory(
+        cls.respo_juliette: Aidant = AidantFactory(
             organisation=cls.aidant_marge.organisation,
         )
         cls.respo_juliette.responsable_de.add(cls.aidant_marge.organisation)
+        cls.respo_juliette_org2 = OrganisationFactory()
+        cls.respo_juliette.organisations.add(cls.respo_juliette_org2)
+        cls.respo_juliette.responsable_de.add(cls.respo_juliette_org2)
+
+        cls.respo_juliette_org3 = OrganisationFactory()
+        cls.respo_juliette.organisations.add(cls.respo_juliette_org2)
+        cls.aidant_sarah: Aidant = AidantFactory(organisation=cls.respo_juliette_org3)
 
         # TOTP Device
         device = TOTPDevice(user=cls.aidant_marge)
@@ -1365,8 +1372,22 @@ class AidantModelMethodsTests(TestCase):
         self.assertTrue(self.respo_juliette.is_responsable_structure())
 
     def test_can_see_aidant(self):
-        self.assertTrue(self.respo_juliette.can_see_aidant(self.aidant_marge))
-        self.assertFalse(self.respo_juliette.can_see_aidant(self.aidant_patricia))
+        # respo_juliette is referent for their current organisation and
+        # aidant_marge is member of this organisation
+        self.assertTrue(self.respo_juliette.can_manage_aidant(self.aidant_marge))
+
+        # aidant_marge's organisation is not respo_juliette's current organisation
+        self.respo_juliette.organisation = self.respo_juliette_org2
+        self.respo_juliette.save()
+        self.respo_juliette.refresh_from_db()
+        self.assertFalse(self.respo_juliette.can_manage_aidant(self.aidant_marge))
+
+        # aidant_patricia is not in any of respo_juliette's organisation
+        self.assertFalse(self.respo_juliette.can_manage_aidant(self.aidant_patricia))
+
+        # respo_juliette is in aidant_sarah's organisation
+        # but not on of their referents
+        self.assertFalse(self.respo_juliette.can_manage_aidant(self.aidant_sarah))
 
     def test_must_validate_cgu(self):
         # an aidant without further modification must validate user conditions
