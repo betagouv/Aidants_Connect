@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 import logging
+from enum import auto
+from pathlib import Path
+from uuid import uuid4
 
 from django.db import models, transaction
+from django.db.models import IntegerChoices
+from django.utils.functional import cached_property
 
 from ..constants import HabilitationRequestStatuses
 from .aidant import Aidant
@@ -138,3 +143,51 @@ class HabilitationRequest(models.Model):
 class IdGenerator(models.Model):
     code = models.CharField(max_length=100, unique=True)
     last_id = models.PositiveIntegerField()
+
+
+def _filepath_generator():
+    return f"{uuid4()}.csv"
+
+
+class ExportRequest(models.Model):
+    class ExportRequestState(IntegerChoices):
+        ONGOING = auto()
+        DONE = auto()
+        ERROR = auto()
+
+    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True)
+    filename = models.CharField(max_length=40, default=_filepath_generator)
+    state = models.IntegerField(
+        choices=ExportRequestState.choices, default=ExportRequestState.ONGOING
+    )
+
+    @property
+    def is_ongoing(self):
+        return self.state == self.ExportRequestState.ONGOING.value
+
+    @property
+    def is_done(self):
+        return self.state == self.ExportRequestState.DONE.value
+
+    @property
+    def is_error(self):
+        return self.state == self.ExportRequestState.ERROR.value
+
+    @cached_property
+    def file_path(self):
+        import aidants_connect
+
+        return Path(aidants_connect.__path__[0]).resolve().parent / self.filename
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            from ..tasks import export_for_bizdevs
+
+            # Must save before export_for_bizdevs is called because if
+            # export_for_bizdevs could save again before self.pk is set
+            # which creates an infinite recursion and destroys the universe
+            super().save(*args, **kwargs)
+            export_for_bizdevs(self)
+        else:
+            super().save(*args, **kwargs)
