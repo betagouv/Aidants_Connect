@@ -404,7 +404,7 @@ def send_email_on_new_notification_task(notification: Notification):
 
 
 @shared_task
-def export_for_bizdevs(request: ExportRequest):
+def export_for_bizdevs(request: ExportRequest, create_file=True):
     class Serializer:
         fields_to_serialize = (
             "first_name",
@@ -453,7 +453,7 @@ def export_for_bizdevs(request: ExportRequest):
                 return None
             return qs[0].insee_code
 
-        organisation__region.csv_column = "Code INSEE de la région"
+        organisation__region.csv_column = "Organisation: Code INSEE de la région"
 
         def organisation__nb_mandat_created(self):
             return Journal.objects.filter(
@@ -461,7 +461,9 @@ def export_for_bizdevs(request: ExportRequest):
                 action=JournalActionKeywords.CREATE_ATTESTATION,
             ).count()
 
-        organisation__nb_mandat_created.csv_column = "Nombre de mandats créés"
+        organisation__nb_mandat_created.csv_column = (
+            "Organisation: Nombre de mandats créés"
+        )
 
         def organisation__nb_mandat_remote_created(self):
             return Journal.objects.filter(
@@ -471,13 +473,13 @@ def export_for_bizdevs(request: ExportRequest):
             ).count()
 
         organisation__nb_mandat_remote_created.csv_column = (
-            "Nombre de mandats à distance créés"
+            "Organisation: Nombre de mandats à distance créés"
         )
 
         def organisation__nb_usager(self):
             return Usager.objects.active().visible_by(self.aidant).count()
 
-        organisation__nb_usager.csv_column = "Nombre d'usagers"
+        organisation__nb_usager.csv_column = "Organisation: Nombre d'usagers"
 
         def values(self) -> list[str]:
             result = []
@@ -520,9 +522,7 @@ def export_for_bizdevs(request: ExportRequest):
                         )
                     )
                 elif requested_field in model_fields:
-                    result.append(
-                        f"{model_fields[requested_field].verbose_name}".capitalize()
-                    )
+                    result.append(f"{model_fields[requested_field].verbose_name}")
                     Aidant.objects.filter()
                 elif LOOKUP_SEP in requested_field:
                     model = Aidant
@@ -540,13 +540,21 @@ def export_for_bizdevs(request: ExportRequest):
                         model = final_field.related_model
                         related_model_fields = cls.__model_fields(model)
 
-                    result.append(str(final_field.verbose_name).capitalize())
+                    result.append(
+                        f"{final_field.model._meta.verbose_name.capitalize()}: {final_field.verbose_name}"  # noqa: E501
+                    )
                 else:
                     raise AttributeError(
                         f"No field could be found in model {Aidant} of method on class "
                         f"{cls.__class__.__name__} with name '{requested_field}' "
                     )
             return result
+
+    if not request.aidant.is_staff:
+        raise AssertionError("Only staff member can start an export")
+
+    if create_file:
+        request.file_path.touch(mode=0o640, exist_ok=True)
 
     with open(request.file_path, mode="w") as f:
         try:

@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField(auto_now_add=True)),
-                ('filename', models.CharField(default=aidants_connect_web.models.other_models._filepath_generator, max_length=255)),
+                ('filename', models.CharField(default=aidants_connect_web.models.other_models._filepath_generator, max_length=40)),
                 ('state', models.IntegerField(choices=[(1, 'Ongoing'), (2, 'Done'), (3, 'Error')], default=1)),
                 ('aidant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],

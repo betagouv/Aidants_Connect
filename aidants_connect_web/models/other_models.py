@@ -157,7 +157,7 @@ class ExportRequest(models.Model):
 
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
-    filename = models.CharField(max_length=255, default=_filepath_generator)
+    filename = models.CharField(max_length=40, default=_filepath_generator)
     state = models.IntegerField(
         choices=ExportRequestState.choices, default=ExportRequestState.ONGOING
     )
@@ -185,15 +185,9 @@ class ExportRequest(models.Model):
             from ..tasks import export_for_bizdevs
 
             # Must save before export_for_bizdevs is called because if
-            # export_for_bizdevs could save again before sel.pk is set
+            # export_for_bizdevs could save again before self.pk is set
             # which creates an infinite recursion and destroys the universe
             super().save(*args, **kwargs)
-
-            self.file_path.touch(mode=0o640, exist_ok=True)
-
-            with open(self.file_path, "w") as f:
-                f.write("Export en cours")
-
             export_for_bizdevs(self)
         else:
             super().save(*args, **kwargs)

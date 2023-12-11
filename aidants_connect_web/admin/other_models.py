@@ -101,6 +101,6 @@ class ExportRequestAdmin(ModelAdmin):
                 csv,
                 content_type="text/csv",
                 headers={
-                    "Content-Disposition": f'attachment; filename="{export_request.file_path.name}"'
+                    "Content-Disposition": f'attachment; filename="{export_request.file_path.name}"'  # noqa: E501
                 },
             )
