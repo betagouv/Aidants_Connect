@@ -2,6 +2,7 @@ from django.conf import settings
 
 from django_blocklist.utils import add_to_blocklist, user_ip_from_request
 from redis import Redis
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 
 class ThrottleIPMiddleware(object):
@@ -17,7 +18,7 @@ class ThrottleIPMiddleware(object):
 
         try:
             self.redis_client.ping()
-        except ConnectionError:
+        except RedisConnectionError:
             return response
 
         if response.status_code == 404:
