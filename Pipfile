@@ -10,6 +10,7 @@ python_version = "3.11"
 celery = {version = "==5.3.1", extras = ["redis"]}
 django = "~=4.2.3"
 djangorestframework = "~=3.14.0"
+django-blocklist = "==2.0.0"
 django-celery-beat = "==2.5.0"
 django-csp = "==3.7"
 django-dsfr = "==0.16.2"

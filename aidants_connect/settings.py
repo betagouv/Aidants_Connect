@@ -138,6 +138,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "widget_tweaks",
     "dsfr",
+    "django_blocklist",
     "aidants_connect",
     "aidants_connect_common",
     "aidants_connect_web",
@@ -170,6 +171,10 @@ if DEBUG and "test" not in sys.argv:
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = ["127.0.0.1"] + ALLOWED_HOSTS
+
+if "test" not in sys.argv:
+    MIDDLEWARE.insert(0, "django_blocklist.middleware.BlocklistMiddleware")
+    MIDDLEWARE.append("aidants_connect_common.middleware.ThrottleIPMiddleware")
 
 ROOT_URLCONF = "aidants_connect.urls"
 
@@ -777,6 +782,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
 }
+
+BLOCKLIST_CONFIG = {}
+BLOCKLIST_THROTTLE_SECONDS = os.getenv("BLOCKLIST_THROTTLE_SECONDS", "1")
+BLOCKLIST_THROTTLE_THRESHOLD = int(os.getenv("BLOCKLIST_THROTTLE_THRESHOLD", 10))
 
 try:
     DRIFTED_OTP_CARD_TOLERANCE = int(os.getenv("DRIFTED_OTP_CARD_TOLERANCE", 30))
