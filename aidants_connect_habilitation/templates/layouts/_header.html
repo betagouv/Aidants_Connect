@@ -79,7 +79,8 @@
                   <a
                     class="fr-nav__link"
                     target="_self"
-                    href="{% if user_is_responsable_structure %}{% url 'espace_responsable_organisation' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
+                    href="
+                      {% if user_is_responsable_structure %}{% url 'espace_responsable_organisation' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
                     {% if view_name|startswith:'espace_aidant' or view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
                   >
                     Mon organisation
@@ -146,18 +147,21 @@
                       <li><p class="fr-px-4v fr-py-3v fr-text--bold">Mes organisations</p></li>
                       {% for organisation in user_organisations %}
                         <li>
-                          <form method="post" action="{% url 'espace_aidant_switch_main_organisation' %}">
-                            {% csrf_token %}
-                            <input name="organisation" value="{{ organisation.pk }}" type="hidden">
-                            <input name="next_url" value="{{ request.get_full_path|urlencode:'' }}" type="hidden">
-                            <button
-                              class="fr-nav__link"
-                              type="submit"
-                              {% if organisation.pk == request.user.organisation.pk %}aria-current="page"{% endif %}
-                            >
-                              {{ organisation.name }}
-                            </button>
-                          </form>
+                          {% if organisation.pk == request.user.organisation.pk %}
+                            <a class="fr-nav__link" aria-current="page" href="#">{{ organisation.name }}</a>
+                          {% else %}
+                            <form method="post" action="{% url 'espace_aidant_switch_main_organisation' %}">
+                              {% csrf_token %}
+                              <input name="organisation" value="{{ organisation.pk }}" type="hidden">
+                              <input name="next_url" value="{{ request.get_full_path|urlencode:'' }}" type="hidden">
+                              <button
+                                class="fr-nav__link"
+                                type="submit"
+                              >
+                                {{ organisation.name }}
+                              </button>
+                            </form>
+                          {% endif %}
                         </li>
                       {% endfor %}
                     </ul>
