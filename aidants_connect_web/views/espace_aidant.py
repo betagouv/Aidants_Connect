@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
@@ -14,6 +16,8 @@ from aidants_connect_web.constants import NotificationType
 from aidants_connect_web.decorators import aidant_logged_required
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
 from aidants_connect_web.models import Aidant, Journal, Notification, Organisation
+
+logger = getLogger(__name__)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -119,6 +123,12 @@ class SwitchMainOrganisation(BaseFormView):
             self.request,
             "Il est impossible de sélectionner cette organisation.",
         )
+
+        logger.error(
+            f"Failed to select organisation with ID {form.data['organisation']} "
+            f"for aidant {self.aidant} with error(s) {form.errors!r}"
+        )
+
         self.next_url = form.cleaned_data["next_url"]
         return HttpResponseRedirect(self.get_success_url())
 

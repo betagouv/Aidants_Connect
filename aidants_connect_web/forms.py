@@ -406,10 +406,7 @@ class RemoveCardFromAidantForm(DsfrBaseForm2):
 
 
 class SwitchMainAidantOrganisationForm(forms.Form):
-    organisation = forms.ModelChoiceField(
-        queryset=Organisation.objects.none(),
-        widget=forms.RadioSelect,
-    )
+    organisation = forms.ModelChoiceField(queryset=Organisation.objects.none())
     next_url = forms.CharField(required=False)
 
     def __init__(self, aidant: Aidant, *args, **kwargs):
