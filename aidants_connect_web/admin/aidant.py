@@ -298,8 +298,6 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "aidants_connect_web/admin/aidants/change_list.html"
     )
 
-    search_fields = ("id__exact", *DjangoUserAdmin.search_fields)
-
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 

@@ -202,7 +202,7 @@ class OrganisationAdmin(
         "display_aidants",
         "display_habilitation_requests",
     )
-    search_fields = ("id__exact", "name", "siret", "data_pass_id")
+    search_fields = ("name", "siret", "data_pass_id")
     list_filter = (
         RegionFilter,
         DepartmentFilter,
