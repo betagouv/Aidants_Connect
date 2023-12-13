@@ -10,21 +10,21 @@
     <li>
       <a {% if active == "mandat" %} class="active"
            aria-label="Le mandat (rubrique active)" {% endif %}
-           href="{% url 'faq_mandat' %}">
+           href="{% url 'faq-category-detail' slug='mandat' %}">
         Le mandat
       </a>
     </li>
     <li>
       <a {% if active == "donnees_personnelles" %} class="active"
          aria-label="Les données personnelles (rubrique active)"{% endif %}
-         href="{% url 'faq_donnees_personnelles' %}">
+           href="{% url 'faq-category-detail' slug='donnees-personnelles' %}">
         Les données personnelles
       </a>
     </li>
     <li>
       <a {% if active == "habilitation" %} class="active"
          aria-label="L’habilitation (rubrique active)"{% endif %}
-         href="{% url 'faq_habilitation' %}">L’habilitation
+           href="{% url 'faq-category-detail' slug='habilitation' %}">L’habilitation
       </a>
     </li>
   </ul>

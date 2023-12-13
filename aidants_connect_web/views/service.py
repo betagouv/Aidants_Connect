@@ -210,10 +210,6 @@ def ressources(request):
     return render(request, "public_website/ressource_page.html")
 
 
-def faq_generale(request):
-    return render(request, "public_website/faq/generale.html")
-
-
 def faq_mandat(request):
     return render(request, "public_website/faq/mandat.html")
 

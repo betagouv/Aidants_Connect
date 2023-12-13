@@ -1,0 +1,94 @@
+// basic layout -----------------------------------------
+
+html, body {
+  min-height: 100vh;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  font-weight: 400; // Marianne-Regular
+}
+
+ul, ol {
+  margin: 0;
+  padding: 0;
+  list-style-position: inside;
+}
+
+$main-padding: 3rem;
+
+#main {
+  overflow: hidden;
+  flex-grow: 100;
+  padding: $main-padding 0;
+}
+
+.main-content-full { // cancels #main padding
+  margin: -$main-padding 0;
+}
+
+h1, .fr-h1 {
+  color: var(--blue-france-sun-113-625);
+  margin: 0 0 3rem 0;
+}
+
+h3, .fr-h3, h4, .fr-h4 {
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.page-main-title {
+  color: var(--grey-425-625);
+  font-size: 1.25rem;
+  line-height: 2rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  margin: 0 0 3rem 0;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+// Accessibility ------------------------------------------------------
+
+:focus-visible {
+  background-color: var(--hover-tint);
+  color: var(--text-inverted-blue-france);
+  outline: 0 solid var(--hover-tint);
+  border-color: var(--hover-tint);
+}
+
+// From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034
+
+.sr-only {
+  border: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  -webkit-clip-path: inset(50%) !important;
+  clip-path: inset(50%) !important;
+  height: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  width: 1px !important;
+  white-space: nowrap !important;
+}
+
+// utils ----------------------------------------------
+
+.spacer {
+  flex-grow: 10;
+}
