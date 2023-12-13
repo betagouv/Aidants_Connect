@@ -452,15 +452,17 @@ class ChangeAidantOrganisationsForm(forms.Form):
 
 
 class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm2):
+    organisation = forms.ModelChoiceField(
+        queryset=Organisation.objects.none(),
+        empty_label="Choisir...",
+    )
+
     def __init__(self, referent, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.referent = referent
-        self.fields["organisation"] = forms.ModelChoiceField(
-            queryset=Organisation.objects.filter(responsables=self.referent).order_by(
-                "name"
-            ),
-            empty_label="Choisir...",
-        )
+        self.fields["organisation"].queryset = Organisation.objects.filter(
+            responsables=self.referent
+        ).order_by("name")
 
     class Meta:
         model = HabilitationRequest

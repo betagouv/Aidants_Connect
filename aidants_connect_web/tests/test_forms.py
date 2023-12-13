@@ -17,6 +17,7 @@ from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
     DatapassHabilitationForm,
+    HabilitationRequestCreationForm,
     MandatForm,
     MassEmailActionForm,
     RecapMandatForm,
@@ -576,3 +577,26 @@ class TestAddAppOTPToAidantForm(TestCase):
         form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "123456"})
 
         self.assertTrue(form.is_valid())
+
+
+@tag("forms")
+class HabilitationRequestCreationFormTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory()
+        OrganisationFactory()
+        OrganisationFactory()
+        cls.referent = AidantFactory(
+            first_name="Armand",
+            last_name="Giraud",
+            email="agiraud@domain.user",
+            username="agiraud@domain.user",
+            password="flkqgnfdùqlgnqùflkgnùqflkngw",
+            profession="Mediateur",
+            organisation=cls.organisation,
+        )
+        cls.referent.responsable_de.add(cls.organisation)
+
+    def test_filter_queryset_organisation(self):
+        form = HabilitationRequestCreationForm(referent=self.referent)
+        self.assertEqual(1, form.fields["organisation"].queryset.count())
