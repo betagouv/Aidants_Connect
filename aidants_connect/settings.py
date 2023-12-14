@@ -173,7 +173,7 @@ if DEBUG and "test" not in sys.argv:
     INTERNAL_IPS = ["127.0.0.1"] + ALLOWED_HOSTS
 
 if "test" not in sys.argv:
-    MIDDLEWARE.insert(0, "django_blocklist.middleware.BlocklistMiddleware")
+    MIDDLEWARE.insert(0, "aidants_connect_common.middleware.BlocklistMiddleware2")
     MIDDLEWARE.append("aidants_connect_common.middleware.ThrottleIPMiddleware")
 
 ROOT_URLCONF = "aidants_connect.urls"
