@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='autorisation',
             name='demarche',
-            field=models.CharField(choices=[('papiers', 'Papiers - Citoyenneté - Élections'), ('famille', 'Famille - Scolarité'), ('social', 'Social - Santé'), ('travail', 'Travail - Formation'), ('logement', 'Logement'), ('transports', 'Transports - Mobilité'), ('argent', 'Argent - Impôts - Consomation'), ('justice', 'Justice'), ('etranger', 'Étranger - Europe'), ('loisirs', 'Loisirs - Sport - Culture')], max_length=16),
+            field=models.CharField(choices=[('papiers', 'Papiers - Citoyenneté - Élections'), ('famille', 'Famille - Scolarité'), ('social', 'Social - Santé'), ('travail', 'Travail - Formation'), ('logement', 'Logement'), ('transports', 'Transports - Mobilité'), ('argent', 'Argent - Impôts - Consommation'), ('justice', 'Justice'), ('etranger', 'Étranger - Europe'), ('loisirs', 'Loisirs - Sport - Culture')], max_length=16),
         ),
     ]
