@@ -110,7 +110,7 @@ class TestRemoteMandateMixin(TestCase):
                 | pour une durée d'un mois (31 jours) en votre nom pour les démarches\
                 | suivantes :
                 |
-                |- Argent - impôts - consomation,
+                |- Argent - impôts - consommation,
                 |- Étranger - europe,
                 |- Famille - scolarité,
                 |- Justice,

@@ -330,7 +330,7 @@ DEMARCHES = {
         "icon": "/static/images/icons/transports.svg",
     },
     "argent": {
-        "titre": "Argent - Impôts - Consomation",
+        "titre": "Argent - Impôts - Consommation",
         "titre_court": "Argent",
         "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
         "Surendettement…",
