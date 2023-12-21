@@ -51,7 +51,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.assertEqual(
             remaining_autorisations,
             [
-                "ARGENT - IMPÔTS - CONSOMATION: Crédit immobilier, Impôts, "
+                "ARGENT - IMPÔTS - CONSOMMATION: Crédit immobilier, Impôts, "
                 "Consommation, Livret A, Assurance, Surendettement…",
                 "FAMILLE - SCOLARITÉ: Allocations familiales, Naissance, Mariage, "
                 "Pacs, Scolarité…",
