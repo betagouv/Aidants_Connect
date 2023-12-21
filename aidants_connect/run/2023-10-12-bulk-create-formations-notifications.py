@@ -16,9 +16,11 @@ def __2023_10_12_bulk_create_formations_notifications():
                 must_ack=True,
                 body=(
                     "Aucune formation Aidants Connect n'est disponible pour le moment. "
-                    "De nouvelles modalités de formation seront expérimentées d'ici "
-                    "fin 2023. Nous reviendrons vers vous si votre demande est "
-                    "concernée les premières expérimentations."
+                    "Nous travaillons à la mise en place de nouvelles modalités "
+                    "de formation qui vous serons présentées début 2024."
+                    "L’équipe Aidants Connect reprendra"
+                    "contact avec vous et des webinaires seront proposés prochainement "
+                    "pour vous communiquer les nouvelles modalités de formation.  "
                 ),
             )
             for aidant_id in aidants_id
