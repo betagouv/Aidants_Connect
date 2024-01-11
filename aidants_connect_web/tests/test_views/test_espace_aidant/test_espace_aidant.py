@@ -123,6 +123,9 @@ class SwitchOrganisationTests(TestCase):
         cls.second_org = OrganisationFactory(name="Second")
         cls.aidant_with_orgs = AidantFactory(organisation=cls.first_org)
         cls.aidant_with_orgs.organisations.set((cls.first_org, cls.second_org))
+        cls.referent_with_orgs = AidantFactory(
+            organisation=cls.first_org, can_create_mandats=False
+        )
 
     def test_switch_url_triggers_the_right_view(self):
         found = resolve(reverse("espace_aidant_switch_main_organisation"))
@@ -154,6 +157,29 @@ class SwitchOrganisationTests(TestCase):
                 action=JournalActionKeywords.SWITCH_ORGANISATION
             ).count(),
             1,
+        )
+
+        # Same test for referent
+        orgas = self.referent_with_orgs.organisations.all()
+        self.client.force_login(self.referent_with_orgs)
+        self.assertEqual(
+            Journal.objects.filter(
+                action=JournalActionKeywords.SWITCH_ORGANISATION
+            ).count(),
+            1,
+        )
+        response = self.client.post(
+            reverse("espace_aidant_switch_main_organisation"),
+            {"organisation": orgas[0].id},
+        )
+        self.assertRedirects(response, self.home_url, fetch_redirect_response=False)
+        self.referent_with_orgs.refresh_from_db()
+        self.assertEqual(self.referent_with_orgs.organisation.id, orgas[0].id)
+        self.assertEqual(
+            Journal.objects.filter(
+                action=JournalActionKeywords.SWITCH_ORGANISATION
+            ).count(),
+            2,
         )
 
     def test_aidant_cannot_switch_to_an_unexisting_orga(self):

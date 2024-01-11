@@ -13,7 +13,6 @@ from django.views.generic.edit import BaseFormView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
 from aidants_connect_web.constants import NotificationType
-from aidants_connect_web.decorators import aidant_logged_required
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
 from aidants_connect_web.models import Aidant, Journal, Notification, Organisation
 
@@ -102,7 +101,7 @@ class ValidateCGU(FormView):
         return super().form_valid(form)
 
 
-@aidant_logged_required
+@method_decorator(login_required, name="dispatch")
 class SwitchMainOrganisation(BaseFormView):
     form_class = SwitchMainAidantOrganisationForm
     success_url = reverse_lazy("espace_aidant_home")
