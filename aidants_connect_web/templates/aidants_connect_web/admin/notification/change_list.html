@@ -1,0 +1,10 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'otpadmin:aidants_connect_web_notification_add_to_referents' %}" class="addlink">
+      Notifier en masse
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}

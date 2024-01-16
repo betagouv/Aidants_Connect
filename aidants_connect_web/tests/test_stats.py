@@ -1,15 +1,18 @@
 from django.conf import settings
 from django.test import TestCase, tag
+from django.utils import timezone
 from django.utils.timezone import now
+
+from dateutil.relativedelta import relativedelta
 
 from aidants_connect_common.models import Commune, Department, Region
 from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_web.constants import HabilitationRequestStatuses
 from aidants_connect_web.models import (
     Aidant,
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
-    HabilitationRequest,
 )
 from aidants_connect_web.statistics import compute_statistics
 from aidants_connect_web.tests.factories import (
@@ -103,7 +106,7 @@ class AllStatisticsTests(TestCase):
         )
 
         staf_orga = OrganisationFactory(name=settings.STAFF_ORGANISATION_NAME)
-        orga_11 = OrganisationFactory(
+        cls.orga_11 = orga_11 = OrganisationFactory(
             name="CCAS",
             department_insee_code="911",
             city_insee_code=cls.commune_11.insee_code,
@@ -135,6 +138,17 @@ class AllStatisticsTests(TestCase):
             can_create_mandats=False,
             post__is_organisation_manager=True,
         )
+
+        # nb = 4
+        AidantFactory(deactivation_warning_at=timezone.now() - relativedelta(months=6))
+        # nb = 5
+        AidantFactory(deactivation_warning_at=timezone.now() - relativedelta(months=6))
+        # nb = 6
+        AidantFactory(
+            deactivation_warning_at=timezone.now() - relativedelta(months=6),
+            is_active=False,
+        )
+
         cls.orga_ad_dep_12 = OrganisationFactory(
             name="FService AD 2", department_insee_code="912"
         )
@@ -183,34 +197,44 @@ class AllStatisticsTests(TestCase):
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_VALIDATED,
+            status=HabilitationRequestStatuses.STATUS_VALIDATED.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_REFUSED,
+            status=HabilitationRequestStatuses.STATUS_REFUSED.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW,
+            status=HabilitationRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW,
+            status=HabilitationRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_12,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW,
+            status=HabilitationRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_12,
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_NEW, organisation=orga_21
+            status=HabilitationRequestStatuses.STATUS_NEW.value, organisation=orga_21
         )
+
+    def test_number_organisation_with_accredited_aidants(self):
+        stats = compute_statistics(AidantStatistiques())
+        self.assertEqual(stats.number_organisation_with_accredited_aidants, 4)
+
+        new_ad = AidantFactory(last_login=now(), organisation=self.orga_ad_dep_11)
+        CarteTOTPFactory(aidant=new_ad)
+
+        nstats = compute_statistics(AidantStatistiques())
+        self.assertEqual(nstats.number_organisation_with_accredited_aidants, 4)
 
     def test_global_computing_new_statistics(self):
         stats = compute_statistics(AidantStatistiques())
@@ -219,13 +243,16 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_operational_aidants, 4)
         self.assertEqual(stats.number_future_aidant, 4)
         self.assertEqual(stats.number_future_trained_aidant, 4)
-        self.assertEqual(stats.number_trained_aidant_since_begining, 6)
+        self.assertEqual(stats.number_trained_aidant_since_begining, 9)
 
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 4)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 3)
 
         self.assertEqual(stats.number_orgas_in_zrr, 1)
         self.assertEqual(stats.number_aidants_in_zrr, 1)
+
+        self.assertEqual(stats.number_old_inactive_aidants_warned, 1)
+        self.assertEqual(stats.number_old_aidants_warned, 2)
 
     def test_by_department_computing_new_statistics(self):
         stats = compute_statistics(

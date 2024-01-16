@@ -1,4 +1,4 @@
-from .aidant import Aidant, AidantManager, AidantType, aidants__organisations_changed
+from .aidant import Aidant, AidantManager, AidantType
 from .journal import Journal
 from .mandat import (
     Autorisation,
@@ -10,11 +10,12 @@ from .mandat import (
 )
 from .notification import Notification, NotificationType
 from .organisation import Organisation, OrganisationType, get_staff_organisation_name_id
-from .other_models import HabilitationRequest, IdGenerator
+from .other_models import ExportRequest, HabilitationRequest, IdGenerator
 from .stats import (
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
+    ReboardingAidantStatistiques,
 )
 from .usager import Usager, UsagerQuerySet
 from .utils import delete_mandats_and_clean_journal
@@ -30,6 +31,7 @@ __all__ = [
     AutorisationQuerySet,
     CarteTOTP,
     Connection,
+    ExportRequest,
     HabilitationRequest,
     IdGenerator,
     Journal,
@@ -38,9 +40,9 @@ __all__ = [
     Organisation,
     OrganisationType,
     Mandat,
+    ReboardingAidantStatistiques,
     Usager,
     UsagerQuerySet,
-    aidants__organisations_changed,
     default_connection_expiration_date,
     delete_mandats_and_clean_journal,
     get_staff_organisation_name_id,

@@ -1,5 +1,6 @@
-// break points -----------------------------------------
+@use "colors";
 
+// break points -----------------------------------------
 $bp-xs: 20em;
 $bp-sm: 36em;
 $bp-md: 48em;
@@ -42,6 +43,9 @@ $bp-xl: 78em;
 .margin-top-2rem {
   margin-top: 2rem !important;
 }
+.margin-top-5rem {
+  margin-top: 5rem !important;
+}
 .margin-top-0 {
   margin-top: 0 !important;
 }
@@ -50,6 +54,9 @@ $bp-xl: 78em;
 }
 .padding-0 {
   padding: 0 !important;
+}
+.padding-1rem {
+  padding: 1rem !important;
 }
 .padding-0-5rem {
   padding: .5rem !important;
@@ -93,4 +100,20 @@ $bp-xl: 78em;
 }
 .bold {
   font-weight: bold;
+}
+.em {
+  font-style: italic;
+}
+.blue-text {
+  color: colors.$blue-aidants
+}
+.light-blue-text {
+  color: colors.$light-blue-anct
+}
+.centering {
+  display: block;
+  margin: auto;
+}
+.spacer {
+  flex-grow: 10;
 }

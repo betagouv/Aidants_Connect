@@ -8,12 +8,16 @@ from django.test.client import Client
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_web.constants import RemoteConsentMethodChoices
+from aidants_connect_web.constants import (
+    OTP_APP_DEVICE_NAME,
+    RemoteConsentMethodChoices,
+)
 from aidants_connect_web.forms import (
     AddAppOTPToAidantForm,
     AidantChangeForm,
     AidantCreationForm,
     DatapassHabilitationForm,
+    HabilitationRequestCreationForm,
     MandatForm,
     MassEmailActionForm,
     RecapMandatForm,
@@ -529,7 +533,7 @@ class TestAddAppOTPToAidantForm(TestCase):
         cls.aidant = AidantFactory()
         cls.otp_device = TOTPDevice(
             user=cls.aidant,
-            name=TOTPDevice.APP_DEVICE_NAME % cls.aidant.pk,
+            name=OTP_APP_DEVICE_NAME % cls.aidant.pk,
             confirmed=False,
         )
 
@@ -573,3 +577,26 @@ class TestAddAppOTPToAidantForm(TestCase):
         form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "123456"})
 
         self.assertTrue(form.is_valid())
+
+
+@tag("forms")
+class HabilitationRequestCreationFormTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory()
+        OrganisationFactory()
+        OrganisationFactory()
+        cls.referent = AidantFactory(
+            first_name="Armand",
+            last_name="Giraud",
+            email="agiraud@domain.user",
+            username="agiraud@domain.user",
+            password="flkqgnfdùqlgnqùflkgnùqflkngw",
+            profession="Mediateur",
+            organisation=cls.organisation,
+        )
+        cls.referent.responsable_de.add(cls.organisation)
+
+    def test_filter_queryset_organisation(self):
+        form = HabilitationRequestCreationForm(referent=self.referent)
+        self.assertEqual(1, form.fields["organisation"].queryset.count())

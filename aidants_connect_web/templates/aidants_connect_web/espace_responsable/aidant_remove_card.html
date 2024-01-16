@@ -1,23 +1,32 @@
-{% extends 'layouts/main.html' %}
-
-{% load static %}
-{% load ac_extras %}
+{% extends 'layouts/main-legacy.html' %}
+{% load static ac_extras dsfr_tags %}
 
 {% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
 
 {% block content %}
   <section class="section">
     <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+      {% include "layouts/_messages.html" %}
       <h1>
         Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte
         de lʼaidant {{ aidant.get_full_name }}, {{ aidant.profession }}
       </h1>
-      {% include "aidants_connect_web/espace_responsable/_aidant_remove_card.html" %}
+
+      <p>
+        Pour supprimer l'association entre la carte {{ aidant.carte_totp.serial_number }}
+        et le compte de l'aidant {{ aidant.get_full_name }},
+        cliquez sur le bouton «&nbsp;Dissocier&nbsp;».
+      </p>
+      <form
+        method="post"
+        class="fr-col-12 fr-col-lg-6 fr-col-md-8"
+        action="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
+      >
+        {% csrf_token %}
+        {% dsfr_form %}
+        <button class="fr-btn" type="submit">Dissocier</button>
+      </form>
+
     </div>
   </section>
 {% endblock content %}

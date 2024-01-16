@@ -69,10 +69,10 @@ class RespoStructureRequiredTests(TestCase):
 
     def test_responsable_can_access_decorated_page(self):
         self.client.force_login(self.responsable_georges)
-        response = self.client.get("/espace-responsable/")
+        response = self.client.get("/espace-responsable/organisation/")
         self.assertEqual(response.status_code, 200)
 
     def test_non_responsable_user_cannot_access_decorated_page(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/espace-responsable/")
+        response = self.client.get("/espace-responsable/organisation/")
         self.assertEqual(response.status_code, 302)

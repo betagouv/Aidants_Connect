@@ -3,7 +3,12 @@
 }
 h2 .text-very-small::before {
 	content: '• ';
+
 }
+h2 .text-very-small{
+	font-size: 0.5em;
+}
+
 #videos .section__subtitle {
 	margin-bottom: 3em;
 }

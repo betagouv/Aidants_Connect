@@ -51,9 +51,10 @@ h4, h5, h6 {
 }
 
 .table tbody th {
-    border-top: 1px solid #ebeff3;
-    border-top: 1px solid var(--lighter-grey);
+  border-top: 1px solid #ebeff3;
+  border-top: 1px solid var(--lighter-grey);
 }
+
 /* Base */
 
 html {
@@ -65,7 +66,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  font-family: Evolventa,Trebuchet MS,sans-serif;
+  font-family: Evolventa, Trebuchet MS, sans-serif;
 }
 
 
@@ -76,6 +77,7 @@ body {
 .ac-color-red {
   color: #FF3954;
 }
+
 /* header & footer */
 .navbar__home {
   height: 10em;
@@ -89,6 +91,7 @@ body {
   height: 3em;
   margin-bottom: 1em;
 }
+
 .logo__anct {
   margin: 1.5em 0 1.5em 0;
 }
@@ -99,6 +102,7 @@ body {
   padding: .5em;
   border-radius: 0 .5em .5em .5em;
 }
+
 .navbar__organisation:hover {
   background: #ebeff3;
   background: var(--lighter-grey);
@@ -120,6 +124,7 @@ body {
 .row div.min-width-35 {
   min-width: 35%;
 }
+
 .row div.min-width-15 {
   min-width: 15%;
 }
@@ -166,9 +171,11 @@ a.no-decoration {
 .background-color-blue {
   background-color: #0053b3;
 }
+
 .background-color-grey {
   background-color: var(--theme-background-grey);
 }
+
 .background-color-white {
   background-color: white;
 }
@@ -180,6 +187,7 @@ a.no-decoration {
 .font-weight-normal {
   font-weight: normal;
 }
+
 .font-weight-bold {
   font-weight: bold;
 }
@@ -187,6 +195,7 @@ a.no-decoration {
 .float-left {
   float: left;
 }
+
 .float-right {
   float: right;
 }
@@ -198,9 +207,11 @@ a.no-decoration {
 .min-width-35 {
   min-width: 35%;
 }
+
 .min-width-50 {
   min-width: 50%;
 }
+
 .max-width-50 {
   max-width: 50%;
 }
@@ -214,15 +225,19 @@ a.no-decoration {
 .table .th-66 {
   width: 66%;
 }
+
 .table .th-50 {
   width: 50%;
 }
+
 .table .th-40 {
   width: 40%;
 }
+
 .table .th-25 {
   width: 25%;
 }
+
 .table .th-20 {
   width: 20%;
 }
@@ -233,9 +248,11 @@ a.no-decoration {
 img.logo-height-5em {
   max-height: 5em;
 }
+
 img.logo-height-4em {
   max-height: 4em;
 }
+
 .logo-in-title {
   height: 2.5em;
   margin: 0 0 .5em;
@@ -259,44 +276,57 @@ img.logo-height-4em {
 
 /* Forms */
 a.button-outline, a.button-outline:active, a.button-outline:focus, a.button-outline:visited, button.button-outline, button.button-outline:active, button.button-outline:focus, button.button-outline:visited, a.button, a.button:active, a.button:focus, a.button:visited, button.button, button.button:active, button.button:focus, button.button:visited, input[type="button"], input[type="button"]:active, input[type="button"]:focus, input[type="button"]:visited, input[type="submit"], input[type="submit"]:active, input[type="submit"]:focus, input[type="submit"]:visited {
-    font-family: Evolventa,Trebuchet MS,sans-serif;
+  font-family: Evolventa, Trebuchet MS, sans-serif;
+}
+
+.input-container {
+  input:not(:checked) ~ label:before {
+    content: url("/static/images/icons/tick-unchecked.svg");
+  }
+
+  input:checked ~ label:before {
+    content: url("/static/images/icons/tick-checked.svg");
+  }
 }
 
 select {
-    /* cancel "appearance:none from template because AC's CSP prevents SVG background from display: */
-    -webkit-appearance: auto;
-    -moz-appearance: auto;
-    appearance: auto;
-    /* cancel background-image property to avoid errors in browser console: */
-    background: #fff;
-    /* other */
-    max-width: 100%;
+  /* cancel "appearance:none from template because AC's CSP prevents SVG background from display: */
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  appearance: auto;
+  /* cancel background-image property to avoid errors in browser console: */
+  background: #fff;
+  /* other */
+  max-width: 100%;
 }
 
 /* Accessibility */
 /* From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034 */
 
 .sr-only {
-	border: 0 !important;
-	clip: rect(1px, 1px, 1px, 1px) !important;
-	-webkit-clip-path: inset(50%) !important;
-		clip-path: inset(50%) !important;
-	height: 1px !important;
-	margin: -1px !important;
-	overflow: hidden !important;
-	padding: 0 !important;
-	position: absolute !important;
-	width: 1px !important;
-	white-space: nowrap !important;
+  border: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  -webkit-clip-path: inset(50%) !important;
+  clip-path: inset(50%) !important;
+  height: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  width: 1px !important;
+  white-space: nowrap !important;
 }
+
 input:focus, select:focus, textarea:focus {
-    border-color: #0061c4;
-    transition: border-color .2s ease-out;
+  border-color: #0061c4;
+  transition: border-color .2s ease-out;
 }
+
 :focus {
   outline: 2px solid var(--theme-border-active);
   outline-offset: 2px;
 }
+
 .notification a[href] {
   color: #000;
   color: var(--theme-dark-text);
@@ -310,14 +340,55 @@ input:focus, select:focus, textarea:focus {
   position: absolute;
   transform: translateY(-100%);
 }
+
 .skip-links:focus-within {
   transform: translateY(0);
   position: relative;
 }
+
 .skip-links a {
   color: var(--theme-dark-text);
   margin-right: 1em;
 }
+
 #top_menu {
   padding: 3em 0; /* used to have top_menu visible on screen just after corresponding skiplink has been followed */
+}
+
+.fr-btn {
+  &.warning {
+    border-color: #d63626;
+    border-color: var(--red);
+    color: #d63626;
+    color: var(--red);
+    box-shadow: inset 0 0 0 1px var(--red);
+
+    &:not(.fr-btn--secondary), &:not(.fr-btn--tertiary) {
+      background-color: #d63626;
+      background-color: var(--red);
+      color: white;
+    }
+  }
+
+  &.warning:active, &.warning:focus, &.warning:hover {
+    border-color: #ab2b1e;
+    border-color: var(--dark-red);
+    color: #ab2b1e;
+    color: var(--dark-red);
+    box-shadow: inset 0 0 0 1px var(--dark-red);
+
+    &:not(.fr-btn--secondary), &:not(.fr-btn--tertiary) {
+      background-color: #ab2b1e;
+      background-color: var(--dark-red);
+      color: white;
+    }
+  }
+}
+
+.btn-group-right-with-gap {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .5rem;
 }

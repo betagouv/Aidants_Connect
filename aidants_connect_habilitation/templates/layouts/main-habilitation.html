@@ -1,14 +1,15 @@
-{% load static %}
+{% load static dsfr_tags ac_common %}
 <!doctype html>
-<html lang="fr" data-fr-scheme="system">
+<html lang="fr" data-fr-scheme="light">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>{% block title %}Aidants Connect{% endblock %}</title>
-  <link href="{% static 'css/ds-font-grid.css' %}" rel="stylesheet">
+  {% dsfr_css %}
   <link href="{% static 'css/main-habilitation.css' %}" rel="stylesheet">
+  <link href="{{ COOKIE_BANNER_CSS_URL }}" rel="stylesheet">
   {# Extra styles #}
   {% block extracss %}{% endblock %}
 
@@ -42,13 +43,22 @@
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicons/favicon-32x32.png' %}">
   <link rel="manifest" href="{% static 'images/favicons/manifest.json' %}">
   <link rel="mask-icon" href="{% static 'images/favicons/safari-pinned-tab.svg' %}" color="#5bbad5">
-  <!-- Matomo -->
-  {% include "layouts/matomo_script.html" %}
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
 {% block nav %}
-  {% include 'layouts/_header.html' %}
+  {% if request.resolver_match.view_name|startswith:"habilitation" %}
+    {% comment %}
+      This block is a bit weird. Habilitation is part of the public webstite so it should display the nav
+      from the public website. But since redesigned connected parts of the app use the habilitation main
+      layout, we're forced to put an exception here in order not to break the entire app.
+      This should be removed when all the app is ported to the new design and this layout is migrated to
+      aidants_connect_common.
+    {% endcomment %}
+    {% include 'public_website/layout/_header.html' %}
+  {% else %}
+    {% include 'layouts/_header.html' %}
+  {% endif %}
 {% endblock nav %}
 
 <main id="main" tabindex="-1">
@@ -77,6 +87,18 @@
   {% include 'layouts/_footer.html' %}
 {% endblock footer %}
 
+{% dsfr_js %}
+<script
+  id="cookie-banner"
+  {% if MATOMO_INSTANCE_URL and MATOMO_INSTANCE_SITE_ID %}
+  data-matomo-url="{{ MATOMO_INSTANCE_URL }}"
+  data-matomo-site-id="{{ MATOMO_INSTANCE_SITE_ID }}"
+  {% endif %}
+  defer src="{{ COOKIE_BANNER_JS_URL }}"
+></script>
+<script defer src="{{ COOKIE_BANNER_LANG_URL }}"></script>
+<script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>
+<script defer src="{% static 'js/cookie-banner.js' %}"></script>
 {% block extrajs %}
 {% endblock %}
 </body>

@@ -10,11 +10,9 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export.results import Result
 
-from aidants_connect_web.admin import (
-    CarteTOTPAdmin,
-    VisibleToAdminMetier,
-    VisibleToTechAdmin,
-)
+from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin
+from aidants_connect_web.admin import CarteTOTPAdmin
+from aidants_connect_web.constants import HabilitationRequestStatuses
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
@@ -442,8 +440,8 @@ class TOTPCardAdminPageTests(TestCase):
 
     def test_dissociate_aidant_whith_totp_device(self):
         aidant = AidantFactory()
-        totp_device = TOTPDeviceFactory(user=aidant)
-        card = CarteTOTPFactory(aidant=aidant, seed=totp_device.key)
+        card: CarteTOTP = CarteTOTPFactory(aidant=aidant)
+        card.get_or_create_totp_device()
         card_dissociate_url = reverse(
             "otpadmin:aidants_connect_web_carte_totp_dissociate",
             args=(card.id,),
@@ -457,8 +455,12 @@ class TOTPCardAdminPageTests(TestCase):
     def test_do_not_destroy_unrelated_totp_device(self):
         aidant_tim = AidantFactory()
         aidant_tom = AidantFactory()
-        totp_device = TOTPDeviceFactory(user=aidant_tim)
-        card = CarteTOTPFactory(aidant=aidant_tom, seed=totp_device.key)
+        CarteTOTPFactory(aidant=aidant_tim).get_or_create_totp_device()
+        card = CarteTOTPFactory(aidant=aidant_tom)
+        card.get_or_create_totp_device()
+
+        self.assertEqual(1, TOTPDevice.objects.filter(user=aidant_tim).count())
+
         card_dissociate_url = reverse(
             "otpadmin:aidants_connect_web_carte_totp_dissociate",
             args=(card.id,),
@@ -560,13 +562,16 @@ class HabilitationRequestAdminPageTests(TestCase):
         for email in emails:
             habilitation_request = HabilitationRequest.objects.get(email=email)
             self.assertEqual(
-                habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+                habilitation_request.status,
+                HabilitationRequestStatuses.STATUS_VALIDATED,
             )
             self.assertTrue(Aidant.objects.filter(email=email).exists())
 
     def test_mass_habilitation_on_canceled_status(self):
         for _ in range(2):
-            HabilitationRequestFactory(status=HabilitationRequest.STATUS_CANCELLED)
+            HabilitationRequestFactory(
+                status=HabilitationRequestStatuses.STATUS_CANCELLED
+            )
         self.assertEqual(2, HabilitationRequest.objects.all().count())
         emails = tuple(obj.email for obj in HabilitationRequest.objects.all())
         response = self.bizdev_client.post(self.url, {"email_list": "\n".join(emails)})
@@ -576,7 +581,8 @@ class HabilitationRequestAdminPageTests(TestCase):
         for email in emails:
             habilitation_request = HabilitationRequest.objects.get(email=email)
             self.assertEqual(
-                habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+                habilitation_request.status,
+                HabilitationRequestStatuses.STATUS_VALIDATED,
             )
             self.assertTrue(Aidant.objects.filter(email=email).exists())
 
@@ -591,7 +597,8 @@ class HabilitationRequestAdminPageTests(TestCase):
         for email in valid_emails:
             habilitation_request = HabilitationRequest.objects.get(email=email)
             self.assertEqual(
-                habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+                habilitation_request.status,
+                HabilitationRequestStatuses.STATUS_VALIDATED,
             )
             self.assertTrue(Aidant.objects.filter(email=email).exists())
         self.assertContains(

@@ -4,7 +4,7 @@
   <tr>
     <th>Nom</th>
     <th>Email</th>
-    <th>Carte Aidants Connect</th>
+    <th>Carte(s) Aidants Connect</th>
     <th><span class="sr-only">Retirer un aidant</span></th>
   </tr>
   </thead>
@@ -15,84 +15,56 @@
         {% if aidant.pk == responsable.pk %}
           {{ aidant.get_full_name }} (Référent)
         {% else %}
-          <a href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+          <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
             {{ aidant.get_full_name }}
           </a>
         {% endif %}
       </td>
       <td>{% mailto recipient=aidant.email %}</td>
       <td>
-        {{ aidant.number_totp_card }}
-
-        {% if aidant.has_a_carte_totp and not aidant.carte_totp.totp_device.confirmed %}
-          <p class="unverified-card-warning shadowed red padding-1rem">
-            Attention : Le fonctionnement de cette carte n’a pas été vérifié.
-            Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
-            de se connecter à Aidants Connect.
-          </p>
+        {% if aidant.has_a_carte_totp %}
+          <div>
+            {{ aidant.number_totp_card }}
+            {% if not aidant.carte_totp.totp_device.confirmed and aidant.is_active %}
+              <p class="unverified-card-warning shadowed red padding-1rem">
+                Attention : Le fonctionnement de cette carte n’a pas été vérifié.
+                Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
+                de se connecter à Aidants Connect.
+              </p>
+            {% endif %}
+          </div>
+        {% endif %}
+        {% if aidant.has_otp_app %}
+          <p>Une carte numérique est associée à ce profil</p>
         {% endif %}
       </td>
       <td>
-        {% if aidant.pk != responsable.pk and aidant.is_active %}
-          <a
-            id="remove-aidant-{{ aidant.id }}-from-organisation"
-            href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
-            class="button"
-          >
-            {% if aidant.organisations.count > 1 %}
-              Retirer l’aidant de l’organisation
-            {% else %}
-              Désactiver l’aidant
+        <ul class="fr-btns-group">
+          <li>
+            {% if aidant.pk != referent.pk and aidant.is_active %}
+              <a
+                id="remove-aidant-{{ aidant.id }}-from-organisation"
+                href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+                class="fr-btn fr-btn--secondary"
+              >
+                {% if aidant.organisations.count > 1 %}
+                  Retirer l’aidant de l’organisation
+                {% else %}
+                  Désactiver l’aidant
+                {% endif %}
+              </a>
             {% endif %}
-          </a>
-        {% endif %}
-
-        {% if aidant.is_active %}
-          {% if not aidant.has_a_carte_totp %}
+          </li>
+          <li>
             <a
-              id="add-totp-card-to-aidant-{{ aidant.id }}"
-              href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
-              class="button"
+              id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+              href="{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}"
+              class="fr-btn fr-btn--secondary"
             >
-              Lier une carte
+              Gérer les cartes OTP
             </a>
-          {% elif not aidant.carte_totp.totp_device.confirmed %}
-            <a
-              id="validate-totp-card-for-aidant-{{ aidant.id }}"
-              href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}"
-              class="button"
-            >
-              Valider la carte
-            </a>
-          {% endif %}
-          {% if not aidant.has_otp_app and FF_OTP_APP %}
-            <a
-              id="add-otp-app-to-aidant-{{ aidant.id }}"
-              href="{% url 'espace_responsable_aidant_add_app_otp' aidant_id=aidant.id %}"
-              class="button"
-            >
-              Ajouter une application OTP
-            </a>
-          {% endif %}
-        {% endif %}
-        {% if aidant.has_a_carte_totp %}
-          <a
-            id="remove-totp-card-from-aidant-{{ aidant.id }}"
-            href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
-            class="button"
-          >
-            Délier la carte
-          </a>
-        {% endif %}
-        {% if aidant.has_otp_app and FF_OTP_APP %}
-          <a
-            id="add-otp-app-to-aidant-{{ aidant.id }}"
-            href="{% url 'espace_responsable_aidant_remove_app_otp' aidant_id=aidant.id %}"
-            class="button"
-          >
-            Supprimer une application OTP
-          </a>
-        {% endif %}
+          </li>
+        </ul>
       </td>
     </tr>
   {% endfor %}

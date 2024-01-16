@@ -52,6 +52,21 @@ class OrganisationManager(models.Manager):
 
 
 class Organisation(models.Model):
+    legal_category = models.PositiveIntegerField(
+        "categorieJuridiqueUniteLegale", default=0
+    )
+    siren = models.BigIntegerField("N° SIREN", default=1)
+
+    legal_cat_level_one = models.CharField(
+        "Niveau I catégories juridiques", max_length=255, null=True
+    )
+    legal_cat_level_two = models.CharField(
+        "Niveau II catégories juridiques", max_length=255, null=True
+    )
+    legal_cat_level_three = models.CharField(
+        "Niveau III catégories juridiques", max_length=255, null=True
+    )
+
     data_pass_id = models.PositiveIntegerField("Datapass ID", null=True, unique=True)
     uuid = models.UUIDField("API ID", unique=True, default=uuid4)
     name = models.TextField("Nom", default="No name provided")
@@ -83,6 +98,9 @@ class Organisation(models.Model):
     )
 
     is_active = models.BooleanField("Est active", default=True, editable=False)
+
+    created_at = models.DateTimeField("Date création", auto_now_add=True)
+    updated_at = models.DateTimeField("Date modification", auto_now=True)
 
     objects = OrganisationManager()
 

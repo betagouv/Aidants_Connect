@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'public_website/layout/main.html' %}
 
 {% load static %}
 
@@ -10,11 +10,13 @@
 
 {% block content %}
 <section class="section">
-  <div class="container">
+  <div class="fr-container">
     {% block before_content %}{% endblock %}
 
-    <h1 class="section__title">Conditions générales d'utilisation</h1>
 
+      <div class="fr-grid-row fr-grid-row--center">
+            <h1 class="fr-mt-16v">Conditions générales d'utilisation</h1>
+      </div>
     {# Penser à mettre à jour CGU_CURRENT_VERSION dans settings.py si on veut que les aidants et référents re-valident les CGU #}
     <p>
       Version 0.2

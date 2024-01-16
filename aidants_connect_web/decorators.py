@@ -112,3 +112,35 @@ def aidant_logged_with_activity_required(
     return aidant_logged_required(
         view=view, method_name=method_name, more_decorators=more_decorators
     )
+
+
+def responsable_logged_with_activity_required(
+    view=None, *, method_name="", more_decorators: List | None = None
+):
+    """
+    Combines @login_required, @user_is_responsable_structure and @activity_required for
+    CBVs.
+
+    Can be applied to either the class itself or any method of the class.
+    If applied on the class, will be applied on ``dispatch`` method by default
+    but can be changed by using ``method_name`` argument.
+
+    ``additionnal_decorators`` allows to decorate the view with additionnal decorators,
+    like csrf_exempt.
+    """
+
+    def decorator(decorated):
+        kwargs = {}
+        if isinstance(decorated, type) and not method_name:
+            kwargs["name"] = method_name or "dispatch"
+
+        more = more_decorators or []
+
+        fun = method_decorator(
+            [login_required, user_is_responsable_structure, activity_required, *more],
+            **kwargs
+        )
+
+        return fun(decorated)
+
+    return decorator(view) if view else decorator

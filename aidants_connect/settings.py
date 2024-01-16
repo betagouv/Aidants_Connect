@@ -9,12 +9,12 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
 import logging
 import os
 import re
 import sys
 from datetime import datetime, timedelta
+from itertools import chain
 from pathlib import Path
 from typing import Optional, Union
 
@@ -32,7 +32,7 @@ from aidants_connect.utils import strtobool
 load_dotenv(verbose=True)
 
 
-def getenv_bool(key: str, default: Optional[bool] = None) -> bool:
+def getenv_bool(key: str, default_value: Optional[bool] = None) -> bool:
     """Obtains a boolean value from an environement variable
 
     Authorized values are casing variants of "true", "yes", "false" and "no" as well as
@@ -42,10 +42,10 @@ def getenv_bool(key: str, default: Optional[bool] = None) -> bool:
     If the environment variable does not exist and no default value is provided,
     an error will be thrown
 
-    :param key: The name the the environment variable to load
-    :param default: The default value to take if env var does not exist
+    :param key: The name the environment variable to load
+    :param default_value: The default value to take if env var does not exist
     """
-    var = os.getenv(key, default)
+    var = os.getenv(key, default_value)
 
     if var is None:
         raise ValueError(
@@ -56,7 +56,7 @@ def getenv_bool(key: str, default: Optional[bool] = None) -> bool:
     if isinstance(var, bool):
         return var
 
-    return strtobool(var) if default is None else strtobool(var, default)
+    return strtobool(var) if default_value is None else strtobool(var, default_value)
 
 
 HOST = os.environ["HOST"]
@@ -87,7 +87,7 @@ else:
 GET_PREFERRED_USERNAME_FROM_FC = getenv_bool("GET_PREFERRED_USERNAME_FROM_FC", True)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -130,19 +130,20 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "django_otp",
-    "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
     "django_extensions",
     "import_export",
     "phonenumber_field",
+    "widget_tweaks",
+    "dsfr",
+    "django_blocklist",
     "aidants_connect",
     "aidants_connect_common",
     "aidants_connect_web",
     "aidants_connect_habilitation",
     "aidants_connect_pico_cms",
-    "aidants_connect_sandbox",
     "aidants_connect_erp",
 ]
 
@@ -171,6 +172,10 @@ if DEBUG and "test" not in sys.argv:
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = ["127.0.0.1"] + ALLOWED_HOSTS
 
+if "test" not in sys.argv:
+    MIDDLEWARE.insert(0, "aidants_connect_common.middleware.BlocklistMiddleware2")
+    MIDDLEWARE.append("aidants_connect_common.middleware.ThrottleIPMiddleware")
+
 ROOT_URLCONF = "aidants_connect.urls"
 
 TEMPLATES = [
@@ -180,6 +185,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "dsfr.context_processors.site_config",
                 "aidants_connect_common.context_processors.settings_variables",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
@@ -324,7 +330,7 @@ DEMARCHES = {
         "icon": "/static/images/icons/transports.svg",
     },
     "argent": {
-        "titre": "Argent - Impôts - Consomation",
+        "titre": "Argent - Impôts - Consommation",
         "titre_court": "Argent",
         "description": "Crédit immobilier, Impôts, Consommation, Livret A, Assurance, "
         "Surendettement…",
@@ -384,7 +390,7 @@ LOWER_TOTP_TOLERANCE_ON_LOGIN = getenv_bool("LOWER_TOTP_TOLERANCE_ON_LOGIN", Tru
 
 # Emails
 EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+    "EMAIL_BACKEND", "aidants_connect.email_backend.LoggedEmailBackend"
 )
 
 # # if file based email backend is used (debug)
@@ -412,17 +418,41 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
+# Scripts and other resources
 STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.1/dist/stimulus.umd.js"
 MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
-SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert?listID=09a44be1-412f-4190-a3fe-6eaac71c9f00&formID=gJOzUSbKRDWeSVyadSRTTw&timezone=Europe/Paris&timezoneOffset=+2"  # noqa
+SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert?listID=09a44be1-412f-4190-a3fe-6eaac71c9f00&formID=gJOzUSbKRDWeSVyadSRTTw&timezone=Europe/Paris&timezoneOffset=+2"  # noqa: E501
+COOKIE_BANNER_JS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.js"
+COOKIE_BANNER_CSS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/css/tarteaucitron.css"
+COOKIE_BANNER_LANG_URL = (
+    "https://unpkg.com/tarteaucitronjs@1.15.0/lang/tarteaucitron.fr.js"
+)
+COOKIE_BANNER_SERVICES_URL = (
+    "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.services.js"
+)
+AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa: E501
+MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
+MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+
+if "test" in sys.argv:
+    GOUV_ADDRESS_SEARCH_API_DISABLED = True
+    GOUV_ADDRESS_SEARCH_API_BASE_URL = ""
+else:
+    GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool(
+        "GOUV_ADDRESS_SEARCH_API_DISABLED", True
+    )
+    GOUV_ADDRESS_SEARCH_API_BASE_URL = os.getenv(
+        "GOUV_ADDRESS_SEARCH_API_BASE_URL", "https://api-adresse.data.gouv.fr/search/"
+    )
 
 # Content security policy
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_CONNECT_SRC = (
     "'self'",
     "https://stats.data.gouv.fr/matomo.php",
+    "https://stats.data.gouv.fr/piwik.php",
     SARBACANE_CONNECT_URL,
 )
 CSP_IMG_SRC = (
@@ -435,7 +465,10 @@ CSP_SCRIPT_SRC = (
     STIMULUS_JS_URL,
     MD_EDITOR_JS_URL,
     SARBACANE_SCRIPT_URL,
-    "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main.html
+    COOKIE_BANNER_JS_URL,
+    COOKIE_BANNER_LANG_URL,
+    COOKIE_BANNER_SERVICES_URL,
+    "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main-legacy.html
     "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
     "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
     "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
@@ -451,15 +484,44 @@ CSP_SCRIPT_SRC = (
 CSP_STYLE_SRC = (
     "'self'",
     MD_EDITOR_CSS_URL,
+    COOKIE_BANNER_CSS_URL,
 )
 
 CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = (
-    "https://www.youtube.com/embed/hATrqHG4zYQ",
-    "https://www.youtube.com/embed/WTHj_kQXnzs",
-    "https://www.youtube.com/embed/ihsm-36I-fE",
-    "https://www.youtube.com/embed/AJGo6bydQss",
+    *list(
+        chain.from_iterable(
+            [
+                [
+                    f"https://www.youtube.com/embed/{video_id}",
+                    f"https://www.youtube-nocookie.com/embed/{video_id}",
+                    f"http://www.youtube.com/embed/{video_id}",
+                    f"http://www.youtube-nocookie.com/embed/{video_id}",
+                ]
+                for video_id in [
+                    "hATrqHG4zYQ",
+                    "WTHj_kQXnzs",
+                    "ihsm-36I-fE",
+                    "AJGo6bydQss",
+                ]
+            ]
+        )
+    ),
 )
+
+if not GOUV_ADDRESS_SEARCH_API_DISABLED:
+    CSP_CONNECT_SRC = (*CSP_CONNECT_SRC, GOUV_ADDRESS_SEARCH_API_BASE_URL)
+    CSP_SCRIPT_SRC = (
+        *CSP_SCRIPT_SRC,
+        AUTOCOMPLETE_SCRIPT_SRC,
+    )
+
+if MATOMO_INSTANCE_URL:
+    CSP_SCRIPT_SRC = (
+        *CSP_SCRIPT_SRC,
+        f"{MATOMO_INSTANCE_URL.removesuffix('/')}/matomo.js",
+        f"{MATOMO_INSTANCE_URL.removesuffix('/')}/piwik.js",
+    )
 
 # Admin Page settings
 ADMIN_URL = os.getenv("ADMIN_URL")
@@ -603,10 +665,6 @@ EMAIL_ORGANISATION_REQUEST_FROM = os.getenv(
     "EMAIL_ORGANISATION_REQUEST_FROM", SUPPORT_EMAIL
 )
 
-EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM = os.getenv(
-    "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_FROM", SUPPORT_EMAIL
-)
-
 EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT = os.getenv(
     "EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT",
     "Aidants Connect - Rappel de votre profil demandeur",
@@ -636,6 +694,24 @@ EMAIL_WELCOME_AIDANT_SUBJECT = os.getenv(
     "EMAIL_WELCOME_AIDANT_SUBJECT", "Bienvenue dans la communauté Aidants Connect"
 )
 EMAIL_WELCOME_AIDANT_FROM = os.getenv("EMAIL_WELCOME_AIDANT_FROM", SUPPORT_EMAIL)
+EMAIL_WELCOME_AIDANT_GUIDE_URL = os.getenv(
+    "EMAIL_WELCOME_AIDANT_GUIDE_URL",
+    "https://aidantsconnect.beta.gouv.fr/guide_utilisation/",
+)
+EMAIL_WELCOME_AIDANT_RESSOURCES_URL = os.getenv(
+    "EMAIL_WELCOME_AIDANT_RESSOURCES_URL",
+    "https://aidantsconnect.beta.gouv.fr/ressources/",
+)
+EMAIL_WELCOME_AIDANT_FAQ_URL = os.getenv(
+    "EMAIL_WELCOME_AIDANT_FAQ_URL", "https://aidantsconnect.beta.gouv.fr/faq/"
+)
+EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES = os.getenv(
+    "EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES",
+    "https://www.etsijaccompagnais.fr/ressources-des-aidants",
+)
+EMAIL_WELCOME_AIDANT_CONTACT_URL = os.getenv(
+    "EMAIL_WELCOME_AIDANT_CONTACT_URL", "contact@aidantsconnect.beta.gouv.fr"
+)
 
 EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT = os.getenv(
     "EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT",
@@ -645,39 +721,34 @@ EMAIL_AIDANT_DEACTIVATION_WARN_FROM = os.getenv(
     "EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT", SUPPORT_EMAIL
 )
 
+EMAIL_AIDANT_DEACTIVATION_NOTICE_SUBJECT = os.getenv(
+    "EMAIL_AIDANT_DEACTIVATION_NOTICE_SUBJECT",
+    "Aidants Connect — Votre compte a été désactivé",
+)
+EMAIL_AIDANT_DEACTIVATION_NOTICE_FROM = os.getenv(
+    "EMAIL_AIDANT_DEACTIVATION_NOTICE_FROM", SUPPORT_EMAIL
+)
+
+EMAIL_AIDANT_ACTIVATED_SUBJECT = os.getenv(
+    "EMAIL_AIDANT_ACTIVATED_SUBJECT",
+    "Aidants Connect — Le compte de {aidant_name} vient d’être activé !",
+)
+EMAIL_AIDANT_ACTIVATED_FROM = os.getenv("EMAIL_AIDANT_ACTIVATED_FROM", SUPPORT_EMAIL)
+EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL = os.getenv(
+    "EMAIL_AIDANT_ACTIVATED_CONTACT_EMAIL", SUPPORT_EMAIL
+)
+
+EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_FROM = os.getenv(
+    "EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_FROM", SUPPORT_EMAIL
+)
+EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_SUBJECT = os.getenv(
+    "EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_SUBJECT",
+    "De nouvelles fonctionnalités vous attendent dans votre espace !",
+)
+
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
 PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
 PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
-
-if "test" in sys.argv:
-    GOUV_ADDRESS_SEARCH_API_DISABLED = True
-    GOUV_ADDRESS_SEARCH_API_BASE_URL = ""
-else:
-    GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool(
-        "GOUV_ADDRESS_SEARCH_API_DISABLED", True
-    )
-    GOUV_ADDRESS_SEARCH_API_BASE_URL = os.getenv(
-        "GOUV_ADDRESS_SEARCH_API_BASE_URL", "https://api-adresse.data.gouv.fr/search/"
-    )
-
-AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa
-
-if not GOUV_ADDRESS_SEARCH_API_DISABLED:
-    CSP_CONNECT_SRC = (*CSP_CONNECT_SRC, GOUV_ADDRESS_SEARCH_API_BASE_URL)
-    CSP_SCRIPT_SRC = (
-        *CSP_SCRIPT_SRC,
-        AUTOCOMPLETE_SCRIPT_SRC,
-    )
-
-MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
-MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
-
-
-if MATOMO_INSTANCE_URL:
-    CSP_SCRIPT_SRC = (
-        *CSP_SCRIPT_SRC,
-        f"{MATOMO_INSTANCE_URL.removesuffix('/')}/matomo.js",
-    )
 
 if "test" in sys.argv:
     # Force disable SMS API during tests
@@ -699,21 +770,12 @@ LM_SMS_SERVICE_BASE_URL = os.getenv("LM_SMS_SERVICE_BASE_URL")
 LM_SMS_SERVICE_OAUTH2_ENDPOINT = os.getenv("LM_SMS_SERVICE_OAUTH2_ENDPOINT")
 LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
 
-
-# ######################## SANDBOX SETTING ############################
-
-ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
-
-# ######################## END SANDBOX SETTING ############################
-
-
 # If set to False, FAQ content will be fetched from aidants_connect_web
 # else FAQ will be set from dynamic content of pico_cms.faq_section and faq_question
 FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
 
 # URLS
 SANDBOX_URL = os.getenv("SANDBOX_URL", "")
-
 WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
 
 REST_FRAMEWORK = {
@@ -721,6 +783,30 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 100,
 }
 
+BLOCKLIST_CONFIG = {}
+BLOCKLIST_EXPIRE_SECONDS = os.getenv("BLOCKLIST_THROTTLE_SECONDS", "1")
+BLOCKLIST_REQUEST_THRESHOLD = int(os.getenv("BLOCKLIST_THROTTLE_THRESHOLD", 10))
+BLOCKLIST_THROTTLE_MS = int(os.getenv("BLOCKLIST_THROTTLE_MS", 200))
+
+try:
+    DRIFTED_OTP_CARD_TOLERANCE = int(os.getenv("DRIFTED_OTP_CARD_TOLERANCE", 30))
+except ValueError:
+    DRIFTED_OTP_CARD_TOLERANCE = 20
+
+
+GRIST_URL_SERVER = os.getenv("GRIST_URL_SERVER", "")
+GRIST_DOCUMENT_ID = os.getenv("GRIST_DOCUMENT_ID", "")
+GRIST_REBORDING_TABLE_ID = os.getenv("GRIST_REBORDING_TABLE_ID", "")
+GRIST_API_KEY = os.getenv("GRIST_API_KEY", "")
+
+
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
-FF_OTP_APP = getenv_bool("FF_OTP_APP", False)
+
+
+
+# ######################## SANDBOX SETTING ############################
+
+ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
+
+# ######################## END SANDBOX SETTING ############################

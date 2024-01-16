@@ -1,4 +1,5 @@
 @use "colors";
+@use "boxes";
 
 // aidants_connect_web/espace_aidant/home.html
 h3.home-section {
@@ -59,44 +60,9 @@ h3.home-section {
   margin-top: 5rem;
 }
 
-.aidant-home-services {
-  a {
-    font-size: 1.5em;
-    line-height: 1.3;
-    font-weight: bold;
-
-    &, &:visited {
-      text-decoration: none;
-      color: black;
-    }
-
-    &:hover {
-      background-color: #0053b3;
-      color: white;
-    }
-  }
-
-  .tile {
-    color: #000;
-    align-items: center;
-    background-color: colors.$light-grey-aidants;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 1rem;
-    transform: none;
-    transition: all .1s ease-in;
-    width: 100%;
-
-    &:hover {
-      transform: scale(1.03)
-    }
-
-    .icon {
-      height: 1em;
-      width: 1em;
-    }
-  }
+.fr-tile__pictogram {
+  font-size: 2.5rem;
+  width: auto;
 }
 
 // aidants_connect_web/espace_aidant/organisation.html
@@ -120,8 +86,8 @@ h3.home-section {
 table.table {
   border-collapse: collapse;
   margin-bottom: 2rem;
+  table-layout: fixed;
   width: 100%;
-
 
   tbody.shadowed {
     td {
@@ -132,9 +98,7 @@ table.table {
     tr:not(:last-child) td {
       border-bottom: 1px solid colors.$light-grey-aidants;
     }
-  }
 
-  &.aidants-list {
     tr td:last-child {
       text-align: right;
 
@@ -151,6 +115,11 @@ table.table {
   [class*="request-status"] {
     padding: .25rem;
     border: 1px solid;
+
+    & .tooltiptext {
+      left: -1px;
+      width: 250px;
+    }
 
     &.request-status-cancelled {
       border-color: colors.$dark-grey-aidants;
@@ -178,28 +147,6 @@ table.table {
     }
   }
 
-  .tooltip {
-    display: inline-block;
-    position: relative;
-  }
-
-  .tooltip .tooltiptext {
-    background-color: #FFF;
-    display: inline-block;
-    left: -1px;
-    list-style-position: inside;
-    padding: 1rem;
-    position: absolute;
-    top: 2rem;
-    visibility: hidden;
-    width: 250px;
-    z-index: 1;
-  }
-
-  .tooltip:hover .tooltiptext {
-    visibility: visible;
-  }
-
   .unverified-card-warning {
     max-width: 20rem;
   }
@@ -207,4 +154,51 @@ table.table {
 
 main a[href^="mailto:"] {
   font-weight: normal;
+}
+
+.totp-card-section {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  &.disabled {
+    .shadowed {
+      box-shadow: 10px 10px 0 colors.$ac_mid_grey;
+      border-color: colors.$ac_mid_grey;
+    }
+
+    img {
+      filter: grayscale(100%)
+    }
+  }
+
+  .shadowed {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1rem;
+
+    .icon-container {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+      margin: 2rem auto;
+
+      img {
+        height: 8rem;
+      }
+    }
+  }
+}
+
+.otp-app-instructions {
+  p:not(:last-child) {
+    margin-bottom: .5rem;
+  }
+}
+
+.aidants-guide-links {
+  span {
+    color: colors.$ac_mid_grey;
+  }
 }

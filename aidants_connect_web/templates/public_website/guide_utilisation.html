@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'public_website/layout/main.html' %}
 
 {% load static %}
 
@@ -6,199 +6,447 @@
 
 {% block extracss %}
 <link href="{% static 'css/resources.css' %}" rel="stylesheet">
+
 {% endblock extracss %}
 
 {% block content %}
-<div class="hero">
-  <div class="hero__container">
-    <h1>Découvrir et utiliser Aidants Connect</h1>
-    <p>Vous trouverez ici les ressources utiles pour comprendre et utiliser le service Aidants Connect.</p>
-    <img src="{% static 'images/aidantsconnect.png' %}" alt="" />
-  </div>
-</div>
+
+<section class="section">
+
+      <div class="fr-container">
+          <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle">
+             <div class="fr-col">
+                 <div class="fr-grid-row fr-grid-row--center fr-mt-16v"> <h2 >Découvrir et utiliser Aidants Connect</h2></div>
+                 <div class="fr-grid-row fr-grid-row--center"><p>Vous trouverez ici les ressources utiles pour comprendre et utiliser le service Aidants Connect.</p></div>
+                 <div class="fr-grid-row fr-grid-row--center"> <img class="aidants-img" alt="Deux personnes se saluent"  src="{% static 'images/aidantsconnect.png' %}" alt="" /></div>
+             </div>
+         </div>
+      </div>
+
+</section>
+
 
 <section id="videos" class="section section-grey">
-  <div class="container">
-    <h1 class="section__title">Des vidéos pour comprendre et se former</h1>
-    <p class="section__subtitle">Visionnez 3 courtes vidéos pour comprendre et utiliser Aidants Connect</p>
-    <div class="row">
-      <div class="card">
-        <div class="card__cover">
-          <iframe title="Vidéo sur l’accompagnement des usagers à l’utilisation de FranceConnect" width="560" height="250" src="https://www.youtube.com/embed/hATrqHG4zYQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-        <div class="card__content">
-          <h2>Comment accompagner un ou une usagère à utiliser FranceConnect&nbsp;?</h2>
-          <div class="card__meta"><a href="https://www.youtube.com/watch?v=hATrqHG4zYQ">Voir sur Youtube</a></div>
-          <p>
-            <strong>Objectif :</strong> comprendre comment accompagner un usager ou une usagère à la création d’une connexion FranceConnect<br />
-            <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
-          </p>
-        </div>
+  <div class="fr-container">
+      <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle">
+          <div class="fr-col">
+
+              <div class="fr-grid-row fr-grid-row--center fr-mt-16v"><h2>Des vidéos pour comprendre et se former</h2></div>
+               <div class="fr-grid-row fr-grid-row--center"><p >Visionnez 3 courtes vidéos pour comprendre et utiliser Aidants Connect</p></div>
+
+
+              <div class="fr-grid-row  card">
+                  <div class="fr-grid-row  fr-col-5">
+                      <div class="card__cover">
+                        <iframe title="Vidéo sur l’accompagnement des usagers à l’utilisation de FranceConnect" width="560" height="250" src="https://www.youtube.com/embed/hATrqHG4zYQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                      </div>
+                      <div class="card__content">
+                          <h3>Comment accompagner un ou une usagère à utiliser FranceConnect&nbsp;?</h3>
+                      </div>
+                      <div><a href="https://www.youtube.com/watch?v=hATrqHG4zYQ">Voir sur Youtube</a></div>
+                      <div>
+                          <p>
+                              <strong>Objectif :</strong> comprendre comment accompagner un usager ou une usagère à la création d’une connexion FranceConnect<br />
+                              <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
+                          </p>
+                      </div>
+                  </div>
+
+                  <div class="fr-grid-row  fr-col-2"></div>
+
+                  <div class="fr-grid-row  fr-col-5">
+                      <div class="card__cover">
+                          <iframe title="Vidéo « Aidants Connect, comment ça fonctionne ? »" width="560" height="250" src="https://www.youtube.com/embed/WTHj_kQXnzs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                      </div>
+                      <div class="card__content">
+                          <h3>Aidants Connect, comment ça fonctionne&nbsp;?</h3>
+                      </div>
+                      <div><a href="https://www.youtube.com/watch?v=WTHj_kQXnzs">Voir sur Youtube</a></div>
+                      <div>
+                          <p>
+                              <strong>Objectif :</strong> comprendre le fonctionnement d’Aidants Connect<br />
+                              <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
+                          </p>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                  <div class="fr-grid-row fr-col-3"> </div>
+                  <div class="fr-grid-row fr-col-6 ">
+                    <iframe title="Vidéo « les aspects juridiques relatifs au tiers de confiance »" width="560" height="250" src="https://www.youtube.com/embed/ihsm-36I-fE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                  </div>
+                  <div class="fr-grid-row fr-col-3"> </div>
+              </div>
+              <div class="fr-grid-row ">
+                  <div class="fr-grid-row fr-col-3"> </div>
+                  <div class="fr-grid-row fr-col-6 ">
+                      <h3>>Les aspects juridiques relatifs au tiers de confiance</h3>
+                  </div>
+                  <div class="fr-grid-row fr-col-3"> </div>
+              </div>
+              <div class="fr-grid-row fr-grid-row--center">
+                  <div class="fr-grid-row fr-col-3"> </div>
+                  <div class="fr-grid-row fr-col-6 ">
+                      <a href="https://www.youtube.com/watch?v=ihsm-36I-fE&t=13s">Voir sur Youtube</a>
+
+                      <p>
+                          <strong>Objectif :</strong> comprendre les enjeux juridiques du tiers de confiance et les conditions de résiliation du mandat<br />
+                          <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
+                      </p>
+                  </div>
+                  <div class="fr-grid-row fr-col-3"> </div>
+              </div>
+
+          </div>
       </div>
-      <div class="card">
-        <div class="card__cover">
-          <iframe title="Vidéo « Aidants Connect, comment ça fonctionne ? »" width="560" height="250" src="https://www.youtube.com/embed/WTHj_kQXnzs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-        <div class="card__content">
-          <h2>Aidants Connect, comment ça fonctionne&nbsp;?</h2>
-          <div class="card__meta"><a href="https://www.youtube.com/watch?v=WTHj_kQXnzs">Voir sur Youtube</a></div>
-          <p>
-            <strong>Objectif :</strong> comprendre le fonctionnement d’Aidants Connect<br />
-            <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
-          </p>
-        </div>
-      </div>
-    </div>
-    <br>
-    <div class="row">
-      <div class="card">
-        <div class="card__cover">
-          <iframe title="Vidéo « les aspects juridiques relatifs au tiers de confiance »" width="560" height="250" src="https://www.youtube.com/embed/ihsm-36I-fE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-        <div class="card__content">
-          <h2>Les aspects juridiques relatifs au tiers de confiance</h2>
-          <div class="card__meta"><a href="https://www.youtube.com/watch?v=ihsm-36I-fE&t=13s" title="">Voir sur Youtube</a></div>
-          <p>
-            <strong>Objectif :</strong> comprendre les enjeux juridiques du tiers de confiance et les conditions de résiliation du mandat<br />
-            <strong>Conditions d’utilisation :</strong> à visionner en autonomie pour vous former
-          </p>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 
-<section id="outils" class="section section-grey">
-  <div class="container">
-    <h1 class="section__title">Des outils pour accompagner</h1>
-    <p class="section__subtitle">Des guides pour vous aider à accompagner vos publics</p>
+<section id="outils" class="section">
+    <div class="fr-container">
+        <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle panel">
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v fr-grid-row--middle"><h2 class="section__title">Des outils pour accompagner</h2></div>
+                <div class="fr-grid-row fr-grid-row--center "><p class="section__subtitle">Des guides pour vous aider à accompagner vos publics</p></div>
 
- <div class="panel">
-        <div class="panel__header">
-          <h2>
-            Comment fonctionne Aidants Connect&nbsp;?
-            <small class="text-very-small">5 documents</small>
-          </h2>
+            </div>
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v panel__header">
+                    <h2>
+                        Comment fonctionne Aidants Connect&nbsp;?
+                        <small class="text-very-small">6 documents</small>
+                    </h2>
+                </div>
+            </div>
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                            <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3>
+                            Aidants Connect, c’est quoi&nbsp;?
+                        </h3>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <h3 >Utiliser Aidants Connect : le tutoriel pas à pas</h3>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Aidants-Connect_c_est-quoi.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Aidants-Connect_c_est-quoi _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidantsconnect_tutoriel.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3>
+                            Bilan de l’expérimentation Aidants Connect
+                        </h3>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <h3 >Exemple type de mandat</h3>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ BilanExperimentation.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Exemple de mandat Aidants Connect_french.pdf' %}" target="_blank">Télécharger en français</a></li>
+                            <li><a href="{% static 'guides_aidants_connect/Mandat type Aidants Connect english.pdf' %}" target="_blank">Télécharger en anglais</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3>
+                            Charte de l’aidant
+                        </h3>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <h3 >Charte du référent Aidants Connect</h3>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect_Charte-aidants.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect_Charte-responsable-aidants-connect.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v panel__header">
+                    <h2>
+                        Questionner son public
+                        <small class="text-very-small">3 documents</small>
+                    </h2>
+                </div>
+            </div>
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3>
+                            L’usager ou usagère a une démarche administrative à réaliser
+                        </h3>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <h3>Expliquer la signature du mandat</h3>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Démarche-administrative.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Démarche-administrative _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Je-signe-un-mandat.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Je-signe-un-mandat _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3>
+                            Quel fournisseur d’identité choisir&nbsp;?
+                        </h3>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Quel-fournisseur-identité-choisir.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                    </div>
+                </div>
+            </div>
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v panel__header">
+                    <h2>
+                        Expliquer ce qu’est FranceConnect
+                        <small class="text-very-small">3 documents</small>
+                    </h2>
+                </div>
+            </div>
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3>
+                            FranceConnect, c’est quoi&nbsp;?
+                        </h3>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <h3>Se connecter avec FranceConnect</h3>
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Franceconnect_1.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                            <li><a href="{% static 'guides_aidants_connect/Franceconnect_1_NB.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Se-connecter-à-FranceConnect.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Se-connecter-à-FranceConnect _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3>
+                            Pour les usagers ou usagères qui ne peuvent pas se connecter via FranceConnect
+                        </h3>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Usagers-sans-FranceConnexion.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Usagers-sans-FranceConnexion _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col ">
+                    </div>
+                </div>
+            </div>
+
         </div>
-        <div class="grid">
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Aidants Connect, c’est quoi&nbsp;?</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Aidants-Connect_c_est-quoi.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Aidants-Connect_c_est-quoi _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
-            </ul>
-          </div>
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Utiliser Aidants Connect : le tutoriel pas à pas</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Aidantsconnect_tutoriel.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-            </ul>
-          </div>
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Bilan de l’expérimentation Aidants Connect</h3>
-             <ul>
-               <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ BilanExperimentation.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-             </ul>
-          </div>
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Exemple type de mandat</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Exemple de mandat Aidants Connect_french.pdf' %}" target="_blank">Télécharger en français</a></li>
-              <li><a href="{% static 'guides_aidants_connect/Mandat type Aidants Connect english.pdf' %}" target="_blank">Télécharger en anglais</a></li>
-            </ul>
-          </div>
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Charte de l’aidant</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect_Charte-aidants.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-             </ul>
-          </div>
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Charte du référent Aidants Connect</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect_Charte-responsable-aidants-connect.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-             </ul>
-          </div>
-       </div>
-      </div>
-	<br>
-    <div class="tiles">
-      <div class="panel">
-        <div class="panel__header">
-          <h2>
-            Questionner son public
-            <small class="text-very-small">2 documents</small>
-          </h2>
-        </div>
-        <div class="grid">
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">L’usager ou usagère a une démarche administrative à réaliser</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Démarche-administrative.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Démarche-administrative _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
-            </ul>
-          </div>
-	  <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Expliquer la signature du mandat</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Je-signe-un-mandat.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Je-signe-un-mandat _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
-            </ul>
-          </div>
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Quel fournisseur d’identité choisir&nbsp;?</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Franceconnect_3.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-              <li><a href="{% static 'guides_aidants_connect/Franceconnect_3_N_B.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <br>
-      <div class="panel">
-        <div class="panel__header">
-          <h2>
-            Expliquer ce qu’est FranceConnect
-            <small class="text-very-small">3 documents</small>
-          </h2>
-        </div>
-        <div class="grid">
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">FranceConnect, c’est quoi&nbsp;?</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Franceconnect_1.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-              <li><a href="{% static 'guides_aidants_connect/Franceconnect_1_NB.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
-            </ul>
-          </div>
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Se connecter avec FranceConnect</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Se-connecter-à-FranceConnect.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Se-connecter-à-FranceConnect _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
-            </ul>
-          </div>
-          <div class="tile">
-            <img class="tile__icon" src="{% static 'images/document.svg' %}" alt="" />
-            <h3 class="text-center">Pour les usagers ou usagères qui ne peuvent pas se connecter via FranceConnect</h3>
-            <ul>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Usagers-sans-FranceConnexion.pdf' %}" target="_blank">Télécharger en couleur</a></li>
-              <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Usagers-sans-FranceConnexion _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-     </div>
-  </div>
+    </div>
 </section>
+
 {% endblock content %}

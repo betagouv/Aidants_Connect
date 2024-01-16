@@ -1,60 +1,42 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-habilitation.html' %}
 
 {% load static ac_extras ac_common %}
 
-{% linebreakless %}
-  {% block title %}
-    Aidants Connect -
-    {% if aidant.organisations|length > 1 %}
-      Retirer l'aidant de {{ organisation.name }}
-    {% else %}
-      Désactiver l'aidant
-    {% endif %}
-  {% endblock %}
-{% endlinebreakless %}
-
-{% block extracss %}
-  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
-{% endblock extracss %}
+{% block title %}
+  Aidants Connect - {% if aidant.organisations|length > 1 %}Retirer l'aidant de {{ organisation.name }}{% else %}Désactiver l'aidant{% endif %}
+{% endblock %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-      <form method="post">
+  <div class="fr-container">
+    {% include "layouts/_messages.html" %}
+
+    <div class="fr-grid-row fr-grid-row--center fr-my-8v">
+      <h2>
+        {% if aidant.organisations|length > 1 %}
+          Retirer {{ aidant.get_full_name }} de {{ organisation.name }}
+        {% else %}
+          Désactiver le profil de {{ aidant.get_full_name }}
+        {% endif %}
+      </h2>
+      <form method="post" class="fr-col-12 fr-col-lg-6 fr-col-md-8">
         {% csrf_token %}
-        <div class="form__group">
-          {% linebreakless %}
-            <h1>
-              {% if aidant.organisations|length > 1 %}
-                Retirer {{ aidant.get_full_name }} de {{ organisation.name }}
-              {% else %}
-                Désactiver le profil de {{ aidant.get_full_name }}
-              {% endif %}
-            </h1>
-          {% endlinebreakless %}
-          <p>
-            {% if aidant.organisations|length > 1 %}
+        <p>
+          {% if aidant.organisations|length > 1 %}
             Vous allez retirer {{ aidant.get_full_name }} de {{ organisation.name }}. Cette personne ne sera plus en
             mesure d'effectuer des démarches pour le compte d'autre personnes au sein de cette organisation.
-            {% else %}
+          {% else %}
             Vous aller désactiver le profil de {{ aidant.get_full_name }}. Cette personne ne sera plus en mesure de
             se connecter au portail Aidants Connect tant que son profil n'aura pas été réactivé.
-            {% endif %}
-          </p>
-          <a
-            href="{% url 'espace_responsable_organisation' organisation_id=organisation.id %}"
-            class="button"
-          >
-            Annuler
-          </a>
-          <button class="button warning float-right" type="submit">Confirmer</button>
-        </div>
+          {% endif %}
+        </p>
+        <a
+          href="{% url 'espace_responsable_organisation' %}"
+          class="fr-btn"
+        >
+          Annuler
+        </a>
+        <button class="warning fr-btn float-right" type="submit">Confirmer</button>
       </form>
     </div>
-  </section>
+  </div>
 {% endblock content %}

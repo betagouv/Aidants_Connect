@@ -1,6 +1,7 @@
 from django.db.models import CharField
 from django.db.models.functions import Length
 
+from django_blocklist.models import BlockedIP
 from django_celery_beat.admin import ClockedScheduleAdmin, PeriodicTaskAdmin
 from django_celery_beat.models import (
     ClockedSchedule,
@@ -71,3 +72,4 @@ admin_site.register(CrontabSchedule)
 admin_site.register(SolarSchedule)
 admin_site.register(ClockedSchedule, ClockedScheduleAdmin)
 admin_site.register(MagicToken)
+admin_site.register(BlockedIP)

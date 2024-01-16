@@ -8,10 +8,12 @@ from django.contrib.auth.decorators import login_required
 from django.db.models.functions import Concat
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.timezone import now, timedelta
+from django.views.generic import DetailView
 
 from aidants_connect_web.decorators import activity_required
-from aidants_connect_web.models import Aidant, Autorisation, Journal, Mandat
+from aidants_connect_web.models import Aidant, Autorisation, Journal, Mandat, Usager
 from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)
@@ -148,43 +150,51 @@ def usagers_index(request):
     )
 
 
-@login_required
-@activity_required
-def usager_details(request, usager_id):
-    aidant = request.user
+@method_decorator([login_required, activity_required], name="dispatch")
+class UsagerView(DetailView):
+    pk_url_kwarg = "usager_id"
+    template_name = "aidants_connect_web/usager_details.html"
+    context_object_name = "usager"
+    model = Usager
 
-    usager = aidant.get_usager(usager_id)
-    if not usager:
-        django_messages.error(request, "Cet usager est introuvable ou inaccessible.")
-        return redirect("espace_aidant_home")
+    def get_object(self, queryset=None):
+        usager_id = self.kwargs.get(self.pk_url_kwarg)
+        return self.aidant.get_usager(usager_id)
 
-    active_mandats = (
-        Mandat.objects.prefetch_related("autorisations")
-        .filter(organisation=aidant.organisation, usager=usager)
-        .active()
-    )
-    inactive_mandats = (
-        Mandat.objects.prefetch_related("autorisations")
-        .filter(organisation=aidant.organisation, usager=usager)
-        .inactive()
-    )
+    def get(self, request, *args, **kwargs):
+        self.aidant = request.user
+        self.object = self.get_object()
+        self.usager = self.object
 
-    return render(
-        request,
-        "aidants_connect_web/usager_details.html",
-        {
-            "aidant": aidant,
-            "usager": usager,
-            "active_mandats": active_mandats,
-            "inactive_mandats": inactive_mandats,
-        },
-    )
+        if not self.usager:
+            django_messages.error(
+                request, "Cet usager est introuvable ou inaccessible."
+            )
+            return redirect("espace_aidant_home")
+
+        context = self.get_context_data(
+            object=self.object, aidant=self.aidant, **self.get_usager_context_data()
+        )
+        return self.render_to_response(context)
+
+    def get_usager_context_data(self):
+        active_mandats = (
+            Mandat.objects.prefetch_related("autorisations")
+            .filter(organisation=self.aidant.organisation, usager=self.usager)
+            .active()
+        )
+        inactive_mandats = (
+            Mandat.objects.prefetch_related("autorisations")
+            .filter(organisation=self.aidant.organisation, usager=self.usager)
+            .inactive()
+        )
+        return {"active_mandats": active_mandats, "inactive_mandats": inactive_mandats}
 
 
 @login_required
 @activity_required
 def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
-    aidant = request.user
+    aidant: Aidant = request.user
     try:
         autorisation = aidant.get_active_autorisations_for_usager(usager_id).get(
             pk=autorisation_id
@@ -281,8 +291,7 @@ def autorisation_cancelation_attestation(request, usager_id, autorisation_id):
 
     return render(
         request,
-        "aidants_connect_web/mandat_auths_cancellation/"
-        "authorization_cancellation_attestation.html",
+        "aidants_connect_web/mandat_auths_cancellation/authorization_cancellation_attestation.html",  # noqa: E501
         {
             "aidant": aidant,
             "authorization": humanize_demarche_names(autorisation.demarche),
@@ -393,7 +402,6 @@ def mandat_cancellation_attestation(request, mandat_id):
         mandat = Mandat.objects.get(pk=mandat_id, organisation=organisation)
         if not mandat.was_explicitly_revoked:
             return redirect("espace_aidant_home")
-
     except Mandat.DoesNotExist:
         django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")

@@ -1,11 +1,33 @@
 {% extends "layouts/email-base.mjml" %}
 
+{% load ac_common %}
+
 {% block email_body %}
-  <mj-section>
-    <mj-column>
-      <mj-text>
-        <p>Bonjour,</p>
-      </mj-text>
-    </mj-column>
-  </mj-section>
+<mj-section>
+  <mj-column>
+    <mj-text>
+      <p>Bienvenue sur Aidants Connect !</p>
+      <p>
+        Votre carte vient d’être activée par le référent Aidants Connect de votre structure. Vous pouvez dès maintenant
+        accéder à votre compte et créer vos premiers mandats pour accompagner les usagers dans la réalisation de leurs
+        démarches.
+      </p>
+      <p>Voici quelques ressources à disposition :</p>
+      <ul>
+        <li><a href="{{ EMAIL_WELCOME_AIDANT_GUIDE_URL }}">Guide de prise en main de l’outil</a></li>
+        <li><a href="{{ EMAIL_WELCOME_AIDANT_RESSOURCES_URL }}">Page ressources du site Aidants Connect</a></li>
+        <li><a href="{{ EMAIL_WELCOME_AIDANT_FAQ_URL }}">Page FAQ du site Aidants Connect</a></li>
+        <li><a href="{{ EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES }}">Fiches tangibles etsijaccompagnais.fr</a></li>
+      </ul>
+      <p>
+        Chaque mois, une newsletter avec des informations et nouveautés sur le dispositif est envoyée.
+        N’hésitez pas <a href="https://aidantsconnect.beta.gouv.fr/">à vous inscrire 👉 ici</a> pour la recevoir !
+      </p>
+      <p>
+        ⚙️ Si vous rencontrez des difficultés de connexion, ou pour toute autre question, nous vous invitons à nous
+        contacter à l’adresse suivante {% mailto EMAIL_WELCOME_AIDANT_CONTACT_URL %}
+      </p>
+    </mj-text>
+  </mj-column>
+</mj-section>
 {% endblock %}

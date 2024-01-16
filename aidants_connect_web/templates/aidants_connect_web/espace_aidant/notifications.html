@@ -1,15 +1,15 @@
 {% if user.is_responsable_structure and not user.has_a_totp_device %}
-  <div class="notification warning" role="alert">
+  <div class="fr-alert fr-alert--info fr-mb-4v">
     Bienvenue&nbsp;! Avant toute chose, nous vous invitons à
-    <strong>
-      <a href="{% url "espace_responsable_associate_totp" aidant_id=user.id %}">activer votre carte Aidants Connect</a>
-    </strong>
+    <a class="fr-link" href="{% url "espace_responsable_associate_totp" aidant_id=user.id %}">
+      activer votre carte Aidants Connect
+    </a>
     afin de pouvoir vous connecter à nouveau à l’avenir.
   </div>
 {% elif user.must_validate_cgu %}
-  <div class="notification warning" role="alert">
+  <div class="fr-alert fr-alert--warning fr-mb-4v">
     Nous vous prions de bien vouloir
-    <a href="{% url "espace_aidant_cgu" %}">valider les conditions générales d’utilisation</a>
+    <a class="fr-link" href="{% url "espace_aidant_cgu" %}">valider les conditions générales d’utilisation</a>
     d’Aidants Connect.
   </div>
 {% endif %}

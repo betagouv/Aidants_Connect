@@ -1,25 +1,40 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from io import StringIO
+from textwrap import dedent
+from unittest import mock
 from unittest.mock import MagicMock
 
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.utils import timezone
+from django.utils.timezone import now
 
 import pytz
 from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
+from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_habilitation.tasks import update_pix_and_create_aidant
-from aidants_connect_web.models import Aidant, CarteTOTP, HabilitationRequest
+from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.models import (
+    Aidant,
+    CarteTOTP,
+    ExportRequest,
+    HabilitationRequest,
+    Journal,
+    Mandat,
+)
 from aidants_connect_web.tasks import (
     email_old_aidants,
+    export_for_bizdevs,
     get_recipient_list_for_organisation,
 )
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     CarteTOTPFactory,
     HabilitationRequestFactory,
+    MandatFactory,
     OrganisationFactory,
 )
 
@@ -43,7 +58,8 @@ class ImportPixTests(TestCase):
         self.assertEqual(aidant_a_former.test_pix_passed, False)
         self.assertEqual(aidant_a_former.date_test_pix, None)
         self.assertEqual(
-            aidant_a_former.status, HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+            aidant_a_former.status,
+            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
 
@@ -59,7 +75,9 @@ class ImportPixTests(TestCase):
             email=aidant_a_former.email
         )[0]
         self.assertTrue(aidant_a_former.test_pix_passed)
-        self.assertEqual(aidant_a_former.status, HabilitationRequest.STATUS_VALIDATED)
+        self.assertEqual(
+            aidant_a_former.status, HabilitationRequestStatuses.STATUS_VALIDATED.value
+        )
 
         self.assertEqual(1, Aidant.objects.filter(email=aidant_a_former.email).count())
 
@@ -72,7 +90,8 @@ class ImportPixTests(TestCase):
         self.assertEqual(aidant_a_former.test_pix_passed, False)
         self.assertEqual(aidant_a_former.date_test_pix, None)
         self.assertEqual(
-            aidant_a_former.status, HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+            aidant_a_former.status,
+            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
 
@@ -89,7 +108,8 @@ class ImportPixTests(TestCase):
         )[0]
         self.assertTrue(aidant_a_former.test_pix_passed)
         self.assertEqual(
-            aidant_a_former.status, HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+            aidant_a_former.status,
+            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
 
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
@@ -115,11 +135,11 @@ class ImportPixTests(TestCase):
         self.assertEqual(aidant_a_former_2.date_test_pix, None)
         self.assertEqual(
             aidant_a_former_1.status,
-            HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
+            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(
             aidant_a_former_2.status,
-            HabilitationRequest.STATUS_WAITING_LIST_HABILITATION,
+            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(
             0, Aidant.objects.filter(email=aidant_a_former_1.email).count()
@@ -137,13 +157,17 @@ class ImportPixTests(TestCase):
             email=aidant_a_former_1.email
         )[0]
         self.assertTrue(aidant_a_former_1.test_pix_passed)
-        self.assertEqual(aidant_a_former_1.status, HabilitationRequest.STATUS_VALIDATED)
+        self.assertEqual(
+            aidant_a_former_1.status, HabilitationRequestStatuses.STATUS_VALIDATED.value
+        )
 
         aidant_a_former_2 = HabilitationRequest.objects.filter(
             email=aidant_a_former_1.email
         )[1]
         self.assertTrue(aidant_a_former_2.test_pix_passed)
-        self.assertEqual(aidant_a_former_2.status, HabilitationRequest.STATUS_VALIDATED)
+        self.assertEqual(
+            aidant_a_former_2.status, HabilitationRequestStatuses.STATUS_VALIDATED.value
+        )
 
         self.assertEqual(
             1, Aidant.objects.filter(email=aidant_a_former_1.email).count()
@@ -200,3 +224,79 @@ class EmailOldAidants(TestCase):
 
         self.aidants_selected.refresh_from_db()
         self.assertEqual(NOW, self.aidants_selected.deactivation_warning_at)
+
+
+class ExportForBizdevs(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.staff_aidant_org = OrganisationFactory(
+            address="45 avenue du Général de Gaulle",
+            zipcode="27120",
+            city="HOULBEC COCHEREL",
+            department_insee_code="27",
+            type_id=1,
+        )
+        cls.staff_aidant: Aidant = AidantFactory(
+            is_staff=True, organisation=cls.staff_aidant_org
+        )
+
+        # Create 4 mandates including 2 remote
+        cls.mandat1: Mandat = MandatFactory(
+            organisation=cls.staff_aidant.organisation,
+            post__create_authorisations=["papiers"],
+        )
+        cls.mandat2: Mandat = MandatFactory(organisation=cls.staff_aidant.organisation)
+        cls.mandat3: Mandat = MandatFactory(
+            organisation=cls.staff_aidant.organisation, is_remote=True
+        )
+        cls.mandat4: Mandat = MandatFactory(
+            organisation=cls.staff_aidant.organisation, is_remote=True
+        )
+        # Create 1 outdated mandate
+        cls.mandat5: Mandat = MandatFactory(
+            organisation=cls.staff_aidant.organisation,
+            expiration_date=now() - timedelta(days=1),
+        )
+
+        # Create journals for these mandates
+        for mandat in (cls.mandat1, cls.mandat2, cls.mandat3, cls.mandat4, cls.mandat5):
+            Journal.log_attestation_creation(
+                aidant=cls.staff_aidant,
+                usager=mandat.usager,
+                demarches=list(mandat.autorisations.values_list("demarche", flat=True)),
+                duree=AuthorizationDurations.duration(mandat.duree_keyword, now()),
+                is_remote_mandat=mandat.is_remote,
+                access_token="",
+                attestation_hash="",
+                mandat=mandat,
+                remote_constent_method=mandat.remote_constent_method,
+                user_phone=mandat.usager.phone,
+                consent_request_id="",
+            )
+
+    def test_export_for_bizdevs(self):
+        self.maxDiff = None
+
+        output = StringIO()
+        # Prevent file from being closed so content can be read and checked
+        output.close = lambda: None
+
+        with mock.patch(
+            "aidants_connect_web.tasks.export_for_bizdevs"
+        ) as export_for_bizdevs_mock:
+            # Prevent running the export when creating the request
+            request = ExportRequest.objects.create(aidant=self.staff_aidant)
+            export_for_bizdevs_mock.assert_called_with(request)
+
+        with mock.patch("builtins.open", return_value=output):
+            export_for_bizdevs(request, create_file=False)
+            self.assertMultiLineEqual(
+                dedent(
+                    f"""
+                    prénom,nom,adresse électronique,Téléphone,profession,Aidant - Peut créer des mandats,Organisation: Nom,Organisation: Datapass ID,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre de mandats créés,Organisation: Nombre de mandats à distance créés,Organisation: Nombre d'usagers
+                    Thierry,Goneau,{self.staff_aidant.email},,secrétaire,True,COMMUNE D'HOULBEC COCHEREL,None,123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,France Services/MSAP,0,None,None,None,5,2,4
+                    """  # noqa: E501
+                ).strip(),
+                # Replace Windows' newline separator by Unix'
+                output.getvalue().replace("\r\n", "\n").strip(),
+            )

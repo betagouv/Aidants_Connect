@@ -17,7 +17,10 @@ from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
-from aidants_connect_web.constants import RemoteConsentMethodChoices
+from aidants_connect_web.constants import (
+    HabilitationRequestStatuses,
+    RemoteConsentMethodChoices,
+)
 from aidants_connect_web.models import (
     Aidant,
     Autorisation,
@@ -1034,7 +1037,7 @@ class AidantModelMethodsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Aidants : Marge & Lisa belong to the same organisation, Patricia does not
-        cls.aidant_marge = AidantFactory(validated_cgu_version="0.1")
+        cls.aidant_marge: Aidant = AidantFactory(validated_cgu_version="0.1")
         cls.aidant_lisa = AidantFactory(
             organisation=cls.aidant_marge.organisation,
             validated_cgu_version=settings.CGU_CURRENT_VERSION,
@@ -1042,10 +1045,17 @@ class AidantModelMethodsTests(TestCase):
         cls.aidant_patricia = AidantFactory()
 
         # Juliette is responsible in the same structure as Marge & Lisa
-        cls.respo_juliette = AidantFactory(
+        cls.respo_juliette: Aidant = AidantFactory(
             organisation=cls.aidant_marge.organisation,
         )
         cls.respo_juliette.responsable_de.add(cls.aidant_marge.organisation)
+        cls.respo_juliette_org2 = OrganisationFactory()
+        cls.respo_juliette.organisations.add(cls.respo_juliette_org2)
+        cls.respo_juliette.responsable_de.add(cls.respo_juliette_org2)
+
+        cls.respo_juliette_org3 = OrganisationFactory()
+        cls.respo_juliette.organisations.add(cls.respo_juliette_org2)
+        cls.aidant_sarah: Aidant = AidantFactory(organisation=cls.respo_juliette_org3)
 
         # TOTP Device
         device = TOTPDevice(user=cls.aidant_marge)
@@ -1362,8 +1372,22 @@ class AidantModelMethodsTests(TestCase):
         self.assertTrue(self.respo_juliette.is_responsable_structure())
 
     def test_can_see_aidant(self):
-        self.assertTrue(self.respo_juliette.can_see_aidant(self.aidant_marge))
-        self.assertFalse(self.respo_juliette.can_see_aidant(self.aidant_patricia))
+        # respo_juliette is referent for their current organisation and
+        # aidant_marge is member of this organisation
+        self.assertTrue(self.respo_juliette.can_manage_aidant(self.aidant_marge))
+
+        # aidant_marge's organisation is not respo_juliette's current organisation
+        self.respo_juliette.organisation = self.respo_juliette_org2
+        self.respo_juliette.save()
+        self.respo_juliette.refresh_from_db()
+        self.assertFalse(self.respo_juliette.can_manage_aidant(self.aidant_marge))
+
+        # aidant_patricia is not in any of respo_juliette's organisation
+        self.assertFalse(self.respo_juliette.can_manage_aidant(self.aidant_patricia))
+
+        # respo_juliette is in aidant_sarah's organisation
+        # but not on of their referents
+        self.assertFalse(self.respo_juliette.can_manage_aidant(self.aidant_sarah))
 
     def test_must_validate_cgu(self):
         # an aidant without further modification must validate user conditions
@@ -1462,7 +1486,7 @@ class AidantModelMethodsTests(TestCase):
 
         self.assertEqual(aidant.organisation, supplementary_organisation_1)
 
-    @patch("aidants_connect_web.models.aidants__organisations_changed.send")
+    @patch("aidants_connect_web.signals.aidants__organisations_changed.send")
     def test_remove_user_from_organisation_sends_signal(self, send: Mock):
         aidant: Aidant = AidantFactory()
         supplementary_organisation_1 = OrganisationFactory()
@@ -1546,7 +1570,7 @@ class AidantModelMethodsTests(TestCase):
 
         self.assertEqual(aidant.organisation, supplementary_organisation_1)
 
-    @patch("aidants_connect_web.models.aidants__organisations_changed.send")
+    @patch("aidants_connect_web.signals.aidants__organisations_changed.send")
     def test_set_organisations_sends_signal(self, send: Mock):
         aidant: Aidant = AidantFactory()
         previous_organisation = aidant.organisation
@@ -1868,10 +1892,14 @@ class HabilitationRequestMethodTests(TestCase):
 
     def test_validate_when_all_is_fine(self):
         for habilitation_request in (
-            HabilitationRequestFactory(status=HabilitationRequest.STATUS_PROCESSING),
-            HabilitationRequestFactory(status=HabilitationRequest.STATUS_NEW),
             HabilitationRequestFactory(
-                status=HabilitationRequest.STATUS_WAITING_LIST_HABILITATION
+                status=HabilitationRequestStatuses.STATUS_PROCESSING.value
+            ),
+            HabilitationRequestFactory(
+                status=HabilitationRequestStatuses.STATUS_NEW.value
+            ),
+            HabilitationRequestFactory(
+                status=HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value  # noqa: E501
             ),
         ):
             self.assertEqual(
@@ -1883,13 +1911,15 @@ class HabilitationRequestMethodTests(TestCase):
             )
             db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
             self.assertEqual(
-                db_hab_request.status, HabilitationRequest.STATUS_VALIDATED
+                db_hab_request.status,
+                HabilitationRequestStatuses.STATUS_VALIDATED.value,
             )
 
     def test_validate_if_active_aidant_already_exists(self):
         aidant = AidantFactory()
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_PROCESSING, email=aidant.email
+            status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+            email=aidant.email,
         )
         self.assertTrue(habilitation_request.validate_and_create_aidant())
         self.assertEqual(
@@ -1897,7 +1927,8 @@ class HabilitationRequestMethodTests(TestCase):
         )
         habilitation_request.refresh_from_db()
         self.assertEqual(
-            habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+            habilitation_request.status,
+            HabilitationRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
@@ -1906,7 +1937,8 @@ class HabilitationRequestMethodTests(TestCase):
         aidant = AidantFactory(is_active=False)
         self.assertFalse(aidant.is_active)
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_PROCESSING, email=aidant.email
+            status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+            email=aidant.email,
         )
         self.assertTrue(habilitation_request.validate_and_create_aidant())
         self.assertEqual(
@@ -1914,7 +1946,8 @@ class HabilitationRequestMethodTests(TestCase):
         )
         habilitation_request.refresh_from_db()
         self.assertEqual(
-            habilitation_request.status, HabilitationRequest.STATUS_VALIDATED
+            habilitation_request.status,
+            HabilitationRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
         self.assertTrue(aidant.is_active)
@@ -1922,7 +1955,7 @@ class HabilitationRequestMethodTests(TestCase):
 
     def test_do_not_validate_if_invalid_status(self):
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequest.STATUS_REFUSED
+            status=HabilitationRequestStatuses.STATUS_REFUSED.value
         )
         self.assertEqual(
             0, Aidant.objects.filter(email=habilitation_request.email).count()
@@ -1932,7 +1965,9 @@ class HabilitationRequestMethodTests(TestCase):
             0, Aidant.objects.filter(email=habilitation_request.email).count()
         )
         db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
-        self.assertEqual(db_hab_request.status, HabilitationRequest.STATUS_REFUSED)
+        self.assertEqual(
+            db_hab_request.status, HabilitationRequestStatuses.STATUS_REFUSED.value
+        )
 
 
 @tag("models", "manndat", "usager", "journal")
@@ -2034,8 +2069,8 @@ class TestNotification(TestCase):
                 Notification.objects.create(
                     type=self.notification_type,
                     aidant=self.aidant,
-                    must_ack=True,
-                    was_ack=None,
+                    must_ack=False,
+                    was_ack=True,
                 )
         with transaction.atomic():
             with self.assertRaises(IntegrityError):
@@ -2044,25 +2079,16 @@ class TestNotification(TestCase):
                     aidant=self.aidant,
                     must_ack=False,
                     auto_ack_date=None,
-                    was_ack=None,
                 )
-        with transaction.atomic():
-            Notification.objects.create(
-                type=self.notification_type,
-                aidant=self.aidant,
-                must_ack=False,
-                auto_ack_date=date.today(),
-                was_ack=None,
-            )
 
         with transaction.atomic():
-            Notification.objects.create(
-                type=self.notification_type,
-                aidant=self.aidant,
-                must_ack=True,
-                auto_ack_date=date.today(),
-                was_ack=False,
-            )
+            with self.assertRaises(IntegrityError):
+                Notification.objects.create(
+                    type=self.notification_type,
+                    aidant=self.aidant,
+                    must_ack=True,
+                    auto_ack_date=date.today(),
+                )
 
         with transaction.atomic():
             Notification.objects.create(
@@ -2073,22 +2099,13 @@ class TestNotification(TestCase):
                 was_ack=False,
             )
 
-
-class NotificationTests(TestCase):
-    def test_constraints(self):
         with transaction.atomic():
-            self.assertRaises(
-                IntegrityError, NotificationFactory, must_ack=True, was_ack=None
-            )
-
-        with transaction.atomic():
-            self.assertRaises(
-                IntegrityError, NotificationFactory, must_ack=False, was_ack=False
-            )
-
-        with transaction.atomic():
-            self.assertRaises(
-                IntegrityError, NotificationFactory, auto_ack_date=None, was_ack=None
+            Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today(),
+                was_ack=False,
             )
 
     def test_mark_read(self):
@@ -2106,3 +2123,46 @@ class NotificationTests(TestCase):
         notification.mark_unread()
         notification.refresh_from_db()
         self.assertFalse(notification.was_ack)
+
+    def test_get_displayable_for_user(self):
+        with transaction.atomic():
+            self.notif_1 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=True,
+                auto_ack_date=None,
+                was_ack=False,
+            )
+            self.notif_2 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=True,
+                auto_ack_date=None,
+                was_ack=True,
+            )
+            self.notif_3 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today(),
+                was_ack=False,
+            )
+            self.notif_4 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today() + timedelta(days=1),
+                was_ack=False,
+            )
+            self.notif_5 = Notification.objects.create(
+                type=self.notification_type,
+                aidant=self.aidant,
+                must_ack=False,
+                auto_ack_date=date.today() - timedelta(days=1),
+                was_ack=False,
+            )
+
+        self.assertEqual(
+            {self.notif_1, self.notif_4},
+            set(Notification.objects.get_displayable_for_user(self.aidant)),
+        )

@@ -10,15 +10,11 @@
 
 {% block content %}
   <div class="fr-container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% include "layouts/_messages.html" %}
     <h1>Mon organisation</h1>
     <h2>{{ organisation.name }}</h2>
     <p class="subtitle">
-      Retrouvez ici des outils à votre disposition, externes à Aidants Connect mais susceptibles de vous aider dans vos
+      Retrouvez dans cette section, des ressources à votre disposition, susceptibles de vous aider dans vos
       démarches d’accompagnement.
     </p>
 

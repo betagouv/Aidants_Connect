@@ -27,10 +27,11 @@ from aidants_connect_common.utils.constants import (
     AuthorizationDurationChoices,
     AuthorizationDurations,
 )
+from aidants_connect_common.utils.render_markdown import render_markdown
 from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
 from aidants_connect_pico_cms.models import MandateTranslation
-from aidants_connect_pico_cms.utils import is_lang_rtl, render_markdown
+from aidants_connect_pico_cms.utils import is_lang_rtl
 from aidants_connect_web.decorators import (
     aidant_logged_required,
     aidant_logged_with_activity_required,
@@ -713,9 +714,13 @@ class Attestation(RenderAttestationAbstract):
 
     def dispatch(self, request, *args, **kwargs):
         self.aidant: Aidant = request.user
-        self.mandat = get_object_or_404(
-            Mandat, pk=kwargs["mandat_id"], organisation=self.aidant.organisation
-        )
+        try:
+            self.mandat = Mandat.objects.get(
+                pk=kwargs["mandat_id"], organisation=self.aidant.organisation
+            )
+        except Mandat.DoesNotExist:
+            django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+            return redirect("espace_aidant_home")
         self.template = self.mandat.get_mandate_template_path()
         self.modified = not self.template
 

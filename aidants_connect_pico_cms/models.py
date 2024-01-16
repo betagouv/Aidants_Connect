@@ -1,20 +1,13 @@
-from django.db import models
-from django.urls import reverse
-from django.utils.html import mark_safe
+from typing import Self
 
+from django.db import models
+from django.templatetags.static import static
+from django.urls import reverse
+
+from aidants_connect_common.models import MarkdownContentMixin
 from aidants_connect_pico_cms.constants import MANDATE_TRANSLATION_LANGUAGE_AVAILABLE
 from aidants_connect_pico_cms.fields import MarkdownField
-from aidants_connect_pico_cms.utils import is_lang_rtl, render_markdown
-
-
-class MarkdownContentMixin(models.Model):
-    body = MarkdownField("Contenu")
-
-    def to_html(self):
-        return mark_safe(render_markdown(self.body))
-
-    class Meta:
-        abstract = True
+from aidants_connect_pico_cms.utils import is_lang_rtl
 
 
 class CmsContent(MarkdownContentMixin, models.Model):
@@ -23,6 +16,7 @@ class CmsContent(MarkdownContentMixin, models.Model):
     published = models.BooleanField("Publié")
     slug = models.SlugField(
         "Clé d’URL",
+        unique=True,
         help_text=(
             "Par exemple <code>questions-generales</code> pour "
             "« Questions générales ».<br>"
@@ -36,12 +30,31 @@ class CmsContent(MarkdownContentMixin, models.Model):
         abstract = True
 
 
+class TestimonyQuerySet(models.QuerySet):
+    def for_display(self) -> Self:
+        return self.filter(published=True).order_by("sort_order", "slug")
+
+
 class Testimony(CmsContent):
     name = models.CharField("Nom de l'aidant·e qui témoigne", max_length=255)
     job = models.CharField("Fonction de l'aidant·e qui témoigne", max_length=255)
+    profile_picture_url = models.URLField(
+        "URL vers la photo de profil de la personne qui témoigne",
+        null=True,
+        default=None,
+    )
+    quote = models.CharField(
+        "Citation à afficher sur la page d'accueil", max_length=255
+    )
+
+    objects = TestimonyQuerySet.as_manager()
 
     def __str__(self):
         return self.name
+
+    @property
+    def profile_picture(self):
+        return self.profile_picture_url or static("images/default-profile-picture.png")
 
     def get_absolute_url(self):
         return reverse("temoignage-detail", kwargs={"slug": self.slug})

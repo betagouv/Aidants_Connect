@@ -6,15 +6,14 @@ from typing import Collection, Optional
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.functional import cached_property
 
 from dateutil.relativedelta import relativedelta
-from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
 
+from ..constants import OTP_APP_DEVICE_NAME
 from .mandat import Autorisation, Mandat
 from .organisation import Organisation
 from .usager import Usager
@@ -84,9 +83,6 @@ class AidantManager(UserManager):
         return super().create(**kwargs)
 
 
-aidants__organisations_changed = Signal()
-
-
 class AidantType(models.Model):
     name = models.CharField("Nom", max_length=350)
 
@@ -136,12 +132,6 @@ class Aidant(AbstractUser):
         "Date d'envoi de l’email d’alerte de désactivation", null=True, default=None
     )
 
-    ff_otp_app = models.BooleanField(
-        "Le ou la référente peut ajouter une application "
-        "OTP aux aidants de son organisation",
-        default=False,
-    )
-
     objects = AidantManager()
 
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]
@@ -156,13 +146,6 @@ class Aidant(AbstractUser):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if self.is_active is False:
-            self.deactivation_warning_at = None
-
-            if update_fields:
-                update_fields = set(update_fields)
-                update_fields.add("deactivation_warning_at")
-
         super().save(
             force_insert=force_insert,
             force_update=force_update,
@@ -290,14 +273,15 @@ class Aidant(AbstractUser):
         """
         return self.responsable_de.count() >= 1
 
-    def can_see_aidant(self, aidant):
+    def can_manage_aidant(self, aidant: Aidant | int | None):
         """
         :return: True if the current object is responsible for at least one of aidant's
-        organisations
+        organisations and this organisation is currently selected for the current
+        object
         """
-        respo_orgas = self.responsable_de.all()
-        aidant_orgas = aidant.organisations.all()
-        return any(org in respo_orgas for org in aidant_orgas)
+        return Organisation.objects.filter(
+            pk=self.organisation.pk, responsables__in=[self], aidants__in=[aidant]
+        ).exists()
 
     def must_validate_cgu(self):
         return self.validated_cgu_version != settings.CGU_CURRENT_VERSION
@@ -312,9 +296,7 @@ class Aidant(AbstractUser):
 
     @cached_property
     def has_otp_app(self) -> bool:
-        return self.totpdevice_set.filter(
-            name=TOTPDevice.APP_DEVICE_NAME % self.pk
-        ).exists()
+        return self.totpdevice_set.filter(name=OTP_APP_DEVICE_NAME % self.pk).exists()
 
     @cached_property
     def number_totp_card(self) -> str:
@@ -334,6 +316,8 @@ class Aidant(AbstractUser):
         if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
+
+        from aidants_connect_web.signals import aidants__organisations_changed
 
         aidants__organisations_changed.send(
             sender=self.__class__,
@@ -365,6 +349,8 @@ class Aidant(AbstractUser):
         if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
+
+        from aidants_connect_web.signals import aidants__organisations_changed
 
         aidants__organisations_changed.send(
             sender=self.__class__,

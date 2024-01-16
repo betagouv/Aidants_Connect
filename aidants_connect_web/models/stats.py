@@ -5,6 +5,7 @@ import logging
 from django.db import models
 
 from aidants_connect_common.models import Department, Region
+from aidants_connect_web.models import Aidant
 
 logger = logging.getLogger()
 
@@ -79,6 +80,16 @@ class AbstractAidantStatistiques(models.Model):
         default=0,
     )
 
+    number_old_aidants_warned = models.PositiveIntegerField(
+        "Nombre d'aidant actifs qui ne se sont pas connectés depuis longtemps et qui ont été alertés",  # noqa
+        default=0,
+    )
+
+    number_old_inactive_aidants_warned = models.PositiveIntegerField(
+        "Nombre d'aidant inactifs qui ne se sont pas connectés depuis longtemps et qui ont été alertés",  # noqa
+        default=0,
+    )
+
     class Meta:
         abstract = True
         verbose_name = "Statistiques aidants abstraite"
@@ -109,3 +120,62 @@ class AidantStatistiquesbyDepartment(AbstractAidantStatistiques):
     class Meta:
         verbose_name = "Statistiques aidants par département"
         verbose_name_plural = "Statistiques aidants par département"
+
+
+class ReboardingAidantStatistiques(models.Model):
+    created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
+
+    warning_date = models.DateTimeField(
+        "Date de l'envoie de l'alerte", auto_now_add=True, null=True
+    )
+    reboarding_session_date = models.DateField("Date de la session de réembarquement")
+
+    aidant = models.ForeignKey(
+        Aidant, verbose_name="Aidant", editable=False, on_delete=models.PROTECT
+    )
+
+    connexions_before_reboarding = models.PositiveIntegerField(
+        "Nb connexion avant réembarquement", default=0
+    )
+
+    connexions_j30_after = models.PositiveIntegerField(
+        "Nb connexion J30 après réembarquement", default=0
+    )
+    connexions_j90_after = models.PositiveIntegerField(
+        "Nb connexion J90 après réembarquement", default=0
+    )
+
+    created_mandats_before_reboarding = models.PositiveIntegerField(
+        "Nb mandats créés avant réembarquement", default=0
+    )
+    created_mandats_j30_after = models.PositiveIntegerField(
+        "Nb mandats créés J30 après réembarquement", default=0
+    )
+    created_mandats_j90_after = models.PositiveIntegerField(
+        "Nb mandats créés J90 après réembarquement", default=0
+    )
+
+    demarches_before_reboarding = models.PositiveIntegerField(
+        "Nb démarches avant réembarquement", default=0
+    )
+    demarches_j30_after = models.PositiveIntegerField(
+        "Nb démarches J30 après réembarquement", default=0
+    )
+    demarches_j90_after = models.PositiveIntegerField(
+        "Nb démarches J90 après réembarquement", default=0
+    )
+
+    usagers_before_reboarding = models.PositiveIntegerField(
+        "Nb usagers accompagnés avant réembarquement", default=0
+    )
+    usagers_j30_after = models.PositiveIntegerField(
+        "Nb usagers accompagnés J30 après réembarquement", default=0
+    )
+    usagers_j90_after = models.PositiveIntegerField(
+        "Nb usagers accompagnés J90 après réembarquement", default=0
+    )
+
+
+class Meta:
+    verbose_name = "Statistique réembarquement"
+    verbose_name_plural = "Statistiques réembarquement"

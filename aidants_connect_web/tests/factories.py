@@ -1,3 +1,4 @@
+import random
 from collections.abc import Iterable
 from datetime import timedelta
 
@@ -29,6 +30,7 @@ from aidants_connect_web.models import (
     OrganisationType,
     Usager,
 )
+from aidants_connect_web.utilities import normalize_totp_cart_serial
 
 
 class OrganisationFactory(DjangoModelFactory):
@@ -41,8 +43,16 @@ class OrganisationFactory(DjangoModelFactory):
 
 
 class CarteTOTPFactory(DjangoModelFactory):
-    serial_number = Sequence(lambda n: f"SN{n}")
     seed = Faker("hexify")
+
+    @lazy_attribute
+    def serial_number(self):
+        for _ in range(10):
+            serial = normalize_totp_cart_serial(random.randint(0, 9999))
+            if not CarteTOTP.objects.filter(serial_number=serial).exists():
+                return serial
+        else:
+            raise ValueError("Couldn't generate a valid serial number in 10 tries")
 
     class Meta:
         model = CarteTOTP
@@ -95,7 +105,7 @@ class AidantFactory(DjangoModelFactory):
         if kwargs.get("with_carte_totp", False):
             confirmed = kwargs.get("with_carte_totp_confirmed", True)
             carte: CarteTOTP = CarteTOTPFactory(aidant=self)
-            carte.createTOTPDevice(confirmed=confirmed).save()
+            carte.get_or_create_totp_device(confirmed=confirmed)
 
     @post_generation
     def password(self, create, value, **_):

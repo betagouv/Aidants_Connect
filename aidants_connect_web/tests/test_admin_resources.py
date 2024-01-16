@@ -7,12 +7,12 @@ from django.test.client import RequestFactory
 import pytz
 import tablib
 
-from aidants_connect_web.admin import (
-    HabilitationRequestAdmin,
+from aidants_connect_web.admin import HabilitationRequestAdmin, OrganisationAdmin
+from aidants_connect_web.admin.habilitation_request import (
     HabilitationRequestImportDateFormationResource,
-    OrganisationAdmin,
-    OrganisationResource,
 )
+from aidants_connect_web.admin.organisation import OrganisationResource
+from aidants_connect_web.constants import HabilitationRequestStatuses
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -285,7 +285,9 @@ class HabilitationRequestResourceTestCase(TestCase):
         self.assertEqual(
             aidant_a_former_1.date_formation, datetime(2022, 1, 1, tzinfo=pytz.UTC)
         )
-        self.assertEqual(aidant_a_former_1.status, HabilitationRequest.STATUS_VALIDATED)
+        self.assertEqual(
+            aidant_a_former_1.status, HabilitationRequestStatuses.STATUS_VALIDATED
+        )
 
         aidant_a_former_2 = HabilitationRequest.objects.filter(
             email=self.aidant_a_former_1.email
@@ -294,7 +296,9 @@ class HabilitationRequestResourceTestCase(TestCase):
         self.assertEqual(
             aidant_a_former_2.date_formation, datetime(2022, 1, 1, tzinfo=pytz.UTC)
         )
-        self.assertEqual(aidant_a_former_2.status, HabilitationRequest.STATUS_VALIDATED)
+        self.assertEqual(
+            aidant_a_former_2.status, HabilitationRequestStatuses.STATUS_VALIDATED
+        )
 
         self.assertEqual(
             1, Aidant.objects.filter(email=aidant_a_former_1.email).count()
@@ -309,19 +313,27 @@ class OrganisationResourceExportForSandboxTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.rf = RequestFactory()
-        cls.organisation1 = OrganisationFactory(name="MAIRIE", siret="121212121")
-        cls.organisation2 = OrganisationFactory(name="MAIRIE2", siret="121212122")
-        cls.organisation3 = OrganisationFactory(name="MAIRIE3", siret="121212123")
+        cls.organisation1 = OrganisationFactory(
+            name="MAIRIE", siret="121212121", data_pass_id=1
+        )
+        cls.organisation2 = OrganisationFactory(
+            name="MAIRIE2", siret="121212122", data_pass_id=2
+        )
+        cls.organisation3 = OrganisationFactory(
+            name="MAIRIE3", siret="121212123", data_pass_id=3
+        )
 
         cls.aidant_marge = AidantFactory(
             first_name="Marge", organisation=cls.organisation1
         )
+        cls.aidant_marge.responsable_de.add(cls.organisation1)
         cls.aidant_homer = AidantFactory(
             first_name="Homer", organisation=cls.organisation2
         )
         cls.habilit_bowser = HabilitationRequestFactory(
             first_name="Bowser", organisation=cls.organisation3
         )
+        cls.aidant_marge.responsable_de.add(cls.organisation1)
 
     def get_list_for_export_sandbox(self):
         orgas = Organisation.objects.filter(
@@ -341,10 +353,28 @@ class OrganisationResourceExportForSandboxTestCase(TestCase):
         orga_admin = OrganisationAdmin(Organisation, AdminSite())
         data = orga_admin.get_data_for_export(request, orgas)
         self.assertEqual(len(data), 2)
-        self.assertEqual(len(data[0]), 12)
+        self.assertEqual(len(data[0]), 13)
         self.assertEqual(data[0][1], "Marge")
         self.assertEqual(data[0][3], self.aidant_marge.email)
         self.assertEqual(data[1][1], "Bowser")
+
+    def test_export_for_sandbox_responsable_de(self):
+        request = self.rf.get("/", {})
+        orgas = Organisation.objects.filter(
+            pk__in=[self.organisation1.pk, self.organisation3.pk]
+        )
+        orga_admin = OrganisationAdmin(Organisation, AdminSite())
+        data = orga_admin.get_data_for_export(request, orgas)
+        self.assertEqual(data[0][12], f"{self.organisation1.data_pass_id}|")
+        self.assertEqual(data[1][12], "")
+
+        self.aidant_marge.responsable_de.add(self.organisation2)
+        data = orga_admin.get_data_for_export(request, orgas)
+        self.assertEqual(
+            data[0][12],
+            f"{self.organisation1.data_pass_id}|{self.organisation2.data_pass_id}|",
+        )
+        self.assertEqual(data[1][12], "")
 
 
 @tag("admin")

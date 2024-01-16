@@ -11,6 +11,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from aidants_connect_pico_cms.models import Testimony
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation, Usager
 
@@ -35,7 +36,16 @@ def home_page(request):
         django_messages.success(
             request, "Votre inscription à l'infolettre a bien été prise en compte."
         )
-    return render(request, "public_website/home_page.html")
+
+    testimonies_qs = Testimony.objects.for_display()
+    return render(
+        request,
+        "public_website/home_page.html",
+        context={
+            "testimonies": testimonies_qs[:3],
+            "has_more_testimonies": testimonies_qs.count() > 3,
+        },
+    )
 
 
 @login_required

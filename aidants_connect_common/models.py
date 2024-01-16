@@ -2,6 +2,10 @@ from typing import Any
 
 from django.db import models
 from django.db.models import CASCADE
+from django.utils.safestring import mark_safe
+
+from aidants_connect_common.utils.render_markdown import render_markdown
+from aidants_connect_pico_cms.fields import MarkdownField
 
 
 class Region(models.Model):
@@ -63,3 +67,20 @@ class Commune(models.Model):
         INSEE's CSV.
         """
         super().save(force_insert, force_update, using, update_fields)
+
+
+class EmailDebug(models.Model):
+    text_email = models.TextField("Contenu de l'email au format texte")
+    html_email = models.TextField("Contenu de l'email au format HTML")
+    created_at = models.DateTimeField("Date de création", auto_now_add=True)
+    email_adress = models.CharField("Adresse email", max_length=250)
+
+
+class MarkdownContentMixin(models.Model):
+    body = MarkdownField("Contenu")
+
+    def to_html(self):
+        return mark_safe(render_markdown(self.body))
+
+    class Meta:
+        abstract = True
