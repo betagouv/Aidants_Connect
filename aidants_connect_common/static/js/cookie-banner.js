@@ -26,13 +26,4 @@
         "mandatory": true,
         "mandatoryCta": true,
     });
-
-    const el = document.querySelector("#cookie-banner");
-    const matomoUrl = el.dataset.matomoUrl;
-    const matomoSiteId = el.dataset.matomoSiteId;
-    if (matomoUrl && matomoSiteId) {
-        tarteaucitron.user.matomoId = matomoSiteId;
-        tarteaucitron.user.matomoHost = matomoUrl.replace(/\/*$/, "/");
-        (tarteaucitron.job = tarteaucitron.job || []).push('matomo');
-    }
 })();

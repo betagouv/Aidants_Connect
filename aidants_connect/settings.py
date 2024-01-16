@@ -433,7 +433,7 @@ COOKIE_BANNER_SERVICES_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.services.js"
 )
 AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa: E501
-MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
+MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.data.gouv.fr")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
 
 if "test" in sys.argv:
@@ -451,8 +451,8 @@ else:
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_CONNECT_SRC = (
     "'self'",
-    "https://stats.data.gouv.fr/matomo.php",
-    "https://stats.data.gouv.fr/piwik.php",
+    f"{MATOMO_INSTANCE_URL.removesuffix('/')}/matomo.php",
+    f"{MATOMO_INSTANCE_URL.removesuffix('/')}/piwik.php",
     SARBACANE_CONNECT_URL,
 )
 CSP_IMG_SRC = (
