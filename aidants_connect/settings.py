@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "django_otp",
+    "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
@@ -144,6 +145,7 @@ INSTALLED_APPS = [
     "aidants_connect_web",
     "aidants_connect_habilitation",
     "aidants_connect_pico_cms",
+    "aidants_connect_sandbox",
     "aidants_connect_erp",
 ]
 
@@ -802,7 +804,6 @@ GRIST_API_KEY = os.getenv("GRIST_API_KEY", "")
 
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
-
 
 
 # ######################## SANDBOX SETTING ############################

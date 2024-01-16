@@ -58,7 +58,26 @@ class AidantSandboxResource(resources.ModelResource):
                     city=row["organisation__city"],
                     zipcode=row["organisation__zipcode"],
                 )[0]
+        if row["Data pass Id Orga Responsable"]:
+            respo_orgas = []
+            data_pass_ids = row["Data pass Id Orga Responsable"].split("|")
+            for str_one_id in data_pass_ids:
+                if str_one_id and str_one_id.isdigit():
+                    one_id = int(str_one_id)
+                    orgas = Organisation.objects.filter(data_pass_id=one_id)
+                    if orgas.exists():
+                        respo_orgas.append(orgas.first())
+
+            self.respo_orgas = respo_orgas
+
         self.orga = orga
+
+    def after_save_instance(self, instance, using_transactions, dry_run):
+        try:
+            for one_orga in self.respo_orgas:
+                instance.responsable_de.add(one_orga)
+        except Exception:
+            pass
 
     def after_import_row(self, row, row_result, row_number=None, **kwargs):
         if row_result.import_type != RowResult.IMPORT_TYPE_NEW:
