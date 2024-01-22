@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -8,7 +8,8 @@ from django.views.generic.base import RedirectView, View
 from django.views.generic.detail import DetailView
 
 from aidants_connect_common.utils.render_markdown import render_markdown
-from aidants_connect_pico_cms.models import FaqCategory, FaqQuestion, Testimony
+from aidants_connect_pico_cms.models import FaqCategory, Testimony
+from aidants_connect_web.models import Aidant
 
 
 class TestimoniesView(RedirectView):
@@ -28,31 +29,69 @@ class TestimonyView(DetailView):
         return super().get_context_data(**kwargs)
 
 
-class FaqDefaultView(View):
-    def get(self, request, *args, **kwargs):
-        if not settings.FF_USE_PICO_CMS_FOR_FAQ:
-            return render(request, "public_website/faq/generale.html")
-
-        first_published_category = (
-            FaqCategory.objects.filter(published=True).order_by("sort_order").first()
-        )
-        if not first_published_category:
-            return HttpResponseNotFound()
-        return HttpResponseRedirect(first_published_category.get_absolute_url())
-
-
 class FaqCategoryView(DetailView):
+    template_name = "aidants_connect_pico_cms/faqcategory_detail.html"
     model = FaqCategory
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["categories"] = FaqCategory.objects.filter(published=True).order_by(
-            "sort_order"
+    def dispatch(self, request, *args, **kwargs):
+        self.see_draft = "see_draft" in getattr(
+            self.request, self.request.method.upper(), {}
         )
-        context["questions"] = FaqQuestion.objects.filter(
-            published=True, category=self.object
-        ).order_by("sort_order")
-        return context
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        if self.should_show_drafts or settings.FF_USE_PICO_CMS_FOR_FAQ:
+            return super().get(request, *args, **kwargs)
+        else:
+            try:
+                from aidants_connect_web.views import service
+
+                return {
+                    "/faq/mandat/": service.faq_mandat,
+                    "/faq/donnees-personnelles/": service.faq_donnees_personnelles,
+                    "/faq/habilitation/": service.faq_habilitation,
+                }[request.path](request)
+            except KeyError:
+                raise Http404
+
+    @property
+    def should_show_drafts(self):
+        return (
+            isinstance(self.request.user, Aidant)
+            and self.request.user.is_staff
+            and self.see_draft
+        )
+
+    def get_queryset(self):
+        cat_kwargs = {} if self.should_show_drafts else {"published": True}
+        return super().get_queryset().filter(**cat_kwargs).order_by("sort_order")
+
+    def get_context_data(self, **kwargs):
+        if not self.object:
+            self.object: FaqCategory = self.get_object()
+
+        kwargs.update(
+            {
+                "categories": self.get_queryset(),
+                "questions": self.object.get_questions(self.should_show_drafts),
+            }
+        )
+        return super().get_context_data(**kwargs)
+
+
+class FaqDefaultView(FaqCategoryView):
+    def get(self, request, *args, **kwargs):
+        if self.should_show_drafts or settings.FF_USE_PICO_CMS_FOR_FAQ:
+            return super().get(request, *args, **kwargs)
+        return render(request, "public_website/faq/generale.html")
+
+    def get_object(self, queryset=None):
+        first_published_category = self.get_queryset().first()
+
+        if not first_published_category:
+            raise Http404
+
+        return first_published_category
 
 
 @method_decorator(csrf_exempt, name="dispatch")

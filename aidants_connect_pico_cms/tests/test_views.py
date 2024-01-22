@@ -7,6 +7,7 @@ from aidants_connect_pico_cms.tests.factories import (  # FaqQuestionFactory,
     FaqCategoryFactory,
     TestimonyFactory,
 )
+from aidants_connect_web.tests.factories import AidantFactory
 
 
 @tag("pico_cms")
@@ -52,6 +53,9 @@ class TestFaqViews(TestCase):
             name="Première section de FAQ", slug="premiere-section", sort_order=10
         )
 
+        cls.aidant_1 = AidantFactory(is_staff=True)
+        cls.aidant_2 = AidantFactory(is_staff=False)
+
     def test_right_template_is_used_and_content_is_here(self):
         self.assertTrue(settings.FF_USE_PICO_CMS_FOR_FAQ)
         response = self.client.get(self.faq_section_1.get_absolute_url())
@@ -62,11 +66,31 @@ class TestFaqViews(TestCase):
         self.assertContains(response, "Première section de FAQ")
         self.assertContains(response, "Deuxième section de FAQ")
 
-    def test_default_faq_route_is_redirected_to_first_published_section(self):
+    def test_default_faq_route_renders_the_first_published_section(self):
         response = self.client.get("/faq/")
-        self.assertRedirects(response, self.faq_section_1.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_pico_cms/faqcategory_detail.html"
+        )
+        self.assertContains(response, "Première section de FAQ")
+        self.assertContains(response, "Deuxième section de FAQ")
+        self.assertEqual(self.faq_section_1, response.context["object"])
 
     def test_404_if_no_section_is_published(self):
         FaqCategory.objects.update(published=False)
         response = self.client.get("/faq/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_renders_unpublished_if_user_is_authorized(self):
+        FaqCategory.objects.update(published=False)
+        self.client.force_login(self.aidant_1)
+        response = self.client.get(f"{self.faq_section_1.get_absolute_url()}?see_draft")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_pico_cms/faqcategory_detail.html"
+        )
+        self.assertContains(response, "Première section de FAQ")
+        self.assertContains(response, "Deuxième section de FAQ")
+        self.client.force_login(self.aidant_2)
+        response = self.client.get(f"{self.faq_section_1.get_absolute_url()}?see_draft")
         self.assertEqual(response.status_code, 404)

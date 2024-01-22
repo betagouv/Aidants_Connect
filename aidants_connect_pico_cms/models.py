@@ -1,6 +1,7 @@
 from typing import Self
 
 from django.db import models
+from django.db.models import F
 from django.templatetags.static import static
 from django.urls import reverse
 
@@ -14,6 +15,13 @@ class CmsContent(MarkdownContentMixin, models.Model):
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
     published = models.BooleanField("Publié")
+    sort_order = models.PositiveSmallIntegerField("Tri", null=True, db_index=True)
+
+    class Meta:
+        abstract = True
+
+
+class CmsUrlContent(CmsContent):
     slug = models.SlugField(
         "Clé d’URL",
         unique=True,
@@ -24,7 +32,6 @@ class CmsContent(MarkdownContentMixin, models.Model):
             "50 caractères maximum."
         ),
     )
-    sort_order = models.PositiveSmallIntegerField("Tri", null=True, db_index=True)
 
     class Meta:
         abstract = True
@@ -35,7 +42,7 @@ class TestimonyQuerySet(models.QuerySet):
         return self.filter(published=True).order_by("sort_order", "slug")
 
 
-class Testimony(CmsContent):
+class Testimony(CmsUrlContent):
     name = models.CharField("Nom de l'aidant·e qui témoigne", max_length=255)
     job = models.CharField("Fonction de l'aidant·e qui témoigne", max_length=255)
     profile_picture_url = models.URLField(
@@ -90,12 +97,25 @@ class MandateTranslation(MarkdownContentMixin):
         verbose_name_plural = "Traductions de mandat"
 
 
-class FaqCategory(CmsContent):
+class FaqObject(CmsContent):
     name = models.CharField("Nom", max_length=255)
-    body = MarkdownField("Introduction", blank=True, null=True)
+    body = MarkdownField("Introduction", blank=True, default="")
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        abstract = True
+
+
+class FaqCategory(CmsUrlContent, FaqObject):
+    def get_questions(self, see_draft=False):
+        filter_kwargs = {"published": True} if not see_draft else {}
+        return (
+            FaqQuestion.objects.filter(**filter_kwargs, category=self)
+            .order_by(F("subcategory__sort_order").asc(nulls_first=True), "sort_order")
+            .prefetch_related("subcategory")
+        )
 
     def get_absolute_url(self):
         return reverse("faq-category-detail", kwargs={"slug": self.slug})
@@ -105,15 +125,29 @@ class FaqCategory(CmsContent):
         verbose_name_plural = "Catégories FAQ"
 
 
-class FaqQuestion(CmsContent):
+class FaqSubCategory(FaqObject):
+    class Meta:
+        verbose_name = "Sous-catégorie FAQ"
+        verbose_name_plural = "Sous-catégories FAQ"
+
+
+class FaqQuestion(CmsUrlContent, CmsContent):
     question = models.TextField("Question")
-    category = models.ForeignKey(
-        FaqCategory, models.SET_NULL, null=True, verbose_name="Catégorie"
+    body = MarkdownField("Réponse")
+    category = models.ForeignKey(FaqCategory, models.CASCADE, verbose_name="Catégorie")
+    subcategory = models.ForeignKey(
+        FaqSubCategory,
+        models.CASCADE,
+        null=True,
+        default=None,
+        verbose_name="Sous-catégorie",
     )
-    body = models.TextField("Réponse")
 
     def __str__(self):
         return self.question
+
+    def get_absolute_url(self):
+        return f"{self.category.get_absolute_url()}#question-{self.slug}"
 
     class Meta:
         verbose_name = "Question FAQ"

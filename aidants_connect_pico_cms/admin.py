@@ -1,12 +1,14 @@
 from django.contrib.admin import ModelAdmin, register
 from django.forms import models
 from django.urls import reverse_lazy
+from django.utils.safestring import mark_safe
 
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_common.widgets import SearchableRadioSelect
 from aidants_connect_pico_cms.models import (
     FaqCategory,
     FaqQuestion,
+    FaqSubCategory,
     MandateTranslation,
     Testimony,
 )
@@ -49,6 +51,7 @@ class TestimonyAdmin(CmsAdmin):
 
 @register(FaqCategory, site=admin_site)
 class FaqCategoryAdmin(CmsAdmin):
+    list_display = (*CmsAdmin.list_display, "see_draft")
     fieldsets = (
         ("Contenu", {"fields": ("name", "body")}),
         (
@@ -65,6 +68,47 @@ class FaqCategoryAdmin(CmsAdmin):
         ),
     )
 
+    def see_draft(self, obj):
+        return mark_safe(
+            f'<a href="{obj.get_absolute_url()}?see_draft">Voir le brouillon</a>'
+        )
+
+    see_draft.short_description = "Voir le brouillon"
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        form.base_fields["body"].required = False
+        return form
+
+
+@register(FaqSubCategory, site=admin_site)
+class FaqSubCategoryAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "__str__",
+        "sort_order",
+        "published",
+        "created_at",
+    )
+    list_filter = ("published",)
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+    fieldsets = (
+        ("Contenu", {"fields": ("name", "body")}),
+        (
+            "Publication",
+            {
+                "fields": (
+                    "published",
+                    "sort_order",
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+    )
+
 
 @register(FaqQuestion, site=admin_site)
 class FaqQuestionAdmin(CmsAdmin):
@@ -73,12 +117,13 @@ class FaqQuestionAdmin(CmsAdmin):
         "__str__",
         "slug",
         "category",
+        "subcategory",
         "sort_order",
         "published",
         "created_at",
     )
     fieldsets = (
-        ("Contenu", {"fields": ("question", "body", "category")}),
+        ("Contenu", {"fields": ("question", "body", "category", "subcategory")}),
         (
             "Publication",
             {
@@ -92,6 +137,11 @@ class FaqQuestionAdmin(CmsAdmin):
             },
         ),
     )
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        form.base_fields["subcategory"].required = False
+        return form
 
 
 class MandateTranslationAdminForm(models.ModelForm):
