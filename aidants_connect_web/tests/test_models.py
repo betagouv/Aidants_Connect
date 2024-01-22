@@ -1602,6 +1602,25 @@ class AidantModelMethodsTests(TestCase):
         CarteTOTPFactory(aidant=self.aidant_patricia, serial_number="12121212")
         self.assertTrue(self.aidant_patricia.number_totp_card, "12121212")
 
+    def test_save_adds_current_and_referents_organisation_to_aidant(self):
+        aidant: Aidant = AidantFactory()
+        aidant_referent = [OrganisationFactory(), OrganisationFactory()]
+        aidant_former_org = aidant.organisation
+        aidant_current_org = OrganisationFactory()
+
+        aidant.refresh_from_db()
+        self.assertEqual({aidant_former_org}, set(aidant.organisations.all()))
+
+        aidant.organisation = aidant_current_org
+        aidant.responsable_de.add(*aidant_referent)
+        aidant.save()
+        aidant.refresh_from_db()
+
+        self.assertEqual(
+            {*aidant_referent, aidant_former_org, aidant_current_org},
+            set(aidant.organisations.all()),
+        )
+
 
 @tag("models", "journal")
 class JournalModelTests(TestCase):
