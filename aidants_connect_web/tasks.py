@@ -413,6 +413,9 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
             "phone",
             "profession",
             "can_create_mandats",
+            "active_totp_card",
+            "has_otp_app",
+            "is_active",
             "organisation__name",
             "organisation__data_pass_id",
             "organisation__siret",
@@ -454,6 +457,22 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
             return qs[0].insee_code
 
         organisation__region.csv_column = "Organisation: Code INSEE de la région"
+
+        def active_totp_card(self):
+            return getattr(
+                getattr(
+                    getattr(self.aidant, "carte_totp", False), "totp_device", False
+                ),
+                "confirmed",
+                False,
+            )
+
+        active_totp_card.csv_column = "Carte TOTP active"
+
+        def has_otp_app(self):
+            return self.aidant.has_otp_app
+
+        has_otp_app.csv_column = "App OTP"
 
         def organisation__nb_mandat_created(self):
             return Journal.objects.filter(
@@ -523,7 +542,6 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
                     )
                 elif requested_field in model_fields:
                     result.append(f"{model_fields[requested_field].verbose_name}")
-                    Aidant.objects.filter()
                 elif LOOKUP_SEP in requested_field:
                     model = Aidant
                     related_model_fields = model_fields

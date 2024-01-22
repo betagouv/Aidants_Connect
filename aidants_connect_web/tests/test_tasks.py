@@ -290,11 +290,11 @@ class ExportForBizdevs(TestCase):
 
         with mock.patch("builtins.open", return_value=output):
             export_for_bizdevs(request, create_file=False)
-            self.assertMultiLineEqual(
+            self.assertEqual(
                 dedent(
                     f"""
-                    prénom,nom,adresse électronique,Téléphone,profession,Aidant - Peut créer des mandats,Organisation: Nom,Organisation: Datapass ID,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre de mandats créés,Organisation: Nombre de mandats à distance créés,Organisation: Nombre d'usagers
-                    Thierry,Goneau,{self.staff_aidant.email},,secrétaire,True,COMMUNE D'HOULBEC COCHEREL,None,123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,France Services/MSAP,0,None,None,None,5,2,4
+                    prénom,nom,adresse électronique,Téléphone,profession,Aidant - Peut créer des mandats,Carte TOTP active,App OTP,actif,Organisation: Nom,Organisation: Datapass ID,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre de mandats créés,Organisation: Nombre de mandats à distance créés,Organisation: Nombre d'usagers
+                    Thierry,Goneau,{self.staff_aidant.email},,secrétaire,True,False,False,True,COMMUNE D'HOULBEC COCHEREL,None,123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,France Services/MSAP,0,None,None,None,5,2,4
                     """  # noqa: E501
                 ).strip(),
                 # Replace Windows' newline separator by Unix'
