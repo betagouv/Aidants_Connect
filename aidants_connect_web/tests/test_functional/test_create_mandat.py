@@ -85,17 +85,23 @@ class CreateNewMandatTests(FunctionalTestCase):
             temp_test_nouvelle_mire_masquer.click()
 
         # Click on the 'Démonstration' identity provider
-        demonstration_hex = self.selenium.find_element(
-            By.ID, "fi-identity-provider-example"
+        self.selenium.find_element(By.ID, "fi-fip1-low").click()
+        self.wait.until(
+            url_matches(r"https://.+fournisseur-d-identite\.fr/interaction/.+")
         )
-        demonstration_hex.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
-        self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
+        self.assertIn("Fournisseur d'identité de démonstration", demo_title)
+        form_input = self.selenium.find_element(By.ID, "login")
+        form_input.clear()
+        form_input.send_keys("test")
+        form_input = self.selenium.find_element(By.ID, "password")
+        form_input.clear()
+        form_input.send_keys("123")
+        submit_button = self.selenium.find_element(
+            By.CSS_SELECTOR, "button[type='submit']"
+        )
         submit_button.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
@@ -212,17 +218,24 @@ class CreateNewMandatTests(FunctionalTestCase):
             temp_test_nouvelle_mire_masquer.click()
 
         # Click on the 'Démonstration' identity provider
-        demonstration_hex = self.selenium.find_element(
-            By.ID, "fi-identity-provider-example"
-        )
+        demonstration_hex = self.selenium.find_element(By.ID, "fi-fip1-low")
         demonstration_hex.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
+        self.wait.until(
+            url_matches(r"https://.+fournisseur-d-identite\.fr/interaction/.+")
+        )
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
-        self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
+        self.assertIn("Fournisseur d'identité de démonstration", demo_title)
+        form_input = self.selenium.find_element(By.ID, "login")
+        form_input.clear()
+        form_input.send_keys("test")
+        form_input = self.selenium.find_element(By.ID, "password")
+        form_input.clear()
+        form_input.send_keys("123")
+        submit_button = self.selenium.find_element(
+            By.CSS_SELECTOR, "button[type='submit']"
+        )
         submit_button.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
@@ -399,17 +412,24 @@ class CreateNewMandatTests(FunctionalTestCase):
             temp_test_nouvelle_mire_masquer.click()
 
         # Click on the 'Démonstration' identity provider
-        demonstration_hex = self.selenium.find_element(
-            By.ID, "fi-identity-provider-example"
-        )
+        demonstration_hex = self.selenium.find_element(By.ID, "fi-fip1-low")
         demonstration_hex.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
+        self.wait.until(
+            url_matches(r"https://.+fournisseur-d-identite\.fr/interaction/.+")
+        )
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
-        self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
+        self.assertIn("Fournisseur d'identité de démonstration", demo_title)
+        form_input = self.selenium.find_element(By.ID, "login")
+        form_input.clear()
+        form_input.send_keys("test")
+        form_input = self.selenium.find_element(By.ID, "password")
+        form_input.clear()
+        form_input.send_keys("123")
+        submit_button = self.selenium.find_element(
+            By.CSS_SELECTOR, "button[type='submit']"
+        )
         submit_button.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
