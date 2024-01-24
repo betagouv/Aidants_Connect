@@ -38,7 +38,21 @@
               <div class="fr-grid-row  card">
                   <div class="fr-grid-row  fr-col-5">
                       <div class="card__cover">
-                        <iframe title="Vidéo sur l’accompagnement des usagers à l’utilisation de FranceConnect" width="560" height="250" src="https://www.youtube.com/embed/hATrqHG4zYQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <div
+                          class="youtube_player"
+                          videoID="hATrqHG4zYQ"
+                          theme="dark"
+                          rel="1"
+                          controls="1"
+                          showinfo="1"
+                          autoplay="0"
+                          mute="0"
+                          loop="0"
+                          loading="0"
+                          width="560"
+                          height="250"
+                          title="Vidéo sur l’accompagnement des usagers à l’utilisation de FranceConnect"
+                        ></div>
                       </div>
                       <div class="card__content">
                           <h3>Comment accompagner un ou une usagère à utiliser FranceConnect&nbsp;?</h3>
@@ -56,10 +70,24 @@
 
                   <div class="fr-grid-row  fr-col-5">
                       <div class="card__cover">
-                          <iframe title="Vidéo « Aidants Connect, comment ça fonctionne ? »" width="560" height="250" src="https://www.youtube.com/embed/WTHj_kQXnzs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <div
+                          class="youtube_player"
+                          videoID="WTHj_kQXnzs"
+                          theme="dark"
+                          rel="1"
+                          controls="1"
+                          showinfo="1"
+                          autoplay="0"
+                          mute="0"
+                          loop="0"
+                          loading="0"
+                          width="560"
+                          height="250"
+                          title="Vidéo sur l’accompagnement des usagers à l’utilisation de FranceConnect"
+                        ></div>
                       </div>
-                      <div class="card__content">
-                          <h3>Aidants Connect, comment ça fonctionne&nbsp;?</h3>
+                    <div class="card__content">
+                      <h3>Aidants Connect, comment ça fonctionne&nbsp;?</h3>
                       </div>
                       <div><a href="https://www.youtube.com/watch?v=WTHj_kQXnzs">Voir sur Youtube</a></div>
                       <div>
@@ -73,10 +101,24 @@
 
               <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
                   <div class="fr-grid-row fr-col-3"> </div>
-                  <div class="fr-grid-row fr-col-6 ">
-                    <iframe title="Vidéo « les aspects juridiques relatifs au tiers de confiance »" width="560" height="250" src="https://www.youtube.com/embed/ihsm-36I-fE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                  </div>
-                  <div class="fr-grid-row fr-col-3"> </div>
+                <div class="fr-grid-row fr-col-6 ">
+                  <div
+                    class="youtube_player"
+                    videoID="ihsm-36I-fE"
+                    theme="dark"
+                    rel="1"
+                    controls="1"
+                    showinfo="1"
+                    autoplay="0"
+                    mute="0"
+                    loop="0"
+                    loading="0"
+                    width="560"
+                    height="250"
+                    title="Vidéo sur l’accompagnement des usagers à l’utilisation de FranceConnect"
+                  ></div>
+                </div>
+                <div class="fr-grid-row fr-col-3"> </div>
               </div>
               <div class="fr-grid-row ">
                   <div class="fr-grid-row fr-col-3"> </div>
@@ -116,7 +158,7 @@
                 <div class="fr-grid-row fr-grid-row--center fr-mt-16v panel__header">
                     <h2>
                         Comment fonctionne Aidants Connect&nbsp;?
-                        <small class="text-very-small">6 documents</small>
+                        <small class="text-very-small">7 documents</small>
                     </h2>
                 </div>
             </div>
@@ -143,7 +185,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                         <h3 >Utiliser Aidants Connect : le tutoriel pas à pas</h3>
                     </div>
                 </div>
@@ -158,7 +200,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                         <ul>
                             <li><a href="{% static 'guides_aidants_connect/Aidantsconnect_tutoriel.pdf' %}" target="_blank">Télécharger en couleur</a></li>
                         </ul>
@@ -188,7 +230,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
                         <h3 >Exemple type de mandat</h3>
                     </div>
                 </div>
@@ -202,7 +244,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                         <ul>
                             <li><a href="{% static 'guides_aidants_connect/Exemple de mandat Aidants Connect_french.pdf' %}" target="_blank">Télécharger en français</a></li>
                             <li><a href="{% static 'guides_aidants_connect/Mandat type Aidants Connect english.pdf' %}" target="_blank">Télécharger en anglais</a></li>
@@ -227,32 +269,68 @@
 
                 <div class="fr-grid-row fr-grid-row--center">
                     <div class="fr-grid-row fr-col fr-grid-row--center">
-                        <h3>
-                            Charte de l’aidant
-                        </h3>
+                        <h3>Exemple type de revocation de mandat </h3>
                     </div>
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
-                        <h3 >Charte du référent Aidants Connect</h3>
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3 >Charte de l’aidant</h3>
                     </div>
                 </div>
 
                 <div class="fr-grid-row fr-grid-row--center">
                     <div class="fr-grid-row fr-col fr-grid-row--center">
                         <ul>
-                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect_Charte-aidants.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                            <li><a href="{% static 'guides_aidants_connect/AidantsConnect_ModeleRevocationMandat.pdf' %}" target="_blank">Télécharger en couleur</a></li>
                         </ul>
                     </div>
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <ul>
+                            <li><a href="{% static 'guides_aidants_connect/Aidants Connect_Charte-aidants.pdf' %}" target="_blank">Télécharger en couleur</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fr-col-12">
+                <div class="fr-grid-row fr-grid-row--center fr-mt-16v">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <span class="fr-icon-file-text-line" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col  fr-grid-row--center">
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                        <h3 >Charte du référent Aidants Connect</h3>
+                    </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                    </div>
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                         <ul>
                             <li><a href="{% static 'guides_aidants_connect/Aidants Connect_Charte-responsable-aidants-connect.pdf' %}" target="_blank">Télécharger en couleur</a></li>
                         </ul>
                     </div>
+
+                    <div class="fr-grid-row fr-col-1"> </div>
+
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
+                    </div>
+
                 </div>
             </div>
 
@@ -288,7 +366,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                         <h3>Expliquer la signature du mandat</h3>
                     </div>
                 </div>
@@ -303,7 +381,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                         <ul>
                             <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Je-signe-un-mandat.pdf' %}" target="_blank">Télécharger en couleur</a></li>
                             <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Je-signe-un-mandat _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
@@ -332,7 +410,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                     </div>
                 </div>
 
@@ -345,7 +423,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                     </div>
                 </div>
             </div>
@@ -381,7 +459,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                         <h3>Se connecter avec FranceConnect</h3>
                     </div>
                 </div>
@@ -396,7 +474,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                         <ul>
                             <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Se-connecter-à-FranceConnect.pdf' %}" target="_blank">Télécharger en couleur</a></li>
                             <li><a href="{% static 'guides_aidants_connect/Aidants Connect _ Se-connecter-à-FranceConnect _ Impression noir et blanc.pdf' %}" target="_blank">Télécharger pour impression en noir et blanc</a></li>
@@ -426,7 +504,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                     </div>
                 </div>
 
@@ -440,7 +518,7 @@
 
                     <div class="fr-grid-row fr-col-1"> </div>
 
-                    <div class="fr-grid-row fr-col ">
+                    <div class="fr-grid-row fr-col fr-grid-row--center">
                     </div>
                 </div>
             </div>
@@ -448,5 +526,8 @@
         </div>
     </div>
 </section>
-
 {% endblock content %}
+
+{% block extrajs %}
+  <script defer type="text/javascript" src="{% static 'js/youtube-cookie.js' %}"></script>
+{% endblock %}
