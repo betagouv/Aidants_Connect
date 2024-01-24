@@ -47,11 +47,20 @@ class TestimonyAdmin(CmsAdmin):
             },
         ),
     )
+    readonly_fields = (*CmsAdmin.readonly_fields, "slug")
 
 
-@register(FaqCategory, site=admin_site)
-class FaqCategoryAdmin(CmsAdmin):
-    list_display = (*CmsAdmin.list_display, "see_draft")
+@register(FaqSubCategory, site=admin_site)
+class FaqSectionAdmin(CmsAdmin):
+    list_display = (
+        "__str__",
+        "sort_order",
+        "slug",
+        "published",
+        "created_at",
+    )
+    list_filter = ("published",)
+    readonly_fields = (*CmsAdmin.readonly_fields, "slug")
     fieldsets = (
         ("Contenu", {"fields": ("name", "body")}),
         (
@@ -68,46 +77,22 @@ class FaqCategoryAdmin(CmsAdmin):
         ),
     )
 
-    def see_draft(self, obj):
-        return mark_safe(
-            f'<a href="{obj.get_absolute_url()}?see_draft">Voir le brouillon</a>'
-        )
-
-    see_draft.short_description = "Voir le brouillon"
-
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
         form.base_fields["body"].required = False
         return form
 
 
-@register(FaqSubCategory, site=admin_site)
-class FaqSubCategoryAdmin(VisibleToAdminMetier, ModelAdmin):
-    list_display = (
-        "__str__",
-        "sort_order",
-        "published",
-        "created_at",
-    )
-    list_filter = ("published",)
-    readonly_fields = (
-        "created_at",
-        "updated_at",
-    )
-    fieldsets = (
-        ("Contenu", {"fields": ("name", "body")}),
-        (
-            "Publication",
-            {
-                "fields": (
-                    "published",
-                    "sort_order",
-                    "created_at",
-                    "updated_at",
-                )
-            },
-        ),
-    )
+@register(FaqCategory, site=admin_site)
+class FaqCategoryAdmin(FaqSectionAdmin):
+    list_display = (*FaqSectionAdmin.list_display, "see_draft")
+
+    def see_draft(self, obj):
+        return mark_safe(
+            f'<a href="{obj.get_absolute_url()}?see_draft">Voir le brouillon</a>'
+        )
+
+    see_draft.short_description = "Voir le brouillon"
 
 
 @register(FaqQuestion, site=admin_site)
@@ -137,6 +122,7 @@ class FaqQuestionAdmin(CmsAdmin):
             },
         ),
     )
+    readonly_fields = (*CmsAdmin.readonly_fields, "slug")
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
