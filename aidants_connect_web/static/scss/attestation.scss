@@ -51,8 +51,11 @@
     @media print {
       border: 1px solid black;
       padding: 1rem;
-      font-size: 0.75em;
-      line-height: 1.4em;
+
+      &, & p, & ul, & ol, {
+        font-size: 0.75em;
+        line-height: 1.4em;
+      }
     }
   }
 
