@@ -12,7 +12,7 @@ def is_lang_rtl(lang_code):
 
 
 def compute_correct_slug(cls, name):
-    slug = slugify(name)
+    slug = slugify(name)[:45]  # slug field is limited to 50
 
     if not cls._meta.model.objects.filter(slug=slug).exists():
         return slug
