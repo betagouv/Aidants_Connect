@@ -469,7 +469,9 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         super().save_related(request, form, formsets, change)
         organisation = form.cleaned_data["organisation"]
         if organisation is not None:
-            form.instance.organisations.add(organisation)
+            form.instance.organisations.add(
+                *{*form.instance.responsable_de.all(), organisation}
+            )
 
     def mass_deactivate(self, request: HttpRequest, queryset: QuerySet):
         queryset.update(is_active=False)

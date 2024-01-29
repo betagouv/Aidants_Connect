@@ -143,16 +143,9 @@ class Aidant(AbstractUser):
         full_name = f"{self.first_name} {self.last_name}".strip()
         return full_name if full_name else self.username
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
-        self.organisations.add(self.organisation)
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.organisations.add(*{*self.responsable_de.all(), self.organisation})
 
     def deactivate(self):
         self.is_active = False
