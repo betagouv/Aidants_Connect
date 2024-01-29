@@ -6,7 +6,7 @@ from django.http import Http404, HttpResponse
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 
-from aidants_connect.admin import admin_site
+from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_web.models import ExportRequest
 
 logger = logging.getLogger()
@@ -30,7 +30,7 @@ class ConnectionAdmin(ModelAdmin):
 
 
 @register(ExportRequest, site=admin_site)
-class ExportRequestAdmin(ModelAdmin):
+class ExportRequestAdmin(ModelAdmin, VisibleToAdminMetier):
     list_display = fields = readonly_fields = ("aidant", "date", "file_link")
 
     def file_link(self, obj: ExportRequest):

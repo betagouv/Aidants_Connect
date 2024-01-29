@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.contrib.admin import ModelAdmin, register
 from django.forms import models
 from django.urls import reverse_lazy
@@ -28,6 +29,18 @@ class CmsAdmin(VisibleToAdminMetier, ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+    def __init__(self, model, _admin_site):
+        super().__init__(model, _admin_site)
+        self.actions = (*(self.actions or []), "publish", "unpublish")
+
+    @admin.action(description="Publie les items sélectionnés")
+    def publish(self, request, queryset):
+        queryset.update(published=True)
+
+    @admin.action(description="Déplublie les items sélectionnés")
+    def unpublish(self, request, queryset):
+        queryset.update(published=False)
 
 
 @register(Testimony, site=admin_site)
