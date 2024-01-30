@@ -28,7 +28,10 @@ from aidants_connect_web.models import (
     Usager,
     UsagerQuerySet,
 )
-from aidants_connect_web.utilities import normalize_totp_cart_serial
+from aidants_connect_web.utilities import (
+    generate_sha256_hash,
+    normalize_totp_cart_serial,
+)
 from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
 
@@ -592,6 +595,10 @@ class OAuthParametersForm(PatchedForm):
     scope = forms.CharField()
     acr_values = forms.CharField()
 
+    def __init__(self, *args, relaxed=False, **kwargs):
+        self.relaxed = relaxed
+        super().__init__(*args, **kwargs)
+
     def clean_nonce(self):
         result = self.cleaned_data.get("nonce")
         if result and not result.isalnum():
@@ -617,16 +624,17 @@ class OAuthParametersForm(PatchedForm):
         return result
 
     def clean_redirect_uri(self):
-        result = self.cleaned_data.get("redirect_uri")
+        result = unquote(self.cleaned_data.get("redirect_uri", ""))
         if result != settings.FC_AS_FI_CALLBACK_URL:
             raise ValidationError("", "invalid")
         return result
 
     def clean_scope(self):
-        result = self.cleaned_data.get("scope")
-        splitted = re.split(r"\s+", result)
-        splitted.sort()
-        if splitted != ["address", "birth", "email", "openid", "phone", "profile"]:
+        result = unquote(self.cleaned_data.get("scope", ""))
+        splitted = set(re.split(r"\s+", result))
+        required = {"address", "birth", "email", "openid", "phone", "profile"}
+
+        if required - splitted:
             raise ValidationError("", "invalid")
         return result
 
@@ -635,10 +643,6 @@ class OAuthParametersForm(PatchedForm):
         if result != "eidas1":
             raise ValidationError("", "invalid")
         return result
-
-    def __init__(self, *args, relaxed=False, **kwargs):
-        self.relaxed = relaxed
-        super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -654,8 +658,35 @@ class OAuthParametersForm(PatchedForm):
         return cleaned_data
 
 
+class OAuthParametersFormV2(OAuthParametersForm):
+    prompt = forms.CharField()
+
+    def clean_prompt(self):
+        result = unquote(self.cleaned_data.get("prompt", ""))
+        splitted = set(re.split(r"\s+", result))
+
+        if {"login"} - splitted:
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_scope(self):
+        result = unquote(self.cleaned_data.get("scope", ""))
+        splitted = set(re.split(r"\s+", result))
+
+        if {"birth", "email", "openid", "profile"} - splitted:
+            raise ValidationError("", "invalid")
+        return result
+
+    def clean_redirect_uri(self):
+        result = unquote(self.cleaned_data.get("redirect_uri", ""))
+        if result != settings.FC_AS_FI_CALLBACK_URL_V2:
+            raise ValidationError("", "invalid")
+        return result
+
+
 class SelectDemarcheForm(PatchedForm):
     chosen_demarche = forms.CharField()
+    redirect_uri = forms.CharField()
 
     def __init__(self, aidant: Aidant, user: Usager, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -666,6 +697,95 @@ class SelectDemarcheForm(PatchedForm):
         result = self.cleaned_data["chosen_demarche"]
         if not self.aidant.get_valid_autorisation(result, self.user):
             raise ValidationError("", code="unauthorized_demarche")
+        return result
+
+    def clean_redirect_uri(self):
+        result = unquote(self.cleaned_data.get("redirect_uri", ""))
+        if result not in [
+            settings.FC_AS_FI_CALLBACK_URL,
+            settings.FC_AS_FI_CALLBACK_URL_V2,
+        ]:
+            raise ValidationError("", "invalid")
+        return result
+
+
+class TokenForm(PatchedForm):
+    code = forms.CharField()
+    grant_type = forms.CharField()
+    redirect_uri = forms.CharField()
+    client_id = forms.CharField()
+    client_secret = forms.CharField()
+
+    def __init__(self, *args, relaxed=False, **kwargs):
+        self.relaxed = relaxed
+        super().__init__(*args, **kwargs)
+
+    def clean_grant_type(self):
+        expected = "authorization_code"
+        result = self.cleaned_data["grant_type"]
+        if result != expected:
+            raise ValidationError(
+                f"'grant_type' must be '{expected}', was '{result}'", "invalid"
+            )
+        return result
+
+    def clean_redirect_uri(self):
+        expected = settings.FC_AS_FI_CALLBACK_URL
+        result = self.cleaned_data["redirect_uri"]
+        if result != expected:
+            raise ValidationError(
+                f"'redirect_uri' must be '{expected}', was '{result}'",
+                "invalid",
+            )
+        return result
+
+    def clean_client_id(self):
+        expected = settings.FC_AS_FI_ID
+        result = self.cleaned_data["client_id"]
+        if result != expected:
+            raise ValidationError(
+                f"'client_id' must be '{expected}', was '{result}'",
+                "invalid",
+            )
+        return result
+
+    def clean_client_secret(self):
+        result = self.cleaned_data["client_secret"]
+        try:
+            computed = generate_sha256_hash(result.encode())
+            if computed != settings.HASH_FC_AS_FI_SECRET:
+                raise AttributeError()
+        except AttributeError:
+            raise ValidationError(
+                "'client_secret' value does not correspond to the one in settings",
+                "invalid",
+            )
+
+        return result
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if self.relaxed:
+            return cleaned_data
+
+        additionnal_keys = set(self.data.keys()) - set(self.fields.keys())
+
+        for additionnal_key in additionnal_keys:
+            self.add_error(None, ValidationError(additionnal_key, "additionnal_key"))
+
+        return cleaned_data
+
+
+class TokenFormV2(TokenForm):
+    def clean_redirect_uri(self):
+        expected = settings.FC_AS_FI_CALLBACK_URL_V2
+        result = self.cleaned_data["redirect_uri"]
+        if result != expected:
+            raise ValidationError(
+                f"'redirect_uri' must be '{expected}', was '{result}'",
+                "invalid",
+            )
         return result
 
 

@@ -1,7 +1,7 @@
 import logging
 import re
 from secrets import token_urlsafe
-from urllib.parse import urlencode
+from urllib.parse import unquote, urlencode
 
 from django.conf import settings
 from django.contrib.auth import logout
@@ -18,7 +18,9 @@ from django.http import (
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.views.generic import FormView
 
 import jwt
@@ -29,7 +31,10 @@ from aidants_connect_web.decorators import aidant_logged_with_activity_required
 from aidants_connect_web.forms import (
     AuthorizeSelectUsagerForm,
     OAuthParametersForm,
+    OAuthParametersFormV2,
     SelectDemarcheForm,
+    TokenForm,
+    TokenFormV2,
 )
 from aidants_connect_web.models import (
     Aidant,
@@ -39,51 +44,10 @@ from aidants_connect_web.models import (
     Usager,
     UsagerQuerySet,
 )
-from aidants_connect_web.utilities import generate_id_token, generate_sha256_hash
+from aidants_connect_web.utilities import generate_id_token
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
-
-
-def check_request_parameters(
-    parameters: dict, expected_static_parameters: dict, view_name: str
-) -> tuple:
-    """
-    When a request arrives, this function checks that all requested parameters are
-    present (if not, returns (1, "missing parameter") and if the static parameters are
-    correct (if not, returns (1, "forbidden parameter value")). If all is good, returns
-    (0, "all is good")
-    :param parameters: dict of all parameters expected in the request
-    (None if the parameter was not present)
-    :param expected_static_parameters: subset of parameters that are not dynamic
-    :param view_name: str with the name of the view for logging purposes
-    :return: tuple (error, message) where error is a bool and message an str
-    """
-    for parameter, value in parameters.items():
-        if not value:
-            error_message = f"400 Bad request: There is no {parameter} @ {view_name}"
-            log.info(error_message)
-            return 1, "missing parameter"
-        elif (
-            parameter not in expected_static_parameters
-            and parameter in ["state", "nonce"]
-            and not value.isalnum()
-        ):
-            error_message = (
-                f"403 forbidden request: malformed {parameter} @ {view_name}"
-            )
-            log.info(error_message)
-            return 1, "malformed parameter value"
-        elif (
-            parameter in expected_static_parameters
-            and value != expected_static_parameters[parameter]
-        ):
-            error_message = (
-                f"403 forbidden request: unexpected {parameter} @ {view_name}"
-            )
-            log.info(error_message)
-            return 1, "forbidden parameter value"
-    return 0, "all good"
 
 
 @aidant_logged_with_activity_required
@@ -99,7 +63,14 @@ class Authorize(RequireConnectionMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        form = OAuthParametersForm(data=request.GET)
+        form = (
+            OAuthParametersFormV2(data=request.GET)
+            if (
+                unquote(request.GET.get("redirect_uri", ""))
+                == settings.FC_AS_FI_CALLBACK_URL_V2
+            )
+            else OAuthParametersForm(data=request.GET)
+        )
         if form.is_valid():
             self.oauth_parameters_form = form
             self.connection = Connection.objects.create(
@@ -110,8 +81,13 @@ class Authorize(RequireConnectionMixin, FormView):
             return self.form_invalid_get(form)
 
     def post(self, request, *args, **kwargs):
-        self.oauth_parameters_form = OAuthParametersForm(
-            data=self.request.POST, relaxed=True
+        self.oauth_parameters_form = (
+            OAuthParametersFormV2(data=request.POST, relaxed=True)
+            if (
+                unquote(request.GET.get("redirect_uri", ""))
+                == settings.FC_AS_FI_CALLBACK_URL_V2
+            )
+            else OAuthParametersForm(data=request.POST, relaxed=True)
         )
 
         if not self.oauth_parameters_form.is_valid():
@@ -126,9 +102,9 @@ class Authorize(RequireConnectionMixin, FormView):
             return HttpResponseForbidden()
 
         view_location = f"{self.__module__}.{self.__class__.__name__}"
+        connection_id = self.request.POST.get("connection_id")
 
         try:
-            connection_id = self.request.POST.get("connection_id")
             self.connection = Connection.objects.get(pk=connection_id)
 
             if self.connection.is_expired:
@@ -202,7 +178,7 @@ class Authorize(RequireConnectionMixin, FormView):
                 "403 forbidden request: Unexpected parameters: "
                 f"{additionnal_keys_errors!r} @ {view_location}"
             )
-            return HttpResponseForbidden("forbidden parameter value")
+            return HttpResponseForbidden("forbidden parameter value {")
 
         log.warning(f"Uncatched validation error @ {view_location}")
         return HttpResponseBadRequest()
@@ -269,6 +245,7 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
         self.connection.aidant = self.aidant
         self.connection.organisation = self.aidant.organisation
         self.connection.save()
+        self.redirect_uri = form.cleaned_data["redirect_uri"]
         return super().form_valid(form)
 
     def get_form_kwargs(self):
@@ -279,7 +256,14 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
         }
 
     def get_context_data(self, **kwargs):
-        oauth_parameters_form = OAuthParametersForm(data=self.request.GET, relaxed=True)
+        oauth_parameters_form = (
+            OAuthParametersFormV2(data=self.request.GET)
+            if (
+                unquote(self.request.GET.get("redirect_uri", ""))
+                == settings.FC_AS_FI_CALLBACK_URL_V2
+            )
+            else OAuthParametersForm(data=self.request.GET)
+        )
         if oauth_parameters_form.is_valid():
             parameters = urlencode(oauth_parameters_form.cleaned_data)
             change_user_url = f"{reverse('authorize')}?{parameters}"
@@ -294,6 +278,9 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
                 for demarche_name in self.user_demarches
             },
             "change_user_url": change_user_url,
+            "redirect_uri": oauth_parameters_form.cleaned_data.get(
+                "redirect_uri", settings.FC_AS_FI_CALLBACK_URL
+            ),
             "warn_scope": (
                 {**settings.DEMARCHES["argent"], "value": "argent"}
                 if "argent" in self.user_demarches
@@ -302,83 +289,72 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
         }
 
     def get_success_url(self):
-        return (
-            f"{settings.FC_AS_FI_CALLBACK_URL}?"
-            f"code={self.code}&state={self.connection.state}"
-        )
+        return f"{self.redirect_uri}?code={self.code}&state={self.connection.state}"
 
 
-def _mock_refresh_token():
-    return get_random_string(18).lower()
+@method_decorator([csrf_exempt, require_POST], name="dispatch")
+class Token(FormView):
+    form_class = TokenForm
 
+    def get_form_class(self):
+        if (
+            unquote(self.request.POST.get("redirect_uri", ""))
+            == settings.FC_AS_FI_CALLBACK_URL_V2
+        ):
+            return TokenFormV2
+        return super().get_form_class()
 
-# Due to `no_referer` error
-# https://docs.djangoproject.com/en/dev/ref/csrf/#django.views.decorators.csrf
-# .csrf_exempt
-@csrf_exempt
-def token(request):
-    if request.method == "GET":
-        return HttpResponse("You did a GET on a POST only route")
+    def form_invalid(self, form):
+        view_location = f"{self.__module__}.{self.__class__.__name__}"
+        parameter = list(form.errors.keys())[0]
+        error_codes = form.errors[parameter].error_codes
 
-    client_secret = request.POST.get("client_secret")
-    try:
-        hash_client_secret = generate_sha256_hash(client_secret.encode())
-    except AttributeError:
-        return HttpResponseBadRequest()
+        if "required" in error_codes:
+            log.info(f"400 Bad request: There is no {parameter} @ {view_location}")
+            return HttpResponseBadRequest()
 
-    parameters = {
-        "code": request.POST.get("code"),
-        "grant_type": request.POST.get("grant_type"),
-        "redirect_uri": request.POST.get("redirect_uri"),
-        "client_id": request.POST.get("client_id"),
-        "hash_client_secret": hash_client_secret,
-    }
-    EXPECTED_STATIC_PARAMETERS = {
-        "grant_type": "authorization_code",
-        "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
-        "client_id": settings.FC_AS_FI_ID,
-        "hash_client_secret": settings.HASH_FC_AS_FI_SECRET,
-    }
-
-    error, message = check_request_parameters(
-        parameters, EXPECTED_STATIC_PARAMETERS, "token"
-    )
-    if error:
-        return (
-            HttpResponseBadRequest()
-            if message == "missing parameter"
-            else HttpResponseForbidden()
-        )
-
-    code_hash = make_password(parameters["code"], settings.FC_AS_FI_HASH_SALT)
-    try:
-        connection = Connection.objects.get(code=code_hash)
-        if connection.is_expired:
-            log.info("connection has expired at token")
-            return render(request, "408.html", status=408)
-    except ObjectDoesNotExist:
-        log.info("403: /token No connection corresponds to the code")
-        log.info(parameters["code"])
+        if "additionnal_key" in error_codes:
+            log.info(f"403 forbidden request: unexpected {parameter} @ {view_location}")
+        else:
+            log.info(f"403 forbidden request: malformed {parameter} @ {view_location}")
         return HttpResponseForbidden()
 
-    encoded_id_token = jwt.encode(
-        generate_id_token(connection), client_secret, algorithm="HS256"
-    )
+    def form_valid(self, form):
+        code = form.cleaned_data["code"]
+        code_hash = make_password(code, settings.FC_AS_FI_HASH_SALT)
+        try:
+            connection = Connection.objects.get(code=code_hash)
+            if connection.is_expired:
+                log.info("connection has expired at token")
+                return render(self.request, "408.html", status=408)
+        except ObjectDoesNotExist:
+            view_location = f"{self.__module__}.{self.__class__.__name__}"
+            log.info(
+                f"403: No connection corresponds to the code {code} @ {view_location}"
+            )
+            return HttpResponseForbidden()
 
-    access_token = token_urlsafe(64)
-    connection.access_token = make_password(access_token, settings.FC_AS_FI_HASH_SALT)
-    connection.save()
+        encoded_id_token = jwt.encode(
+            generate_id_token(connection),
+            form.cleaned_data["client_secret"],
+            algorithm="HS256",
+        )
 
-    response = {
-        "access_token": access_token,
-        "expires_in": 3600,
-        "id_token": encoded_id_token,
-        "refresh_token": _mock_refresh_token(),
-        "token_type": "Bearer",
-    }
+        access_token = token_urlsafe(64)
+        connection.access_token = make_password(
+            access_token, settings.FC_AS_FI_HASH_SALT
+        )
+        connection.save()
 
-    definite_response = JsonResponse(response)
-    return definite_response
+        return JsonResponse(
+            {
+                "access_token": access_token,
+                "expires_in": 3600,
+                "id_token": encoded_id_token,
+                "refresh_token": get_random_string(18).lower(),
+                "token_type": "Bearer",
+            }
+        )
 
 
 def user_info(request):
@@ -443,8 +419,10 @@ def end_session_endpoint(request):
         log.info("Request should be a GET @ end_session_endpoint")
         return HttpResponseBadRequest()
 
-    redirect_uri = settings.FC_AS_FI_LOGOUT_REDIRECT_URI
-    if request.GET.get("post_logout_redirect_uri") != redirect_uri:
+    if (redirect_uri := request.GET.get("post_logout_redirect_uri")) not in [
+        settings.FC_AS_FI_LOGOUT_REDIRECT_URI,
+        settings.FC_AS_FI_LOGOUT_REDIRECT_URI_V2,
+    ]:
         message = (
             f"post_logout_redirect_uri is "
             f"{request.GET.get('post_logout_redirect_uri')} instead of "
@@ -452,5 +430,8 @@ def end_session_endpoint(request):
         )
         log.info(message)
         return HttpResponseBadRequest()
+
+    if redirect_uri == settings.FC_AS_FI_LOGOUT_REDIRECT_URI_V2:
+        redirect_uri = f"{redirect_uri}?state={request.GET.get('state')}"
 
     return HttpResponseRedirect(redirect_uri)

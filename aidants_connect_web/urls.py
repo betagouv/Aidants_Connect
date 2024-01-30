@@ -149,7 +149,7 @@ urlpatterns = [
     ),
     # id_provider
     path("authorize/", id_provider.Authorize.as_view(), name="authorize"),
-    path("token/", id_provider.token, name="token"),
+    path("token/", id_provider.Token.as_view(), name="token"),
     path("userinfo/", id_provider.user_info, name="user_info"),
     path(
         "select_demarche/",
