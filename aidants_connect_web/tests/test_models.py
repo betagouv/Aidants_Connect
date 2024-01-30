@@ -9,6 +9,7 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
 from django.utils import timezone
+from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -40,6 +41,7 @@ from aidants_connect_web.tests.factories import (
     AutorisationFactory,
     CarteTOTPFactory,
     HabilitationRequestFactory,
+    JournalFactory,
     MandatFactory,
     NotificationFactory,
     OrganisationFactory,
@@ -1030,6 +1032,42 @@ class AidantModelTests(TestCase):
             self.assertEqual(
                 aidants_selected, list(Aidant.objects.deactivation_warnable())
             )
+
+    def test_get_users_without_activity_for_90_days(self):
+        # Inactive aidants don't appear in results
+        AidantFactory(is_active=False)
+
+        # Aidants who have no activity don't appear in results
+        AidantFactory(is_active=True)
+
+        # Aidants who have an activity for less than 90 days don't appear in results
+        for action in (
+            JournalActionKeywords.CREATE_ATTESTATION,
+            JournalActionKeywords.USE_AUTORISATION,
+            JournalActionKeywords.INIT_RENEW_MANDAT,
+        ):
+            aidant = AidantFactory(is_active=True)
+            JournalFactory(
+                aidant=aidant, creation_date=now() - timedelta(days=89), action=action
+            )
+
+        warnable_aidants = set()
+
+        # Aidants who have an activity for more than 90 days appear in results
+        for action in (
+            JournalActionKeywords.CREATE_ATTESTATION,
+            JournalActionKeywords.USE_AUTORISATION,
+            JournalActionKeywords.INIT_RENEW_MANDAT,
+        ):
+            aidant = AidantFactory(is_active=True)
+            JournalFactory(
+                aidant=aidant, creation_date=now() - timedelta(days=91), action=action
+            )
+            warnable_aidants.add(aidant)
+
+        self.assertEqual(
+            warnable_aidants, set(Aidant.objects.without_activity_for_90_days())
+        )
 
 
 @tag("models", "aidant")

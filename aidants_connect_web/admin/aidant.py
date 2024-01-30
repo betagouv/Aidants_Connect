@@ -202,9 +202,6 @@ class AidantGoneTooLong(SimpleListFilter):
     parameter_name = "gone_too_long"
     relative_to = {"months": 5}
 
-    def value(self):
-        return strtobool(super().value(), None)
-
     def lookups(self, request, model_admin):
         return [
             (False, "Connectés recemment"),
@@ -212,7 +209,7 @@ class AidantGoneTooLong(SimpleListFilter):
         ]
 
     def queryset(self, request, queryset: AidantManager):
-        match self.value():
+        match strtobool(self.value(), None):
             case False:
                 return queryset.filter(is_active=True).filter(
                     last_login__gt=timezone.now() - relativedelta(**self.relative_to)
@@ -226,6 +223,21 @@ class AidantGoneTooLong(SimpleListFilter):
                     )
                     | Q(last_login=None)
                 )
+            case _:
+                return queryset
+
+
+class AidantNoActionTooLong(SimpleListFilter):
+    title = "Suivi d'activité"
+    parameter_name = "no_action_too_long"
+
+    def lookups(self, request, model_admin):
+        return [(True, "Pas dʼactivité depuis 90j+")]
+
+    def queryset(self, request, queryset: AidantManager):
+        match strtobool(self.value(), None):
+            case True:
+                return queryset.filter(Aidant.objects.q_without_activity_for_90_days())
             case _:
                 return queryset
 
@@ -389,6 +401,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantInPreDesactivationZoneFilter,
         AidantWithMandatsFilter,
         AidantGoneTooLong,
+        AidantNoActionTooLong,
         AidantWithOTPAppFilter,
         "is_staff",
         "is_superuser",

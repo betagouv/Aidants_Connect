@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 from typing import Collection, Optional
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.functional import cached_property
+from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 
@@ -30,6 +33,9 @@ class AidantManager(UserManager):
             last_login__lte=timezone.now() - relativedelta(months=5)
         )
 
+    def without_activity_for_90_days(self):
+        return self.filter(self.q_without_activity_for_90_days())
+
     def deactivation_warnable(self):
         return self.not_connected_recently().filter(
             deactivation_warning_at=None,
@@ -40,6 +46,13 @@ class AidantManager(UserManager):
     def deactivable(self):
         return self.not_connected_recently().filter(
             deactivation_warning_at__lt=timezone.now() - relativedelta(months=1)
+        )
+
+    def q_without_activity_for_90_days(self):
+        return Q(
+            is_active=True,
+            journal_entries__action__in=JournalActionKeywords.activity_tracking_actions,
+            journal_entries__creation_date__lte=now() - timedelta(days=90),
         )
 
     def __normalize_fields(self, extra_fields: dict):
@@ -130,6 +143,11 @@ class Aidant(AbstractUser):
     updated_at = models.DateTimeField("Date de modification", auto_now=True, null=True)
     deactivation_warning_at = models.DateTimeField(
         "Date d'envoi de l’email d’alerte de désactivation", null=True, default=None
+    )
+    activity_tracking_warning_at = models.DateTimeField(
+        "Date d'envoi de l’email de suivi utilisation du service",
+        null=True,
+        default=None,
     )
 
     objects = AidantManager()

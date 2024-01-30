@@ -1,0 +1,37 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>
+      <p>Bonjour {{ user.get_full_name }},</p>
+
+      <p>
+        Votre habilitation Aidants Connect vous permet d’accompagner de façon sécurisée des usagers dans la
+        réalisation de leurs démarches en ligne.
+      </p>
+
+      <p>
+        📚 Vous avez besoin d’un rappel au sujet de l’utilisation du dispositif ?
+        <a href="https://aidantsconnect.beta.gouv.fr/ressources/">Retrouvez nos guides de prise en main via ce lien.</a>
+      </p>
+
+      <p>
+        ⚙️ Vous rencontrez des difficultés techniques ? Contactez-nous à l’adresse suivante :
+        <a href="contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a>
+      </p>
+
+      <p>
+        🗣️ Vous souhaitez participer à un temps d’échange où nous lèverons les freins liés à l’utilisation de l’outil ?
+        <a href="https://tally.so/r/wkeNk1">Inscrivez-vous à l’un de nos webinaires ici.</a>
+      </p>
+
+      <p>
+        🤔 Vous avez des informations à nous partager ?
+        <a href="https://tally.so/r/wvD6Kd">Utilisez ce formulaire.</a>
+      </p>
+    </mj-text>
+
+  </mj-column>
+</mj-section>
+{% endblock %}
