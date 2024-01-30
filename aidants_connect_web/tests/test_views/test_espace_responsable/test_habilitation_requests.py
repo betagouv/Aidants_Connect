@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve
@@ -26,7 +27,7 @@ class HabilitationRequestsTests(TestCase):
         cls.responsable_tom.can_create_mandats = False
         # URL
         cls.add_aidant_url = "/espace-responsable/aidant/ajouter/"
-        cls.organisation_url = f"/espace-responsable/organisation/{cls.org_a.id}/"
+        cls.organisation_url = "/espace-responsable/organisation/"
 
     def test_add_aidant_triggers_the_right_view(self):
         found = resolve(self.add_aidant_url)
@@ -66,8 +67,12 @@ class HabilitationRequestsTests(TestCase):
     def test_add_aidant_allows_create_aidants_for_all_possible_organisations(self):
         self.client.force_login(self.responsable_tom)
         for organisation in self.responsable_tom.responsable_de.all():
+            with transaction.atomic():
+                self.responsable_tom.organisation = organisation
+                self.responsable_tom.save()
+
             email = f"angela.dubois{organisation.id}@a.org"
-            organisation_url = f"/espace-responsable/organisation/{organisation.id}/"
+            organisation_url = "/espace-responsable/organisation/"
 
             response = self.client.post(
                 self.add_aidant_url,

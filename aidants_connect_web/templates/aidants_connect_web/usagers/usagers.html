@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-legacy.html' %}
 
 {% load static ac_common %}
 
@@ -16,16 +16,17 @@
     <div class="container">
       <div class="row">
         <h1 class="margin-bottom-0">Vos usagères et usagers</h1>
-        <a href="{% url 'new_mandat' %}" class="button float-right" id="add_usager"><span aria-hidden="true">📝&nbsp;</span>Ajouter une usagère ou un usager</a>
+        <a
+          href="{% url 'new_mandat' %}"
+          id="add_usager"
+          class="fr-btn fr-btn--icon-left fr-icon-edit-fill"
+        >
+          Ajouter une usagère ou un usager
+        </a>
       </div>
       {% include "aidants_connect_web/users_search_bar.html" %}
-      {% if messages %}
-        <div class="notification success" role="alert">
-          {% for message in messages %}
-            {{ message }}
-          {% endfor %}
-        </div>
-      {% endif %}
+      {% include "layouts/_messages.html" %}
+
       <div class="tiles">
         {% if usagers_dict.total == 0 %}
         <div class="notification" role="alert">Il n'y a encore personne avec qui vous avez un mandat.</div>

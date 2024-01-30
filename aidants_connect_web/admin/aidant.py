@@ -23,6 +23,7 @@ from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect.utils import strtobool
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.forms import (
     AidantChangeForm,
     AidantCreationForm,
@@ -128,6 +129,27 @@ class AidantResource(resources.ModelResource):
             totp_device.save()
 
 
+class AidantWithOTPAppFilter(SimpleListFilter):
+    title = "Avec/sans application OTP"
+    parameter_name = "with_otp_app"
+
+    def lookups(self, request, model_admin):
+        return [(True, "Avec une app OTP"), (False, "Sans app OTP")]
+
+    def queryset(self, request, queryset: AidantManager):
+        match strtobool(self.value(), None):
+            case True:
+                return queryset.filter(
+                    totpdevice__name__startswith=OTP_APP_DEVICE_NAME % ""
+                )
+            case False:
+                return queryset.filter(
+                    ~Q(totpdevice__name__startswith=OTP_APP_DEVICE_NAME % "")
+                )
+            case _:
+                return queryset
+
+
 class AidantWithMandatsFilter(SimpleListFilter):
     title = "Avec/sans mandats"
     parameter_name = "with_mandates"
@@ -162,12 +184,15 @@ class AidantInPreDesactivationZoneFilter(SimpleListFilter):
         ]
 
     def queryset(self, request, queryset: AidantManager):
-        queryset = queryset.filter(is_active=True)
         match self.value():
             case False:
-                return queryset.filter(deactivation_warning_at__isnull=True)
+                return queryset.filter(
+                    is_active=True, deactivation_warning_at__isnull=True
+                )
             case True:
-                return queryset.filter(deactivation_warning_at__isnull=False)
+                return queryset.filter(
+                    is_active=True, deactivation_warning_at__isnull=False
+                )
             case _:
                 return queryset
 
@@ -187,15 +212,14 @@ class AidantGoneTooLong(SimpleListFilter):
         ]
 
     def queryset(self, request, queryset: AidantManager):
-        queryset = queryset.filter(is_active=True)
         match self.value():
             case False:
-                return queryset.filter(
+                return queryset.filter(is_active=True).filter(
                     last_login__gt=timezone.now() - relativedelta(**self.relative_to)
                 )
             case True:
                 # Last connect more than 6 monts ago or never connected
-                return queryset.filter(
+                return queryset.filter(is_active=True).filter(
                     Q(
                         last_login__lte=timezone.now()
                         - relativedelta(**self.relative_to)
@@ -273,6 +297,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     import_export_change_list_template = (
         "aidants_connect_web/admin/aidants/change_list.html"
     )
+
+    search_fields = ("=id", *DjangoUserAdmin.search_fields)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -363,6 +389,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantInPreDesactivationZoneFilter,
         AidantWithMandatsFilter,
         AidantGoneTooLong,
+        AidantWithOTPAppFilter,
         "is_staff",
         "is_superuser",
     )
@@ -411,7 +438,6 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "is_staff",
                     "is_superuser",
                     "responsable_de",
-                    "ff_otp_app",
                 )
             },
         ),

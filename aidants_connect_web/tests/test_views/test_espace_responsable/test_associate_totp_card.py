@@ -164,7 +164,7 @@ class AssociateCarteTOTPTests(TestCase):
         signal_send_mock.assert_called_with(None, otp_device=card.totp_device)
 
         # Check organisation page warns about activation
-        response = self.client.get(f"/espace-responsable/organisation/{self.org_id}/")
+        response = self.client.get("/espace-responsable/organisation/")
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "Le fonctionnement de cette carte n’a pas été vérifié.",

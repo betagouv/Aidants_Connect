@@ -10,11 +10,7 @@
 
 {% block content %}
   <div class="fr-container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% include "layouts/_messages.html" %}
 
     <form class="fr-col-12 fr-col-lg-8" method="post">
       {% csrf_token %}
@@ -27,7 +23,7 @@
       <h3 class="upper clearfix">
         <span class="align-middle">Éléments du mandat</span>
         <span class="float-right">
-          <a class="button primary" href="{% url 'new_attestation_projet' %}" target="_blank" rel="noopener noreferrer">
+          <a class="fr-btn" href="{% url 'new_attestation_projet' %}" target="_blank" rel="noopener noreferrer">
             Voir le projet de mandat
           </a>
         </span>
@@ -66,7 +62,7 @@
         {% field_as_fr_grid_row form.otp_token label_size="large" %}
       </section>
 
-      <input type="submit" class="float-right button primary" value="Enregistrer le mandat"/>
+      <input type="submit" class="float-right fr-btn" value="Enregistrer le mandat"/>
     </form>
   </div>
 {% endblock %}

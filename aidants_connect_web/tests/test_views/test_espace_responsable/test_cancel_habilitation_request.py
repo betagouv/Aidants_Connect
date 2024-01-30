@@ -100,7 +100,9 @@ class CancelHabilitationRequestTests(TestCase):
             )
         )
         self.assertRedirects(
-            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_organisation"),
+            fetch_redirect_response=False,
         )
         self.org1_habilitation_waitling_list.refresh_from_db()
         self.assertEqual(

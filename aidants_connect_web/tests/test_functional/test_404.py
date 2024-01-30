@@ -11,7 +11,7 @@ class Error404Page(FunctionalTestCase):
     def test_404_page(self):
         self.open_live_url("/thiswontwork")
 
-        h1 = self.selenium.find_element(By.TAG_NAME, "h1")
+        h1 = self.selenium.find_element(By.TAG_NAME, "h4")
         self.assertEqual(h1.text, "Cette page n’existe pas (404)")
         link_to_home = self.selenium.find_element(By.ID, "to-home")
         self.assertEqual(link_to_home.text, "Retourner à l’accueil")

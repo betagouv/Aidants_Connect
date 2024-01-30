@@ -3,6 +3,7 @@ import os
 from logging import Logger
 from re import sub as re_sub
 
+from django.core.management import call_command
 from django.db.models import Q
 
 import requests as python_request
@@ -70,3 +71,8 @@ def autofill_insee_code(*, logger=None):
         except (RequestException, KeyError) as e:
             logger.warning("Address API did not respond correctly", exc_info=e)
             continue
+
+
+@shared_task
+def clean_blocklist():
+    call_command("clean_blocklist")

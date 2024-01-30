@@ -1,0 +1,177 @@
+{% load static ac_common %}
+
+{% include 'layouts/_skip-links.html' %}
+
+<header role="banner" class="fr-header">
+  {% with view_name=request.resolver_match.view_name %}
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo">
+                <p class="fr-logo">République<br>Française</p>
+              </div>
+              <div class="fr-header__navbar">
+                <button
+                  class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-499" aria-haspopup="menu"
+                  id="button-500" title="Menu"
+                >
+                  Menu
+                </button>
+              </div>
+            </div>
+            <div class="fr-header__service">
+              <a href="{% url 'home_page' %}" title="Accueil Aidants Connect">
+                <img width="100" src="{% static 'images/aidants-connect_logo.png' %}" alt="Aidants Connect" />
+              </a>
+            </div>
+          </div>
+          <div class="fr-header__tools">
+            <div class="fr-header__tools-links">
+              <ul class="fr-btns-group">
+                {% if user_is_authenticated %}
+                  {% if user_is_responsable_structure %}
+                    <a
+                      class="fr-btn fr-icon-arrow-right-line"
+                      href="{% url 'espace_responsable_organisation' %}"
+                      {% if view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
+                    >
+                      Espace référent
+                    </a>
+                  {% endif %}
+                  <li>
+                    <a
+                      class="fr-btn fr-icon-arrow-right-line"
+                      href="{% url 'espace_aidant_home' %}"
+                      {% if view_name|startswith:'espace_aidant' %}aria-current="true"{% endif %}
+                    >
+                      Espace aidant
+                    </a>
+                  </li>
+                {% endif %}
+                <li>
+                  {% if user_is_authenticated %}
+                    <a class="fr-btn fr-icon-lock-line" href="{% url 'logout' %}">Se déconnecter</a>
+                  {% else %}
+                    <a class="fr-btn fr-icon-lock-line" href="{% url 'login' %}">Se connecter</a>
+                  {% endif %}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-header__menu fr-modal" id="modal-499" aria-labelledby="button-500">
+      <div class="fr-container">
+        <button class="fr-btn--close fr-btn" aria-controls="modal-499" title="Fermer">
+          Fermer
+        </button>
+        <div class="fr-header__menu-links"></div>
+        <nav class="fr-nav" id="navigation-494" role="navigation" aria-label="Menu principal">
+          <ul class="fr-nav__list">
+            {% block nav_menu %}
+              {% if not user_is_authenticated %}
+                {% include 'public_website/layout/_header_links.html' %}
+              {% else %}
+                <li class="fr-nav__item">
+                  <a
+                    class="fr-nav__link"
+                    target="_self"
+                    href="
+                      {% if user_is_responsable_structure %}{% url 'espace_responsable_organisation' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
+                    {% if view_name|startswith:'espace_aidant' or view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
+                  >
+                    Mon organisation
+                  </a>
+                </li>
+                <li class="fr-nav__item">
+                  <a
+                    class="fr-nav__link"
+                    target="_self"
+                    href="{% url 'usagers' %}"
+                    {% if view_name|startswith:'usager' %}aria-current="true"{% endif %}
+                  >
+                    Mes mandats
+                  </a>
+                </li>
+                {% if request.user.can_create_mandats %}
+                  <li class="fr-nav__item">
+                    <a
+                      class="fr-nav__link"
+                      target="_self"
+                      href="{% url 'new_mandat' %}"
+                      {% if view_name|startswith:'new_mandat' %}aria-current="true"{% endif %}
+                    >
+                      Créer un mandat
+                    </a>
+                  </li>
+                {% endif %}
+                <li class="fr-nav__item">
+                  <a
+                    class="fr-nav__link"
+                    target="_self"
+                    href="{% url 'sandbox_presentation' %}"
+                    {% if view_name|startswith:'sandbox_presentation' %}aria-current="true"{% endif %}
+                  >
+                    Site bac à sable
+                  </a>
+                </li>
+                <li class="fr-nav__item">
+                  <a
+                    class="fr-nav__link"
+                    target="_self"
+                    href="{% url 'ressources' %}"
+                    {% if view_name == 'ressources' %}aria-current="true"{% endif %}
+                  >
+                    Ressources
+                  </a>
+                </li>
+                <li class="fr-nav__item">
+                  <a class="fr-nav__link" target="_self" href="{% mailto_href "contact@aidantsconnect.beta.gouv.fr" %}">
+                    Contacter lʼéquipe
+                  </a>
+                </li>
+              {% endif %}
+            {% endblock %}
+            {% with user_organisations=request.user.organisations.all %}
+              {% if user_is_authenticated and user_organisations|length > 1 %}
+                <div class="spacer"></div>
+                <li class="fr-nav__item fr-nav__item--align-right">
+                  <button class="fr-nav__btn" aria-expanded="false" aria-controls="menu-776">
+                    {{ request.user.organisation }}
+                  </button>
+                  <div class="fr-collapse fr-menu" id="menu-776">
+                    <ul class="fr-menu__list">
+                      <li><p class="fr-px-4v fr-py-3v fr-text--bold">Mes organisations</p></li>
+                      {% for organisation in user_organisations %}
+                        <li>
+                          {% if organisation.pk == request.user.organisation.pk %}
+                            <a class="fr-nav__link" aria-current="page" href="#">{{ organisation.name }}</a>
+                          {% else %}
+                            <form method="post" action="{% url 'espace_aidant_switch_main_organisation' %}">
+                              {% csrf_token %}
+                              <input name="organisation" value="{{ organisation.pk }}" type="hidden">
+                              <input name="next_url" value="{{ request.get_full_path|urlencode:'' }}" type="hidden">
+                              <button
+                                class="fr-nav__link"
+                                type="submit"
+                              >
+                                {{ organisation.name }}
+                              </button>
+                            </form>
+                          {% endif %}
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </li>
+              {% endif %}
+            {% endwith %}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  {% endwith %}
+</header>

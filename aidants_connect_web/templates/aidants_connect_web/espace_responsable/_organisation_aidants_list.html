@@ -15,7 +15,7 @@
         {% if aidant.pk == responsable.pk %}
           {{ aidant.get_full_name }} (Référent)
         {% else %}
-          <a href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+          <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
             {{ aidant.get_full_name }}
           </a>
         {% endif %}
@@ -39,27 +39,32 @@
         {% endif %}
       </td>
       <td>
-        {% if aidant.pk != referent.pk and aidant.is_active %}
-          <a
-            id="remove-aidant-{{ aidant.id }}-from-organisation"
-            href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
-            class="button"
-          >
-            {% if aidant.organisations.count > 1 %}
-              Retirer l’aidant de l’organisation
-            {% else %}
-              Désactiver l’aidant
+        <ul class="fr-btns-group">
+          <li>
+            {% if aidant.pk != referent.pk and aidant.is_active %}
+              <a
+                id="remove-aidant-{{ aidant.id }}-from-organisation"
+                href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+                class="fr-btn fr-btn--secondary"
+              >
+                {% if aidant.organisations.count > 1 %}
+                  Retirer l’aidant de l’organisation
+                {% else %}
+                  Désactiver l’aidant
+                {% endif %}
+              </a>
             {% endif %}
-          </a>
-        {% endif %}
-
-        <a
-          id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-          href="{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}"
-          class="button"
-        >
-          Gérer les cartes OTP
-        </a>
+          </li>
+          <li>
+            <a
+              id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+              href="{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}"
+              class="fr-btn fr-btn--secondary"
+            >
+              Gérer les cartes OTP
+            </a>
+          </li>
+        </ul>
       </td>
     </tr>
   {% endfor %}

@@ -7,3 +7,7 @@ class HabilitationFormStep(IntEnum):
     ORGANISATION = auto()
     PERSONNEL = auto()
     SUMMARY = auto()
+
+    @classmethod
+    def size(cls):
+        return len(cls)

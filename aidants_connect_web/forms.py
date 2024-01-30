@@ -1,4 +1,5 @@
 import re
+from urllib.parse import unquote
 
 from django import forms
 from django.conf import settings
@@ -15,7 +16,7 @@ from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 
-from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
+from aidants_connect_common.forms import AcPhoneNumberField, DsfrBaseForm2, PatchedForm
 from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.widgets import DetailedRadioSelect
 from aidants_connect_web.constants import RemoteConsentMethodChoices
@@ -307,7 +308,7 @@ class MandatForm(PatchedForm):
         return True
 
 
-class OTPForm(forms.Form):
+class OTPForm(DsfrBaseForm2):
     otp_token = forms.CharField(
         max_length=6,
         min_length=6,
@@ -362,8 +363,10 @@ class CarteTOTPValidationForm(forms.Form):
     )
 
 
-class RemoveCardFromAidantForm(PatchedForm):
+class RemoveCardFromAidantForm(DsfrBaseForm2):
     reason = forms.ChoiceField(
+        label="Pourquoi séparer cette carte du compte ?",
+        label_suffix=" :",
         choices=(
             ("perte", "Perte : La carte a été perdue."),
             ("casse", "Casse : La carte a été détériorée."),
@@ -374,9 +377,11 @@ class RemoveCardFromAidantForm(PatchedForm):
             ("depart", "Départ : L’aidant concerné quitte la structure."),
             ("erreur", "Erreur : J’ai lié cette carte à ce compte par erreur."),
             ("autre", "Autre : Je complète ci-dessous."),
-        )
+        ),
     )
-    other_reason = forms.CharField(required=False)
+    other_reason = forms.CharField(
+        label="Autre raison", label_suffix=" :", required=False
+    )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -401,15 +406,21 @@ class RemoveCardFromAidantForm(PatchedForm):
 
 
 class SwitchMainAidantOrganisationForm(forms.Form):
-    organisation = forms.ModelChoiceField(
-        queryset=Organisation.objects.none(),
-        widget=forms.RadioSelect,
-    )
+    organisation = forms.ModelChoiceField(queryset=Organisation.objects.none())
     next_url = forms.CharField(required=False)
 
+    def __init__(self, aidant: Aidant, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["organisation"].queryset = aidant.organisations.order_by("name")
 
-class AddOrganisationResponsableForm(forms.Form):
-    candidate = forms.ModelChoiceField(queryset=Aidant.objects.none())
+    def clean_next_url(self):
+        return unquote(self.cleaned_data.get("next_url", ""))
+
+
+class AddOrganisationResponsableForm(DsfrBaseForm2):
+    candidate = forms.ModelChoiceField(
+        label="Nouveau référent", label_suffix=" :", queryset=Aidant.objects.none()
+    )
 
     def __init__(self, organisation: Organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -437,16 +448,18 @@ class ChangeAidantOrganisationsForm(forms.Form):
         self.initial["organisations"] = self.aidant.organisations.all()
 
 
-class HabilitationRequestCreationForm(forms.ModelForm):
+class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm2):
+    organisation = forms.ModelChoiceField(
+        queryset=Organisation.objects.none(),
+        empty_label="Choisir...",
+    )
+
     def __init__(self, referent, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.referent = referent
-        self.fields["organisation"] = forms.ModelChoiceField(
-            queryset=Organisation.objects.filter(responsables=self.referent).order_by(
-                "name"
-            ),
-            empty_label="Choisir...",
-        )
+        self.fields["organisation"].queryset = Organisation.objects.filter(
+            responsables=self.referent
+        ).order_by("name")
 
     class Meta:
         model = HabilitationRequest

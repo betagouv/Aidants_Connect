@@ -194,7 +194,7 @@ class UsagerView(DetailView):
 @login_required
 @activity_required
 def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
-    aidant = request.user
+    aidant: Aidant = request.user
     try:
         autorisation = aidant.get_active_autorisations_for_usager(usager_id).get(
             pk=autorisation_id
@@ -291,8 +291,7 @@ def autorisation_cancelation_attestation(request, usager_id, autorisation_id):
 
     return render(
         request,
-        "aidants_connect_web/mandat_auths_cancellation/"
-        "authorization_cancellation_attestation.html",
+        "aidants_connect_web/mandat_auths_cancellation/authorization_cancellation_attestation.html",  # noqa: E501
         {
             "aidant": aidant,
             "authorization": humanize_demarche_names(autorisation.demarche),
@@ -403,7 +402,6 @@ def mandat_cancellation_attestation(request, mandat_id):
         mandat = Mandat.objects.get(pk=mandat_id, organisation=organisation)
         if not mandat.was_explicitly_revoked:
             return redirect("espace_aidant_home")
-
     except Mandat.DoesNotExist:
         django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")

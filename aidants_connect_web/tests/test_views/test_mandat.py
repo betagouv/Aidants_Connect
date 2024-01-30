@@ -110,7 +110,7 @@ class TestRemoteMandateMixin(TestCase):
                 | pour une durée d'un mois (31 jours) en votre nom pour les démarches\
                 | suivantes :
                 |
-                |- Argent - impôts - consomation,
+                |- Argent - impôts - consommation,
                 |- Étranger - europe,
                 |- Famille - scolarité,
                 |- Justice,
@@ -937,7 +937,11 @@ class AttestationVisualisationTests(TestCase):
             reverse("mandat_visualisation", kwargs={"mandat_id": 10_000_000})
         )
 
-        self.assertEqual(response.status_code, 404)
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce mandat est introuvable ou inaccessible.",
+            messages[0].message,
+        )
 
     def test_raises_404_on_mandate_found_for_another_organisation(self):
         self.client.force_login(self.aidant_1)
@@ -948,7 +952,11 @@ class AttestationVisualisationTests(TestCase):
             )
         )
 
-        self.assertEqual(response.status_code, 404)
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce mandat est introuvable ou inaccessible.",
+            messages[0].message,
+        )
 
     def test_variables_set_for_mandate_with_template(self):
         """
@@ -1121,7 +1129,11 @@ class AttestationFinalTests(TestCase):
             reverse("new_attestation_final", args=(self.mandat.pk + 10_000,))
         )
 
-        self.assertEqual(response.status_code, 404)
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce mandat est introuvable ou inaccessible.",
+            messages[0].message,
+        )
 
     def test_renders_attestation(self):
         self.client.force_login(self.aidant_1)

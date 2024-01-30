@@ -60,7 +60,7 @@
               <legend class="sr-only">Référents Aidants Connect</legend>
               <button
                 id="its-me-manager"
-                class="primary"
+                class="fr-btn"
                 type="button"
                 data-action="personnel-form#onManagerItsMeBtnClicked"
               >
@@ -133,7 +133,7 @@
         <span data-personnel-form-target="addAidantButtonContainer">
           <button
             id="add-aidant-btn"
-            class="primary"
+            class="fr-btn fr-btn--icon-left fr-icon-user-add-line"
             type="button"
             data-action="click->personnel-form#onAddAidantButtonClicked"
           >
@@ -142,7 +142,7 @@
         </span>
       </h3>
 
-      <h4 class="warning">
+      <h4 class="fr-mt-4v warning">
         <b>Attention :</b> Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et
         accessible par une seule personne. Toute saisie d’email de contact générique entrainera un blocage de la
         demande d’habilitation.
@@ -159,11 +159,11 @@
       </section>
 
       <div class="button-box standalone">
-        <a class="button"
+        <a class="fr-btn fr-btn--secondary"
            href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
           Revenir à l’étape précédente
         </a>
-        <button type="submit" class="primary">Valider cette étape</button>
+        <button type="submit" class="fr-btn">Valider cette étape</button>
       </div>
     </form>
 

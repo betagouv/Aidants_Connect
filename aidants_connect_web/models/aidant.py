@@ -132,12 +132,6 @@ class Aidant(AbstractUser):
         "Date d'envoi de l’email d’alerte de désactivation", null=True, default=None
     )
 
-    ff_otp_app = models.BooleanField(
-        "Le ou la référente peut ajouter une application "
-        "OTP aux aidants de son organisation",
-        default=False,
-    )
-
     objects = AidantManager()
 
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]
@@ -279,14 +273,15 @@ class Aidant(AbstractUser):
         """
         return self.responsable_de.count() >= 1
 
-    def can_see_aidant(self, aidant):
+    def can_manage_aidant(self, aidant: Aidant | int | None):
         """
         :return: True if the current object is responsible for at least one of aidant's
-        organisations
+        organisations and this organisation is currently selected for the current
+        object
         """
-        respo_orgas = self.responsable_de.all()
-        aidant_orgas = aidant.organisations.all()
-        return any(org in respo_orgas for org in aidant_orgas)
+        return Organisation.objects.filter(
+            pk=self.organisation.pk, responsables__in=[self], aidants__in=[aidant]
+        ).exists()
 
     def must_validate_cgu(self):
         return self.validated_cgu_version != settings.CGU_CURRENT_VERSION

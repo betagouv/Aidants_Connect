@@ -60,8 +60,7 @@ urlpatterns = [
         name="autorisation_cancelation_success",
     ),
     path(
-        "usagers/<int:usager_id>/autorisations/"
-        "<int:autorisation_id>/cancel_attestation",
+        "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_attestation",  # noqa: E501
         usagers.autorisation_cancelation_attestation,
         name="autorisation_cancelation_attestation",
     ),
@@ -165,12 +164,7 @@ urlpatterns = [
     ),
     # Espace référent structure
     path(
-        "espace-responsable/",
-        espace_responsable.Home.as_view(),
-        name="espace_responsable_home",
-    ),
-    path(
-        "espace-responsable/organisation/<int:organisation_id>/",
+        "espace-responsable/organisation/",
         espace_responsable.OrganisationView.as_view(),
         name="espace_responsable_organisation",
     ),

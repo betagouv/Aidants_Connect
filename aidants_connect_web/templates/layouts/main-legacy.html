@@ -1,4 +1,4 @@
-{% load static %}
+{% load static dsfr_tags ac_common %}
 <!doctype html>
 <html itemscope itemtype="http://schema.org/WebPage" lang="fr">
 
@@ -9,9 +9,10 @@
 
   <title>{% block title %}Aidants Connect{% endblock %}</title>
 
-
   <link href="{% static 'css/template.min.css' %}" rel="stylesheet">
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
+  {% dsfr_css %}
+  <link href="{{ COOKIE_BANNER_CSS_URL }}" rel="stylesheet">
 
   <!-- Extra styles -->
   {% block extracss %}
@@ -48,9 +49,6 @@
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicons/favicon-32x32.png' %}">
   <link rel="manifest" href="{% static 'images/favicons/manifest.json' %}">
   <link rel="mask-icon" href="{% static 'images/favicons/safari-pinned-tab.svg' %}" color="#5bbad5">
-
-  <!-- Matomo -->
-  {% include "layouts/matomo_script.html" %}
 </head>
 
 <body>
@@ -77,7 +75,18 @@
   </svg>
 
   {% block nav %}
-    {% include 'layouts/nav.html' %}
+    {% if request.resolver_match.view_name|startswith:"habilitation" %}
+      {% comment %}
+      This block is a bit weird. Habilitation is part of the public webstite so it should display the nav
+      from the public website. But since redesigned connected parts of the app use the habilitation main
+      layout, we're forced to put an exception here in order not to break the entire app.
+      This should be removed when all the app is ported to the new design and this layout is migrated to
+      aidants_connect_common.
+    {% endcomment %}
+      {% include 'public_website/layout/_header.html' %}
+    {% else %}
+      {% include 'layouts/_header.html' %}
+    {% endif %}
   {% endblock nav %}
 
   <main id="main">
@@ -105,6 +114,19 @@
     {% include 'layouts/footer.html' %}
   {% endblock footer %}
 
+
+  {% dsfr_js %}
+  <script
+    id="cookie-banner"
+    {% if MATOMO_INSTANCE_URL and MATOMO_INSTANCE_SITE_ID %}
+    data-matomo-url="{{ MATOMO_INSTANCE_URL }}"
+    data-matomo-site-id="{{ MATOMO_INSTANCE_SITE_ID }}"
+    {% endif %}
+    defer src="{{ COOKIE_BANNER_JS_URL }}"
+  ></script>
+  <script defer src="{{ COOKIE_BANNER_LANG_URL }}"></script>
+  <script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>
+  <script defer src="{% static 'js/cookie-banner.js' %}"></script>
   {% block extrajs %}
   {% endblock %}
 </body>

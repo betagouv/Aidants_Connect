@@ -70,7 +70,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         cancel_mandat_autorisation_button.click()
 
         # Confirm cancellation
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[1]
+        submit_button = self.selenium.find_element(By.CSS_SELECTOR, "[type='submit']")
         submit_button.click()
 
         # Display attestation
@@ -87,8 +87,8 @@ class CancelAutorisationTests(FunctionalTestCase):
 
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(
-            recap_title,
-            "Révocation d'une autorisation via le service « Aidants Connect »",
+            "révocation d'une autorisation via le service « aidants connect »",
+            recap_title.casefold(),
         )
 
         self.selenium.close()
@@ -116,7 +116,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.assertIn("Révoqué", revoked_mandat_autorisation_after.text)
 
         auth_revocation_attestation_button = self.selenium.find_elements(
-            By.CSS_SELECTOR, ".button.auth-revocation-attestation"
+            By.CSS_SELECTOR, ".auth-revocation-attestation"
         )
         self.assertEqual(len(auth_revocation_attestation_button), 1)
         self.assertIn("Voir la révocation", auth_revocation_attestation_button[0].text)
@@ -132,7 +132,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         cancel_mandat_autorisation_button.click()
 
         # Confirm cancellation
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[1]
+        submit_button = self.selenium.find_element(By.CSS_SELECTOR, "[type='submit']")
         submit_button.click()
 
         # See again all mandats of usager page

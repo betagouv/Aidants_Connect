@@ -2,7 +2,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 from django.contrib import messages as django_messages
-from django.test import TestCase, override_settings, tag
+from django.test import TestCase, tag
 from django.urls import resolve, reverse
 
 from django_otp.oath import TOTP
@@ -15,13 +15,10 @@ from aidants_connect_web.views import espace_responsable
 
 
 @tag("responsable-structure")
-@override_settings(FF_OTP_APP=True)
 class AddAppOTPToAidantTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.responsable_tom: Aidant = AidantFactory(
-            username="tom@tom.fr", ff_otp_app=True
-        )
+        cls.responsable_tom: Aidant = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(
             username="tim@tim.fr",
@@ -79,7 +76,14 @@ class AddAppOTPToAidantTests(TestCase):
             )
         )
 
-        self.assertEqual(404, response.status_code)
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
+            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "veuillez changer dʼorganisation pour le gérer.",
+            messages[0].message,
+        )
+
         self.assertEqual(0, self.aidant_ahmed.totpdevice_set.count())
 
     def test_cant_add_otp_device_twice(self):
@@ -96,7 +100,9 @@ class AddAppOTPToAidantTests(TestCase):
         )
 
         self.assertRedirects(
-            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_organisation"),
+            fetch_redirect_response=False,
         )
         self.assertEqual(
             "Il existe déjà une carte OTP numérique liée à ce profil. Si vous "
@@ -145,7 +151,7 @@ class AddAppOTPToAidantTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse("espace_responsable_home"),
+            reverse("espace_responsable_organisation"),
             fetch_redirect_response=False,
         )
         self.assertEqual(1, self.aidant_tim.totpdevice_set.count())
@@ -153,13 +159,10 @@ class AddAppOTPToAidantTests(TestCase):
 
 
 @tag("responsable-structure")
-@override_settings(FF_OTP_APP=True)
 class RemoveAppOTPToAidantTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.responsable_tom: Aidant = AidantFactory(
-            username="tom@tom.fr", ff_otp_app=True
-        )
+        cls.responsable_tom: Aidant = AidantFactory(username="tom@tom.fr")
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(
             username="tim@tim.fr",
@@ -274,7 +277,13 @@ class RemoveAppOTPToAidantTests(TestCase):
             )
         )
 
-        self.assertEqual(404, response.status_code)
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(
+            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
+            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "veuillez changer dʼorganisation pour le gérer.",
+            messages[0].message,
+        )
         self.assertEqual(1, self.aidant_ahmed.totpdevice_set.count())
 
     def test_remove_otp_app_from_aidant_without_top_app(self):
@@ -290,7 +299,9 @@ class RemoveAppOTPToAidantTests(TestCase):
         )
 
         self.assertRedirects(
-            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_organisation"),
+            fetch_redirect_response=False,
         )
         self.assertEqual(0, self.aidant_tim.totpdevice_set.count())
 
@@ -307,7 +318,9 @@ class RemoveAppOTPToAidantTests(TestCase):
         )
 
         self.assertRedirects(
-            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_organisation"),
+            fetch_redirect_response=False,
         )
         self.assertEqual(0, self.aidant_sarah.totpdevice_set.count())
 
@@ -324,7 +337,7 @@ class RemoveAppOTPToAidantTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_home"),
+            reverse("espace_responsable_organisation"),
             fetch_redirect_response=False,
         )
         self.deactivated_aidant.refresh_from_db()

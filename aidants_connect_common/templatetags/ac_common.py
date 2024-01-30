@@ -3,9 +3,20 @@ from urllib.parse import quote, urlencode
 
 from django import template
 from django.conf import settings
-from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
+from django.contrib.messages import DEBUG, ERROR, INFO, SUCCESS, WARNING
+from django.template import Context
+from django.template.base import (
+    Node,
+    NodeList,
+    Parser,
+    Template,
+    TextNode,
+    Token,
+    token_kwargs,
+)
 from django.template.defaultfilters import stringfilter
 from django.templatetags.static import static
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 
 register = template.Library()
@@ -44,9 +55,8 @@ def mailto_href(recipient: str, subject: str = "", body: str = ""):
 @register.simple_tag
 def mailto(recipient: str, link_text: str = "", subject: str = "", body: str = ""):
     link_text = link_text or recipient
-    return mark_safe(
-        f'<a href="{mailto_href(recipient, subject, body)}">{link_text}</a>'
-    )
+    href = mailto_href(recipient, subject, body)
+    return mark_safe(f'<a class="fr-link" href="{href}">{link_text}</a>')
 
 
 @register.simple_tag
@@ -185,3 +195,56 @@ def camel(value: str):
         splitted = [splitted[0], *[item.capitalize() for item in splitted[1:]]]
 
     return "".join(splitted)
+
+
+@register.filter("startswith")
+def startswith(text, starts):
+    if isinstance(text, str):
+        return text.startswith(starts)
+    return False
+
+
+# TODO: drop when https://github.com/numerique-gouv/django-dsfr/pull/87 is merged
+@register.simple_tag(takes_context=True)
+def dsfr_django_messages(
+    context, is_collapsible=False, extra_classes=None, wrapper_classes=None
+):
+    messages = context.get("messages")
+
+    if not messages:
+        return ""
+
+    wrapper_classes = wrapper_classes or "fr-my-4v"
+    extra_classes = extra_classes or ""
+
+    message_tags_css_classes = {
+        DEBUG: "info",
+        INFO: "info",
+        SUCCESS: "success",
+        WARNING: "warning",
+        ERROR: "error",
+    }
+
+    def _render_alert_tag(message):
+        return Template("{% load dsfr_tags %}{% dsfr_alert data_dict %}").render(
+            Context(
+                {
+                    "data_dict": {
+                        "type": message_tags_css_classes.get(message.level, "info"),
+                        "content": str(message),
+                        "extra_classes": "{} {}".format(
+                            extra_classes, message.extra_tags or ""
+                        ).strip(),
+                        "is_collapsible": is_collapsible,
+                    }
+                }
+            )
+        )
+
+    return format_html(
+        "<div{}>{}</div>",
+        format_html(' class="{}"', wrapper_classes) if wrapper_classes else "",
+        format_html_join(
+            "\n", "{}", ((_render_alert_tag(message),) for message in messages)
+        ),
+    )

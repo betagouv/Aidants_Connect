@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'layouts/main-legacy.html' %}
 
 {% load static %}
 {% load ac_extras %}
@@ -8,11 +8,7 @@
 {% block content %}
   <section class="section">
     <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+      {% include "layouts/_messages.html" %}
       <h1>Fiche aidant : {{ aidant.get_full_name }}, {{ aidant.profession }}</h1>
       <div class="tiles">
         <div class="grid">
@@ -37,22 +33,25 @@
       </div>
       <div class="section actions">
         <h2>Actions</h2>
-        {% if aidant.carte_totp.serial_number %}
-          <details class="background-color-grey">
-            <summary>Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte</summary>
-            {% include "aidants_connect_web/espace_responsable/_aidant_remove_card.html" %}
-          </details>
+        {% if aidant.has_a_totp_device %}
+          <a
+            id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+            href="{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}"
+            class="fr-btn fr-mb-8v"
+          >
+            Gérer les cartes OTP
+          </a>
         {% else %}
           <p>
             <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
-               class="button large">
-              <span aria-hidden="true">💳 </span>
+               class="fr-btn fr-btn--icon-left fr-icon-bank-card-fill"
+            >
               Lier une carte Aidants Connect
             </a>
           </p>
         {% endif %}
         {% if responsable.responsable_de.all|length > 1 %}
-          <details class="background-color-grey">
+          <details class="fr-p-2v background-color-grey">
             <summary>Changer les organisations de rattachement</summary>
             <form method="post" action="{% url "espace_responsable_aidant_change_organisations" aidant_id=aidant.id %}">
               {% csrf_token %}
@@ -88,7 +87,7 @@
                 </ul>
               </fieldset>
               <p>
-                <button class="button" type="submit">Valider</button>
+                <button class="fr-btn" type="submit">Valider</button>
               </p>
             </form>
           </details>

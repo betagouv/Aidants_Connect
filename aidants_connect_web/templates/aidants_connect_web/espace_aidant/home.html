@@ -10,12 +10,7 @@
 
 {% block content %}
   <div class="fr-container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}"
-             role="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% include "layouts/_messages.html" %}
     <h1>
       {% if aidant.can_create_mandats %}Espace Aidant{% else %}Aidants Connect{% endif %}
       {% if aidant.first_name %}<p class="h2">Bienvenue, {{ aidant.first_name }} !</p>{% endif %}
@@ -32,75 +27,163 @@
         — {{ aidant.organisation.address }}.
       </div>
     {% endif %}
+    {% for notification in notifications %}
+      <div
+        class="fr-col-12"
+        data-controller="notification"
+        data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
+      >
+        <div class="fr-alert{% if notification.type == notification_type.WARNING.value %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION.value %} fr-alert--info{% else %} fr-alert--info{% endif %}">
+          <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
+          <p>{{ notification.to_html }}</p>
+          {% if notification.must_ack %}
+            <button
+              class="fr-btn--close fr-btn"
+              title="Masquer le message"
+              data-action="notification#markRead"
+            >
+              Masquer le message
+            </button>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
     <section class="section tiles aidant-home-services">
       <h3 class="home-section">Vos services</h3>
       <div class="fr-grid-row fr-grid-row--gutters">
         {% if aidant.is_responsable_structure %}
           <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <a id="view_organisation" class="tile"
-               href="{% url 'espace_responsable_home' %}">
-              <span aria-hidden="true">🏢<br/></span>Mon espace référent
-            </a>
+            <div class="fr-tile fr-enlarge-link">
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a id="view_organisation" href="{% url 'espace_responsable_organisation' %}">Mon espace référent</a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogram">🏢</div>
+              </div>
+            </div>
           </div>
           {% if not aidant.has_a_totp_device %}
             <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-              <a id="view_organisation" class="tile"
-                 href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}">
-                <span aria-hidden="true">💳<br/></span>Activer ma carte
-              </a>
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a
+                        id="view_organisation"
+                        href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
+                      >
+                        Activer ma carte
+                      </a>
+                    </h3>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">💳</div>
+                </div>
+              </div>
             </div>
           {% endif %}
         {% else %}
           <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <a id="view_organisation" class="tile"
-               href="{% url 'espace_aidant_organisation' %}">
-              <span aria-hidden="true">🏢<br/></span>Mon organisation
-            </a>
+            <div class="fr-tile fr-enlarge-link">
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a id="view_organisation" href="{% url 'espace_aidant_organisation' %}">Mon organisation</a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogram">🏢</div>
+              </div>
+            </div>
           </div>
         {% endif %}
         {% if aidant.can_create_mandats %}
           <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <a id="view_mandats" class="tile" href="{% url 'usagers' %}">
-              <span aria-hidden="true">📂<br/></span>Mes mandats
-            </a>
+            <div class="fr-tile fr-enlarge-link">
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a id="view_mandats" href="{% url 'usagers' %}">Mes mandats</a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogram">📂</div>
+              </div>
+            </div>
           </div>
           <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <a id="add_usager" class="tile" href="{% url 'new_mandat' %}">
-              <span aria-hidden="true">📝<br/></span>Créer un mandat
-            </a>
+            <div class="fr-tile fr-enlarge-link">
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a id="add_usager" href="{% url 'new_mandat' %}">Créer un mandat</a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogram">📝</div>
+              </div>
+            </div>
           </div>
         {% endif %}
 
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <a id="ask_for_help" class="tile" href="{{ sos_href }}">
-            <span aria-hidden="true">🆘<br/></span>J’ai besoin d’aide
-          </a>
-        </div>
-
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <a id="help_tutorial" class="tile"
-             href="https://www.etsijaccompagnais.fr/tutoriel-aidants-connect">
-            <span aria-hidden="true">💡<br/></span>Tutoriel Aidants Connect
-          </a>
-        </div>
-        {% if request.user.organisations.count > 1 and not disable_change_organisation %}
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <a
-              href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
-              class="tile"
-            >
-              <span aria-hidden="true">🏢 &rarr;️ 🏢<br/></span>Changer d'organisation
-            </a>
+          <div class="fr-tile fr-enlarge-link">
+            <div class="fr-tile__body">
+              <div class="fr-tile__content">
+                <h3 class="fr-tile__title">
+                  <a id="ask_for_help" href="{{ sos_href }}">J’ai besoin d’aide</a>
+                </h3>
+              </div>
+            </div>
+            <div class="fr-tile__header">
+              <div class="fr-tile__pictogram">🆘</div>
+            </div>
           </div>
-        {% endif %}
+        </div>
 
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <a href="{%  url 'sandbox_presentation' %}" class="tile">
-            <span aria-hidden="true"><img alt="" class="icon" src="{% static "images/icons/sandbox-icon.png" %}"><br/></span>
-            Site bac à sable
-          </a>
+          <div class="fr-tile fr-enlarge-link">
+            <div class="fr-tile__body">
+              <div class="fr-tile__content">
+                <h3 class="fr-tile__title">
+                  <a id="help_tutorial" href="https://www.etsijaccompagnais.fr/tutoriel-aidants-connect">
+                    Tutoriel Aidants Connect
+                  </a>
+                </h3>
+              </div>
+            </div>
+            <div class="fr-tile__header">
+              <div class="fr-tile__pictogram">💡</div>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <div class="fr-tile fr-enlarge-link">
+            <div class="fr-tile__body">
+              <div class="fr-tile__content">
+                <h3 class="fr-tile__title">
+                  <a href="{% url 'sandbox_presentation' %}">
+                    Site bac à sable
+                  </a>
+                </h3>
+              </div>
+            </div>
+            <div class="fr-tile__header">
+              <div class="fr-tile__pictogram">
+                <img alt="" class="icon" src="{% static "images/icons/sandbox-icon.png" %}">
+              </div>
+            </div>
+          </div>
+        </div>
     </section>
     <section class="section ">
       <h3 class="home-section">Vos ressources</h3>

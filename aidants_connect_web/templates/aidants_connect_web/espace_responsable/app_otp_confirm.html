@@ -1,75 +1,72 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
 {% load static form_extras %}
 
 {% block title %}Aidants Connect - Ajout d’une carte OTP numérique pour {{ aidant.get_full_name }}{% endblock %}
 
 {% block extracss %}
-<link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-<div class="fr-container">
-  <div class="fr-grid-row fr-grid-row--gutters">
-    <div class="fr-col-12 fr-col-md-10">
-      {% if messages %}
-      {% for message in messages %}
-      <div
-        class="notification {% if message.tags %}{{ message.tags }}{% endif %}"
-        role="alert"
-      >{{ message }}
-      </div>
-      {% endfor %}
-      {% endif %}
+  <div class="fr-container">
+    {% include "layouts/_messages.html" %}
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-10">
+        <h1>Espace référent</h1>
+        <h2>Lier une carte</h2>
+        <p class="subtitle">Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
 
-      <h1>Espace référent</h1>
-      <h2>Lier une carte</h2>
-      <p class="subtitle">Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
-
-      <div class="fr-grid-row fr-grid-row--gutters">
-        <div class="fr-col-12 fr-col-md-8 margin-bottom-1rem">
-          <p class="otp-app-instructions blue-text">
-            <span class="bold">Munissez-vous du téléphone utilisé par l’aidant.</span><br/>
-            Si vous ne disposez pas d’une application d’authentification OTP, nous vous recommandons
-            l’utilisation de freeOTP :
-            <a
-              href="https://apps.apple.com/fr/app/freeotp-authenticator/id872559395"
-              target="_blank"
-              rel="noreferrer noopener "
-            >
-              <img src="{% static 'images/icons/arrow-right-red.svg' %}" alt="" />
-              freeOTP sur l’App Store (Apple)
-            </a>
-            <a
-              href="https://play.google.com/store/apps/details?id=org.fedorahosted.freeotp"
-              target="_blank"
-              rel="noreferrer noopener "
-            >
-              <img src="{% static 'images/icons/arrow-right-red.svg' %}" alt="" />
-              freeOTP sur le Play Store (Android)
-            </a>
-          </p>
-          <form method="post">
-            {% csrf_token %}
-            <div class="shadowed margin-bottom-2rem padding-1rem">
+        <div class="fr-grid-row fr-grid-row--gutters">
+          <div class="fr-col-12 fr-col-md-8 margin-bottom-1rem">
+            <section class="otp-app-instructions blue-text">
               <p>
-                Depuis l’application, appuyez sur le bouton <span class="bold">« + » (sur Android)</span>
-                ou sur le bouton <span class="bold">QR Code (sur Apple)</span> puis
-                <span class="bold">scannez le QR Code</span> ci-dessous :
-              </p>
-              <img
-                class="centering"
-                src="{{ otp_device_qr_code_href }}"
-                alt="QR code à flasher dans votre application"
-              />
-              {% field_as_p form.otp_token %}
-            </div>
+              <span class="bold">Munissez-vous du téléphone utilisé par l’aidant.</span><br />
+              Si vous ne disposez pas d’une application d’authentification OTP, nous vous recommandons
+              l’utilisation de freeOTP :
+            </p>
+            <p class="fr-btn--icon-left fr-icon-arrow-right-line">
+              <a
+                class="fr-link"
+                href="https://apps.apple.com/fr/app/freeotp-authenticator/id872559395"
+                target="_blank"
+                rel="noreferrer noopener "
+              >
+                freeOTP sur l’App Store (Apple)
+              </a>
+            </p>
+            <p class="fr-btn--icon-left fr-icon-arrow-right-line">
+              <a
+                class="fr-link"
+                href="https://play.google.com/store/apps/details?id=org.fedorahosted.freeotp"
+                target="_blank"
+                rel="noreferrer noopener "
+              >
+                freeOTP sur le Play Store (Android)
+              </a>
+            </p>
+            </section>
+            <form method="post">
+              {% csrf_token %}
+              <div class="shadowed margin-bottom-2rem padding-1rem">
+                <p>
+                  Depuis l’application, appuyez sur le bouton <span class="bold">« + » (sur Android)</span>
+                  ou sur le bouton <span class="bold">QR Code (sur Apple)</span> puis
+                  <span class="bold">scannez le QR Code</span> ci-dessous :
+                </p>
+                <img
+                  class="centering"
+                  src="{{ otp_device_qr_code_href }}"
+                  alt="QR code à flasher dans votre application"
+                />
+                {% field_as_p form.otp_token %}
+              </div>
 
-            <input type="submit" class="button primary" value="Valider cette carte">
-          </form>
+              <input type="submit" class="fr-btn" value="Valider cette carte">
+            </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 {% endblock content %}

@@ -14,7 +14,7 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
-  font-weight: 400;  // Marianne-Regular
+  font-weight: 400; // Marianne-Regular
 }
 
 ul, ol {
@@ -30,13 +30,6 @@ svg.previews {
 #main {
   overflow: hidden;
   flex-grow: 100;
-}
-
-main {
-  a[href] {
-    color: colors.$red-aidants;
-    font-weight: bold;
-  }
 }
 
 [hidden] {
@@ -143,6 +136,12 @@ h3, .h3 {
   }
 }
 
+h5, .h5 {
+  font-size: 1rem;
+  font-weight: bold;
+
+}
+
 h1, h2, h3, h4, h5, h6 {
   &.upper {
     text-transform: uppercase;
@@ -205,7 +204,7 @@ h3.h3-prime {
   }
 
   .button-box {
-    transform: translateY(4rem);
+    transform: translateY(3.5rem);
   }
 }
 
@@ -226,7 +225,7 @@ h3.h3-prime {
   }
 
   .button-box {
-    transform: translateY(3rem);
+    transform: translateY(2.5rem);
   }
 }
 
@@ -303,6 +302,26 @@ dl {
   dt {
     font-weight: bold;
   }
+}
+
+.tooltip {
+  display: inline-block;
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  background-color: #FFF;
+  display: inline-block;
+  list-style-position: inside;
+  padding: 1rem;
+  position: absolute;
+  top: 2rem;
+  visibility: hidden;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }
 
 // forms -----------------------------------------------
@@ -401,34 +420,31 @@ input[type=radio] {
 }
 
 button, .button {
-  background: #fff;
-  border: 1px solid colors.$red-aidants;
-  color: colors.$red-aidants;
-  cursor: pointer;
-  display: inline-block;
-  font-family: $font-stack;
-  font-size: 1rem;
-  font-weight: bold;
-  line-height: 1.3;
-  margin: 0;
-  padding: .75rem;
-  text-decoration: none;
-  vertical-align: baseline;
+  &:not(.fr-btn):not(.fr-connect):not(.fr-nav__btn):not(.fr-nav__link) {
+    background: #fff;
+    border: 1px solid colors.$red-aidants;
+    color: colors.$red-aidants;
+    cursor: pointer;
+    display: inline-block;
+    font-family: $font-stack;
+    font-size: 1rem;
+    font-weight: bold;
+    line-height: 1.3;
+    margin: 0;
+    padding: .75rem;
+    text-decoration: none;
+    vertical-align: baseline;
 
-  &.primary {
-    background: colors.$red-aidants;
-    color: #fff;
+    &.primary {
+      background: colors.$red-aidants;
+      color: #fff;
+    }
+
+    &:focus-visible {
+      background: colors.$off-yellow-aidants;
+      color: colors.$dark-grey-aidants;
+    }
   }
-
-  &:focus-visible {
-    background: colors.$off-yellow-aidants;
-    color: colors.$dark-grey-aidants;
-  }
-}
-
-button a {
-  color: #fff !important;
-  text-decoration: none;
 }
 
 fieldset {
@@ -484,8 +500,12 @@ fieldset {
   display: flex;
   justify-content: space-between;
 
+  .fr-btn--secondary {
+    background-color: var(--background-default-grey);
+  }
+
   > :only-child {
-    margin-left: auto;
+    margin-left: auto !important;
   }
 
   &.standalone {
@@ -494,7 +514,7 @@ fieldset {
 }
 
 .shadowed .button-box {
-  transform: translateY(4rem);
+  transform: translateY(3.5rem);
 }
 
 .form-in-3-cols .shadowed .button-box {
@@ -595,7 +615,31 @@ fieldset {
   padding: 1rem;
 }
 
-.warning {
+.fr-btn {
+  &.warning {
+    border-color: colors.$red-aidants;
+    color: colors.$red-aidants;
+    box-shadow: inset 0 0 0 1px colors.$red-aidants;
+
+    &:not(.fr-btn--secondary), &:not(.fr-btn--tertiary) {
+      background-color: colors.$red-aidants;
+      color: white;
+    }
+  }
+
+  &.warning:active, &.warning:focus, &.warning:hover {
+    border-color: #ab2b1e;
+    color: #ab2b1e;
+    box-shadow: inset 0 0 0 1px #ab2b1e;
+
+    &:not(.fr-btn--secondary), &:not(.fr-btn--tertiary) {
+      background-color: #ab2b1e;
+      color: white;
+    }
+  }
+}
+
+.warning:not(.fr-btn) {
   background: white;
   color: colors.$red-aidants;
   padding: 1rem;
@@ -644,17 +688,6 @@ fieldset {
     text-align: center;
     position: relative;
     transform: translateY(.5rem);
-
-    a {
-      text-decoration: none;
-      color: colors.$dark-grey-aidants;
-      font-weight: normal;
-
-      &:hover {
-        box-shadow: 0 .5rem 0 colors.$off-yellow-aidants;
-        color: colors.$red-aidants;
-      }
-    }
 
     &:after {
       content: "";
@@ -733,6 +766,33 @@ ol.messages-list {
   margin-top: 0;
   font-style: italic;
   color: colors.$light-blue-anct;
+}
+
+// guides tooltip ----------------------------------------
+
+.title-with-item {
+  display: flex;
+  flex-direction: row;
+
+  h1, h2, h3 {
+    flex-grow: 10;
+  }
+}
+
+.aidants-guide-links {
+  &, & .tooltiptext {
+    border: 1px solid colors.$blue-aidants;
+    right: -1px;
+    width: max-content;
+  }
+
+  color: colors.$blue-aidants;
+  font-weight: normal;
+  padding: .25rem .5rem;
+
+  .tooltiptext {
+    padding: .5rem;
+  }
 }
 
 // header ----------------------------------------------
@@ -902,6 +962,7 @@ footer {
 
     a {
       display: flex;
+      background: none;
       border-radius: 6rem;
       text-decoration: none;
       color: colors.$blue-aidants;
@@ -926,13 +987,15 @@ footer {
     }
 
     .portrait {
+      background-color: white;
+      border-radius: 100%;
       display: flex;
 
       img {
         width: $radius;
         height: $radius;
-        border-radius: 100%;
         border: 2px solid #fff;
+        border-radius: 100%;
       }
     }
   }
@@ -980,5 +1043,12 @@ footer {
       color: colors.$red-aidants;
       text-transform: none;
     }
+  }
+}
+
+// D'ont display cookie related element on print
+[id^='tarteaucitron'] {
+  @media print {
+    display: none;
   }
 }

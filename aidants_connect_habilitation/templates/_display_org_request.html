@@ -15,8 +15,9 @@
         </div>
         {% if show_all_buttons %}
           <div class="button-box">
-            <a class="button primary"
-               href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
+            <a
+              class="fr"
+              href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
           </div>
         {% endif %}
       </div>
@@ -95,7 +96,7 @@
   {% if display_add_aidants_button %}
    <a
     id="add-aidants-btn"
-    class="button primary margin-bottom-1rem"
+    class="fr-btn fr-btn--icon-left fr-icon-user-add-line margin-bottom-1rem"
     href="{% url 'habilitation_organisation_add_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
   >
     Ajouter des aidants
@@ -131,7 +132,7 @@
         {% endif %}
         {% if show_all_buttons %}
           <div class="button-box">
-            <a class="button primary"
+            <a class="fr-btn"
                href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">Éditer</a>
           </div>
         {% endif %}

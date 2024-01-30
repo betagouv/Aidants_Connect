@@ -61,14 +61,8 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             OrganisationFactory(),
         )
 
-    def __get_live_url(self, organisation_id: int):
-        return reverse(
-            "espace_responsable_organisation",
-            kwargs={"organisation_id": organisation_id},
-        )
-
     def test_aidants_actions(self):
-        root_path = self.__get_live_url(self.organisation.pk)
+        root_path = reverse("espace_responsable_organisation")
 
         self.open_live_url(root_path)
 
@@ -104,7 +98,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         deactivated_add_button = self.selenium.find_element(
             By.ID, f"add-totp-card-to-aidant-{self.aidant_inactive_without_card.pk}"
         )
-        self.assertEqual("", deactivated_add_button.get_attribute("href"))
+        self.assertEqual(None, deactivated_add_button.get_attribute("href"))
         self.assertElementNotFound(
             By.ID,
             f"validate-totp-card-for-aidant-{self.aidant_inactive_without_card.pk}",
@@ -195,7 +189,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         )
 
     def test_grouped_autorisations(self):
-        root_path = self.__get_live_url(self.organisation.pk)
+        root_path = reverse("espace_responsable_organisation")
 
         self.open_live_url(root_path)
 
@@ -268,7 +262,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         )
 
     def test_remove_card_from_aidant(self):
-        root_path = self.__get_live_url(self.organisation.pk)
+        root_path = reverse("espace_responsable_organisation")
 
         self.open_live_url(root_path)
 
@@ -291,7 +285,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
 
         button1 = self.selenium.find_element(
             By.ID,
-            f"remove-totp-card-from-aidant-{ self.aidant_inactive_with_card.pk }",
+            f"remove-totp-card-from-aidant-{self.aidant_inactive_with_card.pk}",
         )
         self.assertEqual("Délier la carte physique", button1.text)
 
@@ -307,12 +301,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Dissocier']"
         ).click()
 
-        self.wait.until(
-            self.path_matches(
-                "espace_responsable_organisation",
-                kwargs={"organisation_id": self.aidant_responsable.organisation.pk},
-            )
-        )
+        self.wait.until(self.path_matches("espace_responsable_organisation"))
 
         # Return on manage cards page
         self.selenium.find_element(
@@ -332,12 +321,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         with self.assertRaises(Aidant.carte_totp.RelatedObjectDoesNotExist):
             self.aidant_inactive_with_card.carte_totp
 
-        self.open_live_url(
-            reverse(
-                "espace_responsable_organisation",
-                kwargs={"organisation_id": self.aidant_responsable.organisation.pk},
-            )
-        )
+        self.open_live_url(reverse("espace_responsable_organisation"))
         self.selenium.find_element(
             By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
         ).click()
@@ -366,12 +350,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Dissocier']"
         ).click()
 
-        self.wait.until(
-            self.path_matches(
-                "espace_responsable_organisation",
-                kwargs={"organisation_id": self.aidant_responsable.organisation.pk},
-            )
-        )
+        self.wait.until(self.path_matches("espace_responsable_organisation"))
 
         self.selenium.find_element(
             By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"

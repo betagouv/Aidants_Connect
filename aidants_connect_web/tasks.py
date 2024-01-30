@@ -1,11 +1,14 @@
+import csv
 from collections import defaultdict
 from datetime import timedelta
+from itertools import chain
 from logging import Logger
-from typing import List
+from typing import List, Type
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models import Count, Q
+from django.db.models import Count, Field, Model, Q
+from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
@@ -15,15 +18,19 @@ from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
 from aidants_connect_common.models import Department
+from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_common.utils.email import render_email
 from aidants_connect_common.utils.urls import build_url
 from aidants_connect_web.models import (
     Aidant,
     Connection,
+    ExportRequest,
     HabilitationRequest,
+    Journal,
     Mandat,
     Notification,
     Organisation,
+    Usager,
 )
 from aidants_connect_web.statistics import (
     compute_all_statistics,
@@ -223,7 +230,7 @@ def notify_no_totp_workers():
                 "users": [],
                 "notify_self": False,
                 "espace_responsable_url": (
-                    f"{settings.HOST}{reverse('espace_responsable_home')}"
+                    f"{settings.HOST}{reverse('espace_responsable_organisation')}"
                 ),
             }
 
@@ -394,3 +401,184 @@ def send_email_on_new_notification_task(notification: Notification):
     from aidants_connect_web.signals import send_email_on_new_notification
 
     send_email_on_new_notification(sender=None, instance=notification, created=True)
+
+
+@shared_task
+def export_for_bizdevs(request: ExportRequest, create_file=True):
+    class Serializer:
+        fields_to_serialize = (
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "profession",
+            "can_create_mandats",
+            "organisation__name",
+            "organisation__data_pass_id",
+            "organisation__siret",
+            "organisation__address",
+            "organisation__zipcode",
+            "organisation__city",
+            "organisation__department_insee_code",
+            "organisation__region",
+            "organisation__type__name",
+            "organisation__legal_category",
+            "organisation__legal_cat_level_one",
+            "organisation__legal_cat_level_two",
+            "organisation__legal_cat_level_three",
+            "organisation__nb_mandat_created",
+            "organisation__nb_mandat_remote_created",
+            "organisation__nb_usager",
+        )
+
+        def __init__(self, a: Aidant):
+            self.aidant = a
+
+        @staticmethod
+        def __model_fields(model: Type[Model] | None) -> dict[str, Field]:
+            result = {}
+            if not hasattr(model, "_meta"):
+                return result
+
+            for field in model._meta.fields:
+                result[field.name] = field
+                result[field.attname] = field
+            return result
+
+        def organisation__region(self):
+            qs = Department.objects.filter(
+                insee_code=self.aidant.organisation.department_insee_code
+            )
+            if not qs.exists():
+                return None
+            return qs[0].insee_code
+
+        organisation__region.csv_column = "Organisation: Code INSEE de la région"
+
+        def organisation__nb_mandat_created(self):
+            return Journal.objects.filter(
+                organisation=self.aidant.organisation,
+                action=JournalActionKeywords.CREATE_ATTESTATION,
+            ).count()
+
+        organisation__nb_mandat_created.csv_column = (
+            "Organisation: Nombre de mandats créés"
+        )
+
+        def organisation__nb_mandat_remote_created(self):
+            return Journal.objects.filter(
+                organisation=self.aidant.organisation,
+                action=JournalActionKeywords.CREATE_ATTESTATION,
+                is_remote_mandat=True,
+            ).count()
+
+        organisation__nb_mandat_remote_created.csv_column = (
+            "Organisation: Nombre de mandats à distance créés"
+        )
+
+        def organisation__nb_usager(self):
+            return Usager.objects.active().visible_by(self.aidant).count()
+
+        organisation__nb_usager.csv_column = "Organisation: Nombre d'usagers"
+
+        def values(self) -> list[str]:
+            result = []
+            model_fields = self.__model_fields(Aidant)
+
+            for requested_field in self.fields_to_serialize:
+                if hasattr(self, requested_field):
+                    value = getattr(self, requested_field)
+                    if callable(value):
+                        value = value()
+                    result.append(f"{value}")
+                elif requested_field in model_fields:
+                    result.append(getattr(self.aidant, f"{requested_field}"))
+                elif LOOKUP_SEP in requested_field:
+                    related_fields = requested_field.split(LOOKUP_SEP)
+                    value = self.aidant
+                    for related_field in related_fields:
+                        value = getattr(value, related_field, None)
+                    result.append(f"{value}")
+                else:
+                    raise AttributeError(
+                        f"No field could be found in model {Aidant} of method on class "
+                        f"{self.__class__.__name__} with name '{requested_field}' "
+                    )
+
+            return result
+
+        @classmethod
+        def header(cls) -> list[str]:
+            model_fields = cls.__model_fields(Aidant)
+
+            result = []
+            for requested_field in cls.fields_to_serialize:
+                if hasattr(cls, requested_field):
+                    result.append(
+                        getattr(
+                            getattr(cls, requested_field),
+                            "csv_column",
+                            requested_field,
+                        )
+                    )
+                elif requested_field in model_fields:
+                    result.append(f"{model_fields[requested_field].verbose_name}")
+                    Aidant.objects.filter()
+                elif LOOKUP_SEP in requested_field:
+                    model = Aidant
+                    related_model_fields = model_fields
+                    related_fields = requested_field.split(LOOKUP_SEP)
+                    final_field = None
+                    for related_field in related_fields:
+                        """A bit of introspection here to resolve related fields
+                        expressed in the form 'organisation__name'"""
+                        final_field = related_model_fields.get(related_field, None)
+                        if final_field is None:
+                            raise AttributeError(
+                                f"{related_field} is not a valid field on model {model}"
+                            )
+                        model = final_field.related_model
+                        related_model_fields = cls.__model_fields(model)
+
+                    result.append(
+                        f"{final_field.model._meta.verbose_name.capitalize()}: {final_field.verbose_name}"  # noqa: E501
+                    )
+                else:
+                    raise AttributeError(
+                        f"No field could be found in model {Aidant} of method on class "
+                        f"{cls.__class__.__name__} with name '{requested_field}' "
+                    )
+            return result
+
+    if not request.aidant.is_staff:
+        raise AssertionError("Only staff member can start an export")
+
+    if create_file:
+        request.file_path.touch(mode=0o640, exist_ok=True)
+
+    with open(request.file_path, mode="w") as f:
+        try:
+            writer = csv.writer(f)
+            writer.writerow(Serializer.header())
+
+            qs = (
+                Aidant.objects.order_by("organisation__name")
+                .prefetch_related("organisation")
+                .all()
+            )
+            nb_aidants = qs.count()
+            paging_iterator = chain(range(0, nb_aidants, 500), [nb_aidants])
+
+            first = next(paging_iterator)
+            for second in paging_iterator:
+                for aidant in qs[first:second]:
+                    writer.writerow(Serializer(aidant).values())
+                first = second
+
+            request.state = ExportRequest.ExportRequestState.DONE
+            request.save(update_fields={"state"})
+        except Exception as e:
+            f.write(str(e))
+            request.state = ExportRequest.ExportRequestState.ERROR
+            request.save(update_fields={"state"})
+            raise

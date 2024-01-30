@@ -1,21 +1,13 @@
-{% extends "layouts/main-habilitation.html" %}
+{% extends "aidants_connect_web/espace_responsable/layout/main.html" %}
 
 {% load static ac_common %}
 
 {% block title %}Aidants Connect - Annuler la demande de formation{% endblock %}
 
-{% block extracss %}
-  <link href="{% static 'css/form.css' %}" rel="stylesheet">
-{% endblock extracss %}
-
 {% block content %}
   <section class="section">
     <div class="fr-container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+      {% include "layouts/_messages.html" %}
 
       <h1>Annuler la demande de formation</h1>
 
@@ -29,7 +21,7 @@
           {{ request.profession }}<br/>
         </p>
 
-        <a class="button" href="{% url 'espace_responsable_home' %}">Annuler</a>
+        <a class="button" href="{% url 'espace_responsable_organisation' %}">Annuler</a>
 
         <input
           id="submit-button"

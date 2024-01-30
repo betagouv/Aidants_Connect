@@ -44,7 +44,9 @@ class DissociateCarteTOTPTests(TestCase):
             data={"reason": "perte"},
         )
         self.assertRedirects(
-            response, reverse("espace_responsable_home"), fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_organisation"),
+            fetch_redirect_response=False,
         )
         response = self.client.get(response.url, follow=True)
         response_content = response.content.decode("utf-8")
