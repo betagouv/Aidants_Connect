@@ -12,7 +12,10 @@ from django.urls import reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_common.utils.constants import RequestOriginConstants
+from aidants_connect_common.utils.constants import (
+    JournalActionKeywords,
+    RequestOriginConstants,
+)
 from aidants_connect_common.utils.email import render_email
 from aidants_connect_common.utils.urls import build_url
 from aidants_connect_web.constants import NotificationType
@@ -174,3 +177,17 @@ def populate_id_generator_table(app_config: AppConfig, **_):
         IdGenerator.objects.get_or_create(
             code=settings.DATAPASS_CODE_FOR_ID_GENERATOR, defaults={"last_id": 10000}
         )
+
+
+@receiver(post_save, sender=Journal)
+def update_activity_tracking_on_new_journal(
+    sender, instance: Journal, created: bool, **_
+):
+    if (
+        not created
+        or instance.action not in JournalActionKeywords.activity_tracking_actions
+    ):
+        return
+
+    instance.aidant.activity_tracking_warning_at = None
+    instance.aidant.save(update_fields=("activity_tracking_warning_at",))

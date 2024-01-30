@@ -12,6 +12,7 @@ from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.timezone import now
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -600,3 +601,29 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
             request.state = ExportRequest.ExportRequestState.ERROR
             request.save(update_fields={"state"})
             raise
+
+
+@shared_task
+def email_activity_tracking_warning(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    aidants = Aidant.objects.without_activity_for_90_days().filter(
+        activity_tracking_warning_at=None
+    )
+    for aidant in aidants.all():
+        text_message, html_message = render_email(
+            "email/activity_tracking_warning.mjml", {"user": aidant}
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_ACTIVITY_TRACKING_WARN_FROM,
+            subject="Accompagnez vos usagers avec Aidants Connect",
+            recipient_list=[aidant.email],
+            message=text_message,
+            html_message=html_message,
+        )
+
+        aidant.activity_tracking_warning_at = now()
+        aidant.save(update_fields=("activity_tracking_warning_at",))
+
+    logger.info(f"Emailed activity warning to {aidants.count()} aidants")

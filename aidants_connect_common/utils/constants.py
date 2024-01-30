@@ -81,7 +81,17 @@ class DictChoices(Choices, metaclass=DictChoicesMeta):
         raise NotImplementedError()
 
 
-class JournalActionKeywords:
+class JournalActionKeywordsMeta(type):
+    @property
+    def activity_tracking_actions(cls):
+        return (
+            JournalActionKeywords.CREATE_ATTESTATION,
+            JournalActionKeywords.USE_AUTORISATION,
+            JournalActionKeywords.INIT_RENEW_MANDAT,
+        )
+
+
+class JournalActionKeywords(metaclass=JournalActionKeywordsMeta):
     CONNECT_AIDANT = "connect_aidant"
     ACTIVITY_CHECK_AIDANT = "activity_check_aidant"
     CARD_ASSOCIATION = "card_association"
