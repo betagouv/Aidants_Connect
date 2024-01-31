@@ -24,9 +24,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         login_field.send_keys(self.aidant_thierry.email)
         otp_field = self.selenium.find_element(By.ID, "id_otp_token")
         otp_field.send_keys("123456")
-        submit_button = self.selenium.find_element(
-            By.CSS_SELECTOR, "input[type='submit']"
-        )
+        submit_button = self.selenium.find_element(By.CSS_SELECTOR, "[type='submit']")
         submit_button.click()
         email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual("LIEN DE CONNEXION ENVOYÉ", email_sent_title)

@@ -16,6 +16,7 @@ from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from dsfr.forms import DsfrBaseForm
 from magicauth.forms import EmailForm as MagicAuthEmailForm
+from magicauth.otp_forms import OTPForm
 
 from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
 from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
@@ -154,8 +155,8 @@ class AidantChangeForm(forms.ModelForm):
         return cleaned_data
 
 
-class LoginEmailForm(MagicAuthEmailForm):
-    email = forms.EmailField()
+class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
+    email = forms.EmailField(label="Adresse email")
 
     def clean_email(self):
         user_email = super().clean_email()
@@ -166,6 +167,10 @@ class LoginEmailForm(MagicAuthEmailForm):
                 "référent ou avec Aidants Connect."
             )
         return user_email
+
+
+class DsfrOtpForm(OTPForm, DsfrBaseForm):
+    pass
 
 
 def get_choices_for_remote_method():
