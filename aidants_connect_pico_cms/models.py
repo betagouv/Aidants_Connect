@@ -139,10 +139,12 @@ class FaqSubCategory(FaqSection):
 class FaqQuestion(CmsContent):
     question = models.TextField("Question")
     body = MarkdownField("Réponse")
-    category = models.ForeignKey(FaqCategory, models.CASCADE, verbose_name="Catégorie")
+    category = models.ForeignKey(
+        FaqCategory, models.SET_NULL, null=True, default=None, verbose_name="Catégorie"
+    )
     subcategory = models.ForeignKey(
         FaqSubCategory,
-        models.CASCADE,
+        models.SET_NULL,
         null=True,
         default=None,
         verbose_name="Sous-catégorie",

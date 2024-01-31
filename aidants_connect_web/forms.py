@@ -14,9 +14,10 @@ from django.utils.translation import gettext_lazy as _
 from django_otp import match_token
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from dsfr.forms import DsfrBaseForm
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 
-from aidants_connect_common.forms import AcPhoneNumberField, DsfrBaseForm2, PatchedForm
+from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
 from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.widgets import DetailedRadioSelect
 from aidants_connect_web.constants import RemoteConsentMethodChoices
@@ -311,7 +312,7 @@ class MandatForm(PatchedForm):
         return True
 
 
-class OTPForm(DsfrBaseForm2):
+class OTPForm(DsfrBaseForm):
     otp_token = forms.CharField(
         max_length=6,
         min_length=6,
@@ -366,7 +367,7 @@ class CarteTOTPValidationForm(forms.Form):
     )
 
 
-class RemoveCardFromAidantForm(DsfrBaseForm2):
+class RemoveCardFromAidantForm(DsfrBaseForm):
     reason = forms.ChoiceField(
         label="Pourquoi séparer cette carte du compte ?",
         label_suffix=" :",
@@ -420,7 +421,7 @@ class SwitchMainAidantOrganisationForm(forms.Form):
         return unquote(self.cleaned_data.get("next_url", ""))
 
 
-class AddOrganisationResponsableForm(DsfrBaseForm2):
+class AddOrganisationResponsableForm(DsfrBaseForm):
     candidate = forms.ModelChoiceField(
         label="Nouveau référent", label_suffix=" :", queryset=Aidant.objects.none()
     )
@@ -451,7 +452,7 @@ class ChangeAidantOrganisationsForm(forms.Form):
         self.initial["organisations"] = self.aidant.organisations.all()
 
 
-class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm2):
+class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
     organisation = forms.ModelChoiceField(
         queryset=Organisation.objects.none(),
         empty_label="Choisir...",
