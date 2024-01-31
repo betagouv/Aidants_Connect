@@ -30,7 +30,7 @@ class ConnectionAdmin(ModelAdmin):
 
 
 @register(ExportRequest, site=admin_site)
-class ExportRequestAdmin(ModelAdmin, VisibleToAdminMetier):
+class ExportRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     list_display = fields = readonly_fields = ("aidant", "date", "file_link")
 
     def file_link(self, obj: ExportRequest):
