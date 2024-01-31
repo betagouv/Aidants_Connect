@@ -31,9 +31,11 @@ class ConnectionAdmin(ModelAdmin):
 
 @register(ExportRequest, site=admin_site)
 class ExportRequestAdmin(VisibleToAdminMetier, ModelAdmin):
-    list_display = fields = readonly_fields = ("aidant", "date", "file_link")
+    list_display = fields = readonly_fields = ("aidant", "date", "state", "file_link")
 
     def file_link(self, obj: ExportRequest):
+        if obj.is_ongoing:
+            return "L'export est en cours…"
         if not obj.file_path.exists():
             return "Le fichier n'existe plus"
         route = reverse(

@@ -281,15 +281,13 @@ class ExportForBizdevs(TestCase):
         # Prevent file from being closed so content can be read and checked
         output.close = lambda: None
 
-        with mock.patch(
-            "aidants_connect_web.tasks.export_for_bizdevs"
-        ) as export_for_bizdevs_mock:
+        with mock.patch.object(export_for_bizdevs, "delay") as export_for_bizdevs_mock:
             # Prevent running the export when creating the request
             request = ExportRequest.objects.create(aidant=self.staff_aidant)
-            export_for_bizdevs_mock.assert_called_with(request)
+            export_for_bizdevs_mock.assert_called_with(request.pk)
 
         with mock.patch("builtins.open", return_value=output):
-            export_for_bizdevs(request, create_file=False)
+            export_for_bizdevs(request.pk, create_file=False)
             self.assertEqual(
                 dedent(
                     f"""

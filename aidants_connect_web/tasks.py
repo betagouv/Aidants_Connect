@@ -405,7 +405,7 @@ def send_email_on_new_notification_task(notification: Notification):
 
 
 @shared_task
-def export_for_bizdevs(request: ExportRequest, create_file=True):
+def export_for_bizdevs(request_pk: int, create_file=True):
     class Serializer:
         fields_to_serialize = (
             "first_name",
@@ -569,6 +569,11 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
                     )
             return result
 
+    try:
+        request = ExportRequest.objects.get(pk=request_pk)
+    except ExportRequest.DoesNotExist:
+        return
+
     if not request.aidant.is_staff:
         raise AssertionError("Only staff member can start an export")
 
@@ -580,10 +585,8 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
             writer = csv.writer(f)
             writer.writerow(Serializer.header())
 
-            qs = (
-                Aidant.objects.order_by("organisation__name")
-                .prefetch_related("organisation")
-                .all()
+            qs = Aidant.objects.order_by("organisation__name").prefetch_related(
+                "organisation"
             )
             nb_aidants = qs.count()
             paging_iterator = chain(range(0, nb_aidants, 500), [nb_aidants])
