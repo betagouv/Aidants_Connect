@@ -23,6 +23,16 @@
   <a
     class="fr-nav__link"
     target="_self"
+    href="{% url 'statistiques' %}"
+    {% if view_name == 'statistiques' %}aria-current="true"{% endif %}
+  >
+    Statistiques
+  </a>
+</li>
+<li class="fr-nav__item">
+  <a
+    class="fr-nav__link"
+    target="_self"
     href="{% url 'ressources' %}"
     {% if view_name == 'ressources' %}aria-current="true"{% endif %}
   >
