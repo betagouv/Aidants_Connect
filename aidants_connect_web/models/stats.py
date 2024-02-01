@@ -90,6 +90,11 @@ class AbstractAidantStatistiques(models.Model):
         default=0,
     )
 
+    number_aidants_with_otp_app = models.PositiveIntegerField(
+        "Nombre d'aidant possédant une application TOTP",  # noqa
+        default=0,
+    )
+
     class Meta:
         abstract = True
         verbose_name = "Statistiques aidants abstraite"

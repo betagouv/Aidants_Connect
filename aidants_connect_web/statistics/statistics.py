@@ -10,7 +10,7 @@ from aidants_connect_common.utils.constants import (
 )
 from aidants_connect_habilitation.models import OrganisationRequest
 
-from ..constants import HabilitationRequestStatuses
+from ..constants import OTP_APP_DEVICE_NAME, HabilitationRequestStatuses
 from ..models import (
     Aidant,
     AidantStatistiques,
@@ -205,6 +205,9 @@ def compute_statistics(
     number_old_inactive_aidants_warned = ads.filter(
         deactivation_warning_at__isnull=False, is_active=False
     ).count()
+    number_aidants_with_otp_app = ads.filter(
+        totpdevice__name__startswith=OTP_APP_DEVICE_NAME % ""
+    ).count()
 
     ostat.number_aidants = number_aidants
     ostat.number_aidants_is_active = number_aidants_is_active
@@ -232,6 +235,7 @@ def compute_statistics(
     ostat.number_aidants_in_zrr = number_aidants_in_zrr
     ostat.number_old_aidants_warned = number_old_aidants_warned
     ostat.number_old_inactive_aidants_warned = number_old_inactive_aidants_warned
+    ostat.number_aidants_with_otp_app = number_aidants_with_otp_app
     ostat.save()
 
     return ostat
