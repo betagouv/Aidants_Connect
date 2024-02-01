@@ -151,15 +151,15 @@ def _filepath_generator():
 
 class ExportRequest(models.Model):
     class ExportRequestState(IntegerChoices):
-        ONGOING = auto()
-        DONE = auto()
-        ERROR = auto()
+        ONGOING = (auto(), "En cours")
+        DONE = (auto(), "Fini")
+        ERROR = (auto(), "Erreur")
 
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
     filename = models.CharField(max_length=40, default=_filepath_generator)
     state = models.IntegerField(
-        choices=ExportRequestState.choices, default=ExportRequestState.ONGOING
+        "État", choices=ExportRequestState.choices, default=ExportRequestState.ONGOING
     )
 
     @property
@@ -188,6 +188,6 @@ class ExportRequest(models.Model):
             # export_for_bizdevs could save again before self.pk is set
             # which creates an infinite recursion and destroys the universe
             super().save(*args, **kwargs)
-            export_for_bizdevs(self)
+            export_for_bizdevs.delay(self.pk)
         else:
             super().save(*args, **kwargs)
