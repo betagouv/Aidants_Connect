@@ -1,5 +1,5 @@
 {% extends 'layouts/main.html' %}
-{% load static %}
+{% load static ac_common dsfr_tags %}
 
 {% block title %}
   Aidants Connect - FAQ {{ object.name }}
@@ -60,21 +60,16 @@
             {% if question.subcategory %}
               <h4>{{ question.subcategory.name }}</h4>
               {% if question.subcategory.body %}
-                <section>{{ question.subcategory.to_html }}</section>
+                <section class="fr-mb-8v">{{ question.subcategory.to_html }}</section>
               {% endif %}
             {% endif %}
           {% endifchanged %}
-
-          <div class="fr-accordions-group">
-            <section id="question-{{ question.slug }}" class="fr-accordion">
-              <h5 class="fr-accordion__title">
-                <button class="fr-accordion__btn" aria-expanded="false" aria-controls="accordion-{{ question.pk }}">
-                  {{ question.question }}
-                </button>
-              </h5>
-              <div class="fr-collapse" id="accordion-{{ question.pk }}">{{ question.to_html }}</div>
-            </section>
-          </div>
+          
+          {% ifchanged question.subcategory %}<div class="fr-accordions-group">{% endifchanged %}
+            {% withdict key="accordion-{{ question.pk }}" title=question.question content=question.to_html as data_dict %}
+              {% dsfr_accordion data_dict %}
+            {% endwithdict %}
+          {% ifchanged question.subcategory %}</div>{% endifchanged %}
         {% empty %}
           <p>Aucune question nʼa encore été publiée dans <em>{{ object.name }}</em></p>
         {% endfor %}

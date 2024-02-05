@@ -1,42 +1,14 @@
-from functools import cached_property
 from inspect import signature
-from pathlib import Path
 
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.forms import Form, ModelForm
-from django.forms.renderers import DjangoTemplates
 from django.forms.utils import ErrorList
 
-from dsfr.forms import DsfrBaseForm
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.phonenumber import to_python
 from phonenumbers.phonenumber import PhoneNumber
-
-
-class DsfrDjangoTemplates(DjangoTemplates):
-    @cached_property
-    def engine(self):
-        from django import forms
-
-        import dsfr
-
-        return self.backend(
-            {
-                "APP_DIRS": True,
-                "DIRS": [
-                    Path(dsfr.__path__[0]).resolve() / "templates",
-                    Path(forms.__path__[0]).resolve() / "templates",
-                ],
-                "NAME": "djangoforms",
-                "OPTIONS": {},
-            }
-        )
-
-
-class DsfrBaseForm2(DsfrBaseForm):
-    default_renderer = DsfrDjangoTemplates
 
 
 class PatchedErrorList(ErrorList):

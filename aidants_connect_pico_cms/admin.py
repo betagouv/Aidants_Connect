@@ -102,7 +102,7 @@ class FaqCategoryAdmin(FaqSectionAdmin):
 
     def see_draft(self, obj):
         return mark_safe(
-            f'<a href="{obj.get_absolute_url()}?see_draft">Voir le brouillon</a>'
+            f'<a href="{obj.get_absolute_url()}?see_draft" target="_blank" rel="noreferrer noopener">Voir le brouillon</a>'  # noqa
         )
 
     see_draft.short_description = "Voir le brouillon"
