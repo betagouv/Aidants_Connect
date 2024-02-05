@@ -28,6 +28,11 @@ class LoginView(magicauth_views.LoginView):
     def render_email(self, context):
         return render_email(self.html_template, context)
 
+    def send_email(self, user, user_email, token, extra_context=None):
+        from logging import getLogger
+
+        getLogger().error("Ignoring email from LoginView")
+
     def get_email_context(self, user, token, extra_context=None):
         context = super().get_email_context(user, token, extra_context)
         return {
