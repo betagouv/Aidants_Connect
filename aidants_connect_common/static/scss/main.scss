@@ -91,3 +91,11 @@ p:last-child {
 .spacer {
   flex-grow: 10;
 }
+
+@for $i from 0 through 32 {
+  @each $gap-type in gap, row-gap, column-gap {
+    .fr-grid-row.fr-grid-row--#{$gap-type}-#{$i}v {
+      #{$gap-type}: #{$i * 0.25}rem !important;
+    }
+  }
+}

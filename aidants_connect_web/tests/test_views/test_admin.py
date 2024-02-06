@@ -12,7 +12,7 @@ from import_export.results import Result
 
 from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin
 from aidants_connect_web.admin import CarteTOTPAdmin
-from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
@@ -563,15 +563,13 @@ class HabilitationRequestAdminPageTests(TestCase):
             habilitation_request = HabilitationRequest.objects.get(email=email)
             self.assertEqual(
                 habilitation_request.status,
-                HabilitationRequestStatuses.STATUS_VALIDATED,
+                ReferentRequestStatuses.STATUS_VALIDATED,
             )
             self.assertTrue(Aidant.objects.filter(email=email).exists())
 
     def test_mass_habilitation_on_canceled_status(self):
         for _ in range(2):
-            HabilitationRequestFactory(
-                status=HabilitationRequestStatuses.STATUS_CANCELLED
-            )
+            HabilitationRequestFactory(status=ReferentRequestStatuses.STATUS_CANCELLED)
         self.assertEqual(2, HabilitationRequest.objects.all().count())
         emails = tuple(obj.email for obj in HabilitationRequest.objects.all())
         response = self.bizdev_client.post(self.url, {"email_list": "\n".join(emails)})
@@ -582,7 +580,7 @@ class HabilitationRequestAdminPageTests(TestCase):
             habilitation_request = HabilitationRequest.objects.get(email=email)
             self.assertEqual(
                 habilitation_request.status,
-                HabilitationRequestStatuses.STATUS_VALIDATED,
+                ReferentRequestStatuses.STATUS_VALIDATED,
             )
             self.assertTrue(Aidant.objects.filter(email=email).exists())
 
@@ -598,7 +596,7 @@ class HabilitationRequestAdminPageTests(TestCase):
             habilitation_request = HabilitationRequest.objects.get(email=email)
             self.assertEqual(
                 habilitation_request.status,
-                HabilitationRequestStatuses.STATUS_VALIDATED,
+                ReferentRequestStatuses.STATUS_VALIDATED,
             )
             self.assertTrue(Aidant.objects.filter(email=email).exists())
         self.assertContains(

@@ -10,7 +10,7 @@ from aidants_connect_common.utils.constants import (
 )
 from aidants_connect_habilitation.models import OrganisationRequest
 
-from ..constants import OTP_APP_DEVICE_NAME, HabilitationRequestStatuses
+from ..constants import OTP_APP_DEVICE_NAME, ReferentRequestStatuses
 from ..models import (
     Aidant,
     AidantStatistiques,
@@ -133,9 +133,9 @@ def compute_statistics(
 
     qs_future_aidant = hab_requests.exclude(
         status__in=[
-            HabilitationRequestStatuses.STATUS_REFUSED,
-            HabilitationRequestStatuses.STATUS_CANCELLED,
-            HabilitationRequestStatuses.STATUS_VALIDATED,
+            ReferentRequestStatuses.STATUS_REFUSED,
+            ReferentRequestStatuses.STATUS_CANCELLED,
+            ReferentRequestStatuses.STATUS_VALIDATED,
         ]
     )
     number_future_aidant = qs_future_aidant.count()
@@ -145,7 +145,7 @@ def compute_statistics(
 
     qs_future_trained_aidant = hab_requests.filter(formation_done=True).exclude(
         status__in=[
-            HabilitationRequestStatuses.STATUS_VALIDATED,
+            ReferentRequestStatuses.STATUS_VALIDATED,
         ],
     )
     number_future_trained_aidant = qs_future_trained_aidant.count()

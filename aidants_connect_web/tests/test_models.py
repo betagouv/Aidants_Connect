@@ -19,7 +19,7 @@ from phonenumbers import parse as parse_number
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.constants import (
-    HabilitationRequestStatuses,
+    ReferentRequestStatuses,
     RemoteConsentMethodChoices,
 )
 from aidants_connect_web.models import (
@@ -40,6 +40,7 @@ from aidants_connect_web.tests.factories import (
     AttestationJournalFactory,
     AutorisationFactory,
     CarteTOTPFactory,
+    CoReferentNonAidantRequestFactory,
     HabilitationRequestFactory,
     JournalFactory,
     MandatFactory,
@@ -1069,6 +1070,13 @@ class AidantModelTests(TestCase):
             warnable_aidants, set(Aidant.objects.without_activity_for_90_days())
         )
 
+    def test_referent_non_aidant_and_can_create_mandats_incompatible_constraint(self):
+        AidantFactory(referent_non_aidant=False, can_create_mandats=False)
+        AidantFactory(referent_non_aidant=True, can_create_mandats=False)
+        AidantFactory(referent_non_aidant=False, can_create_mandats=True)
+        with self.assertRaises(IntegrityError):
+            AidantFactory(referent_non_aidant=True, can_create_mandats=True)
+
 
 @tag("models", "aidant")
 class AidantModelMethodsTests(TestCase):
@@ -1950,13 +1958,11 @@ class HabilitationRequestMethodTests(TestCase):
     def test_validate_when_all_is_fine(self):
         for habilitation_request in (
             HabilitationRequestFactory(
-                status=HabilitationRequestStatuses.STATUS_PROCESSING.value
+                status=ReferentRequestStatuses.STATUS_PROCESSING.value
             ),
+            HabilitationRequestFactory(status=ReferentRequestStatuses.STATUS_NEW.value),
             HabilitationRequestFactory(
-                status=HabilitationRequestStatuses.STATUS_NEW.value
-            ),
-            HabilitationRequestFactory(
-                status=HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value  # noqa: E501
+                status=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value  # noqa: E501
             ),
         ):
             self.assertEqual(
@@ -1969,13 +1975,13 @@ class HabilitationRequestMethodTests(TestCase):
             db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
             self.assertEqual(
                 db_hab_request.status,
-                HabilitationRequestStatuses.STATUS_VALIDATED.value,
+                ReferentRequestStatuses.STATUS_VALIDATED.value,
             )
 
     def test_validate_if_active_aidant_already_exists(self):
         aidant = AidantFactory()
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
             email=aidant.email,
         )
         self.assertTrue(habilitation_request.validate_and_create_aidant())
@@ -1985,7 +1991,7 @@ class HabilitationRequestMethodTests(TestCase):
         habilitation_request.refresh_from_db()
         self.assertEqual(
             habilitation_request.status,
-            HabilitationRequestStatuses.STATUS_VALIDATED.value,
+            ReferentRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
@@ -1994,7 +2000,7 @@ class HabilitationRequestMethodTests(TestCase):
         aidant = AidantFactory(is_active=False)
         self.assertFalse(aidant.is_active)
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
             email=aidant.email,
         )
         self.assertTrue(habilitation_request.validate_and_create_aidant())
@@ -2004,7 +2010,7 @@ class HabilitationRequestMethodTests(TestCase):
         habilitation_request.refresh_from_db()
         self.assertEqual(
             habilitation_request.status,
-            HabilitationRequestStatuses.STATUS_VALIDATED.value,
+            ReferentRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
         self.assertTrue(aidant.is_active)
@@ -2012,7 +2018,7 @@ class HabilitationRequestMethodTests(TestCase):
 
     def test_do_not_validate_if_invalid_status(self):
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_REFUSED.value
+            status=ReferentRequestStatuses.STATUS_REFUSED.value
         )
         self.assertEqual(
             0, Aidant.objects.filter(email=habilitation_request.email).count()
@@ -2023,7 +2029,7 @@ class HabilitationRequestMethodTests(TestCase):
         )
         db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
         self.assertEqual(
-            db_hab_request.status, HabilitationRequestStatuses.STATUS_REFUSED.value
+            db_hab_request.status, ReferentRequestStatuses.STATUS_REFUSED.value
         )
 
 
@@ -2223,3 +2229,17 @@ class TestNotification(TestCase):
             {self.notif_1, self.notif_4},
             set(Notification.objects.get_displayable_for_user(self.aidant)),
         )
+
+
+class CoReferentNonAidantRequestTests(TestCase):
+    def test_create_referent_non_aidant(self):
+        request = CoReferentNonAidantRequestFactory()
+        aidant = request.create_referent_non_aidant()
+        self.assertTrue(aidant.referent_non_aidant)
+        self.assertFalse(aidant.can_create_mandats)
+        self.assertEqual(request.first_name, aidant.first_name)
+        self.assertEqual(request.last_name, aidant.last_name)
+        self.assertEqual(request.profession, aidant.profession)
+        self.assertEqual(request.email, aidant.email)
+        self.assertEqual(request.organisation, aidant.organisation)
+        self.assertIn(aidant, request.organisation.responsables.all())

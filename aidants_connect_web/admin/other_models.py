@@ -1,7 +1,9 @@
 import logging
 
+from django.contrib import admin
 from django.contrib import messages as django_messages
 from django.contrib.admin import ModelAdmin, register
+from django.db.models import QuerySet
 from django.http import Http404, HttpResponse
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
@@ -10,7 +12,8 @@ from celery.result import AsyncResult
 from celery.states import FAILURE, SUCCESS
 
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
-from aidants_connect_web.models import ExportRequest
+from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.models import CoReferentNonAidantRequest, ExportRequest
 
 logger = logging.getLogger()
 
@@ -129,3 +132,52 @@ class ExportRequestAdmin(VisibleToAdminMetier, ModelAdmin):
                 )
         else:
             raise Http404
+
+
+@register(CoReferentNonAidantRequest, site=admin_site)
+class CoReferentNonAidantRequestAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "first_name",
+        "last_name",
+        "profession",
+        "email",
+        "get_status_display",
+    )
+    raw_id_fields = ("organisation",)
+    readonly_fields = ("created_at", "updated_at")
+    search_fields = (
+        "id",
+        "first_name",
+        "last_name",
+        "profession",
+        "email",
+        "organisation",
+        "organisation__name",
+    )
+
+    list_filter = ("status",)
+
+    actions = ("mark_validated", "mark_refused")
+
+    @admin.display(description="Status de la demande")
+    def get_status_display(self, obj):
+        return obj.get_status_display()
+
+    def mark_validated(self, request, queryset: QuerySet[CoReferentNonAidantRequest]):
+        instances = [x.create_referent_non_aidant() for x in queryset]
+        self.message_user(
+            request, f"{len(instances)} référents non-aidants ont été créés"
+        )
+
+    mark_validated.short_description = "Créer les comptes co-référents sélectionnés"
+
+    def mark_refused(self, request, queryset: QuerySet[CoReferentNonAidantRequest]):
+        queryset.update(status=ReferentRequestStatuses.STATUS_REFUSED)
+        self.message_user(
+            request,
+            f"{queryset.count()} profils de référents non-aidants ont été refusés.",
+        )
+
+    mark_refused.short_description = (
+        "Refuser la création les comptes co-référents sélectionnés"
+    )

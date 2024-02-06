@@ -3,7 +3,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from ...constants import HabilitationRequestStatuses
+from ...constants import ReferentRequestStatuses
 from ...models import HabilitationRequest, Organisation
 
 logger = logging.getLogger()
@@ -21,7 +21,7 @@ def import_one_row(row):
                 "last_name": row[2],
             },
         )
-        hab_req.status = HabilitationRequestStatuses.STATUS_PROCESSING
+        hab_req.status = ReferentRequestStatuses.STATUS_PROCESSING
         hab_req.save()
     except Exception as e:
         print(e)

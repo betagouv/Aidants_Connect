@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.forms import Media, RadioSelect, Select
+from django.forms import Media, RadioSelect, Select, Widget
 from django.templatetags.static import static
 from django.utils.html import html_safe
 
@@ -14,6 +14,20 @@ class JSModulePath:
 
     def __str__(self):
         return f'<script type="module" src="{static(self.path)}"></script>'
+
+
+class NoopWidget(Widget):
+    """
+    A shadow widget that we don't want to display at all in the form.
+    Useful for form fields that are entirely computed from session context.
+    """
+
+    def __init__(self, attrs=None):
+        super().__init__(attrs)
+        self.input_type = "hidden"
+
+    def render(self, name, value, attrs=None, renderer=None):
+        return ""
 
 
 class DetailedRadioSelect(RadioSelect):

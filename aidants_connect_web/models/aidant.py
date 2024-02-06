@@ -51,6 +51,7 @@ class AidantManager(UserManager):
     def q_without_activity_for_90_days(self):
         return Q(
             is_active=True,
+            referent_non_aidant=False,
             journal_entries__action__in=JournalActionKeywords.activity_tracking_actions,
             journal_entries__creation_date__lte=now() - timedelta(days=90),
         )
@@ -137,6 +138,14 @@ class Aidant(AbstractUser):
             "pour créer des mandats."
         ),
     )
+    referent_non_aidant = models.BooleanField(
+        default=False,
+        verbose_name="Référent non-aidant - Ne peut pas créer de mandat",
+        help_text=(
+            "Ne pas pas accéder à l'espace Aidant. Ce champ est incompatible avec "
+            "le champ « Aidant - Peut créer des mandats »"
+        ),
+    )
     validated_cgu_version = models.TextField(null=True)
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
@@ -156,6 +165,15 @@ class Aidant(AbstractUser):
 
     class Meta:
         verbose_name = "aidant"
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    Q(referent_non_aidant=False)
+                    | Q(referent_non_aidant=True, can_create_mandats=False)
+                ),
+                name="referent_non_aidant_and_can_create_mandats_incompatible",
+            )
+        ]
 
     def __str__(self):
         full_name = f"{self.first_name} {self.last_name}".strip()

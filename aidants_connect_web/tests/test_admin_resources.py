@@ -12,7 +12,7 @@ from aidants_connect_web.admin.habilitation_request import (
     HabilitationRequestImportDateFormationResource,
 )
 from aidants_connect_web.admin.organisation import OrganisationResource
-from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -286,7 +286,7 @@ class HabilitationRequestResourceTestCase(TestCase):
             aidant_a_former_1.date_formation, datetime(2022, 1, 1, tzinfo=pytz.UTC)
         )
         self.assertEqual(
-            aidant_a_former_1.status, HabilitationRequestStatuses.STATUS_VALIDATED
+            aidant_a_former_1.status, ReferentRequestStatuses.STATUS_VALIDATED
         )
 
         aidant_a_former_2 = HabilitationRequest.objects.filter(
@@ -297,7 +297,7 @@ class HabilitationRequestResourceTestCase(TestCase):
             aidant_a_former_2.date_formation, datetime(2022, 1, 1, tzinfo=pytz.UTC)
         )
         self.assertEqual(
-            aidant_a_former_2.status, HabilitationRequestStatuses.STATUS_VALIDATED
+            aidant_a_former_2.status, ReferentRequestStatuses.STATUS_VALIDATED
         )
 
         self.assertEqual(

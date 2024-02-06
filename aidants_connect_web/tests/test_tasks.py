@@ -17,7 +17,7 @@ from freezegun import freeze_time
 
 from aidants_connect_common.utils.constants import AuthorizationDurations
 from aidants_connect_habilitation.tasks import update_pix_and_create_aidant
-from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
@@ -60,7 +60,7 @@ class ImportPixTests(TestCase):
         self.assertEqual(aidant_a_former.date_test_pix, None)
         self.assertEqual(
             aidant_a_former.status,
-            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
 
@@ -77,7 +77,7 @@ class ImportPixTests(TestCase):
         )[0]
         self.assertTrue(aidant_a_former.test_pix_passed)
         self.assertEqual(
-            aidant_a_former.status, HabilitationRequestStatuses.STATUS_VALIDATED.value
+            aidant_a_former.status, ReferentRequestStatuses.STATUS_VALIDATED.value
         )
 
         self.assertEqual(1, Aidant.objects.filter(email=aidant_a_former.email).count())
@@ -92,7 +92,7 @@ class ImportPixTests(TestCase):
         self.assertEqual(aidant_a_former.date_test_pix, None)
         self.assertEqual(
             aidant_a_former.status,
-            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
 
@@ -110,7 +110,7 @@ class ImportPixTests(TestCase):
         self.assertTrue(aidant_a_former.test_pix_passed)
         self.assertEqual(
             aidant_a_former.status,
-            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
 
         self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
@@ -136,11 +136,11 @@ class ImportPixTests(TestCase):
         self.assertEqual(aidant_a_former_2.date_test_pix, None)
         self.assertEqual(
             aidant_a_former_1.status,
-            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(
             aidant_a_former_2.status,
-            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(
             0, Aidant.objects.filter(email=aidant_a_former_1.email).count()
@@ -159,7 +159,7 @@ class ImportPixTests(TestCase):
         )[0]
         self.assertTrue(aidant_a_former_1.test_pix_passed)
         self.assertEqual(
-            aidant_a_former_1.status, HabilitationRequestStatuses.STATUS_VALIDATED.value
+            aidant_a_former_1.status, ReferentRequestStatuses.STATUS_VALIDATED.value
         )
 
         aidant_a_former_2 = HabilitationRequest.objects.filter(
@@ -167,7 +167,7 @@ class ImportPixTests(TestCase):
         )[1]
         self.assertTrue(aidant_a_former_2.test_pix_passed)
         self.assertEqual(
-            aidant_a_former_2.status, HabilitationRequestStatuses.STATUS_VALIDATED.value
+            aidant_a_former_2.status, ReferentRequestStatuses.STATUS_VALIDATED.value
         )
 
         self.assertEqual(
