@@ -8,7 +8,7 @@ python_version = "3.11"
 
 [packages]
 celery = {version = "==5.3.1", extras = ["redis"]}
-django = "~=4.2.3"
+django = "~=4.2.10"
 djangorestframework = "~=3.14.0"
 django-blocklist = "==2.0.0"
 django-celery-beat = "==2.5.0"
