@@ -161,6 +161,7 @@ class ExportRequest(models.Model):
     state = models.IntegerField(
         "État", choices=ExportRequestState.choices, default=ExportRequestState.ONGOING
     )
+    task_uuid = models.UUIDField(null=True, blank=False, default=None)
 
     @property
     def is_ongoing(self):
@@ -184,10 +185,9 @@ class ExportRequest(models.Model):
         if not self.pk:
             from ..tasks import export_for_bizdevs
 
-            # Must save before export_for_bizdevs is called because if
-            # export_for_bizdevs could save again before self.pk is set
-            # which creates an infinite recursion and destroys the universe
             super().save(*args, **kwargs)
-            export_for_bizdevs.delay(self.pk)
+            result = export_for_bizdevs.apply_async((self.pk,), compression="zlib")
+            self.task_uuid = result.id
+            super().save(update_fields=("task_uuid",))
         else:
             super().save(*args, **kwargs)

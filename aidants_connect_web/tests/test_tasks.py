@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime, timedelta
-from io import StringIO
 from textwrap import dedent
 from unittest import mock
 from unittest.mock import MagicMock
+from uuid import uuid4
 
 from django.core import mail
 from django.test import TestCase, override_settings
@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.timezone import now
 
 import pytz
+from celery.result import AsyncResult
 from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
@@ -277,24 +278,23 @@ class ExportForBizdevs(TestCase):
     def test_export_for_bizdevs(self):
         self.maxDiff = None
 
-        output = StringIO()
-        # Prevent file from being closed so content can be read and checked
-        output.close = lambda: None
-
-        with mock.patch.object(export_for_bizdevs, "delay") as export_for_bizdevs_mock:
+        with mock.patch.object(
+            export_for_bizdevs, "apply_async", return_value=AsyncResult(str(uuid4()))
+        ) as export_for_bizdevs_mock:
             # Prevent running the export when creating the request
             request = ExportRequest.objects.create(aidant=self.staff_aidant)
-            export_for_bizdevs_mock.assert_called_with(request.pk)
-
-        with mock.patch("builtins.open", return_value=output):
-            export_for_bizdevs(request.pk, create_file=False)
-            self.assertEqual(
-                dedent(
-                    f"""
-                    prénom,nom,adresse électronique,Téléphone,profession,Aidant - Peut créer des mandats,Carte TOTP active,App OTP,actif,Organisation: Nom,Organisation: Datapass ID,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre de mandats créés,Organisation: Nombre de mandats à distance créés,Organisation: Nombre d'usagers
-                    Thierry,Goneau,{self.staff_aidant.email},,secrétaire,True,False,False,True,COMMUNE D'HOULBEC COCHEREL,None,123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,France Services/MSAP,0,None,None,None,5,2,4
-                    """  # noqa: E501
-                ).strip(),
-                # Replace Windows' newline separator by Unix'
-                output.getvalue().replace("\r\n", "\n").strip(),
+            export_for_bizdevs_mock.assert_called_with(
+                (request.pk,), compression="zlib"
             )
+
+        result = export_for_bizdevs(request.pk)
+        self.assertEqual(
+            dedent(
+                f"""
+                prénom,nom,adresse électronique,Téléphone,profession,Aidant - Peut créer des mandats,Carte TOTP active,App OTP,actif,Organisation: Nom,Organisation: Datapass ID,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre de mandats créés,Organisation: Nombre de mandats à distance créés,Organisation: Nombre d'usagers
+                Thierry,Goneau,{self.staff_aidant.email},,secrétaire,True,False,False,True,COMMUNE D'HOULBEC COCHEREL,None,123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,France Services/MSAP,0,None,None,None,5,2,4
+                """  # noqa: E501
+            ).strip(),
+            # Replace Windows' newline separator by Unix'
+            result.replace("\r\n", "\n").strip(),
+        )
