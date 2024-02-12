@@ -6,6 +6,9 @@ from django.http import Http404, HttpResponse
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 
+from celery.result import AsyncResult
+from celery.states import FAILURE, SUCCESS
+
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_web.models import ExportRequest
 
@@ -36,7 +39,10 @@ class ExportRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     def file_link(self, obj: ExportRequest):
         if obj.is_ongoing:
             return "L'export est en cours…"
-        if not obj.file_path.exists():
+        if not obj.file_path.exists() and AsyncResult(str(obj.task_uuid)).state not in [
+            SUCCESS,
+            FAILURE,
+        ]:
             return "Le fichier n'existe plus"
         route = reverse(
             "otpadmin:aidants_connect_web_export_request_download",
@@ -98,11 +104,28 @@ class ExportRequestAdmin(VisibleToAdminMetier, ModelAdmin):
         if export_request.is_ongoing:
             raise Http404
 
-        with open(export_request.file_path, "rb") as csv:
-            return HttpResponse(
-                csv,
-                content_type="text/csv",
-                headers={
-                    "Content-Disposition": f'attachment; filename="{export_request.file_path.name}"'  # noqa: E501
-                },
-            )
+        if export_request.file_path.exists():
+            with open(export_request.file_path, "rb") as csv:
+                return HttpResponse(
+                    csv,
+                    content_type="text/csv",
+                    headers={
+                        "Content-Disposition": f'attachment; filename="{export_request.file_path.name}"'  # noqa: E501
+                    },
+                )
+
+        result = AsyncResult(str(export_request.task_uuid))
+        if result.state in [SUCCESS, FAILURE]:
+            with open(export_request.file_path, "w") as f:
+                result = str(result.get())
+                f.write(result)
+
+                return HttpResponse(
+                    result.encode(),
+                    content_type="text/csv",
+                    headers={
+                        "Content-Disposition": f'attachment; filename="{export_request.file_path.name}"'  # noqa: E501
+                    },
+                )
+        else:
+            raise Http404

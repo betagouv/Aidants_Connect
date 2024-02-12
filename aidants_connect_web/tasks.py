@@ -1,6 +1,8 @@
 import csv
 from collections import defaultdict
 from datetime import timedelta
+from inspect import signature
+from io import StringIO
 from itertools import chain
 from logging import Logger
 from typing import List, Type
@@ -15,6 +17,8 @@ from django.utils import timezone
 from django.utils.timezone import now
 
 from celery import shared_task
+from celery.app.trace import SUCCESS
+from celery.signals import task_postrun
 from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
@@ -405,7 +409,7 @@ def send_email_on_new_notification_task(notification: Notification):
 
 
 @shared_task
-def export_for_bizdevs(request_pk: int, create_file=True):
+def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
     class Serializer:
         fields_to_serialize = (
             "first_name",
@@ -569,18 +573,18 @@ def export_for_bizdevs(request_pk: int, create_file=True):
                     )
             return result
 
-    try:
-        request = ExportRequest.objects.get(pk=request_pk)
-    except ExportRequest.DoesNotExist:
-        return
+    logger: Logger = logger or get_task_logger(__name__)
+
+    request = ExportRequest.objects.get(pk=request_pk)
 
     if not request.aidant.is_staff:
-        raise AssertionError("Only staff member can start an export")
+        msg = "Only staff member can start an export"
+        logger.error(msg)
+        raise AssertionError(msg)
 
-    if create_file:
-        request.file_path.touch(mode=0o640, exist_ok=True)
+    logger.info(f"Starting export for user {request.aidant.get_full_name()} @ {now()}")
 
-    with open(request.file_path, mode="w") as f:
+    with StringIO() as f:
         try:
             writer = csv.writer(f)
             writer.writerow(Serializer.header())
@@ -597,13 +601,36 @@ def export_for_bizdevs(request_pk: int, create_file=True):
                     writer.writerow(Serializer(aidant).values())
                 first = second
 
-            request.state = ExportRequest.ExportRequestState.DONE
-            request.save(update_fields={"state"})
-        except Exception as e:
-            f.write(str(e))
-            request.state = ExportRequest.ExportRequestState.ERROR
-            request.save(update_fields={"state"})
+            logger.info(
+                f"Finished export for user {request.aidant.get_full_name()} @ {now()}"
+            )
+            return f.getvalue()
+        except Exception:
+            logger.error(
+                f"Error on export for user {request.aidant.get_full_name()} @ {now()}"
+            )
             raise
+
+
+@task_postrun.connect
+def export_for_bizdevs_postrun(task_id, args, kwargs, state, *_1, **_2):
+    request_pk = (
+        signature(export_for_bizdevs)
+        .bind_partial(*args, **kwargs)
+        .arguments["request_pk"]
+    )
+
+    try:
+        request = ExportRequest.objects.get(pk=request_pk)
+    except ExportRequest.DoesNotExist:
+        return
+
+    request.state = (
+        ExportRequest.ExportRequestState.DONE
+        if state == SUCCESS
+        else ExportRequest.ExportRequestState.ERROR
+    )
+    request.save(update_fields=("state",))
 
 
 @shared_task
