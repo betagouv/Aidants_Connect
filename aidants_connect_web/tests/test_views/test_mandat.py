@@ -200,7 +200,7 @@ class TestRemoteMandateMixin(TestCase):
         if remote_constent_method:
             data["remote_constent_method"] = remote_constent_method.value
 
-        form = MandatForm(data=data)
+        form = MandatForm(self.aidant_thierry.organisation, data=data)
 
         if not form.is_valid():
             self.fail(
@@ -221,6 +221,13 @@ class NewMandatTests(TestCase):
         cls.aidant_nour = AidantFactory()
         cls.aidant_nour.organisations.set(
             [cls.aidant_nour.organisation, cls.aidant_thierry.organisation]
+        )
+
+        cls.organisation_with_disallowed_characters = OrganisationFactory(
+            allowed_demarches=["papiers", "famille", "social"]
+        )
+        cls.aidante_safia = AidantFactory(
+            organisation=cls.organisation_with_disallowed_characters
         )
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
@@ -316,6 +323,19 @@ class NewMandatTests(TestCase):
         self.assertRedirects(
             response,
             "/creation_mandat/a_distance/demande_consentement/",
+        )
+
+    def test_disallowed_demarche_triggers_error(self):
+        self.client.force_login(self.aidante_safia)
+        data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
+        response = self.client.post("/creation_mandat/", data=data)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/new_mandat/new_mandat.html"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            "Sélectionnez un choix valide. logement n’en fait pas partie.",
+            response.context_data["form"].errors["demarche"][0],
         )
 
 
@@ -765,7 +785,8 @@ class GenerateAttestationTests(TestCase):
             sub="46df505a40508b9fa620767c73dc1d7ad8c30f66fa6ae5ae963bf9cccc885e8dv1",
         )
         cls.autorisation_form = MandatForm(
-            data={"demarche": ["papiers", "logement"], "duree": "short"}
+            cls.aidant_thierry.organisation,
+            data={"demarche": ["papiers", "logement"], "duree": "short"},
         )
 
         Connection.objects.create(

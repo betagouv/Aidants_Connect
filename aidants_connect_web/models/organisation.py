@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.contrib import messages as django_messages
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import SET_NULL, Q, QuerySet, Value
 from django.db.models.functions import Concat
@@ -51,6 +52,10 @@ class OrganisationManager(models.Manager):
         ).distinct()
 
 
+def organisation_allowed_demarches():
+    return list(settings.DEMARCHES.keys())
+
+
 class Organisation(models.Model):
     legal_category = models.PositiveIntegerField(
         "categorieJuridiqueUniteLegale", default=0
@@ -95,6 +100,17 @@ class Organisation(models.Model):
         blank=True,
         default="",
         max_length=200,
+    )
+
+    allowed_demarches = ArrayField(
+        models.CharField(
+            max_length=16,
+            choices=(
+                (name, attributes["titre"])
+                for name, attributes in settings.DEMARCHES.items()
+            ),
+        ),
+        default=organisation_allowed_demarches,
     )
 
     is_active = models.BooleanField("Est active", default=True, editable=False)

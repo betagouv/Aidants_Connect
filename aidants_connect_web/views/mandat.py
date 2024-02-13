@@ -408,6 +408,9 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             }
         )
 
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "organisation": self.aidant.organisation}
+
     def get_success_url(self):
         return (
             reverse("fc_authorize")

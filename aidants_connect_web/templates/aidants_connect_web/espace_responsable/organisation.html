@@ -57,6 +57,22 @@
 
     {% include "aidants_connect_web/espace_aidant/statistics.html" %}
 
+    <h2>Configuration</h2>
+     <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">
+       
+      <div class="fr-col-12">
+        <h3>Périmètres disponibles</h3>
+        <form method="post">
+          {% csrf_token %}
+          {% if perimetres_form.demarches.errors %}
+            <div class="notification error" role="alert">{{ perimetres_form.demarches.errors }}</div>
+          {% endif %}
+          {{ perimetres_form.demarches }}
+          <button class="fr-btn float-right" type="submit">Enregistrer les modifications</button>
+        </form>
+      </div>
+    </div>
+
     <div class="title-with-item margin-top-2rem">
       <h2 class="clearfix">Aidants</h2>
       <div>
