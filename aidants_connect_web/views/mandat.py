@@ -122,12 +122,12 @@ class RemoteMandateMixin:
         ):
             return None
         method = str(form.cleaned_data["remote_constent_method"]).lower()
-        process: Callable[
-            [Aidant, Organisation, MandatForm], None | HttpResponse
-        ] = getattr(
-            self,
-            f"_process_{method}_first_step",
-            self._process_unknown_first_step,
+        process: Callable[[Aidant, Organisation, MandatForm], None | HttpResponse] = (
+            getattr(
+                self,
+                f"_process_{method}_first_step",
+                self._process_unknown_first_step,
+            )
         )
         return process(aidant, organisation, form)
 

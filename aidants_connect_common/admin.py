@@ -111,9 +111,9 @@ class ZRRResource(ModelResource):
 
     def __init__(self, commune_zrr_classification, **kwargs):
         super().__init__(**kwargs)
-        self.fields[
-            "zrr"
-        ].widget.commune_zrr_classification = commune_zrr_classification
+        self.fields["zrr"].widget.commune_zrr_classification = (
+            commune_zrr_classification
+        )
 
     def skip_row(self, instance, original, row, import_validation_errors=None):
         if not original.insee_code:
