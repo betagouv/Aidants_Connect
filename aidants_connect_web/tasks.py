@@ -96,9 +96,9 @@ def delete_duplicated_static_tokens(*, logger=None):
 
 def get_recipient_list_for_organisation(organisation):
     return list(
-        organisation.aidants.filter(can_create_mandats=True).values_list(
-            "email", flat=True
-        )
+        organisation.aidants.filter(
+            can_create_mandats=True, is_active=True
+        ).values_list("email", flat=True)
     )
 
 
