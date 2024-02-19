@@ -45,7 +45,8 @@ class UtilsTaskTests(TestCase):
         orga = OrganisationFactory()
         AidantFactory(organisation=orga, can_create_mandats=True)
         AidantFactory(organisation=orga, can_create_mandats=False)
-        self.assertEqual(1, Aidant.objects.filter(can_create_mandats=True).count())
+        AidantFactory(organisation=orga, can_create_mandats=True, is_active=False)
+        self.assertEqual(2, Aidant.objects.filter(can_create_mandats=True).count())
         self.assertEqual(1, len(get_recipient_list_for_organisation(orga)))
 
 
