@@ -584,9 +584,9 @@ class PersonnelForm:
 
             return {
                 **local_kwargs,
-                "prefix": prefix
-                if not previous_prefix
-                else f"{prefix}_{previous_prefix}",
+                "prefix": (
+                    prefix if not previous_prefix else f"{prefix}_{previous_prefix}"
+                ),
             }
 
         self._errors = None
