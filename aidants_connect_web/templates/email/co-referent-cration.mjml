@@ -1,0 +1,12 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock %}

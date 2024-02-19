@@ -218,6 +218,13 @@ class CoReferentNonAidantRequest(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def create_referent_non_aidant(self):
+        if ReferentRequestStatuses(self.status) in [
+            ReferentRequestStatuses.STATUS_REFUSED,
+            ReferentRequestStatuses.STATUS_VALIDATED,
+            ReferentRequestStatuses.STATUS_CANCELLED,
+            ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE,
+        ]:
+            return None
         with atomic():
             instance = Aidant.objects.create(
                 first_name=self.first_name,

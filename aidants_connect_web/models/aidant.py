@@ -90,8 +90,9 @@ class AidantManager(UserManager):
             email = email.strip().lower()
             kwargs["email"] = email
             if (
-                username := kwargs.get("username")
-            ) and username.strip().lower() == email:
+                not (username := kwargs.get("username"))
+                or username.strip().lower() == email
+            ):
                 kwargs["username"] = email
 
         return super().create(**kwargs)
