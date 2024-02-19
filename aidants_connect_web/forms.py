@@ -7,7 +7,6 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
-from django.db.models import Q
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
@@ -20,7 +19,7 @@ from magicauth.otp_forms import OTPForm
 
 from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
 from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
-from aidants_connect_common.widgets import DetailedRadioSelect
+from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
     Aidant,
@@ -30,6 +29,7 @@ from aidants_connect_web.models import (
     Usager,
     UsagerQuerySet,
 )
+from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
 from aidants_connect_web.utilities import (
     generate_sha256_hash,
     normalize_totp_cart_serial,
@@ -426,16 +426,12 @@ class SwitchMainAidantOrganisationForm(forms.Form):
         return unquote(self.cleaned_data.get("next_url", ""))
 
 
-class AddOrganisationResponsableForm(DsfrBaseForm):
-    candidate = forms.ModelChoiceField(
-        label="Nouveau référent", label_suffix=" :", queryset=Aidant.objects.none()
-    )
+class AddOrganisationReferentForm(DsfrBaseForm):
+    candidate = forms.ModelChoiceField(Aidant.objects.none())
 
     def __init__(self, organisation: Organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["candidate"].queryset = organisation.aidants.exclude(
-            Q(responsable_de=organisation) | Q(is_active=False)
-        ).order_by("last_name")
+        self.fields["candidate"].queryset = organisation.referents_eligible_aidants
 
 
 class ChangeAidantOrganisationsForm(forms.Form):
@@ -827,3 +823,24 @@ class AddAppOTPToAidantForm(PatchedForm):
             raise ValidationError("La vérification du code OTP a échoué")
 
         return token
+
+
+class CoReferentNonAidantRequestForm(forms.ModelForm, DsfrBaseForm):
+    organisation = forms.Field(required=False, widget=NoopWidget)
+
+    def __init__(self, organisation: Organisation, *args, **kwargs):
+        self.organisation = organisation
+        super().__init__(*args, **kwargs)
+
+    def clean_organisation(self):
+        return self.organisation
+
+    class Meta:
+        model = CoReferentNonAidantRequest
+        fields = (
+            "first_name",
+            "last_name",
+            "profession",
+            "email",
+            "organisation",
+        )

@@ -8,10 +8,7 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.models import Commune, Department, Region
 from aidants_connect_common.utils.constants import JournalActionKeywords
-from aidants_connect_web.constants import (
-    OTP_APP_DEVICE_NAME,
-    HabilitationRequestStatuses,
-)
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME, ReferentRequestStatuses
 from aidants_connect_web.models import (
     Aidant,
     AidantStatistiques,
@@ -211,33 +208,33 @@ class AllStatisticsTests(TestCase):
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_VALIDATED.value,
+            status=ReferentRequestStatuses.STATUS_VALIDATED.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_REFUSED.value,
+            status=ReferentRequestStatuses.STATUS_REFUSED.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_NEW.value,
+            status=ReferentRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_NEW.value,
+            status=ReferentRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_12,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_NEW.value,
+            status=ReferentRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_12,
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_NEW.value, organisation=orga_21
+            status=ReferentRequestStatuses.STATUS_NEW.value, organisation=orga_21
         )
 
     def test_number_organisation_with_accredited_aidants(self):

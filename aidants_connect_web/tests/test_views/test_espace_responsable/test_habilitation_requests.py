@@ -3,7 +3,7 @@ from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve
 
-from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -106,7 +106,7 @@ class HabilitationRequestsTests(TestCase):
             )
             self.assertEqual(
                 created_habilitation_request.status,
-                HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+                ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
             )
 
     def test_email_is_lowercased(self):
