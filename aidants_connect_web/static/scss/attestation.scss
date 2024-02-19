@@ -51,11 +51,6 @@
     @media print {
       border: 1px solid black;
       padding: 1rem;
-
-      &, & p, & ul, & ol, {
-        font-size: 0.75em;
-        line-height: 1.4em;
-      }
     }
   }
 
@@ -85,6 +80,16 @@
   @page {
     size: auto; /* auto is the initial value */
     margin: 1rem 2rem 1rem 2rem; /* this affects the margin in the printer settings */
+  }
+
+  body, p {
+    font-size: 11px !important;
+    line-height: 1rem;
+  }
+
+  li {
+    margin: 0;
+    padding: 0;
   }
 
   .fr-container {
