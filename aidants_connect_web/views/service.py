@@ -208,15 +208,3 @@ def accessibilite(request):
 
 def ressources(request):
     return render(request, "public_website/ressource_page.html")
-
-
-def faq_mandat(request):
-    return render(request, "public_website/faq/mandat.html")
-
-
-def faq_donnees_personnelles(request):
-    return render(request, "public_website/faq/donnees_personnelles.html")
-
-
-def faq_habilitation(request):
-    return render(request, "public_website/faq/habilitation.html")

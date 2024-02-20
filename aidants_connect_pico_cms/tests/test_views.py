@@ -1,5 +1,4 @@
-from django.conf import settings
-from django.test import TestCase, override_settings, tag
+from django.test import TestCase, tag
 from django.test.client import Client
 
 from aidants_connect_pico_cms.models import FaqCategory
@@ -41,7 +40,6 @@ class TestTestimonyViews(TestCase):
 
 
 @tag("pico_cms", "faq")
-@override_settings(FF_USE_PICO_CMS_FOR_FAQ=True)
 class TestFaqViews(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -57,7 +55,6 @@ class TestFaqViews(TestCase):
         cls.aidant_2 = AidantFactory(is_staff=False)
 
     def test_right_template_is_used_and_content_is_here(self):
-        self.assertTrue(settings.FF_USE_PICO_CMS_FOR_FAQ)
         response = self.client.get(self.faq_section_1.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(

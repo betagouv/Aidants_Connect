@@ -324,11 +324,3 @@ class GuideUtilisationTests(TestCase):
     def test_stats_url_triggers_the_correct_template(self):
         response = self.client.get("/guide_utilisation/")
         self.assertTemplateUsed(response, "public_website/guide_utilisation.html")
-
-
-@tag("service", "faq")
-class FAQTests(TestCase):
-    def test_faq_url_triggers_the_correct_template(self):
-        response = self.client.get("/faq/")
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "public_website/faq/generale.html")
