@@ -612,8 +612,8 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             raise
 
 
-@task_postrun.connect
-def export_for_bizdevs_postrun(task_id, args, kwargs, state, *_1, **_2):
+@task_postrun.connect(sender=export_for_bizdevs)
+def export_for_bizdevs_postrun(args, kwargs, state, *_1, **_2):
     request_pk = (
         signature(export_for_bizdevs)
         .bind_partial(*args, **kwargs)
@@ -657,3 +657,22 @@ def email_activity_tracking_warning(*, logger=None):
         aidant.save(update_fields=("activity_tracking_warning_at",))
 
     logger.info(f"Emailed activity warning to {aidants.count()} aidants")
+
+
+@shared_task
+def email_co_rerefent_creation(aidants_ids: List[int], *, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    aidants = list(Aidant.objects.filter(pk__in=aidants_ids).all())
+    for aidant in aidants:
+        text_message, html_message = render_email("email/co-referent-cration.mjml", {})
+
+        send_mail(
+            from_email=settings.EMAIL_CO_RERERENT_CREATION_FROM,
+            subject="",
+            recipient_list=[aidant.email],
+            message=text_message,
+            html_message=html_message,
+        )
+
+    logger.info(f"Emailed {len(aidants)} aidants about co-referent status accepted")
