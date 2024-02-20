@@ -1,5 +1,5 @@
-{% extends 'layouts/main-habilitation.html' %}
-{% load static %}
+{% extends 'layouts/main.html' %}
+{% load static ac_common dsfr_tags %}
 
 {% block title %}
   Aidants Connect - FAQ {{ object.name }}
@@ -7,62 +7,74 @@
 
 {% block content %}
   <div class="fr-container">
-    <h1>Aide</h1>
-    <h1 class="h2">Foire aux questions</h1>
+    <section>
+      <p class="page-main-title">Aide</p>
+      <h1>Foire aux questions</h1>
+    </section>
     <p class="subtitle">Vous trouverez ici les réponses aux questions les plus fréquemment posées à nos équipes.</p>
-  </div>
-  <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--gutters">
-      {# ---- navigation ---- #}
-      <div class="fr-col-12 fr-col-md-3">
-        <nav class="faq-menu" role="navigation" aria-label="Menu questions fréquentes">
-          <ul>
-            {% for category in categories %}
-              <li>
-                <a href="{% url "faq-category-detail" slug=category.slug %}"
-                    {% if category.slug == object.slug %}
-                   class="active"
-                   aria-label="{{ object.name }} (rubrique active)"
-                    {% endif %}
-                >
-                  {{ category.name }}
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
+
+    <div class="fr-grid-row">
+      {# Menu latéral #}
+      <div class="fr-col-12 fr-col-md-4">
+        <nav class="fr-sidemenu" aria-labelledby="fr-sidemenu-title">
+          <div class="fr-sidemenu__inner">
+            <button
+              class="fr-sidemenu__btn"
+              hidden
+              aria-controls="fr-sidemenu-wrapper"
+              aria-expanded="false"
+            >
+              Dans cette rubrique
+            </button>
+            <div class="fr-collapse" id="fr-sidemenu-wrapper">
+              <div class="fr-sidemenu__title" id="fr-sidemenu-title">Menu</div>
+              <ul class="fr-sidemenu__list">
+                {% for category in categories %}
+                  <li class="fr-sidemenu__item">
+                    <a
+                      href="{% if category.slug == object.slug %}#{% else %}{% url "faq-category-detail" slug=category.slug %}{% endif %}"
+                      class="fr-sidemenu__link"
+                      target="_self"
+                      {% if category.slug == object.slug %}aria-current="page"{% endif %}
+                    >
+                      {{ category.name }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
         </nav>
       </div>
-      {# ---- end navigation ---- #}
-      {# ---- content ---- #}
+      {# /Menu latéral #}
+
+      {# Questions #}
       <div class="fr-col-12 fr-col-md-8">
-        <h2>{{ object.name }}</h2>
+        <h3>{{ object.name }}</h3>
         {% if object.body %}
-          <div class="markdown-content">
-            {{ object.to_html }}
-          </div>
+          <section>{{ object.to_html }}</section>
         {% endif %}
-        <div class="accordion shadowed">
-          {% for question in questions %}
-            <details>
-              <summary>
-                <h3 id="{{ question.slug }}">{{ question.question }}</h3>
-              </summary>
-              <div class="markdown-content">
-                {{ question.to_html }}
-              </div>
-            </details>
-          {% endfor %}
-        </div>
-        <div class="more-questions">
-          <h2>Encore des questions&nbsp;?</h2>
-          <p>
-            Si vous n’avez pas trouvé toutes vos réponses ci-dessus,<br>
-            vous pouvez nous contacter à l’adresse suivante :
-          </p>
-          <p class="questions-cta">contact@aidantsconnect.beta.gouv.fr</p>
-        </div>
+
+        {% for question in questions %}
+          {% ifchanged question.subcategory %}
+            {% if question.subcategory %}
+              <h4>{{ question.subcategory.name }}</h4>
+              {% if question.subcategory.body %}
+                <section class="fr-mb-8v">{{ question.subcategory.to_html }}</section>
+              {% endif %}
+            {% endif %}
+          {% endifchanged %}
+          
+          {% ifchanged question.subcategory %}<div class="fr-accordions-group">{% endifchanged %}
+            {% withdict key="accordion-{{ question.pk }}" title=question.question content=question.to_html as data_dict %}
+              {% dsfr_accordion data_dict %}
+            {% endwithdict %}
+          {% ifchanged question.subcategory %}</div>{% endifchanged %}
+        {% empty %}
+          <p>Aucune question nʼa encore été publiée dans <em>{{ object.name }}</em></p>
+        {% endfor %}
       </div>
-      {# ---- end content ---- #}
+      {# /Questions #}
     </div>
   </div>
 {% endblock %}

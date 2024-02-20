@@ -383,9 +383,9 @@ class PersonnelRequestFormView(
         aidant_qs = self.organisation.aidant_requests
 
         if aidant_qs.count() > 0:
-            form_kwargs[
-                f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}_queryset"
-            ] = aidant_qs.all()
+            form_kwargs[f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}_queryset"] = (
+                aidant_qs.all()
+            )
 
         if manager:
             form_kwargs[f"{PersonnelForm.MANAGER_FORM_PREFIX}_instance"] = manager

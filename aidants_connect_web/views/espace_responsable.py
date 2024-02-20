@@ -2,6 +2,7 @@ import base64
 import logging
 from gettext import ngettext as _
 from io import BytesIO
+from itertools import chain
 
 from django.contrib import messages as django_messages
 from django.db import transaction
@@ -18,22 +19,24 @@ from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.constants import (
     OTP_APP_DEVICE_NAME,
-    HabilitationRequestStatuses,
     NotificationType,
+    ReferentRequestStatuses,
 )
 from aidants_connect_web.decorators import responsable_logged_with_activity_required
 from aidants_connect_web.forms import (
     AddAppOTPToAidantForm,
-    AddOrganisationResponsableForm,
+    AddOrganisationReferentForm,
     CarteOTPSerialNumberForm,
     CarteTOTPValidationForm,
     ChangeAidantOrganisationsForm,
+    CoReferentNonAidantRequestForm,
     HabilitationRequestCreationForm,
     RemoveCardFromAidantForm,
 )
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
+    CoReferentNonAidantRequest,
     HabilitationRequest,
     Journal,
     Notification,
@@ -82,7 +85,17 @@ class OrganisationView(DetailView):
         )
         organisation_active_referents = [
             self.referent,
-            *referents_qs.filter(is_active=True),
+            *sorted(
+                chain(
+                    referents_qs.filter(is_active=True).order_by(
+                        "last_name", "first_name"
+                    ),
+                    CoReferentNonAidantRequest.objects.filter(
+                        organisation=self.organisation
+                    ).exclude(status=ReferentRequestStatuses.STATUS_VALIDATED),
+                ),
+                key=lambda item: item.get_full_name().casefold(),
+            ),
         ]
         organisation_inactive_referents = referents_qs.filter(is_active=False)
 
@@ -94,7 +107,7 @@ class OrganisationView(DetailView):
         organisation_inactive_aidants = aidantq_qs.filter(is_active=False)
 
         organisation_habilitation_requests = self.object.habilitation_requests.exclude(
-            status=HabilitationRequestStatuses.STATUS_VALIDATED.value
+            status=ReferentRequestStatuses.STATUS_VALIDATED.value
         ).order_by("status", "last_name")
 
         return {
@@ -114,8 +127,8 @@ class OrganisationView(DetailView):
 
 @responsable_logged_with_activity_required
 class OrganisationResponsables(FormView):
-    form_class = AddOrganisationResponsableForm
     template_name = "aidants_connect_web/espace_responsable/responsables.html"
+    success_url = reverse_lazy("espace_responsable_organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -127,21 +140,34 @@ class OrganisationResponsables(FormView):
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "organisation": self.organisation}
 
-    def form_valid(self, form):
-        new_responsable = form.cleaned_data["candidate"]
-        new_responsable.responsable_de.add(self.organisation)
-        new_responsable.save()
-        django_messages.success(
-            self.request,
-            (
-                f"Tout s’est bien passé, {new_responsable} est maintenant responsable"
-                f"de l’organisation {self.organisation}."
-            ),
+    def get_form_class(self):
+        return (
+            AddOrganisationReferentForm
+            if "candidate" in self.request.POST
+            else CoReferentNonAidantRequestForm
         )
-        return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse("espace_responsable_organisation")
+    def form_valid(self, form):
+        if isinstance(form, AddOrganisationReferentForm):
+            new_responsable = form.cleaned_data["candidate"]
+            new_responsable.responsable_de.add(self.organisation)
+            new_responsable.save()
+            django_messages.success(
+                self.request,
+                (
+                    f"Tout s’est bien passé, {new_responsable} est maintenant "
+                    f"responsable de l’organisation {self.organisation}."
+                ),
+            )
+        else:
+            instance = form.save()
+            django_messages.success(
+                self.request,
+                f"Votre requête pour ajouter {instance.get_full_name()} au "
+                f"poste de referent non-aidant de {self.organisation} a été prise en "
+                f"compte. Elle va faire l'objet d'un examen de la part de nos équipes.",
+            )
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         kwargs.update({"user": self.referent, "organisation": self.organisation})
@@ -723,7 +749,7 @@ class CancelHabilitationRequestView(DetailView):
             .get_queryset()
             .filter(
                 organisation__in=org_ids,
-                status__in=HabilitationRequestStatuses.cancellable_by_responsable(),
+                status__in=ReferentRequestStatuses.cancellable_by_responsable(),
             )
         )
 

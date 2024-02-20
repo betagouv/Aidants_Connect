@@ -2,7 +2,7 @@ from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
 
-from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     HabilitationRequestFactory,
@@ -24,7 +24,7 @@ class CancelHabilitationRequestTests(TestCase):
         )
 
         for count, org in enumerate([cls.organisation1, cls.organisation2]):
-            for status in HabilitationRequestStatuses:
+            for status in ReferentRequestStatuses:
                 setattr(
                     cls,
                     f"org{count + 1}_{status.value}",
@@ -96,7 +96,7 @@ class CancelHabilitationRequestTests(TestCase):
         response = self.client.post(
             reverse(
                 "espace_responsable_cancel_habilitation",
-                kwargs={"request_id": self.org1_habilitation_waitling_list.pk},
+                kwargs={"request_id": self.org1_waitling_list.pk},
             )
         )
         self.assertRedirects(
@@ -104,8 +104,8 @@ class CancelHabilitationRequestTests(TestCase):
             reverse("espace_responsable_organisation"),
             fetch_redirect_response=False,
         )
-        self.org1_habilitation_waitling_list.refresh_from_db()
+        self.org1_waitling_list.refresh_from_db()
         self.assertEqual(
-            self.org1_habilitation_waitling_list.status,
-            HabilitationRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE,
+            self.org1_waitling_list.status,
+            ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE,
         )

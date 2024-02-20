@@ -16,7 +16,7 @@ from aidants_connect_web.constants import NotificationType
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
 from aidants_connect_web.models import Aidant, Journal, Notification, Organisation
 
-logger = getLogger(__name__)
+logger = getLogger()
 
 
 @method_decorator(login_required, name="dispatch")

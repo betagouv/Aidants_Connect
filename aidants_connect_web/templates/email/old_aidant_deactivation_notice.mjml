@@ -13,7 +13,13 @@
           sécurité, conformément <a href="{{ cgu_url }}">aux CGU d’Aidants Connect</a>.
         </p>
         <p>
-          Si vous souhaitez réactiver votre compte, nous vous invitons à nous
+          Nous vous invitons à nous retourner les cartes Aidants Connect à l'adresse suivante : 
+          ANCT-Incubateur des Territoires
+          A l'attention de Marine Jouan,
+          20 avenue de Ségur 75007 Paris
+        </p>
+        <p>
+          Si vous souhaitez réactiver votre compte, merci de nous
           contacter à l’adresse suivante : {% mailto "contact@aidantsconnect.beta.gouv.fr" %}<br/>
           Nous pourrons ainsi réactiver votre compte, afin que vous puissiez y accéder à nouveau.
         </p>

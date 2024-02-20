@@ -1,6 +1,7 @@
 import logging
 from gettext import ngettext
 
+from django.contrib import admin
 from django.contrib import messages as django_messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
@@ -57,6 +58,7 @@ class AidantResource(resources.ModelResource):
         attribute="responsable_de",
         widget=ManyToManyWidget(Organisation, field="data_pass_id", separator=";"),
     )
+    totp_drift = Field(attribute="carte_totp__totp_device__drift")
 
     class Meta:
         model = Aidant
@@ -202,9 +204,6 @@ class AidantGoneTooLong(SimpleListFilter):
     parameter_name = "gone_too_long"
     relative_to = {"months": 5}
 
-    def value(self):
-        return strtobool(super().value(), None)
-
     def lookups(self, request, model_admin):
         return [
             (False, "Connectés recemment"),
@@ -212,7 +211,7 @@ class AidantGoneTooLong(SimpleListFilter):
         ]
 
     def queryset(self, request, queryset: AidantManager):
-        match self.value():
+        match strtobool(self.value(), None):
             case False:
                 return queryset.filter(is_active=True).filter(
                     last_login__gt=timezone.now() - relativedelta(**self.relative_to)
@@ -226,6 +225,21 @@ class AidantGoneTooLong(SimpleListFilter):
                     )
                     | Q(last_login=None)
                 )
+            case _:
+                return queryset
+
+
+class AidantNoActionTooLong(SimpleListFilter):
+    title = "Suivi d'activité"
+    parameter_name = "no_action_too_long"
+
+    def lookups(self, request, model_admin):
+        return [(True, "Pas dʼactivité depuis 90j+")]
+
+    def queryset(self, request, queryset: AidantManager):
+        match strtobool(self.value(), None):
+            case True:
+                return queryset.filter(Aidant.objects.q_without_activity_for_90_days())
             case _:
                 return queryset
 
@@ -298,53 +312,6 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "aidants_connect_web/admin/aidants/change_list.html"
     )
 
-    search_fields = ("=id", *DjangoUserAdmin.search_fields)
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-
-        # Prevent non-superusers from being able to set
-        # the `is_staff` and `is_superuser` flags.
-        if not request.user.is_superuser:
-            if "is_superuser" in form.base_fields:
-                form.base_fields["is_superuser"].disabled = True
-            if "is_staff" in form.base_fields:
-                form.base_fields["is_staff"].disabled = True
-
-        return form
-
-    def get_urls(self):
-        return [
-            path(
-                "deactivate-from-emails/",
-                self.admin_site.admin_view(
-                    AidantMassDeactivateFromMailFormView.as_view()
-                ),
-                {"model_admin": self},
-                name="aidants_connect_web_aidant_mass_deactivate",
-            ),
-            *super().get_urls(),
-        ]
-
-    def display_totp_device_status(self, obj):
-        return obj.has_a_totp_device
-
-    display_totp_device_status.short_description = "Carte TOTP Activée"
-    display_totp_device_status.boolean = True
-
-    def display_mandates_count(self, obj: Aidant):
-        return Journal.objects.filter(
-            action=JournalActionKeywords.CREATE_ATTESTATION, aidant=obj
-        ).count()
-
-    display_mandates_count.short_description = "Nombre de mandats créés"
-
-    def has_otp_app(self, obj):
-        return obj.has_otp_app
-
-    has_otp_app.short_description = "Application OTP"
-    has_otp_app.boolean = True
-
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
@@ -379,7 +346,9 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "created_at",
         "is_staff",
         "is_superuser",
+        "totp_card_drift",
     )
+
     list_filter = (
         AidantRegionFilter,
         AidantDepartmentFilter,
@@ -389,11 +358,12 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantInPreDesactivationZoneFilter,
         AidantWithMandatsFilter,
         AidantGoneTooLong,
+        AidantNoActionTooLong,
         AidantWithOTPAppFilter,
         "is_staff",
         "is_superuser",
     )
-    search_fields = ("id", "first_name", "last_name", "email", "organisation__name")
+    search_fields = ("id", *DjangoUserAdmin.search_fields, "organisation__name")
     ordering = ("email",)
 
     filter_horizontal = (
@@ -463,13 +433,63 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         ),
     )
 
+    @admin.display(description="Carte TOTP Activée", boolean=True)
+    def display_totp_device_status(self, obj):
+        return obj.has_a_totp_device
+
+    @admin.display(description="Nombre de mandats créés")
+    def display_mandates_count(self, obj: Aidant):
+        return Journal.objects.filter(
+            action=JournalActionKeywords.CREATE_ATTESTATION, aidant=obj
+        ).count()
+
+    @admin.display(description="Application OTP", boolean=True)
+    def has_otp_app(self, obj: Aidant):
+        return obj.has_otp_app
+
+    @admin.display(
+        description="Drift de la carte OTP", ordering="carte_totp__totp_device__drift"
+    )
+    def totp_card_drift(self, obj: Aidant):
+        return getattr(
+            getattr(getattr(obj, "carte_totp", ""), "totp_device", ""), "drift", ""
+        )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        # Prevent non-superusers from being able to set
+        # the `is_staff` and `is_superuser` flags.
+        if not request.user.is_superuser:
+            if "is_superuser" in form.base_fields:
+                form.base_fields["is_superuser"].disabled = True
+            if "is_staff" in form.base_fields:
+                form.base_fields["is_staff"].disabled = True
+
+        return form
+
+    def get_urls(self):
+        return [
+            path(
+                "deactivate-from-emails/",
+                self.admin_site.admin_view(
+                    AidantMassDeactivateFromMailFormView.as_view()
+                ),
+                {"model_admin": self},
+                name="aidants_connect_web_aidant_mass_deactivate",
+            ),
+            *super().get_urls(),
+        ]
+
     # Ugh… When you save a model via admin forms it's not an atomic transaction.
     # So… You need to override save_related… https://stackoverflow.com/a/1925784
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         organisation = form.cleaned_data["organisation"]
         if organisation is not None:
-            form.instance.organisations.add(organisation)
+            form.instance.organisations.add(
+                *{*form.instance.responsable_de.all(), organisation}
+            )
 
     def mass_deactivate(self, request: HttpRequest, queryset: QuerySet):
         queryset.update(is_active=False)

@@ -1,16 +1,15 @@
 import contextlib
 
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView
 
 from aidants_connect_web.constants import NotificationType
-from aidants_connect_web.decorators import (
-    aidant_logged_required,
-    aidant_logged_with_activity_required,
-)
+from aidants_connect_web.decorators import aidant_logged_with_activity_required
 from aidants_connect_web.models import Notification
 
 
@@ -47,7 +46,7 @@ class NotificationDetail(DetailView):
         )
 
 
-@aidant_logged_required(more_decorators=[csrf_exempt])
+@method_decorator([csrf_exempt, login_required], name="dispatch")
 class MarkNotification(View):
     def dispatch(self, request, *args, **kwargs):
         self.notification = get_object_or_404(

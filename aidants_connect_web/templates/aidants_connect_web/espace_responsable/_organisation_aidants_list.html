@@ -1,4 +1,4 @@
-{% load ac_common form_extras %}
+{% load ac_common form_extras ac_extras %}
 <table class="table aidants-list">
   <thead>
   <tr>
@@ -12,7 +12,9 @@
   {% for aidant in aidants %}
     <tr>
       <td>
-        {% if aidant.pk == responsable.pk %}
+        {% if aidant.statut %}
+          {{ aidant.get_full_name }}
+        {% elif aidant.pk == responsable.pk %}
           {{ aidant.get_full_name }} (Référent)
         {% else %}
           <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
@@ -22,49 +24,55 @@
       </td>
       <td>{% mailto recipient=aidant.email %}</td>
       <td>
-        {% if aidant.has_a_carte_totp %}
-          <div>
-            {{ aidant.number_totp_card }}
-            {% if not aidant.carte_totp.totp_device.confirmed and aidant.is_active %}
-              <p class="unverified-card-warning shadowed red padding-1rem">
-                Attention : Le fonctionnement de cette carte n’a pas été vérifié.
-                Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
-                de se connecter à Aidants Connect.
-              </p>
-            {% endif %}
-          </div>
-        {% endif %}
-        {% if aidant.has_otp_app %}
-          <p>Une carte numérique est associée à ce profil</p>
+        {% if aidant.status %}
+          <p class="fr-badge {% referent_request_status_badge aidant.status %}">{{ aidant.get_status_display }}</p>
+        {% else %}
+          {% if aidant.has_a_carte_totp %}
+            <div>
+              {{ aidant.number_totp_card }}
+              {% if not aidant.carte_totp.totp_device.confirmed and aidant.is_active %}
+                <p class="unverified-card-warning shadowed red padding-1rem">
+                  Attention : Le fonctionnement de cette carte n’a pas été vérifié.
+                  Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
+                  de se connecter à Aidants Connect.
+                </p>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if aidant.has_otp_app %}
+            <p>Une carte numérique est associée à ce profil</p>
+          {% endif %}
         {% endif %}
       </td>
       <td>
-        <ul class="fr-btns-group">
-          <li>
-            {% if aidant.pk != referent.pk and aidant.is_active %}
+        {% if not aidant.status %}
+        	<ul class="fr-btns-group">
+            <li>
+              {% if aidant.pk != referent.pk and aidant.is_active %}
+                <a
+                  id="remove-aidant-{{ aidant.id }}-from-organisation"
+                  href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+                  class="fr-btn fr-btn--secondary"
+                >
+                  {% if aidant.organisations.count > 1 %}
+                    Retirer l’aidant de l’organisation
+                  {% else %}
+                    Désactiver l’aidant
+                  {% endif %}
+                </a>
+              {% endif %}
+            </li>
+            <li>
               <a
-                id="remove-aidant-{{ aidant.id }}-from-organisation"
-                href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+                id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                href="{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}"
                 class="fr-btn fr-btn--secondary"
               >
-                {% if aidant.organisations.count > 1 %}
-                  Retirer l’aidant de l’organisation
-                {% else %}
-                  Désactiver l’aidant
-                {% endif %}
+                Gérer les cartes OTP
               </a>
-            {% endif %}
-          </li>
-          <li>
-            <a
-              id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-              href="{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}"
-              class="fr-btn fr-btn--secondary"
-            >
-              Gérer les cartes OTP
-            </a>
-          </li>
-        </ul>
+            </li>
+          </ul>
+        {% endif %} 
       </td>
     </tr>
   {% endfor %}

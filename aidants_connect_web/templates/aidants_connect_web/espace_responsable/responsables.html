@@ -1,16 +1,58 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
+{% load static ac_common dsfr_tags %}
 
-{% load static dsfr_tags %}
-
-{% block title %}Aidants Connect - Désigner un nouveau référent pour {{ organisation }}{% endblock %}
+{% block title %}
+  Connectez-vous{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
+{% endblock %}
 
 {% block content %}
   <div class="fr-container">
-    {% include "layouts/_messages.html" %}
+    <section>
+      <p class="page-main-title">Référents</p>
+      <h1>Ajouter un référent</h1>
+    </section>
 
-    <div class="fr-grid-row fr-grid-row--center">
-      <h2 class="fr-mt-8v">Désigner un nouveau référent pour {{ organisation }}</h2>
-      <div class="fr-col-12 fr-col-lg-6 fr-col-md-8">
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--row-gap-8v">
+      <div class="fr-col-12 fr-col-lg-6">
+        <h4>Ajouter un référent non-aidant</h4>
+        <p>
+          <em>
+            Pour ajouter un coréférent de votre organisation qui nʼexerce pas le métier dʼaidant, veuillez remplir le
+            formulaire ci-dessous.
+          </em>
+        </p>
+
+        <hr class="fr-hr" />
+
+        <form method="post">
+          <div class="fr-grid-row fr-mb-6v">
+            <div class="fr-col-12 fr-col-md-8">
+              {% csrf_token %}
+              {# Wait for the merge of https://github.com/numerique-gouv/django-dsfr/pull/101 #}
+              {# {% dsfr_form %} #}
+              {% for field in form.visible_fields %}
+              	{% dsfr_form_field field %}
+              {% endfor %}
+              <p class="fr-text--sm fr-info-text">L’email doit être nominatif</p>
+            </div>
+          </div>
+          <div class="fr-alert fr-alert--info fr-mb-8v">
+            <p>Cet ajout sera soumis à validation par nos équipes</p>
+          </div>
+          <button class="fr-btn" type="submit">Ajouter un référent</button>
+        </form>
+      </div>
+      <div class="fr-col-12 fr-col-lg-6">
+        <h4>Désigner un aidant existant</h4>
+        <p>
+          <em>
+            Pour désigner comme coréférent un aidant déjà habilité au sein de votre organisation, sélectionnez le
+            ci-dessous.
+          </em>
+        </p>
+
+        <hr class="fr-hr" />
+
         {% if organisation.responsables.all|length == 1 %}
           <p>
             Actuellement, votre organisation {{ organisation }} compte un seul référent :
@@ -21,19 +63,35 @@
             Actuellement, votre organisation {{ organisation }} compte {{ organisation.responsables.all|length }}
             référents :
           </p>
-          <ul>
+          <ul class="fr-my-6v">
             {% for responsable in organisation.responsables.all %}
-              <li>{{ responsable.get_full_name }} ({{ responsable.email }})</li>
+              <li>
+                <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=responsable.pk %}">
+                  {{ responsable.get_full_name }} ({{ responsable.email }})
+                </a>
+              </li>
             {% endfor %}
           </ul>
         {% endif %}
-        <p class="fr-mt-8v">Vous pouvez désigner un référent supplémentaire grâce au formulaire ci-dessous.</p>
 
-        <form method="post">
-          {% csrf_token %}
-          {% dsfr_form %}
-          <button class="fr-btn" type="submit">Dissocier</button>
-        </form>
+        <section class="fr-my-6v">
+          {% for aidant in organisation.referents_eligible_aidants %}
+            <form method="post" class="fr-m-4v flex">
+              <p class="spacer fr-my-auto fr-mr-6v">
+                <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+                  {{ aidant.get_full_name }}
+                </a>
+              </p>
+              {% csrf_token %}
+              <input type="hidden" name="candidate" value="{{ aidant.pk }}" />
+              <button type="submit" class="fr-btn fr-btn--secondary">Désigner comme référent</button>
+            </form>
+            {% if not forloop.last %}
+              <hr class="fr-m-0 fr-p-0" />{% endif %}
+          {% empty %}
+            <p>Il nʼy a aucun profil qui peut être désigné au statut de référent.</p>
+          {% endfor %}
+        </section>
       </div>
     </div>
   </div>

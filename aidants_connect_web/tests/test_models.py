@@ -9,6 +9,7 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
 from django.utils import timezone
+from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -18,7 +19,7 @@ from phonenumbers import parse as parse_number
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.constants import (
-    HabilitationRequestStatuses,
+    ReferentRequestStatuses,
     RemoteConsentMethodChoices,
 )
 from aidants_connect_web.models import (
@@ -39,7 +40,9 @@ from aidants_connect_web.tests.factories import (
     AttestationJournalFactory,
     AutorisationFactory,
     CarteTOTPFactory,
+    CoReferentNonAidantRequestFactory,
     HabilitationRequestFactory,
+    JournalFactory,
     MandatFactory,
     NotificationFactory,
     OrganisationFactory,
@@ -1031,6 +1034,49 @@ class AidantModelTests(TestCase):
                 aidants_selected, list(Aidant.objects.deactivation_warnable())
             )
 
+    def test_get_users_without_activity_for_90_days(self):
+        # Inactive aidants don't appear in results
+        AidantFactory(is_active=False)
+
+        # Aidants who have no activity don't appear in results
+        AidantFactory(is_active=True)
+
+        # Aidants who have an activity for less than 90 days don't appear in results
+        for action in (
+            JournalActionKeywords.CREATE_ATTESTATION,
+            JournalActionKeywords.USE_AUTORISATION,
+            JournalActionKeywords.INIT_RENEW_MANDAT,
+        ):
+            aidant = AidantFactory(is_active=True)
+            JournalFactory(
+                aidant=aidant, creation_date=now() - timedelta(days=89), action=action
+            )
+
+        warnable_aidants = set()
+
+        # Aidants who have an activity for more than 90 days appear in results
+        for action in (
+            JournalActionKeywords.CREATE_ATTESTATION,
+            JournalActionKeywords.USE_AUTORISATION,
+            JournalActionKeywords.INIT_RENEW_MANDAT,
+        ):
+            aidant = AidantFactory(is_active=True)
+            JournalFactory(
+                aidant=aidant, creation_date=now() - timedelta(days=91), action=action
+            )
+            warnable_aidants.add(aidant)
+
+        self.assertEqual(
+            warnable_aidants, set(Aidant.objects.without_activity_for_90_days())
+        )
+
+    def test_referent_non_aidant_and_can_create_mandats_incompatible_constraint(self):
+        AidantFactory(referent_non_aidant=False, can_create_mandats=False)
+        AidantFactory(referent_non_aidant=True, can_create_mandats=False)
+        AidantFactory(referent_non_aidant=False, can_create_mandats=True)
+        with self.assertRaises(IntegrityError):
+            AidantFactory(referent_non_aidant=True, can_create_mandats=True)
+
 
 @tag("models", "aidant")
 class AidantModelMethodsTests(TestCase):
@@ -1602,6 +1648,25 @@ class AidantModelMethodsTests(TestCase):
         CarteTOTPFactory(aidant=self.aidant_patricia, serial_number="12121212")
         self.assertTrue(self.aidant_patricia.number_totp_card, "12121212")
 
+    def test_save_adds_current_and_referents_organisation_to_aidant(self):
+        aidant: Aidant = AidantFactory()
+        aidant_referent = [OrganisationFactory(), OrganisationFactory()]
+        aidant_former_org = aidant.organisation
+        aidant_current_org = OrganisationFactory()
+
+        aidant.refresh_from_db()
+        self.assertEqual({aidant_former_org}, set(aidant.organisations.all()))
+
+        aidant.organisation = aidant_current_org
+        aidant.responsable_de.add(*aidant_referent)
+        aidant.save()
+        aidant.refresh_from_db()
+
+        self.assertEqual(
+            {*aidant_referent, aidant_former_org, aidant_current_org},
+            set(aidant.organisations.all()),
+        )
+
 
 @tag("models", "journal")
 class JournalModelTests(TestCase):
@@ -1893,13 +1958,11 @@ class HabilitationRequestMethodTests(TestCase):
     def test_validate_when_all_is_fine(self):
         for habilitation_request in (
             HabilitationRequestFactory(
-                status=HabilitationRequestStatuses.STATUS_PROCESSING.value
+                status=ReferentRequestStatuses.STATUS_PROCESSING.value
             ),
+            HabilitationRequestFactory(status=ReferentRequestStatuses.STATUS_NEW.value),
             HabilitationRequestFactory(
-                status=HabilitationRequestStatuses.STATUS_NEW.value
-            ),
-            HabilitationRequestFactory(
-                status=HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value  # noqa: E501
+                status=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value  # noqa: E501
             ),
         ):
             self.assertEqual(
@@ -1912,13 +1975,13 @@ class HabilitationRequestMethodTests(TestCase):
             db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
             self.assertEqual(
                 db_hab_request.status,
-                HabilitationRequestStatuses.STATUS_VALIDATED.value,
+                ReferentRequestStatuses.STATUS_VALIDATED.value,
             )
 
     def test_validate_if_active_aidant_already_exists(self):
         aidant = AidantFactory()
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
             email=aidant.email,
         )
         self.assertTrue(habilitation_request.validate_and_create_aidant())
@@ -1928,7 +1991,7 @@ class HabilitationRequestMethodTests(TestCase):
         habilitation_request.refresh_from_db()
         self.assertEqual(
             habilitation_request.status,
-            HabilitationRequestStatuses.STATUS_VALIDATED.value,
+            ReferentRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
@@ -1937,7 +2000,7 @@ class HabilitationRequestMethodTests(TestCase):
         aidant = AidantFactory(is_active=False)
         self.assertFalse(aidant.is_active)
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
             email=aidant.email,
         )
         self.assertTrue(habilitation_request.validate_and_create_aidant())
@@ -1947,7 +2010,7 @@ class HabilitationRequestMethodTests(TestCase):
         habilitation_request.refresh_from_db()
         self.assertEqual(
             habilitation_request.status,
-            HabilitationRequestStatuses.STATUS_VALIDATED.value,
+            ReferentRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
         self.assertTrue(aidant.is_active)
@@ -1955,7 +2018,7 @@ class HabilitationRequestMethodTests(TestCase):
 
     def test_do_not_validate_if_invalid_status(self):
         habilitation_request = HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_REFUSED.value
+            status=ReferentRequestStatuses.STATUS_REFUSED.value
         )
         self.assertEqual(
             0, Aidant.objects.filter(email=habilitation_request.email).count()
@@ -1966,7 +2029,7 @@ class HabilitationRequestMethodTests(TestCase):
         )
         db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
         self.assertEqual(
-            db_hab_request.status, HabilitationRequestStatuses.STATUS_REFUSED.value
+            db_hab_request.status, ReferentRequestStatuses.STATUS_REFUSED.value
         )
 
 
@@ -2166,3 +2229,17 @@ class TestNotification(TestCase):
             {self.notif_1, self.notif_4},
             set(Notification.objects.get_displayable_for_user(self.aidant)),
         )
+
+
+class CoReferentNonAidantRequestTests(TestCase):
+    def test_create_referent_non_aidant(self):
+        request = CoReferentNonAidantRequestFactory()
+        aidant = request.create_referent_non_aidant()
+        self.assertTrue(aidant.referent_non_aidant)
+        self.assertFalse(aidant.can_create_mandats)
+        self.assertEqual(request.first_name, aidant.first_name)
+        self.assertEqual(request.last_name, aidant.last_name)
+        self.assertEqual(request.profession, aidant.profession)
+        self.assertEqual(request.email, aidant.email)
+        self.assertEqual(request.organisation, aidant.organisation)
+        self.assertIn(aidant, request.organisation.responsables.all())

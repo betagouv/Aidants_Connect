@@ -48,8 +48,8 @@ class NotificationType(TextChoicesEnum):
     WARNING = "Alerte"
 
 
-class HabilitationRequestStatuses(TextChoices):
-    STATUS_WAITING_LIST_HABILITATION = ("habilitation_waitling_list", "Liste d'attente")
+class ReferentRequestStatuses(TextChoices):
+    STATUS_WAITING_LIST_HABILITATION = ("waitling_list", "Liste d'attente")
     STATUS_NEW = ("new", "Nouvelle")
     STATUS_PROCESSING = ("processing", "En cours")
     STATUS_VALIDATED = ("validated", "Validée")
@@ -61,10 +61,10 @@ class HabilitationRequestStatuses(TextChoices):
     )
 
     @staticmethod
-    def cancellable_by_responsable() -> Set["HabilitationRequestStatuses"]:
+    def cancellable_by_responsable() -> Set["ReferentRequestStatuses"]:
         return {
-            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
-            HabilitationRequestStatuses.STATUS_NEW,
-            HabilitationRequestStatuses.STATUS_PROCESSING,
-            HabilitationRequestStatuses.STATUS_VALIDATED,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
+            ReferentRequestStatuses.STATUS_NEW,
+            ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_VALIDATED,
         }

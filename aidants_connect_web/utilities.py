@@ -2,6 +2,7 @@ import hashlib
 import time
 from datetime import date, datetime
 from pathlib import Path
+from re import sub
 from typing import TYPE_CHECKING, Optional, Union
 
 from django.conf import settings
@@ -108,9 +109,10 @@ def generate_id_token(connection: "Connection"):
         # TODO Check if 10 minutes is not too much
         "exp": int(time.time()) + settings.FC_CONNECTION_AGE,  # The issued at time
         "iat": int(time.time()),  # The issuer,  the URL of your Auth0 tenant
-        "iss": settings.HOST,  # The unique identifier of the user
+        "iss": f"https://{sub(r'^https?://', '', settings.HOST)}",  # The unique identifier of the user  # noqa:E501
         "sub": connection.usager.sub,
         "nonce": connection.nonce,
+        "acr": "eidas1",
     }
 
 

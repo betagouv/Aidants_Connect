@@ -1,30 +1,32 @@
 from typing import Self
 
 from django.db import models
+from django.db.models import F
 from django.templatetags.static import static
 from django.urls import reverse
 
 from aidants_connect_common.models import MarkdownContentMixin
 from aidants_connect_pico_cms.constants import MANDATE_TRANSLATION_LANGUAGE_AVAILABLE
 from aidants_connect_pico_cms.fields import MarkdownField
-from aidants_connect_pico_cms.utils import is_lang_rtl
+from aidants_connect_pico_cms.utils import compute_correct_slug, is_lang_rtl
 
 
 class CmsContent(MarkdownContentMixin, models.Model):
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
     published = models.BooleanField("Publié")
-    slug = models.SlugField(
-        "Clé d’URL",
-        unique=True,
-        help_text=(
-            "Par exemple <code>questions-generales</code> pour "
-            "« Questions générales ».<br>"
-            "Sera utilisée pour créer des liens vers cet élément de contenu.<br>"
-            "50 caractères maximum."
-        ),
-    )
     sort_order = models.PositiveSmallIntegerField("Tri", null=True, db_index=True)
+    slug = models.SlugField("Clé d’URL", unique=True)
+
+    @property
+    def slug_derived_field(self):
+        raise NotImplementedError()
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = compute_correct_slug(self, self.slug_derived_field)
+
+        super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
@@ -50,6 +52,10 @@ class Testimony(CmsContent):
     objects = TestimonyQuerySet.as_manager()
 
     def __str__(self):
+        return self.name
+
+    @property
+    def slug_derived_field(self):
         return self.name
 
     @property
@@ -90,12 +96,31 @@ class MandateTranslation(MarkdownContentMixin):
         verbose_name_plural = "Traductions de mandat"
 
 
-class FaqCategory(CmsContent):
+class FaqSection(CmsContent):
     name = models.CharField("Nom", max_length=255)
-    body = MarkdownField("Introduction", blank=True, null=True)
+    body = MarkdownField("Introduction", blank=True, default="")
 
     def __str__(self):
         return self.name
+
+    @property
+    def slug_derived_field(self):
+        return self.name
+
+    class Meta:
+        abstract = True
+
+
+class FaqCategory(FaqSection):
+    def get_questions(self, see_draft=False):
+        filter_kwargs = (
+            {"published": True, "subcategory__published": True} if not see_draft else {}
+        )
+        return (
+            FaqQuestion.objects.filter(**filter_kwargs, category=self)
+            .order_by(F("subcategory__sort_order").asc(nulls_first=True), "sort_order")
+            .prefetch_related("subcategory")
+        )
 
     def get_absolute_url(self):
         return reverse("faq-category-detail", kwargs={"slug": self.slug})
@@ -105,15 +130,35 @@ class FaqCategory(CmsContent):
         verbose_name_plural = "Catégories FAQ"
 
 
+class FaqSubCategory(FaqSection):
+    class Meta:
+        verbose_name = "Sous-catégorie FAQ"
+        verbose_name_plural = "Sous-catégories FAQ"
+
+
 class FaqQuestion(CmsContent):
     question = models.TextField("Question")
+    body = MarkdownField("Réponse")
     category = models.ForeignKey(
-        FaqCategory, models.SET_NULL, null=True, verbose_name="Catégorie"
+        FaqCategory, models.SET_NULL, null=True, default=None, verbose_name="Catégorie"
     )
-    body = models.TextField("Réponse")
+    subcategory = models.ForeignKey(
+        FaqSubCategory,
+        models.SET_NULL,
+        null=True,
+        default=None,
+        verbose_name="Sous-catégorie",
+    )
 
     def __str__(self):
         return self.question
+
+    @property
+    def slug_derived_field(self):
+        return self.question
+
+    def get_absolute_url(self):
+        return f"{self.category.get_absolute_url()}#question-{self.slug}"
 
     class Meta:
         verbose_name = "Question FAQ"

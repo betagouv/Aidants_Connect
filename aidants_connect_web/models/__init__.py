@@ -10,7 +10,12 @@ from .mandat import (
 )
 from .notification import Notification, NotificationType
 from .organisation import Organisation, OrganisationType, get_staff_organisation_name_id
-from .other_models import ExportRequest, HabilitationRequest, IdGenerator
+from .other_models import (
+    CoReferentNonAidantRequest,
+    ExportRequest,
+    HabilitationRequest,
+    IdGenerator,
+)
 from .stats import (
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
@@ -31,6 +36,7 @@ __all__ = [
     AutorisationQuerySet,
     CarteTOTP,
     Connection,
+    CoReferentNonAidantRequest,
     ExportRequest,
     HabilitationRequest,
     IdGenerator,

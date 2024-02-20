@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
+
 import logging
 import os
 import re
@@ -66,10 +67,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # FC as FI
 FC_AS_FI_CALLBACK_URL = os.environ["FC_AS_FI_CALLBACK_URL"]
+FC_AS_FI_CALLBACK_URL_V2 = os.environ["FC_AS_FI_CALLBACK_URL_V2"]
 FC_AS_FI_ID = os.environ["FC_AS_FI_ID"]
 HASH_FC_AS_FI_SECRET = os.environ["HASH_FC_AS_FI_SECRET"]
 FC_AS_FI_HASH_SALT = os.environ["FC_AS_FI_HASH_SALT"]
 FC_AS_FI_LOGOUT_REDIRECT_URI = os.environ["FC_AS_FI_LOGOUT_REDIRECT_URI"]
+FC_AS_FI_LOGOUT_REDIRECT_URI_V2 = os.environ["FC_AS_FI_LOGOUT_REDIRECT_URI_V2"]
 
 # FC as FS
 FC_AS_FS_BASE_URL = os.environ["FC_AS_FS_BASE_URL"]
@@ -392,7 +395,7 @@ LOWER_TOTP_TOLERANCE_ON_LOGIN = getenv_bool("LOWER_TOTP_TOLERANCE_ON_LOGIN", Tru
 
 # Emails
 EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND", "aidants_connect.email_backend.LoggedEmailBackend"
+    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
 
 # # if file based email backend is used (debug)
@@ -435,7 +438,7 @@ COOKIE_BANNER_SERVICES_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.services.js"
 )
 AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa: E501
-MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL")
+MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.data.gouv.fr")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
 
 if "test" in sys.argv:
@@ -453,8 +456,8 @@ else:
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_CONNECT_SRC = (
     "'self'",
-    "https://stats.data.gouv.fr/matomo.php",
-    "https://stats.data.gouv.fr/piwik.php",
+    f"{MATOMO_INSTANCE_URL.removesuffix('/')}/matomo.php",
+    f"{MATOMO_INSTANCE_URL.removesuffix('/')}/piwik.php",
     SARBACANE_CONNECT_URL,
 )
 CSP_IMG_SRC = (
@@ -746,6 +749,10 @@ EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_FROM = os.getenv(
 EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_SUBJECT = os.getenv(
     "EMAIL_AIDANT_NEW_FEATURE_NOTIFICATION_SUBJECT",
     "De nouvelles fonctionnalités vous attendent dans votre espace !",
+)
+
+EMAIL_ACTIVITY_TRACKING_WARN_FROM = os.getenv(
+    "EMAIL_ACTIVITY_TRACKING_WARN_FROM", SUPPORT_EMAIL
 )
 
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")

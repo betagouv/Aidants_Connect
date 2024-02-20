@@ -377,7 +377,11 @@ class FISelectDemarcheTests(TestCase):
         session["connection"] = self.connection.id
         session.save()
         response = self.client.post(
-            "/select_demarche/", data={"chosen_demarche": "famille"}
+            "/select_demarche/",
+            data={
+                "chosen_demarche": "famille",
+                "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+            },
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
@@ -397,7 +401,10 @@ class FISelectDemarcheTests(TestCase):
 
         response = self.client.post(
             "/select_demarche/",
-            data={"chosen_demarche": "famille"},
+            data={
+                "chosen_demarche": "famille",
+                "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
+            },
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
@@ -466,6 +473,7 @@ class FISelectDemarcheTests(TestCase):
     HASH_FC_AS_FI_SECRET="e26ade3b37d31920d89e233c447b0d5e51accff2fdc51d1f377b0"
     "31b5d581e70",
     FC_AS_FI_CALLBACK_URL="test_url.test_url",
+    FC_AS_FI_CALLBACK_URL_V2="test_url.test_url.v2",
     HOST="localhost",
     FC_AS_FI_HASH_SALT="123456",
 )
@@ -497,7 +505,7 @@ class TokenTests(TestCase):
 
     def test_token_url_triggers_token_view(self):
         found = resolve("/token/")
-        self.assertEqual(found.func, id_provider.token)
+        self.assertEqual(found.func.view_class, id_provider.Token)
 
     date = datetime(2012, 1, 14, 3, 20, 34, 0, tzinfo=ZoneInfo("Europe/Paris"))
 
@@ -531,6 +539,11 @@ class TokenTests(TestCase):
         }
 
         self.assertEqual(awaited_response, response_json)
+
+        # Test 2nd redirect URL
+        request = {**self.fc_request, "redirect_uri": "test_url.test_url.v2"}
+        response = self.client.post("/token/", request)
+        self.assertEqual(response.status_code, 200)
 
     def test_wrong_grant_type_triggers_403(self):
         fc_request = dict(self.fc_request)

@@ -70,8 +70,9 @@ class NotificationDetailTests(TestCase):
 class MarkNotificationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.aidant = AidantFactory()
-        cls.aidant2 = AidantFactory()
+        # Notification should be dismissable even if aidant can't create mandats
+        cls.aidant = AidantFactory(can_create_mandats=False)
+        cls.aidant2 = AidantFactory(can_create_mandats=False)
 
         cls.unread_notification: Notification = NotificationFactory(
             was_ack=False, aidant=cls.aidant

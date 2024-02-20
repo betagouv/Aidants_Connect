@@ -4,7 +4,9 @@ from django.test.client import Client
 from django.urls import resolve, reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from faker import Faker
 
+from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from aidants_connect_web.views import espace_responsable
 
@@ -460,3 +462,22 @@ class DesignationOfAnotherResponsable(TestCase):
         self.aidante_bidule.refresh_from_db()
         self.assertFalse(self.aidante_bidule.is_responsable_structure())
         self.assertNotIn(self.orga, self.aidante_bidule.responsable_de.all())
+
+    def test_can_request_nomination_of_referent_non_aidant(self):
+        fake = Faker()
+        data = {
+            "first_name": fake.first_name(),
+            "last_name": fake.last_name(),
+            "profession": fake.job(),
+            "email": fake.email(),
+            "organisation": 5000,
+        }
+
+        self.client.force_login(self.respo)
+        self.assertEqual(0, CoReferentNonAidantRequest.objects.count())
+        self.client.post(self.url, data=data)
+        self.assertEqual(1, CoReferentNonAidantRequest.objects.count())
+        self.assertDictEqual(
+            {**data, "organisation": self.orga.pk},
+            CoReferentNonAidantRequest.objects.values(*data.keys()).first(),
+        )
