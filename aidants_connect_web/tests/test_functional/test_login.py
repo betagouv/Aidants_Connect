@@ -27,7 +27,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         submit_button = self.selenium.find_element(By.CSS_SELECTOR, "[type='submit']")
         submit_button.click()
         email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("LIEN DE CONNEXION ENVOYÉ", email_sent_title)
+        self.assertEqual("Confirmation de connexion", email_sent_title)
         self.assertEqual(len(mail.outbox), 1)
         url = re.findall(r"https?://\S+", mail.outbox[0].body, flags=re.M)[0].replace(
             "https", "http", 1
