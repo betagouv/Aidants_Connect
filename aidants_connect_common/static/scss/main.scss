@@ -25,7 +25,13 @@ $main-padding: 3rem;
 }
 
 .main-content-full { // cancels #main padding
-  margin: -$main-padding 0;
+  margin-bottom: -$main-padding;
+  margin-top: -$main-padding;
+
+  .main-content-item {
+    margin-bottom: $main-padding;
+    margin-top: $main-padding;
+  }
 }
 
 h1, .fr-h1 {

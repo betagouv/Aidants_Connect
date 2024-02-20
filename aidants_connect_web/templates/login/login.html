@@ -1,14 +1,18 @@
 {% extends 'layouts/main.html' %}
 {% load static ac_common dsfr_tags %}
 
+{% block extracss %}
+  <link href="{% static 'css/login.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block title %}
   Connectez-vous{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
 {% endblock %}
 
 {% block content %}
-  <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
-      <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+  <div class="fr-container main-content-full">
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center">
+      <div class="fr-col-12 fr-col-md-6 main-content-item">
         <div class="fr-alert fr-alert--info fr-mb-6v">
           <p>
             <b>Vous êtes une structure qui souhaite utiliser Aidants Connect ?</b>
@@ -36,7 +40,12 @@
                         Guide
                       </a>
                       <span class="fr-tooltip fr-placement" id="tooltip-2989" role="tooltip" aria-hidden="true">
-                      <a href="{% static 'guides_aidants_connect/AC_Guide_Sauthentifier.pdf' %}" class="fr-link" target="_blank" rel="noreferrer noopener">
+                      <a
+                        href="{% static 'guides_aidants_connect/AC_Guide_Sauthentifier.pdf' %}"
+                        class="fr-link"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
                         Sʼauthentifier sur Aidants Connect
                       </a><span> - pdf</span>
                     </span>
@@ -88,6 +97,16 @@
             votre nom, structure, et la nature du problème.
           </p>
         </div>
+      </div>
+      <div class="fr-col-12 fr-col-md-6 otp-app-panel">
+        <section class="otp-app-explaination background">
+          <div class="fr-py-8v fr-px-16v">
+            <h1>Numérisez votre carte Aidant</h1>
+            <p>Vous pouvez désormais vous connecter et valider vos mandats avec votre téléphone !</p>
+            <p>Passez à la carte numérique en quelques minutes en vous adressant à votre référent Aidants Connect.</p>
+          </div>
+            <img src="{% static 'images/otp-app.png' %}" alt="">
+        </section>
       </div>
     </div>
   </div>
