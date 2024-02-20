@@ -1,6 +1,4 @@
-from django.conf import settings
 from django.http import Http404, HttpResponse
-from django.shortcuts import render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -39,21 +37,6 @@ class FaqCategoryView(DetailView):
         )
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
-        if self.should_show_drafts or settings.FF_USE_PICO_CMS_FOR_FAQ:
-            return super().get(request, *args, **kwargs)
-        else:
-            try:
-                from aidants_connect_web.views import service
-
-                return {
-                    "/faq/mandat/": service.faq_mandat,
-                    "/faq/donnees-personnelles/": service.faq_donnees_personnelles,
-                    "/faq/habilitation/": service.faq_habilitation,
-                }[request.path](request)
-            except KeyError:
-                raise Http404
-
     @property
     def should_show_drafts(self):
         return (
@@ -80,11 +63,6 @@ class FaqCategoryView(DetailView):
 
 
 class FaqDefaultView(FaqCategoryView):
-    def get(self, request, *args, **kwargs):
-        if self.should_show_drafts or settings.FF_USE_PICO_CMS_FOR_FAQ:
-            return super().get(request, *args, **kwargs)
-        return render(request, "public_website/faq/generale.html")
-
     def get_object(self, queryset=None):
         first_published_category = self.get_queryset().first()
 
