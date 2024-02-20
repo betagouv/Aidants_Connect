@@ -207,4 +207,8 @@ def accessibilite(request):
 
 
 def ressources(request):
-    return render(request, "public_website/ressource_page.html")
+    return render(
+        request,
+        "public_website/ressource_page.html",
+        {"should_render_testimonies": Testimony.objects.for_display().count() > 0},
+    )
