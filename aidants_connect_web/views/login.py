@@ -5,7 +5,7 @@ from django.views.generic import RedirectView
 from magicauth import views as magicauth_views
 
 from aidants_connect_common.utils.email import render_email
-from aidants_connect_web.forms import LoginEmailForm
+from aidants_connect_web.forms import DsfrOtpForm, LoginEmailForm
 
 
 class LoginRedirect(RedirectView):
@@ -15,6 +15,7 @@ class LoginRedirect(RedirectView):
 
 class LoginView(magicauth_views.LoginView):
     form_class = LoginEmailForm
+    otp_form_class = DsfrOtpForm
 
     def otp_form_invalid(self, form, otp_form):
         from aidants_connect_web.signals import otp_challenge_failed

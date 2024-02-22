@@ -4,10 +4,11 @@ from django.utils import timezone
 from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.models import Commune, Department, Region
 from aidants_connect_common.utils.constants import JournalActionKeywords
-from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME, ReferentRequestStatuses
 from aidants_connect_web.models import (
     Aidant,
     AidantStatistiques,
@@ -175,6 +176,16 @@ class AllStatisticsTests(TestCase):
         )
         CarteTOTPFactory(aidant=cls.ad_with_totp_dep_21)
 
+        a = AidantFactory(
+            organisation=cls.orga_ad_dep_11,
+            is_active=True,
+        )
+        TOTPDevice.objects.create(
+            user=a,
+            name=OTP_APP_DEVICE_NAME % a.pk,
+            confirmed=False,
+        )
+
         AttestationJournalFactory(
             aidant=cls.ad_with_totp_dep_11,
             organisation=cls.ad_with_totp_dep_11.organisation,
@@ -197,33 +208,33 @@ class AllStatisticsTests(TestCase):
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_VALIDATED.value,
+            status=ReferentRequestStatuses.STATUS_VALIDATED.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_REFUSED.value,
+            status=ReferentRequestStatuses.STATUS_REFUSED.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_NEW.value,
+            status=ReferentRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_11,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_NEW.value,
+            status=ReferentRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_12,
         )
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_NEW.value,
+            status=ReferentRequestStatuses.STATUS_NEW.value,
             formation_done=True,
             organisation=orga_12,
         )
 
         HabilitationRequestFactory(
-            status=HabilitationRequestStatuses.STATUS_NEW.value, organisation=orga_21
+            status=ReferentRequestStatuses.STATUS_NEW.value, organisation=orga_21
         )
 
     def test_number_organisation_with_accredited_aidants(self):
@@ -243,7 +254,7 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_operational_aidants, 4)
         self.assertEqual(stats.number_future_aidant, 4)
         self.assertEqual(stats.number_future_trained_aidant, 4)
-        self.assertEqual(stats.number_trained_aidant_since_begining, 9)
+        self.assertEqual(stats.number_trained_aidant_since_begining, 10)
 
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 4)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 3)
@@ -254,20 +265,22 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_old_inactive_aidants_warned, 1)
         self.assertEqual(stats.number_old_aidants_warned, 2)
 
+        self.assertEqual(stats.number_aidants_with_otp_app, 1)
+
     def test_by_department_computing_new_statistics(self):
         stats = compute_statistics(
             AidantStatistiquesbyDepartment(departement=self.dep_11)
         )
 
-        self.assertEqual(stats.number_aidants, 2)
-        self.assertEqual(stats.number_aidants_is_active, 2)
+        self.assertEqual(stats.number_aidants, 3)
+        self.assertEqual(stats.number_aidants_is_active, 3)
         self.assertEqual(stats.number_responsable, 1)
 
         self.assertEqual(stats.number_aidant_who_have_created_mandat, 1)
         self.assertEqual(stats.number_operational_aidants, 1)
         self.assertEqual(stats.number_future_aidant, 1)
         self.assertEqual(stats.number_future_trained_aidant, 2)
-        self.assertEqual(stats.number_trained_aidant_since_begining, 1)
+        self.assertEqual(stats.number_trained_aidant_since_begining, 2)
 
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 1)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 1)
@@ -298,15 +311,15 @@ class AllStatisticsTests(TestCase):
     def test_by_region_computing_new_statistics(self):
         stats = compute_statistics(AidantStatistiquesbyRegion(region=self.region_one))
 
-        self.assertEqual(stats.number_aidants, 4)
-        self.assertEqual(stats.number_aidants_is_active, 3)
+        self.assertEqual(stats.number_aidants, 5)
+        self.assertEqual(stats.number_aidants_is_active, 4)
         self.assertEqual(stats.number_responsable, 1)
 
         self.assertEqual(stats.number_aidant_who_have_created_mandat, 2)
         self.assertEqual(stats.number_operational_aidants, 2)
         self.assertEqual(stats.number_future_aidant, 3)
         self.assertEqual(stats.number_future_trained_aidant, 4)
-        self.assertEqual(stats.number_trained_aidant_since_begining, 3)
+        self.assertEqual(stats.number_trained_aidant_since_begining, 4)
 
         self.assertEqual(stats.number_organisation_with_accredited_aidants, 2)
         self.assertEqual(stats.number_organisation_with_at_least_one_ac_usage, 2)

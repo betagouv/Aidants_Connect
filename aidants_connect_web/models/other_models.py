@@ -7,9 +7,10 @@ from uuid import uuid4
 
 from django.db import models, transaction
 from django.db.models import IntegerChoices
+from django.db.transaction import atomic
 from django.utils.functional import cached_property
 
-from ..constants import HabilitationRequestStatuses
+from ..constants import ReferentRequestStatuses
 from .aidant import Aidant
 from .organisation import Organisation
 
@@ -45,8 +46,8 @@ class HabilitationRequest(models.Model):
         "État",
         blank=False,
         max_length=150,
-        default=HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
-        choices=HabilitationRequestStatuses.choices,
+        default=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+        choices=ReferentRequestStatuses.choices,
     )
     origin = models.CharField(
         "Origine",
@@ -81,11 +82,11 @@ class HabilitationRequest(models.Model):
 
     def validate_and_create_aidant(self):
         if self.status not in (
-            HabilitationRequestStatuses.STATUS_PROCESSING,
-            HabilitationRequestStatuses.STATUS_NEW,
-            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
-            HabilitationRequestStatuses.STATUS_VALIDATED,
-            HabilitationRequestStatuses.STATUS_CANCELLED,
+            ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_NEW,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
+            ReferentRequestStatuses.STATUS_VALIDATED,
+            ReferentRequestStatuses.STATUS_CANCELLED,
         ):
             return False
 
@@ -96,7 +97,7 @@ class HabilitationRequest(models.Model):
                 aidant.is_active = True
                 aidant.can_create_mandats = True
                 aidant.save()
-                self.status = HabilitationRequestStatuses.STATUS_VALIDATED
+                self.status = ReferentRequestStatuses.STATUS_VALIDATED
                 self.save()
                 return True
 
@@ -108,7 +109,7 @@ class HabilitationRequest(models.Model):
                 email=self.email,
                 username=self.email,
             )
-            self.status = HabilitationRequestStatuses.STATUS_VALIDATED
+            self.status = ReferentRequestStatuses.STATUS_VALIDATED
             self.save()
 
         from aidants_connect_web.signals import aidant_activated
@@ -121,18 +122,18 @@ class HabilitationRequest(models.Model):
         if not self.status_cancellable_by_responsable:
             return
 
-        self.status = HabilitationRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
+        self.status = ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
         self.save(update_fields={"status"})
 
     @property
     def status_label(self):
-        return HabilitationRequestStatuses(self.status).label
+        return ReferentRequestStatuses(self.status).label
 
     @property
     def status_cancellable_by_responsable(self):
         return (
-            HabilitationRequestStatuses(self.status)
-            in HabilitationRequestStatuses.cancellable_by_responsable()
+            ReferentRequestStatuses(self.status)
+            in ReferentRequestStatuses.cancellable_by_responsable()
         )
 
     @property
@@ -151,16 +152,17 @@ def _filepath_generator():
 
 class ExportRequest(models.Model):
     class ExportRequestState(IntegerChoices):
-        ONGOING = auto()
-        DONE = auto()
-        ERROR = auto()
+        ONGOING = (auto(), "En cours")
+        DONE = (auto(), "Fini")
+        ERROR = (auto(), "Erreur")
 
     aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
     filename = models.CharField(max_length=40, default=_filepath_generator)
     state = models.IntegerField(
-        choices=ExportRequestState.choices, default=ExportRequestState.ONGOING
+        "État", choices=ExportRequestState.choices, default=ExportRequestState.ONGOING
     )
+    task_uuid = models.UUIDField(null=True, blank=False, default=None)
 
     @property
     def is_ongoing(self):
@@ -184,10 +186,49 @@ class ExportRequest(models.Model):
         if not self.pk:
             from ..tasks import export_for_bizdevs
 
-            # Must save before export_for_bizdevs is called because if
-            # export_for_bizdevs could save again before self.pk is set
-            # which creates an infinite recursion and destroys the universe
             super().save(*args, **kwargs)
-            export_for_bizdevs(self)
+            result = export_for_bizdevs.apply_async((self.pk,), compression="zlib")
+            self.task_uuid = result.id
+            super().save(update_fields=("task_uuid",))
         else:
             super().save(*args, **kwargs)
+
+
+class CoReferentNonAidantRequest(models.Model):
+    first_name = models.CharField("Prénom", max_length=150)
+    last_name = models.CharField("Nom", max_length=150)
+    profession = models.CharField("Profession", max_length=150)
+    email = models.EmailField("Email professionnel", max_length=150)
+    organisation = models.ForeignKey(
+        Organisation,
+        on_delete=models.CASCADE,
+        related_name="co_referent_validation_requests",
+    )
+    status = models.CharField(
+        "État",
+        max_length=150,
+        default=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+        choices=ReferentRequestStatuses.choices,
+    )
+
+    created_at = models.DateTimeField("Date de création", auto_now_add=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True)
+
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def create_referent_non_aidant(self):
+        with atomic():
+            instance = Aidant.objects.create(
+                first_name=self.first_name,
+                last_name=self.last_name,
+                profession=self.profession,
+                email=self.email,
+                organisation=self.organisation,
+                can_create_mandats=False,
+                referent_non_aidant=True,
+            )
+            self.organisation.responsables.add(instance)
+            self.status = ReferentRequestStatuses.STATUS_VALIDATED
+            self.save(update_fields=("status",))
+            return instance

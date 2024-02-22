@@ -6,7 +6,7 @@ from aidants_connect_web.tests.factories import (
     OrganisationFactory,
 )
 
-from ..constants import HabilitationRequestStatuses
+from ..constants import ReferentRequestStatuses
 from ..management.commands.import_last_eric_files import import_one_row
 
 
@@ -41,7 +41,7 @@ class ImportEricLastFileTests(TestCase):
             first_name="Marge",
             email="m.simpson@test.com",
             organisation=self.orga1,
-            status=HabilitationRequestStatuses.STATUS_NEW.value,
+            status=ReferentRequestStatuses.STATUS_NEW.value,
         )
         self.assertEqual(2, HabilitationRequest.objects.all().count())
         import_one_row([3234, "Marge", "Simpson", "m.simpson@test.com"])
@@ -53,7 +53,7 @@ class ImportEricLastFileTests(TestCase):
                 first_name="Marge",
                 email="m.simpson@test.com",
                 organisation__data_pass_id=3234,
-                status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+                status=ReferentRequestStatuses.STATUS_PROCESSING.value,
             )
         )
 
@@ -63,7 +63,7 @@ class ImportEricLastFileTests(TestCase):
             first_name="Marge",
             email="m.simpson@test.com",
             organisation=self.orga1,
-            status=HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+            status=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )
         self.assertEqual(2, HabilitationRequest.objects.all().count())
         import_one_row([3234, "Marge", "Simpson", "m.simpson@test.com"])
@@ -75,7 +75,7 @@ class ImportEricLastFileTests(TestCase):
                 first_name="Marge",
                 email="m.simpson@test.com",
                 organisation__data_pass_id=3234,
-                status=HabilitationRequestStatuses.STATUS_PROCESSING.value,
+                status=ReferentRequestStatuses.STATUS_PROCESSING.value,
             )
         )
 

@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.urls import include, path, re_path
 
 from magicauth import settings as magicauth_settings
@@ -150,7 +149,7 @@ urlpatterns = [
     ),
     # id_provider
     path("authorize/", id_provider.Authorize.as_view(), name="authorize"),
-    path("token/", id_provider.token, name="token"),
+    path("token/", id_provider.Token.as_view(), name="token"),
     path("userinfo/", id_provider.user_info, name="user_info"),
     path(
         "select_demarche/",
@@ -280,21 +279,5 @@ urlpatterns = [
     ),
     path("api/", include(api_router.urls)),
 ]
-
-if not settings.FF_USE_PICO_CMS_FOR_FAQ:
-    faq_urls = [
-        path("faq/mandat/", service.faq_mandat, name="faq_mandat"),
-        path(
-            "faq/donnees-personnelles/",
-            service.faq_donnees_personnelles,
-            name="faq_donnees_personnelles",
-        ),
-        path(
-            "faq/habilitation/",
-            service.faq_habilitation,
-            name="faq_habilitation",
-        ),
-    ]
-    urlpatterns.extend(faq_urls)
 
 urlpatterns.extend(magicauth_urls)

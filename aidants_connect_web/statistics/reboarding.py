@@ -61,27 +61,27 @@ def synchro_grist_data(
 ):
     dict_update_grist = {"id": row_id}
 
-    dict_update_grist[
-        "Avant_session_nombre_connexions"
-    ] = stats.connexions_before_reboarding
+    dict_update_grist["Avant_session_nombre_connexions"] = (
+        stats.connexions_before_reboarding
+    )
     dict_update_grist["J30_nombre_connexions"] = stats.connexions_j30_after
     dict_update_grist["J90_nombre_connexions"] = stats.connexions_j90_after
 
-    dict_update_grist[
-        "Avant_session_nombre_de_mandats_crees"
-    ] = stats.created_mandats_before_reboarding
+    dict_update_grist["Avant_session_nombre_de_mandats_crees"] = (
+        stats.created_mandats_before_reboarding
+    )
     dict_update_grist["J30_nombre_de_mandats_crees"] = stats.created_mandats_j30_after
     dict_update_grist["J90_nombre_de_mandats_crees"] = stats.created_mandats_j90_after
 
-    dict_update_grist[
-        "Avant_session_nombre_de_demarches_realisees"
-    ] = stats.demarches_before_reboarding
+    dict_update_grist["Avant_session_nombre_de_demarches_realisees"] = (
+        stats.demarches_before_reboarding
+    )
     dict_update_grist["J30_nombre_de_demarches_realisees"] = stats.demarches_j30_after
     dict_update_grist["J90_nombre_de_demarches_realisees"] = stats.demarches_j90_after
 
-    dict_update_grist[
-        "Avant_session_nombre_usagers_accompagnes"
-    ] = stats.usagers_before_reboarding
+    dict_update_grist["Avant_session_nombre_usagers_accompagnes"] = (
+        stats.usagers_before_reboarding
+    )
     dict_update_grist["J30_nombre_usagers_accompagnes"] = stats.usagers_j30_after
     dict_update_grist["J90_nombre_usagers_accompagnes"] = stats.usagers_j90_after
 

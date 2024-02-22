@@ -22,6 +22,7 @@ from aidants_connect_web.models import (
     Autorisation,
     CarteTOTP,
     Connection,
+    CoReferentNonAidantRequest,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -267,3 +268,11 @@ class NotificationFactory(DjangoModelFactory):
 
     class Meta:
         model = Notification
+
+
+class CoReferentNonAidantRequestFactory(DjangoModelFactory):
+    email = Faker("email")
+    organisation = SubFactory(OrganisationFactory)
+
+    class Meta:
+        model = CoReferentNonAidantRequest

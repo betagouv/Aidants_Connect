@@ -331,9 +331,9 @@ def confirm_mandat_cancelation(request, mandat_id):
                 autorisation_in_mandat = Autorisation.objects.filter(mandat=mandat)
                 for autorisation in autorisation_in_mandat:
                     if not autorisation.revocation_date:
-                        autorisation.revocation_date = (
-                            autorisation.revocation_date
-                        ) = timezone.now()
+                        autorisation.revocation_date = autorisation.revocation_date = (
+                            timezone.now()
+                        )
                         autorisation.save(update_fields=["revocation_date"])
                         Journal.log_autorisation_cancel(autorisation, aidant)
                 Journal.log_mandat_cancel(mandat, aidant)

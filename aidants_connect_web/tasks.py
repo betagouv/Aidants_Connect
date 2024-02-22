@@ -1,6 +1,8 @@
 import csv
 from collections import defaultdict
 from datetime import timedelta
+from inspect import signature
+from io import StringIO
 from itertools import chain
 from logging import Logger
 from typing import List, Type
@@ -12,8 +14,11 @@ from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.timezone import now
 
 from celery import shared_task
+from celery.app.trace import SUCCESS
+from celery.signals import task_postrun
 from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
@@ -91,9 +96,9 @@ def delete_duplicated_static_tokens(*, logger=None):
 
 def get_recipient_list_for_organisation(organisation):
     return list(
-        organisation.aidants.filter(can_create_mandats=True).values_list(
-            "email", flat=True
-        )
+        organisation.aidants.filter(
+            can_create_mandats=True, is_active=True
+        ).values_list("email", flat=True)
     )
 
 
@@ -404,7 +409,7 @@ def send_email_on_new_notification_task(notification: Notification):
 
 
 @shared_task
-def export_for_bizdevs(request: ExportRequest, create_file=True):
+def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
     class Serializer:
         fields_to_serialize = (
             "first_name",
@@ -413,6 +418,9 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
             "phone",
             "profession",
             "can_create_mandats",
+            "active_totp_card",
+            "has_otp_app",
+            "is_active",
             "organisation__name",
             "organisation__data_pass_id",
             "organisation__siret",
@@ -454,6 +462,22 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
             return qs[0].insee_code
 
         organisation__region.csv_column = "Organisation: Code INSEE de la région"
+
+        def active_totp_card(self):
+            return getattr(
+                getattr(
+                    getattr(self.aidant, "carte_totp", False), "totp_device", False
+                ),
+                "confirmed",
+                False,
+            )
+
+        active_totp_card.csv_column = "Carte TOTP active"
+
+        def has_otp_app(self):
+            return self.aidant.has_otp_app
+
+        has_otp_app.csv_column = "App OTP"
 
         def organisation__nb_mandat_created(self):
             return Journal.objects.filter(
@@ -523,7 +547,6 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
                     )
                 elif requested_field in model_fields:
                     result.append(f"{model_fields[requested_field].verbose_name}")
-                    Aidant.objects.filter()
                 elif LOOKUP_SEP in requested_field:
                     model = Aidant
                     related_model_fields = model_fields
@@ -550,21 +573,24 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
                     )
             return result
 
+    logger: Logger = logger or get_task_logger(__name__)
+
+    request = ExportRequest.objects.get(pk=request_pk)
+
     if not request.aidant.is_staff:
-        raise AssertionError("Only staff member can start an export")
+        msg = "Only staff member can start an export"
+        logger.error(msg)
+        raise AssertionError(msg)
 
-    if create_file:
-        request.file_path.touch(mode=0o640, exist_ok=True)
+    logger.info(f"Starting export for user {request.aidant.get_full_name()} @ {now()}")
 
-    with open(request.file_path, mode="w") as f:
+    with StringIO() as f:
         try:
             writer = csv.writer(f)
             writer.writerow(Serializer.header())
 
-            qs = (
-                Aidant.objects.order_by("organisation__name")
-                .prefetch_related("organisation")
-                .all()
+            qs = Aidant.objects.order_by("organisation__name").prefetch_related(
+                "organisation"
             )
             nb_aidants = qs.count()
             paging_iterator = chain(range(0, nb_aidants, 500), [nb_aidants])
@@ -575,10 +601,59 @@ def export_for_bizdevs(request: ExportRequest, create_file=True):
                     writer.writerow(Serializer(aidant).values())
                 first = second
 
-            request.state = ExportRequest.ExportRequestState.DONE
-            request.save(update_fields={"state"})
-        except Exception as e:
-            f.write(str(e))
-            request.state = ExportRequest.ExportRequestState.ERROR
-            request.save(update_fields={"state"})
+            logger.info(
+                f"Finished export for user {request.aidant.get_full_name()} @ {now()}"
+            )
+            return f.getvalue()
+        except Exception:
+            logger.error(
+                f"Error on export for user {request.aidant.get_full_name()} @ {now()}"
+            )
             raise
+
+
+@task_postrun.connect
+def export_for_bizdevs_postrun(task_id, args, kwargs, state, *_1, **_2):
+    request_pk = (
+        signature(export_for_bizdevs)
+        .bind_partial(*args, **kwargs)
+        .arguments["request_pk"]
+    )
+
+    try:
+        request = ExportRequest.objects.get(pk=request_pk)
+    except ExportRequest.DoesNotExist:
+        return
+
+    request.state = (
+        ExportRequest.ExportRequestState.DONE
+        if state == SUCCESS
+        else ExportRequest.ExportRequestState.ERROR
+    )
+    request.save(update_fields=("state",))
+
+
+@shared_task
+def email_activity_tracking_warning(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    aidants = Aidant.objects.without_activity_for_90_days().filter(
+        activity_tracking_warning_at=None
+    )
+    for aidant in aidants.all():
+        text_message, html_message = render_email(
+            "email/activity_tracking_warning.mjml", {"user": aidant}
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_ACTIVITY_TRACKING_WARN_FROM,
+            subject="Accompagnez vos usagers avec Aidants Connect",
+            recipient_list=[aidant.email],
+            message=text_message,
+            html_message=html_message,
+        )
+
+        aidant.activity_tracking_warning_at = now()
+        aidant.save(update_fields=("activity_tracking_warning_at",))
+
+    logger.info(f"Emailed activity warning to {aidants.count()} aidants")

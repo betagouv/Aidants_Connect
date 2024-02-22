@@ -3,7 +3,7 @@ from django.core import mail
 from django.test import TestCase, tag
 from django.urls import resolve
 
-from aidants_connect_web.constants import HabilitationRequestStatuses
+from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import (
     HabilitationRequest,
     Organisation,
@@ -180,5 +180,5 @@ class HabilitationDatapass(DatapassMixin, TestCase):
         )
         self.assertEqual(
             habilitation_request.status,
-            HabilitationRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
         )

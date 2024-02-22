@@ -3,20 +3,10 @@ from urllib.parse import quote, urlencode
 
 from django import template
 from django.conf import settings
-from django.contrib.messages import DEBUG, ERROR, INFO, SUCCESS, WARNING
-from django.template import Context
-from django.template.base import (
-    Node,
-    NodeList,
-    Parser,
-    Template,
-    TextNode,
-    Token,
-    token_kwargs,
-)
+from django.template import TemplateSyntaxError
+from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
 from django.template.defaultfilters import stringfilter
 from django.templatetags.static import static
-from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 
 register = template.Library()
@@ -204,47 +194,46 @@ def startswith(text, starts):
     return False
 
 
-# TODO: drop when https://github.com/numerique-gouv/django-dsfr/pull/87 is merged
-@register.simple_tag(takes_context=True)
-def dsfr_django_messages(
-    context, is_collapsible=False, extra_classes=None, wrapper_classes=None
-):
-    messages = context.get("messages")
+@register.tag
+def withdict(parser, token):
+    """
+    Add a dictionnary or one or more values to the context (inside of this block).
+    Name must be specified with ``as <name>`` syntax.
 
-    if not messages:
-        return ""
+    For example::
 
-    wrapper_classes = wrapper_classes or "fr-my-4v"
-    extra_classes = extra_classes or ""
+        {% with name=person.name key=person.key as dict %}
+            {% some_tag_expecting_a_dict doct %}
+        {% endwith %}
 
-    message_tags_css_classes = {
-        DEBUG: "info",
-        INFO: "info",
-        SUCCESS: "success",
-        WARNING: "warning",
-        ERROR: "error",
-    }
-
-    def _render_alert_tag(message):
-        return Template("{% load dsfr_tags %}{% dsfr_alert data_dict %}").render(
-            Context(
-                {
-                    "data_dict": {
-                        "type": message_tags_css_classes.get(message.level, "info"),
-                        "content": str(message),
-                        "extra_classes": "{} {}".format(
-                            extra_classes, message.extra_tags or ""
-                        ).strip(),
-                        "is_collapsible": is_collapsible,
-                    }
-                }
-            )
+    """
+    bits = token.split_contents()
+    remaining_bits = bits[1:]
+    extra_context = token_kwargs(remaining_bits, parser)
+    if not extra_context:
+        raise TemplateSyntaxError(
+            "%r expected at least one variable assignment" % bits[0]
+        )
+    if len(remaining_bits) != 2 or remaining_bits[0] != "as":
+        raise TemplateSyntaxError(
+            "expected variable assignement in the form of `as <variable name>`"
         )
 
-    return format_html(
-        "<div{}>{}</div>",
-        format_html(' class="{}"', wrapper_classes) if wrapper_classes else "",
-        format_html_join(
-            "\n", "{}", ((_render_alert_tag(message),) for message in messages)
-        ),
-    )
+    nodelist = parser.parse(("endwithdict",))
+    parser.delete_first_token()
+    return WithDictNode(nodelist, remaining_bits[1], extra_context)
+
+
+class WithDictNode(Node):
+    def __init__(self, nodelist, variable_name, extra_context):
+        self.nodelist = nodelist
+        self.variable_name = variable_name
+        self.extra_context = extra_context
+
+    def __repr__(self):
+        return "<%s>" % self.__class__.__name__
+
+    def render(self, context):
+        values = {key: val.resolve(context) for key, val in self.extra_context.items()}
+        with context.push(**{self.variable_name: values}):
+            return self.nodelist.render(context)

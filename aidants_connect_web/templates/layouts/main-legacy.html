@@ -10,7 +10,7 @@
   <title>{% block title %}Aidants Connect{% endblock %}</title>
 
   <link href="{% static 'css/template.min.css' %}" rel="stylesheet">
-  <link href="{% static 'css/main.css' %}" rel="stylesheet">
+  <link href="{% static 'css/main-legacy.css' %}" rel="stylesheet">
   {% dsfr_css %}
   <link href="{{ COOKIE_BANNER_CSS_URL }}" rel="stylesheet">
 
@@ -49,6 +49,8 @@
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicons/favicon-32x32.png' %}">
   <link rel="manifest" href="{% static 'images/favicons/manifest.json' %}">
   <link rel="mask-icon" href="{% static 'images/favicons/safari-pinned-tab.svg' %}" color="#5bbad5">
+  <!-- Matomo -->
+  {% include "layouts/matomo_script.html" %}
 </head>
 
 <body>
@@ -116,14 +118,7 @@
 
 
   {% dsfr_js %}
-  <script
-    id="cookie-banner"
-    {% if MATOMO_INSTANCE_URL and MATOMO_INSTANCE_SITE_ID %}
-    data-matomo-url="{{ MATOMO_INSTANCE_URL }}"
-    data-matomo-site-id="{{ MATOMO_INSTANCE_SITE_ID }}"
-    {% endif %}
-    defer src="{{ COOKIE_BANNER_JS_URL }}"
-  ></script>
+  <script id="cookie-banner" defer src="{{ COOKIE_BANNER_JS_URL }}"></script>
   <script defer src="{{ COOKIE_BANNER_LANG_URL }}"></script>
   <script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>
   <script defer src="{% static 'js/cookie-banner.js' %}"></script>

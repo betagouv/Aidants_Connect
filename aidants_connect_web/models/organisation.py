@@ -6,7 +6,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.db import models
-from django.db.models import SET_NULL, QuerySet, Value
+from django.db.models import SET_NULL, Q, QuerySet, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -133,6 +133,8 @@ class Organisation(models.Model):
     def admin_num_mandats(self):
         return self.num_mandats
 
+    admin_num_mandats.short_description = "Nombre de mandats"
+
     @cached_property
     def num_active_mandats(self):
         return (
@@ -156,6 +158,12 @@ class Organisation(models.Model):
     def num_demarches(self):
         return Journal.objects.find_demarches_for_organisation(self).count()
 
+    @cached_property
+    def referents_eligible_aidants(self):
+        return self.aidants.exclude(
+            Q(responsable_de=self) | Q(is_active=False)
+        ).order_by("last_name")
+
     @property
     def display_address(self):
         return self.address if self.address != "No address provided" else "__________"
@@ -163,8 +171,6 @@ class Organisation(models.Model):
     @property
     def display_city(self):
         return self.city if self.city else "__________"
-
-    admin_num_mandats.short_description = "Nombre de mandats"
 
     def set_empty_zipcode_from_address(self):
         if self.zipcode != "0":

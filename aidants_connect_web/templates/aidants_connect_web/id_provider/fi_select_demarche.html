@@ -52,6 +52,7 @@
         <br>
       {% endfor %}
       {% csrf_token %}
+      <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
       <br>
       <div class="notification" role="alert">
         Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat ait expiré.<br>
