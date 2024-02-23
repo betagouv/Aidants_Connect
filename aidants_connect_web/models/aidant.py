@@ -5,6 +5,7 @@ from datetime import timedelta
 from typing import Collection, Optional
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.db.models import Q
@@ -392,3 +393,11 @@ class Aidant(AbstractUser):
         )
 
         return self.is_active
+
+
+class UserFingerprint(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    ip_address = models.GenericIPAddressField(null=True)
+    user_agent = models.CharField(max_length=255)
+    parsed_user_agent = models.JSONField()
+    login_time = models.DateTimeField(auto_now=True)

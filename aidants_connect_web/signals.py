@@ -11,6 +11,8 @@ from django.templatetags.static import static
 from django.urls import reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from ipware import get_client_ip
+from ua_parser import user_agent_parser
 
 from aidants_connect_common.utils.constants import (
     JournalActionKeywords,
@@ -20,6 +22,7 @@ from aidants_connect_common.utils.email import render_email
 from aidants_connect_common.utils.urls import build_url
 from aidants_connect_web.constants import NotificationType
 from aidants_connect_web.models import Aidant, Journal, Notification
+from aidants_connect_web.models.aidant import UserFingerprint
 
 aidants__organisations_changed = Signal()
 otp_challenge_failed = Signal()
@@ -191,3 +194,19 @@ def update_activity_tracking_on_new_journal(
 
     instance.aidant.activity_tracking_warning_at = None
     instance.aidant.save(update_fields=("activity_tracking_warning_at",))
+
+
+@receiver(user_logged_in)
+def log_user_fingerprint(sender, user: Aidant, request, **kwargs):
+    try:
+        client_ip, _ = get_client_ip(request)
+        ua = request.META.get("HTTP_USER_AGENT")
+        parsed_ua = user_agent_parser.Parse(ua)
+        UserFingerprint.objects.create(
+            user=request.user,
+            ip_address=client_ip,
+            user_agent=ua,
+            parsed_user_agent=parsed_ua,
+        )
+    except Exception:
+        logger.exception("Error while recording user fingerprint")
