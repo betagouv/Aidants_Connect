@@ -148,6 +148,10 @@ class Aidant(AbstractUser):
             "le champ « Aidant - Peut créer des mandats »"
         ),
     )
+    conseiller_numerique = models.BooleanField(
+        default=False, verbose_name="L'aidant est conseiller numérique"
+    )
+
     validated_cgu_version = models.TextField(null=True)
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)

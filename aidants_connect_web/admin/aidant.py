@@ -73,6 +73,7 @@ class AidantResource(resources.ModelResource):
             "responsable_de",
             "carte_ac",
             "can_create_mandats",
+            "conseiller_numerique",
             "phone",
         )
 
@@ -342,6 +343,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "has_otp_app",
         "is_active",
         "can_create_mandats",
+        "conseiller_numerique",
         "deactivation_warning_at",
         "created_at",
         "is_staff",
@@ -355,6 +357,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_active",
         "aidant_type",
         "can_create_mandats",
+        "conseiller_numerique",
         AidantInPreDesactivationZoneFilter,
         AidantWithMandatsFilter,
         AidantGoneTooLong,
@@ -405,6 +408,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 "fields": (
                     "is_active",
                     "can_create_mandats",
+                    "conseiller_numerique",
                     "is_staff",
                     "is_superuser",
                     "responsable_de",
