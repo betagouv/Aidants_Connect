@@ -4,19 +4,6 @@ body {
   counter-reset: step-title;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
-  grid-gap: 1.5rem;
-  justify-items: center;
-  justify-content: space-evenly;
-  margin-bottom: 2rem;
-}
-
-.grid-4 {
-  grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
-}
-
 .prior-notice {
 
   > * {
@@ -33,33 +20,6 @@ body {
   }
 }
 
-.detailed-radio-select {
-  .detailed-radio-select-label-text {
-    text-transform: uppercase;
-  }
-
-  &:hover, &:active {
-    transform: scale(1.02);
-  }
-
-  input, label {
-    cursor: pointer;
-  }
-
-  > label::after {
-    margin: 1rem;
-  }
-}
-
-.field-block {
-  margin: 0;
-
-  label, input {
-    display: block;
-    margin: 0 0 .5rem 0;
-    width: 100%;
-  }
-}
 
 .step-title {
   margin-top: 4em !important;
@@ -114,23 +74,6 @@ body {
   }
 }
 
-.detailed-radio-select.mandat-demarche,
-.detailed-radio-select.mandat-duree {
-  .shadowed {
-    background-color: #FFF;
-  }
-
-  input:checked {
-    ~ .shadowed {
-      box-shadow: 10px 10px 0 colors.$blue-aidants;
-
-      .detailed-radio-select-label-text-and-description {
-        background-color: colors.$off-yellow-aidants;
-      }
-    }
-  }
-}
-
 .detailed-radio-select.mandat-duree .detailed-radio-select-label-text-and-description {
   padding-right: 40px;
   flex-direction: column;
@@ -148,56 +91,6 @@ body {
     cursor: pointer;
     flex-grow: 10;
     padding: 1rem;
-  }
-}
-
-.detailed-radio-select.mandat-demarche {
-  .detailed-radio-select-label {
-    flex-direction: column;
-    padding: 0;
-
-    * {
-      margin-right: 0;
-    }
-  }
-
-  .detailed-radio-select-logo {
-    max-height: 6rem;
-  }
-
-  .detailed-radio-select-label-text-and-description {
-    flex-direction: column;
-    flex-grow: 1;
-    padding: 1.5rem;
-
-    .detailed-radio-select-description {
-      flex-direction: column;
-      flex-grow: 1;
-
-      .scope {
-        flex-grow: 1;
-      }
-    }
-  }
-
-  .scope {
-    margin-bottom: 3rem;
-  }
-
-  .scope, .scope-examples {
-    display: block;
-  }
-
-  .scope-examples {
-    font-style: italic;
-
-    .example {
-      color: colors.$blue-aidants;
-      display: inline-block;
-      margin: .225rem .225rem 0 0;
-      padding: .225rem;
-      background-color: colors.$light-grey-aidants;
-    }
   }
 }
 

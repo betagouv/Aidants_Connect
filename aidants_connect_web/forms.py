@@ -189,7 +189,7 @@ def get_choices_for_remote_method():
 
 class MandatForm(PatchedForm):
     demarche = forms.MultipleChoiceField(
-        choices=[(key, value) for key, value in settings.DEMARCHES.items()],
+        choices=[],
         required=True,
         widget=MandatDemarcheSelect,
         error_messages={
@@ -263,6 +263,14 @@ class MandatForm(PatchedForm):
         ),
         label_suffix="",
     )
+
+    def __init__(self, organisation: Organisation, *args, **kwargs):
+        self.organisation = organisation
+        super().__init__(*args, **kwargs)
+        self.fields["demarche"].choices = [
+            (key, settings.DEMARCHES[key])
+            for key in self.organisation.allowed_demarches
+        ]
 
     def clean_remote_constent_method(self):
         if not self.cleaned_data["is_remote"]:
@@ -427,7 +435,9 @@ class SwitchMainAidantOrganisationForm(forms.Form):
 
 
 class AddOrganisationReferentForm(DsfrBaseForm):
-    candidate = forms.ModelChoiceField(Aidant.objects.none())
+    candidate = forms.ModelChoiceField(
+        label="Nouveau référent", label_suffix=" :", queryset=Aidant.objects.none()
+    )
 
     def __init__(self, organisation: Organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -844,3 +854,14 @@ class CoReferentNonAidantRequestForm(forms.ModelForm, DsfrBaseForm):
             "email",
             "organisation",
         )
+
+
+class OrganisationRestrictDemarchesForm(PatchedForm):
+    demarches = forms.MultipleChoiceField(
+        choices=[(key, value) for key, value in settings.DEMARCHES.items()],
+        required=True,
+        widget=MandatDemarcheSelect,
+        error_messages={
+            "required": _("Vous devez sélectionner au moins une démarche.")
+        },
+    )

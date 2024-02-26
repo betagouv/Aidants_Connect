@@ -6,6 +6,7 @@ from django.urls import resolve, reverse
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from faker import Faker
 
+from aidants_connect import settings
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from aidants_connect_web.views import espace_responsable
@@ -70,6 +71,44 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.client.force_login(self.responsable_tom)
         response = self.client.get("/espace-responsable/organisation/")
         self.assertNotContains(response, "Numéro d’habilitation")
+
+    def test_I_can_restrict_demarches(self):
+        # All demarches are allowed
+        self.assertEqual(
+            len(settings.DEMARCHES.keys()),
+            len(self.responsable_tom.organisation.allowed_demarches),
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.post(
+            reverse("espace_responsable_organisation"),
+            data={"demarches": ["papiers", "logement"]},
+        )
+        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        self.responsable_tom.organisation.refresh_from_db()
+        self.assertEqual(
+            2,
+            len(self.responsable_tom.organisation.allowed_demarches),
+        )
+
+    def test_I_must_select_at_least_one_demarche(self):
+        # All demarches are allowed
+        self.assertEqual(
+            len(settings.DEMARCHES.keys()),
+            len(self.responsable_tom.organisation.allowed_demarches),
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.post(
+            reverse("espace_responsable_organisation"),
+            data={"demarches": []},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_responsable/organisation.html"
+        )
+        self.assertEqual(
+            response.context_data["form"].errors["demarches"][0],
+            "Vous devez sélectionner au moins une démarche.",
+        )
 
 
 @tag("responsable-structure")
