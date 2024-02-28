@@ -239,3 +239,29 @@ class CoReferentNonAidantRequest(models.Model):
             self.status = ReferentRequestStatuses.STATUS_VALIDATED
             self.save(update_fields=("status",))
             return instance
+
+
+class FormationType(models.Model):
+    label = models.CharField("Type")
+
+    class Meta:
+        verbose_name = "Type de formation aidant"
+        verbose_name_plural = "Types de formation aidant"
+
+
+class Formation(models.Model):
+    class Status(models.IntegerChoices):
+        PRESENTIAL = (auto(), "En présentiel")
+        REMOTE = (auto(), "À distance")
+
+    start_datetime = models.DateTimeField("Date et heure de début de la formation")
+    end_datetime = models.DateTimeField("Date et heure de fin de la formation")
+    duration = models.IntegerField("Durée en heures")
+    max_attendants = models.IntegerField("Nombre maximum d'inscrits possibles")
+    status = models.IntegerField("En présentiel/à distance", choices=Status.choices)
+    place = models.CharField("Lieu", max_length=500)
+    type = models.ForeignKey(FormationType, on_delete=models.PROTECT)
+
+    class Meta:
+        verbose_name = "Formation aidant"
+        verbose_name_plural = "Formations aidant"
