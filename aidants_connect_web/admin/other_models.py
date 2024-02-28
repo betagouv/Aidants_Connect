@@ -16,6 +16,7 @@ from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import CoReferentNonAidantRequest, ExportRequest
 
+from ..models.other_models import Formation, FormationType
 from ..tasks import email_co_rerefent_creation
 
 logger = logging.getLogger()
@@ -190,3 +191,13 @@ class CoReferentNonAidantRequestAdmin(VisibleToAdminMetier, ModelAdmin):
             request,
             f"{queryset.count()} profils de référents non-aidants ont été refusés.",
         )
+
+
+@register(FormationType, site=admin_site)
+class FormationTypeAdmin(VisibleToAdminMetier, ModelAdmin):
+    pass
+
+
+@register(Formation, site=admin_site)
+class FormationAdmin(VisibleToAdminMetier, ModelAdmin):
+    pass
