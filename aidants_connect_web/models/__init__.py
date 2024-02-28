@@ -13,6 +13,8 @@ from .organisation import Organisation, OrganisationType, get_staff_organisation
 from .other_models import (
     CoReferentNonAidantRequest,
     ExportRequest,
+    Formation,
+    FormationType,
     HabilitationRequest,
     IdGenerator,
 )
@@ -38,6 +40,8 @@ __all__ = [
     Connection,
     CoReferentNonAidantRequest,
     ExportRequest,
+    Formation,
+    FormationType,
     HabilitationRequest,
     IdGenerator,
     Journal,
