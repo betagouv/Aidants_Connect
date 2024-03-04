@@ -30,10 +30,7 @@ from aidants_connect_web.models import (
     UsagerQuerySet,
 )
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
-from aidants_connect_web.utilities import (
-    generate_sha256_hash,
-    normalize_totp_cart_serial,
-)
+from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
 
@@ -358,8 +355,14 @@ class RecapMandatForm(OTPForm, forms.Form):
 class CarteOTPSerialNumberForm(forms.Form):
     serial_number = forms.CharField()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["serial_number"].widget.attrs.update(
+            {"placeholder": "Ex : GADT000XXXX"}
+        )
+
     def clean_serial_number(self):
-        serial_number = normalize_totp_cart_serial(self.cleaned_data["serial_number"])
+        serial_number = self.cleaned_data["serial_number"]
         try:
             carte = CarteTOTP.objects.get(serial_number=serial_number)
         except CarteTOTP.DoesNotExist:

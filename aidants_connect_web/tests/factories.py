@@ -31,7 +31,6 @@ from aidants_connect_web.models import (
     OrganisationType,
     Usager,
 )
-from aidants_connect_web.utilities import normalize_totp_cart_serial
 
 
 class OrganisationFactory(DjangoModelFactory):
@@ -49,7 +48,7 @@ class CarteTOTPFactory(DjangoModelFactory):
     @lazy_attribute
     def serial_number(self):
         for _ in range(10):
-            serial = normalize_totp_cart_serial(random.randint(0, 9999))
+            serial = f"GADT000{random.randint(0, 9999):04}"
             if not CarteTOTP.objects.filter(serial_number=serial).exists():
                 return serial
         else:
