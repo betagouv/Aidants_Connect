@@ -3,8 +3,8 @@ import logging
 from django.conf import settings
 from django.contrib import admin
 from django.contrib import messages as django_messages
-from django.contrib.admin import ModelAdmin, register
-from django.db.models import QuerySet
+from django.contrib.admin import ModelAdmin, SimpleListFilter, register
+from django.db.models import Count, F, QuerySet
 from django.http import Http404, HttpResponse
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
@@ -198,6 +198,46 @@ class FormationTypeAdmin(VisibleToAdminMetier, ModelAdmin):
     pass
 
 
+class FormationFillingFilter(SimpleListFilter):
+    title = "Remplissage de la formation"
+
+    parameter_name = "formation_filling"
+
+    def lookups(self, request, model_admin):
+        return ("empty", "Vide"), ("not_empty", "Avec inscrits"), ("full", "Pleine")
+
+    def queryset(self, request, queryset: QuerySet[Formation]):
+        match self.value():
+            case "empty":
+                return queryset.annotate(attendants_count=Count("attendants")).filter(
+                    attendants_count=0
+                )
+            case "not_empty":
+                return queryset.annotate(attendants_count=Count("attendants")).filter(
+                    attendants_count__gt=0, attendants_count__lt=F("max_attendants")
+                )
+            case "full":
+                return queryset.annotate(attendants_count=Count("attendants")).filter(
+                    attendants_count=F("max_attendants")
+                )
+            case _:
+                return queryset
+
+
 @register(Formation, site=admin_site)
 class FormationAdmin(VisibleToAdminMetier, ModelAdmin):
-    pass
+    list_display = (
+        "__str__",
+        "start_datetime",
+        "end_datetime",
+        "number_of_attendants",
+        "max_attendants",
+        "status",
+        "place",
+    )
+    raw_id_fields = ("type",)
+    list_filter = (FormationFillingFilter, "status")
+
+    @admin.display(description="Nombre d'inscrits")
+    def number_of_attendants(self, obj):
+        return obj.number_of_attendants

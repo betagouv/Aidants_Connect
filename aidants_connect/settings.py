@@ -137,6 +137,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
     "django_extensions",
+    "pgtrigger",
     "import_export",
     "phonenumber_field",
     "widget_tweaks",

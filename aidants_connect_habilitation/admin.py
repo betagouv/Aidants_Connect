@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.core.mail import send_mail
@@ -41,6 +41,7 @@ class OrganisationRequestInline(VisibleToAdminMetier, TabularInline):
     can_delete = False
 
 
+@admin.register(Issuer, site=admin_site)
 class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "email",
@@ -70,6 +71,7 @@ class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
     resend_confirmation_emails.short_description = "Renvoyer les emails de confirmation"
 
 
+@admin.register(IssuerEmailConfirmation, site=admin_site)
 class EmailConfirmationAdmin(VisibleToTechAdmin, ModelAdmin):
     pass
 
@@ -89,6 +91,7 @@ class ManagerReverseInlineModelAdmin(VisibleToAdminMetier, ReverseInlineModelAdm
     pass
 
 
+@admin.register(Manager, site=admin_site)
 class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
     fields = (
         "organisation",
@@ -123,6 +126,7 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
     list_filter = ("is_aidant",)
 
 
+@admin.register(OrganisationRequest, site=admin_site)
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     list_filter = (RegionFilter, DepartmentFilter, "status")
     list_display = ("name", "issuer", "status", "data_pass_id", "created_at")
@@ -557,7 +561,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         message.save()
 
 
-admin_site.register(Issuer, IssuerAdmin)
-admin_site.register(Manager, ManagerAdmin)
-admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
-admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)
+@admin.register(AidantRequest, site=admin_site)
+class AidantRequestAdmin(VisibleToTechAdmin, ModelAdmin):
+    list_display = ("__str__", "email", "profession", "organisation")
+    raw_id_fields = ("organisation",)

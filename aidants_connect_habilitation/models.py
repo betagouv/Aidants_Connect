@@ -3,6 +3,7 @@ from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import SET_NULL, Q
@@ -28,6 +29,7 @@ from aidants_connect_web.models import (
     Organisation,
     OrganisationType,
 )
+from aidants_connect_web.models.other_models import Formation
 from aidants_connect_web.utilities import generate_new_datapass_id
 
 __all__ = [
@@ -560,6 +562,8 @@ class AidantRequest(Person):
         on_delete=models.CASCADE,
         related_name="aidant_requests",
     )
+
+    formation = GenericRelation(Formation, related_name="aidant_requests")
 
     @property
     def is_draft(self):

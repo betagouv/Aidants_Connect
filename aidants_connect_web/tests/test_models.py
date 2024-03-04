@@ -18,6 +18,7 @@ from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
 
 from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_habilitation.tests.factories import AidantRequestFactory
 from aidants_connect_web.constants import (
     ReferentRequestStatuses,
     RemoteConsentMethodChoices,
@@ -35,12 +36,14 @@ from aidants_connect_web.models import (
     OrganisationType,
     Usager,
 )
+from aidants_connect_web.models.other_models import FormationAttendant
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AttestationJournalFactory,
     AutorisationFactory,
     CarteTOTPFactory,
     CoReferentNonAidantRequestFactory,
+    FormationFactory,
     HabilitationRequestFactory,
     JournalFactory,
     MandatFactory,
@@ -2243,3 +2246,62 @@ class CoReferentNonAidantRequestTests(TestCase):
         self.assertEqual(request.email, aidant.email)
         self.assertEqual(request.organisation, aidant.organisation)
         self.assertIn(aidant, request.organisation.responsables.all())
+
+
+class FormationAttendantTests(TestCase):
+    def test_I_cant_regester_more_aidant_than_max_attendees(self):
+        formation = FormationFactory(max_attendants=2)
+        aidant_request = AidantRequestFactory()
+        habilitation_request = HabilitationRequestFactory()
+
+        FormationAttendant.objects.create(formation=formation, attendant=aidant_request)
+
+        last = FormationAttendant.objects.create(
+            formation=formation, attendant=habilitation_request
+        )
+
+        self.assertEqual(
+            2, FormationAttendant.objects.filter(formation=formation).count()
+        )
+
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                FormationAttendant.objects.create(
+                    formation=formation, attendant=AidantRequestFactory()
+                )
+
+        self.assertEqual(
+            2, FormationAttendant.objects.filter(formation=formation).count()
+        )
+
+        # Can unregister an attendant and register a new one
+        with transaction.atomic():
+            last.delete()
+
+        self.assertEqual(
+            1, FormationAttendant.objects.filter(formation=formation).count()
+        )
+
+        FormationAttendant.objects.create(
+            formation=formation, attendant=AidantRequestFactory()
+        )
+
+        self.assertEqual(
+            2, FormationAttendant.objects.filter(formation=formation).count()
+        )
+
+        with self.assertRaises(IntegrityError):
+            FormationAttendant.objects.create(
+                formation=formation, attendant=AidantRequestFactory()
+            )
+
+    def test_I_cant_register_an_attendant_to_a_formation_twice(self):
+        formation = FormationFactory(max_attendants=2)
+        aidant_request = AidantRequestFactory()
+
+        FormationAttendant.objects.create(formation=formation, attendant=aidant_request)
+
+        with self.assertRaises(IntegrityError):
+            FormationAttendant.objects.create(
+                formation=formation, attendant=aidant_request
+            )
