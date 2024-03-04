@@ -564,4 +564,4 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 @admin.register(AidantRequest, site=admin_site)
 class AidantRequestAdmin(VisibleToTechAdmin, ModelAdmin):
     list_display = ("__str__", "email", "profession", "organisation")
-    raw_id_fields = ("organisation",)
+    raw_id_fields = ("organisation", "habilitation_request")

@@ -472,7 +472,7 @@ class AidantRequestForm(PatchedModelForm, CleanEmailMixin):
 
     class Meta:
         model = AidantRequest
-        exclude = ["organisation"]
+        exclude = ["organisation", "habilitation_request"]
 
 
 class BaseAidantRequestFormSet(BaseModelFormSet):

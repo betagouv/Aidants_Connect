@@ -577,6 +577,14 @@ class AidantRequest(Person):
 
     formation = GenericRelation(Formation, related_name="aidant_requests")
 
+    habilitation_request = models.OneToOneField(
+        "aidants_connect_web.HabilitationRequest",
+        related_name="aidant_request",
+        null=True,
+        default=None,
+        on_delete=models.CASCADE,
+    )
+
     @property
     def is_draft(self):
         return self.organisation.is_draft
