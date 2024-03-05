@@ -5,7 +5,7 @@ from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
 
-from aidants_connect_common.utils.constants import RequestStatusConstants
+from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
 from aidants_connect_web.models import Aidant, Journal

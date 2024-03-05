@@ -24,7 +24,7 @@ from phonenumbers import PhoneNumber, PhoneNumberFormat, format_number, is_valid
 from phonenumbers import parse as parse_number
 from phonenumbers import region_code_for_country_code
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     AuthorizationDurationChoices,
     AuthorizationDurations,
 )

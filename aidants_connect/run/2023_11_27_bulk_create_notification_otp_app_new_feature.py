@@ -1,7 +1,7 @@
 def __2023_11_27_bulk_create_notification_otp_app_new_feature():
     from django.templatetags.static import static
 
-    from aidants_connect_common.utils.urls import build_url
+    from aidants_connect_common.utils import build_url
     from aidants_connect_web.constants import NotificationType
     from aidants_connect_web.models import Aidant, Notification
 

@@ -3,7 +3,7 @@ from urllib.parse import quote, unquote
 
 from django.test import TestCase, override_settings
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,

@@ -15,7 +15,7 @@ from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
 
 from ..constants import OTP_APP_DEVICE_NAME
 from .mandat import Autorisation, Mandat

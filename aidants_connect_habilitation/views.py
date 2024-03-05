@@ -10,13 +10,13 @@ from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
 
-from aidants_connect_common.forms import PatchedModelForm
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.forms import PatchedModelForm
+from aidants_connect_common.utils import render_email
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,

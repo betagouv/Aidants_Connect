@@ -23,7 +23,7 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect.utils import strtobool
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.forms import (
     AidantChangeForm,

@@ -23,15 +23,12 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext as _
 
+from aidants_connect_common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
     PatchedErrorList,
     PatchedForm,
     PatchedModelForm,
-)
-from aidants_connect_common.utils.constants import (
-    MessageStakeholders,
-    RequestOriginConstants,
 )
 from aidants_connect_common.utils.gouv_address_api import Address, search_adresses
 from aidants_connect_habilitation import models

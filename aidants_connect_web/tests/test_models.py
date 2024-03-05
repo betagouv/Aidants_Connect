@@ -17,7 +17,9 @@ from freezegun import freeze_time
 from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
 
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
+from aidants_connect_common.models import FormationAttendant
+from aidants_connect_common.tests.factories import FormationFactory
 from aidants_connect_habilitation.tests.factories import AidantRequestFactory
 from aidants_connect_web.constants import (
     ReferentRequestStatuses,
@@ -36,14 +38,12 @@ from aidants_connect_web.models import (
     OrganisationType,
     Usager,
 )
-from aidants_connect_web.models.other_models import FormationAttendant
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AttestationJournalFactory,
     AutorisationFactory,
     CarteTOTPFactory,
     CoReferentNonAidantRequestFactory,
-    FormationFactory,
     HabilitationRequestFactory,
     JournalFactory,
     MandatFactory,

@@ -18,7 +18,7 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.models import Department
-from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils import render_email
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.forms import MassEmailActionForm
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation

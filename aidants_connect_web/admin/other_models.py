@@ -13,10 +13,10 @@ from celery.result import AsyncResult
 from celery.states import FAILURE, SUCCESS
 
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
+from aidants_connect_common.models import Formation, FormationType
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import CoReferentNonAidantRequest, ExportRequest
 
-from ..models.other_models import Formation, FormationType
 from ..tasks import email_co_rerefent_creation
 
 logger = logging.getLogger()

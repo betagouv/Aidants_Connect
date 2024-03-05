@@ -15,7 +15,7 @@ from django.views.generic import DeleteView, DetailView, FormView, TemplateView
 import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_common.utils.constants import RequestStatusConstants
+from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.constants import (
     OTP_APP_DEVICE_NAME,

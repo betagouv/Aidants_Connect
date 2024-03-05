@@ -11,7 +11,7 @@ from django.db.models import Q, QuerySet
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import PhoneNumber, PhoneNumberFormat, format_number
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     JOURNAL_ACTIONS,
     AuthorizationDurations,
     JournalActionKeywords,

@@ -1,3 +1,5 @@
+from aidants_connect_common.models import IdGenerator
+
 from .aidant import Aidant, AidantManager, AidantType
 from .journal import Journal
 from .mandat import (
@@ -10,14 +12,7 @@ from .mandat import (
 )
 from .notification import Notification, NotificationType
 from .organisation import Organisation, OrganisationType, get_staff_organisation_name_id
-from .other_models import (
-    CoReferentNonAidantRequest,
-    ExportRequest,
-    Formation,
-    FormationType,
-    HabilitationRequest,
-    IdGenerator,
-)
+from .other_models import CoReferentNonAidantRequest, ExportRequest, HabilitationRequest
 from .stats import (
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
@@ -40,8 +35,6 @@ __all__ = [
     Connection,
     CoReferentNonAidantRequest,
     ExportRequest,
-    Formation,
-    FormationType,
     HabilitationRequest,
     IdGenerator,
     Journal,

@@ -15,7 +15,7 @@ from celery.result import AsyncResult
 from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
-from aidants_connect_common.utils.constants import AuthorizationDurations
+from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_habilitation.tasks import update_pix_and_create_aidant
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import (

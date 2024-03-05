@@ -5,8 +5,7 @@ from django.dispatch import receiver
 from django.http import HttpRequest
 from django.urls import reverse
 
-from aidants_connect_common.utils.email import render_email
-from aidants_connect_common.utils.urls import build_url
+from aidants_connect_common.utils import build_url, render_email
 from aidants_connect_habilitation.models import (
     IssuerEmailConfirmation,
     OrganisationRequest,

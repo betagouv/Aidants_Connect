@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.test import TestCase, TransactionTestCase, tag
 
-from aidants_connect_web.models import IdGenerator
-from aidants_connect_web.utilities import generate_new_datapass_id, generate_sha256_hash
+from aidants_connect_common.models import IdGenerator
+from aidants_connect_common.utils import generate_new_datapass_id
+from aidants_connect_web.utilities import generate_sha256_hash
 
 
 @tag("utilities")

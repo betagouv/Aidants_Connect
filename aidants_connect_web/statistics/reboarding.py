@@ -4,7 +4,7 @@ from django.utils.timezone import datetime, timedelta
 
 from grist_api import GristDocAPI
 
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
 
 from ..models import Aidant, Journal, ReboardingAidantStatistiques
 
