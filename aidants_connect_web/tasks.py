@@ -675,3 +675,16 @@ def email_co_rerefent_creation(aidants_ids: List[int], *, logger=None):
         )
 
     logger.info(f"Emailed {len(aidants)} aidants about co-referent status accepted")
+
+
+@shared_task
+def create_or_update_aidant_in_sandbox_task(
+    habilitation_request_id: int, *, logger=None
+):
+    logger: Logger = logger or get_task_logger(__name__)
+    r = HabilitationRequest.create_or_update_aidant_in_sandbox(habilitation_request_id)
+    logger.info(
+        f"Aidant task creation sandbox for "
+        f"Habilitation Request PK : {habilitation_request_id}, "
+        f"status : {r.status} "
+    )

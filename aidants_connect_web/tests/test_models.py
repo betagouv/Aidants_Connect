@@ -1953,6 +1953,45 @@ class JournalModelTests(TestCase):
 
 
 @tag("models", "habilitation_request")
+class HabilitationRequestForSandboxTests(TestCase):
+    def test_generate_dict_for_sandbox(self):
+        orga = OrganisationFactory(
+            name="Test",
+            data_pass_id=424242,
+            siret="123456789",
+            address="Test Address",
+            zipcode="12345",
+            city="Test City",
+        )
+        hr = HabilitationRequestFactory(
+            organisation=orga,
+            first_name="Test NOM",
+            last_name="Test PRENOM",
+            email="Test Email",
+        )
+
+        rdict = hr.generate_dict_for_sandbox()
+        self.assertDictEqual(
+            rdict,
+            {
+                "first_name": "Test NOM",
+                "last_name": "Test PRENOM",
+                "profession": hr.profession,
+                "email": "Test Email",
+                "username": "Test Email",
+                "organisation__data_pass_id": 424242,
+                "organisation__name": "Test",
+                "organisation__siret": "123456789",
+                "organisation__address": "Test Address",
+                "organisation__city": "Test City",
+                "organisation__zipcode": "12345",
+                "datapass_id_managers": "",
+                "token": settings.SANDBOX_API_TOKEN,
+            },
+        )
+
+
+@tag("models", "habilitation_request")
 class HabilitationRequestMethodTests(TestCase):
     @classmethod
     def setUpTestData(cls):

@@ -5,11 +5,14 @@ from enum import auto
 from pathlib import Path
 from uuid import uuid4
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models, transaction
 from django.db.models import IntegerChoices
 from django.db.transaction import atomic
 from django.utils.functional import cached_property
+
+import requests
 
 from aidants_connect_common.models import Formation
 
@@ -135,6 +138,31 @@ class HabilitationRequest(models.Model):
 
         self.status = ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
         self.save(update_fields={"status"})
+
+    def generate_dict_for_sandbox(self):
+        orga = self.organisation
+
+        return {
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "profession": self.profession,
+            "email": self.email,
+            "username": self.email,
+            "organisation__data_pass_id": orga.data_pass_id,
+            "organisation__name": orga.name,
+            "organisation__siret": orga.siret,
+            "organisation__address": orga.address,
+            "organisation__city": orga.city,
+            "organisation__zipcode": orga.zipcode,
+            "datapass_id_managers": "",
+            "token": settings.SANDBOX_API_TOKEN,
+        }
+
+    @classmethod
+    def create_or_update_aidant_in_sandbox(cls, pk_hr: int):
+        hr = cls.objects.get(pk=pk_hr)
+        post_dict = hr.generate_dict_for_sandbox()
+        return requests.post(settings.SANDBOX_API_URL, data=post_dict)
 
     class Meta:
         constraints = (
