@@ -5,6 +5,7 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
@@ -20,6 +21,7 @@ from phonenumbers import parse as parse_number
 from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import FormationAttendant
 from aidants_connect_common.tests.factories import FormationFactory
+from aidants_connect_habilitation.models import AidantRequest
 from aidants_connect_habilitation.tests.factories import AidantRequestFactory
 from aidants_connect_web.constants import (
     ReferentRequestStatuses,
@@ -1992,7 +1994,7 @@ class HabilitationRequestForSandboxTests(TestCase):
 
 
 @tag("models", "habilitation_request")
-class HabilitationRequestMethodTests(TestCase):
+class HabilitationRequestTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         pass
@@ -2072,6 +2074,38 @@ class HabilitationRequestMethodTests(TestCase):
         db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
         self.assertEqual(
             db_hab_request.status, ReferentRequestStatuses.STATUS_REFUSED.value
+        )
+
+    def test_trigger(self):
+        ar1 = AidantRequestFactory()
+        hr1 = HabilitationRequestFactory()
+        FormationAttendant.objects.create(attendant=ar1, formation=FormationFactory())
+        FormationAttendant.objects.create(attendant=hr1, formation=FormationFactory())
+
+        ar2 = AidantRequestFactory()
+        FormationAttendant.objects.create(attendant=ar2, formation=FormationFactory())
+
+        arct = ContentType.objects.get_for_model(AidantRequest)
+        hrct = ContentType.objects.get_for_model(HabilitationRequest)
+
+        self.assertEqual(
+            {(ar1.pk, arct.pk), (hr1.pk, hrct.pk), (ar2.pk, arct.pk)},
+            set(
+                FormationAttendant.objects.all().values_list(
+                    "attendant_id", "attendant_content_type"
+                )
+            ),
+        )
+
+        hr2 = HabilitationRequestFactory(email=ar2.email)
+
+        self.assertEqual(
+            {(ar1.pk, arct.pk), (hr1.pk, hrct.pk), (hr2.pk, hrct.pk)},
+            set(
+                FormationAttendant.objects.all().values_list(
+                    "attendant_id", "attendant_content_type"
+                )
+            ),
         )
 
 

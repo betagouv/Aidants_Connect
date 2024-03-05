@@ -3,22 +3,27 @@ from __future__ import annotations
 import logging
 from enum import auto
 from pathlib import Path
+from textwrap import dedent
 from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.models import IntegerChoices
 from django.db.transaction import atomic
 from django.utils.functional import cached_property
 
+import pgtrigger
 import requests
 
 from aidants_connect_common.models import FormationAttendant
+from aidants_connect_habilitation.models import AidantRequest
 
 from ..constants import ReferentRequestStatuses
 from .aidant import Aidant
 from .organisation import Organisation
+from .utils import PGTriggerExtendedFunc
 
 logger = logging.getLogger()
 
@@ -183,6 +188,44 @@ class HabilitationRequest(models.Model):
         )
         verbose_name = "aidant à former"
         verbose_name_plural = "aidants à former"
+        triggers = [
+            pgtrigger.Trigger(
+                name="check_attendants_count",
+                when=pgtrigger.After,
+                operation=pgtrigger.Insert,
+                declare=[
+                    ("attendants_count", "INTEGER"),
+                ],
+                func=PGTriggerExtendedFunc(
+                    dedent(
+                        """
+                        -- Prevent concurrent inserts from multiple transactions
+                        LOCK TABLE {meta.db_table} IN EXCLUSIVE MODE;
+
+                        UPDATE {FormationAttendant_meta.db_table} fa
+                        SET {FormationAttendant_columns.attendant_id} = NEW.{meta.pk.name}, {FormationAttendant_columns.attendant_content_type} = ct1.{ContentType_meta.pk.column}
+                        FROM {ContentType_meta.db_table} ct1
+                        INNER JOIN {AidantRequest_meta.db_table} ar
+                        ON LOWER(ar.{AidantRequest_columns.email}) = LOWER(NEW.{columns.email})
+                        INNER JOIN {ContentType_meta.db_table} ct2
+                        ON ct2.{ContentType_columns.app_label} = '{AidantRequest_meta.app_label}'
+                        AND ct2.{ContentType_columns.model} = '{AidantRequest_meta.model_name}'
+                        WHERE ct1.{ContentType_columns.app_label} = '{meta.app_label}'
+                        AND ct1.{ContentType_columns.model} = '{meta.model_name}'
+                        AND fa.{FormationAttendant_columns.attendant_id} = ar.{AidantRequest_meta.pk.column}
+                        AND fa.{FormationAttendant_columns.attendant_content_type} = ct2.{ContentType_meta.pk.column};
+
+                        RETURN NEW;
+                        """  # noqa: E501
+                    ).strip(),
+                    additionnal_models={
+                        "FormationAttendant": FormationAttendant,
+                        "ContentType": ContentType,
+                        "AidantRequest": AidantRequest,
+                    },
+                ),
+            )
+        ]
 
 
 def _filepath_generator():
