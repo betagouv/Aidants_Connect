@@ -1,7 +1,7 @@
 from django.test import TestCase, tag
 from django.utils.timezone import now, timedelta
 
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_web.models import ReboardingAidantStatistiques
 from aidants_connect_web.statistics.reboarding import (
     compute_reboarding_statistics_for_aidant,

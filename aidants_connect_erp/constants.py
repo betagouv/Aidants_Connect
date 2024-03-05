@@ -1,4 +1,4 @@
-from aidants_connect_common.utils.constants import TextChoicesEnum
+from aidants_connect_common.constants import TextChoicesEnum
 
 
 class SendingStatusChoices(TextChoicesEnum):

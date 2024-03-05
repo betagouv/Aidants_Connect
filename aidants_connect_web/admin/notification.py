@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 from django.urls import path, reverse
 
 from aidants_connect.admin import admin_site
-from aidants_connect_common.utils.constants import TextChoicesEnum
+from aidants_connect_common.constants import TextChoicesEnum
 from aidants_connect_web.models import Aidant, Notification
 
 

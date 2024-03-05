@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 
-from aidants_connect_common.utils.constants import AuthorizationDurations
+from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.decorators import aidant_logged_with_activity_required

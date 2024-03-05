@@ -17,8 +17,8 @@ from dsfr.forms import DsfrBaseForm
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
 
+from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
-from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (

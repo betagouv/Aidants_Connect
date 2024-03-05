@@ -4,7 +4,7 @@ from django.views.generic import RedirectView
 
 from magicauth import views as magicauth_views
 
-from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils import render_email
 from aidants_connect_web.forms import DsfrOtpForm, LoginEmailForm
 
 

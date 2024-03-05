@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
 from django.conf import settings
@@ -16,21 +16,20 @@ from django.utils.timezone import now
 
 from phonenumber_field.modelfields import PhoneNumberField
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.utils.email import render_email
-from aidants_connect_common.utils.urls import build_url
-from aidants_connect_web.models import (
-    Aidant,
-    HabilitationRequest,
-    Organisation,
-    OrganisationType,
+from aidants_connect_common.models import Formation
+from aidants_connect_common.utils import (
+    build_url,
+    generate_new_datapass_id,
+    render_email,
 )
-from aidants_connect_web.models.other_models import Formation
-from aidants_connect_web.utilities import generate_new_datapass_id
+
+if TYPE_CHECKING:
+    from aidants_connect_web.models import Organisation
 
 __all__ = [
     "PersonWithResponsibilities",
@@ -201,7 +200,7 @@ class OrganisationRequest(models.Model):
     updated_at = models.DateTimeField("Date modification", auto_now=True)
 
     organisation = models.ForeignKey(
-        Organisation,
+        "aidants_connect_web.Organisation",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -243,7 +242,9 @@ class OrganisationRequest(models.Model):
         choices=RequestStatusConstants.choices,
     )
 
-    type = models.ForeignKey(OrganisationType, null=True, on_delete=SET_NULL)
+    type = models.ForeignKey(
+        "aidants_connect_web.OrganisationType", null=True, on_delete=SET_NULL
+    )
 
     type_other = models.CharField(
         "Type de structure si autre",
@@ -381,6 +382,14 @@ class OrganisationRequest(models.Model):
 
     @transaction.atomic
     def accept_request_and_create_organisation(self):
+        # Local import to avoid circular imports
+        from aidants_connect_web.models import (
+            Aidant,
+            HabilitationRequest,
+            Organisation,
+            OrganisationType,
+        )
+
         if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
             return False
 
@@ -450,7 +459,10 @@ class OrganisationRequest(models.Model):
         return True
 
     @transaction.atomic
-    def create_aidants(self, organisation: Organisation):
+    def create_aidants(self, organisation: "Organisation"):
+        # Local import to avoid circular imports
+        from aidants_connect_web.models import HabilitationRequest
+
         for aidant in self.aidant_requests.all():
             HabilitationRequest.objects.get_or_create(
                 email=aidant.email,

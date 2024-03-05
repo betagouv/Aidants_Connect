@@ -22,10 +22,9 @@ from celery.signals import task_postrun
 from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
+from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import Department
-from aidants_connect_common.utils.constants import JournalActionKeywords
-from aidants_connect_common.utils.email import render_email
-from aidants_connect_common.utils.urls import build_url
+from aidants_connect_common.utils import build_url, render_email
 from aidants_connect_web.models import (
     Aidant,
     Connection,

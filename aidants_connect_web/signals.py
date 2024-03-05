@@ -14,12 +14,11 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from ipware import get_client_ip
 from ua_parser import user_agent_parser
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     JournalActionKeywords,
     RequestOriginConstants,
 )
-from aidants_connect_common.utils.email import render_email
-from aidants_connect_common.utils.urls import build_url
+from aidants_connect_common.utils import build_url, render_email
 from aidants_connect_web.constants import NotificationType
 from aidants_connect_web.models import Aidant, Journal, Notification
 from aidants_connect_web.models.aidant import UserFingerprint
@@ -171,15 +170,6 @@ def populate_organisation_type_table(app_config: AppConfig, **_):
                 f"""SELECT setval({regclass}, {bigint}, {boolean})
                     FROM "aidants_connect_web_organisationtype";"""
             )
-
-
-@receiver(post_migrate)
-def populate_id_generator_table(app_config: AppConfig, **_):
-    if app_config.name == "aidants_connect_web":
-        IdGenerator = app_config.get_model("IdGenerator")
-        IdGenerator.objects.get_or_create(
-            code=settings.DATAPASS_CODE_FOR_ID_GENERATOR, defaults={"last_id": 10000}
-        )
 
 
 @receiver(post_save, sender=Journal)

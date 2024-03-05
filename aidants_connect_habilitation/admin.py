@@ -16,7 +16,7 @@ from django_reverse_admin import ReverseInlineModelAdmin, ReverseModelAdmin
 
 from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin, admin_site
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
-from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils import render_email
 from aidants_connect_habilitation.forms import (
     AdminAcceptationOrRefusalForm,
     RequestMessageForm,

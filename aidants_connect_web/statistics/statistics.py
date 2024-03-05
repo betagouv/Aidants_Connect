@@ -3,11 +3,11 @@ from typing import Union
 from django.conf import settings
 from django.db.models import Q
 
-from aidants_connect_common.models import Commune, Department, Region
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     JournalActionKeywords,
     RequestStatusConstants,
 )
+from aidants_connect_common.models import Commune, Department, Region
 from aidants_connect_habilitation.models import OrganisationRequest
 
 from ..constants import OTP_APP_DEVICE_NAME, ReferentRequestStatuses

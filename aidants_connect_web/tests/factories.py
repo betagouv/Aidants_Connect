@@ -9,7 +9,6 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from factory import (
     Faker,
     LazyAttribute,
-    LazyFunction,
     SelfAttribute,
     Sequence,
     SubFactory,
@@ -17,7 +16,6 @@ from factory import (
     post_generation,
 )
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyChoice
 
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
@@ -25,8 +23,6 @@ from aidants_connect_web.models import (
     CarteTOTP,
     Connection,
     CoReferentNonAidantRequest,
-    Formation,
-    FormationType,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -279,22 +275,3 @@ class CoReferentNonAidantRequestFactory(DjangoModelFactory):
 
     class Meta:
         model = CoReferentNonAidantRequest
-
-
-class FormationTypeFactory(DjangoModelFactory):
-    label = Faker("word")
-
-    class Meta:
-        model = FormationType
-
-
-class FormationFactory(DjangoModelFactory):
-    start_datetime = LazyFunction(now)
-    end_datetime = LazyFunction(lambda: now() + timedelta(days=1))
-    type = SubFactory(FormationTypeFactory)
-    duration = LazyFunction(lambda: random.randint(1, 10))
-    max_attendants = LazyFunction(lambda: random.randint(1, 10))
-    status = FuzzyChoice(Formation.Status.values)
-
-    class Meta:
-        model = Formation
