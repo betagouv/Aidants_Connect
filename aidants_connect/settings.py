@@ -316,7 +316,11 @@ DEMARCHES = {
         "titre": "Travail - Formation",
         "titre_court": "Travail",
         "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
-        "service_exemples": ["Pôle emploi", "Mon compte formation", "info-retraite.fr"],
+        "service_exemples": [
+            "France Travail",
+            "Mon compte formation",
+            "info-retraite.fr",
+        ],
         "icon": "/static/images/icons/travail.svg",
     },
     "logement": {
