@@ -1,0 +1,76 @@
+{% extends "layouts/main.html" %}
+
+{% load static dsfr_tags %}
+
+{% block extracss %}
+  <link href="{% static 'css/formation-registration.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    <section>
+      <h1 class="fr-mb-6v">Formation de {{ aidant.get_full_name }}</h1>
+      <p class="fr-text--xl fr-mb-16v">
+        Retrouvez ci-dessous toutes les informations concernant les formations disponibles pour
+        {{ aidant.get_full_name }}.
+      </p>
+    </section>
+
+    {% if form.fields.formations.queryset.count == 0 %}
+      <p>Aucune formation nʼest encore disponible.</p>
+    {% else %}
+      <form method="post">
+        {% csrf_token %}
+        {% if form.formation.errors %}
+          <div class="fr-error-text">{{ form.formation.errors }}</div>{% endif %}
+        <table class="fr-table fr-col-12 fr-mb-8v">
+          <thead>
+          <tr>
+            <td>Organisame</td>
+            <td>Dates</td>
+            <td>Format</td>
+            <td>Lieu</td>
+            <td>Sélection</td>
+          </tr>
+          </thead>
+          <tbody>
+          {% for formation_widget in form.formations.subwidgets %}
+            <tr>
+              <td>{{ formation_widget.data.label }}</td>
+              <td>{{ formation_widget.data.value.instance.date_range_str }}</td>
+              <td>{{ formation_widget.data.value.instance.get_type_display }}</td>
+              <td>{{ formation_widget.data.value.instance.place }}</td>
+              <td class="fr-checkbox-group checkbox-container">
+                <input
+                  name="{{ formation_widget.data.name }}"
+                  value="{{ formation_widget.data.value }}"
+                  id="formation-{{ formation_widget.data.value }}"
+                  type="checkbox"
+                  {% if formation_widget.data.value in registered_to %}
+                  disabled
+                  checked
+                  title="{{ aidant.get_full_name }} suis déjà cette formation"
+                  {% endif %}
+                  {% if formation_widget.data.selected %}checked{% endif %} 
+                >
+                <label class="fr-label" for="formation-{{ formation_widget.data.value }}">
+                  <span class="sr-only">
+                    Inscription à la formation {{ formation_widget.data.label }}, 
+                    {{ formation_widget.data.value.instance.date_range_str|lower }}
+                  </span>
+                </label>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <ul class="fr-btns-group fr-btns-group--inline fr-btns-group--right">
+          <li><a href="{{ organisation.get_absolute_url }}" class="fr-btn fr-btn--secondary">Annuler</a></li>
+          <li>
+            <button class="fr-btn" type="submit">Valider la sélection</button>
+          </li>
+        </ul>
+      </form>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -21,7 +21,7 @@ from aidants_connect_common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.models import Formation
+from aidants_connect_common.models import FormationAttendant
 from aidants_connect_common.utils import (
     build_url,
     generate_new_datapass_id,
@@ -575,7 +575,12 @@ class AidantRequest(Person):
         related_name="aidant_requests",
     )
 
-    formation = GenericRelation(Formation, related_name="aidant_requests")
+    formations = GenericRelation(
+        FormationAttendant,
+        related_name="aidant_requests",
+        object_id_field="attendant_id",
+        content_type_field="attendant_content_type",
+    )
 
     habilitation_request = models.OneToOneField(
         "aidants_connect_web.HabilitationRequest",

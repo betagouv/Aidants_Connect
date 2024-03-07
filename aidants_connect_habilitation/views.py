@@ -17,6 +17,9 @@ from aidants_connect_common.constants import (
 )
 from aidants_connect_common.forms import PatchedModelForm
 from aidants_connect_common.utils import render_email
+from aidants_connect_common.views import (
+    FormationRegistrationView as CommonFormationRegistrationView,
+)
 from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
@@ -27,6 +30,7 @@ from aidants_connect_habilitation.forms import (
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
+    AidantRequest,
     Issuer,
     IssuerEmailConfirmation,
     OrganisationRequest,
@@ -48,7 +52,7 @@ __all__ = [
     "AddAidantsRequestView",
 ]
 
-from aidants_connect_web.models import Organisation
+from aidants_connect_web.models import HabilitationRequest, Organisation
 
 """Mixins"""
 
@@ -544,3 +548,24 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
                 Organisation.objects.get(data_pass_id=self.organisation.data_pass_id)
             )
         return super().form_valid(formset)
+
+
+class FormationRegistrationView(LateStageRequestView, CommonFormationRegistrationView):
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant = get_object_or_404(
+            AidantRequest, pk=kwargs["aidant_id"], organisation=self.organisation
+        )
+        if not self.aidant.habilitation_request:
+            raise Http404
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_habilitation_request(self) -> HabilitationRequest:
+        return self.aidant.habilitation_request
+
+    def get_context_data(self, **kwargs):
+        kwargs.update({"organisation": self.organisation, "aidant": self.aidant})
+        return super().get_context_data(**kwargs)
+
+    def get_success_url(self):
+        return self.organisation.get_absolute_url()

@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from enum import auto
 from textwrap import dedent
-from typing import Any
+from typing import Any, Self
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import CASCADE
+from django.db.models import CASCADE, Count
 from django.utils.safestring import mark_safe
+from django.utils.timezone import now
 
 import pgtrigger
 
@@ -103,6 +105,16 @@ class FormationType(models.Model):
         ]
 
 
+class FormationQuerySet(models.QuerySet):
+    def not_full(self) -> Self:
+        return self.annotate(attendants_count=Count("attendants")).filter(
+            attendants_count__lt=models.F("max_attendants")
+        )
+
+    def after(self, delta: timedelta) -> Self:
+        return self.filter(start_datetime__gte=now() + delta)
+
+
 class Formation(models.Model):
     class Status(models.IntegerChoices):
         PRESENTIAL = (auto(), "En présentiel")
@@ -116,18 +128,41 @@ class Formation(models.Model):
     place = models.CharField("Lieu", max_length=500)
     type = models.ForeignKey(FormationType, on_delete=models.PROTECT)
 
+    objects = FormationQuerySet.as_manager()
+
     @property
     def number_of_attendants(self):
         return self.attendants.count()
 
+    @property
+    def date_range_str(self):
+        start_datetime_format = "%d"
+        if self.start_datetime.year != self.end_datetime.year:
+            start_datetime_format += " %B %Y"
+        elif self.start_datetime.month != self.end_datetime.month:
+            start_datetime_format += " %B"
+
+        return (
+            f"Du {self.start_datetime.strftime(start_datetime_format)} "
+            f"au {self.end_datetime.strftime('%d %B %Y')}"
+        )
+
     def __str__(self):
         return self.type.label
 
-    def register_attendant(self, obj):
-        return FormationAttendant.objects.create(formation=self, attendant=obj)
+    def register_attendant(self, obj: models.Model):
+        return FormationAttendant.objects.get_or_create(
+            formation=self,
+            attendant_id=obj.pk,
+            attendant_content_type=ContentType.objects.get_for_model(obj._meta.model),
+        )
 
-    def unregister_attendant(self, obj):
-        FormationAttendant.objects.filter(formation=self, attendant=obj).delete()
+    def unregister_attendant(self, obj: models.Model):
+        FormationAttendant.objects.filter(
+            formation=self,
+            attendant_id=obj.pk,
+            attendant_content_type=ContentType.objects.get_for_model(obj._meta.model),
+        ).delete()
 
     class Meta:
         verbose_name = "Formation aidant"
