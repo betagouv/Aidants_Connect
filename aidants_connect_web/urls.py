@@ -3,6 +3,7 @@ from django.urls import include, path, re_path
 from magicauth import settings as magicauth_settings
 from magicauth.urls import urlpatterns as magicauth_urls
 
+from aidants_connect_sandbox.urls import urlpatterns as sandbox_urls
 from aidants_connect_web.api.urls import router as api_router
 from aidants_connect_web.views import (
     FC_as_FS,
@@ -281,3 +282,4 @@ urlpatterns = [
 ]
 
 urlpatterns.extend(magicauth_urls)
+urlpatterns.extend(sandbox_urls)

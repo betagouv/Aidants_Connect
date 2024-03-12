@@ -58,9 +58,9 @@ class AidantSandboxResource(resources.ModelResource):
                     city=row["organisation__city"],
                     zipcode=row["organisation__zipcode"],
                 )[0]
-        if row["Data pass Id Orga Responsable"]:
+        if row["datapass_id_managers"]:
             respo_orgas = []
-            data_pass_ids = row["Data pass Id Orga Responsable"].split("|")
+            data_pass_ids = row["datapass_id_managers"].split("|")
             for str_one_id in data_pass_ids:
                 if str_one_id and str_one_id.isdigit():
                     one_id = int(str_one_id)
