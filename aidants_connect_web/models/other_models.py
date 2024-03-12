@@ -14,7 +14,7 @@ from django.utils.functional import cached_property
 
 import requests
 
-from aidants_connect_common.models import Formation
+from aidants_connect_common.models import FormationAttendant
 
 from ..constants import ReferentRequestStatuses
 from .aidant import Aidant
@@ -24,6 +24,8 @@ logger = logging.getLogger()
 
 
 class HabilitationRequest(models.Model):
+    ReferentRequestStatuses = ReferentRequestStatuses
+
     ORIGIN_DATAPASS = "datapass"
     ORIGIN_RESPONSABLE = "responsable"
     ORIGIN_OTHER = "autre"
@@ -70,7 +72,12 @@ class HabilitationRequest(models.Model):
     test_pix_passed = models.BooleanField("Test PIX", default=False)
     date_test_pix = models.DateTimeField("Date test PIX", null=True, blank=True)
 
-    formation = GenericRelation(Formation, related_name="habilitation_requests")
+    formations = GenericRelation(
+        FormationAttendant,
+        related_name="aidant_requests",
+        object_id_field="attendant_id",
+        content_type_field="attendant_content_type",
+    )
 
     @property
     def aidant_full_name(self):

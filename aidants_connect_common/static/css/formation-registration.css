@@ -1,0 +1,27 @@
+.checkbox-container {
+  position: relative;
+}
+
+.checkbox-container .fr-label {
+  position: absolute !important;
+  height: 100% !important;
+  width: 100% !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  margin: 0 !important;
+}
+
+.checkbox-container .fr-label::before {
+    left: 1rem !important;
+    top: unset !important;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table tbody tr {
+  border-bottom: 2px solid var(--border-default-grey);
+}

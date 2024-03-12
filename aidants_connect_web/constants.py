@@ -61,10 +61,17 @@ class ReferentRequestStatuses(TextChoices):
     )
 
     @staticmethod
-    def cancellable_by_responsable() -> Set["ReferentRequestStatuses"]:
-        return {
+    def formation_registerable():
+        return (
+            ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_VALIDATED,
+        )
+
+    @staticmethod
+    def cancellable_by_responsable():
+        return (
             ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
             ReferentRequestStatuses.STATUS_NEW,
             ReferentRequestStatuses.STATUS_PROCESSING,
             ReferentRequestStatuses.STATUS_VALIDATED,
-        }
+        )

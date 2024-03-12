@@ -1,11 +1,14 @@
 import logging
 
 from django.contrib.auth import logout
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.views import View
+from django.views.generic import FormView
 
-from aidants_connect_web.models import Aidant, Connection
+from aidants_connect_common.forms import FormationRegistrationForm
+from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -41,3 +44,35 @@ class RequireConnectionView(RequireConnectionMixin, View):
         self.connection: Connection = result
         self.aidant: Aidant = request.user
         return super().dispatch(request, *args, **kwargs)
+
+
+class FormationRegistrationView(FormView):
+    form_class = FormationRegistrationForm
+    template_name = "formation/formation-registration.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.attendant = self.get_habilitation_request()
+        if (
+            self.attendant.status
+            not in ReferentRequestStatuses.formation_registerable()
+        ):
+            raise Http404
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_habilitation_request(self) -> HabilitationRequest:
+        raise NotImplementedError
+
+    def form_valid(self, form: FormationRegistrationForm):
+        for formation in form.cleaned_data["formations"].all():
+            formation.register_attendant(self.attendant)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        kwargs.update(
+            {
+                "registered_to": self.get_habilitation_request().formations.values_list(
+                    "formation", flat=True
+                )
+            }
+        )
+        return super().get_context_data(**kwargs)
