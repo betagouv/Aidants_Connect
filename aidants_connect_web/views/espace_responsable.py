@@ -16,6 +16,9 @@ import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_common.constants import RequestStatusConstants
+from aidants_connect_common.views import (
+    FormationRegistrationView as CommonFormationRegistrationView,
+)
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.constants import (
     OTP_APP_DEVICE_NAME,
@@ -775,3 +778,15 @@ class CancelHabilitationRequestView(DetailView):
     def post(self, request, *args, **kwargs):
         self.get_object().cancel_by_responsable()
         return redirect(reverse("espace_responsable_organisation"))
+
+
+@responsable_logged_with_activity_required
+class FormationRegistrationView(CommonFormationRegistrationView):
+    success_url = reverse_lazy("espace_responsable_organisation")
+
+    def get_habilitation_request(self) -> HabilitationRequest:
+        return get_object_or_404(
+            HabilitationRequest,
+            pk=self.kwargs["request_id"],
+            organisation=self.request.user.organisation,
+        )
