@@ -239,7 +239,7 @@ class RequestOriginConstants(IntegerChoices):
     GUICHET_AUTRE = (7, "Autre guichet d’accueil de service public de proximité")
     GUICHET_OPERATEUR = (
         8,
-        "Guichet d’accueil d’opérateur de service public (CAF, Pôle Emploi, etc.)",
+        "Guichet d’accueil d’opérateur de service public (CAF, France Travail, etc.)",
     )
     AUTRES_ASSOS = (
         9,
