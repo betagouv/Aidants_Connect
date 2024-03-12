@@ -19,8 +19,14 @@ from aidants_connect_common.constants import (
     RequestOriginConstants,
 )
 from aidants_connect_common.utils import build_url, render_email
+from aidants_connect_web import tasks
 from aidants_connect_web.constants import NotificationType
-from aidants_connect_web.models import Aidant, Journal, Notification
+from aidants_connect_web.models import (
+    Aidant,
+    HabilitationRequest,
+    Journal,
+    Notification,
+)
 from aidants_connect_web.models.aidant import UserFingerprint
 
 aidants__organisations_changed = Signal()
@@ -30,6 +36,14 @@ aidant_activated = Signal()
 
 
 logger = logging.getLogger()
+
+
+@receiver(post_save, sender=HabilitationRequest)
+def create_or_update_aidant_in_sandbox(
+    sender, instance: HabilitationRequest, created: bool, **_
+):
+    if settings.SANDBOX_API_URL:
+        tasks.create_or_update_aidant_in_sandbox_task.delay(instance.id)
 
 
 @receiver(post_save, sender=Notification)
