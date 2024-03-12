@@ -469,7 +469,7 @@ class OrganisationRequest(models.Model):
         from aidants_connect_web.models import HabilitationRequest
 
         for aidant in self.aidant_requests.all():
-            HabilitationRequest.objects.get_or_create(
+            hr, _ = HabilitationRequest.objects.get_or_create(
                 email=aidant.email,
                 organisation=organisation,
                 defaults=dict(
@@ -480,6 +480,8 @@ class OrganisationRequest(models.Model):
                     conseiller_numerique=aidant.conseiller_numerique,
                 ),
             )
+            aidant.habilitation_request = hr
+            aidant.save(update_fields=("habilitation_request",))
 
     def refuse_request(self):
         if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
