@@ -1,4 +1,5 @@
 from django.test import TestCase, override_settings, tag
+from django.urls import reverse
 
 import tablib
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
@@ -29,6 +30,48 @@ class AdminAddInfiniteTokenTest(TestCase):
             )
 
 
+@override_settings(ACTIVATE_INFINITY_TOKEN=True)
+@override_settings(SANDBOX_API_TOKEN="TOKENSANDBOX")
+@override_settings(SANDBOX_API_TOKEN="SANDBOX_URL_PADDING")
+class AutomaticAddUserTestCase(TestCase):
+
+    def test_automatic_add_user(self):
+        data = {
+            "first_name": "Test NOM",
+            "last_name": "Test PRENOM",
+            "profession": "PROFESSION",
+            "email": "Test Email",
+            "username": "Test Email",
+            "organisation__data_pass_id": 424242,
+            "organisation__name": "Organisation Test",
+            "organisation__siret": "123456789",
+            "organisation__address": "Test Address",
+            "organisation__city": "Test City",
+            "organisation__zipcode": "12345",
+            "datapass_id_managers": "",
+            "token": "TOKENSANDBOX",
+        }
+        response = self.client.post(reverse("sandbox_automatic_creation"), data)
+        self.assertEqual(201, response.status_code)
+
+        self.assertEqual(1, Organisation.objects.all().count())
+        orga = Organisation.objects.all()[0]
+        self.assertEqual(424242, orga.data_pass_id)
+        self.assertEqual("Organisation Test", orga.name)
+
+        self.assertEqual(1, Aidant.objects.all().count())
+        aidant = Aidant.objects.all()[0]
+        self.assertEqual("test email", aidant.username)
+        self.assertEqual("test email", aidant.email)
+        self.assertEqual(orga, aidant.organisation)
+
+        self.assertEqual(1, StaticDevice.objects.filter(user=aidant).count())
+        device = StaticDevice.objects.filter(user=aidant).first()
+        self.assertEqual(
+            1, StaticToken.objects.filter(device=device, token="123456").count()
+        )
+
+
 @tag("admin")
 class OrganisationResourceTestCase(TestCase):
     @classmethod
@@ -47,7 +90,7 @@ class OrganisationResourceTestCase(TestCase):
                 "organisation__zipcode",
                 "organisation__type__id",
                 "organisation__type__name",
-                "Data pass Id Orga Responsable",
+                "datapass_id_managers",
             ]
         )
 

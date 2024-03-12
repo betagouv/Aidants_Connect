@@ -785,6 +785,7 @@ FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
 
 # URLS
 SANDBOX_URL = os.getenv("SANDBOX_URL", "")
+SANDBOX_URL_PADDING = os.getenv("SANDBOX_URL", "PADDING_SANDBOX")
 WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
 
 REST_FRAMEWORK = {
@@ -816,5 +817,6 @@ FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
 # ######################## SANDBOX SETTING ############################
 
 ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
+AUTO_CREATE_SANDBOX_TOKEN = os.getenv("AUTO_CREATE_SANDBOX_TOKEN", None)
 
 # ######################## END SANDBOX SETTING ############################
