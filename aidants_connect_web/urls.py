@@ -203,10 +203,7 @@ urlpatterns = [
         name="espace_responsable_aidant_change_organisations",
     ),
     path(
-        (
-            "espace-responsable/aidant/<int:aidant_id>/"
-            "supprimer-organisation/<int:organisation_id>/"
-        ),
+        "espace-responsable/aidant/<int:aidant_id>/supprimer-organisation/<int:organisation_id>/",  # noqa: E501
         espace_responsable.RemoveAidantFromOrganisationView.as_view(),
         name="espace_responsable_remove_aidant_from_organisation",
     ),
@@ -229,6 +226,11 @@ urlpatterns = [
         "espace-responsable/aidant-a-former/<int:request_id>/annuler-demande",
         espace_responsable.CancelHabilitationRequestView.as_view(),
         name="espace_responsable_cancel_habilitation",
+    ),
+    path(
+        "espace-responsable/aidant-a-former/<int:request_id>/inscription-formation/",
+        espace_responsable.FormationRegistrationView.as_view(),
+        name="espace_responsable_register_formation",
     ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorize"),
