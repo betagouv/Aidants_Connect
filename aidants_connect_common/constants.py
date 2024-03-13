@@ -253,7 +253,7 @@ class RequestOriginConstants(IntegerChoices):
 class RequestStatusConstants(TextChoicesEnum):
     NEW = "Brouillon"
     AC_VALIDATION_PROCESSING = "En attente de validation par Aidants Connect"
-    VALIDATED = "Validée"
+    VALIDATED = "Élégibilité validée"
     REFUSED = "Refusée"
     CLOSED = "Clôturée"
     CHANGES_REQUIRED = "Modifications demandées"
