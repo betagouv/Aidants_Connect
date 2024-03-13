@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import timedelta
 from enum import auto
 from textwrap import dedent
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -16,6 +16,10 @@ import pgtrigger
 
 from aidants_connect_common.utils import render_markdown
 from aidants_connect_pico_cms.fields import MarkdownField
+
+if TYPE_CHECKING:
+    from aidants_connect_habilitation.models import AidantRequest
+    from aidants_connect_web.models import HabilitationRequest
 
 
 class Region(models.Model):
@@ -114,6 +118,42 @@ class FormationQuerySet(models.QuerySet):
     def after(self, delta: timedelta) -> Self:
         return self.filter(start_datetime__gte=now() + delta)
 
+    def for_attendant(self, attendant: HabilitationRequest | AidantRequest) -> Self:
+        return self.filter(
+            attendants__attendant_id=attendant.pk,
+            attendants__attendant_content_type=ContentType.objects.get_for_model(
+                attendant._meta.model
+            ),
+        )
+
+    def register_attendant(
+        self, attendant: HabilitationRequest | AidantRequest
+    ) -> None:
+        FormationAttendant.objects.bulk_create(
+            [
+                FormationAttendant(
+                    formation_id=formation,
+                    attendant_id=attendant.pk,
+                    attendant_content_type=ContentType.objects.get_for_model(
+                        attendant._meta.model
+                    ),
+                )
+                for formation in self.values_list("pk", flat=True)
+            ],
+            ignore_conflicts=True,
+        )
+
+    def unregister_attendant(
+        self, attendant: HabilitationRequest | AidantRequest
+    ) -> None:
+        FormationAttendant.objects.filter(
+            formation_id__in=self.values("pk"),
+            attendant_id=attendant.pk,
+            attendant_content_type=ContentType.objects.get_for_model(
+                attendant._meta.model
+            ),
+        ).delete()
+
 
 class Formation(models.Model):
     class Status(models.IntegerChoices):
@@ -148,21 +188,13 @@ class Formation(models.Model):
         )
 
     def __str__(self):
-        return self.type.label
+        return f"{self.type.label} {self.date_range_str.casefold()}"
 
-    def register_attendant(self, obj: models.Model):
-        return FormationAttendant.objects.get_or_create(
-            formation=self,
-            attendant_id=obj.pk,
-            attendant_content_type=ContentType.objects.get_for_model(obj._meta.model),
-        )
+    def register_attendant(self, attendant: HabilitationRequest | AidantRequest):
+        Formation.objects.filter(pk=self.pk).register_attendant(attendant)
 
-    def unregister_attendant(self, obj: models.Model):
-        FormationAttendant.objects.filter(
-            formation=self,
-            attendant_id=obj.pk,
-            attendant_content_type=ContentType.objects.get_for_model(obj._meta.model),
-        ).delete()
+    def unregister_attendant(self, attendant: HabilitationRequest | AidantRequest):
+        Formation.objects.filter(pk=self.pk).unregister_attendant(attendant)
 
     class Meta:
         verbose_name = "Formation aidant"

@@ -1,5 +1,6 @@
 import random
 from datetime import timedelta
+from typing import Collection
 
 from django.utils.timezone import now
 
@@ -44,6 +45,15 @@ class FormationFactory(DjangoModelFactory):
         if create and extracted:
             self.type.label = extracted
             self.type.save()
+
+    @factory.post_generation
+    def attendants(self, create, extracted, **kwargs):
+        if create and isinstance(extracted, Collection):
+            for attendant in extracted:
+                if self.max_attendants < len(extracted):
+                    self.max_attendants = len(extracted)
+                    self.save()
+                self.register_attendant(attendant)
 
     class Meta:
         model = Formation
