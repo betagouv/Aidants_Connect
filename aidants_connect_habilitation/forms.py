@@ -411,6 +411,7 @@ class ManagerForm(
     class Meta(PersonWithResponsibilitiesForm.Meta):
         model = Manager
         widgets = {"address": TextInput}
+        include = ("conseiller_numerique",)
 
 
 class EmailOrganisationValidationError(ValidationError):

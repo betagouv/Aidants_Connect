@@ -189,6 +189,10 @@ class Manager(PersonWithResponsibilities):
 
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
 
+    conseiller_numerique = models.BooleanField(
+        "Est un conseiller numérique", default=False
+    )
+
     class Meta:
         verbose_name = "Référent structure"
         verbose_name_plural = "Référents structure"
@@ -453,6 +457,7 @@ class OrganisationRequest(models.Model):
                     first_name=self.manager.first_name,
                     last_name=self.manager.last_name,
                     profession=self.manager.profession,
+                    conseiller_numerique=self.manager.conseiller_numerique,
                 ),
             )
 
@@ -472,6 +477,7 @@ class OrganisationRequest(models.Model):
                     first_name=aidant.first_name,
                     last_name=aidant.last_name,
                     profession=aidant.profession,
+                    conseiller_numerique=aidant.conseiller_numerique,
                 ),
             )
 
@@ -575,11 +581,8 @@ class AidantRequest(Person):
         related_name="aidant_requests",
     )
 
-    formations = GenericRelation(
-        FormationAttendant,
-        related_name="aidant_requests",
-        object_id_field="attendant_id",
-        content_type_field="attendant_content_type",
+    conseiller_numerique = models.BooleanField(
+        "Est un conseiller numérique", default=False
     )
 
     habilitation_request = models.OneToOneField(
@@ -588,6 +591,13 @@ class AidantRequest(Person):
         null=True,
         default=None,
         on_delete=models.CASCADE,
+    )
+
+    formations = GenericRelation(
+        FormationAttendant,
+        related_name="aidant_requests",
+        object_id_field="attendant_id",
+        content_type_field="attendant_content_type",
     )
 
     @property

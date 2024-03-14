@@ -177,9 +177,12 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
             )
 
-            self.assertEqual(
-                element.get_attribute("value"), getattr(manager, field_name)
-            )
+            if element.get_attribute("type") == "checkbox":
+                self.assertEqual(getattr(manager, field_name), element.is_selected())
+            else:
+                self.assertEqual(
+                    element.get_attribute("value"), getattr(manager, field_name)
+                )
 
     def test_form_modify_manager_data(self):
         issuer: Issuer = IssuerFactory()
@@ -229,8 +232,13 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                     By.CSS_SELECTOR,
                     f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
                 )
-                element.clear()
-                element.send_keys(str(getattr(new_manager, field_name)))
+
+                if element.get_attribute("type") == "checkbox":
+                    if element.is_selected() != getattr(new_manager, field_name):
+                        element.click()
+                else:
+                    element.clear()
+                    element.send_keys(str(getattr(new_manager, field_name)))
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
@@ -302,8 +310,10 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                     By.CSS_SELECTOR,
                     f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}-{field_name}",
                 )
-                element.clear()
-                element.send_keys(aidant_data[field_name])
+
+                if element.get_attribute("type") != "checkbox":
+                    element.clear()
+                    element.send_keys(aidant_data[field_name])
 
             self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
 
@@ -351,8 +361,13 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"
                 f"{modified_aidant_idx}-{field_name}",
             )
-            element.clear()
-            element.send_keys(aidant_data[field_name])
+
+            if element.get_attribute("type") == "checkbox":
+                if element.is_selected() != aidant_data[field_name]:
+                    element.click()
+            else:
+                element.clear()
+                element.send_keys(aidant_data[field_name])
 
         self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
