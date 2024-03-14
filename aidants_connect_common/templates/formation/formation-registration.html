@@ -46,12 +46,7 @@
                   value="{{ formation_widget.data.value }}"
                   id="formation-{{ formation_widget.data.value }}"
                   type="checkbox"
-                  {% if formation_widget.data.value in registered_to %}
-                  disabled
-                  checked
-                  title="{{ aidant.get_full_name }} suis déjà cette formation"
-                  {% endif %}
-                  {% if formation_widget.data.selected %}checked{% endif %} 
+                  {% if formation_widget.data.selected or formation_widget.data.value in registered_to %}checked{% endif %} 
                 >
                 <label class="fr-label" for="formation-{{ formation_widget.data.value }}">
                   <span class="sr-only">

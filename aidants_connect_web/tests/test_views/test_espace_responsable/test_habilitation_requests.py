@@ -296,6 +296,25 @@ class TestFormationRegistrationView(TestCase):
         )
         cls.formation_full.register_attendant(HabilitationRequestFactory())
 
+        cls.hr_registered_to_2_formations = HabilitationRequestFactory(
+            organisation=cls.referent.organisation,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
+
+        cls.formation_with_aidant1: Formation = FormationFactory(
+            type_label="Hein? formations",
+            start_datetime=now() + timedelta(days=45),
+            attendants=[cls.hr_registered_to_2_formations],
+            max_attendants=10,
+        )
+
+        cls.formation_with_aidant2: Formation = FormationFactory(
+            type_label="Formes Ah Scions",
+            start_datetime=now() + timedelta(days=45),
+            attendants=[cls.hr_registered_to_2_formations],
+            max_attendants=10,
+        )
+
     def test_triggers_correct_view(self):
         found = resolve(
             reverse(
@@ -387,4 +406,28 @@ class TestFormationRegistrationView(TestCase):
         self.assertEqual(
             {self.habilitation_processing},
             {item.attendant for item in self.formation_ok.attendants.all()},
+        )
+
+    def test_unregistration(self):
+        self.client.force_login(self.referent)
+        self.assertEqual(
+            {self.formation_with_aidant1, self.formation_with_aidant2},
+            {
+                fa.formation
+                for fa in self.hr_registered_to_2_formations.formations.all()
+            },
+        )
+        self.client.post(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.hr_registered_to_2_formations.pk},
+            ),
+            data={"formations": [self.formation_ok.pk, self.formation_with_aidant1.pk]},
+        )
+        self.assertEqual(
+            {self.formation_with_aidant1, self.formation_ok},
+            {
+                fa.formation
+                for fa in self.hr_registered_to_2_formations.formations.all()
+            },
         )

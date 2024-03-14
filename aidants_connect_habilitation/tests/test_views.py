@@ -1345,6 +1345,27 @@ class TestFormationRegistrationView(TestCase):
         )
         cls.formation_full.register_attendant(HabilitationRequestFactory())
 
+        cls.aidant_registered_to_2_formations: AidantRequest = AidantRequestFactory(
+            organisation=cls.organisation,
+            habilitation_request=HabilitationRequestFactory(
+                status=ReferentRequestStatuses.STATUS_PROCESSING
+            ),
+        )
+
+        cls.formation_with_aidant1: Formation = FormationFactory(
+            type_label="Hein? formations",
+            start_datetime=now() + timedelta(days=45),
+            attendants=[cls.aidant_registered_to_2_formations.habilitation_request],
+            max_attendants=10,
+        )
+
+        cls.formation_with_aidant2: Formation = FormationFactory(
+            type_label="Formes Ah Scions",
+            start_datetime=now() + timedelta(days=45),
+            attendants=[cls.aidant_registered_to_2_formations.habilitation_request],
+            max_attendants=10,
+        )
+
     def test_triggers_correct_view(self):
         found = resolve(
             reverse(
@@ -1504,4 +1525,27 @@ class TestFormationRegistrationView(TestCase):
         self.assertEqual(
             {self.aidant_with_ongoing_habilitation.habilitation_request},
             {item.attendant for item in self.formation_ok.attendants.all()},
+        )
+
+    def test_unregistration(self):
+        hab = self.aidant_registered_to_2_formations.habilitation_request
+        self.assertEqual(
+            {self.formation_with_aidant1, self.formation_with_aidant2},
+            {fa.formation for fa in hab.formations.all()},
+        )
+        self.client.post(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_registered_to_2_formations.pk,
+                },
+            ),
+            data={"formations": [self.formation_ok.pk, self.formation_with_aidant1.pk]},
+        )
+        hab = self.aidant_registered_to_2_formations.habilitation_request
+        self.assertEqual(
+            {self.formation_with_aidant1, self.formation_ok},
+            {fa.formation for fa in hab.formations.all()},
         )

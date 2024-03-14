@@ -1,12 +1,14 @@
 import logging
 
 from django.contrib.auth import logout
+from django.db import transaction
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.views import View
 from django.views.generic import FormView
 
 from aidants_connect_common.forms import FormationRegistrationForm
+from aidants_connect_common.models import Formation
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
 
@@ -57,14 +59,19 @@ class FormationRegistrationView(FormView):
             not in ReferentRequestStatuses.formation_registerable()
         ):
             raise Http404
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_habilitation_request(self) -> HabilitationRequest:
         raise NotImplementedError
 
     def form_valid(self, form: FormationRegistrationForm):
-        for formation in form.cleaned_data["formations"].all():
-            formation.register_attendant(self.attendant)
+        with transaction.atomic():
+            Formation.objects.exclude(
+                pk__in=form.cleaned_data["formations"].values("pk")
+            ).for_attendant(self.attendant).unregister_attendant(self.attendant)
+            form.cleaned_data["formations"].register_attendant(self.attendant)
+
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
