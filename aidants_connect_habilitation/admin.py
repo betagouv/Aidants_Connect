@@ -106,6 +106,7 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "city_insee_code",
         "department_insee_code",
         "is_aidant",
+        "conseiller_numerique",
     )
     readonly_fields = ("organisation",)
 
@@ -114,6 +115,7 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "last_name",
         "email",
         "is_aidant",
+        "conseiller_numerique",
         "organisation",
         "zipcode",
     )
@@ -563,5 +565,11 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 
 @admin.register(AidantRequest, site=admin_site)
 class AidantRequestAdmin(VisibleToTechAdmin, ModelAdmin):
-    list_display = ("__str__", "email", "profession", "organisation")
+    list_display = (
+        "__str__",
+        "email",
+        "profession",
+        "organisation",
+        "conseiller_numerique",
+    )
     raw_id_fields = ("organisation", "habilitation_request")

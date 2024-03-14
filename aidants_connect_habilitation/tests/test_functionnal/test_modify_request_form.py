@@ -78,8 +78,13 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                     By.CSS_SELECTOR,
                     f"#id_form-{i}-{field_name}",
                 )
-                element.clear()
-                element.send_keys(aidant_data[field_name])
+
+                if element.get_attribute("type") == "checkbox":
+                    if element.is_selected() == aidant_data[field_name]:
+                        element.click()
+                else:
+                    element.clear()
+                    element.send_keys(aidant_data[field_name])
 
             self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
 

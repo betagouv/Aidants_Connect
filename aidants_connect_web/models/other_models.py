@@ -50,6 +50,9 @@ class HabilitationRequest(models.Model):
         related_name="habilitation_requests",
     )
     profession = models.CharField(blank=False, max_length=150)
+    conseiller_numerique = models.BooleanField(
+        "Est un conseiller numérique", default=False
+    )
     status = models.CharField(
         "État",
         blank=False,
@@ -129,6 +132,7 @@ class HabilitationRequest(models.Model):
                 organisation=self.organisation,
                 email=self.email,
                 username=self.email,
+                conseiller_numerique=self.conseiller_numerique,
             )
             self.status = ReferentRequestStatuses.STATUS_VALIDATED
             self.save()
