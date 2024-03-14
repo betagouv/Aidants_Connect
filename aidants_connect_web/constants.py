@@ -51,7 +51,7 @@ class NotificationType(TextChoicesEnum):
 class ReferentRequestStatuses(TextChoices):
     STATUS_WAITING_LIST_HABILITATION = ("waitling_list", "Liste d'attente")
     STATUS_NEW = ("new", "Nouvelle")
-    STATUS_PROCESSING = ("processing", "En cours")
+    STATUS_PROCESSING = ("processing", "Élégibilité validée")
     STATUS_VALIDATED = ("validated", "Validée")
     STATUS_REFUSED = ("refused", "Refusée")
     STATUS_CANCELLED = ("cancelled", "Annulée")
