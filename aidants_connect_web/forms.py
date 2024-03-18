@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 from urllib.parse import unquote
 
 from django import forms
@@ -16,6 +17,9 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from dsfr.forms import DsfrBaseForm
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
+from pydantic import BaseModel
+from pydantic import ValidationError as PydanticValidationError
+from pydantic import validator
 
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
@@ -609,9 +613,11 @@ class OAuthParametersForm(PatchedForm):
     redirect_uri = forms.CharField()
     scope = forms.CharField()
     acr_values = forms.CharField()
+    claim = forms.JSONField(required=False)
 
-    def __init__(self, *args, relaxed=False, **kwargs):
+    def __init__(self, organisation: Organisation, *args, relaxed=False, **kwargs):
         self.relaxed = relaxed
+        self.organisation = organisation
         super().__init__(*args, **kwargs)
 
     def clean_nonce(self):
@@ -659,8 +665,52 @@ class OAuthParametersForm(PatchedForm):
             raise ValidationError("", "invalid")
         return result
 
+    def clean_claim(self):
+        result = self.cleaned_data.get("claim")
+        if not result:
+            return None
+
+        class Claim(BaseModel):
+            class IdToken(BaseModel):
+                class RepScope(BaseModel):
+                    essential: bool
+                    values: Optional[set[str]] = set()
+
+                    @validator("essential", allow_reuse=True)
+                    def check_true(cls, v):
+                        assert v is True
+                        return v
+
+                    @validator("values", allow_reuse=True)
+                    def check_demarche(cls, v):
+                        assert all(value in settings.DEMARCHES.keys() for value in v)
+                        return v
+
+                rep_scope: RepScope
+
+            id_token: IdToken
+
+        try:
+            unauthorized_perimeters = Claim(**result).id_token.rep_scope.values - set(
+                self.organisation.allowed_demarches
+            )
+
+            if unauthorized_perimeters:
+                raise ValidationError(
+                    f"Unauthorized perimeters: {unauthorized_perimeters}",
+                    code="unauthorized_perimeter",
+                )
+        except (TypeError, PydanticValidationError):
+            raise ValidationError(
+                self.fields["claim"].error_messages["invalid"],
+                code="invalid",
+                params={"value": result},
+            )
+
+        return result
+
     def clean(self):
-        cleaned_data = super().clean()
+        cleaned_data = {k: v for k, v in super().clean().items() if v is not None}
 
         if self.relaxed:
             return cleaned_data
