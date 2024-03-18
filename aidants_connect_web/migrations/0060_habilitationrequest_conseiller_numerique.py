@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aidants_connect_web', '0058_alter_formationattendant_unique_together_and_more'),
+        ('aidants_connect_web', '0059_habilitationrequest_check_attendants_count'),
     ]
 
     operations = [
