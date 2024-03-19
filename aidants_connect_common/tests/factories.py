@@ -33,7 +33,7 @@ class FormationFactory(DjangoModelFactory):
     start_datetime = LazyFunction(now)
     type = SubFactory(FormationTypeFactory)
     duration = LazyFunction(lambda: random.randint(1, 10))
-    max_attendants = LazyFunction(lambda: random.randint(1, 10))
+    max_attendants = LazyFunction(lambda: random.randint(10, 100))
     status = FuzzyChoice(Formation.Status.values)
 
     @factory.lazy_attribute
