@@ -36,16 +36,16 @@
           <tbody>
           {% for formation_widget in form.formations.subwidgets %}
             <tr>
-              <td>{{ formation_widget.data.label }}</td>
+              <td>{{ formation_widget.data.value.instance.type.label }}</td>
               <td>{{ formation_widget.data.value.instance.date_range_str }}</td>
-              <td>{{ formation_widget.data.value.instance.get_type_display }}</td>
+              <td>{{ formation_widget.data.value.instance.get_status_display }}</td>
               <td>{{ formation_widget.data.value.instance.place }}</td>
-              <td class="fr-checkbox-group checkbox-container">
+              <td class="fr-radio-group option-container">
                 <input
                   name="{{ formation_widget.data.name }}"
                   value="{{ formation_widget.data.value }}"
                   id="formation-{{ formation_widget.data.value }}"
-                  type="checkbox"
+                  type="radio"
                   {% if formation_widget.data.selected or formation_widget.data.value in registered_to %}checked{% endif %} 
                 >
                 <label class="fr-label" for="formation-{{ formation_widget.data.value }}">

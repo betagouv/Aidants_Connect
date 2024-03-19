@@ -186,7 +186,7 @@
                   {% if request.status in request.ReferentRequestStatuses.formation_registerable %}
                     <a
                       id="register-habilitation-request-{{ request.id }}"
-                      href="{% url "espace_responsable_cancel_habilitation" request_id=request.id %}"
+                      href="{% url "espace_responsable_register_formation" request_id=request.id %}"
                       class="fr-btn fr-btn--secondary "
                     >
                       Inscrire à une formation
