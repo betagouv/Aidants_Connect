@@ -53,7 +53,7 @@ pre-commit = "~=3.1"
 selenium = "~=4.4"
 tblib = "*"
 # pre-commit dependencies
-black = "==24.2.0"
+black = "==24.3.0"
 flake8 = "==7.0.0"
 pre-commit-hooks = "==4.5.0"
 isort = "==5.13.2"
