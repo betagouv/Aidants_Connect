@@ -18,12 +18,12 @@ import pgtrigger
 import requests
 
 from aidants_connect_common.models import FormationAttendant
+from aidants_connect_common.utils import PGTriggerExtendedFunc
 from aidants_connect_habilitation.models import AidantRequest
 
 from ..constants import ReferentRequestStatuses
 from .aidant import Aidant
 from .organisation import Organisation
-from .utils import PGTriggerExtendedFunc
 
 logger = logging.getLogger()
 
@@ -107,7 +107,7 @@ class HabilitationRequest(models.Model):
         return self.ORIGIN_LABELS[self.origin]
 
     def __str__(self):
-        return f"{self.email}"
+        return f"{self.aidant_full_name} ({self.email})"
 
     def validate_and_create_aidant(self):
         if self.status not in (
