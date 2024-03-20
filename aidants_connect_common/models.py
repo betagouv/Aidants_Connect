@@ -8,6 +8,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import CASCADE, Count
+from django.template.defaultfilters import date
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
@@ -176,15 +177,9 @@ class Formation(models.Model):
 
     @property
     def date_range_str(self):
-        start_datetime_format = "%d"
-        if self.start_datetime.year != self.end_datetime.year:
-            start_datetime_format += " %B %Y"
-        elif self.start_datetime.month != self.end_datetime.month:
-            start_datetime_format += " %B"
-
         return (
-            f"Du {self.start_datetime.strftime(start_datetime_format)} "
-            f"au {self.end_datetime.strftime('%d %B %Y')}"
+            f"Du {date(self.start_datetime, 'd F Y à H:i')} "
+            f"au {date(self.end_datetime, 'd F Y à H:i')}"
         )
 
     def __str__(self):

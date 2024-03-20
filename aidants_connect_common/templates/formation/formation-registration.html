@@ -28,6 +28,7 @@
           <tr>
             <td>Organisame</td>
             <td>Dates</td>
+            <td>Durée</td>
             <td>Format</td>
             <td>Lieu</td>
             <td>Sélection</td>
@@ -38,6 +39,7 @@
             <tr>
               <td>{{ formation_widget.data.value.instance.type.label }}</td>
               <td>{{ formation_widget.data.value.instance.date_range_str }}</td>
+              <td>{{ formation_widget.data.value.instance.duration }}h</td>
               <td>{{ formation_widget.data.value.instance.get_status_display }}</td>
               <td>{{ formation_widget.data.value.instance.place }}</td>
               <td class="fr-radio-group option-container">
