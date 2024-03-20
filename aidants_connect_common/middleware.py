@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.conf import settings
 
 from django_blocklist.middleware import BlocklistMiddleware
@@ -13,7 +15,7 @@ class BlocklistMiddleware2(BlocklistMiddleware):
         return super().__call__(request)
 
 
-class ThrottleIPMiddleware(object):
+class ThrottleIPMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.redis_client: Redis = Redis.from_url(settings.REDIS_URL)
@@ -34,7 +36,9 @@ class ThrottleIPMiddleware(object):
         if response.status_code == 404:
             self.redis_client.setnx(ip, "0")
             num_fail = int(self.redis_client.incr(ip))
-            self.redis_client.expire(ip, settings.BLOCKLIST_EXPIRE_SECONDS)
+            self.redis_client.expire(
+                ip, timedelta(seconds=settings.BLOCKLIST_EXPIRE_SECONDS)
+            )
 
             if num_fail >= settings.BLOCKLIST_REQUEST_THRESHOLD:
                 add_to_blocklist({ip})
