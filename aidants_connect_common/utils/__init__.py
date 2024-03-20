@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 import json
+import re
 from datetime import date, datetime, time, timedelta
 from logging import getLogger
+from textwrap import dedent
 
 from django.conf import settings
-from django.db import transaction
+from django.db import models, transaction
 from django.db.models import F
 from django.template import loader
 from django.templatetags.static import static
 from django.utils.html import escape
 
+import pgtrigger
 from markdown import markdown
 from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.nl2br import Nl2BrExtension
@@ -89,3 +94,38 @@ def render_markdown(content: str) -> str:
             AttrListExtension(),  # Allows to add HTML classes and ID
         ],
     )
+
+
+class PGTriggerExtendedFunc(pgtrigger.Func):
+    """Temporary until https://github.com/Opus10/django-pgtrigger/pull/150/ is merged"""
+
+    def __init__(
+        self, func, additionnal_models: dict[str, type[models.Model]] | None = None
+    ):
+        super().__init__(dedent(re.sub(r"[ \t\r\f\v]+\n", "\n", func)).strip())
+        self.additionnal_models = additionnal_models or {}
+
+    def render(self, model: models.Model) -> str:
+        fields = pgtrigger.utils.AttrDict(
+            {field.name: field for field in model._meta.fields}
+        )
+        columns = pgtrigger.utils.AttrDict(
+            {field.name: field.column for field in model._meta.fields}
+        )
+        format_parameters = {"meta": model._meta, "fields": fields, "columns": columns}
+        for prefix, additionnal_model in self.additionnal_models.items():
+            format_parameters.update(
+                {
+                    f"{prefix}_meta": additionnal_model._meta,
+                    f"{prefix}_fields": pgtrigger.utils.AttrDict(
+                        {field.name: field for field in additionnal_model._meta.fields}
+                    ),
+                    f"{prefix}_columns": pgtrigger.utils.AttrDict(
+                        {
+                            field.name: field.column
+                            for field in additionnal_model._meta.fields
+                        }
+                    ),
+                }
+            )
+        return self.func.format(**format_parameters)

@@ -2,19 +2,19 @@ from __future__ import annotations
 
 from datetime import timedelta
 from enum import auto
-from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Self
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import CASCADE, Count
+from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 
 import pgtrigger
 
-from aidants_connect_common.utils import render_markdown
+from aidants_connect_common.utils import PGTriggerExtendedFunc, render_markdown
 from aidants_connect_pico_cms.fields import MarkdownField
 
 if TYPE_CHECKING:
@@ -100,8 +100,8 @@ class FormationType(models.Model):
         return self.label
 
     class Meta:
-        verbose_name = "Type de formation aidant"
-        verbose_name_plural = "Types de formation aidant"
+        verbose_name = "Formation : types"
+        verbose_name_plural = "Formation : types"
         constraints = [
             models.CheckConstraint(
                 check=models.Q(label__isnull_or_blank=False), name="not_blank_label"
@@ -226,7 +226,18 @@ class FormationAttendant(models.Model):
         Formation, on_delete=models.PROTECT, related_name="attendants"
     )
 
+    @cached_property
+    def target(self):
+        return self.attendant_content_type.get_object_for_this_type(
+            pk=self.attendant_id
+        )
+
+    def __str__(self):
+        return f"{self.target}"
+
     class Meta:
+        verbose_name = "Formation : inscrit"
+        verbose_name_plural = "Formation : inscrits"
         # One attendant a type can only be registered only once to a specific formation
         unique_together = ("attendant_content_type", "attendant_id", "formation")
         triggers = [
@@ -238,27 +249,26 @@ class FormationAttendant(models.Model):
                     ("attendants_count", "INTEGER"),
                     ("max_attendants_count", "INTEGER"),
                 ],
-                func=pgtrigger.Func(
-                    dedent(
-                        f"""
-                        -- prevent concurrent inserts from multiple transactions
-                        LOCK TABLE {{meta.db_table}} IN EXCLUSIVE MODE;
+                func=PGTriggerExtendedFunc(
+                    """
+                    -- prevent concurrent inserts from multiple transactions
+                    LOCK TABLE {meta.db_table} IN EXCLUSIVE MODE;
 
-                        SELECT INTO attendants_count COUNT(*) 
-                        FROM {{meta.db_table}} 
-                        WHERE {{columns.formation}} = NEW.{{columns.formation}};
+                    SELECT INTO attendants_count COUNT(*) 
+                    FROM {meta.db_table}
+                    WHERE {columns.formation} = NEW.{columns.formation};
 
-                        SELECT {Formation._meta.get_field('max_attendants').name} INTO max_attendants_count
-                        FROM {Formation._meta.db_table} 
-                        WHERE {Formation._meta.pk.name} = NEW.{{columns.formation}};
+                    SELECT {Formation_columns.max_attendants} INTO max_attendants_count
+                    FROM {Formation_meta.db_table} 
+                    WHERE {Formation_meta.pk.name} = NEW.{columns.formation};
 
-                        IF attendants_count >= max_attendants_count THEN
-                            RAISE EXCEPTION 'Formation is already full.' USING ERRCODE = 'check_violation';
-                        END IF;
+                    IF attendants_count >= max_attendants_count THEN
+                        RAISE EXCEPTION 'Formation is already full.' USING ERRCODE = 'check_violation';
+                    END IF;
 
-                        RETURN NEW;
-                        """  # noqa: E501, W291
-                    ).strip()
+                    RETURN NEW;
+                    """,  # noqa: E501, W291
+                    additionnal_models={"Formation": Formation},
                 ),
             )
         ]
