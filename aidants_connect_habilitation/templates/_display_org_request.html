@@ -151,7 +151,7 @@
 
           <div class="flex fr-mb-5v">
             <h4 class="h2 fr-col--middle fr-m-0">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
-            {% if aidant_request.habilitation_request and aidant_request.habilitation_request.status in aidant_request.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+            {% if aidant_request.habilitation_request and aidant_request.habilitation_request.status in aidant_request.habilitation_request.ReferentRequestStatuses.formation_registerable and aidant_request.habilitation_request.conseiller_numerique %}
               <span class="spacer"></span>
               <a
                 href="{% url 'habilitation_new_aidant_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant_request.pk %}"
