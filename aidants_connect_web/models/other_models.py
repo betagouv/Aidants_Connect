@@ -88,6 +88,10 @@ class HabilitationRequest(models.Model):
     )
 
     @property
+    def get_full_name(self):
+        return self.aidant_full_name
+
+    @property
     def aidant_full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 

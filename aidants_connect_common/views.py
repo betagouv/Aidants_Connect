@@ -79,7 +79,8 @@ class FormationRegistrationView(FormView):
             {
                 "registered_to": self.get_habilitation_request().formations.values_list(
                     "formation", flat=True
-                )
+                ),
+                "aidant": self.get_habilitation_request(),
             }
         )
         return super().get_context_data(**kwargs)
