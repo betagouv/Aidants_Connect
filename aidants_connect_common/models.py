@@ -111,21 +111,27 @@ class FormationType(models.Model):
 
 
 class FormationQuerySet(models.QuerySet):
-    def not_full(self) -> Self:
-        return self.annotate(attendants_count=Count("attendants")).filter(
-            attendants_count__lt=models.F("max_attendants")
-        )
-
-    def after(self, delta: timedelta) -> Self:
-        return self.filter(start_datetime__gte=now() + delta)
-
-    def for_attendant(self, attendant: HabilitationRequest | AidantRequest) -> Self:
-        return self.filter(
+    def for_attendant_q(self, attendant: HabilitationRequest | AidantRequest):
+        return models.Q(
             attendants__attendant_id=attendant.pk,
             attendants__attendant_content_type=ContentType.objects.get_for_model(
                 attendant._meta.model
             ),
         )
+
+    def available_for_attendant(
+        self, after: timedelta, attendant: HabilitationRequest | AidantRequest
+    ) -> Self:
+        return self.annotate(attendants_count=Count("attendants")).filter(
+            models.Q(
+                attendants_count__lt=models.F("max_attendants"),
+                start_datetime__gte=now() + after,
+            )
+            | self.for_attendant_q(attendant)
+        )
+
+    def for_attendant(self, attendant: HabilitationRequest | AidantRequest) -> Self:
+        return self.filter(self.for_attendant_q(attendant))
 
     def register_attendant(
         self, attendant: HabilitationRequest | AidantRequest

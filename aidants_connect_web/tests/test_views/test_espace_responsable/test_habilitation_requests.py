@@ -282,7 +282,7 @@ class TestFormationRegistrationView(TestCase):
 
         cls.formation_ok: Formation = FormationFactory(
             type_label="Des formations et des Hommes",
-            start_datetime=now() + timedelta(days=45),
+            start_datetime=now() + timedelta(days=46),
         )
 
         cls.formation_too_close: Formation = FormationFactory(
@@ -291,7 +291,7 @@ class TestFormationRegistrationView(TestCase):
 
         cls.formation_full: Formation = FormationFactory(
             type_label="A fond la Formation",
-            start_datetime=now() + timedelta(days=45),
+            start_datetime=now() + timedelta(days=46),
             max_attendants=1,
         )
         cls.formation_full.register_attendant(HabilitationRequestFactory())
@@ -303,14 +303,14 @@ class TestFormationRegistrationView(TestCase):
 
         cls.formation_with_aidant1: Formation = FormationFactory(
             type_label="Hein? formations",
-            start_datetime=now() + timedelta(days=45),
+            start_datetime=now() + timedelta(days=46),
             attendants=[cls.hr_registered_to_2_formations],
             max_attendants=10,
         )
 
         cls.formation_with_aidant2: Formation = FormationFactory(
             type_label="Formes Ah Scions",
-            start_datetime=now() + timedelta(days=45),
+            start_datetime=now() + timedelta(days=46),
             attendants=[cls.hr_registered_to_2_formations],
             max_attendants=10,
         )
