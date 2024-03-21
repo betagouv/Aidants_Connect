@@ -63,14 +63,7 @@ class Authorize(RequireConnectionMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        form = (
-            OAuthParametersFormV2(data=request.GET)
-            if (
-                unquote(request.GET.get("redirect_uri", ""))
-                == settings.FC_AS_FI_CALLBACK_URL_V2
-            )
-            else OAuthParametersForm(data=request.GET)
-        )
+        form = self.get_oauth_parameters_form()
         if form.is_valid():
             self.oauth_parameters_form = form
             self.connection = Connection.objects.create(
@@ -81,14 +74,7 @@ class Authorize(RequireConnectionMixin, FormView):
             return self.form_invalid_get(form)
 
     def post(self, request, *args, **kwargs):
-        self.oauth_parameters_form = (
-            OAuthParametersFormV2(data=request.POST, relaxed=True)
-            if (
-                unquote(request.GET.get("redirect_uri", ""))
-                == settings.FC_AS_FI_CALLBACK_URL_V2
-            )
-            else OAuthParametersForm(data=request.POST, relaxed=True)
-        )
+        self.oauth_parameters_form = self.get_oauth_parameters_form(relaxed=True)
 
         if not self.oauth_parameters_form.is_valid():
             # That case should only happen if, for whatever reason,
@@ -202,6 +188,21 @@ class Authorize(RequireConnectionMixin, FormView):
             ],
         }
 
+    def get_oauth_parameters_form(self, **kwargs):
+        data = self.request.GET if self.request.method == "GET" else self.request.POST
+        return (
+            OAuthParametersFormV2(
+                data=data, organisation=self.aidant.organisation, **kwargs
+            )
+            if (
+                unquote(data.get("redirect_uri", ""))
+                == settings.FC_AS_FI_CALLBACK_URL_V2
+            )
+            else OAuthParametersForm(
+                data=data, organisation=self.aidant.organisation, **kwargs
+            )
+        )
+
     def get_success_url(self):
         parameters = urlencode(self.oauth_parameters_form.cleaned_data)
         return f"{reverse('fi_select_demarche')}?{parameters}"
@@ -257,12 +258,16 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
 
     def get_context_data(self, **kwargs):
         oauth_parameters_form = (
-            OAuthParametersFormV2(data=self.request.GET)
+            OAuthParametersFormV2(
+                data=self.request.GET, organisation=self.aidant.organisation
+            )
             if (
                 unquote(self.request.GET.get("redirect_uri", ""))
                 == settings.FC_AS_FI_CALLBACK_URL_V2
             )
-            else OAuthParametersForm(data=self.request.GET)
+            else OAuthParametersForm(
+                organisation=self.aidant.organisation, data=self.request.GET
+            )
         )
         if oauth_parameters_form.is_valid():
             parameters = urlencode(oauth_parameters_form.cleaned_data)
