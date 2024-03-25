@@ -26,7 +26,7 @@
         <table class="fr-table fr-col-12 fr-mb-8v">
           <thead>
           <tr>
-            <td>Organisame</td>
+            <td>Organisme</td>
             <td>Dates</td>
             <td>Durée</td>
             <td>Format</td>
@@ -38,7 +38,9 @@
           {% for formation_widget in form.formations.subwidgets %}
             <tr>
               <td>{{ formation_widget.data.value.instance.type.label }}</td>
-              <td>{{ formation_widget.data.value.instance.date_range_str }}</td>
+              <td>{{ formation_widget.data.value.instance.date_range_str }} <br />
+                  <span>{{ formation_widget.data.value.instance.description }}</span>
+              </td>
               <td>{{ formation_widget.data.value.instance.duration }}h</td>
               <td>{{ formation_widget.data.value.instance.get_status_display }}</td>
               <td>{{ formation_widget.data.value.instance.place }}</td>

@@ -168,12 +168,19 @@ class Formation(models.Model):
         REMOTE = (auto(), "À distance")
 
     start_datetime = models.DateTimeField("Date et heure de début de la formation")
-    end_datetime = models.DateTimeField("Date et heure de fin de la formation")
+    end_datetime = models.DateTimeField(
+        "Date et heure de fin de la formation", null=True, blank=True
+    )
     duration = models.IntegerField("Durée en heures")
     max_attendants = models.IntegerField("Nombre maximum d'inscrits possibles")
     status = models.IntegerField("En présentiel/à distance", choices=Status.choices)
     place = models.CharField("Lieu", max_length=500)
     type = models.ForeignKey(FormationType, on_delete=models.PROTECT)
+
+    description = models.TextField("Description", blank=True, default="")
+    id_grist = models.CharField(
+        "Id Grist", editable=False, max_length=50, blank=True, default=""
+    )
 
     objects = FormationQuerySet.as_manager()
 
@@ -183,10 +190,15 @@ class Formation(models.Model):
 
     @property
     def date_range_str(self):
-        return (
-            f"Du {date(self.start_datetime, 'd F Y à H:i')} "
-            f"au {date(self.end_datetime, 'd F Y à H:i')}"
-        )
+        if self.end_datetime:
+            return (
+                f"Du {date(self.start_datetime, 'd F Y à H:i')} "
+                f"au {date(self.end_datetime, 'd F Y à H:i')}"
+            )
+        else:
+            if self.start_datetime.hour == 0:
+                return f"Début le {date(self.start_datetime, 'd F Y')} "
+            return f"Début le {date(self.start_datetime, 'd F Y à H:i')} "
 
     def __str__(self):
         return f"{self.type.label} {self.date_range_str.casefold()}"
