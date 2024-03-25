@@ -153,12 +153,18 @@
             <h4 class="h2 fr-col--middle fr-m-0">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
             {% if aidant_request.habilitation_request and aidant_request.habilitation_request.status in aidant_request.habilitation_request.ReferentRequestStatuses.formation_registerable and aidant_request.habilitation_request.conseiller_numerique %}
               <span class="spacer"></span>
-              <a
+              {% if aidant_request.habilitation_request.formations.exists %}
+                <button class="fr-btn fr-ml-4v" disabled>
+                  Cette personne est inscrite à une formation
+                </button>
+              {% else %}
+                <a
                 href="{% url 'habilitation_new_aidant_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant_request.pk %}"
-                class="fr-btn"
-              >
-                Inscrire à une formation
-              </a>
+                class="fr-btn fr-ml-4v"
+                >
+                  Inscrire à une formation
+                </a>
+              {% endif %} 
             {% endif %}
           </div>
 

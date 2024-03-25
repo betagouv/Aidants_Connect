@@ -173,26 +173,38 @@
                 </div>
               </td>
               <td>
-                <div class="fr-btns-group">
+                <ul class="fr-btns-group">
                   {% if request.status_cancellable_by_responsable %}
-                    <a
-                      id="cancel-habilitation-request-{{ request.id }}"
-                      href="{% url "espace_responsable_cancel_habilitation" request_id=request.id %}"
-                      class="fr-btn fr-btn--secondary "
-                    >
-                      Annuler la demande
-                    </a>
+                    <li>
+                      <a
+                        id="cancel-habilitation-request-{{ request.id }}"
+                        href="{% url "espace_responsable_cancel_habilitation" request_id=request.id %}"
+                        class="fr-btn fr-btn--secondary "
+                      >
+                        Annuler la demande
+                      </a>
+                    </li>
                   {% endif %}
                   {% if request.status in request.ReferentRequestStatuses.formation_registerable and request.conseiller_numerique %}
-                    <a
-                      id="register-habilitation-request-{{ request.id }}"
-                      href="{% url "espace_responsable_register_formation" request_id=request.id %}"
-                      class="fr-btn fr-btn--secondary "
-                    >
-                      Inscrire à une formation
-                    </a>
+                    {% if request.formations.exists %}
+                      <li>
+                        <button class="fr-btn" disabled>
+                          Cette personne est inscrite à une formation
+                        </button>
+                      </li>
+                    {% else %}
+                      <li>
+                        <a
+                          id="register-habilitation-request-{{ request.id }}"
+                          href="{% url "espace_responsable_register_formation" request_id=request.id %}"
+                          class="fr-btn fr-btn--secondary"
+                        >
+                          Inscrire à une formation
+                        </a>
+                      </li>
+                    {% endif %}
                   {% endif %}
-                </div>
+                </ul>
               </td>
             </tr>
           {% endfor %}

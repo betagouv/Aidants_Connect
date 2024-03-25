@@ -98,18 +98,10 @@ table.table {
     tr:not(:last-child) td {
       border-bottom: 1px solid colors.$light-grey-aidants;
     }
+  }
 
-    tr td:last-child {
-      text-align: right;
-
-      .button {
-        padding: .25rem;
-
-        &:not(:last-child) {
-          margin-bottom: .5rem;
-        }
-      }
-    }
+  .fr-btn {
+    text-align: center;
   }
 
   [class*="request-status"] {

@@ -5,6 +5,7 @@ from django import forms
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
+from django.db.models import Model
 from django.forms.utils import ErrorList
 
 from dsfr.forms import DsfrBaseForm
@@ -83,6 +84,10 @@ class AcPhoneNumberField(PhoneNumberField):
 
 
 class FormationRegistrationForm(DsfrBaseForm):
-    formations = forms.ModelMultipleChoiceField(
-        queryset=Formation.objects.after(timedelta(days=45)).not_full()
-    )
+    formations = forms.ModelMultipleChoiceField(queryset=Formation.objects.none())
+
+    def __init__(self, registree: Model, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["formations"].queryset = Formation.objects.available_for_attendant(
+            timedelta(days=45), registree
+        )
