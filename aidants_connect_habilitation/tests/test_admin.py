@@ -70,14 +70,8 @@ class OrganisationRequestAdminTests(TestCase):
         )
         # check recipients are as expected
         self.assertEqual(
-            len(acceptance_message.recipients()), 5
-        )  # 3 aidants + 1 issuer + 1 manager
-        self.assertTrue(
-            all(
-                aidant.email in acceptance_message.recipients()
-                for aidant in org_request.aidant_requests.all()
-            )
-        )
+            len(acceptance_message.recipients()), 2
+        )  # 1 issuer + 1 manager
         self.assertTrue(org_request.manager.email in acceptance_message.recipients())
         self.assertTrue(org_request.issuer.email in acceptance_message.recipients())
 
@@ -135,14 +129,8 @@ class OrganisationRequestAdminTests(TestCase):
 
         # check recipients are as expected
         self.assertEqual(
-            len(acceptance_message.recipients()), 5
-        )  # 3 aidants + 1 issuer + 1 manager
-        self.assertTrue(
-            all(
-                aidant.email in acceptance_message.recipients()
-                for aidant in org_request.aidant_requests.all()
-            )
-        )
+            len(acceptance_message.recipients()), 2
+        )  # 1 issuer + 1 manager
         self.assertTrue(org_request.manager.email in acceptance_message.recipients())
         self.assertTrue(org_request.issuer.email in acceptance_message.recipients())
 
