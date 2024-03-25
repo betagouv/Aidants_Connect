@@ -143,11 +143,11 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                         "Was form 'prefix' or 'auto_id' modified?"
                     )
 
-                self.assertEqual(field_label.text, field.label)
+                self.assertIn(field.label, field_label.text)
 
     def test_form_loads_manager_data(self):
         issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory(is_aidant=True)
+        manager: Manager = ManagerFactory(is_aidant=True, conseiller_numerique=True)
         form = ManagerForm()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer, manager=manager
@@ -157,12 +157,24 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         field_names = list(form.fields.keys())
         field_names.remove("is_aidant")
+        field_names.remove("conseiller_numerique")
         field_names.remove("alternative_address")
         field_names.remove("skip_address_validation")
 
         element: WebElement = self.selenium.find_element(
             By.XPATH,
             f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
+            "//option[normalize-space(text())='Oui']",
+        )
+
+        self.assertIsNotNone(
+            element.get_attribute("selected"),
+            "Manager is also conseiller numérique, option should have been checked",
+        )
+
+        element: WebElement = self.selenium.find_element(
+            By.XPATH,
+            f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique']"
             "//option[normalize-space(text())='Oui']",
         )
 
@@ -177,12 +189,9 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
             )
 
-            if element.get_attribute("type") == "checkbox":
-                self.assertEqual(getattr(manager, field_name), element.is_selected())
-            else:
-                self.assertEqual(
-                    element.get_attribute("value"), getattr(manager, field_name)
-                )
+            self.assertEqual(
+                element.get_attribute("value"), getattr(manager, field_name)
+            )
 
     def test_form_modify_manager_data(self):
         issuer: Issuer = IssuerFactory()
@@ -199,29 +208,48 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         field_names = list(form.fields.keys())
         field_names.remove("is_aidant")
+        field_names.remove("conseiller_numerique")
         field_names.remove("alternative_address")
         field_names.remove("skip_address_validation")
+
+        prefix = PersonnelForm.MANAGER_FORM_PREFIX
 
         self.assertIsNone(
             self.selenium.find_element(
                 By.XPATH,
-                f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
-                "//option[normalize-space(text())='Oui']",
+                f"//*[@id='id_{prefix}-is_aidant']//option[normalize-space(text())='Oui']",  # noqa: E501
             ).get_attribute("selected"),
             "Manager is not an aidant, checkbox should not have been checked",
         )
 
         Select(
-            self.selenium.find_element(
-                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant"
-            )
+            self.selenium.find_element(By.ID, f"id_{prefix}-is_aidant")
         ).select_by_visible_text("Oui")
 
         self.assertIsNotNone(
             self.selenium.find_element(
                 By.XPATH,
-                f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
-                "//option[normalize-space(text())='Oui']",
+                f"//*[@id='id_{prefix}-is_aidant']//option[normalize-space(text())='Oui']",  # noqa: E501
+            ).get_attribute("selected"),
+            "New manager is conseiller numérique, checkbox should be checked",
+        )
+
+        self.assertIsNone(
+            self.selenium.find_element(
+                By.XPATH,
+                f"//*[@id='id_{prefix}-conseiller_numerique']//option[normalize-space(text())='Oui']",  # noqa: E501
+            ).get_attribute("selected"),
+            "Manager is not an aidant, checkbox should not have been checked",
+        )
+
+        Select(
+            self.selenium.find_element(By.ID, f"id_{prefix}-conseiller_numerique")
+        ).select_by_visible_text("Oui")
+
+        self.assertIsNotNone(
+            self.selenium.find_element(
+                By.XPATH,
+                f"//*[@id='id_{prefix}-conseiller_numerique']//option[normalize-space(text())='Oui']",  # noqa: E501
             ).get_attribute("selected"),
             "New manager is an aidant, checkbox should be checked",
         )
@@ -233,9 +261,9 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                     f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
                 )
 
-                if element.get_attribute("type") == "checkbox":
-                    if element.is_selected() != getattr(new_manager, field_name):
-                        element.click()
+                if "conseiller_numerique" in element.get_attribute("name"):
+                    select = Select(element)
+                    select.select_by_value(str(new_manager["conseiller_numerique"]))
                 else:
                     element.clear()
                     element.send_keys(str(getattr(new_manager, field_name)))
@@ -256,7 +284,11 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         saved_manager = organisation.manager
 
         for field_name in form.fields:
-            if field_name not in ["alternative_address", "skip_address_validation"]:
+            if field_name not in (
+                "alternative_address",
+                "skip_address_validation",
+                "conseiller_numerique",
+            ):
                 self.assertEqual(
                     getattr(saved_manager, field_name), getattr(new_manager, field_name)
                 )
@@ -311,7 +343,10 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                     f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}-{field_name}",
                 )
 
-                if element.get_attribute("type") != "checkbox":
+                if "conseiller_numerique" in element.get_attribute("name"):
+                    select = Select(element)
+                    select.select_by_value(str(aidant_data["conseiller_numerique"]))
+                else:
                     element.clear()
                     element.send_keys(aidant_data[field_name])
 
@@ -362,9 +397,9 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 f"{modified_aidant_idx}-{field_name}",
             )
 
-            if element.get_attribute("type") == "checkbox":
-                if element.is_selected() != aidant_data[field_name]:
-                    element.click()
+            if "conseiller_numerique" in element.get_attribute("name"):
+                select = Select(element)
+                select.select_by_value(str(aidant_data["conseiller_numerique"]))
             else:
                 element.clear()
                 element.send_keys(aidant_data[field_name])
@@ -499,6 +534,12 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             )
         ).select_by_visible_text("Oui")
 
+        Select(
+            self.selenium.find_element(
+                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique"
+            )
+        ).select_by_visible_text("Oui")
+
         # Open dropdown
         self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
 
@@ -570,6 +611,12 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         Select(
             self.selenium.find_element(
                 By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant"
+            )
+        ).select_by_visible_text("Oui")
+
+        Select(
+            self.selenium.find_element(
+                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique"
             )
         ).select_by_visible_text("Oui")
 

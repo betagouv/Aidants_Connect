@@ -1,4 +1,3 @@
-from distutils.util import strtobool
 from re import sub as re_sub
 from typing import List, Tuple, Union
 from urllib.parse import quote, unquote
@@ -23,6 +22,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext as _
 
+from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
@@ -387,6 +387,13 @@ class ManagerForm(
         coerce=lambda value: bool(strtobool(value)),
     )
 
+    conseiller_numerique = TypedChoiceField(
+        label="Est un conseiller numérique",
+        label_suffix=" :",
+        choices=(("", ""), (True, "Oui"), (False, "Non")),
+        coerce=lambda value: bool(strtobool(value)),
+    )
+
     def get_address_for_search(self) -> str:
         return " ".join(
             [
@@ -443,6 +450,13 @@ class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
 
 
 class AidantRequestForm(PatchedModelForm, CleanEmailMixin):
+    conseiller_numerique = TypedChoiceField(
+        label="Est un conseiller numérique",
+        label_suffix=" :",
+        choices=(("", ""), (True, "Oui"), (False, "Non")),
+        coerce=lambda value: bool(strtobool(value)),
+    )
+
     def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
         self.organisation = organisation
         super().__init__(*args, **kwargs)
