@@ -44,7 +44,7 @@ from aidants_connect_habilitation.tests.factories import (
     OrganisationRequestFactory,
 )
 from aidants_connect_habilitation.tests.utils import get_form
-from aidants_connect_habilitation.views import FormationRegistrationView
+from aidants_connect_habilitation.views import AidantFormationRegistrationView
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import HabilitationRequestFactory
@@ -1377,7 +1377,7 @@ class TestFormationRegistrationView(TestCase):
                 },
             )
         )
-        self.assertEqual(found.func.view_class, FormationRegistrationView)
+        self.assertEqual(found.func.view_class, AidantFormationRegistrationView)
 
     def test_renders_correct_template(self):
         response = self.client.get(

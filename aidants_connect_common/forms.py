@@ -86,8 +86,8 @@ class AcPhoneNumberField(PhoneNumberField):
 class FormationRegistrationForm(DsfrBaseForm):
     formations = forms.ModelMultipleChoiceField(queryset=Formation.objects.none())
 
-    def __init__(self, registree: Model, *args, **kwargs):
+    def __init__(self, attendant: Model, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["formations"].queryset = Formation.objects.available_for_attendant(
-            timedelta(days=45), registree
+            timedelta(days=45), attendant
         )

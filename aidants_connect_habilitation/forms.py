@@ -412,6 +412,7 @@ class ManagerForm(
         model = Manager
         widgets = {"address": TextInput}
         include = ("conseiller_numerique",)
+        exclude = ("habilitation_request",)
 
 
 class EmailOrganisationValidationError(ValidationError):

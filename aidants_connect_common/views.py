@@ -65,6 +65,9 @@ class FormationRegistrationView(FormView):
     def get_habilitation_request(self) -> HabilitationRequest:
         raise NotImplementedError
 
+    def get_cancel_url(self) -> str:
+        raise NotImplementedError
+
     def form_valid(self, form: FormationRegistrationForm):
         with transaction.atomic():
             Formation.objects.exclude(
@@ -77,7 +80,7 @@ class FormationRegistrationView(FormView):
     def get_form_kwargs(self):
         return {
             **super().get_form_kwargs(),
-            "registree": self.get_habilitation_request(),
+            "attendant": self.get_habilitation_request(),
         }
 
     def get_context_data(self, **kwargs):
@@ -86,7 +89,8 @@ class FormationRegistrationView(FormView):
                 "registered_to": self.get_habilitation_request().formations.values_list(
                     "formation", flat=True
                 ),
-                "aidant": self.attendant,
+                "attendant": self.attendant,
+                "cancel_url": self.get_cancel_url(),
             }
         )
         return super().get_context_data(**kwargs)

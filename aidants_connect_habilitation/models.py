@@ -193,9 +193,24 @@ class Manager(PersonWithResponsibilities):
         "Est un conseiller numérique", default=False
     )
 
+    habilitation_request = models.OneToOneField(
+        "aidants_connect_web.HabilitationRequest",
+        related_name="manger_request",
+        null=True,
+        default=None,
+        on_delete=models.CASCADE,
+    )
+
     class Meta:
         verbose_name = "Référent structure"
         verbose_name_plural = "Référents structure"
+        constraints = (
+            models.CheckConstraint(
+                name="habilitation_request_null_when_manager_is_not_aidant",
+                check=models.Q(is_aidant=True)
+                | models.Q(habilitation_request__isnull=True),
+            ),
+        )
 
 
 class OrganisationRequest(models.Model):
@@ -449,17 +464,20 @@ class OrganisationRequest(models.Model):
         self.create_aidants(organisation)
 
         if self.manager.is_aidant:
-            HabilitationRequest.objects.get_or_create(
-                email=self.manager.email,
-                organisation=organisation,
-                defaults=dict(
-                    origin=HabilitationRequest.ORIGIN_HABILITATION,
-                    first_name=self.manager.first_name,
-                    last_name=self.manager.last_name,
-                    profession=self.manager.profession,
-                    conseiller_numerique=self.manager.conseiller_numerique,
-                ),
+            self.manager.habilitation_request, _ = (
+                HabilitationRequest.objects.get_or_create(
+                    email=self.manager.email,
+                    organisation=organisation,
+                    defaults=dict(
+                        origin=HabilitationRequest.ORIGIN_HABILITATION,
+                        first_name=self.manager.first_name,
+                        last_name=self.manager.last_name,
+                        profession=self.manager.profession,
+                        conseiller_numerique=self.manager.conseiller_numerique,
+                    ),
+                )
             )
+            self.manager.save(update_fields=("habilitation_request",))
 
         return True
 

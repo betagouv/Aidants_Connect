@@ -2,10 +2,11 @@ from django.urls import path
 
 from aidants_connect_habilitation.views import (
     AddAidantsRequestView,
-    FormationRegistrationView,
+    AidantFormationRegistrationView,
     IssuerEmailConfirmationView,
     IssuerEmailConfirmationWaitingView,
     IssuerPageView,
+    ManagerFormationRegistrationView,
     ModifyIssuerFormView,
     ModifyOrganisationRequestFormView,
     NewHabilitationView,
@@ -56,8 +57,13 @@ urlpatterns = [
     ),
     path(
         "demandeur/<str:issuer_id>/organisation/<str:uuid>/aidant/<int:aidant_id>/inscription-formation/",  # noqa E501
-        FormationRegistrationView.as_view(),
+        AidantFormationRegistrationView.as_view(),
         name="habilitation_new_aidant_formation_registration",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/referent/inscription-formation/",  # noqa E501
+        ManagerFormationRegistrationView.as_view(),
+        name="habilitation_manager_formation_registration",
     ),
     path(
         "demandeur/<str:issuer_id>/organisation/<str:uuid>/validation/",
