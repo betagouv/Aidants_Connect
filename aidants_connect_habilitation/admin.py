@@ -411,9 +411,9 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
                 f"{organisation.data_pass_id} a été acceptée"
             )
 
-        recipients = set(organisation.aidant_requests.values_list("email", flat=True))
-        recipients.add(organisation.manager.email)
-        recipients.add(organisation.issuer.email)
+        recipients = {organisation.issuer.email}
+        if organisation.manager:
+            recipients.add(organisation.manager.email)
 
         send_mail(
             from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
