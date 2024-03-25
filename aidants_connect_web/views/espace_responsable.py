@@ -790,3 +790,6 @@ class FormationRegistrationView(CommonFormationRegistrationView):
             pk=self.kwargs["request_id"],
             organisation=self.request.user.organisation,
         )
+
+    def get_cancel_url(self) -> str:
+        return reverse("espace_responsable_organisation")

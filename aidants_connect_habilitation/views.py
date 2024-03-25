@@ -33,6 +33,7 @@ from aidants_connect_habilitation.models import (
     AidantRequest,
     Issuer,
     IssuerEmailConfirmation,
+    Manager,
     OrganisationRequest,
     RequestMessage,
 )
@@ -550,22 +551,34 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
         return super().form_valid(formset)
 
 
-class FormationRegistrationView(LateStageRequestView, CommonFormationRegistrationView):
+class AidantFormationRegistrationView(
+    LateStageRequestView, CommonFormationRegistrationView
+):
     def dispatch(self, request, *args, **kwargs):
-        self.aidant = get_object_or_404(
-            AidantRequest, pk=kwargs["aidant_id"], organisation=self.organisation
-        )
-        if not self.aidant.habilitation_request:
+        self.person = self.get_person()
+        if not self.person.habilitation_request:
             raise Http404
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_habilitation_request(self) -> HabilitationRequest:
-        return self.aidant.habilitation_request
+    def get_person(self):
+        return get_object_or_404(
+            AidantRequest, pk=self.kwargs["aidant_id"], organisation=self.organisation
+        )
 
-    def get_context_data(self, **kwargs):
-        kwargs.update({"organisation": self.organisation, "aidant": self.aidant})
-        return super().get_context_data(**kwargs)
+    def get_cancel_url(self) -> str:
+        return self.organisation.get_absolute_url()
+
+    def get_habilitation_request(self) -> HabilitationRequest:
+        return self.person.habilitation_request
 
     def get_success_url(self):
         return self.organisation.get_absolute_url()
+
+
+class ManagerFormationRegistrationView(AidantFormationRegistrationView):
+
+    def get_person(self):
+        return get_object_or_404(
+            Manager, organisation=self.organisation, is_aidant=True
+        )
