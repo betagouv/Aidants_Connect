@@ -4,6 +4,7 @@ from django.urls import reverse
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.constants import RequestStatusConstants
@@ -79,9 +80,9 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                     f"#id_form-{i}-{field_name}",
                 )
 
-                if element.get_attribute("type") == "checkbox":
-                    if element.is_selected() == aidant_data[field_name]:
-                        element.click()
+                if "conseiller_numerique" in element.get_attribute("name"):
+                    select = Select(element)
+                    select.select_by_value(str(aidant_data["conseiller_numerique"]))
                 else:
                     element.clear()
                     element.send_keys(aidant_data[field_name])
