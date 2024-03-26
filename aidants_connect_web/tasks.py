@@ -5,11 +5,11 @@ from inspect import signature
 from io import StringIO
 from itertools import chain
 from logging import Logger
-from typing import List, Type
+from typing import List
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models import Count, Field, Model, Q
+from django.db.models import Count, Q
 from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
@@ -24,7 +24,7 @@ from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
 from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import Department
-from aidants_connect_common.utils import build_url, render_email
+from aidants_connect_common.utils import build_url, model_fields, render_email
 from aidants_connect_web.models import (
     Aidant,
     Connection,
@@ -416,8 +416,12 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "email",
             "phone",
             "profession",
+            "referent",
             "can_create_mandats",
             "active_totp_card",
+            "totp_card_drifted",
+            "totp_card_drift",
+            "totp_card_date_activated",
             "has_otp_app",
             "is_active",
             "organisation__name",
@@ -429,38 +433,25 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "organisation__department_insee_code",
             "organisation__region",
             "organisation__type__name",
+            "organisation__france_services_label",
             "organisation__legal_category",
             "organisation__legal_cat_level_one",
             "organisation__legal_cat_level_two",
             "organisation__legal_cat_level_three",
             "organisation__nb_mandat_created",
             "organisation__nb_mandat_remote_created",
+            "organisation__nb_mandat_revoked",
+            "organisation__nb_mandat_renewed",
             "organisation__nb_usager",
         )
 
         def __init__(self, a: Aidant):
             self.aidant = a
 
-        @staticmethod
-        def __model_fields(model: Type[Model] | None) -> dict[str, Field]:
-            result = {}
-            if not hasattr(model, "_meta"):
-                return result
+        def referent(self):
+            return self.aidant.responsable_de.exists()
 
-            for field in model._meta.fields:
-                result[field.name] = field
-                result[field.attname] = field
-            return result
-
-        def organisation__region(self):
-            qs = Department.objects.filter(
-                insee_code=self.aidant.organisation.department_insee_code
-            )
-            if not qs.exists():
-                return None
-            return qs[0].insee_code
-
-        organisation__region.csv_column = "Organisation: Code INSEE de la région"
+        referent.csv_column = "Est référent"
 
         def active_totp_card(self):
             return getattr(
@@ -473,10 +464,51 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
 
         active_totp_card.csv_column = "Carte TOTP active"
 
+        def totp_card_drifted(self):
+            drift = getattr(
+                getattr(
+                    getattr(self.aidant, "carte_totp", False), "totp_device", False
+                ),
+                "drift",
+                None,
+            )
+            return drift if drift is None else drift > 0
+
+        def totp_card_drift(self):
+            return getattr(
+                getattr(
+                    getattr(self.aidant, "carte_totp", False), "totp_device", False
+                ),
+                "drift",
+                None,
+            )
+
+        totp_card_drifted.csv_column = "Carte TOTP décallée"
+
+        def totp_card_date_activated(self):
+            try:
+                Journal.objects.filter(
+                    action=JournalActionKeywords.CARD_ASSOCIATION, aidant=self.aidant
+                ).order_by("creation_date")[0].creation_date
+            except (Journal.DoesNotExist, IndexError):
+                return None
+
+        totp_card_date_activated.csv_column = "Date activation carte TOTP"
+
         def has_otp_app(self):
             return self.aidant.has_otp_app
 
         has_otp_app.csv_column = "App OTP"
+
+        def organisation__region(self):
+            qs = Department.objects.filter(
+                insee_code=self.aidant.organisation.department_insee_code
+            )
+            if not qs.exists():
+                return None
+            return qs[0].insee_code
+
+        organisation__region.csv_column = "Organisation: Code INSEE de la région"
 
         def organisation__nb_mandat_created(self):
             return Journal.objects.filter(
@@ -499,6 +531,27 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "Organisation: Nombre de mandats à distance créés"
         )
 
+        def organisation__nb_mandat_revoked(self):
+            return (
+                Mandat.objects.seperatly_revoked()
+                .filter(organisation=self.aidant.organisation)
+                .count()
+            )
+
+        organisation__nb_mandat_revoked.csv_column = (
+            "Organisation: Nombre de mandats révoqués"
+        )
+
+        def organisation__nb_mandat_renewed(self):
+            return Journal.objects.filter(
+                action=JournalActionKeywords.INIT_RENEW_MANDAT,
+                organisation=self.aidant.organisation,
+            ).count()
+
+        organisation__nb_mandat_renewed.csv_column = (
+            "Organisation: Nombre de mandats renouvelés"
+        )
+
         def organisation__nb_usager(self):
             return Usager.objects.active().visible_by(self.aidant).count()
 
@@ -506,7 +559,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
 
         def values(self) -> list[str]:
             result = []
-            model_fields = self.__model_fields(Aidant)
+            fields = model_fields(Aidant)
 
             for requested_field in self.fields_to_serialize:
                 if hasattr(self, requested_field):
@@ -514,7 +567,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                     if callable(value):
                         value = value()
                     result.append(f"{value}")
-                elif requested_field in model_fields:
+                elif requested_field in fields:
                     result.append(getattr(self.aidant, f"{requested_field}"))
                 elif LOOKUP_SEP in requested_field:
                     related_fields = requested_field.split(LOOKUP_SEP)
@@ -532,7 +585,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
 
         @classmethod
         def header(cls) -> list[str]:
-            model_fields = cls.__model_fields(Aidant)
+            fields = model_fields(Aidant)
 
             result = []
             for requested_field in cls.fields_to_serialize:
@@ -544,11 +597,11 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                             requested_field,
                         )
                     )
-                elif requested_field in model_fields:
-                    result.append(f"{model_fields[requested_field].verbose_name}")
+                elif requested_field in fields:
+                    result.append(f"{fields[requested_field].verbose_name}")
                 elif LOOKUP_SEP in requested_field:
                     model = Aidant
-                    related_model_fields = model_fields
+                    related_model_fields = fields
                     related_fields = requested_field.split(LOOKUP_SEP)
                     final_field = None
                     for related_field in related_fields:
@@ -560,7 +613,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                                 f"{related_field} is not a valid field on model {model}"
                             )
                         model = final_field.related_model
-                        related_model_fields = cls.__model_fields(model)
+                        related_model_fields = model_fields(model)
 
                     result.append(
                         f"{final_field.model._meta.verbose_name.capitalize()}: {final_field.verbose_name}"  # noqa: E501

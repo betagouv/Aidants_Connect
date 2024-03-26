@@ -5,10 +5,11 @@ import re
 from datetime import date, datetime, time, timedelta
 from logging import getLogger
 from textwrap import dedent
+from typing import Type
 
 from django.conf import settings
 from django.db import models, transaction
-from django.db.models import F
+from django.db.models import F, Field, Model
 from django.template import loader
 from django.templatetags.static import static
 from django.utils.html import escape
@@ -129,3 +130,14 @@ class PGTriggerExtendedFunc(pgtrigger.Func):
                 }
             )
         return self.func.format(**format_parameters)
+
+
+def model_fields(model: Type[Model] | None) -> dict[str, Field]:
+    result = {}
+    if not hasattr(model, "_meta"):
+        return result
+
+    for field in model._meta.fields:
+        result[field.name] = field
+        result[field.attname] = field
+    return result
