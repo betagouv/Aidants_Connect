@@ -164,7 +164,7 @@ class FormationQuerySet(models.QuerySet):
 
 class Formation(models.Model):
     class Status(models.IntegerChoices):
-        PRESENTIAL = (auto(), "En présentiel")
+        PRESENTIAL = (auto(), "Présentiel")
         REMOTE = (auto(), "À distance")
 
     start_datetime = models.DateTimeField("Date et heure de début de la formation")
@@ -197,8 +197,8 @@ class Formation(models.Model):
             )
         else:
             if self.start_datetime.hour == 0:
-                return f"Début le {date(self.start_datetime, 'd F Y')} "
-            return f"Début le {date(self.start_datetime, 'd F Y à H:i')} "
+                return f"Le {date(self.start_datetime, 'd F Y')} "
+            return f"Le {date(self.start_datetime, 'd F Y à H:i')} "
 
     def __str__(self):
         return f"{self.type.label} {self.date_range_str.casefold()}"
