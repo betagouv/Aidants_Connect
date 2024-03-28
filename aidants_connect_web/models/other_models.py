@@ -87,7 +87,6 @@ class HabilitationRequest(models.Model):
         content_type_field="attendant_content_type",
     )
 
-    @property
     def get_full_name(self):
         return self.aidant_full_name
 

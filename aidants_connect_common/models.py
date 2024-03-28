@@ -136,19 +136,14 @@ class FormationQuerySet(models.QuerySet):
     def register_attendant(
         self, attendant: HabilitationRequest | AidantRequest
     ) -> None:
-        FormationAttendant.objects.bulk_create(
-            [
-                FormationAttendant(
-                    formation_id=formation,
-                    attendant_id=attendant.pk,
-                    attendant_content_type=ContentType.objects.get_for_model(
-                        attendant._meta.model
-                    ),
-                )
-                for formation in self.values_list("pk", flat=True)
-            ],
-            ignore_conflicts=True,
-        )
+        for formation in self.values_list("pk", flat=True):
+            FormationAttendant.objects.get_or_create(
+                formation_id=formation,
+                attendant_id=attendant.pk,
+                attendant_content_type=ContentType.objects.get_for_model(
+                    attendant._meta.model
+                ),
+            )
 
     def unregister_attendant(
         self, attendant: HabilitationRequest | AidantRequest
