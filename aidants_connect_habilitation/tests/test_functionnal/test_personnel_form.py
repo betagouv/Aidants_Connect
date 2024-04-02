@@ -143,7 +143,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                         "Was form 'prefix' or 'auto_id' modified?"
                     )
 
-                self.assertIn(field.label, field_label.text)
+                self.assertIn(field.label, field_label.get_attribute("innerHTML"))
 
     def test_form_loads_manager_data(self):
         issuer: Issuer = IssuerFactory()
