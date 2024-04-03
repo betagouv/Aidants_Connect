@@ -1,0 +1,22 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+  <mj-section>
+    <mj-column>
+      <mj-text>Madame, Monsieur,</mj-text>
+      <mj-text>
+        <p>
+          Nous vous confirmons que {{person.get_full_name}} a été inscrit à la formation : {{formation.type.label}},
+          {{formation.date_range_str|lower}}.
+        </p>
+        <p>L’organisme en charge de cette formation prendra prochainement contact avec vous.</p>
+        <p>
+          Si vous souhaitez modifier ou annuler votre demande, merci de vous rapprocher de l’organisme de formation.
+        </p>
+      </mj-text>
+      <mj-text>
+        Nous nous tenons à votre disposition et vous remercions de votre intérêt pour Aidants Connect
+      </mj-text>
+    </mj-column>
+  </mj-section>
+{% endblock %}
