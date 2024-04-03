@@ -77,6 +77,9 @@ class MandatQuerySet(models.QuerySet):
             | Q(autorisations__revocation_date__isnull=True)
         )
 
+    def seperatly_revoked(self):
+        return self.exclude(autorisations__revocation_date__isnull=True)
+
 
 class Mandat(models.Model):
     organisation = models.ForeignKey(
@@ -165,7 +168,7 @@ class Mandat(models.Model):
         Returns whether the mandate was explicitely revoked, independently of it's
         expiration date.
         """
-        return not self.autorisations.exclude(revocation_date__isnull=False)
+        return Mandat.objects.seperatly_revoked().filter(pk=self.pk).exists()
 
     def get_absolute_url(self):
         path = reverse("mandat_visualisation", kwargs={"mandat_id": self.pk})
