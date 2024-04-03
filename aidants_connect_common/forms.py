@@ -89,5 +89,5 @@ class FormationRegistrationForm(DsfrBaseForm):
     def __init__(self, attendant: Model, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["formations"].queryset = Formation.objects.available_for_attendant(
-            timedelta(days=45), attendant
+            timedelta(days=21), attendant
         )
