@@ -5,9 +5,19 @@ L’équipe Aidants Connect vous informe que les mandats suivants vont bientôt 
 {% for mandate in mandates %}{% with auths_count=mandate.autorisations.count %}
   — le mandat réalisé avec {{ mandate.usager.get_full_name }} qui expire le {{ mandate.expiration_date|date:"l j F Y" }} ({{ auths_count }} autorisation{{ auths_count|pluralize }}),
     [{{forloop.counter}}] : {{ mandate.get_absolute_url }}{% list_term %}
+{% endwith %}{% endfor %}
 
-Vous recevez cet email pour deux raisons :
+Vous recevez cet email pour deux raisons :
 
 — Vous avez créé un mandat ou un aidant habilité dans votre structure a créé un mandat avec cet usager. Pour rappel, les mandats créés sont au nom de la structure ce qui signifie qu’ils sont visibles par tous les aidants habilités d’un même service ou d’une même structure.
 — Le mandat arrive à expiration et vous pouvez le renouveler avec l’usager. L’avantage du renouvellement du mandat c’est que vous n’avez pas besoin d’utiliser les identifiants de connexion France Connect pour valider la création d’un nouveau mandat. En revanche, vous devez toujours faire signer ce nouveau mandat , l’imprimer en deux exemplaires et remettre une copie à l’usager.
-{% endwith %}{% endfor %}
+
+
+Merci de ne pas répondre à cet email.
+
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr
