@@ -231,27 +231,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 By.XPATH,
                 f"//*[@id='id_{prefix}-is_aidant']//option[normalize-space(text())='Oui']",  # noqa: E501
             ).get_attribute("selected"),
-            "New manager is conseiller numérique, checkbox should be checked",
-        )
-
-        self.assertIsNone(
-            self.selenium.find_element(
-                By.XPATH,
-                f"//*[@id='id_{prefix}-conseiller_numerique']//option[normalize-space(text())='Oui']",  # noqa: E501
-            ).get_attribute("selected"),
             "Manager is not an aidant, checkbox should not have been checked",
-        )
-
-        Select(
-            self.selenium.find_element(By.ID, f"id_{prefix}-conseiller_numerique")
-        ).select_by_visible_text("Oui")
-
-        self.assertIsNotNone(
-            self.selenium.find_element(
-                By.XPATH,
-                f"//*[@id='id_{prefix}-conseiller_numerique']//option[normalize-space(text())='Oui']",  # noqa: E501
-            ).get_attribute("selected"),
-            "New manager is an aidant, checkbox should be checked",
         )
 
         for field_name in field_names:
@@ -261,12 +241,8 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                     f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
                 )
 
-                if "conseiller_numerique" in element.get_attribute("name"):
-                    select = Select(element)
-                    select.select_by_value(str(new_manager["conseiller_numerique"]))
-                else:
-                    element.clear()
-                    element.send_keys(str(getattr(new_manager, field_name)))
+                element.clear()
+                element.send_keys(str(getattr(new_manager, field_name)))
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
@@ -538,7 +514,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             self.selenium.find_element(
                 By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique"
             )
-        ).select_by_visible_text("Oui")
+        ).select_by_visible_text("Non")
 
         # Open dropdown
         self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
@@ -618,7 +594,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             self.selenium.find_element(
                 By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique"
             )
-        ).select_by_visible_text("Oui")
+        ).select_by_visible_text("Non")
 
         # Open dropdown
         self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()

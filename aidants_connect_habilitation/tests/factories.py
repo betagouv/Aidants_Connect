@@ -65,6 +65,7 @@ class ManagerFactory(DjangoModelFactory):
     address = FactoryFaker("street_address")
     zipcode = FactoryFaker("postcode")
     city = FactoryFaker("city")
+    conseiller_numerique = False
 
     is_aidant = True
 
@@ -136,6 +137,7 @@ class AidantRequestFactory(DjangoModelFactory):
     email = FactoryFaker("email")
     profession = FactoryFaker("job")
     organisation = SubFactory(OrganisationRequestFactory)
+    conseiller_numerique = False
 
     class Meta:
         model = AidantRequest
