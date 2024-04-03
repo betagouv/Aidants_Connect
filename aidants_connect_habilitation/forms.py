@@ -20,6 +20,7 @@ from django.forms import (
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from aidants_connect.utils import strtobool
@@ -388,7 +389,9 @@ class ManagerForm(
     )
 
     conseiller_numerique = TypedChoiceField(
-        label="Est un conseiller numérique",
+        label=mark_safe(
+            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
+        ),
         label_suffix=" :",
         choices=(("", ""), (True, "Oui"), (False, "Non")),
         coerce=lambda value: bool(strtobool(value)),
@@ -451,7 +454,9 @@ class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
 
 class AidantRequestForm(PatchedModelForm, CleanEmailMixin):
     conseiller_numerique = TypedChoiceField(
-        label="Est un conseiller numérique",
+        label=mark_safe(
+            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
+        ),
         label_suffix=" :",
         choices=(("", ""), (True, "Oui"), (False, "Non")),
         coerce=lambda value: bool(strtobool(value)),
