@@ -17,12 +17,22 @@
           </li>
         {% endwith %}{% endfor %}
         </ul>
-        <p>Vous recevez cet email pour deux raisons : </p>
+      </mj-text>
+      <mj-text>
+        Vous recevez cet email pour deux raisons :
         <ul>
-        <li>Vous avez créé un mandat ou un aidant habilité dans votre structure a créé un mandat avec cet usager. Pour rappel, les mandats créés sont au nom de la structure ce qui signifie qu’ils sont visibles par tous les aidants habilités d’un même service ou d’une même structure.</li>
-        <li>Le mandat arrive à expiration et vous pouvez le renouveler avec l’usager. L’avantage du renouvellement du mandat c’est que vous n’avez pas besoin d’utiliser les identifiants de connexion France Connect pour valider la création d’un nouveau mandat. En revanche, vous devez toujours faire signer ce nouveau mandat, l’imprimer en deux exemplaires et remettre une copie à l’usager.</li>
+          <li>Vous avez créé un mandat ou un aidant habilité dans votre structure a créé un mandat avec cet usager. Pour
+            rappel, les mandats créés sont au nom de la structure ce qui signifie qu’ils sont visibles par tous les
+            aidants habilités d’un même service ou d’une même structure.
+          </li>
+          <li>Le mandat arrive à expiration et vous pouvez le renouveler avec l’usager. L’avantage du renouvellement du
+            mandat c’est que vous n’avez pas besoin d’utiliser les identifiants de connexion France Connect pour valider
+            la création d’un nouveau mandat. En revanche, vous devez toujours faire signer ce nouveau mandat, l’imprimer
+            en deux exemplaires et remettre une copie à l’usager.
+          </li>
         </ul>
       </mj-text>
+      <mj-text>Merci de ne pas répondre à cet email.</mj-text>
     </mj-column>
   </mj-section>
 {% endblock %}
