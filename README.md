@@ -11,8 +11,8 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 
 Aidants Connect est construit sur les éléments suivants :
 
-- Python 3.10
-- Django 3.2
+- Python 3.11
+- Django 4.2
 - PostgreSQL
 
 ## Installer et lancer l'application
