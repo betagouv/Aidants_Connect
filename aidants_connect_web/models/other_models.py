@@ -324,3 +324,31 @@ class CoReferentNonAidantRequest(models.Model):
             self.status = ReferentRequestStatuses.STATUS_VALIDATED
             self.save(update_fields=("status",))
             return instance
+
+
+class ReferentsFormation(models.Model):
+    first_name = models.CharField("Prénom", max_length=150)
+    last_name = models.CharField("Nom", max_length=150)
+    email = models.EmailField("Email professionnel", max_length=150)
+    referent = models.ForeignKey(
+        Aidant, null=True, default=None, on_delete=models.CASCADE
+    )
+    organisation_name = models.TextField("Nom", default="No name provided")
+    address = models.TextField("Adresse", default="No address provided")
+    zipcode = models.CharField("Code Postal", max_length=10, default="0")
+    city = models.CharField("Ville", max_length=255, null=True)
+    city_insee_code = models.CharField(
+        "Code INSEE de la ville", max_length=5, null=True, blank=True
+    )
+    organisation = models.ForeignKey(
+        Organisation, null=True, default=None, on_delete=models.CASCADE
+    )
+    formation_registration_dt = models.DateTimeField(
+        "Date et heure de début de la formation", auto_now_add=True
+    )
+    formation_presence = models.BooleanField("Présent à la formation", default=False)
+    formation_registered = models.BooleanField("Inscrit à la formation", default=False)
+    formation_participated = models.BooleanField(
+        "A participé à la formation", default=False
+    )
+    replay_seen = models.BooleanField("A vu le replay", default=False)
