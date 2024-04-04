@@ -1,0 +1,31 @@
+{% extends 'public_website/layout/main.html' %}
+
+{% block title %}
+{% endblock title %}
+
+{% load static %}
+
+{% block extracss %}
+  <link href="{% static 'css/habilitation.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<div class="fr-container">
+  <h1>Utiliser Aidants Connect</h1>
+  <p class="fr-text--xl">Retrouvez ici toutes les informations sur les étapes essentielles pour utiliser Aidants Connect : l'habilitation et la formation.</p>
+  <div class="fr-grid-row fr-mt-6">
+    <div class="fr-col-md-3 fr-col-12">
+      {% block menu %}
+      {% include "public_website/layout/_menu-habilitation.html" %}
+      {% endblock %}
+    </div>
+    <div class="fr-col-md-9 fr-col-12">
+      {% block body %}
+      {% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+

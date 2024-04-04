@@ -1,133 +1,25 @@
-.container-habilitation {
-  width: 55%;
-}
-
-.red {
-  color: #EF4056;
-}
-
-.so {
-    color: #1B4991;
-    background-color: #FAD776;
-    border-radius: .3em;
-    padding: .5em 1em .5em 5em;
-    display: inline-block;
-    font-weight: bold;
-    position: relative;
-    background-image: url(../images/habilitation/arrow.svg);
-    background-repeat: no-repeat;
-    background-size: auto 2em;
-    margin-top: 2.5rem;
-}
-
-.question {
-  list-style: none;
-}
-
-.question > li {
-  font-size: 1.25rem;
-  color: #1B4991;
+.blue-dot-nbr {
+  display: block;
+  color: white;
+  background-color:var(--background-action-high-blue-france);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 2rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
   line-height: 2rem;
 }
-
-.question > li::before {
-  content: "\2022";
-  color: #EF4056;
-  font-weight: bold;
-  margin-right: .5em;
+.fr-card h4 {
+  color: var(--background-action-high-blue-france)
 }
-
-.how {
-    counter-reset: how;
+.right-grey-background .fr-tabs__panel {
+  padding: 0;
 }
-
-.how > li {
-    border-left: 4px dotted #ccc;
-    min-height: 9em;
-    position: relative;
-    list-style-type: none;
-    padding: 0 0 3em 2em;
-    color: #1B4991;
+.right-grey-background .fr-col-12 {
+  padding: 2rem;
 }
-
-.how > li:before {
-    counter-increment: how;
-    display: block;
-    content: counter(how);
-    position: absolute;
-    left: -1.05em;
-    width: 1.8em;
-    height: 1.8em;
-    background: #1B4991;
-    border-radius: 50%;
-    color: #fff;
-    text-align: center;
-    font-weight: bold;
-    line-height: 1.8em;
-}
-
-.how > .how_5 {
-    border-left: 4px solid #fff;
-}
-
-.how > .how_5:before {
-    background-color: #EF4056;
-}
-
-.who > ul > li {
-    margin-bottom: 2em;
-}
-
-.btn-habilitation {
-  box-sizing: border-box;
-  box-shadow: 10px 10px 0 #FAD776;
-  padding: .5rem;
-  background-color: #EF4056;
-  border-radius: .3rem;
-  width: 406px;
-  text-align: center;
-  margin: auto;
-  margin-bottom: 5rem;
-}
-
-.btn-habilitation a {
-  color: #fff !important;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-@media screen and (min-width: 600px) {
-    .how > li {
-        padding-right: 10em;
-        background-repeat: no-repeat;
-        background-position: top right;
-    }
-
-    .how > .how_1 {
-        background-image: url(../images/habilitation/step1.svg);
-    }
-
-    .how > .how_2 {
-        background-image: url(../images/habilitation/step2.svg);
-    }
-
-    .how > .how_3 {
-        background-image: url(../images/habilitation/step3.svg);
-    }
-
-    .how > .how_4 {
-        background-image: url(../images/habilitation/step4.svg);
-    }
-
-    .how > .how_5 {
-        border-left: 4px solid #fff;
-        background-image: url(../images/habilitation/step5.svg);
-    }
-
-    .who {
-        border-bottom: 4px solid #1B4991;
-        padding-right: 10em;
-        background: url(../images/habilitation/structure.svg) no-repeat bottom -4px right 2em;
-        margin-bottom: 4em;
-    }
+.right-grey-background .fr-col-md-4 {
+  background-color: var(--background-contrast-grey);
+  margin-bottom: -3px
 }
