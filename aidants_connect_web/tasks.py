@@ -424,6 +424,10 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "totp_card_date_activated",
             "has_otp_app",
             "is_active",
+            "nb_mandat_created",
+            "nb_mandat_remote_created",
+            "nb_mandat_revoked",
+            "nb_mandat_renewed",
             "organisation__name",
             "organisation__data_pass_id",
             "organisation__siret",
@@ -438,10 +442,6 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "organisation__legal_cat_level_one",
             "organisation__legal_cat_level_two",
             "organisation__legal_cat_level_three",
-            "organisation__nb_mandat_created",
-            "organisation__nb_mandat_remote_created",
-            "organisation__nb_mandat_revoked",
-            "organisation__nb_mandat_renewed",
             "organisation__nb_usager",
         )
 
@@ -500,6 +500,48 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
 
         has_otp_app.csv_column = "App OTP"
 
+        def nb_mandat_created(self):
+            return Journal.objects.filter(
+                aidant=self.aidant,
+                action=JournalActionKeywords.CREATE_ATTESTATION,
+            ).count()
+
+        nb_mandat_created.csv_column = "Nombre de mandats créés"
+
+        def nb_mandat_remote_created(self):
+            return Journal.objects.filter(
+                aidant=self.aidant,
+                action=JournalActionKeywords.CREATE_ATTESTATION,
+                is_remote_mandat=True,
+            ).count()
+
+        nb_mandat_remote_created.csv_column = "Nombre de mandats à distance créés"
+
+        def nb_mandat_revoked(self):
+            return (
+                Journal.objects.filter(
+                    aidant=self.aidant,
+                    action=JournalActionKeywords.CREATE_ATTESTATION,
+                )
+                .exclude(mandat__autorisations__revocation_date__isnull=True)
+                .count()
+            )
+
+        nb_mandat_revoked.csv_column = "Nombre de mandats révoqués"
+
+        def nb_mandat_renewed(self):
+            return Journal.objects.filter(
+                action=JournalActionKeywords.INIT_RENEW_MANDAT,
+                aidant=self.aidant,
+            ).count()
+
+        nb_mandat_renewed.csv_column = "Nombre de mandats renouvelés"
+
+        def organisation__nb_usager(self):
+            return Usager.objects.active().visible_by(self.aidant).count()
+
+        organisation__nb_usager.csv_column = "Organisation: Nombre d'usagers"
+
         def organisation__region(self):
             qs = Department.objects.filter(
                 insee_code=self.aidant.organisation.department_insee_code
@@ -509,53 +551,6 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             return qs[0].insee_code
 
         organisation__region.csv_column = "Organisation: Code INSEE de la région"
-
-        def organisation__nb_mandat_created(self):
-            return Journal.objects.filter(
-                organisation=self.aidant.organisation,
-                action=JournalActionKeywords.CREATE_ATTESTATION,
-            ).count()
-
-        organisation__nb_mandat_created.csv_column = (
-            "Organisation: Nombre de mandats créés"
-        )
-
-        def organisation__nb_mandat_remote_created(self):
-            return Journal.objects.filter(
-                organisation=self.aidant.organisation,
-                action=JournalActionKeywords.CREATE_ATTESTATION,
-                is_remote_mandat=True,
-            ).count()
-
-        organisation__nb_mandat_remote_created.csv_column = (
-            "Organisation: Nombre de mandats à distance créés"
-        )
-
-        def organisation__nb_mandat_revoked(self):
-            return (
-                Mandat.objects.seperatly_revoked()
-                .filter(organisation=self.aidant.organisation)
-                .count()
-            )
-
-        organisation__nb_mandat_revoked.csv_column = (
-            "Organisation: Nombre de mandats révoqués"
-        )
-
-        def organisation__nb_mandat_renewed(self):
-            return Journal.objects.filter(
-                action=JournalActionKeywords.INIT_RENEW_MANDAT,
-                organisation=self.aidant.organisation,
-            ).count()
-
-        organisation__nb_mandat_renewed.csv_column = (
-            "Organisation: Nombre de mandats renouvelés"
-        )
-
-        def organisation__nb_usager(self):
-            return Usager.objects.active().visible_by(self.aidant).count()
-
-        organisation__nb_usager.csv_column = "Organisation: Nombre d'usagers"
 
         def values(self) -> list[str]:
             result = []
