@@ -9,6 +9,7 @@ from aidants_connect_common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_common.utils.gouv_address_api import Address
+from aidants_connect_habilitation.constants import CONSEILLER_NUMERIQUE_EMAIL
 from aidants_connect_habilitation.forms import (
     AddressValidatableMixin,
     AidantRequestForm,
@@ -473,6 +474,21 @@ class TestManagerForm(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual("test@test.test", form.cleaned_data["email"])
 
+    def test_email_conseiller_numerique(self):
+        form = get_form(
+            ManagerForm,
+            ignore_errors=True,
+            conseiller_numerique=True,
+            email="test@test.test",
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["email"][0],
+            "Si la personne fait partie du dispositif conseiller numérique, "
+            f"elle doit s'inscrire avec son email {CONSEILLER_NUMERIQUE_EMAIL}",
+        )
+
 
 class TestAidantRequestForm(TestCase):
     def test_clean_aidant_with_same_email_as_manager(self):
@@ -561,6 +577,23 @@ class TestAidantRequestForm(TestCase):
                 f"aidante doit avoir son propre e-mail nominatif."
             ],
             form.errors["email"],
+        )
+
+    def test_email_conseiller_numerique(self):
+        organisation = OrganisationRequestFactory()
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation},
+            conseiller_numerique=True,
+            email="test@test.test",
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["email"][0],
+            "Si la personne fait partie du dispositif conseiller numérique, "
+            f"elle doit s'inscrire avec son email {CONSEILLER_NUMERIQUE_EMAIL}",
         )
 
 

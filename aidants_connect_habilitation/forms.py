@@ -33,6 +33,7 @@ from aidants_connect_common.forms import (
 )
 from aidants_connect_common.utils.gouv_address_api import Address, search_adresses
 from aidants_connect_habilitation import models
+from aidants_connect_habilitation.constants import CONSEILLER_NUMERIQUE_EMAIL
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Manager,
@@ -151,6 +152,37 @@ class AddressValidatableMixin(Form):
 class CleanEmailMixin:
     def clean_email(self):
         return self.cleaned_data["email"].lower().strip()
+
+
+def coerce(value):
+    return bool(strtobool(value))
+
+
+class ConseillerNumerique(Form):
+    conseiller_numerique = TypedChoiceField(
+        label=mark_safe(
+            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
+        ),
+        label_suffix=" :",
+        choices=(("", ""), (True, "Oui"), (False, "Non")),
+        coerce=coerce,
+    )
+
+    def clean(self):
+        result = super().clean()
+        if result["conseiller_numerique"] is True and not result.get(
+            "email", ""
+        ).endswith(CONSEILLER_NUMERIQUE_EMAIL):
+            self.add_error(
+                "email",
+                (
+                    "Si la personne fait partie du dispositif conseiller numérique, "
+                    "elle doit s'inscrire avec son email "
+                    f"{CONSEILLER_NUMERIQUE_EMAIL}"
+                ),
+            )
+
+        return result
 
 
 class CleanZipCodeMixin:
@@ -360,7 +392,10 @@ class PersonWithResponsibilitiesForm(PatchedModelForm, CleanEmailMixin):
 
 
 class ManagerForm(
-    PersonWithResponsibilitiesForm, AddressValidatableMixin, CleanZipCodeMixin
+    ConseillerNumerique,
+    PersonWithResponsibilitiesForm,
+    AddressValidatableMixin,
+    CleanZipCodeMixin,
 ):
     zipcode = CharField(
         label="Code Postal",
@@ -383,15 +418,6 @@ class ManagerForm(
 
     is_aidant = TypedChoiceField(
         label="C’est aussi un aidant",
-        label_suffix=" :",
-        choices=(("", ""), (True, "Oui"), (False, "Non")),
-        coerce=lambda value: bool(strtobool(value)),
-    )
-
-    conseiller_numerique = TypedChoiceField(
-        label=mark_safe(
-            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
-        ),
         label_suffix=" :",
         choices=(("", ""), (True, "Oui"), (False, "Non")),
         coerce=lambda value: bool(strtobool(value)),
@@ -452,16 +478,7 @@ class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
         )
 
 
-class AidantRequestForm(PatchedModelForm, CleanEmailMixin):
-    conseiller_numerique = TypedChoiceField(
-        label=mark_safe(
-            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
-        ),
-        label_suffix=" :",
-        choices=(("", ""), (True, "Oui"), (False, "Non")),
-        coerce=lambda value: bool(strtobool(value)),
-    )
-
+class AidantRequestForm(ConseillerNumerique, PatchedModelForm, CleanEmailMixin):
     def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
         self.organisation = organisation
         super().__init__(*args, **kwargs)
