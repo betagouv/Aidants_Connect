@@ -9,7 +9,7 @@
         <p>Bonjour {{ user.get_full_name }},</p>
 
         <p>
-          Suite à notre relance du mois dernier, comme annoncé, votre compte a été désactivé pour des raisons de
+          Suite à notre précédente relance, comme annoncé, votre compte a été désactivé pour des raisons de
           sécurité, conformément <a href="{{ cgu_url }}">aux CGU d’Aidants Connect</a>.
         </p>
         <p>
