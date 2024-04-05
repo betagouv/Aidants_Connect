@@ -62,6 +62,7 @@ def guide_utilisation(request):
 def formation(request):
     return render(request, "public_website/formation.html")
 
+
 def habilitation(request):
     return render(request, "public_website/habilitation.html")
 
