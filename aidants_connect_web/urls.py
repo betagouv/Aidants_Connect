@@ -241,7 +241,8 @@ urlpatterns = [
     path("cgu/", service.cgu, name="cgu"),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
-    path("habilitation", service.habilitation, name="habilitation"),
+    path("formation", service.formation, name="habilitation_faq_formation"),
+    path("habilitation", service.habilitation, name="habilitation_faq_habilitation"),
     path("ressources/", service.ressources, name="ressources"),
     path("accessibilite/", service.accessibilite, name="accessibilite"),
     # # Datapass
