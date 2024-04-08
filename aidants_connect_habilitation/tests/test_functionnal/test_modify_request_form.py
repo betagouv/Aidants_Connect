@@ -10,9 +10,14 @@ from selenium.webdriver.support.wait import WebDriverWait
 from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.forms import AidantRequestForm
-from aidants_connect_habilitation.models import OrganisationRequest
-from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
+from aidants_connect_habilitation.models import AidantRequest, OrganisationRequest
+from aidants_connect_habilitation.tests.factories import (
+    AidantRequestFactory,
+    OrganisationRequestFactory,
+)
 from aidants_connect_habilitation.tests.utils import get_form
+from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.tests.factories import HabilitationRequestFactory
 
 
 @tag("functional")
@@ -103,6 +108,62 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
 
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 4)
+
+    def test_I_can_cancel_habilitation_request(self):
+        organisation: OrganisationRequest = OrganisationRequestFactory(
+            status=RequestStatusConstants.NEW.name
+        )
+
+        ar1: AidantRequest = AidantRequestFactory(organisation=organisation)
+        ar2: AidantRequest = AidantRequestFactory(organisation=organisation)
+
+        ar1.habilitation_request = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
+        )
+        ar1.save()
+        ar2.habilitation_request = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_VALIDATED
+        )
+        ar2.save()
+
+        self.__open_readonly_view_url(organisation)
+
+        elts = self.selenium.find_elements(
+            By.CSS_SELECTOR, 'a[id*="cancel-habilitation-request"]'
+        )
+        self.assertEqual(1, len(elts))
+        self.assertEqual(
+            f"cancel-habilitation-request-{ar2.habilitation_request.pk}",
+            elts[0].get_attribute("id"),
+        )
+
+        elts[0].click()
+        self.wait.until(
+            self.path_matches(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": organisation.issuer.issuer_id,
+                    "uuid": organisation.uuid,
+                    "aidant_id": ar2.pk,
+                },
+            )
+        )
+        self.selenium.find_element(By.ID, "submit-button").click()
+        self.wait.until(
+            self.path_matches(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": organisation.issuer.issuer_id,
+                    "uuid": organisation.uuid,
+                },
+            )
+        )
+
+        ar2.habilitation_request.refresh_from_db()
+        self.assertEqual(
+            ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE,
+            ReferentRequestStatuses(ar2.habilitation_request.status),
+        )
 
     def __open_readonly_view_url(
         self,

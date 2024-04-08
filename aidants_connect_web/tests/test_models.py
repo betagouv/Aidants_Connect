@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
 from django.utils import timezone
@@ -14,6 +15,7 @@ from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from factory.django import mute_signals
 from freezegun import freeze_time
 from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
@@ -2077,16 +2079,25 @@ class HabilitationRequestTests(TestCase):
         )
 
     def test_trigger(self):
-        ar1 = AidantRequestFactory()
-        hr1 = HabilitationRequestFactory()
-        FormationAttendant.objects.create(attendant=ar1, formation=FormationFactory())
-        FormationAttendant.objects.create(attendant=hr1, formation=FormationFactory())
+        # Prevent aidants_connect_web.signals.cancel_formation_on_habilitation_cancelation  # noqa: E501
+        # from triggering
+        with mute_signals(pre_save, post_save):
+            ar1 = AidantRequestFactory()
+            hr1 = HabilitationRequestFactory()
+            FormationAttendant.objects.create(
+                attendant=ar1, formation=FormationFactory()
+            )
+            FormationAttendant.objects.create(
+                attendant=hr1, formation=FormationFactory()
+            )
 
-        ar2 = AidantRequestFactory()
-        FormationAttendant.objects.create(attendant=ar2, formation=FormationFactory())
+            ar2 = AidantRequestFactory()
+            FormationAttendant.objects.create(
+                attendant=ar2, formation=FormationFactory()
+            )
 
-        arct = ContentType.objects.get_for_model(AidantRequest)
-        hrct = ContentType.objects.get_for_model(HabilitationRequest)
+            arct = ContentType.objects.get_for_model(AidantRequest)
+            hrct = ContentType.objects.get_for_model(HabilitationRequest)
 
         self.assertEqual(
             {(ar1.pk, arct.pk), (hr1.pk, hrct.pk), (ar2.pk, arct.pk)},
@@ -2096,8 +2107,8 @@ class HabilitationRequestTests(TestCase):
                 )
             ),
         )
-
-        hr2 = HabilitationRequestFactory(email=ar2.email)
+        with mute_signals(pre_save, post_save):
+            hr2 = HabilitationRequestFactory(email=ar2.email)
 
         self.assertEqual(
             {(ar1.pk, arct.pk), (hr1.pk, hrct.pk), (hr2.pk, hrct.pk)},
@@ -2107,6 +2118,17 @@ class HabilitationRequestTests(TestCase):
                 )
             ),
         )
+
+    def test_cancel_habilitation_unregister_formation(self):
+        hr1: HabilitationRequest = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_VALIDATED
+        )
+        FormationAttendant.objects.create(attendant=hr1, formation=FormationFactory())
+
+        self.assertEqual(1, FormationAttendant.objects.count())
+
+        hr1.cancel_by_responsable()
+        self.assertEqual(0, FormationAttendant.objects.count())
 
 
 @tag("models", "manndat", "usager", "journal")

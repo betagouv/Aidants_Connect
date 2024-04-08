@@ -20,7 +20,7 @@ from aidants_connect_common.constants import (
 )
 from aidants_connect_common.utils import build_url, render_email
 from aidants_connect_web import tasks
-from aidants_connect_web.constants import NotificationType
+from aidants_connect_web.constants import NotificationType, ReferentRequestStatuses
 from aidants_connect_web.models import (
     Aidant,
     HabilitationRequest,
@@ -214,3 +214,14 @@ def log_user_fingerprint(sender, user: Aidant, request, **kwargs):
         )
     except Exception:
         logger.exception("Error while recording user fingerprint")
+
+
+@receiver(post_save, sender=HabilitationRequest)
+def cancel_formation_on_habilitation_cancelation(
+    sender, instance: HabilitationRequest, **_
+):
+    if (
+        ReferentRequestStatuses(instance.status)
+        not in ReferentRequestStatuses.formation_registerable()
+    ):
+        instance.formations.all().delete()
