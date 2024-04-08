@@ -154,10 +154,6 @@ class CleanEmailMixin:
         return self.cleaned_data["email"].lower().strip()
 
 
-def coerce(value):
-    return bool(strtobool(value))
-
-
 class ConseillerNumerique(Form):
     conseiller_numerique = TypedChoiceField(
         label=mark_safe(
@@ -165,12 +161,12 @@ class ConseillerNumerique(Form):
         ),
         label_suffix=" :",
         choices=(("", ""), (True, "Oui"), (False, "Non")),
-        coerce=coerce,
+        coerce=lambda value: bool(strtobool(value)),
     )
 
     def clean(self):
         result = super().clean()
-        if result["conseiller_numerique"] is True and not result.get(
+        if result.get("conseiller_numerique", None) is True and not result.get(
             "email", ""
         ).endswith(CONSEILLER_NUMERIQUE_EMAIL):
             self.add_error(
