@@ -3,6 +3,7 @@ from uuid import UUID
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
+from django.forms import Form
 from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -574,6 +575,43 @@ class AidantFormationRegistrationView(
 
     def get_success_url(self):
         return self.organisation.get_absolute_url()
+
+
+class HabilitationRequestCancelationView(LateStageRequestView, FormView):
+    form_class = Form
+    template_name = "cancel-habilitation-request.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.person = get_object_or_404(
+            AidantRequest, pk=self.kwargs["aidant_id"], organisation=self.organisation
+        )
+
+        if (
+            not self.person.habilitation_request
+            or not self.person.habilitation_request.status_cancellable_by_responsable
+        ):
+            raise Http404
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.person.habilitation_request.cancel_by_responsable()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        kwargs.update(
+            {
+                "request": self.person.habilitation_request,
+                "organisation": self.organisation,
+            }
+        )
+        return super().get_context_data(**kwargs)
+
+    def get_success_url(self):
+        return reverse(
+            "habilitation_organisation_view",
+            kwargs={"issuer_id": self.issuer.issuer_id, "uuid": self.organisation.uuid},
+        )
 
 
 class ManagerFormationRegistrationView(AidantFormationRegistrationView):

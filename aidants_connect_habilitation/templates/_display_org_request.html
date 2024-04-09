@@ -189,6 +189,21 @@
             </p>
             <p>{{ aidant_request.email }}</p>
           </div>
+          {% if aidant_request.habilitation_request %}
+            {% if aidant_request.habilitation_request.status_cancellable_by_responsable %}
+              <div>
+                <a
+                  id="cancel-habilitation-request-{{ aidant_request.habilitation_request.pk }}"
+                  class="fr-link fr-link--icon-left fr-text-default--error fr-icon-delete-bin-line"
+                  href="{% url 'habilitation_new_aidant_cancel_habilitation_request' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant_request.pk %}"
+                >
+                  Annuler cette demande d'habilitation
+                </a>
+              </div>
+            {% elif aidant_request.habilitation_request.status == aidant_request.habilitation_request.ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE %}
+              <p class="fr-badge fr-badge--warning">Demande annulée par le ou la référente</p>
+            {% endif %}
+          {% endif %}
           {% if show_all_buttons %}
             <div class="button-box">
               <a

@@ -45,7 +45,10 @@ from aidants_connect_habilitation.tests.factories import (
     OrganisationRequestFactory,
 )
 from aidants_connect_habilitation.tests.utils import get_form
-from aidants_connect_habilitation.views import AidantFormationRegistrationView
+from aidants_connect_habilitation.views import (
+    AidantFormationRegistrationView,
+    HabilitationRequestCancelationView,
+)
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import HabilitationRequestFactory
@@ -1551,4 +1554,163 @@ class TestFormationRegistrationView(TestCase):
         self.assertEqual(
             {self.formation_with_aidant1, self.formation_ok},
             {fa.formation for fa in hab.formations.all()},
+        )
+
+
+class TestHabilitationRequestCancelationView(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationRequestFactory()
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
+        )
+        cls.aidant_with_cancelled_habilitation: AidantRequestFactory = (
+            AidantRequestFactory(
+                organisation=cls.organisation, habilitation_request=hab
+            )
+        )
+
+        cls.aidant_without_habilitation: AidantRequestFactory = AidantRequestFactory(
+            organisation=cls.organisation
+        )
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_VALIDATED
+        )
+        cls.aidant_with_newly_validated_habilitation: AidantRequestFactory = (
+            AidantRequestFactory(
+                organisation=cls.organisation, habilitation_request=hab
+            )
+        )
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING
+        )
+        cls.aidant_with_ongoing_habilitation: AidantRequest = AidantRequestFactory(
+            organisation=cls.organisation, habilitation_request=hab
+        )
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_VALIDATED
+        )
+        cls.unrelated_aidant_request: AidantRequestFactory = AidantRequestFactory(
+            habilitation_request=hab
+        )
+
+    def test_triggers_correct_view(self):
+        found = resolve(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(found.func.view_class, HabilitationRequestCancelationView)
+
+    def test_renders_correct_template(self):
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertTemplateUsed(response, "cancel-habilitation-request.html")
+
+    def test_404_on_bad_url_parameters(self):
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(uuid4()),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(uuid4()),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.unrelated_aidant_request.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_without_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_cancelled_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_cancel_habilitation(self):
+        self.assertTrue(
+            self.aidant_with_ongoing_habilitation.habilitation_request.status_cancellable_by_responsable  # noqa: E501
+        )
+        response = self.client.post(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                },
+            ),
+        )
+        self.aidant_with_ongoing_habilitation.habilitation_request.refresh_from_db()
+        self.assertFalse(
+            self.aidant_with_ongoing_habilitation.habilitation_request.status_cancellable_by_responsable  # noqa: E501
         )
