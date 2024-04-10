@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Count, Q
 from django.db.models.constants import LOOKUP_SEP
+from django.db.models.functions import Lower, Trim
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
@@ -23,7 +24,7 @@ from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
 from aidants_connect_common.constants import JournalActionKeywords
-from aidants_connect_common.models import Department
+from aidants_connect_common.models import Commune, Department
 from aidants_connect_common.utils import build_url, model_fields, render_email
 from aidants_connect_web.models import (
     Aidant,
@@ -36,6 +37,8 @@ from aidants_connect_web.models import (
     Organisation,
     Usager,
 )
+from aidants_connect_web.models.other_models import ReferentsFormation
+from aidants_connect_web.models.utils import LiveStormApi
 from aidants_connect_web.statistics import (
     compute_all_statistics,
     compute_reboarding_statistics_and_synchro_grist,
@@ -736,3 +739,50 @@ def create_or_update_aidant_in_sandbox_task(
         f"Habilitation Request PK : {habilitation_request_id}, "
         f"status : {r.status} "
     )
+
+
+@shared_task
+def import_referent_formation_from_livestorm(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    api = LiveStormApi(logger=logger)
+    evt = api.get_event_id("Webinaire référent")
+    if not evt:
+        return
+
+    sessions = api.get_sessions_id_for_event(evt)
+    for session in sessions:
+        participants = api.get_people_for_session(session.id)
+        for participant in participants:
+            try:
+                aidant = Aidant.objects.get(email=participant.get_email())
+            except Aidant.DoesNotExist:
+                aidant = None
+
+            try:
+                org = Organisation.objects.annotate(n=Lower(Trim("name"))).get(
+                    n=participant.structure.casefold().strip()
+                )
+            except (Organisation.DoesNotExist, Organisation.MultipleObjectsReturned):
+                org = None
+
+            try:
+                city = Commune.objects.annotate(n=Lower(Trim("name"))).get(
+                    n=participant.city.casefold().strip()
+                )
+            except (Commune.DoesNotExist, Organisation.MultipleObjectsReturned):
+                city = None
+
+            ReferentsFormation.objects.create(
+                first_name=participant.first_name,
+                last_name=participant.last_name,
+                email=participant.get_email(),
+                referent=aidant,
+                organisation_name=participant.structure,
+                address=participant.address,
+                zipcode="",
+                city=participant.city,
+                city_insee_code=getattr(city, "insee_code", ""),
+                organisation=org,
+                formation_registration_dt=session.estimated_started_at,
+            )
