@@ -611,7 +611,7 @@ DATAPASS_CODE_FOR_ID_GENERATOR = "datapassid"
 
 AC_IMPORT_HABILITATION_REQUESTS = getenv_bool("AC_IMPORT_HABILITATION_REQUESTS", False)
 
-SUPPORT_EMAIL = "connexion@aidantsconnect.beta.gouv.fr"
+SUPPORT_EMAIL = "contact@aidantsconnect.beta.gouv.fr"
 
 MANDAT_EXPIRED_SOON = 30
 MANDAT_EXPIRED_SOON_EMAIL_SUBJECT = os.getenv(
