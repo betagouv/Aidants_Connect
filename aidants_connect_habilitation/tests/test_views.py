@@ -1156,6 +1156,8 @@ class RequestReadOnlyViewTests(TestCase):
             self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(response, self.template_name)
+        self.assertNotContains(response, settings.SUPPORT_EMAIL)
+        self.assertContains(response, settings.AC_CONTACT_EMAIL)
         self.assertNotContains(response, "Éditer")
 
     def test_no_redirect_on_confirmed_organisation_request(self):
