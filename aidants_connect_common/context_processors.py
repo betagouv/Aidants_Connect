@@ -10,6 +10,7 @@ def settings_variables(request):
             isinstance(request.user, Aidant) and request.user.is_responsable_structure
         ),
         "SUPPORT_EMAIL": settings.SUPPORT_EMAIL,
+        "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,
         "SITE_DESCRIPTION": settings.SITE_DESCRIPTION,
         "MATOMO_INSTANCE_URL": settings.MATOMO_INSTANCE_URL,
         "MATOMO_INSTANCE_SITE_ID": settings.MATOMO_INSTANCE_SITE_ID,
