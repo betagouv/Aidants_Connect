@@ -41,6 +41,7 @@ class Session(BaseModel):
 
 
 class Participant(BaseModel):
+    id: str
     email: str = ""
     first_name: str = ""
     last_name: str = ""
@@ -175,13 +176,14 @@ class LiveStormApi:
                 for item in response["data"]:
                     result.append(
                         Participant(
+                            id=item["id"],
                             **{
                                 field["id"]: field["value"]
                                 for field in item["attributes"]["registrant_detail"][
                                     "fields"
                                 ]
                                 if field["value"]
-                            }
+                            },
                         )
                     )
 

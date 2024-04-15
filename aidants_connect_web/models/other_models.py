@@ -327,6 +327,7 @@ class CoReferentNonAidantRequest(models.Model):
 
 
 class ReferentsFormation(models.Model):
+    livestorm_id = models.CharField("ID livestorm", max_length=255, unique=True)
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
     email = models.EmailField("Email professionnel", max_length=150)
