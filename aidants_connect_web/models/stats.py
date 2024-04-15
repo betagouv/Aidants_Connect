@@ -95,6 +95,8 @@ class AbstractAidantStatistiques(models.Model):
         default=0,
     )
 
+    revoked_mandats = models.PositiveIntegerField("Nb mandats révoqués", default=0)
+
     class Meta:
         abstract = True
         verbose_name = "Statistiques aidants abstraite"
