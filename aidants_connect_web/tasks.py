@@ -773,16 +773,21 @@ def import_referent_formation_from_livestorm(*, logger=None):
             except (Commune.DoesNotExist, Organisation.MultipleObjectsReturned):
                 city = None
 
-            ReferentsFormation.objects.create(
-                first_name=participant.first_name,
-                last_name=participant.last_name,
-                email=participant.get_email(),
-                referent=aidant,
-                organisation_name=participant.structure,
-                address=participant.address,
-                zipcode="",
-                city=participant.city,
-                city_insee_code=getattr(city, "insee_code", ""),
-                organisation=org,
-                formation_registration_dt=session.estimated_started_at,
+            pass
+
+            ReferentsFormation.objects.get_or_create(
+                livestorm_id=participant.id,
+                defaults={
+                    "first_name": participant.first_name,
+                    "last_name": participant.last_name,
+                    "email": participant.get_email(),
+                    "referent": aidant,
+                    "organisation_name": participant.structure,
+                    "address": participant.address,
+                    "zipcode": "",
+                    "city": participant.city,
+                    "city_insee_code": getattr(city, "insee_code", ""),
+                    "organisation": org,
+                    "formation_registration_dt": session.estimated_started_at,
+                },
             )
