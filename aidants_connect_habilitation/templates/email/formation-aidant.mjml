@@ -14,15 +14,12 @@
           Si vous souhaitez modifier ou annuler votre demande, merci de vous rapprocher de l’organisme de formation.
         </p>
       </mj-text>
+    <mj-text>
+    <em>L'organisme de formation se réserve le droit d’annuler une session si le nombre de participants est insuffisant.</em>
+    </mj-text>
       <mj-text>
         Nous nous tenons à votre disposition et vous remercions de votre intérêt pour Aidants Connect.
       </mj-text>
-      <mj-text>
-      L'équipe Aidants Connect
-      </mj-text>
-    <mj-text>
-    <span style="font-style: italic;">L'organisme de formation se réserve le droit d’annuler une session si le nombre de participants est insuffisant.</span>
-    </mj-text>
     </mj-column>
   </mj-section>
 {% endblock %}
