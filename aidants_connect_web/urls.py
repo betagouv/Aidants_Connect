@@ -239,6 +239,11 @@ urlpatterns = [
     path("", service.home_page, name="home_page"),
     path("stats/", service.statistiques, name="statistiques"),
     path("cgu/", service.cgu, name="cgu"),
+    path(
+        "politique_confidentialite/",
+        service.politique_confidentialite,
+        name="politique_confidentialite",
+    ),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("formation", service.formation, name="habilitation_faq_formation"),

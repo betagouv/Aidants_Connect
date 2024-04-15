@@ -23,9 +23,6 @@
   background-color: var(--background-contrast-grey);
   margin-bottom: -3px
 }
-li {
-  list-style-position: outside;
-}
 .fr-info-text {
   align-items: flex-start;
 }
