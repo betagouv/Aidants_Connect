@@ -4,6 +4,7 @@ from datetime import timedelta
 from enum import auto
 from typing import TYPE_CHECKING, Any, Self
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -122,6 +123,16 @@ class FormationQuerySet(models.QuerySet):
     def available_for_attendant(
         self, after: timedelta, attendant: HabilitationRequest | AidantRequest
     ) -> Self:
+        if attendant.conseiller_numerique:
+            return self.annotate(attendants_count=Count("attendants")).filter(
+                models.Q(
+                    attendants_count__lt=models.F("max_attendants"),
+                    start_datetime__gte=now() + after,
+                    type_id=settings.PK_MEDNUM_FORMATION_TYPE,
+                )
+                | self.for_attendant_q(attendant)
+            )
+
         return self.annotate(attendants_count=Count("attendants")).filter(
             models.Q(
                 attendants_count__lt=models.F("max_attendants"),

@@ -111,7 +111,7 @@
       <div class="shadowed with-button-box">
         <h4 class="h2">Référent de structure</h4>
         {% if organisation.manager %}
-          {% if organisation.manager.habilitation_request and organisation.manager.habilitation_request.status in organisation.manager.habilitation_request.ReferentRequestStatuses.formation_registerable and organisation.manager.habilitation_request.conseiller_numerique %}
+          {% if organisation.manager.habilitation_request and organisation.manager.habilitation_request.status in organisation.manager.habilitation_request.ReferentRequestStatuses.formation_registerable %}
             {% if organisation.manager.habilitation_request.formations.exists %}
               <button class="fr-btn fr-mb-8v" disabled>
                 Cette personne est inscrite à une formation
@@ -165,7 +165,7 @@
 
           <div class="flex fr-mb-5v">
             <h4 class="h2 fr-col--middle fr-m-0">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
-            {% if aidant_request.habilitation_request and aidant_request.habilitation_request.status in aidant_request.habilitation_request.ReferentRequestStatuses.formation_registerable and aidant_request.habilitation_request.conseiller_numerique %}
+            {% if aidant_request.habilitation_request and aidant_request.habilitation_request.status in aidant_request.habilitation_request.ReferentRequestStatuses.formation_registerable %}
               <span class="spacer"></span>
               {% if aidant_request.habilitation_request.formations.exists %}
                 <button class="fr-btn fr-ml-4v" disabled>
