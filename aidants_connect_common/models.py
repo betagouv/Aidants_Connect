@@ -265,6 +265,9 @@ class FormationAttendant(models.Model):
     formation = models.ForeignKey(
         Formation, on_delete=models.PROTECT, related_name="attendants"
     )
+    id_grist = models.CharField(
+        "Id Grist", editable=False, max_length=50, blank=True, default=""
+    )
 
     @cached_property
     def target(self):
