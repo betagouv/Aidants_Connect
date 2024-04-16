@@ -33,6 +33,13 @@ $main-padding: 3rem;
   }
 }
 
+// Don't display cookie related element on print
+#tarteaucitron {
+  @media print {
+    display: none;
+  }
+}
+
 h1, .fr-h1 {
   margin: 0 0 3rem 0;
 }
@@ -45,35 +52,6 @@ h3, .fr-h3, h4, .fr-h4 {
     margin-top: 0;
   }
 }
-
-.fr-text-default {
-  color: var(--text-default-grey) !important;
-}
-.fr-text-blue-france {
-  color: var(--blue-france-sun-113-625);
-}
-.fr-text-grey {
-  color: var(--grey-425-625);
-}
-.fr-text--center {
-  text-align: center;
-}
-.fr-bordered {
-    border: solid 1px var(--border-default-grey);
-}
-.fr-bordered-blue {
-  border-color: var(--border-default-blue-france)
-}
-.fr-height-100 {
-  height: 100%;
-}
-.contrast-grey-background {
-  background-color: var(--background-contrast-grey);
-}
-.alt-grey-background {
-  background-color: var(--background-alt-grey);
-}
-
 
 .page-main-title {
   color: var(--grey-425-625);
@@ -132,12 +110,13 @@ p:last-child {
 .flex-right {
   justify-content: right;
 }
-.flex-between {
-  justify-content: space-between;
-}
 .flex-wrap {
   flex-wrap: wrap;
 }
+.flex-between {
+  justify-content: space-between;
+}
+
 .width-100 {
   width: 100%;
 }
@@ -148,6 +127,22 @@ p:last-child {
 
 .fr-text--overflow-hidden {
   overflow: hidden;
+}
+
+.fr-text--center {
+  text-align: center;
+}
+
+.fr-bordered {
+    border: solid 1px var(--border-default-grey);
+}
+
+.fr-bordered-blue {
+  border-color: var(--border-default-blue-france)
+}
+
+.fr-height-100 {
+  height: 100%;
 }
 
 @for $i from 0 through 32 {
