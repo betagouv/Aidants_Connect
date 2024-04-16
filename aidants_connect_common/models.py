@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Self
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import CASCADE, Count
 from django.template.defaultfilters import date
@@ -111,6 +112,23 @@ class FormationType(models.Model):
         ]
 
 
+class FormationOrganization(models.Model):
+    name = models.CharField("Nom")
+    contacts = ArrayField(models.EmailField(), default=list)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Formation : organisation"
+        verbose_name_plural = "Formation : organisation"
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(name__isnull_or_blank=False), name="not_blank_name"
+            )
+        ]
+
+
 class FormationQuerySet(models.QuerySet):
     def for_attendant_q(self, attendant: HabilitationRequest | AidantRequest):
         return models.Q(
@@ -186,6 +204,9 @@ class Formation(models.Model):
     description = models.TextField("Description", blank=True, default="")
     id_grist = models.CharField(
         "Id Grist", editable=False, max_length=50, blank=True, default=""
+    )
+    organisation = models.ForeignKey(
+        FormationOrganization, on_delete=models.PROTECT, null=True, default=None
     )
 
     objects = FormationQuerySet.as_manager()
