@@ -185,7 +185,7 @@
                       </a>
                     </li>
                   {% endif %}
-                  {% if request.status in request.ReferentRequestStatuses.formation_registerable and request.conseiller_numerique %}
+                  {% if request.status in request.ReferentRequestStatuses.formation_registerable %}
                     {% if request.formations.exists %}
                       <li>
                         <button class="fr-btn" disabled>
