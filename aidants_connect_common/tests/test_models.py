@@ -4,8 +4,16 @@ from django.conf import settings
 from django.test import TestCase, tag
 from django.utils.timezone import now
 
-from aidants_connect_common.models import Formation, FormationType
-from aidants_connect_common.tests.factories import FormationFactory
+from aidants_connect_common.models import (
+    Formation,
+    FormationAttendant,
+    FormationOrganization,
+    FormationType,
+)
+from aidants_connect_common.tests.factories import (
+    FormationFactory,
+    FormationOrganizationFactory,
+)
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.tests.factories import (
     HabilitationRequestFactory,
@@ -65,4 +73,54 @@ class FormationTests(TestCase):
                 timedelta(days=12), self.hab
             ).count(),
             2,
+        )
+
+
+class TestFormationOrganization(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.org_without_attendants = FormationOrganizationFactory()
+
+        cls.org_with_warned_attendants = FormationOrganizationFactory()
+        form = FormationFactory(organisation=cls.org_with_warned_attendants)
+        FormationAttendant.objects.create(
+            attendant=HabilitationRequestFactory(),
+            formation=form,
+            organization_warned_at=now(),
+        )
+        FormationAttendant.objects.create(
+            attendant=HabilitationRequestFactory(),
+            formation=form,
+            organization_warned_at=now(),
+        )
+
+        cls.org_with_not_warned_attendants = FormationOrganizationFactory()
+        form = FormationFactory(organisation=cls.org_with_not_warned_attendants)
+        FormationAttendant.objects.create(
+            attendant=HabilitationRequestFactory(),
+            formation=form,
+            organization_warned_at=now(),
+        )
+        FormationAttendant.objects.create(
+            attendant=HabilitationRequestFactory(),
+            formation=form,
+            organization_warned_at=now(),
+        )
+
+        form = FormationFactory(organisation=cls.org_with_not_warned_attendants)
+        FormationAttendant.objects.create(
+            attendant=HabilitationRequestFactory(),
+            formation=form,
+            organization_warned_at=None,
+        )
+        FormationAttendant.objects.create(
+            attendant=HabilitationRequestFactory(),
+            formation=form,
+            organization_warned_at=None,
+        )
+
+    def test_warnable_about_new_attendants(self):
+        self.assertEqual(
+            {self.org_with_not_warned_attendants},
+            set(FormationOrganization.objects.warnable_about_new_attendants()),
         )

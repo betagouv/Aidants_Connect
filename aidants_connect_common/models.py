@@ -112,9 +112,20 @@ class FormationType(models.Model):
         ]
 
 
+class FormationOrganizationQuerySet(models.QuerySet):
+    def warnable_about_new_attendants(self):
+        return self.annotate(nb=Count("formations__attendants")).filter(
+            contacts__len__gt=0,
+            formations__attendants__organization_warned_at__isnull=True,
+            nb__gt=0,
+        )
+
+
 class FormationOrganization(models.Model):
     name = models.CharField("Nom")
     contacts = ArrayField(models.EmailField(), default=list)
+
+    objects = FormationOrganizationQuerySet.as_manager()
 
     def __str__(self):
         return self.name
@@ -206,7 +217,11 @@ class Formation(models.Model):
         "Id Grist", editable=False, max_length=50, blank=True, default=""
     )
     organisation = models.ForeignKey(
-        FormationOrganization, on_delete=models.PROTECT, null=True, default=None
+        FormationOrganization,
+        on_delete=models.PROTECT,
+        null=True,
+        default=None,
+        related_name="formations",
     )
 
     objects = FormationQuerySet.as_manager()
@@ -267,6 +282,12 @@ class FormationAttendant(models.Model):
     attendant = GenericForeignKey("attendant_content_type", "attendant_id")
     formation = models.ForeignKey(
         Formation, on_delete=models.PROTECT, related_name="attendants"
+    )
+    organization_warned_at = models.DateTimeField(
+        "Lʼorganisation de la formation a été informée "
+        "de lʼinscription de cette personne à…",
+        null=True,
+        default=None,
     )
     id_grist = models.CharField(
         "Id Grist", editable=False, max_length=50, blank=True, default=""
