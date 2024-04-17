@@ -13,7 +13,7 @@ body {
 ul, ol {
   margin: 0;
   padding: 0;
-  list-style-position: inside;
+  list-style-position: outside;
 }
 
 $main-padding: 3rem;
@@ -46,6 +46,9 @@ h3, .fr-h3, h4, .fr-h4 {
   &:first-child {
     margin-top: 0;
   }
+}
+.fr-text-default {
+  color: var(--text-default-grey);
 }
 
 .page-main-title {

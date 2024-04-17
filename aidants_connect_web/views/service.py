@@ -202,6 +202,10 @@ def cgu(request):
     return render(request, "public_website/cgu.html")
 
 
+def politique_confidentialite(request):
+    return render(request, "public_website/politique_confidentialite.html")
+
+
 def mentions_legales(request):
     return render(request, "public_website/mentions_legales.html")
 
