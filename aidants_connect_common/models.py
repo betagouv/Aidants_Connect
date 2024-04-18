@@ -254,6 +254,9 @@ class Formation(models.Model):
 
 
 class FormationAttendant(models.Model):
+    created_at = models.DateTimeField("Date création", auto_now_add=True, null=True)
+    updated_at = models.DateTimeField("Date modification", auto_now=True, null=True)
+
     attendant_content_type = models.ForeignKey(
         ContentType,
         editable=False,
