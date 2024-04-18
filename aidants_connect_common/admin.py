@@ -23,6 +23,7 @@ from aidants_connect_common.models import (
     Department,
     Formation,
     FormationAttendant,
+    FormationOrganization,
     FormationType,
     Region,
 )
@@ -342,3 +343,10 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
             current_app=self.admin_site.name,
         )
         return mark_safe(f'<a href="{obj_url}">{obj}</a>')
+
+
+@register(FormationOrganization, site=admin_site)
+class FormationOrganizationAdmin(VisibleToAdminMetier, ModelAdmin):
+    fields = ("name", "contacts")
+    list_display = ("name", "contacts")
+    search_fields = ("name", "contacts")
