@@ -54,7 +54,7 @@ __all__ = [
     "AddAidantsRequestView",
 ]
 
-from aidants_connect_web.models import HabilitationRequest, Organisation
+from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 
 """Mixins"""
 
@@ -469,9 +469,12 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
             ),
             "display_modify_button": (
                 self.organisation.status
-                in [
-                    RequestStatusConstants.CHANGES_REQUIRED.name,
-                ]
+                in [RequestStatusConstants.CHANGES_REQUIRED.name]
+            ),
+            "manager_is_active": (
+                (aidant := Aidant.objects.filter(email=self.organisation.manager.email))
+                and aidant.exists()
+                and aidant.first().last_login
             ),
         }
 
@@ -560,6 +563,10 @@ class AidantFormationRegistrationView(
         if not self.person.habilitation_request:
             raise Http404
 
+        aidant = Aidant.objects.filter(email=self.organisation.manager.email)
+        if aidant.exists() and aidant.first().last_login:
+            raise Http404
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_person(self):
@@ -590,6 +597,10 @@ class HabilitationRequestCancelationView(LateStageRequestView, FormView):
             not self.person.habilitation_request
             or not self.person.habilitation_request.status_cancellable_by_responsable
         ):
+            raise Http404
+
+        aidant = Aidant.objects.filter(email=self.organisation.manager.email)
+        if aidant.exists() and aidant.first().last_login:
             raise Http404
 
         return super().dispatch(request, *args, **kwargs)
