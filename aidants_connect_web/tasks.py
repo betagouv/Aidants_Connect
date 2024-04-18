@@ -419,18 +419,22 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "email",
             "phone",
             "profession",
+            "deactivation_warning_at",
             "referent",
             "can_create_mandats",
+            "conseiller_numerique",
             "active_totp_card",
             "totp_card_drifted",
             "totp_card_drift",
             "totp_card_date_activated",
             "has_otp_app",
             "is_active",
+            "has_connected_once",
             "nb_mandat_created",
             "nb_mandat_remote_created",
             "nb_mandat_revoked",
             "nb_mandat_renewed",
+            "nb_demarches",
             "organisation__name",
             "organisation__data_pass_id",
             "organisation__siret",
@@ -477,6 +481,8 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             )
             return drift if drift is None else drift > 0
 
+        totp_card_drifted.csv_column = "Carte TOTP décallée"
+
         def totp_card_drift(self):
             return getattr(
                 getattr(
@@ -486,7 +492,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                 None,
             )
 
-        totp_card_drifted.csv_column = "Carte TOTP décallée"
+        totp_card_drifted.csv_column = "Importance de décalage de la carte"
 
         def totp_card_date_activated(self):
             try:
@@ -502,6 +508,13 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             return self.aidant.has_otp_app
 
         has_otp_app.csv_column = "App OTP"
+
+        def has_connected_once(self):
+            return Journal.objects.filter(
+                aidant=self.aidant, action=JournalActionKeywords.CONNECT_AIDANT
+            ).exists()
+
+        has_connected_once.csv_column = "S'est connecté⋅e au moins 1 fois"
 
         def nb_mandat_created(self):
             return Journal.objects.filter(
@@ -539,6 +552,14 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             ).count()
 
         nb_mandat_renewed.csv_column = "Nombre de mandats renouvelés"
+
+        def nb_demarches(self):
+            return Journal.objects.filter(
+                action=JournalActionKeywords.USE_AUTORISATION,
+                aidant=self.aidant,
+            ).count()
+
+        nb_demarches.csv_column = "Nombre de démarches rélisées"
 
         def organisation__nb_usager(self):
             return Usager.objects.active().visible_by(self.aidant).count()
