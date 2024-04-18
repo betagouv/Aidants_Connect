@@ -1,0 +1,26 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load i18n %}
+
+{% block email_body %}
+  <mj-section>
+    <mj-column>
+      <mj-text>
+        <p>Bonjour,</p>
+          {% with count=attendants|length %}{% if count == 1 %}
+            <p>La personne {{ attendants.0.target.get_full_name }} a été inscrite à la session du {{ attendants.0.formation.start_datetime|date:"d F Y à H:i" }}</p>
+          {% else %}
+            <p>Les personnes suivantes on été inscrites à une session de formation :</p>
+            <ul>{% for attendant in attendants %}
+              <li>{{ attendant.target.get_full_name }}, à la session du {{ attendant.formation.start_datetime|date:"d F Y à H:i" }}</li>
+            {% endfor %}</ul>
+          {% endif %}{% endwith %}
+      </mj-text>
+      <mj-button href="{{ detail_attendants }}">Voir le détails des inscriptions</mj-button>
+      <mj-text>
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier lʼadresse suivante dans votre navigateur :
+        <a href="{{ detail_attendants }}">{{ detail_attendants }}</a>
+      </mj-text>
+    </mj-column>
+  </mj-section>
+{% endblock %}

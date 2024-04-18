@@ -330,7 +330,7 @@ def email_old_aidants(*, logger=None):
     @shared_task
     def email_one_aidant(a: Aidant):
         text_message, html_message = render_email(
-            "email/old_aidant_deactivation_warning.mjml",
+            "email/formation_organization_new_attendants.mjml",
             {
                 "email_title": "Votre compte va être désactivé, réagissez !",
                 "user": a,

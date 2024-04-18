@@ -5,11 +5,12 @@ from typing import Collection
 from django.utils.timezone import now
 
 import factory
+import faker
 from factory import Faker, LazyFunction, SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice
 
-from ..models import Department, Formation, FormationType, Region
+from ..models import Department, Formation, FormationOrganization, FormationType, Region
 
 
 class RegionFactory(DjangoModelFactory):
@@ -29,12 +30,25 @@ class FormationTypeFactory(DjangoModelFactory):
         model = FormationType
 
 
+class FormationOrganizationFactory(DjangoModelFactory):
+    name = Faker("word")
+
+    @factory.lazy_attribute
+    def contacts(self, *args, **kwargs):
+        fake = faker.Faker()
+        return [fake.email() for _ in range(10)]
+
+    class Meta:
+        model = FormationOrganization
+
+
 class FormationFactory(DjangoModelFactory):
     start_datetime = LazyFunction(now)
     type = SubFactory(FormationTypeFactory)
     duration = LazyFunction(lambda: random.randint(1, 10))
     max_attendants = LazyFunction(lambda: random.randint(10, 100))
     status = FuzzyChoice(Formation.Status.values)
+    organisation = SubFactory(FormationOrganizationFactory)
 
     @factory.lazy_attribute
     def end_datetime(self, *args, **kwargs):
