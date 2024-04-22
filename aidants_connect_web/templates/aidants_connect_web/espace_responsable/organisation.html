@@ -78,7 +78,7 @@
     <div class="title-with-item margin-top-2rem">
       <h2 class="clearfix">Aidants</h2>
       <div>
-        {% if organisation_active_aidants|length > 1 %}{# Organisation has more aidants than just the référent #}
+        {% if organisation_active_aidants|length >= 1 %}
           <a
             href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}"
             class="fr-btn fr-btn--icon-left fr-icon-settings-5-fill"
