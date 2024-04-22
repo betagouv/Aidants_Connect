@@ -8,9 +8,9 @@
       <mj-text>
         <p>Bonjour,</p>
           {% with count=attendants|length %}{% if count == 1 %}
-            <p>La personne {{ attendants.0.target.get_full_name }} a été inscrite à la session du {{ attendants.0.formation.start_datetime|date:"d F Y à H:i" }}</p>
+            <p>{{ attendants.0.target.get_full_name }} a été inscrit(e) à la session du {{ attendants.0.formation.start_datetime|date:"d F Y à H:i" }}</p>
           {% else %}
-            <p>Les personnes suivantes on été inscrites à une session de formation :</p>
+            <p>Les personnes suivantes ont été inscrites à une session de formation :</p>
             <ul>{% for attendant in attendants %}
               <li>{{ attendant.target.get_full_name }}, à la session du {{ attendant.formation.start_datetime|date:"d F Y à H:i" }}</li>
             {% endfor %}</ul>
