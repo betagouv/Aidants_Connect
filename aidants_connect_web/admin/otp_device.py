@@ -50,6 +50,21 @@ class CarteTOTPResource(resources.ModelResource):
 
 
 class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "serial_number",
+        "aidant",
+        get_email_user_for_device,
+        "is_functional",
+    )
+    list_filter = ("is_functional",)
+    search_fields = ("serial_number", "aidant__email")
+    raw_id_fields = ("aidant", "totp_device")
+    readonly_fields = ("totp_devices_diagnostic",)
+    ordering = ("-created_at",)
+    resource_classes = [CarteTOTPResource]
+    import_template_name = "aidants_connect_web/admin/import_export/import.html"
+    change_form_template = "aidants_connect_web/admin/carte_totp/change_form.html"
+
     def totp_devices_diagnostic(self, obj):
         devices = TOTPDevice.objects.filter(key=obj.seed)
 
@@ -125,21 +140,6 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         )
 
     totp_devices_diagnostic.short_description = "Diagnostic Carte/TOTP Device"
-
-    list_display = (
-        "serial_number",
-        "aidant",
-        get_email_user_for_device,
-        "is_functional",
-    )
-    list_filter = ("is_functional",)
-    search_fields = ("serial_number", "aidant__email")
-    raw_id_fields = ("aidant",)
-    readonly_fields = ("totp_devices_diagnostic",)
-    ordering = ("-created_at",)
-    resource_classes = [CarteTOTPResource]
-    import_template_name = "aidants_connect_web/admin/import_export/import.html"
-    change_form_template = "aidants_connect_web/admin/carte_totp/change_form.html"
 
     def generate_log_entries(self, result, request):
         super().generate_log_entries(result, request)
