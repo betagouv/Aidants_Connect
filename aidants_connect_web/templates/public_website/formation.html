@@ -1,4 +1,5 @@
-{% extends 'public_website/layout/layout_habilitation.html' %} 
+{% extends 'public_website/layout/layout_habilitation.html' %}
+{% load ac_common %}
 
 {% block title %}Aidants Connect - Formation{% endblock %} 
 
@@ -64,7 +65,10 @@
     </button>
   </h3>
   <div class="fr-collapse" id="accordion-3">
-    <p>En plus des 2 options ci-dessus, je peux être formé par l'un de mes collègues habilité et utilisateur d'Aidants Connect (pour plus d'informations, rapprochez-vous du référent Aidants Connect de votre structure).</p>
+    <p>En plus des 2 options ci-dessus, je peux être formé par l'un de mes collègues habilité et utilisateur d'Aidants Connect.</p>
+    <p class="fr-info-text">
+      <span>Attention, cette modalité de formation est accessible selon des critères spécifiques. Pour connaître les modalités de la formation entre pairs, veuillez contacter l'équipe Aidants Connect à l'adresse suivante : {% mailto AC_CONTACT_EMAIL link_class='fr-link-sm' %}.</span>
+    </p>
   </div>
 </section>
 <section class="fr-accordion">
