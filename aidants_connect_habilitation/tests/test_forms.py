@@ -707,7 +707,7 @@ class TestAddressValidatableMixin(TestCase):
         "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
     )
     @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_form_leaves_me_alone_if_API_id_down(
+    def test_form_raises_error_if_API_is_down(
         self, search_adresses_mock: Mock, get_address_for_search: Mock
     ):
         address = address_factory()
@@ -718,17 +718,16 @@ class TestAddressValidatableMixin(TestCase):
         form = AddressValidatableMixin(data={})
 
         # Simulate POST
-        self.assertTrue(form.is_valid())
-        search_adresses_mock.assert_called_with(search_address)
+        self.assertFalse(form.is_valid())
         self.assertEqual(
-            form.cleaned_data["alternative_address"],
-            AddressValidatableMixin.DEFAULT_CHOICE,
+            form.errors,
+            {
+                "alternative_address": [
+                    "La validité de cette adresse nʼa pas pu être vérifiée ; "
+                    "veuillez réessayer plus tard"
+                ]
+            },
         )
-
-        # Simulate autocompleting: AddressValidatableMixin.post_clean
-        # must be called in derived form's clean function
-        form.post_clean()
-        self.assertNotIn("alternative_address", form.cleaned_data)
 
     @patch("aidants_connect_habilitation.forms.AddressValidatableMixin.autocomplete")
     @patch(
@@ -778,23 +777,3 @@ class TestAddressValidatableMixin(TestCase):
             form.errors,
             {"alternative_address": ["Plusieurs choix d'adresse sont possibles"]},
         )
-
-    @patch("aidants_connect_habilitation.forms.AddressValidatableMixin.autocomplete")
-    @patch(
-        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
-    )
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_disable_backend_validation(
-        self,
-        search_adresses_mock: Mock,
-        get_address_for_search: Mock,
-        autocomplete_mock: Mock,
-    ):
-        form = AddressValidatableMixin(data={"skip_backend_validation": True})
-
-        # Simulate POST
-        self.assertTrue(form.is_valid())
-
-        search_adresses_mock.assert_not_called()
-        get_address_for_search.assert_not_called()
-        autocomplete_mock.assert_not_called()

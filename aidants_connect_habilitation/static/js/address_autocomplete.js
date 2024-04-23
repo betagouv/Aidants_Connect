@@ -39,12 +39,6 @@
         initialize() {
             this.addresses = {};
             this.labels = [];
-
-            // Insert <input> to disable backend validation for address
-            this.autcompleteInputTarget.insertAdjacentHTML(
-                "afterend", '<input name="skip_backend_validation" value="true" hidden>'
-            );
-
             super.initialize();
         }
 

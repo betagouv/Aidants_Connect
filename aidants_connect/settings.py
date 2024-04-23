@@ -29,6 +29,7 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 
 from aidants_connect.postgres_url import turn_psql_url_into_param
 from aidants_connect.utils import strtobool
+from aidants_connect_common.utils import build_url
 
 load_dotenv(verbose=True)
 
@@ -444,13 +445,16 @@ AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplet
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.beta.gouv.fr")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
 
+GOUV_ADDRESS_SEARCH_API_MOCK_BASE_URL = "test-address-api/segur/"
 if "test" in sys.argv:
     GOUV_ADDRESS_SEARCH_API_DISABLED = True
+    GOUV_ADDRESS_SEARCH_API_UNDER_TEST = True
     GOUV_ADDRESS_SEARCH_API_BASE_URL = ""
 else:
     GOUV_ADDRESS_SEARCH_API_DISABLED = getenv_bool(
         "GOUV_ADDRESS_SEARCH_API_DISABLED", True
     )
+    GOUV_ADDRESS_SEARCH_API_UNDER_TEST = False
     GOUV_ADDRESS_SEARCH_API_BASE_URL = os.getenv(
         "GOUV_ADDRESS_SEARCH_API_BASE_URL", "https://api-adresse.data.gouv.fr/search/"
     )

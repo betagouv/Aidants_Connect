@@ -159,7 +159,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         field_names.remove("is_aidant")
         field_names.remove("conseiller_numerique")
         field_names.remove("alternative_address")
-        field_names.remove("skip_address_validation")
 
         element: WebElement = self.selenium.find_element(
             By.XPATH,
@@ -210,7 +209,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         field_names.remove("is_aidant")
         field_names.remove("conseiller_numerique")
         field_names.remove("alternative_address")
-        field_names.remove("skip_address_validation")
 
         prefix = PersonnelForm.MANAGER_FORM_PREFIX
 
@@ -262,7 +260,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         for field_name in form.fields:
             if field_name not in (
                 "alternative_address",
-                "skip_address_validation",
                 "conseiller_numerique",
             ):
                 self.assertEqual(
