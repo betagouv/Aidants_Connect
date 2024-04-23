@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirec
 from django.shortcuts import render
 from django.template import loader
 from django.urls import path, reverse
-from django.utils.html import linebreaks
+from django.utils.html import linebreaks, urlize
 from django.utils.safestring import mark_safe
 
 from django_reverse_admin import ReverseInlineModelAdmin, ReverseModelAdmin
@@ -215,7 +215,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             try:
                 if org_request.accept_request_and_create_organisation():
                     orgs_created += 1
-                    self.send_acceptance_email(org_request)
+                    self.send_acceptance_email(request, org_request)
                 else:
                     self.message_user(
                         request,
@@ -334,10 +334,19 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         return HttpResponseRedirect(redirect_path)
 
-    def __accept_request_get(self, request, object_id):
+    def __accept_request_get(self, request: HttpRequest, object_id):
         organisation = OrganisationRequest.objects.get(id=object_id)
         email_body = loader.render_to_string(
-            "email/demande_acceptee.txt", {"organisation": organisation}
+            "email/demande_acceptee.txt",
+            {
+                "organisation": organisation,
+                "organisation_request_url": request.build_absolute_uri(
+                    organisation.get_absolute_url()
+                ),
+                "habilitation_faq_formation": request.build_absolute_uri(
+                    reverse("habilitation_faq_formation")
+                ),
+            },
         )
         email_subject = (
             "Aidants Connect - la demande d'habilitation n° "
@@ -370,7 +379,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         object.accept_request_and_create_organisation()
         subject = form.cleaned_data.get("email_subject")
         body_text = form.cleaned_data.get("email_body")
-        self.send_acceptance_email(object, body_text, subject)
+        self.send_acceptance_email(request, object, body_text, subject)
 
         aidant_count = object.aidant_requests.count()
         if object.manager.is_aidant:
@@ -395,14 +404,25 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         return HttpResponseRedirect(redirect_path)
 
-    def send_acceptance_email(self, organisation, body_text=None, subject=None):
+    def send_acceptance_email(
+        self, request, organisation, body_text=None, subject=None
+    ):
         body_text = body_text or loader.render_to_string(
-            "email/demande_acceptee.txt", {"organisation": organisation}
+            "email/demande_acceptee.txt",
+            {
+                "organisation": organisation,
+                "organisation_request_url": request.build_absolute_uri(
+                    organisation.get_absolute_url()
+                ),
+                "habilitation_faq_formation": request.build_absolute_uri(
+                    reverse("habilitation_faq_formation")
+                ),
+            },
         )
 
         text_message, html_message = render_email(
             "email/empty.mjml",
-            mjml_context={"content": mark_safe(linebreaks(body_text))},
+            mjml_context={"content": mark_safe(urlize(linebreaks(body_text)))},
             text_context={"content": body_text},
         )
 
@@ -487,7 +507,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 
         text_message, html_message = render_email(
             "email/empty.mjml",
-            mjml_context={"content": mark_safe(linebreaks(body_text))},
+            mjml_context={"content": mark_safe(urlize(linebreaks(body_text)))},
             text_context={"content": body_text},
         )
 
