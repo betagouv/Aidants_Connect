@@ -428,6 +428,13 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             field_value = getattr(issuer, field_name)
             self.assertEqual(element.get_attribute("value"), field_value)
 
+        for field_name in ("zipcode", "city", "address"):
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
+            )
+            field_value = getattr(organisation, field_name)
+            self.assertEqual(element.get_attribute("value"), field_value)
+
     def test_cannot_submit_form_without_aidants_displays_errors(self):
         issuer: Issuer = IssuerFactory()
         manager: Manager = ManagerFactory(is_aidant=False)
