@@ -368,6 +368,9 @@ class PersonnelRequestFormView(
         issuer_data = model_to_dict(
             self.issuer, exclude=[*IssuerForm.Meta.exclude, "id"]
         )
+        issuer_data.update(
+            model_to_dict(self.organisation, fields=("zipcode", "city", "address"))
+        )
         # Fields of type PhoneNumberField are not natively JSON serializable
         issuer_data["phone"] = str(issuer_data["phone"])
         return {
