@@ -369,7 +369,7 @@ DEMARCHES = {
 }
 
 # CGU
-CGU_CURRENT_VERSION = "0.2"
+CGU_CURRENT_VERSION = "0.3"
 
 MANDAT_TEMPLATE_DIR = "aidants_connect_web/mandat_templates"
 MANDAT_TEMPLATE_CURRENT_FILE = "20230530_mandat.html"
