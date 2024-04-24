@@ -585,10 +585,7 @@ CELERY_RESULT_SERIALIZER = JSON_SERIALIZER
 CELERY_TASK_SERIALIZER = JSON_SERIALIZER
 CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
 
-SITE_DESCRIPTION = (
-    "Permettre à un aidant professionnel de réaliser des démarches administratives en "
-    "ligne « à la place de » via une connexion sécurisée"
-)
+SITE_DESCRIPTION = "Accompagnez vos usagers en toute sécurité"
 
 # COVID-19 changes
 ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
