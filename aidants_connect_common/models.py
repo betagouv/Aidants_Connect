@@ -311,7 +311,7 @@ class FormationAttendant(models.Model):
             pgtrigger.Trigger(
                 name="check_attendants_count",
                 when=pgtrigger.Before,
-                operation=(pgtrigger.Insert | pgtrigger.Update),
+                operation=pgtrigger.Insert,
                 declare=[
                     ("attendants_count", "INTEGER"),
                     ("max_attendants_count", "INTEGER"),
