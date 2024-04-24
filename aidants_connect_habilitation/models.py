@@ -197,6 +197,7 @@ class Manager(PersonWithResponsibilities):
         "aidants_connect_web.HabilitationRequest",
         related_name="manger_request",
         null=True,
+        blank=True,
         default=None,
         on_delete=models.CASCADE,
     )
@@ -610,6 +611,7 @@ class AidantRequest(Person):
         related_name="aidant_request",
         null=True,
         default=None,
+        blank=True,
         on_delete=models.CASCADE,
     )
 
