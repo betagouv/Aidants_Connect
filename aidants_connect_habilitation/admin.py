@@ -80,6 +80,7 @@ class AidantRequestInline(VisibleToAdminMetier, TabularInline):
     model = AidantRequest
     show_change_link = True
     extra = 0
+    readonly_fields = ("habilitation_request",)
 
 
 class MessageInline(VisibleToAdminMetier, StackedInline):
@@ -88,7 +89,7 @@ class MessageInline(VisibleToAdminMetier, StackedInline):
 
 
 class ManagerReverseInlineModelAdmin(VisibleToAdminMetier, ReverseInlineModelAdmin):
-    pass
+    readonly_fields = ("habilitation_request",)
 
 
 @admin.register(Manager, site=admin_site)
@@ -108,7 +109,7 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "is_aidant",
         "conseiller_numerique",
     )
-    readonly_fields = ("organisation",)
+    readonly_fields = ("organisation", "habilitation_request")
 
     list_display = (
         "first_name",
@@ -572,4 +573,5 @@ class AidantRequestAdmin(VisibleToTechAdmin, ModelAdmin):
         "organisation",
         "conseiller_numerique",
     )
-    raw_id_fields = ("organisation", "habilitation_request")
+    raw_id_fields = ("organisation",)
+    readonly_fields = ("habilitation_request",)
