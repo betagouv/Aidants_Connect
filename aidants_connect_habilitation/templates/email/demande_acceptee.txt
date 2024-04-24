@@ -1,23 +1,31 @@
 Bonjour,
 
-Bienvenue sur Aidants Connect !
+Bienvenue sur Aidants Connect !
 
 La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}, a été acceptée.
 
-⚠️ Attention : un nombre important d’aidants sont en attente d’une formation Aidants Connect et les formations peuvent être complètes pour les prochaines semaines. Vous serez contactés prochainement par l'organisme de formation qui vous communiquera les dates disponibles pour les formations à venir. 
+Vous trouverez ci-dessous les prochaines étapes de la procédure d'habilitation à Aidants Connect :
 
-Pour rappel, ci-dessous les étapes de la procédure d’habilitation Aidants Connect :
+1) La formation des aidants
 
-Dans un premier temps, les aidantes et les aidants vont être contactés pour suivre la formation Aidants Connect :
-{% for aidant in organisation.aidant_requests.all %}
- - {{ aidant }}{% endfor %}
-{% if organisation.manager.is_aidant %} - {{ organisation.manager }}{% endif %}
+Rendez-vous sur votre demande d’habilitation, vérifiez que la liste des aidants à former est à jour, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date de formation pour chaque aidant.
 
-En parallèle, le ou la référente Aidants Connect est invité à participer à un webinaire de 30 minutes qui explique en détail son rôle dans l’habilitation. Pour s’inscrire, c’est ici : https://app.livestorm.co/incubateur-des-territoires/responsable-aidants-connect.
+Retrouvez votre demande dʼhabilitation sur le lien suivant : {{ organisation_request_url }}
 
-Enfin, une fois les aidants formés, le kit de bienvenue - contenant les accès au compte Aidants Connect - sera livré par voie postale au/à la référente de la structure à l'adresse suivante :
+L’organisme de formation vous contactera par la suite pour valider l’inscription. Retrouvez toutes les informations sur les modalités de financement sur notre site internet : {{ habilitation_faq_formation }}
+
+2) Le wébinaire référent
+
+En parallèle, le ou la référent(e) Aidants Connect est invité(e) à participer à un webinaire de présentation de l’outil et du rôle du référent.
+Vous pouvez vous inscrire sur le lien suivant : https://app.livestorm.co/aidants-connect/webinaire-referent?type=detailed
+
+3) L’ouverture de votre espace Aidants Connect
+
+Enfin, une fois les aidants formés, un kit de bienvenue - contenant les accès au compte Aidants Connect - sera livré par voie postale au/à la référent(e) de la structure à l’adresse suivante :
 
 {{ organisation.name }}
 A l'attention de {{ organisation.manager }}
 {{ organisation.manager.address }}
 {{ organisation.manager.zipcode }} {{ organisation.manager.city }}
+
+Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.

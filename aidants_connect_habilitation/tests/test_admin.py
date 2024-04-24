@@ -53,7 +53,8 @@ class OrganisationRequestAdminTests(TestCase):
             AidantRequestFactory(organisation=org_request)
 
         # this is supposed to send another email:
-        self.org_request_admin.send_acceptance_email(org_request)
+        request = self.client.get("/").context["request"]
+        self.org_request_admin.send_acceptance_email(request, org_request)
 
         # so here we expect 2 emails here in outbox:
         self.assertEqual(len(mail.outbox), 2)
@@ -62,12 +63,7 @@ class OrganisationRequestAdminTests(TestCase):
 
         # check subject and email contents
         self.assertIn(str(org_request.data_pass_id), acceptance_message.subject)
-        self.assertTrue(
-            all(
-                str(aidant) in acceptance_message.body
-                for aidant in org_request.aidant_requests.all()
-            )
-        )
+
         # check recipients are as expected
         self.assertEqual(
             len(acceptance_message.recipients()), 2
@@ -83,22 +79,16 @@ class OrganisationRequestAdminTests(TestCase):
             data_pass_id=67245456,
         )
 
-        self.org_request_admin.send_acceptance_email(org_request)
+        request = self.client.get("/").context["request"]
+        self.org_request_admin.send_acceptance_email(request, org_request)
         self.assertEqual(len(mail.outbox), 2)
 
         acceptance_message = mail.outbox[1]
 
         self.assertIn(
-            "les formations peuvent être complètes pour les prochaines semaines",
+            "Vous trouverez ci-dessous les prochaines étapes "
+            "de la procédure d'habilitation à Aidants Connect",
             acceptance_message.body,
-        )
-        self.assertIn(
-            "Vous serez contactés prochainement par l'organisme de formation qui vous "
-            "communiquera les dates disponibles pour les formations à venir. ",
-            acceptance_message.body,
-        )
-        self.assertNotIn(
-            "Vous pouvez vous inscrire sur liste d’attente ici", acceptance_message.body
         )
 
     def test_send_email_with_custom_body_and_subject(self):
@@ -115,8 +105,9 @@ class OrganisationRequestAdminTests(TestCase):
         # this is supposed to send another email:
         email_body = "Corps du mail iaculis, scelerisque felis non, rutrum purus."
         email_subject = "Objet du mail consequat nisl sed viverra laoreet."
+        request = self.client.get("/").context["request"]
         self.org_request_admin.send_acceptance_email(
-            org_request, email_body, email_subject
+            request, org_request, email_body, email_subject
         )
 
         # so here we expect 2 emails here in outbox:
