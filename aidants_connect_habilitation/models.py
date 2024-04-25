@@ -27,6 +27,7 @@ from aidants_connect_common.utils import (
     generate_new_datapass_id,
     render_email,
 )
+from aidants_connect_web.constants import ReferentRequestStatuses
 
 if TYPE_CHECKING:
     from aidants_connect_web.models import Organisation
@@ -475,6 +476,7 @@ class OrganisationRequest(models.Model):
                         last_name=self.manager.last_name,
                         profession=self.manager.profession,
                         conseiller_numerique=self.manager.conseiller_numerique,
+                        status=ReferentRequestStatuses.STATUS_PROCESSING,
                     ),
                 )
             )
@@ -497,6 +499,7 @@ class OrganisationRequest(models.Model):
                     last_name=aidant.last_name,
                     profession=aidant.profession,
                     conseiller_numerique=aidant.conseiller_numerique,
+                    status=ReferentRequestStatuses.STATUS_PROCESSING,
                 ),
             )
             aidant.habilitation_request = hr
