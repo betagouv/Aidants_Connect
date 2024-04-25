@@ -170,6 +170,31 @@ class AuthorizeTests(TestCase):
                 f"{response.status_code}",
             )
 
+    def test_authorize_url_with_disabled_perimeters_triggers_403(self):
+        self.client.force_login(self.aidante_sarah)
+
+        response: TemplateResponse = self.client.get(
+            "/authorize/",
+            data={
+                **self.valid_oauth_data,
+                "claims": json.dumps(
+                    {
+                        "id_token": {
+                            "rep_scope": {
+                                "essential": True,
+                                "values": ["argent"],
+                            }
+                        }
+                    }
+                ),
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.content.decode(), "Unauthorized perimeters: {'argent'}"
+        )
+
     def test_authorize_sends_the_correct_amount_of_usagers(self):
         self.client.force_login(self.aidant_thierry)
 
@@ -291,7 +316,7 @@ class AuthorizeTests(TestCase):
         def get_oauth_data(essential=True, values=None):
             return {
                 **self.valid_oauth_data,
-                "claim": json.dumps(
+                "claims": json.dumps(
                     {
                         "id_token": {
                             "rep_scope": {
@@ -311,7 +336,7 @@ class AuthorizeTests(TestCase):
                 "chosen_usager": self.usager.pk,
                 "connection_id": connection.pk,
                 **self.valid_oauth_data,
-                "claim": "test",
+                "claims": "test",
             },
         )
         self.assertEqual(403, response.status_code)

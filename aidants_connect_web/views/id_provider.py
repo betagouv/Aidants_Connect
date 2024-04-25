@@ -81,7 +81,8 @@ class Authorize(RequireConnectionMixin, FormView):
             # the user touched the HTML with their sticky fingers…
             log.error(
                 "The HTML was modified, bad OAuth parameters "
-                f"{self.oauth_parameters_form.data!r}"
+                f"{self.oauth_parameters_form.data!r}: "
+                f"{self.oauth_parameters_form.errors!r}"
             )
             # Punish the user
             logout(self.request)
@@ -158,7 +159,12 @@ class Authorize(RequireConnectionMixin, FormView):
             )
             return HttpResponseForbidden("forbidden parameter value")
 
-        log.warning(f"Uncatched validation error @ {view_location}")
+        if "claims" in form.errors_codes.get("unauthorized_perimeter", {}):
+            message = form.errors_codes["unauthorized_perimeter"]["claims"]
+            log.info(f"{message} @ {view_location}")
+            return HttpResponseForbidden(f"{message}")
+
+        log.warning(f"Uncaught validation error @ {view_location}: {form.errors!r}")
         return HttpResponseBadRequest()
 
     def get_form_kwargs(self):
