@@ -143,10 +143,6 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
     revoked_mandats = OrderedDict()
 
     for mandat in mandats:
-        if mandat.usager not in valid_mandats:
-            valid_mandats[mandat.usager] = list()
-            expired_mandats[mandat.usager] = list()
-            revoked_mandats[mandat.usager] = list()
 
         expired = mandat.expiration_date if mandat.expiration_date < now() else False
         autorisations = (
@@ -159,6 +155,9 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
         delta_before_expiration = ""
 
         if mandat.revocation_date:
+            if mandat.usager not in revoked_mandats:
+                revoked_mandats[mandat.usager] = list()
+
             revoked_mandats[mandat.usager].append(
                 (mandat, l_autorisations,
                  delta_before_expiration, expired_soon)
@@ -166,12 +165,18 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
             continue
 
         if has_no_autorisations:
+            if mandat.usager not in expired_mandats:
+                expired_mandats[mandat.usager] = list()
+
             expired_mandats[mandat.usager].append(
                 (mandat, [], delta_before_expiration, expired_soon)
             )
             continue
 
         if not expired:
+            if mandat.usager not in valid_mandats:
+                valid_mandats[mandat.usager] = list()
+
             expired_soon = mandat.expiration_date - timedelta(days=delta) < now()
             timedelta_before_expiration = mandat.expiration_date - now()
             delta_before_expiration = timedelta_before_expiration.days
@@ -180,6 +185,9 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
                  delta_before_expiration, expired_soon)
             )
         else:
+            if mandat.usager not in expired_mandats:
+                expired_mandats[mandat.usager] = list()
+
             expired_mandats[mandat.usager].append(
                 (mandat, l_autorisations,
                  delta_before_expiration, expired_soon)
