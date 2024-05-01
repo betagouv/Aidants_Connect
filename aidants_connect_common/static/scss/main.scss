@@ -35,7 +35,6 @@ $main-padding: 3rem;
 }
 
 h1, .fr-h1 {
-  color: var(--blue-france-sun-113-625);
   margin: 0 0 3rem 0;
 }
 
@@ -92,6 +91,10 @@ p:last-child {
 .flex {
   display: flex;
 }
+.flex-between {
+  justify-content: space-between;
+}
+
 
 .width-100 {
   width: 100%;
@@ -99,6 +102,25 @@ p:last-child {
 
 .spacer {
   flex-grow: 10;
+}
+
+details {
+  position: relative;
+}
+summary::marker {
+  content: "";
+}
+summary {
+  width: 45px;
+  height: 45px;
+  background-color: var(--background-alt-grey);
+  text-align: center;
+  line-height: 45px;
+}
+.details-content {
+  position: absolute;
+  background-color: white;
+  border: solid 1px #CECECE;
 }
 
 @for $i from 0 through 32 {
