@@ -202,6 +202,10 @@ class Formation(models.Model):
         PRESENTIAL = (auto(), "En présentiel")
         REMOTE = (auto(), "À distance")
 
+    class State(models.IntegerChoices):
+        ACTIVE = (auto(), "Active")
+        CANCELLED = (auto(), "Annulé")
+
     start_datetime = models.DateTimeField("Date et heure de début de la formation")
     end_datetime = models.DateTimeField(
         "Date et heure de fin de la formation", null=True, blank=True
@@ -209,6 +213,9 @@ class Formation(models.Model):
     duration = models.IntegerField("Durée en heures")
     max_attendants = models.IntegerField("Nombre maximum d'inscrits possibles")
     status = models.IntegerField("En présentiel/à distance", choices=Status.choices)
+    state = models.IntegerField(
+        "État de la formation", choices=State.choices, default=State.ACTIVE
+    )
     place = models.CharField("Lieu", max_length=500)
     type = models.ForeignKey(FormationType, on_delete=models.PROTECT)
 
@@ -269,6 +276,11 @@ class Formation(models.Model):
 
 
 class FormationAttendant(models.Model):
+    class State(models.IntegerChoices):
+        DEFAULT = (auto(), "Par défaut")
+        WAITING = (auto(), "En attente")
+        CANCELLED = (auto(), "Annulé")
+
     created_at = models.DateTimeField("Date création", auto_now_add=True, null=True)
     updated_at = models.DateTimeField("Date modification", auto_now=True, null=True)
 
@@ -291,6 +303,10 @@ class FormationAttendant(models.Model):
     )
     id_grist = models.CharField(
         "Id Grist", editable=False, max_length=50, blank=True, default=""
+    )
+
+    state = models.IntegerField(
+        "État de la demande", choices=State.choices, default=State.DEFAULT
     )
 
     @cached_property
