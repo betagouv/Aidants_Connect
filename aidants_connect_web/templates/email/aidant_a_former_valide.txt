@@ -1,12 +1,13 @@
 Bonjour,
 
-L’équipe Aidants Connect vous confirme avoir validé l’ajout de l'aidante ou l'aidant {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. Dans votre espace référent, la personne a été ajoutée en bas de la liste des aidants avec un statut « en cours ».
+Nous venons de valider l'éligibilité de lʼajout de l'aidante ou lʼaidant {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}} à former ajoutée depuis votre espace.
 
-Désormais, l’aidant ou l'aidante est invitée à poursuivre la procédure d’habilitation (participation à la journée de formation + passage du test PIX final). L’organisme de formation va prochainement prendre contact avec vous pour l’organisation de sa formation.
+Attention, selon votre profil et votre structure, les modalités de formation et de prise en charge diffèrent. Retrouvez toutes les informations sur la formation Aidants Connect et ses modalités de financement : {{ formation_url }}.
+
+Rendez-vous sur votre espace référent : {{ espace_referent_url }}. Dans la section Aidants > Demandes d’habilitation en cours, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date de formation pour chaque aidant de votre structure. Vous serez ensuite contactés par l’organisme de formation pour valider l’inscription.
 
 
 À bientôt sur Aidants Connect !
-
 L’équipe Aidants Connect
 Accompagnez vos usagers en toute sécurité
 Pour toute demande : contact@aidantsconnect.beta.gouv.fr
