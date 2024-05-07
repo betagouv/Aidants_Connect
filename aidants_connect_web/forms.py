@@ -514,7 +514,7 @@ class DatapassForm(forms.Form):
     organization_type = forms.CharField()
 
 
-class ValidateCGUForm(forms.Form):
+class ValidateCGUForm(DsfrBaseForm):
     agree = forms.BooleanField(
         label="J’ai lu et j’accepte les conditions d’utilisation Aidants Connect.",
         required=True,
