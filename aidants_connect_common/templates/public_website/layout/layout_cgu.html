@@ -7,17 +7,18 @@
 
 
 {% block content %}
-<div class="fr-container">
-  <div class="fr-grid-row fr-mt-6">
-    <div class="fr-col-md-3 fr-col-12">
-      {% block menu %}
-      {% include "public_website/layout/_menu-cgu.html" %}
-      {% endblock %}
-    </div>
-    <div class="fr-col-md-9 fr-col-12">
-      {% block body %}
-      {% endblock %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-mt-6">
+      <div class="fr-col-md-3 fr-col-12">
+        {% block menu %}
+          {% include "public_website/layout/_menu-cgu.html" %}
+        {% endblock %}
+      </div>
+      <div class="fr-col-md-9 fr-col-12">
+        {% block before_content %}{% endblock %}
+        {% block body %}{% endblock %}
+        {% block after_content %}{% endblock %}
+      </div>
     </div>
   </div>
-</div>
 {% endblock %}
