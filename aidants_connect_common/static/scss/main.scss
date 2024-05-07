@@ -19,7 +19,6 @@ ul, ol {
 $main-padding: 3rem;
 
 #main {
-  overflow: hidden;
   flex-grow: 100;
   padding: $main-padding 0;
 }
@@ -32,6 +31,10 @@ $main-padding: 3rem;
     margin-bottom: $main-padding;
     margin-top: $main-padding;
   }
+}
+.background-grey {
+  background-color: var(--background-alt-grey);
+  background-image: none;
 }
 
 h1, .fr-h1 {
@@ -48,6 +51,12 @@ h3, .fr-h3, h4, .fr-h4 {
 }
 .fr-text-default {
   color: var(--text-default-grey);
+}
+.fr-text-color--warning {
+  color: var(--text-default-warning);
+}
+.fr-text-center {
+  text-align: center !important;
 }
 
 .page-main-title {
@@ -94,7 +103,9 @@ p:last-child {
 .flex-between {
   justify-content: space-between;
 }
-
+.d-table table {
+  display: table;
+}
 
 .width-100 {
   width: 100%;
@@ -104,24 +115,6 @@ p:last-child {
   flex-grow: 10;
 }
 
-details {
-  position: relative;
-}
-summary::marker {
-  content: "";
-}
-summary {
-  width: 45px;
-  height: 45px;
-  background-color: var(--background-alt-grey);
-  text-align: center;
-  line-height: 45px;
-}
-.details-content {
-  position: absolute;
-  background-color: white;
-  border: solid 1px #CECECE;
-}
 
 @for $i from 0 through 32 {
   @each $gap-type in gap, row-gap, column-gap {

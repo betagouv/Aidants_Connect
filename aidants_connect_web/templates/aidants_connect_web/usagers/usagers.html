@@ -5,7 +5,9 @@
 {% block title %}Aidants Connect - Usagers{% endblock %}
 
 {% block extracss %}
-{% endblock %}
+  <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
 
 {% load ac_extras %}
 
@@ -17,23 +19,23 @@
       </div>
       <div>
         <a href="{% url 'new_mandat' %}"
-        id="add_usager"
-        class="fr-btn fr-btn--icon-left fr-icon-add-line">
-        Créer un mandat
-      </a>
-    </div>
+          id="add_usager"
+          class="fr-btn fr-btn--icon-left fr-icon-add-line">
+          Créer un mandat
+        </a>
+      </div>
     </div>
     <h2>Mandats actifs</h2>
-    <div class="fr-table fr-table--bordered fr-table--no-caption fr-table--layout-fixed">
+    <div class="fr-table d-table fr-table--bordered fr-table--no-caption">
       <table>
         <caption>Table des mandats actifs</caption>
         <thead>
           <tr>
-            <th scope="col">Nom</th>
-            <th scope="col">Date de naissance</th>
-            <th scope="col">Périmètre</th>
-            <th scope="col">Validité</th>
-            <th scope="col"></th>
+            <th scope="col" class="fr-col-3">Nom</th>
+            <th scope="col" class="fr-col-2">Date de naissance</th>
+            <th scope="col" class="fr-col-4">Périmètre</th>
+            <th scope="col" class="fr-col-2">Validité</th>
+            <th scope="col" class="fr-col-1"></th>
           </tr>
         </thead>
         <tbody>
@@ -42,8 +44,7 @@
               {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=True %}
             {% endfor %}
           {% else %}
-          <tr>Vous n'avez pas de mandats actifs</tr>
-            
+            <tr><td colspan="5" class="fr-text-center">Vous n'avez pas de mandats actifs</td></tr>
           {% endif %}
         </tbody>
       </table>
@@ -51,25 +52,25 @@
   </div>
   <div class="fr-container">
     <h2>Mandats expirés</h2>
-    <div class="fr-table">
+    <div class="fr-table d-table fr-table--bordered fr-table--no-caption">
       <table>
+        <caption>Table des mandats expirés</caption>
         <thead>
           <tr>
-            <th scope="col">Nom</th>
-            <th scope="col">Date de naissance</th>
-            <th scope="col">Périmètre</th>
-            <th scope="col">Validité</th>
-            <th scope="col"></th>
+            <th scope="col" class="fr-col-3">Nom</th>
+            <th scope="col" class="fr-col-2">Date de naissance</th>
+            <th scope="col" class="fr-col-4">Périmètre</th>
+            <th scope="col" class="fr-col-2"></th>
+            <th scope="col" class="fr-col-1"></th>
           </tr>
         </thead>
         <tbody>
           {% if expired_mandats|length > 0 %}
             {% for usager, mandats in expired_mandats.items %}
-              {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=True %}
+              {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=False %}
             {% endfor %}
           {% else %}
-          <tr>Vous n'avez pas de mandats expirés</tr>
-            
+            <tr><td colspan="5" class="fr-text-center">Vous n'avez pas de mandats expirés</td></tr>
           {% endif %}
         </tbody>
       </table>
@@ -77,24 +78,25 @@
   </div>
   <div class="fr-container">
     <h2>Mandats révoqués</h2>
-    <div class="fr-table">
+    <div class="fr-table d-table fr-table--bordered fr-table--no-caption">
       <table>
+        <caption>Table des mandats révoqués</caption>
         <thead>
           <tr>
-            <th scope="col">Nom</th>
-            <th scope="col">Date de naissance</th>
-            <th scope="col">Périmètre</th>
-            <th scope="col">Validité</th>
-            <th scope="col"></th>
+            <th scope="col" class="fr-col-3">Nom</th>
+            <th scope="col" class="fr-col-2">Date de naissance</th>
+            <th scope="col" class="fr-col-4">Périmètre</th>
+            <th scope="col" class="fr-col-2"></th>
+            <th scope="col" class="fr-col-1"></th>
           </tr>
         </thead>
         <tbody>
           {% if revoked_mandats|length > 0 %}
             {% for usager, mandats in revoked_mandats.items %}
-              {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=True %}
+              {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=False %}
             {% endfor %}
           {% else %}
-            <tr><td colspan="5" class="fr-text-center">Vous n'avez pas de mandats révoqués</td></tr>
+            <tr><td colspan="5" class="fr-text-center background-grey">Vous n'avez pas de mandats révoqués</td></tr>
           {% endif %}
         </tbody>
       </table>
