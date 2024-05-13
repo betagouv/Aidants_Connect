@@ -2346,11 +2346,11 @@ class CoReferentNonAidantRequestTests(TestCase):
 class FormationAttendantTests(TestCase):
     def test_I_cant_regester_more_aidant_than_max_attendees(self):
         formation = FormationFactory(max_attendants=2)
-        aidant_request = AidantRequestFactory()
-        habilitation_request = HabilitationRequestFactory()
 
+        aidant_request = AidantRequestFactory()
         FormationAttendant.objects.create(formation=formation, attendant=aidant_request)
 
+        habilitation_request = HabilitationRequestFactory()
         last = FormationAttendant.objects.create(
             formation=formation, attendant=habilitation_request
         )
@@ -2373,8 +2373,15 @@ class FormationAttendantTests(TestCase):
         with transaction.atomic():
             last.delete()
 
+        # Cancelled registration don't prevent from registering an attendant
+        FormationAttendant.objects.create(
+            formation=formation,
+            attendant=AidantRequestFactory(),
+            state=FormationAttendant.State.CANCELLED,
+        )
+
         self.assertEqual(
-            1, FormationAttendant.objects.filter(formation=formation).count()
+            2, FormationAttendant.objects.filter(formation=formation).count()
         )
 
         FormationAttendant.objects.create(
@@ -2382,7 +2389,7 @@ class FormationAttendantTests(TestCase):
         )
 
         self.assertEqual(
-            2, FormationAttendant.objects.filter(formation=formation).count()
+            3, FormationAttendant.objects.filter(formation=formation).count()
         )
 
         with self.assertRaises(IntegrityError):

@@ -17,6 +17,7 @@ from django.utils.timezone import now
 
 import pgtrigger
 
+from aidants_connect_common.constants import FormationAttendantState
 from aidants_connect_common.utils import PGTriggerExtendedFunc, render_markdown
 from aidants_connect_pico_cms.fields import MarkdownField
 
@@ -152,22 +153,19 @@ class FormationQuerySet(models.QuerySet):
     def available_for_attendant(
         self, after: timedelta, attendant: HabilitationRequest | AidantRequest
     ) -> Self:
+        q = models.Q(
+            attendants_count__lt=models.F("max_attendants"),
+            start_datetime__gte=now() + after,
+            state=Formation.State.ACTIVE,
+        )
         if attendant.conseiller_numerique:
             return self.annotate(attendants_count=Count("attendants")).filter(
-                models.Q(
-                    attendants_count__lt=models.F("max_attendants"),
-                    start_datetime__gte=now() + after,
-                    type_id=settings.PK_MEDNUM_FORMATION_TYPE,
-                )
+                (q & models.Q(type_id=settings.PK_MEDNUM_FORMATION_TYPE))
                 | self.for_attendant_q(attendant)
             )
 
         return self.annotate(attendants_count=Count("attendants")).filter(
-            models.Q(
-                attendants_count__lt=models.F("max_attendants"),
-                start_datetime__gte=now() + after,
-            )
-            | self.for_attendant_q(attendant)
+            q | self.for_attendant_q(attendant)
         )
 
     def for_attendant(self, attendant: HabilitationRequest | AidantRequest) -> Self:
@@ -276,10 +274,7 @@ class Formation(models.Model):
 
 
 class FormationAttendant(models.Model):
-    class State(models.IntegerChoices):
-        DEFAULT = (auto(), "Par défaut")
-        WAITING = (auto(), "En attente")
-        CANCELLED = (auto(), "Annulé")
+    State = FormationAttendantState
 
     created_at = models.DateTimeField("Date création", auto_now_add=True, null=True)
     updated_at = models.DateTimeField("Date modification", auto_now=True, null=True)
@@ -333,17 +328,18 @@ class FormationAttendant(models.Model):
                     ("max_attendants_count", "INTEGER"),
                 ],
                 func=PGTriggerExtendedFunc(
-                    """
+                    f"""
                     -- prevent concurrent inserts from multiple transactions
-                    LOCK TABLE {meta.db_table} IN EXCLUSIVE MODE;
+                    LOCK TABLE {{meta.db_table}} IN EXCLUSIVE MODE;
 
                     SELECT INTO attendants_count COUNT(*) 
-                    FROM {meta.db_table}
-                    WHERE {columns.formation} = NEW.{columns.formation};
+                    FROM {{meta.db_table}}
+                    WHERE {{columns.formation}} = NEW.{{columns.formation}}
+                    AND {{columns.state}} != {FormationAttendantState.CANCELLED};
 
-                    SELECT {Formation_columns.max_attendants} INTO max_attendants_count
-                    FROM {Formation_meta.db_table} 
-                    WHERE {Formation_meta.pk.name} = NEW.{columns.formation};
+                    SELECT {{Formation_columns.max_attendants}} INTO max_attendants_count
+                    FROM {{Formation_meta.db_table}} 
+                    WHERE {{Formation_meta.pk.name}} = NEW.{{columns.formation}};
 
                     IF attendants_count >= max_attendants_count THEN
                         RAISE EXCEPTION 'Formation is already full.' USING ERRCODE = 'check_violation';

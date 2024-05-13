@@ -47,6 +47,13 @@ class FormationTests(TestCase):
             type=conum_type,
         )
 
+        FormationFactory(
+            type_label="Des formations et des Hommes",
+            start_datetime=now() + timedelta(days=50),
+            type=conum_type,
+            state=Formation.State.CANCELLED,
+        )
+
         cls.hab = HabilitationRequestFactory(
             status=ReferentRequestStatuses.STATUS_PROCESSING,
             organisation=organisation,
@@ -68,6 +75,13 @@ class FormationTests(TestCase):
         )
 
     def test_aidant_can_subscribe_all_formations(self):
+        # Total formations count
+        self.assertEqual(
+            Formation.objects.count(),
+            3,
+        )
+
+        # Formation available for attendant
         self.assertEqual(
             Formation.objects.available_for_attendant(
                 timedelta(days=12), self.hab
