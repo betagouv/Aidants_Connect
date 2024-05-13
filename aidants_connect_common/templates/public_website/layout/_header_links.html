@@ -14,9 +14,19 @@
     class="fr-nav__link"
     target="_self"
     href="{% url 'habilitation_faq_habilitation' %}"
-    {% if view_name|startswith:'habilitation' %}aria-current="true"{% endif %}
+    {% if request.resolver_match.url_name == 'habilitation_faq_habilitation' %}aria-current="true"{% endif %}
   >
     Habilitation
+  </a>
+</li>
+<li class="fr-nav__item">
+  <a
+    class="fr-nav__link"
+    target="_self"
+    href="{% url 'habilitation_faq_formation' %}"
+    {% if request.resolver_match.url_name == 'habilitation_faq_formation' %}aria-current="true"{% endif %}
+  >
+    Formation
   </a>
 </li>
 <li class="fr-nav__item">
