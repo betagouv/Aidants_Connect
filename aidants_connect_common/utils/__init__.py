@@ -5,13 +5,16 @@ import re
 from datetime import date, datetime, time, timedelta
 from logging import getLogger
 from textwrap import dedent
-from typing import Type
+from typing import TYPE_CHECKING, Type
 
 from django.conf import settings
+from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import F, Field, Model
+from django.http import HttpRequest
 from django.template import loader
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils.html import escape
 
 import pgtrigger
@@ -19,6 +22,9 @@ from markdown import markdown
 from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.nl2br import Nl2BrExtension
 from mjml import mjml2html
+
+if TYPE_CHECKING:
+    from aidants_connect_habilitation.models import Issuer
 
 logger = getLogger()
 
@@ -141,3 +147,25 @@ def model_fields(model: Type[Model] | None) -> dict[str, Field]:
         result[field.name] = field
         result[field.attname] = field
     return result
+
+
+def issuer_exists_send_reminder_email(request: HttpRequest, issuer: "Issuer"):
+    text_message, html_message = render_email(
+        "email/issuer_profile_reminder.mjml",
+        {
+            "url": request.build_absolute_uri(
+                reverse(
+                    "habilitation_issuer_page",
+                    kwargs={"issuer_id": str(issuer.issuer_id)},
+                )
+            ),
+        },
+    )
+
+    send_mail(
+        from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+        recipient_list=[issuer.email],
+        subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
+        message=text_message,
+        html_message=html_message,
+    )

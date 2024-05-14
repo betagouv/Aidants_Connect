@@ -143,6 +143,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "dsfr",
     "django_blocklist",
+    "django_js_reverse",
     "aidants_connect",
     "aidants_connect_common",
     "aidants_connect_web",
