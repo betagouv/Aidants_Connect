@@ -262,7 +262,7 @@ LANGUAGES = global_settings.LANGUAGES + [
     ("pus", gettext_noop("Pachto")),
     ("prs", gettext_noop("Dari")),
     ("rfc", gettext_noop("Créole réunionnais")),
-    ("gcf", gettext_noop("Créole guadeloupéen")),
+    ("gcf", gettext_noop("Créole guadeloupéen/martiniquais")),
 ]
 
 # ISO 639-1 language code for language that write right-to-left
