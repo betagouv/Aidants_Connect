@@ -17,6 +17,7 @@ __all__ = [
     "RequestOriginConstants",
     "RequestStatusConstants",
     "MessageStakeholders",
+    "FormationAttendantState",
 ]
 
 
@@ -263,3 +264,9 @@ class RequestStatusConstants(TextChoicesEnum):
 class MessageStakeholders(TextChoicesEnum):
     AC = "Aidants Connect"
     ISSUER = "Demandeur"
+
+
+class FormationAttendantState(IntegerChoices):
+    DEFAULT = (enum.auto(), "Par défaut")
+    WAITING = (enum.auto(), "En attente")
+    CANCELLED = (enum.auto(), "Annulé")
