@@ -32,7 +32,7 @@ class FormationTests(TestCase):
         other_type, _ = FormationType.objects.get_or_create(
             pk=settings.PK_MEDNUM_FORMATION_TYPE + 1, label="Other Formation Type"
         )
-
+        cls.other_type = other_type
         organisation = OrganisationFactory()
 
         FormationFactory(
@@ -73,6 +73,16 @@ class FormationTests(TestCase):
             ).count(),
             1,
         )
+
+    def test_can_create_one_day_formation(self):
+        self.assertEqual(3, Formation.objects.all().count())
+        FormationFactory(
+            type_label="Formation in one day",
+            start_datetime=now() + timedelta(days=50),
+            end_datetime=now() + timedelta(days=50),
+            type=self.other_type,
+        )
+        self.assertEqual(4, Formation.objects.all().count())
 
     def test_aidant_can_subscribe_all_formations(self):
         # Total formations count

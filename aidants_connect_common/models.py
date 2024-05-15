@@ -261,8 +261,8 @@ class Formation(models.Model):
         verbose_name_plural = "Formations aidant"
         constraints = [
             models.CheckConstraint(
-                check=models.Q(start_datetime__lt=models.F("end_datetime")),
-                name="must_starts_before_it_ends",
+                check=models.Q(start_datetime__lte=models.F("end_datetime")),
+                name="must_starts_before_or_equal_it_ends",
             ),
             models.CheckConstraint(
                 check=models.Q(duration__gt=0), name="must_be_a_non_0_duration"
