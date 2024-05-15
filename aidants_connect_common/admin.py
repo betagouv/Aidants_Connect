@@ -164,9 +164,9 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             "zrr_resource_name": ZRRResource.get_display_name(),
         }
 
-    def get_resource_kwargs(self, request, form: CommuneImportForm, *args, **kwargs):
+    def get_resource_kwargs(self, request, form: CommuneImportForm, **kwargs):
         return {
-            **super().get_resource_kwargs(request, *args, **kwargs),
+            **super().get_resource_kwargs(request, **kwargs),
             "commune_zrr_classification": getattr(form, "cleaned_data", {}).get(
                 "commune_zrr_classification", None
             ),
