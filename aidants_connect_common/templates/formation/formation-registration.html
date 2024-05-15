@@ -58,8 +58,9 @@
           {% for formation_widget in form.formations.subwidgets %}
             <tr>
               <td>{{ formation_widget.data.value.instance.type.label }}</td>
-              <td>{{ formation_widget.data.value.instance.date_range_str }} <br />
-                  <span>{{ formation_widget.data.value.instance.description }}</span>
+              <td>
+                {{ formation_widget.data.value.instance.date_range_str }} <br />
+                {{ formation_widget.data.value.instance.description|linebreaksbr }}
               </td>
               <td>{{ formation_widget.data.value.instance.duration }}h</td>
               <td>{{ formation_widget.data.value.instance.get_status_display }}</td>
@@ -70,7 +71,7 @@
                   value="{{ formation_widget.data.value }}"
                   id="formation-{{ formation_widget.data.value }}"
                   type="radio"
-                  {% if formation_widget.data.selected or formation_widget.data.value in registered_to %}checked{% endif %} 
+                  {% if formation_widget.data.selected or formation_widget.data.value in registered_to %}checked{% endif %}
                 >
                 <label class="fr-label" for="formation-{{ formation_widget.data.value }}">
                   <span class="sr-only">
