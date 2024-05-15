@@ -158,14 +158,21 @@ class FormationQuerySet(models.QuerySet):
             start_datetime__gte=now() + after,
             state=Formation.State.ACTIVE,
         )
-        if attendant.conseiller_numerique:
-            return self.annotate(attendants_count=Count("attendants")).filter(
+
+        q = (
+            (
                 (q & models.Q(type_id=settings.PK_MEDNUM_FORMATION_TYPE))
                 | self.for_attendant_q(attendant)
             )
+            if attendant.conseiller_numerique
+            else (q | self.for_attendant_q(attendant))
+        )
 
-        return self.annotate(attendants_count=Count("attendants")).filter(
-            q | self.for_attendant_q(attendant)
+        return (
+            self.annotate(attendants_count=Count("attendants"))
+            .filter(q)
+            .order_by("start_datetime")
+            .distinct()
         )
 
     def for_attendant(self, attendant: HabilitationRequest | AidantRequest) -> Self:
