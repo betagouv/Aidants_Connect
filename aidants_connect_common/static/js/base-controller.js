@@ -1,4 +1,5 @@
 export class BaseController extends Stimulus.Controller {
+    noop() { /* Does nothing */ }
     showElement(elt) {
         elt.removeAttribute("hidden");
         elt.removeAttribute("aria-hidden");

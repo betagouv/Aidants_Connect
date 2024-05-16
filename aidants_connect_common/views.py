@@ -7,8 +7,12 @@ from django.shortcuts import render
 from django.views import View
 from django.views.generic import FormView
 
-from aidants_connect_common.forms import FormationRegistrationForm
+from aidants_connect_common.forms import (
+    FollowMyHabilitationRequesrForm,
+    FormationRegistrationForm,
+)
 from aidants_connect_common.models import Formation
+from aidants_connect_common.utils import issuer_exists_send_reminder_email
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
 
@@ -94,3 +98,14 @@ class FormationRegistrationView(FormView):
             }
         )
         return super().get_context_data(**kwargs)
+
+
+class FollowMyHabilitationRequestView(FormView):
+    template_name = "habilitation/_follow-my-request-form.html"
+    form_class = FollowMyHabilitationRequesrForm
+
+    def form_valid(self, form):
+        issuer_exists_send_reminder_email(self.request, form.cleaned_data["email"])
+        return super().render_to_response(
+            self.get_context_data(form=form, success=True)
+        )

@@ -2,7 +2,6 @@ from uuid import UUID
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.forms import Form
 from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponseRedirect
@@ -17,7 +16,7 @@ from aidants_connect_common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_common.forms import PatchedModelForm
-from aidants_connect_common.utils import render_email
+from aidants_connect_common.utils import issuer_exists_send_reminder_email
 from aidants_connect_common.views import (
     FormationRegistrationView as CommonFormationRegistrationView,
 )
@@ -202,25 +201,7 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
     def send_issuer_profile_reminder_mail(self, email: str):
         issuer: Issuer = Issuer.objects.get(email__iexact=email)
 
-        text_message, html_message = render_email(
-            "email/issuer_profile_reminder.mjml",
-            {
-                "url": self.request.build_absolute_uri(
-                    reverse(
-                        "habilitation_issuer_page",
-                        kwargs={"issuer_id": str(issuer.issuer_id)},
-                    )
-                ),
-            },
-        )
-
-        send_mail(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
-            recipient_list=[issuer.email],
-            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
-            message=text_message,
-            html_message=html_message,
-        )
+        issuer_exists_send_reminder_email(self.request, issuer)
 
 
 class IssuerEmailConfirmationWaitingView(

@@ -1,6 +1,6 @@
 from datetime import timedelta
 from unittest import skip
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import patch
 from uuid import UUID, uuid4
 
 from django.contrib import messages as django_messages
@@ -117,26 +117,18 @@ class NewIssuerFormViewTests(TestCase):
                     "Request should have created an instance of IssuerEmailConfirmation"
                 )
 
-    @patch("aidants_connect_habilitation.views.send_mail")
-    def test_send_email_when_issuer_already_exists(self, send_mail_mock: Mock):
+    def test_send_email_when_issuer_already_exists(self):
         issuer: Issuer = IssuerFactory()
 
         data = utils.get_form(IssuerForm).clean()
         data["email"] = issuer.email
 
+        self.assertEqual(0, len(mail.outbox))
+
         self.client.post(reverse(self.pattern_name), data)
 
-        send_mail_mock.assert_called_with(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
-            recipient_list=[issuer.email],
-            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
-            message=ANY,
-            html_message=ANY,
-        )
-
-        # Also test when user gives their email with capitals
-        send_mail_mock.reset_mock()
-        send_mail_mock.assert_not_called()
+        self.assertEqual(1, len(mail.outbox))
+        self.assertEqual([issuer.email.casefold()], mail.outbox[0].to)
 
         data["email"] = issuer.email.capitalize()
 
@@ -144,13 +136,8 @@ class NewIssuerFormViewTests(TestCase):
 
         self.client.post(reverse(self.pattern_name), data)
 
-        send_mail_mock.assert_called_with(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
-            recipient_list=[issuer.email],
-            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
-            message=ANY,
-            html_message=ANY,
-        )
+        self.assertEqual(2, len(mail.outbox))
+        self.assertEqual([issuer.email.casefold()], mail.outbox[1].to)
 
     def test_render_warning_when_issuer_already_exists(self):
         issuer: Issuer = IssuerFactory()

@@ -91,3 +91,20 @@ class FormationRegistrationForm(DsfrBaseForm):
         self.fields["formations"].queryset = Formation.objects.available_for_attendant(
             timedelta(days=21), attendant
         )
+
+
+class FollowMyHabilitationRequesrForm(DsfrBaseForm):
+    email = forms.EmailField(label="Adresse email")
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", None)
+
+        from aidants_connect_habilitation.models import Issuer
+
+        try:
+            return Issuer.objects.get(email=email)
+        except Issuer.DoesNotExist:
+            raise ValidationError(
+                "Il nʼexiste pas de demande dʼhabilitation associée à cet email. "
+                "Veuillez vérifier votre saisie ou renseigner une autre adresse email."
+            )
