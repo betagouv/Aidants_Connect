@@ -86,8 +86,7 @@ class OrganisationRequestAdminTests(TestCase):
         acceptance_message = mail.outbox[1]
 
         self.assertIn(
-            "Vous trouverez ci-dessous les prochaines étapes "
-            "de la procédure d'habilitation à Aidants Connect",
+            "Quelles sont les modalités de financement de la formation",
             acceptance_message.body,
         )
 
