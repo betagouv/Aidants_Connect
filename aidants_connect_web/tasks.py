@@ -327,33 +327,6 @@ def email_old_aidants(*, logger=None):
 
     logger: Logger = logger or get_task_logger(__name__)
 
-    @shared_task
-    def email_one_aidant(a: Aidant):
-        text_message, html_message = render_email(
-            "email/formation_organization_new_attendants.mjml",
-            {
-                "email_title": "Votre compte va être désactivé, réagissez !",
-                "user": a,
-                "webinaire_sub_form": settings.WEBINAIRE_SUBFORM_URL,
-            },
-        )
-
-        send_mail(
-            from_email=settings.EMAIL_AIDANT_DEACTIVATION_WARN_FROM,
-            subject=settings.EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT,
-            recipient_list=[a.email],
-            message=text_message,
-            html_message=html_message,
-        )
-
-        a.deactivation_warning_at = timezone.now()
-        a.save()
-
-        logger.info(
-            f"Sent warning notice for aidant {a.get_full_name()} "
-            "not connected recently"
-        )
-
     aidants = Aidant.objects.deactivation_warnable().all()
 
     logger.info(
@@ -361,7 +334,30 @@ def email_old_aidants(*, logger=None):
     )
 
     for aidant in aidants:
-        email_one_aidant(aidant)
+        text_message, html_message = render_email(
+            "email/old_aidant_deactivation_warning.mjml",
+            {
+                "email_title": "Votre compte va être désactivé, réagissez !",
+                "user": aidant,
+                "webinaire_sub_form": settings.WEBINAIRE_SUBFORM_URL,
+            },
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_AIDANT_DEACTIVATION_WARN_FROM,
+            subject=settings.EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT,
+            recipient_list=[aidant.email],
+            message=text_message,
+            html_message=html_message,
+        )
+
+        aidant.deactivation_warning_at = timezone.now()
+        aidant.save()
+
+        logger.info(
+            f"Sent warning notice for aidant {aidant.get_full_name()} "
+            "not connected recently"
+        )
 
     logger.info(
         f"Sent warning notice for {len(aidants)} aidants not connected recently"
