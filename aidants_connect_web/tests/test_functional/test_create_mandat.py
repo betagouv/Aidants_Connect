@@ -108,14 +108,12 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("RÉCAPITULATIF DU MANDAT", recap_title)
+        self.assertEqual("Récapitulatif du mandat", recap_title)
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        id_personal_data = checkboxes[1]
-        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
-        id_personal_data.click()
-        id_otp_token = checkboxes[2]
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
+        id_otp_token = checkboxes[-2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
@@ -171,14 +169,14 @@ class CreateNewMandatTests(FunctionalTestCase):
             By.CSS_SELECTOR, "#id_duree_short ~ label"
         )
         self.assertEqual(
-            "MANDAT COURT (expire demain)", short_duree_label.text.replace("\n", " ")
+            "Mandat court expire demain", short_duree_label.text.replace("\n", " ")
         )
         short_duree_label.click()
 
         # Select remote method
-        self.selenium.find_element(By.ID, "id_is_remote").click()
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_is_remote ~ label").click()
         self.assertEqual(
-            "MANDAT COURT À DISTANCE (expire demain)",
+            "Mandat court à distance expire demain",
             self.selenium.find_element(
                 By.CSS_SELECTOR, "#id_duree_short ~ label"
             ).text.replace("\n", " "),
@@ -235,14 +233,12 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("RÉCAPITULATIF DU MANDAT À DISTANCE", recap_title)
+        self.assertEqual("Récapitulatif du mandat à distance", recap_title)
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        id_personal_data = checkboxes[1]
-        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
-        id_personal_data.click()
-        id_otp_token = checkboxes[2]
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
+        id_otp_token = checkboxes[-2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
@@ -310,13 +306,13 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
         short_duree_label.click()
         self.assertEqual(
-            "MANDAT COURT (expire demain)", short_duree_label.text.replace("\n", " ")
+            "Mandat court expire demain", short_duree_label.text.replace("\n", " ")
         )
 
         # Select remote method
-        self.selenium.find_element(By.ID, "id_is_remote").click()
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_is_remote ~ label").click()
         self.assertEqual(
-            "MANDAT COURT À DISTANCE (expire demain)",
+            "Mandat court à distance expire demain",
             self.selenium.find_element(
                 By.CSS_SELECTOR, "#id_duree_short ~ label"
             ).text.replace("\n", " "),
@@ -341,7 +337,9 @@ class CreateNewMandatTests(FunctionalTestCase):
             self._element_is_required(By.ID, "id_user_remote_contact_verified")
         )
         self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
-        self.selenium.find_element(By.ID, "id_user_remote_contact_verified").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_user_remote_contact_verified ~ label"
+        ).click()
 
         # # Send recap mandate and go to second step
         self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect").click()
@@ -422,14 +420,12 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("RÉCAPITULATIF DU MANDAT À DISTANCE", recap_title)
+        self.assertEqual("Récapitulatif du mandat à distance", recap_title)
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        id_personal_data = checkboxes[1]
-        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
-        id_personal_data.click()
-        id_otp_token = checkboxes[2]
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
+        id_otp_token = checkboxes[-2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]

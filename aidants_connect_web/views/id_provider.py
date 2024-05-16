@@ -107,10 +107,7 @@ class Authorize(RequireConnectionMixin, FormView):
         return super().post(request, *args, **kwargs)
 
     def form_invalid(self, form):
-        if (
-            "unauthorized_user"
-            in form.errors.get("chosen_usager", PatchedErrorList()).error_codes
-        ):
+        if form.has_error("unauthorized_user", "chosen_usager"):
             log.info(
                 f"User {self.request.POST['chosen_usager']} does not have a valid "
                 f"autorisation with the organisation of aidant with id {self.aidant.id}"
@@ -132,18 +129,13 @@ class Authorize(RequireConnectionMixin, FormView):
         self.request.session["connection"] = self.connection.pk
         return super().form_valid(form)
 
-    def form_invalid_get(self, form):
+    def form_invalid_get(self, form: OAuthParametersForm):
         view_location = f"{self.__module__}.{self.__class__.__name__}"
-        requirement_errors = set()
-        format_validation_errors = set()
+        requirement_errors = set(form.errors_codes.get("required", {}).keys())
+        format_validation_errors = set(form.errors_codes.get("invalid", {}).keys())
         additionnal_keys_errors = set()
-        for field_name, errors in form.errors.items():
-            if "required" in errors.error_codes:
-                requirement_errors.update([field_name])
-            if "invalid" in errors.error_codes:
-                format_validation_errors.update([field_name])
-            if error := errors.get_error_by_code("additionnal_key"):
-                additionnal_keys_errors.update([error.message])
+        for message_list in form.errors_codes.get("invalid", {}).values():
+            additionnal_keys_errors.update(message_list)
 
         if requirement_errors:
             log.info(
@@ -164,7 +156,7 @@ class Authorize(RequireConnectionMixin, FormView):
                 "403 forbidden request: Unexpected parameters: "
                 f"{additionnal_keys_errors!r} @ {view_location}"
             )
-            return HttpResponseForbidden("forbidden parameter value {")
+            return HttpResponseForbidden("forbidden parameter value")
 
         log.warning(f"Uncatched validation error @ {view_location}")
         return HttpResponseBadRequest()

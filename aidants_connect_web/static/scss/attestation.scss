@@ -1,42 +1,21 @@
 @use "colors";
 
 .fr-container {
-  .subtitle {
-    color: colors.$blue-aidants;
-    font-weight: bold;
-    font-size: larger;
-    margin: 0;
-  }
 
   .attestation-content {
     .navbar {
       @media not print {
         display: none;
       }
+      .header-logo img:last-of-type {
+        margin-bottom: 4rem;
+      }
     }
-
-    h1 {
-      color: black;
-      font-size: 2em;
-      line-height: 1.125em;
-      margin: 0 2em .6em;
-      text-transform: none;
-    }
-
-    p {
-      margin: 0;
-    }
-
     ul {
       padding: 0 0 0 2rem;
     }
-
-    .demarches {
-      font-size: .95em;
-    }
-
-    .demarches + p {
-      margin-top: .1em;
+    p {
+      margin-bottom: .5rem;
     }
 
     .organisation-address {
@@ -59,7 +38,12 @@
   }
 
   .text-center {
-    text-align: center;
+    text-align: center;  
+  }
+  .attestation-content h1 {
+    font-size: 1.5rem;
+    margin: 0 3rem 2rem;
+    line-height: 1.75rem;
   }
 
   /* Back compatibility with past mandat templates */

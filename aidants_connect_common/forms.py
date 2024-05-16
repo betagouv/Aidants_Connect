@@ -6,7 +6,9 @@ from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db.models import Model
+from django.forms import Form
 from django.forms.utils import ErrorList
+from django.utils.datastructures import MultiValueDict
 
 from dsfr.forms import DsfrBaseForm
 from phonenumber_field.formfields import PhoneNumberField
@@ -51,13 +53,45 @@ class PatchedModelForm(forms.ModelForm, WidgetAttrMixin):
         super().__init__(*sig.args, **sig.kwargs)
 
 
-class PatchedForm(forms.Form, WidgetAttrMixin):
+class PatchedForm(Form, WidgetAttrMixin):
     def __init__(self, *args, **kwargs):
         sig = signature(super().__init__).bind_partial(*args, **kwargs)
         sig.arguments.setdefault("label_suffix", "")
         sig.arguments["error_class"] = PatchedErrorList
 
         super().__init__(*sig.args, **sig.kwargs)
+
+
+class ErrorCodesManipulationMixin:
+    @property
+    def errors_codes(self) -> dict[str, MultiValueDict[str, str]]:
+        """
+        Return a dict associating all the form's error codes with a dict associating the
+        field names presenting these errors with a list of the error messages
+        Exemple:
+        >>> from django import forms
+        >>> from aidants_connect_common.forms import ErrorCodesManipulationMixin
+        >>> class TestForm(ErrorCodesManipulationMixin, forms.Form):
+        ...     is_ok = forms.BooleanField()
+        ...     name = forms.CharField()
+        >>> form = TestForm()
+        >>> form.errors_codes
+        {'required': {'is_ok': ['Ce champ est obligatoire.'],'name': ['Ce champ est obligatoire.']}}
+        """  # noqa: E501
+
+        if not hasattr(self, "errors"):
+            raise AttributeError(
+                "ErrorCodesManipulationMixin must be used on Form class"
+            )
+        if not hasattr(self, "_errors_codes"):
+            self._errors_codes: dict[str, MultiValueDict[str, str]] = {}
+            for field, errors in self.errors.items():
+                for error in errors.as_data():
+                    code = error.code or ""
+                    self._errors_codes.setdefault(code, MultiValueDict())
+                    self._errors_codes[code].setlistdefault(field)
+                    self._errors_codes[code].appendlist(field, error.message or "")
+        return self._errors_codes
 
 
 class AcPhoneNumberField(PhoneNumberField):

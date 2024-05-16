@@ -1,0 +1,85 @@
+{% load static %}
+
+<section class="container">
+  <h1 class="text-center">
+    Mandat pour réaliser des démarches en ligne avec le service « Aidants Connect »
+  </h1>
+  <p>Je m’appelle : <strong>{{ usager.get_full_name }}</strong> (je suis le mandant).</p>  
+  <p>
+    J’autorise <strong>{{ aidant.organisation }}</strong> (c’est le mandataire) à réaliser pour mon compte les démarches
+    administratives suivantes :
+  </p>
+  <ul class="demarches">  
+    {% for demarche in demarches %}
+      <li><strong>{{ demarche }}</strong></li>
+    {% endfor %}
+  </ul>
+  <p><strong>{{ duree }}.</strong></p>
+  <p>
+    Cette autorisation est conforme aux articles 1984 et suivants du Code civil. Les démarches seront accomplies sur
+    internet, sur des sites utilisant FranceConnect ou sur d’autres sites. Elles peuvent être aussi accomplies par tous
+    les moyens permis par l’administration (téléphone, papier, email…).
+  </p>
+  <p>
+    Je peux annuler mon autorisation à tout moment.
+  </p>
+  <p>
+    Pour que <strong>{{ aidant.organisation }}</strong> puisse agirpour mon compte :
+  </p>
+  <ul>
+    <li>
+      Je reconnais que l’aidant habilité par <strong>{{ aidant.organisation }}</strong> m’a rappelé l’objet de son
+      intervention, et m’a informé sur la nécessité et l’utilité des informations collectées ;
+    </li>
+    <li>
+      J’autorise les aidants habilités par <strong>{{ aidant.organisation }}</strong> à utiliser mes données
+      personnelles dans le cadre de ce mandat.
+      Je sais que j’ai des droits sur les informations me concernant : accès, rectification, suppression.
+    </li>
+  </ul>
+  <p>
+    Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :
+  </p>
+  <ul>
+    <li>
+      effectuer les démarches listées dans ce document pour mon compte, à partir des informations que je leur ai données ;
+    </li>
+    <li>
+      collecter et conserver, utiliser et communiquer seulement les informations nécessaires aux démarches listées
+      dans ce document ou à celles qui s’y rattachent ;
+    </li>
+    <li>
+      m’informer et demander mon autorisation avant d’effectuer d’autres démarches que celles listées dans ce document ;
+    </li>
+    <li>mettre à jour et supprimer l’ensemble de mes informations personnelles lorsqu’elles ne sont plus utiles ;</li>
+    <li>s’interdire de rendre publiques mes informations personnelles ;</li>
+    <li>prendre toutes les précautions pour assurer la sécurité de mes informations personnelles.</li>
+  </ul>
+  <p>
+    À partir du moment où un aidant habilité par <strong>{{ aidant.organisation }}</strong>
+    réalise pour mon compte une des démarches listées dans ce document,
+    il accepte de le faire dans les conditions décrites dans ce document.
+  </p>
+  <p>
+    Mon autorisation est donnée et acceptée <strong>{{ duree }}</strong>. Elle se termine avant si :
+  </p>
+  <ul>
+    <li>les démarches décrites ci-dessus sont réalisées ;</li>
+    <li>je décide de l’annuler ;</li>
+    <li>l’aidant habilité par <strong>{{ aidant.organisation }}</strong> décide de l’annuler ;</li>
+    <li>
+      je donne mon autorisation à une autre personne qu’un aidant habilité par
+      <strong>{{ aidant.organisation }}</strong>. Dans ce cas, je dois en informer le plus vite possible
+      <strong>{{ aidant.organisation }}</strong>.
+    </li>
+  </ul>
+  <p>
+    L'aidant habilité par <strong>{{ aidant.organisation }}</strong> doit accomplir pour mon compte les démarches listées
+    dans ce document tant que le mandat est valable. Il pourra être responsable s’il ne respecte pas les
+    conditions décrites dans ce document (article 1991 du Code civil).
+  </p>
+  <p>
+    Fait à <strong>{{ aidant.organisation.display_address }}, {{ aidant.organisation.display_city }}</strong>,
+    le <strong>{{ date }}</strong>
+  </p>
+</section>
