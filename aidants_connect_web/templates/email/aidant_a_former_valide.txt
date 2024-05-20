@@ -1,6 +1,6 @@
 Bonjour,
 
-Nous venons de valider l'éligibilité de lʼajout de l'aidante ou lʼaidant {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}} à former ajoutée depuis votre espace.
+Nous venons de valider l'éligibilité de lʼajout de l'aidant(e) {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}} à former ajouté(e) depuis votre espace.
 
 Attention, selon votre profil et votre structure, les modalités de formation et de prise en charge diffèrent. Retrouvez toutes les informations sur la formation Aidants Connect et ses modalités de financement : {{ formation_url }}.
 
