@@ -1,20 +1,12 @@
 {% load ac_common static %}
 
 <div
-  class="fr-mt-8v"
   data-controller="follow-request-modale"
   data-follow-request-modale-form-action-value="{% url 'habilitation_follow_my_request' %}"
   hidden
   aria-hidden="true"
 >
-  <button
-    id="follow-my-habilitation-request-btn"
-    class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-arrow-right-line"
-    data-fr-opened="false"
-    aria-controls="fr-modal-follow-hab-request"
-  >
-    Suivre ma demande
-  </button>
+
   <dialog
     aria-labelledby="fr-modal-follow-hab-request-title"
     id="fr-modal-follow-hab-request"
