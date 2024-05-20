@@ -4,6 +4,7 @@ from django.core import mail
 from django.test import tag
 from django.urls import reverse
 
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import (
     invisibility_of_element_located,
@@ -73,9 +74,19 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
         self.assertEqual(mail.outbox[1].to, [iss.email])
 
     def _open_modale(self):
-        self.wait.until(
-            visibility_of_element_located((By.ID, "follow-my-habilitation-request-btn"))
-        ).click()
+        def try_open_modal(driver):
+            try:
+                self.selenium.find_element(
+                    By.ID, "follow-my-habilitation-request-btn"
+                ).click()
+            except NoSuchElementException:
+                return False
+
+            return visibility_of_element_located(
+                (By.ID, "fr-modal-follow-hab-request-title")
+            )(driver)
+
+        self.wait.until(try_open_modal)
 
     def _close_modale(self):
         self.selenium.find_element(

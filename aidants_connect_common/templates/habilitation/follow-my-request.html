@@ -1,20 +1,6 @@
 {% load ac_common static %}
 
-<div
-  class="fr-mt-8v"
-  data-controller="follow-request-modale"
-  data-follow-request-modale-form-action-value="{% url 'habilitation_follow_my_request' %}"
-  hidden
-  aria-hidden="true"
->
-  <button
-    id="follow-my-habilitation-request-btn"
-    class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-arrow-right-line"
-    data-fr-opened="false"
-    aria-controls="fr-modal-follow-hab-request"
-  >
-    Suivre ma demande
-  </button>
+<div data-controller="follow-request-modale">
   <dialog
     aria-labelledby="fr-modal-follow-hab-request-title"
     id="fr-modal-follow-hab-request"
@@ -49,6 +35,16 @@
     <div class="fr-alert fr-alert--error fr-mb-6v">
       <p>Suite à une erreur du système, veuillez renouveler votre demande.</p>
     </div>
+  </template>
+  <template data-follow-request-modale-target="dialogBtnTpl">
+    <button
+      id="follow-my-habilitation-request-btn"
+      class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-arrow-right-line fr-mt-4v"
+      data-fr-opened="false"
+      aria-controls="fr-modal-follow-hab-request"
+    >
+      Suivre ma demande
+    </button>
   </template>
   {% stimulusjs %}
   <script defer src="{% url 'js_reverse' %}"></script>
