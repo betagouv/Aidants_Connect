@@ -2,22 +2,32 @@
 
 import {BaseController} from "./base-controller.js"
 
-(function () {
+(function() {
+    const DIALOG_BTN_TARGET_CSS = '[data-follow-request-modale-target="dialogBtn"]';
+
     class FollowRequestModale extends BaseController {
-        initialize () {
+        initialize() {
+            const dialogBtnTarget = document.querySelectorAll(DIALOG_BTN_TARGET_CSS);
+            if (dialogBtnTarget.length === 0) {
+                console.error(`No element with CSS ${DIALOG_BTN_TARGET_CSS} present, can't add dialog button`);
+                return;
+            }
+
             fetch(Urls.habilitationFollowMyRequest())
                 .then(async response => {
                     if (response.ok) {
                         this.element.insertAdjacentHTML(
-                            "beforeend", 
+                            "beforeend",
                             `<template data-follow-request-modale-target="formTpl">${await response.text()}</template>`
                         );
-                        this.showElement(this.element);
+                        dialogBtnTarget.forEach(elt => {
+                            elt.outerHTML = this.dialogBtnTplTarget.innerHTML;
+                        });
                     }
                 }).catch(this.noop);
         }
 
-        async onSubmit (evt) {
+        async onSubmit(evt) {
             this.submitRequestOngoingValue = true;
             try {
                 const response = await fetch(
@@ -39,7 +49,7 @@ import {BaseController} from "./base-controller.js"
             this.formContentTarget.innerHTML = this.formTplTarget.innerHTML;
         }
 
-        submitRequestOngoingValueChanged (value) {
+        submitRequestOngoingValueChanged(value) {
             if (value) {
                 // Remove errors
                 this.formContentTarget.querySelectorAll(".fr-alert--error").forEach(el => el.remove());
@@ -48,7 +58,7 @@ import {BaseController} from "./base-controller.js"
             }
         }
 
-        static targets = ["formContent", "unknownErrorMsgTpl", "formTpl"]
+        static targets = ["formContent", "unknownErrorMsgTpl", "formTpl", "dialogBtnTpl"]
         static values = {submitRequestOngoing: {type: Boolean, default: false}}
     }
 
