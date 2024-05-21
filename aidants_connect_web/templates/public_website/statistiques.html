@@ -1,4 +1,4 @@
-{% extends 'public_website/layout/main.html' %}
+{% extends 'public_website/layout/main-legacy.html' %}
 
 {% load static %}
 
@@ -23,7 +23,7 @@
         <div class="shadowed">
           <div class="fr-grid-row fr-grid-row--gutters">
             <div class="fr-col-12 fr-col-md-4 stats-container">
-              <h3 class="stats-text">Démarches administratives réalisés</h3>
+              <h3 class="stats-text">Démarches administratives réalisées</h3>
               <p class="stats-number">{{ autorisation_use_count }}</p>
             </div>
             <div class="fr-col-12 fr-col-md-4 stats-container">
@@ -31,7 +31,7 @@
               <p class="stats-number">{{ usagers_with_mandat_count }}</p>
             </div>
             <div class="fr-col-12 fr-col-md-4 stats-container">
-              <h3 class="stats-text">Mandats crées</h3>
+              <h3 class="stats-text">Mandats créés</h3>
               <p class="stats-number">{{ mandats_count }}</p>
             </div>
           </div>

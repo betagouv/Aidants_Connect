@@ -1,4 +1,4 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
 {% load static %}
 
@@ -6,16 +6,23 @@
 
 {% block content %}
   <div class="fr-container">
-    <h1>Lien de connexion envoyé</h1>
-    <p class="subtitle">Un email vous a été envoyé pour vous connecter.</p>
-    <img
-      class="full-width margin-bottom-1rem margin-top-1rem"
-      src="{% static 'images/email-connection-banner.svg' %}"
-      alt=""
-    >
-    <p>
-      Si vous ne le recevez pas, vous pouvez
-      <a href="{% url 'magicauth-login' %}" class="fr-link">réessayer</a>.
-    </p>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-lg-8">
+        <h1 class="fr-mb-6v">Confirmation de connexion</h1>
+        <p class="fr-text--xl fr-mb-16v">Un email vous a été envoyé pour vous connecter.</p>
+
+        <div class="fr-alert fr-alert--info">
+          <h3 class="fr-alert__title fr-m-0">Vous n’avez pas reçu votre email de connexion ?</h3>
+          <p><a href="{% url 'magicauth-login' %}" class="fr-link">Cliquez ici</a> pour réessayer de vous connecter.</p>
+        </div>
+      </div>
+      <div class="fr-col-3 fr-col-offset-xl-1 fr-hidden fr-unhidden-lg">
+        <img
+          class="full-width margin-bottom-1rem margin-top-1rem"
+          src="{% static 'images/icons/mail-sent.svg' %}"
+          alt=""
+        >
+      </div>
+    </div>
   </div>
 {% endblock content %}

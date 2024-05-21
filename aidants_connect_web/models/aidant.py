@@ -5,6 +5,7 @@ from datetime import timedelta
 from typing import Collection, Optional
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.db.models import Q
@@ -14,7 +15,7 @@ from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
 
 from ..constants import OTP_APP_DEVICE_NAME
 from .mandat import Autorisation, Mandat
@@ -90,8 +91,9 @@ class AidantManager(UserManager):
             email = email.strip().lower()
             kwargs["email"] = email
             if (
-                username := kwargs.get("username")
-            ) and username.strip().lower() == email:
+                not (username := kwargs.get("username"))
+                or username.strip().lower() == email
+            ):
                 kwargs["username"] = email
 
         return super().create(**kwargs)
@@ -146,6 +148,10 @@ class Aidant(AbstractUser):
             "le champ « Aidant - Peut créer des mandats »"
         ),
     )
+    conseiller_numerique = models.BooleanField(
+        default=False, verbose_name="L'aidant est conseiller numérique"
+    )
+
     validated_cgu_version = models.TextField(null=True)
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
@@ -391,3 +397,11 @@ class Aidant(AbstractUser):
         )
 
         return self.is_active
+
+
+class UserFingerprint(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    ip_address = models.GenericIPAddressField(null=True)
+    user_agent = models.CharField(max_length=255)
+    parsed_user_agent = models.JSONField()
+    login_time = models.DateTimeField(auto_now=True)

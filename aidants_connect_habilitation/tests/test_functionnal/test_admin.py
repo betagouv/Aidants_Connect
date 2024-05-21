@@ -7,8 +7,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.wait import WebDriverWait
 
+from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_common.utils.constants import RequestStatusConstants
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
 from aidants_connect_web.models import Aidant

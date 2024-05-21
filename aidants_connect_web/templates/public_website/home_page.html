@@ -1,4 +1,4 @@
-{% extends 'public_website/layout/main.html' %}
+{% extends 'public_website/layout/main-legacy.html' %}
 
 {% load static %}
 
@@ -9,9 +9,26 @@
 
 {% block content %}
   <div class="fr-container">
+    <div class="fr-alert fr-alert--info fr-my-4v">
+      <h3 class="fr-alert__title">
+        🎉 Nouveauté : Les inscriptions aux formations Aidants Connect sont de retour !
+      </h3>
+      <p>
+        Plusieurs webinaires d'information présenteront les nouvelles modalités de formation et de financement. Ces
+        webinaires se dérouleront aux dates suivantes : mercredi 22 mai à 14h ; mercredi 29 mai à 14h ; mercredi 12 juin à 14h ; mercredi 26 juin à 14h (heure métropole).
+      </p>
+      <p>
+        Pour y accéder, il vous suffit de <a
+        href="https://webinaire.numerique.gouv.fr//meeting/signin/31150/creator/9817/hash/9a27df264fb8c0dec8c66ddfee02e1e11246d4c7"
+        class="fr-link"
+        target="_blank"
+      >
+        cliquer sur ce lien .</a>
+      </p>
+    </div>
+
     {% include "layouts/_messages.html" %}
   </div>
-
   <div class="fr-container--fluid hero-container">
     <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle hero-row">
       <div class="fr-col">
@@ -52,7 +69,7 @@
         </div>
         <div class="fr-grid-row fr-grid-row--right aidants-btn-container">
           <div class="fr-grid-col aidants-btn-col">
-            <a class="fr-btn" href="{% url 'habilitation' %}">Être habilité Aidants Connect</a>
+            <a class="fr-btn" href="{% url 'habilitation_faq_habilitation' %}">Être habilité Aidants Connect</a>
           </div>
         </div>
       </div>
@@ -174,7 +191,7 @@
             <div class="fr-grid-row fr-grid-row--right fr-grid-row--bottom">
               <ul class="fr-btns-group fr-btns-group--inline">
                 <li>
-                  <a class="fr-btn" href="{% url 'habilitation' %}">Habilitation</a>
+                  <a class="fr-btn" href="{% url 'habilitation_faq_habilitation' %}">Habilitation</a>
                 </li>
                 <li>
                   <a class="fr-btn" href="{% url 'faq_generale' %}">FAQ</a>

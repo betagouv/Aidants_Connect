@@ -12,7 +12,7 @@ from django.urls import reverse
 import jwt
 from freezegun import freeze_time
 
-from aidants_connect_common.utils.constants import AuthorizationDurationChoices
+from aidants_connect_common.constants import AuthorizationDurationChoices
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import Connection, Journal, Usager
 from aidants_connect_web.tests.factories import AidantFactory, UsagerFactory

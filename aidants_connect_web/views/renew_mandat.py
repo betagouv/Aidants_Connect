@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 
-from aidants_connect_common.utils.constants import AuthorizationDurations
+from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.decorators import aidant_logged_with_activity_required
@@ -102,6 +102,9 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             ),
             "has_mandate_translations": MandateTranslation.objects.exists(),
         }
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "organisation": self.aidant.organisation}
 
     def get_success_url(self):
         return (

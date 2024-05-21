@@ -35,6 +35,10 @@ class AuthorizeTests(TestCase):
         cls.client = Client()
         cls.aidant_thierry = AidantFactory()
         cls.aidant_jacques = AidantFactory()
+        cls.aidante_sarah = AidantFactory()
+        cls.aidante_sarah.organisation.allowed_demarches = ["papiers"]
+        cls.aidante_sarah.organisation.save()
+
         cls.usager = UsagerFactory(given_name="Joséphine", sub="123")
 
         mandat_1 = MandatFactory(
@@ -88,9 +92,10 @@ class AuthorizeTests(TestCase):
             "nonce": "avalidnonce456",
             "response_type": "code",
             "client_id": settings.FC_AS_FI_ID,
-            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL,
-            "scope": "openid profile email address phone birth",
+            "redirect_uri": settings.FC_AS_FI_CALLBACK_URL_V2,
+            "scope": "openid birth email profile",
             "acr_values": "eidas1",
+            "prompt": "login",
         }
 
     def test_authorize_url_triggers_the_authorize_view(self):
@@ -277,6 +282,99 @@ class AuthorizeTests(TestCase):
                 "la liste déroulante"
             ],
         )
+
+    def test_claim_perimeter_restriction(self):
+        connection = Connection.objects.create(
+            state="avalidstate123", nonce="avalidnonce456", usager=self.usager
+        )
+
+        def get_oauth_data(essential=True, values=None):
+            return {
+                **self.valid_oauth_data,
+                "claim": json.dumps(
+                    {
+                        "id_token": {
+                            "rep_scope": {
+                                "essential": essential,
+                                **({"values": values} if values else {}),
+                            }
+                        }
+                    }
+                ),
+            }
+
+        # Invalid JSON
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/authorize/",
+            data={
+                "chosen_usager": self.usager.pk,
+                "connection_id": connection.pk,
+                **self.valid_oauth_data,
+                "claim": "test",
+            },
+        )
+        self.assertEqual(403, response.status_code)
+
+        # Invalid perimeters
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/authorize/",
+            data={
+                "chosen_usager": self.usager.pk,
+                "connection_id": connection.pk,
+                **get_oauth_data(values=["argent", "test"]),
+            },
+        )
+        self.assertEqual(403, response.status_code)
+
+        # essential=false
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/authorize/",
+            data={
+                "chosen_usager": self.usager.pk,
+                "connection_id": connection.pk,
+                **get_oauth_data(essential=False),
+            },
+        )
+        self.assertEqual(403, response.status_code)
+
+        # Unauthorize parameter
+        self.client.force_login(self.aidante_sarah)
+        response = self.client.post(
+            "/authorize/",
+            data={
+                "chosen_usager": self.usager.pk,
+                "connection_id": connection.pk,
+                **get_oauth_data(values=["famille"]),
+            },
+        )
+        self.assertEqual(403, response.status_code)
+
+        # No perimeter
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/authorize/",
+            data={
+                "chosen_usager": self.usager.pk,
+                "connection_id": connection.pk,
+                **get_oauth_data(),
+            },
+        )
+        self.assertEqual(302, response.status_code)
+
+        # Valid data
+        self.client.force_login(self.aidant_thierry)
+        response = self.client.post(
+            "/authorize/",
+            data={
+                "chosen_usager": self.usager.pk,
+                "connection_id": connection.pk,
+                **get_oauth_data(values=["famille"]),
+            },
+        )
+        self.assertEqual(302, response.status_code)
 
 
 @tag("id_provider")

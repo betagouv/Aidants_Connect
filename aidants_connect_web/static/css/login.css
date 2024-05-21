@@ -1,1 +1,37 @@
-.habilitation-notice{margin:2rem 0 2rem 0;padding:.5rem}.habilitation-notice .strong{font-weight:bold}.habilitation-notice,.habilitation-notice a[href]{color:#1b4991}.login-form{margin:2rem 0 4rem 0;padding:2rem}/*# sourceMappingURL=login.css.map */
+.main-content-full [class*="fr-col"] {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.otp-app-panel .background {
+  background-color: var(--background-contrast-pink-macaron-hover);
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.otp-app-panel .background > img {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 0;
+}
+
+
+.otp-app-panel .background > :not(img) {
+  position: relative;
+  z-index: 1;
+}
+
+.otp-app-explaination h1 {
+  color: var(--text-label-pink-macaron);
+}
+
+.otp-app-explaination {
+  min-height: 952px;
+  @media (max-width: 767px) {
+    min-height: 1054px;
+  }
+}

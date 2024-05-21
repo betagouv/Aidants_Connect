@@ -16,8 +16,8 @@ class DebugEmailBackend(FileBasedEmailBackend):
         if html:
             path = Path(self._get_filename()).resolve()
             for email_addr in message.to:
-                path = path.parent / f"{path.stem}-{email_addr}.html"
-                with open(path, "w") as f:
+                file = path.parent / f"{path.stem}-{email_addr}.html"
+                with open(file, "w") as f:
                     f.writelines(html)
 
         super().write_message(message)

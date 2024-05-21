@@ -22,3 +22,6 @@ coverage.xml
 /coverage.*
 
 *.css.map
+node_modules/
+package.json
+package-lock.json

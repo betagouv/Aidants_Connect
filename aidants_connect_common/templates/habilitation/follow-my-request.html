@@ -1,0 +1,52 @@
+{% load ac_common static %}
+
+<div data-controller="follow-request-modale">
+  <dialog
+    aria-labelledby="fr-modal-follow-hab-request-title"
+    id="fr-modal-follow-hab-request"
+    class="fr-modal"
+    role="alertdialog"
+    data-action="dsfr.disclose->follow-request-modale#onModaleOpen"
+  >
+    <div class="fr-container fr-container--fluid fr-container-md">
+      <div class="fr-grid-row fr-grid-row--center">
+        <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+          <div class="fr-modal__body">
+            <div class="fr-modal__header">
+              <button class="fr-btn--close fr-btn" aria-controls="fr-modal-follow-hab-request">Fermer</button>
+            </div>
+            <div class="fr-modal__content">
+              <h1 id="fr-modal-follow-hab-request-title" class="fr-modal__title">
+                <span class="fr-icon-arrow-right-line fr-icon--lg"></span>
+                Suivre ma demande dʼhabilitation
+              </h1>
+              <p>
+                Pour retrouver votre demande dʼhabilitation, veuillez saisir ci-dessous lʼadresse email renseignée lors
+                de votre inscription
+              </p>
+              <div data-follow-request-modale-target="formContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+  <template data-follow-request-modale-target="unknownErrorMsgTpl">
+    <div class="fr-alert fr-alert--error fr-mb-6v">
+      <p>Suite à une erreur du système, veuillez renouveler votre demande.</p>
+    </div>
+  </template>
+  <template data-follow-request-modale-target="dialogBtnTpl">
+    <button
+      id="follow-my-habilitation-request-btn"
+      class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-arrow-right-line fr-mt-4v"
+      data-fr-opened="false"
+      aria-controls="fr-modal-follow-hab-request"
+    >
+      Suivre ma demande
+    </button>
+  </template>
+  {% stimulusjs %}
+  <script defer src="{% url 'js_reverse' %}"></script>
+  <script defer type="module" src="{% static 'js/follow-request-modale.js' %}"></script>
+</div>

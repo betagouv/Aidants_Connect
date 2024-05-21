@@ -17,7 +17,8 @@
           <div class="button-box">
             <a
               class="fr"
-              href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
+              href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}"
+            >Éditer</a>
           </div>
         {% endif %}
       </div>
@@ -28,7 +29,7 @@
         <div>
           <p>
             <strong>{{ organisation.name }}</strong><br>
-            {{ organisation.address|linebreaksbr }}<br/>
+            {{ organisation.address|linebreaksbr }}<br />
             {{ organisation.zipcode }}
             {{ organisation.city }}
           </p>
@@ -36,8 +37,10 @@
         </div>
         {% if show_all_buttons %}
           <div class="button-box">
-            <a class="button primary"
-               href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+            <a
+              class="button primary"
+              href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+            >
               Éditer
             </a>
           </div>
@@ -81,8 +84,10 @@
       </dl>
       {% if show_all_buttons %}
         <div class="button-box">
-          <a class="button primary"
-             href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+          <a
+            class="button primary"
+            href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+          >
             Éditer
           </a>
         </div>
@@ -94,14 +99,14 @@
 <h3>
   Personnes impliquées
   {% if display_add_aidants_button %}
-   <a
+     <a
     id="add-aidants-btn"
     class="fr-btn fr-btn--icon-left fr-icon-user-add-line margin-bottom-1rem"
     href="{% url 'habilitation_organisation_add_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
   >
     Ajouter des aidants
   </a>
-{% endif %}
+  {% endif %}
 </h3>
 
 <div class="form-in-3-cols">
@@ -110,30 +115,51 @@
     <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
       <div class="shadowed with-button-box">
         <h4 class="h2">Référent de structure</h4>
-        {% if organisation.manager %}
-        <div>
-          <p>
-            <strong>{{ organisation.manager.get_full_name }}</strong>
-            <br>{{ organisation.manager.profession }}
-          </p>
-          <p>
-            {{ organisation.manager.email }}<br>{{ organisation.manager.phone }}
-          </p>
-          <p>
-            {{ organisation.manager.address|linebreaksbr }}<br/>
-            {{ organisation.manager.zipcode }}
-            {{ organisation.manager.city }}
-          </p>
-          <p>Ce ou cette référente est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
-        </div>
+        {% if organisation.manager.habilitation_request and organisation.manager.habilitation_request.status in organisation.manager.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+          {% if manager_is_active %}
+            <a
+              href="{% url 'espace_responsable_organisation' %}"
+              class="fr-btn fr-mb-8v"
+            >
+              Gérer les formations sur mon espace référent
+            </a>
+          {% elif organisation.manager.habilitation_request.formations.exists %}
+            <button class="fr-btn fr-mb-8v" disabled>
+              Cette personne est inscrite à une formation
+            </button>
+          {% else %}
+            <a
+              href="{% url 'habilitation_manager_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+              class="fr-btn fr-mb-8v"
+            >
+              Inscrire à une formation
+            </a>
+          {% endif %}
+          <div>
+            <p>
+              <strong>{{ organisation.manager.get_full_name }}</strong>
+              <br>{{ organisation.manager.profession }}
+            </p>
+            <p>
+              {{ organisation.manager.email }}<br>{{ organisation.manager.phone }}
+            </p>
+            <p>
+              {{ organisation.manager.address|linebreaksbr }}<br />
+              {{ organisation.manager.zipcode }}
+              {{ organisation.manager.city }}
+            </p>
+            <p>Ce ou cette référente est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
+          </div>
         {% else %}
-        <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-          Ajouter un ou une référente</a>
+          <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+            Ajouter un ou une référente</a>
         {% endif %}
         {% if show_all_buttons %}
           <div class="button-box">
-            <a class="fr-btn"
-               href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">Éditer</a>
+            <a
+              class="fr-btn"
+              href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+            >Éditer</a>
           </div>
         {% endif %}
       </div>
@@ -148,7 +174,33 @@
       {% endif %}
       <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
         <div class="shadowed with-button-box">
-          <h4 class="h2">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
+
+          <div class="flex fr-mb-5v">
+            <h4 class="h2 fr-col--middle fr-m-0">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
+            {% if aidant_request.habilitation_request and aidant_request.habilitation_request.status in aidant_request.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+              <span class="spacer"></span>
+              {% if manager_is_active %}
+                <a
+                  href="{% url 'espace_responsable_organisation' %}"
+                  class="fr-btn fr-ml-4v"
+                >
+                  Gérer les formations sur mon espace référent
+                </a>
+              {% elif aidant_request.habilitation_request.formations.exists %}
+                <button class="fr-btn fr-ml-4v" disabled>
+                  Cette personne est inscrite à une formation
+                </button>
+              {% else %}
+                <a
+                  href="{% url 'habilitation_new_aidant_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant_request.pk %}"
+                  class="fr-btn fr-ml-4v"
+                >
+                  Inscrire à une formation
+                </a>
+              {% endif %}
+            {% endif %}
+          </div>
+
           <div>
             <p>
               <strong>{{ aidant_request.get_full_name }}</strong><br>
@@ -156,6 +208,21 @@
             </p>
             <p>{{ aidant_request.email }}</p>
           </div>
+          {% if aidant_request.habilitation_request and not manager_is_active %}
+            {% if aidant_request.habilitation_request.status_cancellable_by_responsable %}
+              <div>
+                <a
+                  id="cancel-habilitation-request-{{ aidant_request.habilitation_request.pk }}"
+                  class="fr-link fr-link--icon-left fr-text-default--error fr-icon-delete-bin-line"
+                  href="{% url 'habilitation_new_aidant_cancel_habilitation_request' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant_request.pk %}"
+                >
+                  Annuler cette demande d'habilitation
+                </a>
+              </div>
+            {% elif aidant_request.habilitation_request.status == aidant_request.habilitation_request.ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE %}
+              <p class="fr-badge fr-badge--warning">Demande annulée par le ou la référente</p>
+            {% endif %}
+          {% endif %}
           {% if show_all_buttons %}
             <div class="button-box">
               <a

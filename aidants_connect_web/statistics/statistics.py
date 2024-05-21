@@ -3,11 +3,11 @@ from typing import Union
 from django.conf import settings
 from django.db.models import Q
 
-from aidants_connect_common.models import Commune, Department, Region
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     JournalActionKeywords,
     RequestStatusConstants,
 )
+from aidants_connect_common.models import Commune, Department, Region
 from aidants_connect_habilitation.models import OrganisationRequest
 
 from ..constants import OTP_APP_DEVICE_NAME, ReferentRequestStatuses
@@ -18,6 +18,7 @@ from ..models import (
     AidantStatistiquesbyRegion,
     HabilitationRequest,
     Journal,
+    Mandat,
     Organisation,
 )
 
@@ -55,6 +56,7 @@ def compute_statistics(
         hab_requests = HabilitationRequest.objects.all()
         orga_requests = OrganisationRequest.objects.all()
         journals = Journal.objects.all()
+        mandats = Mandat.objects.all()
     elif isinstance(ostat, AidantStatistiquesbyDepartment):
         departement_insee_code = ostat.departement.insee_code
         ads = Aidant.objects.exclude(organisation__name=stafforg).filter(
@@ -70,6 +72,9 @@ def compute_statistics(
             Q(organisation__department_insee_code=departement_insee_code)
         )
         journals = Journal.objects.all().filter(
+            Q(organisation__department_insee_code=departement_insee_code)
+        )
+        mandats = Mandat.objects.all().filter(
             Q(organisation__department_insee_code=departement_insee_code)
         )
     elif isinstance(ostat, AidantStatistiquesbyRegion):
@@ -89,6 +94,9 @@ def compute_statistics(
             Q(organisation__department_insee_code__in=dpts_insee_code)
         )
         journals = Journal.objects.all().filter(
+            Q(organisation__department_insee_code__in=dpts_insee_code)
+        )
+        mandats = Mandat.objects.all().filter(
             Q(organisation__department_insee_code__in=dpts_insee_code)
         )
     else:
@@ -236,6 +244,7 @@ def compute_statistics(
     ostat.number_old_aidants_warned = number_old_aidants_warned
     ostat.number_old_inactive_aidants_warned = number_old_inactive_aidants_warned
     ostat.number_aidants_with_otp_app = number_aidants_with_otp_app
+    ostat.revoked_mandats = mandats.seperatly_revoked().count()
     ostat.save()
 
     return ostat

@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib import admin
 from django.contrib import messages as django_messages
 from django.contrib.admin import ModelAdmin, register
@@ -14,6 +15,8 @@ from celery.states import FAILURE, SUCCESS
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import CoReferentNonAidantRequest, ExportRequest
+
+from ..tasks import email_co_rerefent_creation
 
 logger = logging.getLogger()
 
@@ -163,21 +166,27 @@ class CoReferentNonAidantRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     def get_status_display(self, obj):
         return obj.get_status_display()
 
+    @admin.action(description="Créer les comptes co-référents sélectionnés")
     def mark_validated(self, request, queryset: QuerySet[CoReferentNonAidantRequest]):
-        instances = [x.create_referent_non_aidant() for x in queryset]
+        instances = [
+            instance.pk
+            for x in queryset
+            if (instance := x.create_referent_non_aidant())
+        ]
+
         self.message_user(
             request, f"{len(instances)} référents non-aidants ont été créés"
         )
 
-    mark_validated.short_description = "Créer les comptes co-référents sélectionnés"
+        if settings.FF_EMAIL_CO_RERERENT_CREATION:
+            email_co_rerefent_creation.delay(instances)
 
+    @admin.action(
+        description="Refuser la création les comptes co-référents sélectionnés"
+    )
     def mark_refused(self, request, queryset: QuerySet[CoReferentNonAidantRequest]):
         queryset.update(status=ReferentRequestStatuses.STATUS_REFUSED)
         self.message_user(
             request,
             f"{queryset.count()} profils de référents non-aidants ont été refusés.",
         )
-
-    mark_refused.short_description = (
-        "Refuser la création les comptes co-référents sélectionnés"
-    )

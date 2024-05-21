@@ -1,0 +1,15 @@
+.option-container {
+  position: relative;
+}
+
+.option-container .fr-label::before {
+  position: unset !important;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table tbody tr {
+  border-bottom: 2px solid var(--border-default-grey);
+}

@@ -11,8 +11,8 @@ Aidants Connect est une application web qui propose à des aidants les fonctionn
 
 Aidants Connect est construit sur les éléments suivants :
 
-- Python 3.10
-- Django 3.2
+- Python 3.11
+- Django 4.2
 - PostgreSQL
 
 ## Installer et lancer l'application
@@ -151,6 +151,7 @@ Des données de test qui créent un environnement complet :
 ```shell
   python manage.py loaddata admin.json
   python manage.py loaddata usager_autorisation.json
+  python manage.py loaddata faq.json
 ```
 
 Ce process crée automatiquement un _superuser_ `admin@email.com`. Plus d'information sur comment se connecter avec ce compte sont disponible dans la section [Se connecter à l'application](#se-connecter-à-lapplication)

@@ -368,3 +368,50 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         self.aidant_active_with_card.refresh_from_db()
         with self.assertRaises(Aidant.carte_totp.RelatedObjectDoesNotExist):
             self.aidant_active_with_card.carte_totp
+
+
+@tag("functional")
+class RestrictDemarchesTests(FunctionalTestCase):
+    def setUp(self):
+        self.organisation = OrganisationFactory(allowed_demarches=[])
+        self.aidant_responsable: Aidant = AidantFactory(
+            organisation=self.organisation,
+            post__with_otp_device=True,
+            post__is_organisation_manager=True,
+        )
+
+    def test_restrict_demarches(self):
+        root_path = reverse("espace_responsable_organisation")
+        selected = ["papiers", "logement"]
+
+        self.open_live_url(root_path)
+
+        self.assertEqual([], self.organisation.allowed_demarches)
+        # Login
+        self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        for demarche in selected:
+            self.selenium.find_element(
+                By.CSS_SELECTOR, f'[for="id_demarches_{demarche}"]'
+            ).click()
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.wait.until(self.path_matches("espace_responsable_organisation"))
+
+        self.organisation.refresh_from_db()
+        self.assertEqual(selected, self.organisation.allowed_demarches)
+
+    def test_select_no_demarche_raises_error(self):
+        self.open_live_url(reverse("espace_responsable_organisation"))
+
+        self.assertEqual([], self.organisation.allowed_demarches)
+        # Login
+        self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.path_matches("espace_responsable_organisation"))
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.assertEqual(
+            "Vous devez sélectionner au moins une démarche.",
+            self.selenium.find_element(By.CSS_SELECTOR, ".notification.error").text,
+        )

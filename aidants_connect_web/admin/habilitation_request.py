@@ -18,7 +18,7 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.models import Department
-from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils import build_url, render_email
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.forms import MassEmailActionForm
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
@@ -344,7 +344,14 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
 
     def send_validation_email(self, aidant):
         text_message, html_message = render_email(
-            "email/aidant_a_former_valide.mjml", {"aidant": aidant}
+            "email/aidant_a_former_valide.mjml",
+            {
+                "aidant": aidant,
+                "formation_url": build_url(reverse("habilitation_faq_formation")),
+                "espace_referent_url": build_url(
+                    reverse("espace_responsable_organisation")
+                ),
+            },
         )
 
         subject = (

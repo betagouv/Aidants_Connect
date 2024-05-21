@@ -1,10 +1,13 @@
 import json
 import os
+from gettext import ngettext
 from logging import Logger
 from re import sub as re_sub
 
+from django.core.mail import send_mail
 from django.core.management import call_command
 from django.db.models import Q
+from django.utils.timezone import now
 
 import requests as python_request
 from celery import shared_task
@@ -12,6 +15,8 @@ from celery.utils.log import get_task_logger
 from requests import RequestException
 
 from aidants_connect import settings
+from aidants_connect_common.models import FormationAttendant, FormationOrganization
+from aidants_connect_common.utils import render_email
 from aidants_connect_habilitation.models import Manager, OrganisationRequest
 from aidants_connect_web.models import Organisation
 
@@ -76,3 +81,41 @@ def autofill_insee_code(*, logger=None):
 @shared_task
 def clean_blocklist():
     call_command("clean_blocklist")
+
+
+@shared_task
+def email_formation_organization_new_attendants():
+    orgs = FormationOrganization.objects.warnable_about_new_attendants()
+
+    for org in orgs:
+        attendants = (
+            FormationAttendant.objects.filter(
+                formation__organisation=org, organization_warned_at__isnull=True
+            )
+            .prefetch_related("formation")
+            .order_by("formation")
+        )
+
+        text_message, html_message = render_email(
+            "email/formation_organization_new_attendants.mjml",
+            {
+                "attendants": attendants,
+                "detail_attendants": (
+                    settings.EMAIL_ORGANISATION_FORMATION_NEW_ATTENDANT_GRIST_LINK
+                ),
+            },
+        )
+
+        send_mail(
+            from_email=settings.AC_CONTACT_EMAIL,
+            subject=ngettext(
+                "Nouvelle inscription à une formation Aidants Connect",
+                "Nouvelles inscriptions à des formations Aidants Connect",
+                len(attendants),
+            ),
+            recipient_list=org.contacts,
+            message=text_message,
+            html_message=html_message,
+        )
+
+        attendants.update(organization_warned_at=now())

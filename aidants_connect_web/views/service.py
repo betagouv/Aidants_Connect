@@ -59,6 +59,10 @@ def guide_utilisation(request):
     return render(request, "public_website/guide_utilisation.html")
 
 
+def formation(request):
+    return render(request, "public_website/formation.html")
+
+
 def habilitation(request):
     return render(request, "public_website/habilitation.html")
 
@@ -198,6 +202,10 @@ def cgu(request):
     return render(request, "public_website/cgu.html")
 
 
+def politique_confidentialite(request):
+    return render(request, "public_website/politique_confidentialite.html")
+
+
 def mentions_legales(request):
     return render(request, "public_website/mentions_legales.html")
 
@@ -207,16 +215,8 @@ def accessibilite(request):
 
 
 def ressources(request):
-    return render(request, "public_website/ressource_page.html")
-
-
-def faq_mandat(request):
-    return render(request, "public_website/faq/mandat.html")
-
-
-def faq_donnees_personnelles(request):
-    return render(request, "public_website/faq/donnees_personnelles.html")
-
-
-def faq_habilitation(request):
-    return render(request, "public_website/faq/habilitation.html")
+    return render(
+        request,
+        "public_website/ressource_page.html",
+        {"should_render_testimonies": Testimony.objects.for_display().count() > 0},
+    )

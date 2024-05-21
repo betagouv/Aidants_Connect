@@ -22,12 +22,12 @@ from django.views.generic import FormView, TemplateView, View
 import qrcode
 from phonenumbers import PhoneNumber
 
-from aidants_connect_common.templatetags.ac_common import mailto
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     AuthorizationDurationChoices,
     AuthorizationDurations,
 )
-from aidants_connect_common.utils.render_markdown import render_markdown
+from aidants_connect_common.templatetags.ac_common import mailto
+from aidants_connect_common.utils import render_markdown
 from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
 from aidants_connect_pico_cms.models import MandateTranslation
@@ -407,6 +407,9 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
                 "remote_constent_method": self.connection.remote_constent_method,
             }
         )
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "organisation": self.aidant.organisation}
 
     def get_success_url(self):
         return (
