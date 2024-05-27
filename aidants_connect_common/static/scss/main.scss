@@ -45,9 +45,11 @@ h3, .fr-h3, h4, .fr-h4 {
     margin-top: 0;
   }
 }
+
 .fr-text-default {
   color: var(--text-default-grey);
 }
+
 .fr-text--center {
   text-align: center;
 }
@@ -70,6 +72,12 @@ p:last-child {
 
 [hidden] {
   display: none !important;
+}
+
+.fr-icon-loader:after,
+.fr-icon-loader:before {
+  -webkit-mask-image: url(../images/icons/AC-loader.svg);
+  mask-image: url(../images/icons/AC-loader.svg)
 }
 
 // From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034
