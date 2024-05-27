@@ -340,7 +340,10 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             f"{habilitation_requests.count()} demandes sont maintenant en cours.",
         )
 
-    mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
+    mark_processing.short_description = (
+        "Passer les demandes sélectionnées au statut "
+        f"« {ReferentRequestStatuses.STATUS_PROCESSING.label} »"
+    )
 
     def send_validation_email(self, aidant):
         text_message, html_message = render_email(
