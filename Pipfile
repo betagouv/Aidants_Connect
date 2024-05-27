@@ -18,7 +18,7 @@ django-extensions = "~=3.2.1"
 django-import-export = "~=3.3"
 django-ipware = "~=7.0.1"
 django-js-reverse = "~=0.10.0"
-django-magicauth = "==1.0.1"
+django-magicauth = "==1.0.2"
 django-nested-admin = "~=4.0.2"
 django-otp = "~=1.5"
 django-phonenumber-field = {version = "~=7.0", extras = ["phonenumberslite"]}
