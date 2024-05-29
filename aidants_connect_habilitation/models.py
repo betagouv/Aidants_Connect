@@ -216,6 +216,8 @@ class Manager(PersonWithResponsibilities):
 
 
 class OrganisationRequest(models.Model):
+    Status = RequestStatusConstants
+
     created_at = models.DateTimeField("Date création", auto_now_add=True)
 
     updated_at = models.DateTimeField("Date modification", auto_now=True)
@@ -259,8 +261,8 @@ class OrganisationRequest(models.Model):
     status = models.CharField(
         "État",
         max_length=150,
-        default=RequestStatusConstants.NEW.name,
-        choices=RequestStatusConstants.choices,
+        default=Status.NEW,
+        choices=Status.choices,
     )
 
     type = models.ForeignKey(

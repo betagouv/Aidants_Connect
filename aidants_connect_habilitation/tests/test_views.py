@@ -1210,11 +1210,16 @@ class AddAidantsRequestViewTests(TestCase):
         cls.pattern_name = "habilitation_organisation_add_aidants"
 
     def test_redirects_on_unauthorized_request_status(self):
-        unauthorized_statuses = set(RequestStatusConstants.values) - {
-            RequestStatusConstants.NEW.name,
-            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            RequestStatusConstants.VALIDATED.name,
-        }
+        unauthorized_statuses = set(RequestStatusConstants.values) - set(
+            RequestStatusConstants.modifiable
+        )
+
+        self.assertNotEqual(
+            0,
+            len(unauthorized_statuses),
+            "RequestStatusConstants.modifiable() should not be equal "
+            "to RequestStatusConstants.values",
+        )
 
         for i, status in enumerate(unauthorized_statuses):
             organisation: OrganisationRequest = OrganisationRequestFactory(

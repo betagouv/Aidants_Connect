@@ -51,6 +51,9 @@ __all__ = [
     "ValidationRequestFormView",
     "ReadonlyRequestView",
     "AddAidantsRequestView",
+    "AidantFormationRegistrationView",
+    "HabilitationRequestCancelationView",
+    "ManagerFormationRegistrationView",
 ]
 
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
@@ -443,14 +446,6 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
             "aidants": self.organisation.aidant_requests,
-            "display_add_aidants_button": (
-                self.organisation.status
-                in [
-                    RequestStatusConstants.NEW.name,
-                    RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-                    RequestStatusConstants.VALIDATED.name,
-                ]
-            ),
             "display_modify_button": (
                 self.organisation.status
                 in [RequestStatusConstants.CHANGES_REQUIRED.name]
@@ -490,11 +485,7 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
     template_name = "add_aidants_request.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if self.organisation.status not in [
-            RequestStatusConstants.NEW.name,
-            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            RequestStatusConstants.VALIDATED.name,
-        ]:
+        if self.organisation.status not in self.organisation.Status.modifiable:
             messages.error(
                 request,
                 "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",

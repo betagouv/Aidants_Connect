@@ -5,7 +5,7 @@ from typing import List, Tuple
 from django.conf import settings
 from django.db.models import Choices, IntegerChoices, TextChoices
 from django.db.models.enums import ChoicesMeta as DjangoChoicesMeta
-from django.utils.functional import Promise
+from django.utils.functional import Promise, classproperty
 from django.utils.timezone import now
 
 __all__ = [
@@ -259,6 +259,10 @@ class RequestStatusConstants(TextChoicesEnum):
     CLOSED = "Clôturée"
     CHANGES_REQUIRED = "Modifications demandées"
     CHANGES_PROPOSED = "Modifications proposées par Aidants Connect"
+
+    @classproperty
+    def modifiable(cls):
+        return cls.NEW, cls.AC_VALIDATION_PROCESSING, cls.VALIDATED
 
 
 class MessageStakeholders(TextChoicesEnum):
