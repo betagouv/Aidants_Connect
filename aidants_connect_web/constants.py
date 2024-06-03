@@ -52,6 +52,7 @@ class ReferentRequestStatuses(TextChoices):
     STATUS_WAITING_LIST_HABILITATION = ("waitling_list", "Liste d'attente")
     STATUS_NEW = ("new", "Nouvelle")
     STATUS_PROCESSING = ("processing", "Éligibilité validée")
+    STATUS_PROCESSING_P2P = ("processing_p2p", "Éligibilité validée (pair-à-pair)")
     STATUS_VALIDATED = ("validated", "Validée")
     STATUS_REFUSED = ("refused", "Refusée")
     STATUS_CANCELLED = ("cancelled", "Annulée")
@@ -64,6 +65,7 @@ class ReferentRequestStatuses(TextChoices):
     def formation_registerable():
         return (
             ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_PROCESSING_P2P,
             ReferentRequestStatuses.STATUS_VALIDATED,
         )
 
@@ -73,5 +75,6 @@ class ReferentRequestStatuses(TextChoices):
             ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
             ReferentRequestStatuses.STATUS_NEW,
             ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_PROCESSING_P2P,
             ReferentRequestStatuses.STATUS_VALIDATED,
         )
