@@ -31,6 +31,10 @@ logger = logging.getLogger()
 class HabilitationRequest(models.Model):
     ReferentRequestStatuses = ReferentRequestStatuses
 
+    class CourseType(IntegerChoices):
+        CLASSIC = (auto(), "Parcours classique")
+        P2P = (auto(), "Parcours pair-à-pair")
+
     ORIGIN_DATAPASS = "datapass"
     ORIGIN_RESPONSABLE = "responsable"
     ORIGIN_OTHER = "autre"
@@ -85,6 +89,13 @@ class HabilitationRequest(models.Model):
         related_name="aidant_requests",
         object_id_field="attendant_id",
         content_type_field="attendant_content_type",
+    )
+
+    course_type = models.IntegerField(
+        "Type de parcours",
+        editable=False,
+        choices=CourseType.choices,
+        default=CourseType.CLASSIC,
     )
 
     def get_full_name(self):
