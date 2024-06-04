@@ -126,10 +126,7 @@ class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
                 issuer_id=self.issuer.issuer_id,
             )
 
-        if (
-            self.organisation.status != RequestStatusConstants.NEW.name
-            and self.organisation.status != RequestStatusConstants.CHANGES_REQUIRED.name
-        ):
+        if self.organisation.status not in RequestStatusConstants.validatable:
             return redirect(
                 "habilitation_organisation_view",
                 issuer_id=self.issuer.issuer_id,
@@ -446,15 +443,6 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
             "aidants": self.organisation.aidant_requests,
-            "display_modify_button": (
-                self.organisation.status
-                in [RequestStatusConstants.CHANGES_REQUIRED.name]
-            ),
-            "manager_is_active": (
-                (aidant := Aidant.objects.filter(email=self.organisation.manager.email))
-                and aidant.exists()
-                and aidant.first().last_login
-            ),
         }
 
     def get_success_url(self):
@@ -485,7 +473,7 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
     template_name = "add_aidants_request.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if self.organisation.status not in self.organisation.Status.modifiable:
+        if self.organisation.status not in self.organisation.Status.aidant_registrable:
             messages.error(
                 request,
                 "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",

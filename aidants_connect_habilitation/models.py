@@ -1,4 +1,5 @@
 from datetime import timedelta
+from functools import cached_property
 from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
@@ -202,6 +203,15 @@ class Manager(PersonWithResponsibilities):
         default=None,
         on_delete=models.CASCADE,
     )
+
+    @cached_property
+    def aidant(self):
+        from aidants_connect_web.models import Aidant
+
+        try:
+            return Aidant.objects.get(email=self.email)
+        except Aidant.DoesNotExist:
+            return None
 
     class Meta:
         verbose_name = "Référent structure"

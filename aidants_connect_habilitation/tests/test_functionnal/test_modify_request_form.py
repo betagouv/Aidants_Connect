@@ -1,7 +1,6 @@
 from django.test import tag
 from django.urls import reverse
 
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
@@ -23,13 +22,9 @@ from aidants_connect_web.tests.factories import HabilitationRequestFactory
 @tag("functional")
 class AddAidantsRequestViewTests(FunctionalTestCase):
     def test_add_aidant_button_shown_in_readonly_view_under_correct_conditions(self):
-        authorized_statuses = {
-            RequestStatusConstants.NEW.name,
-            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            RequestStatusConstants.VALIDATED.name,
-        }
-
-        unauthorized_statuses = set(RequestStatusConstants.values) - authorized_statuses
+        unauthorized_statuses = set(RequestStatusConstants) - set(
+            RequestStatusConstants.aidant_registrable
+        )
 
         for status in unauthorized_statuses:
             organisation: OrganisationRequest = OrganisationRequestFactory(
@@ -38,16 +33,9 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             self.__open_readonly_view_url(organisation)
 
             self.selenium.find_element(By.CSS_SELECTOR, ".fr-container")
-            previous_timeout = self.selenium.timeouts.implicit_wait
-            # Change timeout for finding elements to shorten the test
-            self.selenium.implicitly_wait(0.2)
+            self.assertElementNotFound(By.CSS_SELECTOR, "#add-aidants-btn")
 
-            with self.assertRaises(NoSuchElementException):
-                self.selenium.find_element(By.CSS_SELECTOR, "#add-aidants-btn")
-
-            self.selenium.implicitly_wait(previous_timeout)
-
-        for status in authorized_statuses:
+        for status in RequestStatusConstants.aidant_registrable:
             organisation: OrganisationRequest = OrganisationRequestFactory(
                 status=status
             )
@@ -63,7 +51,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 },
             )
 
-            WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
+            self.wait.until(url_matches(f"^.+{path}$"))
 
     def test_can_correctly_add_new_aidants(self):
         organisation: OrganisationRequest = OrganisationRequestFactory(

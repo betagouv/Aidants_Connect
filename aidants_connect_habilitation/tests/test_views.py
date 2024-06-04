@@ -5,11 +5,13 @@ from uuid import UUID, uuid4
 
 from django.contrib import messages as django_messages
 from django.core import mail
+from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
@@ -497,7 +499,6 @@ class NewOrganisationRequestFormViewTests(TestCase):
 class ModifyOrganisationRequestFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.client = Client()
         cls.pattern_name = "habilitation_modify_organisation"
         cls.template_name = "organisation_form.html"
         cls.issuer: Issuer = IssuerFactory()
@@ -1097,9 +1098,6 @@ class ValidationRequestFormViewTests(TestCase):
 class RequestReadOnlyViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.client = Client()
-        cls.pattern_name = "habilitation_organisation_view"
-        cls.template_name = "view_organisation_request.html"
         cls.issuer = IssuerFactory()
         cls.organisation: OrganisationRequest = OrganisationRequestFactory(
             issuer=cls.issuer
@@ -1107,7 +1105,7 @@ class RequestReadOnlyViewTests(TestCase):
 
     def get_url(self, issuer_id, uuid):
         return reverse(
-            self.pattern_name,
+            "habilitation_organisation_view",
             kwargs={
                 "issuer_id": issuer_id,
                 "uuid": uuid,
@@ -1142,10 +1140,9 @@ class RequestReadOnlyViewTests(TestCase):
         response = self.client.get(
             self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
-        self.assertTemplateUsed(response, self.template_name)
+        self.assertTemplateUsed(response, "view_organisation_request.html")
         self.assertNotContains(response, settings.SUPPORT_EMAIL)
         self.assertContains(response, settings.AC_CONTACT_EMAIL)
-        self.assertNotContains(response, "Éditer")
 
     def test_no_redirect_on_confirmed_organisation_request(self):
         organisation = OrganisationRequestFactory(
@@ -1184,23 +1181,189 @@ class RequestReadOnlyViewTests(TestCase):
         response = self.client.get(organisation.get_absolute_url())
         self.assertNotContains(response, "Notre conversation démarre ici.")
 
-    def shows_mofication_button_when_changes_required(self):
+    def test_shows_mofication_button_when_changes_required(self):
         organisation = OrganisationRequestFactory(
             status=RequestStatusConstants.CHANGES_REQUIRED.name
         )
         response = self.client.get(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid)
         )
-        self.assertContains(response, "modify-btn")
+        self.assertContains(response, "Modifier votre demande")
 
-    def not_show_mofication_button_when_other_status(self):
+    def test_not_show_mofication_button_when_other_status(self):
         organisation = OrganisationRequestFactory(
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
         response = self.client.get(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid)
         )
-        self.assertNotContains(response, "modify-btn")
+        self.assertNotContains(response, "Modifier votre demande")
+
+    def test_do_not_show_edit_buttons(self):
+        organisation = OrganisationRequestFactory(
+            status=RequestStatusConstants.VALIDATED
+        )
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        # Here, we're testing the absence of URLs because any change would be detected
+        # elsewhere contrary to button text that may change going unoticed
+
+        # Can't edit issuer informations
+        self.assertNotContains(
+            response,
+            reverse(
+                "habilitation_modify_issuer",
+                kwargs={"issuer_id": organisation.issuer.issuer_id},
+            ),
+        )
+
+        # Can't edit organisation
+        self.assertNotContains(
+            response,
+            reverse(
+                "habilitation_modify_organisation",
+                kwargs={
+                    "issuer_id": organisation.issuer.issuer_id,
+                    "uuid": organisation.uuid,
+                },
+            ),
+        )
+
+        # Can't edit or add aidants
+        self.assertNotContains(
+            response,
+            reverse(
+                "habilitation_new_aidants",
+                kwargs={
+                    "issuer_id": organisation.issuer.issuer_id,
+                    "uuid": organisation.uuid,
+                },
+            ),
+        )
+
+    def test_can_add_aidant_in_right_circumstances(self):
+        text_to_search = "Ajouter des aidants"
+
+        do_not_add_aidants = (
+            OrganisationRequestFactory(status=status)
+            for status in (
+                set(RequestStatusConstants)
+                - set(RequestStatusConstants.aidant_registrable)
+            )
+        )
+
+        for organisation in do_not_add_aidants:
+            response = self.client.get(
+                self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+            )
+            self.assertNotContains(response, text_to_search)
+
+        for organisation in (
+            OrganisationRequestFactory(status=status)
+            for status in RequestStatusConstants.aidant_registrable
+        ):
+            response = self.client.get(
+                self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+            )
+            self.assertContains(response, text_to_search)
+
+    def test_can_modify_request_in_right_circumstances(self):
+        text_to_search = "Modifier votre demande"
+        do_not_validate_statuses = (
+            OrganisationRequestFactory(status=status)
+            for status in (
+                set(RequestStatusConstants) - set(RequestStatusConstants.validatable)
+            )
+        )
+
+        for organisation in do_not_validate_statuses:
+            response = self.client.get(
+                self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+            )
+            self.assertNotContains(response, text_to_search)
+
+        for organisation in (
+            OrganisationRequestFactory(status=status)
+            for status in RequestStatusConstants.validatable
+        ):
+            response = self.client.get(
+                self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+            )
+            self.assertContains(response, text_to_search)
+
+    def test_referent_formation_registration(self):
+        # ~~~~~~~~~ Case 1 ~~~~~~~~~
+        # Do not display formation registration button when manager is aidant
+        organisation = OrganisationRequestFactory(
+            manager=ManagerFactory(is_aidant=True)
+        )
+        # Assert organisation has no registered aidant; we just want to test manager
+        self.assertEqual(0, organisation.aidant_requests.count())
+
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        self.assertNotContains(response, "Inscrire à une formation")
+
+        # ~~~~~~~~~ Case 2 ~~~~~~~~~
+        # Display espace referent button
+        with transaction.atomic():
+            organisation: OrganisationRequest = OrganisationRequestFactory(
+                manager=ManagerFactory(
+                    is_aidant=True,
+                    habilitation_request=HabilitationRequestFactory(
+                        status=ReferentRequestStatuses.STATUS_PROCESSING
+                    ),
+                )
+            )
+            organisation.accept_request_and_create_organisation()
+            organisation.manager.aidant.last_login = timezone.now()
+            organisation.manager.aidant.save()
+
+        # Assert organisation has no registered aidant; we just want to test manager
+        self.assertEqual(0, organisation.aidant_requests.count())
+
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        self.assertNotContains(response, "Inscrire à une formation")
+        self.assertContains(response, "Gérer les formations sur mon espace référent")
+
+        # ~~~~~~~~~ Case 3 ~~~~~~~~~
+        # Display formation button
+        with transaction.atomic():
+            organisation: OrganisationRequest = OrganisationRequestFactory(
+                manager=ManagerFactory(is_aidant=True)
+            )
+            organisation.accept_request_and_create_organisation()
+
+        # Assert organisation has no registered aidant; we just want to test manager
+        self.assertEqual(0, organisation.aidant_requests.count())
+
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        self.assertContains(response, "Inscrire à une formation")
+
+        # ~~~~~~~~~ Case 4 ~~~~~~~~~
+        # Display espace referent button
+        with transaction.atomic():
+            organisation: OrganisationRequest = OrganisationRequestFactory(
+                manager=ManagerFactory(is_aidant=True)
+            )
+            organisation.accept_request_and_create_organisation()
+            FormationFactory(attendants=[organisation.manager.habilitation_request])
+
+        # Assert organisation has no registered aidant; we just want to test manager
+        self.assertEqual(0, organisation.aidant_requests.count())
+
+        response = self.client.get(
+            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
+        )
+        self.assertNotContains(response, "Inscrire à une formation")
+        self.assertNotContains(response, "Gérer les formations sur mon espace référent")
+        self.assertContains(response, "Cette personne est inscrite à une formation")
 
 
 class AddAidantsRequestViewTests(TestCase):
@@ -1211,13 +1374,13 @@ class AddAidantsRequestViewTests(TestCase):
 
     def test_redirects_on_unauthorized_request_status(self):
         unauthorized_statuses = set(RequestStatusConstants.values) - set(
-            RequestStatusConstants.modifiable
+            RequestStatusConstants.aidant_registrable
         )
 
         self.assertNotEqual(
             0,
             len(unauthorized_statuses),
-            "RequestStatusConstants.modifiable() should not be equal "
+            "RequestStatusConstants.aidant_registrable() should not be equal "
             "to RequestStatusConstants.values",
         )
 
