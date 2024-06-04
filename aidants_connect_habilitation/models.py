@@ -1,4 +1,5 @@
 from datetime import timedelta
+from functools import cached_property
 from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
@@ -203,6 +204,15 @@ class Manager(PersonWithResponsibilities):
         on_delete=models.CASCADE,
     )
 
+    @cached_property
+    def aidant(self):
+        from aidants_connect_web.models import Aidant
+
+        try:
+            return Aidant.objects.get(email=self.email)
+        except Aidant.DoesNotExist:
+            return None
+
     class Meta:
         verbose_name = "Référent structure"
         verbose_name_plural = "Référents structure"
@@ -216,6 +226,8 @@ class Manager(PersonWithResponsibilities):
 
 
 class OrganisationRequest(models.Model):
+    Status = RequestStatusConstants
+
     created_at = models.DateTimeField("Date création", auto_now_add=True)
 
     updated_at = models.DateTimeField("Date modification", auto_now=True)
@@ -259,8 +271,8 @@ class OrganisationRequest(models.Model):
     status = models.CharField(
         "État",
         max_length=150,
-        default=RequestStatusConstants.NEW.name,
-        choices=RequestStatusConstants.choices,
+        default=Status.NEW,
+        choices=Status.choices,
     )
 
     type = models.ForeignKey(
