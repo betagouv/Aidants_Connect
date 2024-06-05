@@ -1,7 +1,8 @@
+from enum import auto
 from typing import Set
 
 from django.conf import settings
-from django.db.models import TextChoices
+from django.db.models import IntegerChoices, TextChoices
 from django.utils.translation import gettext_lazy as _
 
 from aidants_connect_common.constants import DictChoices, TextChoicesEnum
@@ -78,3 +79,8 @@ class ReferentRequestStatuses(TextChoices):
             ReferentRequestStatuses.STATUS_PROCESSING_P2P,
             ReferentRequestStatuses.STATUS_VALIDATED,
         )
+
+
+class HabilitationRequestCourseType(IntegerChoices):
+    CLASSIC = (auto(), "Parcours classique")
+    P2P = (auto(), "Parcours pair-à-pair")

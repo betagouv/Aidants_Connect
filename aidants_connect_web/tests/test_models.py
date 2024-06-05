@@ -2078,9 +2078,8 @@ class HabilitationRequestTests(TestCase):
             db_hab_request.status, ReferentRequestStatuses.STATUS_REFUSED.value
         )
 
-    def test_trigger(self):
-        # Prevent aidants_connect_web.signals.cancel_formation_on_habilitation_cancelation  # noqa: E501
-        # from triggering
+    def test_check_attendants_count_trigger(self):
+        # Prevent aidants_connect_web.signals.cancel_formation_on_habilitation_cancelation from triggering  # noqa: E501
         with mute_signals(pre_save, post_save):
             ar1 = AidantRequestFactory()
             hr1 = HabilitationRequestFactory()
@@ -2118,6 +2117,59 @@ class HabilitationRequestTests(TestCase):
                 )
             ),
         )
+
+    @mute_signals(pre_save, post_save)
+    def test_check_p2p_course_type_trigger(self):
+        hr1: HabilitationRequest = HabilitationRequestFactory(
+            status=HabilitationRequest.ReferentRequestStatuses.STATUS_NEW,
+            course_type=HabilitationRequest.CourseType.CLASSIC,
+        )
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_NEW, hr1.status
+        )
+        self.assertEqual(HabilitationRequest.CourseType.CLASSIC, hr1.course_type)
+
+        # Case HR passes to STATUS_PROCESSING_P2P
+        hr1.status = HabilitationRequest.ReferentRequestStatuses.STATUS_PROCESSING_P2P
+        hr1.save()
+        hr1.refresh_from_db()
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_PROCESSING_P2P,
+            hr1.status,
+        )
+        self.assertEqual(HabilitationRequest.CourseType.P2P, hr1.course_type)
+
+        # HR.course_type is maintained across validation
+        hr1.status = HabilitationRequest.ReferentRequestStatuses.STATUS_VALIDATED
+        hr1.save()
+        hr1.refresh_from_db()
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_VALIDATED, hr1.status
+        )
+        self.assertEqual(HabilitationRequest.CourseType.P2P, hr1.course_type)
+
+        # Case HR passes to STATUS_PROCESSING
+        hr1.status = HabilitationRequest.ReferentRequestStatuses.STATUS_PROCESSING
+        hr1.save()
+        hr1.refresh_from_db()
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_PROCESSING, hr1.status
+        )
+        self.assertEqual(HabilitationRequest.CourseType.CLASSIC, hr1.course_type)
+
+        # HR.course_type is maintained across validation
+        hr1.status = HabilitationRequest.ReferentRequestStatuses.STATUS_VALIDATED
+        hr1.save()
+        hr1.refresh_from_db()
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_VALIDATED, hr1.status
+        )
+        self.assertEqual(HabilitationRequest.CourseType.CLASSIC, hr1.course_type)
 
     def test_cancel_habilitation_unregister_formation(self):
         hr1: HabilitationRequest = HabilitationRequestFactory(
