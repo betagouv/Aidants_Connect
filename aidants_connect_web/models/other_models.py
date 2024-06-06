@@ -16,12 +16,13 @@ from django.utils.functional import cached_property
 
 import pgtrigger
 import requests
+from pgtrigger import Func
 
 from aidants_connect_common.models import FormationAttendant
 from aidants_connect_common.utils import PGTriggerExtendedFunc
 from aidants_connect_habilitation.models import AidantRequest
 
-from ..constants import ReferentRequestStatuses
+from ..constants import HabilitationRequestCourseType, ReferentRequestStatuses
 from .aidant import Aidant
 from .organisation import Organisation
 
@@ -30,10 +31,7 @@ logger = logging.getLogger()
 
 class HabilitationRequest(models.Model):
     ReferentRequestStatuses = ReferentRequestStatuses
-
-    class CourseType(IntegerChoices):
-        CLASSIC = (auto(), "Parcours classique")
-        P2P = (auto(), "Parcours pair-à-pair")
+    CourseType = HabilitationRequestCourseType
 
     ORIGIN_DATAPASS = "datapass"
     ORIGIN_RESPONSABLE = "responsable"
@@ -66,7 +64,7 @@ class HabilitationRequest(models.Model):
         "État",
         blank=False,
         max_length=150,
-        default=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+        default=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
         choices=ReferentRequestStatuses.choices,
     )
     origin = models.CharField(
@@ -202,7 +200,7 @@ class HabilitationRequest(models.Model):
         )
         verbose_name = "aidant à former"
         verbose_name_plural = "aidants à former"
-        triggers = [
+        triggers = (
             pgtrigger.Trigger(
                 name="check_attendants_count",
                 when=pgtrigger.After,
@@ -238,8 +236,29 @@ class HabilitationRequest(models.Model):
                         "AidantRequest": AidantRequest,
                     },
                 ),
-            )
-        ]
+            ),
+            pgtrigger.Trigger(
+                name="check_p2p_course_type",
+                when=pgtrigger.Before,
+                operation=pgtrigger.Update,
+                func=Func(
+                    dedent(
+                        f"""
+                        -- Prevent concurrent inserts from multiple transactions
+                        LOCK TABLE {{meta.db_table}} IN EXCLUSIVE MODE;
+
+                        IF NEW.{{columns.status}} = '{ReferentRequestStatuses.STATUS_PROCESSING_P2P}' THEN
+                            NEW.{{columns.course_type}} := '{HabilitationRequestCourseType.P2P}';
+                        ELSIF NEW.{{columns.status}} = '{ReferentRequestStatuses.STATUS_PROCESSING}' THEN
+                            NEW.{{columns.course_type}} := {HabilitationRequestCourseType.CLASSIC};
+                        END IF;
+
+                        RETURN NEW;
+                        """  # noqa: E501
+                    ).strip()
+                ),
+            ),
+        )
 
 
 def _filepath_generator():
