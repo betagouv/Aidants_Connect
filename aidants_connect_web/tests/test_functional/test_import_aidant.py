@@ -60,7 +60,7 @@ class ImportAidantTests(FunctionalTestCase):
         file_import_field = self.selenium.find_element(By.ID, "id_import_file")
         file_import_field.send_keys(path)
         xlsx_type_option = self.selenium.find_element(
-            By.XPATH, "//select[@id='id_input_format']/option[text()='xlsx']"
+            By.XPATH, "//select[@id='id_format']/option[text()='xlsx']"
         )
         xlsx_type_option.click()
         file_import_submit = self.selenium.find_element(
