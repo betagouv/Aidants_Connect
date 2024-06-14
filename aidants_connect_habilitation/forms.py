@@ -45,8 +45,6 @@ from aidants_connect_web.models import OrganisationType
 
 
 class AddressValidatableMixin(Form):
-    DEFAULT_CHOICE = "DEFAULT"
-
     # Necessary so dynamically setting properties
     # in __init__ does not mess with original classes
     class XChoiceField(ChoiceField):
@@ -56,15 +54,15 @@ class AddressValidatableMixin(Form):
                 raise ValidationError(self.error_messages["required"], code="required")
 
     class XRadioSelect(RadioSelect):
-        pass
-
-    # This field should not be rendered. It is just used by
-    # the JS front to disable backend validation
-    skip_address_validation = BooleanField(required=False)
+        def render(self, name, value, attrs=None, renderer=None):
+            return mark_safe(
+                f"{super().render(name, value, attrs, renderer)}"
+                '<a class="fr-btn" href="">Mon adresse nʼapparaît pas dans la liste</a>'
+            )
 
     alternative_address = XChoiceField(
-        label="Veuillez sélectionner votre adresse dans les propositions ci-dessous :",
-        choices=((DEFAULT_CHOICE, "Laisser l'adresse inchangée"),),
+        label="Veuillez sélectionner votre adresse dans les propositions ci-dessous",
+        label_suffix=" :",
         widget=XRadioSelect(attrs={"class": "choice-field"}),
         required=False,
     )
@@ -82,29 +80,18 @@ class AddressValidatableMixin(Form):
         setattr(AddressValidatableMixin.XChoiceField, "required", required)
         setattr(AddressValidatableMixin.XRadioSelect, "is_required", required)
 
-    def clean_skip_address_validation(self):
-        # For expressiveness, the name transmitted byt the JS front
-        # will be ``skip_backend_validation`` whereas the name of the form
-        # field is ``skip_address_validation``.
-        return self.data.get("skip_backend_validation", False)
-
     def clean_alternative_address(self):
-        if self.cleaned_data["skip_address_validation"]:
-            self.__required = False
-            return None
-
         alternative_address = self.cleaned_data.get("alternative_address")
-
-        if alternative_address == self.DEFAULT_CHOICE:
-            return self.DEFAULT_CHOICE
-        elif alternative_address:
+        if alternative_address:
             return Address.parse_raw(unquote(alternative_address))
         else:
             results = search_adresses(self.get_address_for_search())
 
-            # Case not result returned (most likely, HTTP request failed)
-            if len(results) == 0:
-                return self.DEFAULT_CHOICE
+            if not results:
+                raise ValidationError(
+                    "La validité de cette adresse nʼa pas pu être vérifiée ; "
+                    "veuillez réessayer plus tard"
+                )
 
             # There is 1 result and it almost 100% matches
             if (

@@ -40,7 +40,10 @@ class Address(BaseModel):
     type: AddressType
 
     @validator("context", pre=True)
-    def parse_context(cls, value: Union[str, dict]):
+    def parse_context(cls, value: Union[str, dict, Context]):
+        if isinstance(value, Context):
+            return value
+
         if isinstance(value, str):
             department_number, department_name, *region = value.split(",")
             region = region[0] if len(region) == 1 else department_name
@@ -64,6 +67,30 @@ def search_adresses(query_string: str) -> List[Address]:
 
     The API used is documented on https://adresse.data.gouv.fr/api-doc/adresse
     """
+    # Mock the service when under tests
+    if (
+        settings.GOUV_ADDRESS_SEARCH_API_DISABLED
+        and settings.GOUV_ADDRESS_SEARCH_API_UNDER_TEST
+    ):
+
+        return [
+            Address(
+                id="75107_8909",
+                name="Avenue de Ségur",
+                label=query_string,
+                score=0.95,
+                postcode="75007",
+                city="Paris",
+                citycode="75107",
+                context=Context(
+                    department_number="75",
+                    department_name="Paris",
+                    region="Île-de-France",
+                ),
+                type=AddressType.STREET,
+            )
+        ]
+
     if settings.GOUV_ADDRESS_SEARCH_API_DISABLED:
         return []
 
