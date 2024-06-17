@@ -6,11 +6,13 @@ La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, d
 
 Quelles sont les modalités de financement de la formation ?
 
-- Pour les conseillers numériques, la formation est financée dans le cadre de la formation continue
-- Pour les structures adhérentes à l’OPCO Uniformation, la formation est financée dans le cadre d’un partenariat entre l’ANCT et Uniformation
-- Pour les autres cas, des modalités de financement seront possibles via les gouvernances France Numérique Ensemble ou la formation peut être auto-financée par la structure.
+La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant payante et financée seulement dans les 2 cas suivants :
 
-Retrouvez plus de détails sur notre site internet : {{ habilitation_faq_formation }}
+- Pour les conseillers numériques, si elle fait partie des modules thématiques choisis lors de la formation initiale ou continue ;
+
+- Pour les aidants des structures adhérentes à l’OPCO Uniformation (suite à l’inscription en formation, un devis sera adressé à la structure et une demande de prise en charge sera à effectuer auprès d’Uniformation).
+
+Pour tous les autres cas, la formation doit être financée par la structure. Retrouvez plus de détails sur notre site internet : {{ habilitation_faq_formation }}
 
 Comment inscrire les aidants en formation ?
 
