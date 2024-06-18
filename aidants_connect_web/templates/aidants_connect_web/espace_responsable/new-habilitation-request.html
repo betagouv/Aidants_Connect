@@ -1,4 +1,4 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
 {% load static dsfr_tags %}
 
@@ -6,18 +6,38 @@
 
 {% block content %}
   <div class="fr-container">
-    {% include "layouts/_messages.html" %}
+    {% dsfr_django_messages %}
 
-    <div class="fr-grid-row fr-grid-row--center">
-      <h2 class="fr-mt-8v">Ajouter un aidant à une de vos organisations</h2>
+    <h1>Habiliter de nouveaux aidants</h1>
+    <div class="fr-grid-row">
       <p>
-        Pour ajouter un aidant, vous devez formuler une demande d'habilitation à l'aide du
+        Pour ajouter un aidant à votre organisation, vous devez formuler une nouvelle demande d’habilitation à l’aide du
         formulaire ci-dessous. Tous les champs sont obligatoires.
       </p>
-      <form method="post" class="fr-col-12 fr-col-lg-6 fr-col-md-8">
-        <section class="fr-my-4v">{{ form.non_field_errors }}</section>
+      <form method="post" action="{% url 'espace_responsable_aidant_new' %}" class="fr-col-12">
         {% csrf_token %}
-        {% dsfr_form %}
+        {{ form.management_form }}
+        {% with form=form.empty_form %}
+        	<section id="empty-form" class="fr-col-12 fr-col-md-6">
+              {% dsfr_form %}
+              <button
+                class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-user-add-line"
+                type="submit"
+                formaction="{% url 'espace_responsable_aidant_new' %}?commit=false"
+              >
+                Ajouter un autre aidant
+              </button>
+            </section>
+        {% endwith %}
+        {% if form.forms %}
+          <section id="added-forms">
+            {% for form in form.forms %}
+              <section id="added-form-{{ forloop.counter0 }}">
+                {%  dsfr_form %}
+              </section>
+            {% endfor %}
+          </section>
+        {% endif %}
         <button class="fr-btn" type="submit">Demander l'habilitation</button>
       </form>
     </div>
