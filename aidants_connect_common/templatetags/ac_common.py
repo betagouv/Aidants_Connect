@@ -209,9 +209,9 @@ def withdict(parser, token):
 
     For example::
 
-        {% with name=person.name key=person.key as dict %}
+        {% withdict name=person.name key=person.key as dict %}
             {% some_tag_expecting_a_dict doct %}
-        {% endwith %}
+        {% endwithdict %}
 
     """
     bits = token.split_contents()

@@ -7,12 +7,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>{% block title %}Aidants Connect{% endblock %}</title>
+  {# Extra styles #}
+  {% block extracss %}{% endblock %}
   {% dsfr_css %}
   <link rel="stylesheet" href="{% static 'dsfr/dist/utility/utility.min.css' %}">
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
   <link href="{{ COOKIE_BANNER_CSS_URL }}" rel="stylesheet">
-  {# Extra styles #}
-  {% block extracss %}{% endblock %}
 
   <!-- Search Engine -->
   <meta name="title" content="Aidants Connect - aidantsconnect.beta.gouv.fr">
@@ -66,8 +66,6 @@
 {% endblock nav %}
 
 <main id="main" tabindex="-1">
-  {% dsfr_django_messages %}
-
   {% block content %}
   {% endblock %}
 </main>

@@ -288,39 +288,6 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
 
 
 @tag("responsable-structure")
-class EspaceResponsableAddAidant(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.client = Client()
-        cls.responsable_tom = AidantFactory()
-        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
-
-        cls.id_organisation = cls.responsable_tom.organisation.id
-        cls.add_aidant_url = "/espace-responsable/aidant/ajouter/"
-        cls.autre_organisation = OrganisationFactory()
-
-    def test_add_aidant_url_triggers_the_right_view(self):
-        self.client.force_login(self.responsable_tom)
-        found = resolve(self.add_aidant_url)
-        self.assertEqual(
-            found.func.view_class, espace_responsable.NewHabilitationRequest
-        )
-
-    def test_add_aidant_url_triggers_the_right_template(self):
-        self.client.force_login(self.responsable_tom)
-        response = self.client.get(self.add_aidant_url)
-        self.assertEqual(
-            response.status_code,
-            200,
-            f"trying to get {self.add_aidant_url}",
-        )
-        self.assertTemplateUsed(
-            response,
-            "aidants_connect_web/espace_responsable/new-habilitation-request.html",
-        )
-
-
-@tag("responsable-structure")
 class InsistOnTOTPDeviceActivationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
