@@ -1,14 +1,19 @@
+from datetime import timedelta
 from inspect import signature
 
+from django import forms
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.forms import Form, ModelForm
+from django.db.models import Model
 from django.forms.utils import ErrorList
 
+from dsfr.forms import DsfrBaseForm
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.phonenumber import to_python
 from phonenumbers.phonenumber import PhoneNumber
+
+from aidants_connect_common.models import Formation
 
 
 class PatchedErrorList(ErrorList):
@@ -37,7 +42,7 @@ class WidgetAttrMixin:
             self.fields[widget_name].widget.attrs[attr_name] = attr_value
 
 
-class PatchedModelForm(ModelForm, WidgetAttrMixin):
+class PatchedModelForm(forms.ModelForm, WidgetAttrMixin):
     def __init__(self, *args, **kwargs):
         sig = signature(super().__init__).bind_partial(*args, **kwargs)
         sig.arguments.setdefault("label_suffix", "")
@@ -46,7 +51,7 @@ class PatchedModelForm(ModelForm, WidgetAttrMixin):
         super().__init__(*sig.args, **sig.kwargs)
 
 
-class PatchedForm(Form, WidgetAttrMixin):
+class PatchedForm(forms.Form, WidgetAttrMixin):
     def __init__(self, *args, **kwargs):
         sig = signature(super().__init__).bind_partial(*args, **kwargs)
         sig.arguments.setdefault("label_suffix", "")
@@ -76,3 +81,30 @@ class AcPhoneNumberField(PhoneNumberField):
                 return phone_number
 
         raise ValidationError(self.error_messages["invalid"])
+
+
+class FormationRegistrationForm(DsfrBaseForm):
+    formations = forms.ModelMultipleChoiceField(queryset=Formation.objects.none())
+
+    def __init__(self, attendant: Model, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["formations"].queryset = Formation.objects.available_for_attendant(
+            timedelta(days=21), attendant
+        )
+
+
+class FollowMyHabilitationRequesrForm(DsfrBaseForm):
+    email = forms.EmailField(label="Adresse email")
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", None)
+
+        from aidants_connect_habilitation.models import Issuer
+
+        try:
+            return Issuer.objects.get(email=email)
+        except Issuer.DoesNotExist:
+            raise ValidationError(
+                "Il nʼexiste pas de demande dʼhabilitation associée à cet email. "
+                "Veuillez vérifier votre saisie ou renseigner une autre adresse email."
+            )

@@ -17,6 +17,7 @@ __all__ = [
     "RequestOriginConstants",
     "RequestStatusConstants",
     "MessageStakeholders",
+    "FormationAttendantState",
 ]
 
 
@@ -239,7 +240,7 @@ class RequestOriginConstants(IntegerChoices):
     GUICHET_AUTRE = (7, "Autre guichet d’accueil de service public de proximité")
     GUICHET_OPERATEUR = (
         8,
-        "Guichet d’accueil d’opérateur de service public (CAF, Pôle Emploi, etc.)",
+        "Guichet d’accueil d’opérateur de service public (CAF, France Travail, etc.)",
     )
     AUTRES_ASSOS = (
         9,
@@ -263,3 +264,9 @@ class RequestStatusConstants(TextChoicesEnum):
 class MessageStakeholders(TextChoicesEnum):
     AC = "Aidants Connect"
     ISSUER = "Demandeur"
+
+
+class FormationAttendantState(IntegerChoices):
+    DEFAULT = (enum.auto(), "Par défaut")
+    WAITING = (enum.auto(), "En attente")
+    CANCELLED = (enum.auto(), "Annulé")

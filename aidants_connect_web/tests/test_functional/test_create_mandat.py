@@ -449,6 +449,50 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertEqual(1, mandat_qs.count())
         self.assertEqual(2, mandat_qs[0].autorisations.count())
 
+    def test_bdf_warn_notification(self):
+        self.open_live_url("/usagers/")
+
+        self.login_aidant(self.aidant)
+
+        # Create new mandat
+        self.selenium.find_element(By.ID, "add_usager").click()
+        self.wait.until(self.path_matches("new_mandat"))
+
+        demarches_section = self.selenium.find_element(
+            By.CSS_SELECTOR, ".demarches-section"
+        )
+
+        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
+        self.assertEqual(len(demarches), 10)
+
+        self.assertFalse(
+            self.selenium.find_element(By.ID, "bdf-warn-msg").is_displayed()
+        )
+        demarches_section.find_element(
+            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
+        ).click()
+        self.assertTrue(
+            self.selenium.find_element(By.ID, "bdf-warn-msg").is_displayed()
+        )
+
+    def test_restrict_demarches(self):
+        self.aidant.organisation.allowed_demarches = ["papiers", "famille", "social"]
+        self.aidant.organisation.save()
+
+        self.open_live_url("/usagers/")
+
+        self.login_aidant(self.aidant)
+
+        self.selenium.find_element(By.ID, "add_usager").click()
+        self.wait.until(self.path_matches("new_mandat"))
+
+        # Create new mandat
+        demarches = self.selenium.find_elements(By.CSS_SELECTOR, '[id^="id_demarche_"]')
+        self.assertEqual(
+            ["papiers", "famille", "social"],
+            [elt.get_attribute("value") for elt in demarches],
+        )
+
     def _element_is_required(self, by: By, value: str):
         def _predicate(driver: WebDriver):
             attr = driver.find_element(by, value).get_attribute("required")
@@ -476,32 +520,6 @@ class CreateNewMandatTests(FunctionalTestCase):
                 "mcc": "208",
                 "mnc": "14",
             },
-        )
-
-    def test_bdf_warn_notification(self):
-        self.open_live_url("/usagers/")
-
-        self.login_aidant(self.aidant)
-
-        # Create new mandat
-        self.selenium.find_element(By.ID, "add_usager").click()
-        self.wait.until(self.path_matches("new_mandat"))
-
-        demarches_section = self.selenium.find_element(
-            By.CSS_SELECTOR, ".demarches-section"
-        )
-
-        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
-        self.assertEqual(len(demarches), 10)
-
-        self.assertFalse(
-            self.selenium.find_element(By.ID, "bdf-warn-msg").is_displayed()
-        )
-        demarches_section.find_element(
-            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
-        ).click()
-        self.assertTrue(
-            self.selenium.find_element(By.ID, "bdf-warn-msg").is_displayed()
         )
 
     def _user_consents(self, phone_number: str):

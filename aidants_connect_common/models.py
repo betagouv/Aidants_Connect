@@ -1,11 +1,29 @@
-from typing import Any
+from __future__ import annotations
 
+from datetime import timedelta
+from enum import auto
+from typing import TYPE_CHECKING, Any, Self
+
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import CASCADE
+from django.db.models import CASCADE, Count
+from django.template.defaultfilters import date
+from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
+from django.utils.timezone import now
 
-from aidants_connect_common.utils.render_markdown import render_markdown
+import pgtrigger
+
+from aidants_connect_common.constants import FormationAttendantState
+from aidants_connect_common.utils import PGTriggerExtendedFunc, render_markdown
 from aidants_connect_pico_cms.fields import MarkdownField
+
+if TYPE_CHECKING:
+    from aidants_connect_habilitation.models import AidantRequest
+    from aidants_connect_web.models import HabilitationRequest
 
 
 class Region(models.Model):
@@ -77,3 +95,271 @@ class MarkdownContentMixin(models.Model):
 
     class Meta:
         abstract = True
+
+
+class FormationType(models.Model):
+    label = models.CharField("Type", blank=False)
+
+    def __str__(self):
+        return self.label
+
+    class Meta:
+        verbose_name = "Formation : types"
+        verbose_name_plural = "Formation : types"
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(label__isnull_or_blank=False), name="not_blank_label"
+            )
+        ]
+
+
+class FormationOrganizationQuerySet(models.QuerySet):
+    def warnable_about_new_attendants(self):
+        return self.annotate(nb=Count("formations__attendants")).filter(
+            contacts__len__gt=0,
+            formations__attendants__organization_warned_at__isnull=True,
+            nb__gt=0,
+        )
+
+
+class FormationOrganization(models.Model):
+    name = models.CharField("Nom")
+    contacts = ArrayField(models.EmailField(), default=list)
+
+    objects = FormationOrganizationQuerySet.as_manager()
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Formation : organisation"
+        verbose_name_plural = "Formation : organisation"
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(name__isnull_or_blank=False), name="not_blank_name"
+            )
+        ]
+
+
+class FormationQuerySet(models.QuerySet):
+    def for_attendant_q(self, attendant: HabilitationRequest | AidantRequest):
+        return models.Q(
+            attendants__attendant_id=attendant.pk,
+            attendants__attendant_content_type=ContentType.objects.get_for_model(
+                attendant._meta.model
+            ),
+        )
+
+    def available_for_attendant(
+        self, after: timedelta, attendant: HabilitationRequest | AidantRequest
+    ) -> Self:
+        q = models.Q(
+            attendants_count__lt=models.F("max_attendants"),
+            start_datetime__gte=now() + after,
+            state=Formation.State.ACTIVE,
+        )
+
+        q = (
+            (
+                (q & models.Q(type_id=settings.PK_MEDNUM_FORMATION_TYPE))
+                | self.for_attendant_q(attendant)
+            )
+            if attendant.conseiller_numerique
+            else (q | self.for_attendant_q(attendant))
+        )
+
+        return (
+            self.annotate(attendants_count=Count("attendants"))
+            .filter(q)
+            .order_by("start_datetime")
+            .distinct()
+        )
+
+    def for_attendant(self, attendant: HabilitationRequest | AidantRequest) -> Self:
+        return self.filter(self.for_attendant_q(attendant))
+
+    def register_attendant(
+        self, attendant: HabilitationRequest | AidantRequest
+    ) -> None:
+        for formation in self.values_list("pk", flat=True):
+            FormationAttendant.objects.get_or_create(
+                formation_id=formation,
+                attendant_id=attendant.pk,
+                attendant_content_type=ContentType.objects.get_for_model(
+                    attendant._meta.model
+                ),
+            )
+
+    def unregister_attendant(
+        self, attendant: HabilitationRequest | AidantRequest
+    ) -> None:
+        FormationAttendant.objects.filter(
+            formation_id__in=self.values("pk"),
+            attendant_id=attendant.pk,
+            attendant_content_type=ContentType.objects.get_for_model(
+                attendant._meta.model
+            ),
+        ).delete()
+
+
+class Formation(models.Model):
+    class Status(models.IntegerChoices):
+        PRESENTIAL = (auto(), "En présentiel")
+        REMOTE = (auto(), "À distance")
+
+    class State(models.IntegerChoices):
+        ACTIVE = (auto(), "Active")
+        CANCELLED = (auto(), "Annulé")
+
+    start_datetime = models.DateTimeField("Date et heure de début de la formation")
+    end_datetime = models.DateTimeField(
+        "Date et heure de fin de la formation", null=True, blank=True
+    )
+    duration = models.IntegerField("Durée en heures")
+    max_attendants = models.IntegerField("Nombre maximum d'inscrits possibles")
+    status = models.IntegerField("En présentiel/à distance", choices=Status.choices)
+    state = models.IntegerField(
+        "État de la formation", choices=State.choices, default=State.ACTIVE
+    )
+    place = models.CharField("Lieu", max_length=500)
+    type = models.ForeignKey(FormationType, on_delete=models.PROTECT)
+
+    description = models.TextField("Description", blank=True, default="")
+    id_grist = models.CharField(
+        "Id Grist", editable=False, max_length=50, blank=True, default=""
+    )
+    organisation = models.ForeignKey(
+        FormationOrganization,
+        on_delete=models.PROTECT,
+        null=True,
+        default=None,
+        related_name="formations",
+    )
+
+    objects = FormationQuerySet.as_manager()
+
+    @property
+    def number_of_attendants(self):
+        return self.attendants.count()
+
+    @property
+    def date_range_str(self):
+        if self.end_datetime:
+            return (
+                f"Du {date(self.start_datetime, 'd F Y à H:i')} "
+                f"au {date(self.end_datetime, 'd F Y à H:i')}"
+            )
+        else:
+            if self.start_datetime.hour == 0:
+                return f"Début le {date(self.start_datetime, 'd F Y')} "
+            return f"Début le {date(self.start_datetime, 'd F Y à H:i')} "
+
+    def __str__(self):
+        return f"{self.type.label} {self.date_range_str.casefold()}"
+
+    def register_attendant(self, attendant: HabilitationRequest | AidantRequest):
+        Formation.objects.filter(pk=self.pk).register_attendant(attendant)
+
+    def unregister_attendant(self, attendant: HabilitationRequest | AidantRequest):
+        Formation.objects.filter(pk=self.pk).unregister_attendant(attendant)
+
+    class Meta:
+        verbose_name = "Formation aidant"
+        verbose_name_plural = "Formations aidant"
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(start_datetime__lte=models.F("end_datetime")),
+                name="must_starts_before_or_equal_it_ends",
+            ),
+            models.CheckConstraint(
+                check=models.Q(duration__gt=0), name="must_be_a_non_0_duration"
+            ),
+            models.CheckConstraint(
+                check=models.Q(max_attendants__gt=0), name="cant_have_0_max_attendants"
+            ),
+        ]
+
+
+class FormationAttendant(models.Model):
+    State = FormationAttendantState
+
+    created_at = models.DateTimeField("Date création", auto_now_add=True, null=True)
+    updated_at = models.DateTimeField("Date modification", auto_now=True, null=True)
+
+    attendant_content_type = models.ForeignKey(
+        ContentType,
+        editable=False,
+        related_name="%(app_label)s_%(class)s_formations_attendants",
+        on_delete=models.CASCADE,
+    )
+    attendant_id = models.PositiveIntegerField()
+    attendant = GenericForeignKey("attendant_content_type", "attendant_id")
+    formation = models.ForeignKey(
+        Formation, on_delete=models.PROTECT, related_name="attendants"
+    )
+    organization_warned_at = models.DateTimeField(
+        "Lʼorganisation de la formation a été informée "
+        "de lʼinscription de cette personne à…",
+        null=True,
+        default=None,
+    )
+    id_grist = models.CharField(
+        "Id Grist", editable=False, max_length=50, blank=True, default=""
+    )
+
+    state = models.IntegerField(
+        "État de la demande", choices=State.choices, default=State.DEFAULT
+    )
+
+    @cached_property
+    def target(self):
+        return self.attendant_content_type.get_object_for_this_type(
+            pk=self.attendant_id
+        )
+
+    def __str__(self):
+        return f"{self.target}"
+
+    class Meta:
+        verbose_name = "Formation : inscrit"
+        verbose_name_plural = "Formation : inscrits"
+        # One attendant a type can only be registered only once to a specific formation
+        unique_together = ("attendant_content_type", "attendant_id", "formation")
+        triggers = [
+            pgtrigger.Trigger(
+                name="check_attendants_count",
+                when=pgtrigger.Before,
+                operation=pgtrigger.Insert,
+                declare=[
+                    ("attendants_count", "INTEGER"),
+                    ("max_attendants_count", "INTEGER"),
+                ],
+                func=PGTriggerExtendedFunc(
+                    f"""
+                    -- prevent concurrent inserts from multiple transactions
+                    LOCK TABLE {{meta.db_table}} IN EXCLUSIVE MODE;
+
+                    SELECT INTO attendants_count COUNT(*) 
+                    FROM {{meta.db_table}}
+                    WHERE {{columns.formation}} = NEW.{{columns.formation}}
+                    AND {{columns.state}} != {FormationAttendantState.CANCELLED};
+
+                    SELECT {{Formation_columns.max_attendants}} INTO max_attendants_count
+                    FROM {{Formation_meta.db_table}} 
+                    WHERE {{Formation_meta.pk.name}} = NEW.{{columns.formation}};
+
+                    IF attendants_count >= max_attendants_count THEN
+                        RAISE EXCEPTION 'Formation is already full.' USING ERRCODE = 'check_violation';
+                    END IF;
+
+                    RETURN NEW;
+                    """,  # noqa: E501, W291
+                    additionnal_models={"Formation": Formation},
+                ),
+            )
+        ]
+
+
+class IdGenerator(models.Model):
+    code = models.CharField(max_length=100, unique=True)
+    last_id = models.PositiveIntegerField()

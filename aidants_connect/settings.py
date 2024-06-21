@@ -138,11 +138,13 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
     "django_extensions",
+    "pgtrigger",
     "import_export",
     "phonenumber_field",
     "widget_tweaks",
     "dsfr",
     "django_blocklist",
+    "django_js_reverse",
     "aidants_connect",
     "aidants_connect_common",
     "aidants_connect_web",
@@ -262,6 +264,8 @@ LANGUAGES = global_settings.LANGUAGES + [
     # https://fr.wikipedia.org/wiki/ISO_639-3
     ("pus", gettext_noop("Pachto")),
     ("prs", gettext_noop("Dari")),
+    ("rfc", gettext_noop("Créole réunionnais")),
+    ("gcf", gettext_noop("Créole guadeloupéen/martiniquais")),
 ]
 
 # ISO 639-1 language code for language that write right-to-left
@@ -317,7 +321,11 @@ DEMARCHES = {
         "titre": "Travail - Formation",
         "titre_court": "Travail",
         "description": "CDD, Concours, Retraite, Démission, Période d'essai…",
-        "service_exemples": ["Pôle emploi", "Mon compte formation", "info-retraite.fr"],
+        "service_exemples": [
+            "France Travail",
+            "Mon compte formation",
+            "info-retraite.fr",
+        ],
         "icon": "/static/images/icons/travail.svg",
     },
     "logement": {
@@ -366,7 +374,7 @@ DEMARCHES = {
 }
 
 # CGU
-CGU_CURRENT_VERSION = "0.2"
+CGU_CURRENT_VERSION = "0.3"
 
 MANDAT_TEMPLATE_DIR = "aidants_connect_web/mandat_templates"
 MANDAT_TEMPLATE_CURRENT_FILE = "20230530_mandat.html"
@@ -438,7 +446,7 @@ COOKIE_BANNER_SERVICES_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.services.js"
 )
 AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa: E501
-MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.data.gouv.fr")
+MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.beta.gouv.fr")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
 
 if "test" in sys.argv:
@@ -582,10 +590,7 @@ CELERY_RESULT_SERIALIZER = JSON_SERIALIZER
 CELERY_TASK_SERIALIZER = JSON_SERIALIZER
 CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
 
-SITE_DESCRIPTION = (
-    "Permettre à un aidant professionnel de réaliser des démarches administratives en "
-    "ligne « à la place de » via une connexion sécurisée"
-)
+SITE_DESCRIPTION = "Accompagnez vos usagers en toute sécurité"
 
 # COVID-19 changes
 ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
@@ -609,6 +614,7 @@ DATAPASS_CODE_FOR_ID_GENERATOR = "datapassid"
 AC_IMPORT_HABILITATION_REQUESTS = getenv_bool("AC_IMPORT_HABILITATION_REQUESTS", False)
 
 SUPPORT_EMAIL = "connexion@aidantsconnect.beta.gouv.fr"
+AC_CONTACT_EMAIL = "contact@aidantsconnect.beta.gouv.fr"
 
 MANDAT_EXPIRED_SOON = 30
 MANDAT_EXPIRED_SOON_EMAIL_SUBJECT = os.getenv(
@@ -755,6 +761,15 @@ EMAIL_ACTIVITY_TRACKING_WARN_FROM = os.getenv(
     "EMAIL_ACTIVITY_TRACKING_WARN_FROM", SUPPORT_EMAIL
 )
 
+EMAIL_CO_RERERENT_CREATION_FROM = os.getenv(
+    "EMAIL_CO_RERERENT_CREATION_FROM", SUPPORT_EMAIL
+)
+
+EMAIL_ORGANISATION_FORMATION_NEW_ATTENDANT_GRIST_LINK = os.getenv(
+    "EMAIL_ORGANISATION_FORMATION_NEW_ATTENDANT_GRIST_LINK",
+    "https://grist.incubateur.anct.gouv.fr/o/anct/t7BQn7enpHrR/Formations/p/82",
+)
+
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
 PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
 PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
@@ -779,13 +794,12 @@ LM_SMS_SERVICE_BASE_URL = os.getenv("LM_SMS_SERVICE_BASE_URL")
 LM_SMS_SERVICE_OAUTH2_ENDPOINT = os.getenv("LM_SMS_SERVICE_OAUTH2_ENDPOINT")
 LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
 
-# If set to False, FAQ content will be fetched from aidants_connect_web
-# else FAQ will be set from dynamic content of pico_cms.faq_section and faq_question
-FF_USE_PICO_CMS_FOR_FAQ = getenv_bool("FF_USE_PICO_CMS_FOR_FAQ", False)
-
 # URLS
 SANDBOX_URL = os.getenv("SANDBOX_URL", "")
 SANDBOX_URL_PADDING = os.getenv("SANDBOX_URL", "PADDING_SANDBOX")
+SANDBOX_API_URL = os.getenv("SANDBOX_API_URL", "")
+SANDBOX_API_TOKEN = os.getenv("SANDBOX_API_TOKEN", "TOKEN")
+
 WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
 
 REST_FRAMEWORK = {
@@ -794,7 +808,7 @@ REST_FRAMEWORK = {
 }
 
 BLOCKLIST_CONFIG = {}
-BLOCKLIST_EXPIRE_SECONDS = os.getenv("BLOCKLIST_THROTTLE_SECONDS", "1")
+BLOCKLIST_EXPIRE_SECONDS = int(os.getenv("BLOCKLIST_THROTTLE_SECONDS", 1))
 BLOCKLIST_REQUEST_THRESHOLD = int(os.getenv("BLOCKLIST_THROTTLE_THRESHOLD", 10))
 BLOCKLIST_THROTTLE_MS = int(os.getenv("BLOCKLIST_THROTTLE_MS", 200))
 
@@ -803,15 +817,19 @@ try:
 except ValueError:
     DRIFTED_OTP_CARD_TOLERANCE = 20
 
+PK_MEDNUM_FORMATION_TYPE = os.getenv("PK_MEDNUM_FORMATION_TYPE", 1)
 
 GRIST_URL_SERVER = os.getenv("GRIST_URL_SERVER", "")
 GRIST_DOCUMENT_ID = os.getenv("GRIST_DOCUMENT_ID", "")
 GRIST_REBORDING_TABLE_ID = os.getenv("GRIST_REBORDING_TABLE_ID", "")
 GRIST_API_KEY = os.getenv("GRIST_API_KEY", "")
 
+LIVESTORM_API_KEY = os.getenv("LIVESTORM_API_KEY")
+
 
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
+FF_EMAIL_CO_RERERENT_CREATION = getenv_bool("FF_EMAIL_CO_RERERENT_CREATION", False)
 
 
 # ######################## SANDBOX SETTING ############################

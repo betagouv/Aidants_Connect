@@ -1,0 +1,23 @@
+{% load i18n ac_common %}
+Bonjour,
+
+{% linebreakless %}
+{% with count=attendants|length %}{% if count == 1 %}
+La personne {{ attendants.0.target.get_full_name }} a été inscrite à la session du {{ attendants.0.formation.start_datetime|date:"d F Y à H:i" }}{% keeplinebreak %}
+{% else %}
+Les personnes suivantes on été inscrites à une session de formation :{% keeplinebreak %}
+{% keeplinebreak %}
+{% for attendant in attendants %}
+  - {{ attendant.target.get_full_name }}, à la session du {{ attendant.formation.start_datetime|date:"d F Y à H:i" }}{% keeplinebreak %}
+{% endfor %}
+{% endif %}
+{% endwith %}
+{% endlinebreakless %}
+Voir le détails des inscriptions ici : {{ detail_attendants }}
+
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr

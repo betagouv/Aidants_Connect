@@ -13,23 +13,27 @@ body {
 ul, ol {
   margin: 0;
   padding: 0;
-  list-style-position: inside;
+  list-style-position: outside;
 }
 
 $main-padding: 3rem;
 
 #main {
-  overflow: hidden;
   flex-grow: 100;
   padding: $main-padding 0;
 }
 
 .main-content-full { // cancels #main padding
-  margin: -$main-padding 0;
+  margin-bottom: -$main-padding;
+  margin-top: -$main-padding;
+
+  .main-content-item {
+    margin-bottom: $main-padding;
+    margin-top: $main-padding;
+  }
 }
 
 h1, .fr-h1 {
-  color: var(--blue-france-sun-113-625);
   margin: 0 0 3rem 0;
 }
 
@@ -40,6 +44,12 @@ h3, .fr-h3, h4, .fr-h4 {
   &:first-child {
     margin-top: 0;
   }
+}
+.fr-text-default {
+  color: var(--text-default-grey);
+}
+.fr-text--center {
+  text-align: center;
 }
 
 .page-main-title {

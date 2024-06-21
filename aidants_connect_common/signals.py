@@ -2,6 +2,7 @@ from json import loads as json_loads
 from pathlib import Path
 
 from django.apps import AppConfig
+from django.conf import settings
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
@@ -41,3 +42,12 @@ def populate_departments_and_tables(app_config: AppConfig, **_):
                         "region": Region.objects.get(name=department["region"]),
                     },
                 )
+
+
+@receiver(post_migrate)
+def populate_id_generator_table(app_config: AppConfig, **_):
+    if app_config.name == "aidants_connect_common":
+        IdGenerator = app_config.get_model("IdGenerator")
+        IdGenerator.objects.get_or_create(
+            code=settings.DATAPASS_CODE_FOR_ID_GENERATOR, defaults={"last_id": 10000}
+        )

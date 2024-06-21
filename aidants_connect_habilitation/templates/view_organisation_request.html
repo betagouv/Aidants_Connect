@@ -17,7 +17,6 @@ Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
     <br>
     {% include "edito/_aide_etats_demandes_habilitation.html" with status=organisation.status %}
   </p>
-  {% include "request_messages/_messages.html" with issuer=organisation.issuer messages=organisation.messages form=form %}
   <h2>Rappel de votre saisie</h2>
   {% if display_modify_button %}
   <a
@@ -28,13 +27,12 @@ Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
     Modifier votre demande
   </a>
   {% endif %}
-  {% include "_display_org_request.html" with organisation=organisation show_all_buttons=False %}
+  {% include "_display_org_request.html" with show_all_buttons=False %}
 
   <div class="fr-grid-row fr-grid-row--gutters">
     <p class="fr-col more-info">
-      Pour modifier cette demande (ajouter un aidant, etc.), utilisez
-      <a href="#messages_with_ac">l'interface «&nbsp;Vos échanges avec Aidants Connect&nbsp;»</a>
-      ci-dessus.
+      Pour modifier cette demande (ajouter un aidant, etc.), envoyez votre requête par mail à lʼadresse 
+      {% mailto AC_CONTACT_EMAIL %}.
     </p>
   </div>
 

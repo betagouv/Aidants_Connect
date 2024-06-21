@@ -1,11 +1,20 @@
 import logging
 
 from django.contrib.auth import logout
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.db import transaction
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.views import View
+from django.views.generic import FormView
 
-from aidants_connect_web.models import Aidant, Connection
+from aidants_connect_common.forms import (
+    FollowMyHabilitationRequesrForm,
+    FormationRegistrationForm,
+)
+from aidants_connect_common.models import Formation
+from aidants_connect_common.utils import issuer_exists_send_reminder_email
+from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -41,3 +50,62 @@ class RequireConnectionView(RequireConnectionMixin, View):
         self.connection: Connection = result
         self.aidant: Aidant = request.user
         return super().dispatch(request, *args, **kwargs)
+
+
+class FormationRegistrationView(FormView):
+    form_class = FormationRegistrationForm
+    template_name = "formation/formation-registration.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.attendant = self.get_habilitation_request()
+        if (
+            self.attendant.status
+            not in ReferentRequestStatuses.formation_registerable()
+        ):
+            raise Http404
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_habilitation_request(self) -> HabilitationRequest:
+        raise NotImplementedError
+
+    def get_cancel_url(self) -> str:
+        raise NotImplementedError
+
+    def form_valid(self, form: FormationRegistrationForm):
+        with transaction.atomic():
+            Formation.objects.exclude(
+                pk__in=form.cleaned_data["formations"].values("pk")
+            ).for_attendant(self.attendant).unregister_attendant(self.attendant)
+            form.cleaned_data["formations"].register_attendant(self.attendant)
+
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        return {
+            **super().get_form_kwargs(),
+            "attendant": self.get_habilitation_request(),
+        }
+
+    def get_context_data(self, **kwargs):
+        kwargs.update(
+            {
+                "registered_to": self.get_habilitation_request().formations.values_list(
+                    "formation", flat=True
+                ),
+                "attendant": self.attendant,
+                "cancel_url": self.get_cancel_url(),
+            }
+        )
+        return super().get_context_data(**kwargs)
+
+
+class FollowMyHabilitationRequestView(FormView):
+    template_name = "habilitation/_follow-my-request-form.html"
+    form_class = FollowMyHabilitationRequesrForm
+
+    def form_valid(self, form):
+        issuer_exists_send_reminder_email(self.request, form.cleaned_data["email"])
+        return super().render_to_response(
+            self.get_context_data(form=form, success=True)
+        )

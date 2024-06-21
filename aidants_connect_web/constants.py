@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy as _
 
-from aidants_connect_common.utils.constants import DictChoices, TextChoicesEnum
+from aidants_connect_common.constants import DictChoices, TextChoicesEnum
 
 OTP_APP_DEVICE_NAME = "OTP App for user %s"
 
@@ -51,7 +51,7 @@ class NotificationType(TextChoicesEnum):
 class ReferentRequestStatuses(TextChoices):
     STATUS_WAITING_LIST_HABILITATION = ("waitling_list", "Liste d'attente")
     STATUS_NEW = ("new", "Nouvelle")
-    STATUS_PROCESSING = ("processing", "En cours")
+    STATUS_PROCESSING = ("processing", "Éligibilité validée")
     STATUS_VALIDATED = ("validated", "Validée")
     STATUS_REFUSED = ("refused", "Refusée")
     STATUS_CANCELLED = ("cancelled", "Annulée")
@@ -61,10 +61,17 @@ class ReferentRequestStatuses(TextChoices):
     )
 
     @staticmethod
-    def cancellable_by_responsable() -> Set["ReferentRequestStatuses"]:
-        return {
+    def formation_registerable():
+        return (
+            ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_VALIDATED,
+        )
+
+    @staticmethod
+    def cancellable_by_responsable():
+        return (
             ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
             ReferentRequestStatuses.STATUS_NEW,
             ReferentRequestStatuses.STATUS_PROCESSING,
             ReferentRequestStatuses.STATUS_VALIDATED,
-        }
+        )

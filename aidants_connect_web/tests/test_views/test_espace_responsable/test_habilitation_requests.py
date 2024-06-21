@@ -1,8 +1,13 @@
+from datetime import timedelta
+
 from django.db import transaction
 from django.test import TestCase, tag
 from django.test.client import Client
-from django.urls import resolve
+from django.urls import resolve, reverse
+from django.utils.timezone import now
 
+from aidants_connect_common.models import Formation
+from aidants_connect_common.tests.factories import FormationFactory
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest
 from aidants_connect_web.tests.factories import (
@@ -11,6 +16,7 @@ from aidants_connect_web.tests.factories import (
     OrganisationFactory,
 )
 from aidants_connect_web.views import espace_responsable
+from aidants_connect_web.views.espace_responsable import FormationRegistrationView
 
 
 @tag("responsable-structure")
@@ -255,4 +261,173 @@ class HabilitationRequestsTests(TestCase):
             other_aidant.email,
             response_content,
             "New habilitation request should be displayed on organisation page.",
+        )
+
+
+class TestFormationRegistrationView(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.referent = AidantFactory(post__is_organisation_manager=True)
+        cls.unrelated_referent = AidantFactory(post__is_organisation_manager=True)
+
+        cls.habilitation_waiting = HabilitationRequestFactory(
+            organisation=cls.referent.organisation,
+            status=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
+        )
+
+        cls.habilitation_processing = HabilitationRequestFactory(
+            organisation=cls.referent.organisation,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
+
+        cls.formation_ok: Formation = FormationFactory(
+            type_label="Des formations et des Hommes",
+            start_datetime=now() + timedelta(days=46),
+        )
+
+        cls.formation_too_close: Formation = FormationFactory(
+            type_label="À la Bonne Formation", start_datetime=now() + timedelta(days=1)
+        )
+
+        cls.formation_full: Formation = FormationFactory(
+            type_label="A fond la Formation",
+            start_datetime=now() + timedelta(days=46),
+            max_attendants=1,
+        )
+        cls.formation_full.register_attendant(HabilitationRequestFactory())
+
+        cls.hr_registered_to_2_formations = HabilitationRequestFactory(
+            organisation=cls.referent.organisation,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
+
+        cls.formation_with_aidant1: Formation = FormationFactory(
+            type_label="Hein? formations",
+            start_datetime=now() + timedelta(days=46),
+            attendants=[cls.hr_registered_to_2_formations],
+            max_attendants=10,
+        )
+
+        cls.formation_with_aidant2: Formation = FormationFactory(
+            type_label="Formes Ah Scions",
+            start_datetime=now() + timedelta(days=46),
+            attendants=[cls.hr_registered_to_2_formations],
+            max_attendants=10,
+        )
+
+    def test_triggers_correct_view(self):
+        found = resolve(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.habilitation_processing.pk},
+            )
+        )
+        self.assertEqual(found.func.view_class, FormationRegistrationView)
+
+    def test_renders_correct_template(self):
+        self.client.force_login(self.referent)
+        response = self.client.get(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.habilitation_processing.pk},
+            )
+        )
+        self.assertTemplateUsed(response, "formation/formation-registration.html")
+
+    def avoid_oracle(self):
+        self.client.force_login(self.unrelated_referent)
+        response = resolve(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.habilitation_processing.pk},
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_cant_register_aidant_in_incorrect_state(self):
+        self.client.force_login(self.referent)
+        response = self.client.get(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.habilitation_waiting.pk},
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_display_only_available_formations(self):
+        self.client.force_login(self.referent)
+        # Formation too close or already full should not be listed on the page
+        response = self.client.get(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.habilitation_processing.pk},
+            )
+        )
+
+        self.assertIn(self.formation_ok.type.label, response.content.decode())
+        self.assertNotIn(self.formation_too_close.type.label, response.content.decode())
+        self.assertNotIn(self.formation_full.type.label, response.content.decode())
+
+    def test_registration(self):
+        self.client.force_login(self.referent)
+        self.assertEqual(0, self.formation_ok.attendants.count())
+        response = self.client.post(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.habilitation_processing.pk},
+            ),
+            data={"formations": [self.formation_full.pk]},
+        )
+        self.formation_ok.refresh_from_db()
+        self.assertTemplateUsed(response, "formation/formation-registration.html")
+        self.assertEqual(0, self.formation_ok.attendants.count())
+        self.assertIn("formations", response.context_data["form"].errors)
+
+        response = self.client.post(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.habilitation_processing.pk},
+            ),
+            data={"formations": [self.formation_too_close.pk]},
+        )
+        self.formation_ok.refresh_from_db()
+        self.assertTemplateUsed(response, "formation/formation-registration.html")
+        self.assertEqual(0, self.formation_ok.attendants.count())
+        self.assertIn("formations", response.context_data["form"].errors)
+
+        self.client.post(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.habilitation_processing.pk},
+            ),
+            data={"formations": [self.formation_ok.pk]},
+        )
+        self.formation_ok.refresh_from_db()
+        self.assertEqual(
+            {self.habilitation_processing},
+            {item.attendant for item in self.formation_ok.attendants.all()},
+        )
+
+    def test_unregistration(self):
+        self.client.force_login(self.referent)
+        self.assertEqual(
+            {self.formation_with_aidant1, self.formation_with_aidant2},
+            {
+                fa.formation
+                for fa in self.hr_registered_to_2_formations.formations.all()
+            },
+        )
+        self.client.post(
+            reverse(
+                "espace_responsable_register_formation",
+                kwargs={"request_id": self.hr_registered_to_2_formations.pk},
+            ),
+            data={"formations": [self.formation_ok.pk, self.formation_with_aidant1.pk]},
+        )
+        self.assertEqual(
+            {self.formation_with_aidant1, self.formation_ok},
+            {
+                fa.formation
+                for fa in self.hr_registered_to_2_formations.formations.all()
+            },
         )

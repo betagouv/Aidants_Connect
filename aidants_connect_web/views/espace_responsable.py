@@ -15,14 +15,20 @@ from django.views.generic import DeleteView, DetailView, FormView, TemplateView
 import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect_common.utils.constants import RequestStatusConstants
+from aidants_connect_common.constants import RequestStatusConstants
+from aidants_connect_common.views import (
+    FormationRegistrationView as CommonFormationRegistrationView,
+)
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.constants import (
     OTP_APP_DEVICE_NAME,
     NotificationType,
     ReferentRequestStatuses,
 )
-from aidants_connect_web.decorators import responsable_logged_with_activity_required
+from aidants_connect_web.decorators import (
+    responsable_logged_required,
+    responsable_logged_with_activity_required,
+)
 from aidants_connect_web.forms import (
     AddAppOTPToAidantForm,
     AddOrganisationReferentForm,
@@ -31,6 +37,7 @@ from aidants_connect_web.forms import (
     ChangeAidantOrganisationsForm,
     CoReferentNonAidantRequestForm,
     HabilitationRequestCreationForm,
+    OrganisationRestrictDemarchesForm,
     RemoveCardFromAidantForm,
 )
 from aidants_connect_web.models import (
@@ -57,14 +64,20 @@ class ReferentCannotManageAidantResponseMixin:
         return redirect("espace_responsable_organisation")
 
 
-@responsable_logged_with_activity_required
-class OrganisationView(DetailView):
+@responsable_logged_required
+# We don't want to check activity on POST route
+@responsable_logged_with_activity_required(method_name="get")
+class OrganisationView(DetailView, FormView):
     template_name = "aidants_connect_web/espace_responsable/organisation.html"
     context_object_name = "organisation"
     model = Organisation
+    form_class = OrganisationRestrictDemarchesForm
+    success_url = reverse_lazy("espace_responsable_organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
+        # Needed when following the FormView path
+        self.object = self.get_object()
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -122,7 +135,16 @@ class OrganisationView(DetailView):
             "organisation_active_aidants": organisation_active_aidants,
             "organisation_inactive_aidants": organisation_inactive_aidants,
             "organisation_habilitation_requests": organisation_habilitation_requests,
+            "perimetres_form": super().get_form(),
         }
+
+    def get_initial(self):
+        return {"demarches": self.referent.organisation.allowed_demarches}
+
+    def form_valid(self, form):
+        self.organisation.allowed_demarches = form.cleaned_data["demarches"]
+        self.organisation.save(update_fields=("allowed_demarches",))
+        return super().form_valid(form)
 
 
 @responsable_logged_with_activity_required
@@ -756,3 +778,18 @@ class CancelHabilitationRequestView(DetailView):
     def post(self, request, *args, **kwargs):
         self.get_object().cancel_by_responsable()
         return redirect(reverse("espace_responsable_organisation"))
+
+
+@responsable_logged_with_activity_required
+class FormationRegistrationView(CommonFormationRegistrationView):
+    success_url = reverse_lazy("espace_responsable_organisation")
+
+    def get_habilitation_request(self) -> HabilitationRequest:
+        return get_object_or_404(
+            HabilitationRequest,
+            pk=self.kwargs["request_id"],
+            organisation=self.request.user.organisation,
+        )
+
+    def get_cancel_url(self) -> str:
+        return reverse("espace_responsable_organisation")

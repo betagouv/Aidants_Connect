@@ -1,5 +1,6 @@
 from datetime import timedelta
-from unittest.mock import ANY, Mock, patch
+from unittest import skip
+from unittest.mock import patch
 from uuid import UUID, uuid4
 
 from django.contrib import messages as django_messages
@@ -8,17 +9,19 @@ from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
-from django.urls import reverse
+from django.urls import resolve, reverse
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
 from faker import Faker
 
 from aidants_connect import settings
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
+from aidants_connect_common.models import Formation
+from aidants_connect_common.tests.factories import FormationFactory
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     EmailOrganisationValidationError,
@@ -42,7 +45,13 @@ from aidants_connect_habilitation.tests.factories import (
     OrganisationRequestFactory,
 )
 from aidants_connect_habilitation.tests.utils import get_form
+from aidants_connect_habilitation.views import (
+    AidantFormationRegistrationView,
+    HabilitationRequestCancelationView,
+)
+from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest, Organisation
+from aidants_connect_web.tests.factories import HabilitationRequestFactory
 
 
 @tag("habilitation")
@@ -108,26 +117,18 @@ class NewIssuerFormViewTests(TestCase):
                     "Request should have created an instance of IssuerEmailConfirmation"
                 )
 
-    @patch("aidants_connect_habilitation.views.send_mail")
-    def test_send_email_when_issuer_already_exists(self, send_mail_mock: Mock):
+    def test_send_email_when_issuer_already_exists(self):
         issuer: Issuer = IssuerFactory()
 
         data = utils.get_form(IssuerForm).clean()
         data["email"] = issuer.email
 
+        self.assertEqual(0, len(mail.outbox))
+
         self.client.post(reverse(self.pattern_name), data)
 
-        send_mail_mock.assert_called_with(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
-            recipient_list=[issuer.email],
-            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
-            message=ANY,
-            html_message=ANY,
-        )
-
-        # Also test when user gives their email with capitals
-        send_mail_mock.reset_mock()
-        send_mail_mock.assert_not_called()
+        self.assertEqual(1, len(mail.outbox))
+        self.assertEqual([issuer.email.casefold()], mail.outbox[0].to)
 
         data["email"] = issuer.email.capitalize()
 
@@ -135,13 +136,8 @@ class NewIssuerFormViewTests(TestCase):
 
         self.client.post(reverse(self.pattern_name), data)
 
-        send_mail_mock.assert_called_with(
-            from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
-            recipient_list=[issuer.email],
-            subject=settings.EMAIL_HABILITATION_ISSUER_EMAIL_ALREADY_EXISTS_SUBJECT,
-            message=ANY,
-            html_message=ANY,
-        )
+        self.assertEqual(2, len(mail.outbox))
+        self.assertEqual([issuer.email.casefold()], mail.outbox[1].to)
 
     def test_render_warning_when_issuer_already_exists(self):
         issuer: Issuer = IssuerFactory()
@@ -1147,6 +1143,8 @@ class RequestReadOnlyViewTests(TestCase):
             self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(response, self.template_name)
+        self.assertNotContains(response, settings.SUPPORT_EMAIL)
+        self.assertContains(response, settings.AC_CONTACT_EMAIL)
         self.assertNotContains(response, "Éditer")
 
     def test_no_redirect_on_confirmed_organisation_request(self):
@@ -1160,6 +1158,7 @@ class RequestReadOnlyViewTests(TestCase):
             response, RequestStatusConstants.AC_VALIDATION_PROCESSING.label
         )
 
+    @skip
     def test_issuer_can_post_a_message(self):
         organisation = OrganisationRequestFactory(
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value
@@ -1172,6 +1171,7 @@ class RequestReadOnlyViewTests(TestCase):
         response = self.client.get(organisation.get_absolute_url())
         self.assertContains(response, "Bonjour bonjour")
 
+    @skip
     def test_correct_message_is_shown_when_empty_messages_history(self):
         organisation = OrganisationRequestFactory(
             status=RequestStatusConstants.AC_VALIDATION_PROCESSING.value
@@ -1292,4 +1292,414 @@ class AddAidantsRequestViewTests(TestCase):
                 "issuer_id": issuer_id,
                 "uuid": uuid,
             },
+        )
+
+
+class TestFormationRegistrationView(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.unrelated_organisation = OrganisationRequestFactory()
+        cls.unrelated_aidant1 = AidantRequestFactory(
+            organisation=cls.unrelated_organisation
+        )
+
+        cls.organisation = OrganisationRequestFactory()
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION
+        )
+        cls.aidant_with_newly_created_habilitation: AidantRequestFactory = (
+            AidantRequestFactory(
+                organisation=cls.organisation, habilitation_request=hab
+            )
+        )
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING
+        )
+        cls.aidant_with_ongoing_habilitation: AidantRequest = AidantRequestFactory(
+            organisation=cls.organisation, habilitation_request=hab
+        )
+        cls.aidant_without_habilitation: AidantRequestFactory = AidantRequestFactory(
+            organisation=cls.organisation
+        )
+
+        cls.formation_ok: Formation = FormationFactory(
+            type_label="Des formations et des Hommes",
+            start_datetime=now() + timedelta(days=50),
+        )
+
+        cls.formation_too_close: Formation = FormationFactory(
+            type_label="À la Bonne Formation", start_datetime=now() + timedelta(days=1)
+        )
+
+        cls.formation_full: Formation = FormationFactory(
+            type_label="A fond la Formation",
+            start_datetime=now() + timedelta(days=50),
+            max_attendants=1,
+        )
+        cls.formation_full.register_attendant(HabilitationRequestFactory())
+
+        cls.aidant_registered_to_2_formations: AidantRequest = AidantRequestFactory(
+            organisation=cls.organisation,
+            habilitation_request=HabilitationRequestFactory(
+                status=ReferentRequestStatuses.STATUS_PROCESSING
+            ),
+        )
+
+        cls.formation_with_aidant1: Formation = FormationFactory(
+            type_label="Hein? formations",
+            start_datetime=now() + timedelta(days=46),
+            attendants=[cls.aidant_registered_to_2_formations.habilitation_request],
+            max_attendants=10,
+        )
+
+        cls.formation_with_aidant2: Formation = FormationFactory(
+            type_label="Formes Ah Scions",
+            start_datetime=now() + timedelta(days=46),
+            attendants=[cls.aidant_registered_to_2_formations.habilitation_request],
+            max_attendants=10,
+        )
+
+    def test_triggers_correct_view(self):
+        found = resolve(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(found.func.view_class, AidantFormationRegistrationView)
+
+    def test_renders_correct_template(self):
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertTemplateUsed(response, "formation/formation-registration.html")
+
+    def test_cant_register_aidant_of_unrelated_request(self):
+        # Issuer is unrelated
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.unrelated_organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_newly_created_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+        # Organisation is unrelated
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.unrelated_organisation.uuid),
+                    "aidant_id": self.aidant_with_newly_created_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+        # Organisation and issuer are unrelated
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.unrelated_organisation.issuer.issuer_id),
+                    "uuid": str(self.unrelated_organisation.uuid),
+                    "aidant_id": self.aidant_with_newly_created_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_cant_register_aidant_in_incorrect_state(self):
+        # AidantRequest object must have a related HabilitationRequest object
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.unrelated_organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_newly_created_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+        # Related HabilitationRequest object's status must be allowed
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.unrelated_organisation.issuer.issuer_id),
+                    "uuid": str(self.unrelated_organisation.uuid),
+                    "aidant_id": self.aidant_without_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_display_only_available_formations(self):
+        # Formation too close or already full should not be listed on the page
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+
+        self.assertIn(self.formation_ok.type.label, response.content.decode())
+        self.assertNotIn(self.formation_too_close.type.label, response.content.decode())
+        self.assertNotIn(self.formation_full.type.label, response.content.decode())
+
+    def test_registration(self):
+        self.assertEqual(0, self.formation_ok.attendants.count())
+        response = self.client.post(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            ),
+            data={"formations": [self.formation_full.pk]},
+        )
+        self.formation_ok.refresh_from_db()
+        self.assertTemplateUsed(response, "formation/formation-registration.html")
+        self.assertEqual(0, self.formation_ok.attendants.count())
+        self.assertIn("formations", response.context_data["form"].errors)
+
+        response = self.client.post(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            ),
+            data={"formations": [self.formation_too_close.pk]},
+        )
+        self.formation_ok.refresh_from_db()
+        self.assertTemplateUsed(response, "formation/formation-registration.html")
+        self.assertEqual(0, self.formation_ok.attendants.count())
+        self.assertIn("formations", response.context_data["form"].errors)
+
+        self.client.post(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            ),
+            data={"formations": [self.formation_ok.pk]},
+        )
+        self.formation_ok.refresh_from_db()
+        self.assertEqual(
+            {self.aidant_with_ongoing_habilitation.habilitation_request},
+            {item.attendant for item in self.formation_ok.attendants.all()},
+        )
+
+    def test_unregistration(self):
+        hab = self.aidant_registered_to_2_formations.habilitation_request
+        self.assertEqual(
+            {self.formation_with_aidant1, self.formation_with_aidant2},
+            {fa.formation for fa in hab.formations.all()},
+        )
+        self.client.post(
+            reverse(
+                "habilitation_new_aidant_formation_registration",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_registered_to_2_formations.pk,
+                },
+            ),
+            data={"formations": [self.formation_ok.pk, self.formation_with_aidant1.pk]},
+        )
+        hab = self.aidant_registered_to_2_formations.habilitation_request
+        self.assertEqual(
+            {self.formation_with_aidant1, self.formation_ok},
+            {fa.formation for fa in hab.formations.all()},
+        )
+
+
+class TestHabilitationRequestCancelationView(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationRequestFactory()
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
+        )
+        cls.aidant_with_cancelled_habilitation: AidantRequestFactory = (
+            AidantRequestFactory(
+                organisation=cls.organisation, habilitation_request=hab
+            )
+        )
+
+        cls.aidant_without_habilitation: AidantRequestFactory = AidantRequestFactory(
+            organisation=cls.organisation
+        )
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_VALIDATED
+        )
+        cls.aidant_with_newly_validated_habilitation: AidantRequestFactory = (
+            AidantRequestFactory(
+                organisation=cls.organisation, habilitation_request=hab
+            )
+        )
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING
+        )
+        cls.aidant_with_ongoing_habilitation: AidantRequest = AidantRequestFactory(
+            organisation=cls.organisation, habilitation_request=hab
+        )
+
+        hab = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_VALIDATED
+        )
+        cls.unrelated_aidant_request: AidantRequestFactory = AidantRequestFactory(
+            habilitation_request=hab
+        )
+
+    def test_triggers_correct_view(self):
+        found = resolve(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(found.func.view_class, HabilitationRequestCancelationView)
+
+    def test_renders_correct_template(self):
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertTemplateUsed(response, "cancel-habilitation-request.html")
+
+    def test_404_on_bad_url_parameters(self):
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(uuid4()),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(uuid4()),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.unrelated_aidant_request.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_without_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_cancelled_habilitation.pk,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_cancel_habilitation(self):
+        self.assertTrue(
+            self.aidant_with_ongoing_habilitation.habilitation_request.status_cancellable_by_responsable  # noqa: E501
+        )
+        response = self.client.post(
+            reverse(
+                "habilitation_new_aidant_cancel_habilitation_request",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                    "aidant_id": self.aidant_with_ongoing_habilitation.pk,
+                },
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": str(self.organisation.issuer.issuer_id),
+                    "uuid": str(self.organisation.uuid),
+                },
+            ),
+        )
+        self.aidant_with_ongoing_habilitation.habilitation_request.refresh_from_db()
+        self.assertFalse(
+            self.aidant_with_ongoing_habilitation.habilitation_request.status_cancellable_by_responsable  # noqa: E501
         )

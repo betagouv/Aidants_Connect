@@ -23,7 +23,7 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect.utils import strtobool
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.forms import (
     AidantChangeForm,
@@ -73,6 +73,7 @@ class AidantResource(resources.ModelResource):
             "responsable_de",
             "carte_ac",
             "can_create_mandats",
+            "conseiller_numerique",
             "phone",
         )
 
@@ -342,6 +343,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "has_otp_app",
         "is_active",
         "can_create_mandats",
+        "conseiller_numerique",
         "deactivation_warning_at",
         "created_at",
         "is_staff",
@@ -355,6 +357,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_active",
         "aidant_type",
         "can_create_mandats",
+        "conseiller_numerique",
         AidantInPreDesactivationZoneFilter,
         AidantWithMandatsFilter,
         AidantGoneTooLong,
@@ -405,6 +408,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 "fields": (
                     "is_active",
                     "can_create_mandats",
+                    "conseiller_numerique",
                     "is_staff",
                     "is_superuser",
                     "responsable_de",

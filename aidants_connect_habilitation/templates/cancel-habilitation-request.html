@@ -1,0 +1,43 @@
+{% extends "layouts/main.html" %}
+
+{% load static ac_common %}
+
+{% block title %}Aidants Connect - Annuler la demande dʼhabilitation{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="fr-container">
+      <h1>Annuler la demande dʼhabilitation</h1>
+
+      <form method="post">
+        {% csrf_token %}
+        <p>Confirmez-vous l’annulation de la demande dʼhabilitation pour ce profil ?</p>
+
+        <p>
+          {{ request.aidant_full_name }}<br />
+          {% mailto recipient=request.email %}<br />
+          {{ request.profession }}<br />
+        </p>
+
+        <ul class="fr-btns-group fr-btns-group--inline fr-btns-group--right">
+          <li>
+            <a
+              class="fr-btn fr-btn--secondary"
+              href="{% url 'habilitation_organisation_view' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+            >
+              Retour
+            </a>
+          </li>
+          <li>
+            <input
+              id="submit-button"
+              class="fr-btn"
+              type="submit"
+              value="Annuler cette demande"
+            />
+          </li>
+        </ul>
+      </form>
+    </div>
+  </section>
+{% endblock %}
