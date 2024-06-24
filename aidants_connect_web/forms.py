@@ -1,4 +1,5 @@
 import re
+from itertools import chain
 from typing import Optional
 from urllib.parse import unquote
 
@@ -8,13 +9,16 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
-from django.forms import EmailField
+from django.forms import BaseModelFormSet, EmailField, Form
+from django.forms.formsets import TOTAL_FORM_COUNT
+from django.utils.functional import cached_property
+from django.utils.html import format_html_join
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from dsfr.forms import DsfrBaseForm
+from dsfr.forms import DsfrBaseForm, DsfrDjangoTemplates
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
 from pydantic import BaseModel
@@ -22,7 +26,12 @@ from pydantic import ValidationError as PydanticValidationError
 from pydantic import validator
 
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
-from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
+from aidants_connect_common.forms import (
+    AcPhoneNumberField,
+    CleanEmailMixin,
+    ConseillerNumerique,
+    PatchedForm,
+)
 from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
@@ -470,27 +479,63 @@ class ChangeAidantOrganisationsForm(forms.Form):
         self.initial["organisations"] = self.aidant.organisations.all()
 
 
-class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
+class HabilitationRequestCreationForm(
+    ConseillerNumerique, CleanEmailMixin, forms.ModelForm, DsfrBaseForm
+):
     organisation = forms.ModelChoiceField(
         queryset=Organisation.objects.none(),
-        empty_label="Choisir...",
+        empty_label="Choisir…",
     )
 
     def __init__(self, referent, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.referent = referent
+        self.fields["email"].help_text = "L’email doit être nominatif"
         self.fields["organisation"].queryset = Organisation.objects.filter(
             responsables=self.referent
         ).order_by("name")
+
+    def clean_email(self):
+        email = super().clean_email()
+
+        if Aidant.objects.filter(
+            email__iexact=email,
+            organisation__in=self.referent.responsable_de.all(),
+        ).exists():
+            raise ValidationError(
+                "Il existe déjà un compte aidant pour cette adresse e-mail. "
+                "Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci."
+            )
+
+        if HabilitationRequest.objects.filter(
+            email=email,
+            organisation__in=self.referent.responsable_de.all(),
+        ).exists():
+            raise ValidationError(
+                "Une demande d’habilitation est déjà en cours pour l’adresse e-mail. "
+                "Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci.",
+            )
+
+        return email
+
+    def as_hidden(self):
+        return format_html_join("\n", "{}", ((bf.as_hidden(),) for bf in self))
+
+    def save(self, commit=True):
+        self.instance.origin = HabilitationRequest.ORIGIN_RESPONSABLE
+        return super().save(commit)
 
     class Meta:
         model = HabilitationRequest
         fields = (
             "email",
-            "last_name",
             "first_name",
+            "last_name",
             "profession",
             "organisation",
+            "conseiller_numerique",
         )
         error_messages = {
             NON_FIELD_ERRORS: {
@@ -501,8 +546,98 @@ class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
             }
         }
 
-    def clean_email(self):
-        return self.cleaned_data.get("email").lower()
+
+class HabilitationRequestCreationFormSet(BaseModelFormSet):
+    def __init__(self, force_empty_form_check, **kwargs):
+        self.extra = 0
+        self.force_empty_form_check = force_empty_form_check
+        self.renderer = DsfrDjangoTemplates()  # Patched in Django 5
+        kwargs.setdefault("queryset", self.model._default_manager.none())
+        super().__init__(**kwargs)
+
+        self._validate_empty_form = False
+
+    def get_form_kwargs(self, index):
+        return {
+            **super().get_form_kwargs(index),
+            "empty_permitted": False,
+            "data": self.data,
+        }
+
+    @property
+    def forms(self):
+        if not hasattr(self, "_forms"):
+            self._forms = super().forms
+
+        if self._validate_empty_form:
+            return chain(self._forms, [self.empty_form])
+        return self._forms
+
+    @cached_property
+    def empty_form(self) -> Form:
+        form = super().empty_form
+        if (
+            # No form was submitted, we need to check the first empty form
+            self.is_bound
+            and self.management_form.cleaned_data[TOTAL_FORM_COUNT] == 0
+            # We explicitely required empty_form to be checked
+            or self.force_empty_form_check
+        ):
+            form.empty_permitted = False
+        return form
+
+    def is_valid(self):
+        if not self.is_bound:
+            return False
+
+        if not self.empty_form.is_valid():
+            return False
+
+        if self._validate_empty_form:
+            # We're in a recursive call of is_valid, we should not temper self.data here
+            return super().is_valid()
+
+        old_data = self.data
+
+        if self.empty_form.has_changed():  # empty_form olds data
+            self.data = self.data.copy()
+            self.data[self.management_form.add_prefix(TOTAL_FORM_COUNT)] = (
+                f"{self.management_form.cleaned_data[TOTAL_FORM_COUNT] + 1}"
+            )
+            self._validate_empty_form = True
+            self.management_form.full_clean()
+
+        result = super().is_valid()
+
+        self._validate_empty_form = False
+
+        if result:
+            self.finalize_empty_form()
+        else:
+            self.data = old_data
+            self.management_form.full_clean()
+
+        return result
+
+    def finalize_empty_form(self):
+        if not self.empty_form.has_changed():  # Verify that empty_form is not empty
+            return
+
+        # Everything is ok. Proceeding to making empty_form a regular form
+        curr_form_count = self.management_form.cleaned_data[TOTAL_FORM_COUNT]
+        for field_name in self.empty_form.fields.keys():
+            old_key = self.empty_form.add_prefix(field_name)
+            new_key = old_key.replace("__prefix__", f"{curr_form_count}")
+
+            # Replacing empty_form keys
+            if (datum := self.data.get(old_key)) is not None:
+                self.data[new_key] = datum
+                del self.data[old_key]
+
+        new_form = self.empty_form
+        del self.empty_form
+        new_form.prefix = self.add_prefix(curr_form_count)
+        self.forms.append(new_form)
 
 
 class DatapassForm(forms.Form):

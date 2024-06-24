@@ -6,14 +6,18 @@ from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db.models import Model
+from django.forms import Form, RadioSelect, TypedChoiceField
 from django.forms.utils import ErrorList
+from django.utils.safestring import mark_safe
 
 from dsfr.forms import DsfrBaseForm
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.phonenumber import to_python
 from phonenumbers.phonenumber import PhoneNumber
 
+from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Formation
+from aidants_connect_habilitation.constants import CONSEILLER_NUMERIQUE_EMAIL
 
 
 class PatchedErrorList(ErrorList):
@@ -108,3 +112,38 @@ class FollowMyHabilitationRequesrForm(DsfrBaseForm):
                 "Il nʼexiste pas de demande dʼhabilitation associée à cet email. "
                 "Veuillez vérifier votre saisie ou renseigner une autre adresse email."
             )
+
+
+class CleanEmailMixin:
+    def clean_email(self):
+        return self.cleaned_data["email"].lower().strip()
+
+
+class ConseillerNumerique(Form):
+    conseiller_numerique = TypedChoiceField(
+        label=mark_safe(
+            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
+        ),
+        label_suffix=" :",
+        choices=((True, "Oui"), (False, "Non")),
+        coerce=lambda value: bool(strtobool(value)),
+        widget=RadioSelect,
+    )
+
+    def clean(self):
+        result = super().clean()
+        result.setdefault("conseiller_numerique", None)
+        result.setdefault("email", "")
+        if result["conseiller_numerique"] is True and not result["email"].endswith(
+            CONSEILLER_NUMERIQUE_EMAIL
+        ):
+            self.add_error(
+                "email",
+                (
+                    "Si la personne fait partie du dispositif conseiller numérique, "
+                    "elle doit s'inscrire avec son email "
+                    f"{CONSEILLER_NUMERIQUE_EMAIL}"
+                ),
+            )
+
+        return result

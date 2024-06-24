@@ -1,7 +1,7 @@
 from unittest import mock
 from unittest.mock import Mock
 
-from django.forms.models import model_to_dict
+from django.forms.models import model_to_dict, modelformset_factory
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 
@@ -18,6 +18,7 @@ from aidants_connect_web.forms import (
     AidantCreationForm,
     DatapassHabilitationForm,
     HabilitationRequestCreationForm,
+    HabilitationRequestCreationFormSet,
     MandatForm,
     MassEmailActionForm,
     RecapMandatForm,
@@ -644,3 +645,244 @@ class HabilitationRequestCreationFormTests(TestCase):
     def test_filter_queryset_organisation(self):
         form = HabilitationRequestCreationForm(referent=self.referent)
         self.assertEqual(1, form.fields["organisation"].queryset.count())
+
+
+@tag("forms")
+class TestHabilitationRequestCreationFormSet(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.referent = AidantFactory(post__is_organisation_manager=True)
+        cls.form_cls = modelformset_factory(
+            HabilitationRequestCreationForm.Meta.model,
+            HabilitationRequestCreationForm,
+            formset=HabilitationRequestCreationFormSet,
+        )
+
+    def test_is_valid_empty_form_is_not_valid(self):
+        # First case: empty form is not valid
+        form = self.form_cls(
+            force_empty_form_check=True, form_kwargs={"referent": self.referent}
+        )
+        # Validating twice to assert data is not messed up
+        self.assertFalse(form.is_valid())
+        self.assertFalse(form.is_valid())
+        self.assertEqual(0, len(form.forms))
+        self.assertEqual(
+            {
+                "email": [{"message": "Ce champ est obligatoire.", "code": "required"}],
+                "first_name": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+                "last_name": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+                "profession": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+                "organisation": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+                "conseiller_numerique": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+            },
+            form.empty_form.errors.get_json_data(),
+        )
+
+    def test_is_valid_filled_form_is_valid(self):
+        form = self.form_cls(
+            force_empty_form_check=False,
+            form_kwargs={"referent": self.referent},
+            data={
+                "form-TOTAL_FORMS": "1",
+                "form-INITIAL_FORMS": "0",
+                "form-MIN_NUM_FORMS": "0",
+                "form-MAX_NUM_FORMS": "1000",
+                "form-0-id": "",
+                "form-0-email": "test@test.test",
+                "form-0-first_name": "Sarah",
+                "form-0-last_name": "Lambda",
+                "form-0-profession": "organisatrice",
+                "form-0-organisation": f"{self.referent.organisation.pk}",
+                "form-0-conseiller_numerique": "False",
+            },
+        )
+        # Validating twice to assert data is not messed up
+        self.assertTrue(form.is_valid())
+        self.assertTrue(form.is_valid())
+        self.assertEqual(1, len(form.forms))
+
+    def test_is_valid_check_empty_form(self):
+        data = {
+            "form-TOTAL_FORMS": "1",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-id": "",
+            "form-0-email": "test@test.test",
+            "form-0-first_name": "Sarah",
+            "form-0-last_name": "Lambda",
+            "form-0-profession": "organisatrice",
+            "form-0-organisation": f"{self.referent.organisation.pk}",
+            "form-0-conseiller_numerique": "False",
+            "form-__prefix__-id": "",
+            "form-__prefix__-email": "",
+            "form-__prefix__-first_name": "",
+            "form-__prefix__-last_name": "",
+            "form-__prefix__-profession": "",
+            "form-__prefix__-organisation": "",
+            "form-__prefix__-conseiller_numerique": "",
+        }
+
+        # Case 1, we don't want to force check empty form
+        form = self.form_cls(
+            force_empty_form_check=False,
+            form_kwargs={"referent": self.referent},
+            data=data,
+        )
+        # Validating twice to assert data is not messed up
+        self.assertTrue(form.is_valid())
+        self.assertTrue(form.is_valid())
+        self.assertEqual(1, len(form.forms))
+        self.assertEqual(data, form.data)
+
+        # Case 2, we want to force check empty form
+        form = self.form_cls(
+            force_empty_form_check=True,
+            form_kwargs={"referent": self.referent},
+            data=data,
+        )
+        # Validating twice to assert data is not messed up
+        self.assertFalse(form.is_valid())
+        self.assertFalse(form.is_valid())
+        self.assertEqual(1, len(form.forms))
+        self.assertEqual(
+            {
+                "email": [{"message": "Ce champ est obligatoire.", "code": "required"}],
+                "first_name": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+                "last_name": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+                "profession": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+                "organisation": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+                "conseiller_numerique": [
+                    {"message": "Ce champ est obligatoire.", "code": "required"}
+                ],
+            },
+            form.empty_form.errors.get_json_data(),
+        )
+
+    def test_is_valid_filled_empty_form_is_added_to_forms(self):
+        # Case 1, we don't want to force check empty form
+        form = self.form_cls(
+            force_empty_form_check=False,
+            form_kwargs={"referent": self.referent},
+            data={
+                "form-TOTAL_FORMS": "1",
+                "form-INITIAL_FORMS": "0",
+                "form-MIN_NUM_FORMS": "0",
+                "form-MAX_NUM_FORMS": "1000",
+                "form-0-id": "",
+                "form-0-email": "test@test.test",
+                "form-0-first_name": "Sarah",
+                "form-0-last_name": "Lambda",
+                "form-0-profession": "organisateurice",
+                "form-0-organisation": f"{self.referent.organisation.pk}",
+                "form-0-conseiller_numerique": "False",
+                "form-__prefix__-id": "",
+                "form-__prefix__-email": "test2@test.test",
+                "form-__prefix__-first_name": "Abdel",
+                "form-__prefix__-last_name": "Sigma",
+                "form-__prefix__-profession": "organisateurice",
+                "form-__prefix__-organisation": f"{self.referent.organisation.pk}",
+                "form-__prefix__-conseiller_numerique": "False",
+            },
+        )
+        self.assertEqual(1, len(form.forms))
+        # Validating twice to assert form data is not messed up
+        self.assertTrue(form.is_valid())
+        self.assertTrue(form.is_valid())
+        self.assertEqual(2, len(form.forms))
+        self.assertFalse(form.empty_form.errors)
+        self.maxDiff = None
+        self.assertEqual(
+            {
+                "form-TOTAL_FORMS": "2",
+                "form-INITIAL_FORMS": "0",
+                "form-MIN_NUM_FORMS": "0",
+                "form-MAX_NUM_FORMS": "1000",
+                "form-0-id": "",
+                "form-0-email": "test@test.test",
+                "form-0-first_name": "Sarah",
+                "form-0-last_name": "Lambda",
+                "form-0-profession": "organisateurice",
+                "form-0-organisation": f"{self.referent.organisation.pk}",
+                "form-0-conseiller_numerique": "False",
+                "form-1-id": "",
+                "form-1-email": "test2@test.test",
+                "form-1-first_name": "Abdel",
+                "form-1-last_name": "Sigma",
+                "form-1-profession": "organisateurice",
+                "form-1-organisation": f"{self.referent.organisation.pk}",
+                "form-1-conseiller_numerique": "False",
+            },
+            form.data,
+        )
+        self.assertEqual(
+            form.forms[1].cleaned_data,
+            {
+                "conseiller_numerique": False,
+                "email": "test2@test.test",
+                "first_name": "Abdel",
+                "id": None,
+                "last_name": "Sigma",
+                "organisation": self.referent.organisation,
+                "profession": "organisateurice",
+            },
+        )
+        self.assertEqual(form.add_prefix(1), form.forms[1].prefix)
+        # Check previous empty_form was deleted to host another form data
+        self.assertFalse(form.empty_form.cleaned_data)
+
+    def test_is_valid_duplicate_email_is_not_valid(self):
+        data = {
+            "form-TOTAL_FORMS": "1",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-id": "",
+            "form-0-email": "test@test.test",
+            "form-0-first_name": "Sarah",
+            "form-0-last_name": "Lambda",
+            "form-0-profession": "organisateurice",
+            "form-0-organisation": f"{self.referent.organisation.pk}",
+            "form-0-conseiller_numerique": "False",
+            "form-__prefix__-id": "",
+            "form-__prefix__-email": "test@test.test",
+            "form-__prefix__-first_name": "Abdel",
+            "form-__prefix__-last_name": "Sigma",
+            "form-__prefix__-profession": "organisateurice",
+            "form-__prefix__-organisation": f"{self.referent.organisation.pk}",
+            "form-__prefix__-conseiller_numerique": "False",
+        }
+
+        form = self.form_cls(
+            force_empty_form_check=False,
+            form_kwargs={"referent": self.referent},
+            data=data,
+        )
+        self.assertEqual(1, len(form.forms))
+        # Validating twice to assert data is not messed up
+        self.assertFalse(form.is_valid())
+        self.assertEqual(data, form.data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(data, form.data)
+
+        self.assertEqual(1, len(form.forms))
+        self.assertEqual(1, len(form.empty_form.errors))
