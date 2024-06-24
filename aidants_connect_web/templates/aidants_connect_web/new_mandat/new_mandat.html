@@ -1,4 +1,6 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
+
+{% load dsfr_tags %}
 
 {% load static form_extras ac_common %}
 
@@ -28,52 +30,109 @@
       </div>
     {% endif %}
     <h2>Mentions à lire à l’usager</h2>
+    <p class="fr-text--lead">Le mandat est une autorisation écrite qui permet à l’aidant de réaliser pour vous des démarches
+      administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
+      moment.</p>
+    <div class="fr-callout fr-icon-information-line">
+      <h3 class="fr-callout__title">Avec ce mandat, l’aidant s’engage à:</h3>
+      <p class="fr-callout__text">
+        <ul>
+          <li>
+            réaliser les démarches listées dans le mandat à partir des informations que vous lui avez données ;
+          </li>
+          <li>
+            utiliser et enregistrer seulement les informations nécessaires à ces démarches ;
+          </li>
+          <li>
+            ne pas effectuer d’autres démarches que celles listées dans le mandat ;
+          </li>
+          <li>
+            sécuriser l’ensemble de vos informations et les supprimer lorsqu’elles ne sont plus utiles.
+          </li>
+        </ul>
+      </p>
+    </div>
+    <p class="fr-text--lg"><span class="fr-icon-file-text-fill fr-text-blue-france fr-mr-1w"></span><strong>Ressources</strong></p>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-1w">
+      <div class="fr-col-md-6 fr-col-md">
+        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body mandate-translation-section">
+              <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                      <a class="fr-text-default" href="{% url 'mandate_translation' %}">Mandat type avec traductions disponibles</a>
+                  </h3>
+                  <p class="fr-tile__detail fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.</p>
+              </div>
+          </div>
+        </div>
+      </div>
+      <div class="fr-col-md-6 fr-col-md">
+        <div class="fr-tile fr-tile--horizontal ">
+          <div class="fr-tile__body">
+              <div class="fr-tile__content fr-pb-2W">
+                <h3 class="fr-tile__title">Fiches pratiques pour les usagers</h3>
+                <div class="fr-tile__detail flex-wrap">
 
-    <section class="prior-notice fr-col-12 fr-col-lg-10">
-      <p>Le mandat est une autorisation écrite qui permet à l’aidant de réaliser pour vous des démarches
-        administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
-        moment.</p>
-      <p><strong>Avec ce mandat l’aidant s’engage à:</strong></p>
-      <ul>
-        <li>
-          réaliser les démarches listées dans le mandat à partir des informations que vous lui avez données ;
-        </li>
-        <li>
-          utiliser et enregistrer seulement les informations nécessaires à ces démarches ;
-        </li>
-        <li>
-          ne pas effectuer d’autres démarches que celles listées dans le mandat ;
-        </li>
-        <li>
-          sécuriser l’ensemble de vos informations et les supprimer lorsqu’elles ne sont plus utiles.
-        </li>
-    </section>
-
+                  <p class="fr-col-12 fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.
+                  </p>
+                    <ul class="fr-btns-group fr-btns-group--inline-lg fr-col-12 fr-mt-2w flex-right">
+                    <li>
+                        <button class="fr-btn fr-btn--secondary">
+                          <a href="https://www.etsijaccompagnais.fr/ressources-des-aidants" target="_blank">
+                            Version française
+                          </a>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="fr-btn fr-btn--secondary">
+                          <details>
+                            <summary>Versions traduites</summary>
+                            <div class="details-content">
+                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiches_Anglais.pdf" target="_blank">Anglais</a>
+                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiches_Dari.pdf" target="_blank">Dari</a>
+                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiche_Bengali-rmb7.pdf" target="_blank"> Bengali</a>
+                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiche_Pashto.pdf" target="_blank">Pashto</a>
+                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiche_Arabe.pdf" target="_blank">Arabe</a>
+                            </div>
+                          </details>
+                          
+                        </button>
+                    </li>
+                  </ul>
+              </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="border fr-mb-16v"></div>
+    <h2 class="fr-mb-16v">Création de Mandat</h2>
     <form
       method="post"
       data-controller="mandate-form-controller"
       data-mandate-form-controller-bdf-warning-value="{{ warn_scope.value }}"
     >
       {% if form.errors %}
-        <section class="notification error" role="alert">Il y a des erreurs dans le formulaire.</section>
+        <p class="fr-alert fr-alert--error" role="alert">Il y a des erreurs dans le formulaire.</p>
       {% endif %}
       {% csrf_token %}
 
-      <h4 class="step-title">Sélectionnez la ou les démarche(s)</h4>
-      {% fields_as_fieldset form.demarche fieldset_classes="demarches-section" legend_classes="sr-only" %}
+      <section class="demarches-section">
+        {% dsfr_form_field form.demarche %}
+      </section>
 
       {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
 
       <div class="fr-col-12 fr-col-lg-8">
-        <h4 class="step-title">Choisissez la durée du mandat</h4>
-        {% fields_as_fieldset form.duree fieldset_classes="duree-section" legend_classes="sr-only" %}
+        {% dsfr_form_field form.duree %}
 
-        <fieldset class="is-remote-section">
-          <section class="shadowed margin-bottom-1rem mandate-is-remote-field">
-            {{ form.is_remote }}
-            {{ form.is_remote.label_tag }}
+        <h4 class="fr-h6 fr-mt-2w">Signature à distance</h4>
+
+        <fieldset class="is-remote-section fr-fieldset">
+          <section class="fr-checkbox-group">
+            {% dsfr_form_field form.is_remote %}
+            <div class="fr-text-grey fr-text--xs fr-ml-4w">Vous devrez imprimer le mandat et le faire signer à la personne accompagnée aussi vite que possible. Ce mandat vous protège légalement.</div>
           </section>
-
           <section
             class="mandate-remote-method-section"
             hidden
@@ -83,14 +142,15 @@
             {% if form.remote_constent_method.errors %}
               <div class="notification error" role="alert">
                 {{ form.remote_constent_method.errors }}
-              </div>{% endif %}
+              </div>
+            {% endif %}
 
-            <legend class="remote-consent-legend">
+            <legend class="fr-h6 fr-mb-1w">
               {{ form.remote_constent_method.label }}
             </legend>
             {% for subfield in form.remote_constent_method %}
               <div
-                class="detailed-radio-select shadowed margin-bottom-1rem"
+                class="fr-mb-2w fr-radio-group"
                 data-controller="remote-method-controller"
                 data-remote-method-controller-consent-method-value="{{ subfield.data.value }}"
               >
@@ -103,18 +163,13 @@
                 >
 
                 <label for="{{ subfield.id_for_label }}" {% class_attr subfield.data.label_classes %}>
-                  <img
-                    src="{% static subfield.data.img_src %}"
-                    class="{{ subfield.data.input_wrapper_base_class }}-logo"
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  <span class="{{ subfield.data.input_wrapper_base_class }}-label-text-and-description">
-                    <span class="{{ subfield.data.input_wrapper_base_class }}-text">{{ subfield.choice_label }}</span>
-                    <span class="{{ subfield.data.input_wrapper_base_class }}-description">
+                  <div class="{{ subfield.data.input_wrapper_base_class }}-label-text-and-description">
+                    <span class="fr-icon-{{subfield.data.logo}} fr-mr-1w"></span>
+                    <span class="{{ subfield.data.input_wrapper_base_class }}-text">{{ subfield.choice_label }} : </span>
+                    <span class="{{ subfield.data.input_wrapper_base_class }}-description fr-text--sm">
                       {{ subfield.data.description }}
                     </span>
-                  </span>
+                  </div>
                 </label>
                 {% if subfield.data.value == "SMS" %}
                   <div
@@ -123,8 +178,9 @@
                     aria-hidden="true"
                     data-remote-method-controller-target="requiredInputs"
                   >
-                    {% field_as_p form.user_phone p_classes="field-block" %}
-                    {% checkbox_fr_grid_row form.user_remote_contact_verified %}
+                    {% field_as_p form.user_phone p_classes="fr-my-1w fr-ml-4w" %}
+                    
+                    {% dsfr_form_field form.user_remote_contact_verified %}
                   </div>
                 {% endif %}
               </div>
@@ -132,26 +188,12 @@
           </section>
         </fieldset>
 
-        {% if has_mandate_translations %}
-          <h4 class="step-title">Prévisualisez un mandat traduit (à titre informatif)</h4>
-          <section class="mandate-translation-section margin-bottom-6rem">
-            <div class="shadowed fr-p-8v">
-              <h5 class="mandate-translation-title">L’usager prend connaissance d’un mandat traduit</h5>
-              <p>
-                Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune
-                valeur juridique. Seul le mandat final en français a une valeur juridique valide.
-              </p>
-              <div class="button-box">
-                <a href="{% url 'mandate_translation' %}" class="fr-btn">Consulter le mandat traduit</a>
-              </div>
-            </div>
-          </section>
-        {% endif %}
+        
 
         {% block input_submit_form %}
-          <h4 class="step-title">Connectez l’usager à FranceConnect</h4>
+          <h3 class="fr-label title-count">Connectez l’usager à FranceConnect</h3>
           <section id="france_connection">
-            <button id="submit-btn" class="fr-connect" type="submit">
+            <button id="submit-btn" class="fr-connect fr-ml-6w" type="submit">
               <span class="fr-connect__login">S’identifier avec</span>
               <span class="fr-connect__brand">FranceConnect</span>
             </button>
@@ -162,6 +204,7 @@
   </div>
 {% endblock content %}
 
+</div>
 {% block extrajs %}
   {% stimulusjs %}
   <script defer type="module" src="{% static 'js/new-mandat.js' %}"></script>

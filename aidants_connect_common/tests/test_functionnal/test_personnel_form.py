@@ -76,6 +76,12 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
     def _open_modale(self):
         def try_open_modal(driver):
             try:
+                # Verify if modale is already visible
+                if self.selenium.find_element(
+                    By.ID, "fr-modal-follow-hab-request-title"
+                ).is_displayed():
+                    return True
+
                 self.selenium.find_element(
                     By.ID, "follow-my-habilitation-request-btn"
                 ).click()

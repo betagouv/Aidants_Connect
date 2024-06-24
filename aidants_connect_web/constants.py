@@ -18,7 +18,7 @@ class RemoteConsentMethodChoices(DictChoices):
             "la personne accompagnée aussi vite que possible. "
             "Ce mandat vous protège légalement."
         ),
-        "img_src": "images/icons/Papier.svg",
+        "logo": "edit-box-line",
     }
 
     SMS = {
@@ -28,7 +28,7 @@ class RemoteConsentMethodChoices(DictChoices):
             "son consentement. L'exécution du mandat est bloqué tant que "
             "la personne n'a pas répondu positivement."
         ),
-        "img_src": "images/icons/SMS.svg",
+        "logo": "discuss-line",
     }
 
     @staticmethod

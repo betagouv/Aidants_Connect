@@ -9,6 +9,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
 from django.forms import EmailField
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
@@ -22,7 +23,11 @@ from pydantic import ValidationError as PydanticValidationError
 from pydantic import validator
 
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
-from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
+from aidants_connect_common.forms import (
+    AcPhoneNumberField,
+    ErrorCodesManipulationMixin,
+    PatchedForm,
+)
 from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
@@ -190,6 +195,7 @@ def get_choices_for_remote_method():
 
 class MandatForm(PatchedForm):
     demarche = forms.MultipleChoiceField(
+        label="Sélectionnez la ou les démarches",
         choices=[],
         required=True,
         widget=MandatDemarcheSelect,
@@ -201,24 +207,24 @@ class MandatForm(PatchedForm):
     DUREES = [
         (
             ADKW.SHORT,
-            {"label": "Mandat court", "description": "(expire demain)"},
+            {"label": "Mandat court", "description": "expire demain"},
         ),
         (
             ADKW.MONTH,
             {
                 "label": "Mandat d'un mois",
-                "description": f"({ADKW.DAYS[ADKW.MONTH]} jours)",
+                "description": f"{ADKW.DAYS[ADKW.MONTH]} jours",
             },
         ),
         (
             ADKW.LONG,
-            {"label": "Mandat long", "description": "(12 mois)"},
+            {"label": "Mandat long", "description": "12 mois"},
         ),
         (
             ADKW.SEMESTER,
             {
                 "label": "Mandat de 6 mois",
-                "description": f"({ADKW.DAYS[ADKW.SEMESTER]} jours)",
+                "description": f"{ADKW.DAYS[ADKW.SEMESTER]} jours",
             },
         ),
     ]
@@ -232,7 +238,7 @@ class MandatForm(PatchedForm):
     )
 
     is_remote = forms.BooleanField(
-        label="Signature à distance du mandat",
+        label="Je souhaite signer le mandat à distance",
         label_suffix="",
         required=False,
     )
@@ -335,6 +341,10 @@ class OTPForm(DsfrBaseForm):
             "Entrez le code à 6 chiffres généré par votre téléphone "
             "ou votre carte Aidants Connect"
         ),
+        help_text=(
+            "Un nouveau code à 6 chiffres est généré toutes les minutes "
+            "par votre carte physique ou numérique."
+        ),
         widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )
 
@@ -352,8 +362,19 @@ class OTPForm(DsfrBaseForm):
             raise ValidationError("Ce code n'est pas valide.")
 
 
-class RecapMandatForm(OTPForm, forms.Form):
+class RecapMandatForm(OTPForm):
     personal_data = forms.BooleanField()
+
+    def __init__(self, usager: Usager, aidant: Aidant, *args, **kwargs):
+        super().__init__(aidant, *args, **kwargs)
+        self["personal_data"].label = mark_safe(
+            f"Avoir communiqué à <strong>{usager.get_full_name()}</strong> les "
+            "informations concernant l’objet de l’intervention, la raison pour "
+            "laquelle ses informations sont collectées et leur utilité ; les droits "
+            "sur ses données ET avoir conservé son consentement écrit "
+            "(capture d'écran email, SMS…) pour conclure le mandat et utiliser ses "
+            "données à caractère personnel."
+        )
 
 
 class CarteOTPSerialNumberForm(forms.Form):
@@ -573,7 +594,7 @@ class MassEmailActionForm(forms.Form):
         )
 
 
-class AuthorizeSelectUsagerForm(PatchedForm):
+class AuthorizeSelectUsagerForm(DsfrBaseForm, ErrorCodesManipulationMixin):
     chosen_usager = forms.IntegerField(
         required=True,
         error_messages={
@@ -605,7 +626,7 @@ class AuthorizeSelectUsagerForm(PatchedForm):
             )
 
 
-class OAuthParametersForm(PatchedForm):
+class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
     state = forms.CharField()
     nonce = forms.CharField()
     response_type = forms.CharField()

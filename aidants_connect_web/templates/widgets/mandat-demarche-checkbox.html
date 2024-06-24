@@ -1,8 +1,16 @@
 {% extends "widgets/detailed_radio_option.html" %}
+
+{% block class_tile %}
+  fr-tile fr-tile--horizontal fr-checkbox-group
+{% endblock %}
+
+{% block extra_tile %}
+  <div class="fr-tile__title"></div>
+{% endblock %}
+
 {% block widget_description %}
-  <span class="scope">{{ widget.description }}</span>
-  <small class="scope-examples">
-    Exemples :<br/>
-    {% for service in option.service_exemples %}<span class="example">{{ service }}</span>{% endfor %}
-  </small>
+  <div class="scope">{{ widget.description }}</div>
+  <div class="fr-mt-2w">
+    {% for service in option.service_exemples %}<span class="fr-tag fr-text--xs fr-mr-1w fr-mb-1w">{{ service }}</span>{% endfor %}
+  </div>
 {% endblock %}
