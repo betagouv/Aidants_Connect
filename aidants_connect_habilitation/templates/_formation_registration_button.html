@@ -11,11 +11,13 @@
       Cette personne est inscrite à une formation
     </button>
   {% else %}
-    <a
-      href="{% url 'habilitation_manager_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-      class="fr-btn"
-    >
-      Inscrire à une formation
-    </a>
+    {% block url_registration %}
+        <a
+          href="{% url 'habilitation_manager_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+          class="fr-btn"
+        >
+          Inscrire à une formation
+        </a>
+    {% endblock %}
   {% endif %}
 {% endif %}
