@@ -78,10 +78,9 @@ class AidantCreationForm(forms.ModelForm):
         self.fields["organisation"].required = True
 
     def clean(self):
-        super().clean()
-        cleaned_data = self.cleaned_data
+        cleaned_data = super().clean()
         aidant_email = cleaned_data.get("email")
-        if aidant_email in Aidant.objects.all().values_list("username", flat=True):
+        if Aidant.objects.filter(email__iexact=aidant_email).exists():
             self.add_error(
                 "email", forms.ValidationError("This email is already taken")
             )
