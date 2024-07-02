@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 from urllib.parse import quote, unquote
 
+from django.conf import settings
 from django.test import TestCase, override_settings
 
 from aidants_connect_common.constants import (
@@ -9,7 +10,6 @@ from aidants_connect_common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_common.utils.gouv_address_api import Address
-from aidants_connect_habilitation.constants import CONSEILLER_NUMERIQUE_EMAIL
 from aidants_connect_habilitation.forms import (
     AddressValidatableMixin,
     AidantRequestForm,
@@ -486,7 +486,8 @@ class TestManagerForm(TestCase):
         self.assertEqual(
             form.errors["email"][0],
             "Si la personne fait partie du dispositif conseiller numérique, "
-            f"elle doit s'inscrire avec son email {CONSEILLER_NUMERIQUE_EMAIL}",
+            "elle doit s'inscrire avec son email "
+            f"{settings.CONSEILLER_NUMERIQUE_EMAIL}",
         )
 
 
@@ -593,7 +594,8 @@ class TestAidantRequestForm(TestCase):
         self.assertEqual(
             form.errors["email"][0],
             "Si la personne fait partie du dispositif conseiller numérique, "
-            f"elle doit s'inscrire avec son email {CONSEILLER_NUMERIQUE_EMAIL}",
+            "elle doit s'inscrire avec son email "
+            f"{settings.CONSEILLER_NUMERIQUE_EMAIL}",
         )
 
 

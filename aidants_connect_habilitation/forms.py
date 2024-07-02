@@ -20,20 +20,20 @@ from django.forms import (
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
+    CleanEmailMixin,
+    ConseillerNumerique,
     PatchedErrorList,
     PatchedForm,
     PatchedModelForm,
 )
 from aidants_connect_common.utils.gouv_address_api import Address, search_adresses
 from aidants_connect_habilitation import models
-from aidants_connect_habilitation.constants import CONSEILLER_NUMERIQUE_EMAIL
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Manager,
@@ -147,38 +147,6 @@ class AddressValidatableMixin(Form):
         API returns one result that matches with more than 90% probability.
         """
         raise NotImplementedError()
-
-
-class CleanEmailMixin:
-    def clean_email(self):
-        return self.cleaned_data["email"].lower().strip()
-
-
-class ConseillerNumerique(Form):
-    conseiller_numerique = TypedChoiceField(
-        label=mark_safe(
-            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
-        ),
-        label_suffix=" :",
-        choices=(("", ""), (True, "Oui"), (False, "Non")),
-        coerce=lambda value: bool(strtobool(value)),
-    )
-
-    def clean(self):
-        result = super().clean()
-        if result.get("conseiller_numerique", None) is True and not result.get(
-            "email", ""
-        ).endswith(CONSEILLER_NUMERIQUE_EMAIL):
-            self.add_error(
-                "email",
-                (
-                    "Si la personne fait partie du dispositif conseiller numérique, "
-                    "elle doit s'inscrire avec son email "
-                    f"{CONSEILLER_NUMERIQUE_EMAIL}"
-                ),
-            )
-
-        return result
 
 
 class CleanZipCodeMixin:

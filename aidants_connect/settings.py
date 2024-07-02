@@ -768,6 +768,13 @@ EMAIL_ORGANISATION_FORMATION_NEW_ATTENDANT_GRIST_LINK = os.getenv(
     "https://grist.incubateur.anct.gouv.fr/o/anct/t7BQn7enpHrR/Formations/p/82",
 )
 
+CONSEILLER_NUMERIQUE_EMAIL = os.getenv(
+    "CONSEILLER_NUMERIQUE_EMAIL", "@conseiller-numerique.fr"
+)
+CONSEILLER_NUMERIQUE_PAGE = os.getenv(
+    "CONSEILLER_NUMERIQUE_PAGE", "https://www.conseiller-numerique.gouv.fr/"
+)
+
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
 PIX_METABASE_PASSWORD = os.getenv("PIX_METABASE_PASSWORD")
 PIX_METABASE_CARD_ID = os.getenv("PIX_METABASE_CARD_ID")
