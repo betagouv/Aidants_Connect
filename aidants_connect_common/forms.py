@@ -1,8 +1,9 @@
+import functools
 from copy import deepcopy
 from datetime import timedelta
 from inspect import signature
 from itertools import accumulate
-from typing import Iterable, Union
+from typing import Iterable, Tuple, Union
 
 from django import forms
 from django.conf import settings
@@ -15,13 +16,14 @@ from django.forms import (
     BaseFormSet,
     BaseModelForm,
     BaseModelFormSet,
+    BoundField,
     Form,
     Media,
     MediaDefiningClass,
     RadioSelect,
     TypedChoiceField,
 )
-from django.forms.utils import ErrorList
+from django.forms.utils import ErrorList, pretty_name
 from django.utils.datastructures import MultiValueDict
 from django.utils.html import format_html
 from django.utils.translation import ngettext
@@ -277,7 +279,7 @@ class BaseMultiForm(metaclass=DeclarativeFormMetaclass):
         except KeyError:
             raise KeyError(
                 f"Key '{name}' not found in '{self.__class__.__name__}'. "
-                f"Choices are: {', '.join(sorted(self.form_classes.values()))}."
+                f"Choices are: {', '.join(sorted(self.form_classes.keys()))}."
             )
 
     @property
@@ -443,10 +445,10 @@ class BaseModelMultiForm(BaseMultiForm, AltersData):
         return kwargs
 
     @property
-    def model_forms(self):
-        for form in self:
+    def model_forms(self) -> Iterable[Tuple[str, ModelFormLike]]:
+        for name, form in self.forms.items():
             if isinstance(form, ModelFormLike):
-                yield form
+                yield name, form
 
     def save(self, commit=True):
         if self.errors:
@@ -463,5 +465,82 @@ class BaseModelMultiForm(BaseMultiForm, AltersData):
                 ),
             )
 
-        for form in self.model_forms:
-            form.save(commit)
+        return {name: form.save(commit) for name, form in self.model_forms}
+
+
+class PropertyBoundField(BoundField):
+    """Waiting for https://github.com/django/django/pull/18289 to be merged"""
+
+    @property
+    def label(self):
+        return pretty_name(self.name) if self.field.label is None else self.field.label
+
+    @label.setter
+    def label(self, value):
+        self.field.label = value
+
+    @property
+    def help_text(self):
+        return self.field.help_text or ""
+
+    @help_text.setter
+    def help_text(self, value):
+        self.field.help_text = value
+
+    @property
+    def renderer(self):
+        return self.form.renderer
+
+    @renderer.setter
+    def renderer(self, value):
+        self.form.renderer = value
+
+    @property
+    def html_name(self):
+        return self.form.add_prefix(self.name)
+
+    @html_name.setter
+    def html_name(self, _):
+        pass
+
+    @property
+    def html_initial_name(self):
+        return self.form.add_initial_prefix(self.name)
+
+    @html_initial_name.setter
+    def html_initial_name(self, _):
+        pass
+
+    @property
+    def html_initial_id(self):
+        return self.form.add_initial_prefix(self.auto_id)
+
+    @html_initial_id.setter
+    def html_initial_id(self, _):
+        pass
+
+
+class CustomBoundFieldForm(forms.Form):
+    """Waiting for https://github.com/django/django/pull/18266 to be merged"""
+
+    bound_field_class = PropertyBoundField
+
+    def __init__(self, *args, **kwargs):
+        for field in self.base_fields.values():
+            field.get_bound_field = functools.update_wrapper(
+                functools.partial(
+                    lambda _, name: self.bound_field_class(
+                        self, self.fields[name], name
+                    )
+                ),
+                field.get_bound_field,
+            )
+
+        if hasattr(self, "fields"):
+            for key, field in list(self.fields.items()):
+                field.get_bound_field = self.base_fields[key].get_bound_field
+
+        if hasattr(self, "_bound_fields_cache"):
+            self._bound_fields_cache.clear()
+
+        super().__init__(*args, **kwargs)
