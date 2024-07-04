@@ -11,6 +11,3 @@ class HabilitationFormStep(IntEnum):
     @classmethod
     def size(cls):
         return len(cls)
-
-
-CONSEILLER_NUMERIQUE_EMAIL = "@conseiller-numerique.fr"
