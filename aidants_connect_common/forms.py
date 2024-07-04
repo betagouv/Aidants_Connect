@@ -17,6 +17,7 @@ from django.forms import (
     BaseModelForm,
     BaseModelFormSet,
     BoundField,
+    Field,
     Form,
     Media,
     MediaDefiningClass,
@@ -526,21 +527,29 @@ class CustomBoundFieldForm(forms.Form):
     bound_field_class = PropertyBoundField
 
     def __init__(self, *args, **kwargs):
-        for field in self.base_fields.values():
+        self.__fields = {}
+        super().__init__(*args, **kwargs)
+
+    @property
+    def fields(self):
+        return self.__fields
+
+    @fields.setter
+    def fields(self, value: dict[str, Field]):
+        """
+        Intercepts the self.fields initialisation in super().__init__()
+
+        This is necessary because BaseForm makes a deepcopy of self.base_field during
+        __init__ so we don't modify class-wide fields. We want to edit
+        Field.get_bound_field as soon as possible.
+        """
+        for field in value.values():
             field.get_bound_field = functools.update_wrapper(
                 functools.partial(
                     lambda _, name: self.bound_field_class(
-                        self, self.fields[name], name
+                        self, self.__fields[name], name
                     )
                 ),
                 field.get_bound_field,
             )
-
-        if hasattr(self, "fields"):
-            for key, field in list(self.fields.items()):
-                field.get_bound_field = self.base_fields[key].get_bound_field
-
-        if hasattr(self, "_bound_fields_cache"):
-            self._bound_fields_cache.clear()
-
-        super().__init__(*args, **kwargs)
+        self.__fields = value

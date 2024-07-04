@@ -1,11 +1,11 @@
 import re
-from typing import Optional
+from typing import Callable, Optional
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core import mail
-from django.test import override_settings
+from django.test import override_settings, tag
 from django.urls import reverse
 
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
@@ -19,6 +19,7 @@ from aidants_connect_web.models import Aidant
 
 
 @override_settings(DEBUG=True)
+@tag("functional")
 class FunctionalTestCase(StaticLiveServerTestCase):
     js = True
 
@@ -32,10 +33,13 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         if settings.HEADLESS_FUNCTIONAL_TESTS:
             firefox_options.add_argument("--headless")
 
+        # Allow pasting in console
+        firefox_options.set_preference("devtools.selfxss.count", 1_000_000)
         firefox_options.set_preference("javascript.enabled", cls.js)
 
         cls.selenium = WebDriver(options=firefox_options)
         cls.selenium.implicitly_wait(10)
+        cls.selenium.maximize_window()
         cls.wait = WebDriverWait(cls.selenium, 10)
 
         # In some rare cases, the first connection to the Django LiveServer
@@ -55,16 +59,11 @@ class FunctionalTestCase(StaticLiveServerTestCase):
 
     def open_live_url(self, url):
         """Helper method to trigger a GET request on the Django live server."""
-
         self.selenium.get(f"{self.live_server_url}{url}")
+        self.wait.until(self.document_loaded())
 
     def admin_login(self, user: str, password: str, otp: str):
-        selenium_wait = WebDriverWait(self.selenium, 10)
-
-        path = reverse("otpadmin:login")
-        self.open_live_url(path)
-        selenium_wait.until(url_matches(f"^.+{path}$"))
-
+        self.open_live_url(reverse("otpadmin:login"))
         self.selenium.find_element(By.CSS_SELECTOR, 'input[name="username"]').send_keys(
             user
         )
@@ -77,7 +76,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        selenium_wait.until(url_matches(f"^.+{reverse('otpadmin:index')}$"))
+        self.wait.until(self.document_loaded())
 
     def login_aidant(self, aidant: Aidant, otp_code: str | None = None):
         """
@@ -113,9 +112,16 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             rf"http://localhost:\d+{reverse(route_name, kwargs=kwargs)}{query_part}"
         )
 
+    def document_loaded(self) -> Callable[[WebDriver], bool]:
+        def _predicate(driver: WebDriver) -> bool:
+            return driver.execute_script("return document.readyState") == "complete"
+
+        return _predicate
+
     def assertElementNotFound(self, by=By.ID, value: Optional[str] = None):
         implicit_wait = self.selenium.timeouts.implicit_wait
         self.selenium.implicitly_wait(0.1)
+        self.wait.until(self.document_loaded())
         try:
             with self.assertRaises(
                 NoSuchElementException, msg="Found element expected to be absent"

@@ -88,6 +88,7 @@ class HabilitationRequestsTests(TestCase):
                     "last_name": "Dubois",
                     "email": email,
                     "profession": "Assistante sociale",
+                    "conseiller_numerique": False,
                 },
             )
             self.assertRedirects(
@@ -128,6 +129,7 @@ class HabilitationRequestsTests(TestCase):
                 "last_name": "Dubois",
                 "email": uppercased_email,
                 "profession": "Assistante sociale",
+                "conseiller_numerique": False,
             },
         )
 
@@ -214,6 +216,7 @@ class HabilitationRequestsTests(TestCase):
                 "first_name": "Bob",
                 "last_name": "Dubois",
                 "profession": "Assistant social",
+                "conseiller_numerique": False,
             },
         )
         self.assertRedirects(
@@ -245,6 +248,7 @@ class HabilitationRequestsTests(TestCase):
                 "first_name": "Bob",
                 "last_name": "Dubois",
                 "profession": "Assistant social",
+                "conseiller_numerique": False,
             },
         )
         self.assertRedirects(

@@ -1,4 +1,6 @@
+import itertools
 import re
+from contextlib import contextmanager
 from typing import Optional
 from urllib.parse import unquote
 
@@ -8,14 +10,23 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
-from django.forms import EmailField
+from django.forms import (
+    BaseModelFormSet,
+    EmailField,
+    Form,
+    RadioSelect,
+    modelformset_factory,
+)
+from django.forms.formsets import TOTAL_FORM_COUNT, ManagementForm
+from django.utils.functional import cached_property
+from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from dsfr.forms import DsfrBaseForm
+from dsfr.forms import DsfrBaseForm, DsfrDjangoTemplates
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
 from pydantic import BaseModel
@@ -25,11 +36,18 @@ from pydantic import validator
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
+    BaseModelMultiForm,
+    CleanEmailMixin,
+    ConseillerNumerique,
+    CustomBoundFieldForm,
     ErrorCodesManipulationMixin,
     PatchedForm,
 )
 from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
-from aidants_connect_web.constants import RemoteConsentMethodChoices
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    RemoteConsentMethodChoices,
+)
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
@@ -490,10 +508,16 @@ class ChangeAidantOrganisationsForm(forms.Form):
         self.initial["organisations"] = self.aidant.organisations.all()
 
 
-class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
+class HabilitationRequestCreationForm(
+    ConseillerNumerique,
+    CleanEmailMixin,
+    forms.ModelForm,
+    DsfrBaseForm,
+    CustomBoundFieldForm,
+):
     organisation = forms.ModelChoiceField(
         queryset=Organisation.objects.none(),
-        empty_label="Choisir...",
+        empty_label="Choisir…",
     )
 
     def __init__(self, referent, *args, **kwargs):
@@ -503,12 +527,44 @@ class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
             responsables=self.referent
         ).order_by("name")
 
+    def clean_email(self):
+        email = super().clean_email()
+
+        if Aidant.objects.filter(
+            email__iexact=email,
+            organisation__in=self.referent.responsable_de.all(),
+        ).exists():
+            raise ValidationError(
+                "Il existe déjà un compte aidant pour cette adresse e-mail. "
+                "Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci."
+            )
+
+        if HabilitationRequest.objects.filter(
+            email=email,
+            organisation__in=self.referent.responsable_de.all(),
+        ).exists():
+            raise ValidationError(
+                "Une demande d’habilitation est déjà en cours pour l’adresse e-mail. "
+                "Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci.",
+            )
+
+        return email
+
+    def as_hidden(self):
+        return format_html_join("\n", "{}", ((bf.as_hidden(),) for bf in self))
+
+    def save(self, commit=True):
+        self.instance.origin = HabilitationRequest.ORIGIN_RESPONSABLE
+        return super().save(commit)
+
     class Meta:
         model = HabilitationRequest
         fields = (
             "email",
-            "last_name",
             "first_name",
+            "last_name",
             "profession",
             "organisation",
         )
@@ -521,8 +577,214 @@ class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
             }
         }
 
-    def clean_email(self):
-        return self.cleaned_data.get("email").lower()
+
+class HabilitationRequestCreationFormSet(BaseModelFormSet):
+    TEMP_DATA_PREFIX = "__temp__"
+
+    def __init__(self, force_left_form_check, **kwargs):
+        self.extra = 0
+        self.force_left_form_check = force_left_form_check
+        kwargs.setdefault("queryset", self.model._default_manager.none())
+        super().__init__(**kwargs)
+
+        self._is_cleaning = False
+
+    @cached_property
+    def has_temp_data(self):
+        if not self.is_bound:
+            return False
+
+        with self._cleaning_mode(False):
+            form = self.form(  # noqa
+                **{
+                    **self.get_form_kwargs(None),
+                    "data": self.data,
+                    "auto_id": self.auto_id,
+                    "prefix": self.add_prefix(self.TEMP_DATA_PREFIX),
+                }
+            )
+            for field in form:
+                if field.html_name in self.data:
+                    return True
+            return False
+
+    @property
+    def left_form_empty_permitted(self):
+        return not (
+            len(self.cached_forms) == 0
+            and self.has_temp_data
+            or self.force_left_form_check
+            and self.has_temp_data
+        )
+
+    @property
+    def should_validate_left_form(self):
+        return not self.left_form_empty_permitted or self.has_temp_data
+
+    @cached_property
+    def left_form(self) -> Form:
+        form = self.empty_form
+        form.prefix = self.add_prefix(self.TEMP_DATA_PREFIX)
+        form.empty_permitted = self.left_form_empty_permitted
+        return form
+
+    @cached_property
+    def cached_forms(self):
+        with self._cleaning_mode(False):
+            return super().forms
+
+    @cached_property
+    def cached_management_form(self):
+        with self._cleaning_mode(False):
+            return super().management_form
+
+    @cached_property
+    def computed_managment_form(self):
+        new_data = self.data.copy()
+        try:
+            curr_form_count = self.cached_management_form.cleaned_data[TOTAL_FORM_COUNT]
+            new_data[self.cached_management_form[TOTAL_FORM_COUNT].html_name] = (
+                f"{curr_form_count + 1}"
+            )
+        except (KeyError, ValidationError):
+            # There's a problem with the managment data anyway
+            return self.cached_management_form
+
+        form = ManagementForm(
+            new_data,
+            auto_id=self.auto_id,
+            prefix=self.prefix,
+        )
+        form.full_clean()
+        return form
+
+    @property
+    def management_form(self):
+        if not self.is_bound or not self.has_temp_data or not self._is_cleaning:
+            return self.cached_management_form
+
+        return self.computed_managment_form
+
+    @management_form.deleter
+    def management_form(self):
+        del self.computed_managment_form  # noqa
+        del self.cached_management_form  # noqa
+
+    @property
+    def forms(self):
+        if not self._is_cleaning or not self.has_temp_data:
+            return self.cached_forms
+        return itertools.chain(self.cached_forms, [self.left_form])
+
+    def get_form_kwargs(self, index):
+        return {
+            **super().get_form_kwargs(index),
+            "empty_permitted": False,
+            "data": self.data,
+        }
+
+    def is_valid(self):
+        if not self.is_bound:
+            return False
+
+        if self.should_validate_left_form and not self.left_form.is_valid():
+            return False
+
+        return super().is_valid()
+
+    def full_clean(self):
+        if not self.has_temp_data:
+            return super().full_clean()
+
+        with self._cleaning_mode(True, False):
+            super().full_clean()
+        self.post_clean()
+
+    def post_clean(self):
+        if not self.has_temp_data or not self.left_form.has_changed():
+            return
+
+        if (
+            any(item for item in self.errors)
+            or self.non_form_errors()
+            or not self.left_form.is_valid()
+        ):
+            # Return on any error
+            return
+
+        # Everything is ok. Proceeding to making left_form a regular form
+        curr_form_count = self.management_form.cleaned_data[TOTAL_FORM_COUNT]
+        self.data[self.management_form[TOTAL_FORM_COUNT].html_name] = (
+            f"{curr_form_count + 1}"
+        )
+
+        for field in self.left_form:
+            new_key = field.html_name.replace(
+                self.TEMP_DATA_PREFIX, f"{curr_form_count}"
+            )
+
+            # Replacing left_form keys
+            if (datum := self.data.get(field.html_name)) is not None:
+                self.data[new_key] = datum
+                del self.data[field.html_name]
+
+        self.left_form.prefix = self.add_prefix(curr_form_count)
+        self.forms.append(self.left_form)
+
+        # Invalidating cached properties
+        del self.management_form
+        del self.left_form  # noqa
+        del self.has_temp_data  # noqa
+
+    @contextmanager
+    def _cleaning_mode(self, start_mode=False, stop_mode=None):
+        """
+        Set the Form in a specific cleaning mode to avoid messing with parent's
+        properties
+        """
+        previous_mode, self._is_cleaning = self._is_cleaning, start_mode
+        try:
+            yield
+        except Exception:
+            raise
+        finally:
+            self._is_cleaning = previous_mode if stop_mode is None else stop_mode
+
+
+class HabilitationRequestCreationFormationTypeForm(forms.Form):
+    Type = HabilitationRequestCourseType
+
+    type = forms.ChoiceField(
+        label=(
+            "Renseignez le type de formation souhaité "
+            "pour la liste des aidants à habiliter."
+        ),
+        label_suffix=None,
+        choices=Type.choices,
+        widget=RadioSelect,
+        initial=Type.CLASSIC,
+    )
+
+
+class NewHabilitationRequestForm(BaseModelMultiForm):
+    habilitation_requests = modelformset_factory(
+        HabilitationRequestCreationForm.Meta.model,
+        HabilitationRequestCreationForm,
+        formset=HabilitationRequestCreationFormSet,
+    )
+
+    course_type = HabilitationRequestCreationFormationTypeForm
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("renderer", DsfrDjangoTemplates())  # Patched in Django 5)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        super().save(commit=False)
+        for form in self["habilitation_requests"].forms:
+            form.instance.course_type = self["course_type"].cleaned_data["type"]
+
+        return super().save(commit)
 
 
 class DatapassForm(forms.Form):
