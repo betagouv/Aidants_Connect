@@ -96,6 +96,52 @@ class OrganisationView(DetailView, FormView):
         return self.organisation
 
     def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "referent": self.referent,
+            "referent_notifications": Notification.objects.get_displayable_for_user(
+                self.referent
+            ),
+            "notification_type": NotificationType,
+            "perimetres_form": super().get_form(),
+        }
+
+    def get_initial(self):
+        return {"demarches": self.referent.organisation.allowed_demarches}
+
+    def form_valid(self, form):
+        self.organisation.allowed_demarches = form.cleaned_data["demarches"]
+        self.organisation.save(update_fields=("allowed_demarches",))
+        return super().form_valid(form)
+
+
+@responsable_logged_required
+# We don't want to check activity on POST route
+@responsable_logged_with_activity_required(method_name="get")
+class ReferentsView(DetailView, FormView):
+    template_name = "aidants_connect_web/espace_responsable/referents.html"
+    context_object_name = "organisation"
+    model = Organisation
+    form_class = OrganisationRestrictDemarchesForm
+    success_url = reverse_lazy("espace_responsable_referents")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        # Needed when following the FormView path
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        self.organisation: Organisation = self.referent.organisation
+
+        if not self.organisation:
+            django_messages.error(
+                self.request, "Vous n'êtes pas rattaché à une organisation."
+            )
+            return redirect("espace_aidant_home")
+        return self.organisation
+
+    def get_context_data(self, **kwargs):
         referents_qs = (
             self.object.responsables.exclude(pk=self.referent.pk)
             .order_by("last_name")
@@ -117,17 +163,6 @@ class OrganisationView(DetailView, FormView):
         ]
         organisation_inactive_referents = referents_qs.filter(is_active=False)
 
-        aidantq_qs = self.object.aidants_not_responsables.order_by(
-            "last_name"
-        ).prefetch_related("carte_totp")
-
-        organisation_active_aidants = aidantq_qs.filter(is_active=True)
-        organisation_inactive_aidants = aidantq_qs.filter(is_active=False)
-
-        organisation_habilitation_requests = self.object.habilitation_requests.exclude(
-            status=ReferentRequestStatuses.STATUS_VALIDATED.value
-        ).order_by("status", "last_name")
-
         return {
             **super().get_context_data(**kwargs),
             "referent": self.referent,
@@ -137,9 +172,6 @@ class OrganisationView(DetailView, FormView):
             "notification_type": NotificationType,
             "organisation_active_referents": organisation_active_referents,
             "organisation_inactive_referents": organisation_inactive_referents,
-            "organisation_active_aidants": organisation_active_aidants,
-            "organisation_inactive_aidants": organisation_inactive_aidants,
-            "organisation_habilitation_requests": organisation_habilitation_requests,
             "perimetres_form": super().get_form(),
         }
 
@@ -152,10 +184,139 @@ class OrganisationView(DetailView, FormView):
         return super().form_valid(form)
 
 
+@responsable_logged_required
+# We don't want to check activity on POST route
+@responsable_logged_with_activity_required(method_name="get")
+class AidantsView(DetailView, FormView):
+    template_name = "aidants_connect_web/espace_responsable/aidants.html"
+    context_object_name = "organisation"
+    model = Organisation
+    success_url = reverse_lazy("espace_responsable_aidants")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        # Needed when following the FormView path
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_class(self):
+        return (
+            AddOrganisationReferentForm
+            if "candidate" in self.request.POST
+            else OrganisationRestrictDemarchesForm
+        )
+
+    def get_form_kwargs(self):
+        return (
+            {**super().get_form_kwargs(), "organisation": self.organisation}
+            if "candidate" in self.request.POST
+            else {**super().get_form_kwargs()}
+        )
+
+    def get_object(self, queryset=None):
+        self.organisation: Organisation = self.referent.organisation
+
+        if not self.organisation:
+            django_messages.error(
+                self.request, "Vous n'êtes pas rattaché à une organisation."
+            )
+            return redirect("espace_aidant_home")
+        return self.organisation
+
+    def get_context_data(self, **kwargs):
+        aidantq_qs = self.object.aidants_not_responsables.order_by(
+            "last_name"
+        ).prefetch_related("carte_totp")
+
+        organisation_active_aidants = aidantq_qs.filter(is_active=True)
+        organisation_inactive_aidants = aidantq_qs.filter(is_active=False)
+
+        return {
+            **super().get_context_data(**kwargs),
+            "referent": self.referent,
+            "referent_notifications": Notification.objects.get_displayable_for_user(
+                self.referent
+            ),
+            "notification_type": NotificationType,
+            "organisation_active_aidants": organisation_active_aidants,
+            "organisation_inactive_aidants": organisation_inactive_aidants,
+            "perimetres_form": super().get_form(),
+        }
+
+    def form_valid(self, form):
+        if isinstance(form, AddOrganisationReferentForm):
+            new_responsable = form.cleaned_data["candidate"]
+            new_responsable.responsable_de.add(self.organisation)
+            new_responsable.save()
+            django_messages.success(
+                self.request,
+                (
+                    f"Tout s’est bien passé, {new_responsable} est maintenant "
+                    f"responsable de l’organisation {self.organisation}."
+                ),
+            )
+        return super().form_valid(form)
+
+
+class DemandesView(DetailView, FormView):
+    template_name = "aidants_connect_web/espace_responsable/demandes.html"
+    context_object_name = "organisation"
+    model = Organisation
+    form_class = OrganisationRestrictDemarchesForm
+    success_url = reverse_lazy("espace_responsable_demandes")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        # Needed when following the FormView path
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        self.organisation: Organisation = self.referent.organisation
+
+        if not self.organisation:
+            django_messages.error(
+                self.request, "Vous n'êtes pas rattaché à une organisation."
+            )
+            return redirect("espace_aidant_home")
+        return self.organisation
+
+    def get_context_data(self, **kwargs):
+
+        organisation_habilitation_requests = self.object.habilitation_requests.filter(
+            status__in=[
+                ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+                ReferentRequestStatuses.STATUS_NEW.value,
+            ]
+        ).order_by("status", "last_name")
+        organisation_habilitation_validated = self.object.habilitation_requests.filter(
+            status__in=[
+                ReferentRequestStatuses.STATUS_PROCESSING.value,
+                ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
+            ]
+        ).order_by("status", "last_name")
+        organisation_habilitation_refused = self.object.habilitation_requests.filter(
+            status__in=[
+                ReferentRequestStatuses.STATUS_REFUSED.value,
+                ReferentRequestStatuses.STATUS_CANCELLED.value,
+                ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE.value,
+            ]
+        ).order_by("status", "last_name")
+
+        return {
+            **super().get_context_data(**kwargs),
+            "notification_type": NotificationType,
+            "organisation_habilitation_requests": organisation_habilitation_requests,
+            "organisation_habilitation_validated": organisation_habilitation_validated,
+            "organisation_habilitation_refused": organisation_habilitation_refused,
+            "perimetres_form": super().get_form(),
+        }
+
+
 @responsable_logged_with_activity_required
 class OrganisationResponsables(FormView):
     template_name = "aidants_connect_web/espace_responsable/responsables.html"
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_responsable_referents")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -228,7 +389,7 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
 class RemoveCardFromAidant(ReferentCannotManageAidantResponseMixin, FormView):
     template_name = "aidants_connect_web/espace_responsable/aidant_remove_card.html"
     form_class = RemoveCardFromAidantForm
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_responsable_aidants")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -439,7 +600,7 @@ class RemoveAidantFromOrganisationView(
                 request, f"Le profil de {self.aidant.get_full_name()} a été désactivé."
             )
 
-        return redirect("espace_responsable_organisation")
+        return redirect("espace_responsable_aidants")
 
     def get_context_data(self, **kwargs):
         kwargs.update({"aidant": self.aidant, "organisation": self.organisation})
@@ -702,7 +863,7 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
 class NewHabilitationRequest(FormView):
     template_name = "aidants_connect_web/espace_responsable/new-habilitation-request.html"  # noqa: E501
     form_class = NewHabilitationRequestForm
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_responsable_demandes")
     partial_key = "partial"
     edit_key = "edit"
 
@@ -840,7 +1001,7 @@ class CancelHabilitationRequestView(DetailView):
 
 @responsable_logged_with_activity_required
 class FormationRegistrationView(CommonFormationRegistrationView):
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_responsable_demandes")
 
     def get_habilitation_request(self) -> HabilitationRequest:
         return get_object_or_404(
@@ -850,4 +1011,4 @@ class FormationRegistrationView(CommonFormationRegistrationView):
         )
 
     def get_cancel_url(self) -> str:
-        return reverse("espace_responsable_organisation")
+        return reverse("espace_responsable_demandes")

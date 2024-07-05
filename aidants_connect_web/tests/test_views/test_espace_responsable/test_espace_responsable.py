@@ -48,7 +48,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         aidant_b.organisations.set(
             (aidant_b.organisation, self.responsable_tom.organisation)
         )
-        response = self.client.get("/espace-responsable/organisation/")
+        response = self.client.get(reverse("espace_responsable_aidants"))
         self.assertContains(response, aidant_a.first_name)
         self.assertContains(response, aidant_b.first_name)
 
@@ -432,8 +432,8 @@ class DesignationOfAnotherResponsable(TestCase):
 
     def test_link_is_visible_if_there_is_an_aidant_to_become_responsable(self):
         self.client.force_login(self.respo)
-        response = self.client.get(self.orga_url)
-        self.assertContains(response, "Désigner un ou une référente")
+        response = self.client.get(reverse("espace_responsable_referents"))
+        self.assertContains(response, "Ajouter un ou une référente")
 
     def test_current_aidant_can_become_responsable(self):
         self.client.force_login(self.respo)
