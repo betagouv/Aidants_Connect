@@ -65,7 +65,7 @@ class HabilitationRequestsTests(TestCase):
     def test_habilitation_request_is_displayed_if_needed(self):
         HabilitationRequestFactory(organisation=self.org_a)
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(self.organisation_url)
+        response = self.client.get(reverse("espace_responsable_demandes"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "Demandes d’habilitation en cours",
@@ -121,9 +121,11 @@ class HabilitationRequestsTests(TestCase):
                 data=data,
             )
             self.assertRedirects(
-                response, self.organisation_url, fetch_redirect_response=False
+                response,
+                reverse("espace_responsable_demandes"),
+                fetch_redirect_response=False,
             )
-            response = self.client.get(self.organisation_url)
+            response = self.client.get(reverse("espace_responsable_demandes"))
             response_content = response.content.decode("utf-8")
             self.assertIn(
                 "La demande d’habilitation pour Angela Dubois a bien été enregistrée.",
@@ -302,9 +304,11 @@ class HabilitationRequestsTests(TestCase):
             },
         )
         self.assertRedirects(
-            response, self.organisation_url, fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_demandes"),
+            fetch_redirect_response=False,
         )
-        response = self.client.get(self.organisation_url)
+        response = self.client.get(reverse("espace_responsable_demandes"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "La demande d’habilitation pour Bob Dubois a bien été enregistrée.",
@@ -340,9 +344,11 @@ class HabilitationRequestsTests(TestCase):
             },
         )
         self.assertRedirects(
-            response, self.organisation_url, fetch_redirect_response=False
+            response,
+            reverse("espace_responsable_demandes"),
+            fetch_redirect_response=False,
         )
-        response = self.client.get(self.organisation_url)
+        response = self.client.get(reverse("espace_responsable_demandes"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "La demande d’habilitation pour Bob Dubois a bien été enregistrée.",

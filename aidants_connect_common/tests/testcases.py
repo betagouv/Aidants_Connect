@@ -1,3 +1,4 @@
+import contextlib
 import operator
 import re
 from typing import Any, Callable, Iterable, Mapping, Optional
@@ -11,7 +12,11 @@ from django.db import models
 from django.test import override_settings, tag
 from django.urls import reverse
 
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    StaleElementReferenceException,
+    WebDriverException,
+)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.webdriver import WebDriver
@@ -213,6 +218,24 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         """
         for el in self.selenium.find_elements(by, value):
             self.selenium.execute_script("arguments[0].click();", el)
+
+    @contextlib.contextmanager
+    def details_opened(self, by=By.ID, value: Optional[str] = None):
+        elt = self.selenium.find_element(by, value)
+        try:
+            self.selenium.execute_script(
+                "arguments[0].setAttribute('open', 'open')", elt
+            )
+            yield
+        except Exception:
+            raise
+        finally:
+            # If we moved away from the page (for instance when POSTing a form)
+            # the element is stale so we ignore this exception
+            with contextlib.suppress(StaleElementReferenceException):
+                self.selenium.execute_script(
+                    "arguments[0].removeAttribute('open')", elt
+                )
 
     def path_matches(
         self, route_name: str, *, kwargs: dict = None, query_params: dict = None

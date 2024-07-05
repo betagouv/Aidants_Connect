@@ -206,72 +206,91 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         )
 
     def test_grouped_autorisations(self):
-        root_path = reverse("espace_responsable_organisation")
-
-        self.open_live_url(root_path)
+        self.open_live_url(reverse("espace_responsable_aidants"))
 
         # Login
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         # Check button text
-        button = self.selenium.find_element(
-            By.ID,
-            f"remove-aidant-{self.aidant_with_multiple_orgs.pk}-from-organisation",
-        )
-        self.assertEqual(
-            "Retirer l’aidant de l’organisation",
-            button.text,
-        )
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_with_multiple_orgs.pk}-contextual-actions"
+        ):
+            button = self.selenium.find_element(
+                By.ID,
+                f"remove-aidant-{self.aidant_with_multiple_orgs.pk}-from-organisation",
+            )
 
-        button = self.selenium.find_element(
-            By.ID, f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation"
-        )
-        self.assertEqual("Désactiver l’aidant", button.text)
+            self.assertEqual(
+                "Retirer l’aidant de l’organisation",
+                button.text,
+            )
+
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            button = self.selenium.find_element(
+                By.ID,
+                f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation",
+            )
+            self.assertEqual("Désactiver l’aidant", button.text)
 
         self.assertElementNotFound(
             By.ID, f"remove-aidant-{self.aidant_responsable.pk}-from-organisation"
         )
 
-        # Let's try those btns shall we?
-        button.click()
-        path = reverse(
-            "espace_responsable_remove_aidant_from_organisation",
-            kwargs={
-                "organisation_id": self.organisation.pk,
-                "aidant_id": self.aidant_active_with_card.pk,
-            },
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            # Let's try those btns shall we?
+            self.selenium.find_element(
+                By.ID,
+                f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation",
+            ).click()
+
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_remove_aidant_from_organisation",
+                kwargs={
+                    "organisation_id": self.organisation.pk,
+                    "aidant_id": self.aidant_active_with_card.pk,
+                },
+            )
         )
-        self.wait.until(url_matches(f"^.+{path}$"))
 
         self.selenium.find_element(
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Confirmer']"
         ).click()
 
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         self.assertElementNotFound(
             By.ID, f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation"
         )
 
-        self.selenium.find_element(
-            By.ID,
-            f"remove-aidant-{self.aidant_with_multiple_orgs.pk}-from-organisation",
-        ).click()
-        path = reverse(
-            "espace_responsable_remove_aidant_from_organisation",
-            kwargs={
-                "organisation_id": self.organisation.pk,
-                "aidant_id": self.aidant_with_multiple_orgs.pk,
-            },
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_with_multiple_orgs.pk}-contextual-actions"
+        ):
+            self.selenium.find_element(
+                By.ID,
+                f"remove-aidant-{self.aidant_with_multiple_orgs.pk}-from-organisation",
+            ).click()
+
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_remove_aidant_from_organisation",
+                kwargs={
+                    "organisation_id": self.organisation.pk,
+                    "aidant_id": self.aidant_with_multiple_orgs.pk,
+                },
+            )
         )
-        self.wait.until(url_matches(f"^.+{path}$"))
 
         self.selenium.find_element(
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Confirmer']"
         ).click()
 
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         self.assertElementNotFound(
             By.ID,
@@ -279,20 +298,23 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         )
 
     def test_remove_card_from_aidant(self):
-        root_path = reverse("espace_responsable_organisation")
-
-        self.open_live_url(root_path)
+        self.open_live_url(reverse("espace_responsable_aidants"))
 
         # Login
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         # First aidant: disabled
         self.assertIsNotNone(self.aidant_inactive_with_card.carte_totp)
 
-        self.selenium.find_element(
-            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_inactive_with_card.pk}"
-        ).click()
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_inactive_with_card.pk}-contextual-actions"
+        ):
+            self.selenium.find_element(
+                By.ID,
+                f"manage-totp-cards-for-aidant-{self.aidant_inactive_with_card.pk}",
+            ).click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_choose_totp",
@@ -305,8 +327,8 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             f"remove-totp-card-from-aidant-{self.aidant_inactive_with_card.pk}",
         )
         self.assertEqual("Délier la carte physique", button1.text)
-
         button1.click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_aidant_remove_card",
@@ -318,12 +340,15 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Dissocier']"
         ).click()
 
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
-        # Return on manage cards page
-        self.selenium.find_element(
-            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_inactive_with_card.pk}"
-        ).click()
+        self.open_live_url(
+            reverse(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_inactive_with_card.id},
+            )
+        )
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_choose_totp",
@@ -331,17 +356,22 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             )
         )
         self.assertElementNotFound(
-            By.ID, f"remove-totp-card-from-aidant-{self.aidant_inactive_with_card.pk}"
+            By.ID, f"aidant-{self.aidant_inactive_with_card.pk}-contextual-actions"
         )
 
         self.aidant_inactive_with_card.refresh_from_db()
         with self.assertRaises(Aidant.carte_totp.RelatedObjectDoesNotExist):
             self.aidant_inactive_with_card.carte_totp
 
-        self.open_live_url(reverse("espace_responsable_organisation"))
-        self.selenium.find_element(
-            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
-        ).click()
+        self.open_live_url(reverse("espace_responsable_aidants"))
+
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            self.selenium.find_element(
+                By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
+            ).click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_choose_totp",
@@ -349,13 +379,29 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             )
         )
         self.assertIsNotNone(self.aidant_active_with_card.carte_totp)
-        button2 = self.selenium.find_element(
-            By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_with_card.pk}"
-        )
-        self.assertEqual("Délier la carte physique", button2.text)
 
-        # First aidant: active
-        button2.click()
+        self.open_live_url(reverse("espace_responsable_aidants"))
+
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            button2 = self.selenium.find_element(
+                By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
+            )
+            self.assertEqual("Gérer les cartes OTP", button2.text)
+            button2.click()
+
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_active_with_card.pk},
+            )
+        )
+
+        self.selenium.find_element(
+            By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_with_card.pk}"
+        ).click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_aidant_remove_card",
@@ -367,11 +413,15 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Dissocier']"
         ).click()
 
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
-        self.selenium.find_element(
-            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
-        ).click()
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            self.selenium.find_element(
+                By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
+            ).click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_choose_totp",
@@ -794,7 +844,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         elt.send_keys(new_email)
 
         self.selenium.find_element(By.ID, "form-submit").click()
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_responsable_demandes"))
 
         # Don't forget to modify the data for the test
         reqs[idx_to_modify].email = new_email

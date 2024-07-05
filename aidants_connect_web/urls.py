@@ -168,6 +168,21 @@ urlpatterns = [
         name="espace_responsable_organisation",
     ),
     path(
+        "espace-responsable/aidants/",
+        espace_responsable.AidantsView.as_view(),
+        name="espace_responsable_aidants",
+    ),
+    path(
+        "espace-responsable/referents/",
+        espace_responsable.ReferentsView.as_view(),
+        name="espace_responsable_referents",
+    ),
+    path(
+        "espace-responsable/demandes/",
+        espace_responsable.DemandesView.as_view(),
+        name="espace_responsable_demandes",
+    ),
+    path(
         "espace-responsable/organisation/<int:organisation_id>/responsables/",
         espace_responsable.OrganisationResponsables.as_view(),
         name="espace_responsable_organisation_responsables",
