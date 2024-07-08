@@ -1,6 +1,6 @@
 Bonjour {{ user.get_full_name }},
 
-Suite à notre relance du mois dernier, comme annoncé, votre compte a été désactivé pour des raisons de sécurité, conformément aux CGU d’Aidants Connect ({{ cgu_url }}).
+Suite à notre précédente relance, comme annoncé, votre compte a été désactivé pour des raisons de sécurité, conformément aux CGU d’Aidants Connect ({{ cgu_url }}).
 
 Nous vous invitons à nous retourner les cartes Aidants Connect à l'adresse suivante : 
 ANCT-Incubateur des Territoires

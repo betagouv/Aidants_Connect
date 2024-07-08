@@ -5,7 +5,9 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
 from django.utils import timezone
@@ -13,11 +15,16 @@ from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from factory.django import mute_signals
 from freezegun import freeze_time
 from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
 
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
+from aidants_connect_common.models import FormationAttendant
+from aidants_connect_common.tests.factories import FormationFactory
+from aidants_connect_habilitation.models import AidantRequest
+from aidants_connect_habilitation.tests.factories import AidantRequestFactory
 from aidants_connect_web.constants import (
     ReferentRequestStatuses,
     RemoteConsentMethodChoices,
@@ -1950,7 +1957,46 @@ class JournalModelTests(TestCase):
 
 
 @tag("models", "habilitation_request")
-class HabilitationRequestMethodTests(TestCase):
+class HabilitationRequestForSandboxTests(TestCase):
+    def test_generate_dict_for_sandbox(self):
+        orga = OrganisationFactory(
+            name="Test",
+            data_pass_id=424242,
+            siret="123456789",
+            address="Test Address",
+            zipcode="12345",
+            city="Test City",
+        )
+        hr = HabilitationRequestFactory(
+            organisation=orga,
+            first_name="Test NOM",
+            last_name="Test PRENOM",
+            email="Test Email",
+        )
+
+        rdict = hr.generate_dict_for_sandbox()
+        self.assertDictEqual(
+            rdict,
+            {
+                "first_name": "Test NOM",
+                "last_name": "Test PRENOM",
+                "profession": hr.profession,
+                "email": "Test Email",
+                "username": "Test Email",
+                "organisation__data_pass_id": 424242,
+                "organisation__name": "Test",
+                "organisation__siret": "123456789",
+                "organisation__address": "Test Address",
+                "organisation__city": "Test City",
+                "organisation__zipcode": "12345",
+                "datapass_id_managers": "",
+                "token": settings.SANDBOX_API_TOKEN,
+            },
+        )
+
+
+@tag("models", "habilitation_request")
+class HabilitationRequestTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         pass
@@ -2031,6 +2077,110 @@ class HabilitationRequestMethodTests(TestCase):
         self.assertEqual(
             db_hab_request.status, ReferentRequestStatuses.STATUS_REFUSED.value
         )
+
+    def test_check_attendants_count_trigger(self):
+        # Prevent aidants_connect_web.signals.cancel_formation_on_habilitation_cancelation from triggering  # noqa: E501
+        with mute_signals(pre_save, post_save):
+            ar1 = AidantRequestFactory()
+            hr1 = HabilitationRequestFactory()
+            FormationAttendant.objects.create(
+                attendant=ar1, formation=FormationFactory()
+            )
+            FormationAttendant.objects.create(
+                attendant=hr1, formation=FormationFactory()
+            )
+
+            ar2 = AidantRequestFactory()
+            FormationAttendant.objects.create(
+                attendant=ar2, formation=FormationFactory()
+            )
+
+            arct = ContentType.objects.get_for_model(AidantRequest)
+            hrct = ContentType.objects.get_for_model(HabilitationRequest)
+
+        self.assertEqual(
+            {(ar1.pk, arct.pk), (hr1.pk, hrct.pk), (ar2.pk, arct.pk)},
+            set(
+                FormationAttendant.objects.all().values_list(
+                    "attendant_id", "attendant_content_type"
+                )
+            ),
+        )
+        with mute_signals(pre_save, post_save):
+            hr2 = HabilitationRequestFactory(email=ar2.email)
+
+        self.assertEqual(
+            {(ar1.pk, arct.pk), (hr1.pk, hrct.pk), (hr2.pk, hrct.pk)},
+            set(
+                FormationAttendant.objects.all().values_list(
+                    "attendant_id", "attendant_content_type"
+                )
+            ),
+        )
+
+    @mute_signals(pre_save, post_save)
+    def test_check_p2p_course_type_trigger(self):
+        hr1: HabilitationRequest = HabilitationRequestFactory(
+            status=HabilitationRequest.ReferentRequestStatuses.STATUS_NEW,
+            course_type=HabilitationRequest.CourseType.CLASSIC,
+        )
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_NEW, hr1.status
+        )
+        self.assertEqual(HabilitationRequest.CourseType.CLASSIC, hr1.course_type)
+
+        # Case HR passes to STATUS_PROCESSING_P2P
+        hr1.status = HabilitationRequest.ReferentRequestStatuses.STATUS_PROCESSING_P2P
+        hr1.save()
+        hr1.refresh_from_db()
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_PROCESSING_P2P,
+            hr1.status,
+        )
+        self.assertEqual(HabilitationRequest.CourseType.P2P, hr1.course_type)
+
+        # HR.course_type is maintained across validation
+        hr1.status = HabilitationRequest.ReferentRequestStatuses.STATUS_VALIDATED
+        hr1.save()
+        hr1.refresh_from_db()
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_VALIDATED, hr1.status
+        )
+        self.assertEqual(HabilitationRequest.CourseType.P2P, hr1.course_type)
+
+        # Case HR passes to STATUS_PROCESSING
+        hr1.status = HabilitationRequest.ReferentRequestStatuses.STATUS_PROCESSING
+        hr1.save()
+        hr1.refresh_from_db()
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_PROCESSING, hr1.status
+        )
+        self.assertEqual(HabilitationRequest.CourseType.CLASSIC, hr1.course_type)
+
+        # HR.course_type is maintained across validation
+        hr1.status = HabilitationRequest.ReferentRequestStatuses.STATUS_VALIDATED
+        hr1.save()
+        hr1.refresh_from_db()
+
+        self.assertEqual(
+            HabilitationRequest.ReferentRequestStatuses.STATUS_VALIDATED, hr1.status
+        )
+        self.assertEqual(HabilitationRequest.CourseType.CLASSIC, hr1.course_type)
+
+    def test_cancel_habilitation_unregister_formation(self):
+        hr1: HabilitationRequest = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_VALIDATED
+        )
+        FormationAttendant.objects.create(attendant=hr1, formation=FormationFactory())
+
+        self.assertEqual(1, FormationAttendant.objects.count())
+
+        hr1.cancel_by_responsable()
+        self.assertEqual(0, FormationAttendant.objects.count())
 
 
 @tag("models", "manndat", "usager", "journal")
@@ -2243,3 +2393,69 @@ class CoReferentNonAidantRequestTests(TestCase):
         self.assertEqual(request.email, aidant.email)
         self.assertEqual(request.organisation, aidant.organisation)
         self.assertIn(aidant, request.organisation.responsables.all())
+
+
+class FormationAttendantTests(TestCase):
+    def test_I_cant_regester_more_aidant_than_max_attendees(self):
+        formation = FormationFactory(max_attendants=2)
+
+        aidant_request = AidantRequestFactory()
+        FormationAttendant.objects.create(formation=formation, attendant=aidant_request)
+
+        habilitation_request = HabilitationRequestFactory()
+        last = FormationAttendant.objects.create(
+            formation=formation, attendant=habilitation_request
+        )
+
+        self.assertEqual(
+            2, FormationAttendant.objects.filter(formation=formation).count()
+        )
+
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                FormationAttendant.objects.create(
+                    formation=formation, attendant=AidantRequestFactory()
+                )
+
+        self.assertEqual(
+            2, FormationAttendant.objects.filter(formation=formation).count()
+        )
+
+        # Can unregister an attendant and register a new one
+        with transaction.atomic():
+            last.delete()
+
+        # Cancelled registration don't prevent from registering an attendant
+        FormationAttendant.objects.create(
+            formation=formation,
+            attendant=AidantRequestFactory(),
+            state=FormationAttendant.State.CANCELLED,
+        )
+
+        self.assertEqual(
+            2, FormationAttendant.objects.filter(formation=formation).count()
+        )
+
+        FormationAttendant.objects.create(
+            formation=formation, attendant=AidantRequestFactory()
+        )
+
+        self.assertEqual(
+            3, FormationAttendant.objects.filter(formation=formation).count()
+        )
+
+        with self.assertRaises(IntegrityError):
+            FormationAttendant.objects.create(
+                formation=formation, attendant=AidantRequestFactory()
+            )
+
+    def test_I_cant_register_an_attendant_to_a_formation_twice(self):
+        formation = FormationFactory(max_attendants=2)
+        aidant_request = AidantRequestFactory()
+
+        FormationAttendant.objects.create(formation=formation, attendant=aidant_request)
+
+        with self.assertRaises(IntegrityError):
+            FormationAttendant.objects.create(
+                formation=formation, attendant=aidant_request
+            )

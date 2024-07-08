@@ -22,12 +22,12 @@ from django.views.generic import FormView, TemplateView, View
 import qrcode
 from phonenumbers import PhoneNumber
 
-from aidants_connect_common.templatetags.ac_common import mailto
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     AuthorizationDurationChoices,
     AuthorizationDurations,
 )
-from aidants_connect_common.utils.render_markdown import render_markdown
+from aidants_connect_common.templatetags.ac_common import mailto
+from aidants_connect_common.utils import render_markdown
 from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
 from aidants_connect_pico_cms.models import MandateTranslation
@@ -408,6 +408,9 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             }
         )
 
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "organisation": self.aidant.organisation}
+
     def get_success_url(self):
         return (
             reverse("fc_authorize")
@@ -494,6 +497,11 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
         ):
             return result
 
+        try:
+            self.usager: Usager = Usager.objects.get(pk=self.connection.usager.pk)
+        except (AttributeError, Usager.DoesNotExist):
+            return self.redirect_on_error()
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -523,7 +531,11 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
             ) from e
 
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "aidant": self.aidant}
+        return {
+            **super().get_form_kwargs(),
+            "usager": self.usager,
+            "aidant": self.aidant,
+        }
 
     def form_valid(self, form):
         fixed_date = timezone.now()
@@ -593,24 +605,18 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
                 )
                 Journal.log_autorisation_creation(autorisation, self.aidant)
 
-        except AttributeError as error:
-            log.error("Error happened in Recap")
-            log.error(error)
-            django_messages.error(
-                self.request, f"Error with Usager attribute : {error}"
-            )
-            return redirect("espace_aidant_home")
-
-        except IntegrityError as error:
-            log.error("Error happened in Recap")
-            log.error(error)
-            django_messages.error(self.request, f"No Usager was given : {error}")
-            return redirect("espace_aidant_home")
+        except (AttributeError, IntegrityError):
+            return self.redirect_on_error()
 
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse("new_attestation_final", kwargs={"mandat_id": self.mandat.pk})
+
+    def redirect_on_error(self):
+        log.exception("Error happened in Recap")
+        django_messages.error(self.request, "Une erreur inconnue s'est produite")
+        return redirect("espace_aidant_home")
 
 
 @aidant_logged_with_activity_required

@@ -1,9 +1,18 @@
 {% load form_extras %}
-{% include "django/forms/widgets/input.html" %}
-<label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}{% class_attr option.label_classes %}>
-  {% if widget.img_src %}<img src="{{ widget.img_src }}" class="{{ widget.input_wrapper_base_class }}-logo" alt="" aria-hidden="true" />{% endif %}
-  {% if widget.description %}<span class="{{ widget.input_wrapper_base_class }}-label-text-and-description">{% endif %}
-  <span class="{{ widget.input_wrapper_base_class }}-label-text">{% block widget_label %}{{ widget.label }}{% endblock %}</span>
-  {% if widget.description %}<span class="{{ widget.input_wrapper_base_class }}-description">{% block widget_description %}{{ widget.description }}{% endblock %}</span>
-  </span>{% endif %}
-</label>
+<div class="{% block class_tile %}{% endblock %}">
+  {% block extra_tile %}{% endblock %} 
+
+  {% include "django/forms/widgets/input.html" %}
+
+  <label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}{% class_attr option.label_classes %}>
+    {% if widget.img_src %}
+      <img src="{{ widget.img_src }}" class="{{ widget.input_wrapper_base_class }}-logo" alt="" aria-hidden="true" />
+    {% endif %}
+    {% if widget.description %}
+      <span class="{{ widget.input_wrapper_base_class }}-label-text-and-description">
+    {% endif %}
+    <span class="{{ widget.input_wrapper_base_class }}-label-text fr-mb-2w">{% block widget_label %}{{ widget.label }}{% endblock %}</span>
+    {% if widget.description %}<span class="{{ widget.input_wrapper_base_class }}-description">{% block widget_description %}{{ widget.description }}{% endblock %}</span>
+    </span>{% endif %}
+  </label>
+</div>

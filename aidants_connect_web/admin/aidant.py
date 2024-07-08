@@ -23,7 +23,7 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect.utils import strtobool
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
-from aidants_connect_common.utils.constants import JournalActionKeywords
+from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.forms import (
     AidantChangeForm,
@@ -73,10 +73,16 @@ class AidantResource(resources.ModelResource):
             "responsable_de",
             "carte_ac",
             "can_create_mandats",
+            "conseiller_numerique",
             "phone",
+            "carte_totp",
+            "datapass_id",
+            "respo_de_datapass_id",
+            "token",
+            "totp_drift",
         )
 
-    def before_save_instance(self, instance: Aidant, using_transactions, dry_run):
+    def before_save_instance(self, instance: Aidant, row, **kwargs):
         if not instance.email:
             instance.email = instance.username
 
@@ -95,7 +101,7 @@ class AidantResource(resources.ModelResource):
         if token and len(token) == 6 and token.isnumeric():
             add_static_token(row["username"], token)
 
-    def after_save_instance(self, instance: Aidant, using_transactions, dry_run):
+    def after_save_instance(self, instance: Aidant, row, **kwargs):
         if hasattr(instance, "carte_ac") and instance.carte_ac is not None:
             card_sn = instance.carte_ac
             # instance.carte_ac is the sn the import added to the aidant instance,
@@ -342,6 +348,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "has_otp_app",
         "is_active",
         "can_create_mandats",
+        "conseiller_numerique",
         "deactivation_warning_at",
         "created_at",
         "is_staff",
@@ -355,6 +362,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_active",
         "aidant_type",
         "can_create_mandats",
+        "conseiller_numerique",
         AidantInPreDesactivationZoneFilter,
         AidantWithMandatsFilter,
         AidantGoneTooLong,
@@ -405,6 +413,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 "fields": (
                     "is_active",
                     "can_create_mandats",
+                    "conseiller_numerique",
                     "is_staff",
                     "is_superuser",
                     "responsable_de",

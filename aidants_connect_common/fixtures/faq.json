@@ -1,0 +1,1224 @@
+[
+  {
+    "model": "aidants_connect_pico_cms.faqcategory",
+    "pk": 1,
+    "fields": {
+      "created_at": "2024-02-06T15:34:31.118Z",
+      "updated_at": "2024-02-06T15:34:31.118Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "questions-generales",
+      "name": "Questions générales",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqcategory",
+    "pk": 2,
+    "fields": {
+      "created_at": "2024-02-06T15:34:52.251Z",
+      "updated_at": "2024-02-06T15:34:52.251Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "lhabilitation-aidants-connect",
+      "name": "Lʼhabilitation Aidants Connect",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqcategory",
+    "pk": 3,
+    "fields": {
+      "created_at": "2024-02-06T15:35:22.628Z",
+      "updated_at": "2024-02-06T15:35:22.628Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "utiliser-aidants-connect",
+      "name": "Utiliser Aidants Connect",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqcategory",
+    "pk": 4,
+    "fields": {
+      "created_at": "2024-02-06T15:35:47.791Z",
+      "updated_at": "2024-02-06T15:35:47.791Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "responsabilite-juridique-et-rgpd",
+      "name": "Responsabilité juridique et RGPD",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqcategory",
+    "pk": 5,
+    "fields": {
+      "created_at": "2024-02-06T15:38:58.831Z",
+      "updated_at": "2024-02-06T15:38:58.832Z",
+      "published": true,
+      "sort_order": 5,
+      "slug": "securite",
+      "name": "Sécurité",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 1,
+    "fields": {
+      "created_at": "2024-02-06T15:51:52.032Z",
+      "updated_at": "2024-02-06T15:51:52.032Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "qui-peut-ou-pas-etre-habilite-a-aidants-conne",
+      "name": "Qui peut ou pas être habilité à Aidants Connect",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 2,
+    "fields": {
+      "created_at": "2024-02-06T15:52:10.342Z",
+      "updated_at": "2024-02-06T15:52:10.342Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "procedure-dhabilitation",
+      "name": "Procédure dʼhabilitation",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 3,
+    "fields": {
+      "created_at": "2024-02-06T15:52:46.069Z",
+      "updated_at": "2024-02-06T15:52:46.069Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "referent-aidants-connect",
+      "name": "Référent Aidants Connect",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 4,
+    "fields": {
+      "created_at": "2024-02-06T15:53:05.821Z",
+      "updated_at": "2024-02-06T15:53:05.821Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "se-connecter-sur-la-plateforme",
+      "name": "Se connecter sur la plateforme",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 5,
+    "fields": {
+      "created_at": "2024-02-06T15:53:22.465Z",
+      "updated_at": "2024-02-06T15:53:22.465Z",
+      "published": true,
+      "sort_order": 5,
+      "slug": "creer-un-mandat",
+      "name": "Créer un mandat",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 6,
+    "fields": {
+      "created_at": "2024-02-06T15:53:37.681Z",
+      "updated_at": "2024-02-06T15:53:37.681Z",
+      "published": true,
+      "sort_order": 6,
+      "slug": "realiser-une-demarche",
+      "name": "Réaliser une démarche",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 7,
+    "fields": {
+      "created_at": "2024-02-06T15:53:53.612Z",
+      "updated_at": "2024-02-06T15:53:53.612Z",
+      "published": true,
+      "sort_order": 7,
+      "slug": "aide-sur-la-plateforme",
+      "name": "Aide sur la plateforme",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 8,
+    "fields": {
+      "created_at": "2024-02-06T15:54:10.334Z",
+      "updated_at": "2024-02-06T15:54:10.334Z",
+      "published": true,
+      "sort_order": 8,
+      "slug": "depart-dun-aidant-ou-referent",
+      "name": "Départ dʼun aidant ou référent",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 9,
+    "fields": {
+      "created_at": "2024-02-08T11:19:53.021Z",
+      "updated_at": "2024-02-08T11:19:53.021Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "droit-a-lerreur",
+      "name": "Droit à l’erreur",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 10,
+    "fields": {
+      "created_at": "2024-02-08T11:21:24.614Z",
+      "updated_at": "2024-02-08T11:21:24.614Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "responsabilite-de-la-structure",
+      "name": "Responsabilité de la structure",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 11,
+    "fields": {
+      "created_at": "2024-02-08T11:21:36.664Z",
+      "updated_at": "2024-02-08T11:21:36.664Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "gestion-et-conservation-des-donnees-personnel",
+      "name": "Gestion et conservation des données personnelles",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 12,
+    "fields": {
+      "created_at": "2024-02-08T11:21:51.384Z",
+      "updated_at": "2024-02-08T11:21:51.384Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "liens-cgu-et-politique-de-confidentialite",
+      "name": "Liens CGU et politique de confidentialité",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 13,
+    "fields": {
+      "created_at": "2024-02-08T18:00:09.371Z",
+      "updated_at": "2024-02-08T18:00:09.371Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "le-deploiement-daidants-connect",
+      "name": "Le déploiement dʼAidants Connect",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqsubcategory",
+    "pk": 14,
+    "fields": {
+      "created_at": "2024-02-08T18:01:07.436Z",
+      "updated_at": "2024-02-08T18:01:07.436Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "securiser-son-compte-aidants-connect",
+      "name": "Sécuriser son compte Aidants Connect",
+      "body": ""
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 61,
+    "fields": {
+      "created_at": "2024-02-08T11:31:18.953Z",
+      "updated_at": "2024-02-08T18:01:27.899Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "quest-ce-quun-code-otp",
+      "question": "Qu’est-ce qu’un code OTP ?",
+      "body": "Un code OTP (One-Time Password) est un mot de passe qui n’est valable qu’une seule fois. Il est utilisé pour renforcer la sécurité lors de l’authentification à une plateforme. \\r\\n\\r\\nPour les utilisateurs d’Aidants Connect, les aidants habilités ont soit une carte OTP qui leur a été envoyé suite à la formation soit un téléphone avec une application OTP pour générer un code à 6 chiffres et à usage unique. Le code doit être utilisé dans un temps limité (60 secondes pour la plateforme Aidants Connect) et il n’est valable qu’une fois. Passé ce délai, un nouveau code à 6 chiffres devra être généré sur sa carte Aidants Connect ou sur son téléphone pour accéder à son compte Aidants Connect.",
+      "category": 5,
+      "subcategory": 14
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 1,
+    "fields": {
+      "created_at": "2024-02-06T15:44:52.233Z",
+      "updated_at": "2024-02-08T18:02:02.645Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "qui-peut-ou-ne-pas-etre-habilite-a-aidants-co",
+      "question": "Aidants Connect, quʼest-ce que cʼest ?",
+      "body": "Aidants Connect est un service public numérique qui permet à des aidants professionnels d’accompagner en toute sécurité des usagers dans la réalisation de démarches administratives en ligne.",
+      "category": 1,
+      "subcategory": 13
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 5,
+    "fields": {
+      "created_at": "2024-02-06T16:03:58.229Z",
+      "updated_at": "2024-02-08T18:02:39.554Z",
+      "published": true,
+      "sort_order": 5,
+      "slug": "une-meme-structure-peut-elle-avoir-plusieurs-",
+      "question": "Une même structure peut-elle avoir plusieurs comptes Aidants Connect ?",
+      "body": "Une structure peut avoir plusieurs aidants professionnels habilités, chaque aidant possède un compte nominatif. Tous les aidants habilités sont sensibilisés à la protection des données personnelles des usagers lors de la formation.",
+      "category": 1,
+      "subcategory": 13
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 10,
+    "fields": {
+      "created_at": "2024-02-06T16:08:33.763Z",
+      "updated_at": "2024-02-06T16:08:33.763Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "pourquoi-les-benevoles-ne-peuvent-pas-etre-ha",
+      "question": "Pourquoi les bénévoles ne peuvent pas être habilités Aidants Connect ?",
+      "body": "Les bénévoles ne peuvent pas utiliser le service Aidants Connect pour les raisons suivantes :\\r\\n\\r\\n* Les bénévoles n’ont pas de contrat de travail avec la structure dans laquelle ils se portent volontaires. En cas de litige, aucun recours n’est donc possible ;\\r\\n* L’aidant professionnel engage sa responsabilité pénale comme celle de sa hiérarchie (c’est-à-dire le référent de la structure).",
+      "category": 2,
+      "subcategory": 1
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 65,
+    "fields": {
+      "created_at": "2024-02-08T11:35:52.263Z",
+      "updated_at": "2024-02-08T18:01:53.266Z",
+      "published": true,
+      "sort_order": 5,
+      "slug": "comment-reactiver-mon-compte-apres-une-desact",
+      "question": "Comment réactiver mon compte après une désactivation ?",
+      "body": "Conformément aux conditions générales d’utilisation de la plateforme Aidants Connect, tous les comptes inactifs depuis 6 mois seront temporairement désactivés. Les aidants sont prévenus un mois à l’avance avant la désactivation. Passé ce délai, si vous souhaitez de nouveau accéder à la plateforme, nous vous invitons à nous contacter à l’adresse suivante contact@aidantsconnect.beta.gouv.fr",
+      "category": 5,
+      "subcategory": 14
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 14,
+    "fields": {
+      "created_at": "2024-02-06T16:11:01.112Z",
+      "updated_at": "2024-02-06T16:11:01.112Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "lhabilitation-se-fait-elle-au-nom-dune-person",
+      "question": "L’habilitation se fait-elle au nom d’une personne physique ou au nom de la structure ?",
+      "body": "L’habilitation est portée par la structure et se rapporte donc au nom de la structure. Tout changement relatif à la structure (adresse postale, adresse email) doit être notifié à l’adresse e-mail suivante : contact@aidantsconnect.beta.gouv.fr.",
+      "category": 2,
+      "subcategory": 2
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 26,
+    "fields": {
+      "created_at": "2024-02-06T16:20:47.714Z",
+      "updated_at": "2024-02-06T16:20:47.714Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "quest-que-le-mandat-aidants-connect",
+      "question": "Qu’est que le mandat Aidants Connect ?",
+      "body": "Le mandat est un contrat par lequel l’usager donne à l’aidant le pouvoir de réaliser des démarches administratives en son nom. Il précise le type de démarches à réaliser et la durée de l’accompagnement. Il protège l’aidant et lʼusager et peut être modifié ou résilié à tout moment.",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 24,
+    "fields": {
+      "created_at": "2024-02-06T16:19:41.502Z",
+      "updated_at": "2024-02-08T11:43:08.118Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "comment-se-connecter-a-aidants-connect",
+      "question": "Comment se connecter à Aidants Connect ?",
+      "body": "Retrouvez toutes les étapes pour se connecter à la plateforme Aidants Connect dans le guide [“S’authentifier sur la plateforme Aidants Connect”](https://aidantsconnect.beta.gouv.fr/static/guides_aidants_connect/AC_Guide_Sauthentifier.pdf).",
+      "category": 3,
+      "subcategory": 4
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 39,
+    "fields": {
+      "created_at": "2024-02-07T08:29:10.484Z",
+      "updated_at": "2024-02-07T08:29:10.484Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "jessaie-de-me-connecter-a-lespace-referent-po",
+      "question": "J’essaie de me connecter à l’espace référent pour la première fois mais cela ne fonctionne pas",
+      "body": "Pour pouvoir accéder à votre espace référent, il faut au moins un aidant formé dans la structure. A l’issue de la formation d’au moins un aidant, un kit de ressources avec un code de première connexion à usage unique est envoyé par voie postale au référent. Si vous avez reçu tous les éléments  pour vous connecter mais que cela ne fonctionne pas, voici les raisons : \\r\\n- L’adresse e-mail utilisée pour se connecter doit être celle renseignée dans le formulaire d’habilitation : cette adresse e-mail doit être une adresse professionnelle et doit être nominative ;\\r\\n- Un code à usage unique est nécessaire lors de la première connexion : il se trouve dans le kit de bienvenue ou est collé sur l’enveloppe (lors de la première connexion vous ne pouvez pas vous connecter avec la carte Aidants Connect ou votre application OTP).\\r\\n\\r\\nSi vous avez vérifié ces éléments et que vous n’arrivez toujours pas à vous connecter, contactez-nous à l’adresse suivante contact@aidantsconnect.beta.gouv.fr",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 2,
+    "fields": {
+      "created_at": "2024-02-06T15:58:29.775Z",
+      "updated_at": "2024-02-14T13:13:20.589Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "a-qui-sadresse-aidants-connect",
+      "question": "À qui s’adresse Aidants Connect ?",
+      "body": "Aidants Connect s’adresse à des structures qui emploient des aidants professionnels salariés de leurs structures et qui accompagnent régulièrement des usagers dans la réalisation de démarches administratives en ligne. Il peut s’agir de travailleurs sociaux, d’agents publics d’accueil, de médiateurs numériques...",
+      "category": 1,
+      "subcategory": 13
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 11,
+    "fields": {
+      "created_at": "2024-02-06T16:09:22.022Z",
+      "updated_at": "2024-02-06T16:09:22.022Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "pourquoi-les-services-civiques-ne-peuvent-pas",
+      "question": "Pourquoi les services civiques ne peuvent pas être habilités Aidants Connect ?",
+      "body": "Les services civiques ne peuvent pas utiliser le service Aidants Connect pour les raisons suivantes :\\r\\n\\r\\n* Le service Aidants Connect est accessible uniquement aux professionnels de l’accompagnement qui ont donc de l’expérience dans l’accompagnement des publics isolés ;\\r\\n* Chaque aidant professionnel doit suivre une formation avant d’utiliser le service Aidants Connect ;\\r\\n* L’aidant professionnel engage sa responsabilité pénale comme celle de sa hiérarchie (c’est-à-dire le référent de la structure).",
+      "category": 2,
+      "subcategory": 1
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 32,
+    "fields": {
+      "created_at": "2024-02-06T16:25:22.086Z",
+      "updated_at": "2024-02-08T11:50:05.181Z",
+      "published": true,
+      "sort_order": 7,
+      "slug": "le-mandat-aidants-connect-existe-t-il-dans-pl",
+      "question": "Le mandat Aidants Connect existe-t-il dans plusieurs langues ?",
+      "body": "À ce jour le mandat Aidants Connect est consultable en français, anglais, arabe, dari et pachto. \\r\\nNéanmoins, seule la version française signée par lʼusager permet de garantir la protection des 2 parties. \\r\\n\\r\\nRetrouvez les traductions du mandat traduit sur le lien suivant [https://aidantsconnect.beta.gouv.fr/guide_utilisation/](https://aidantsconnect.beta.gouv.fr/guide_utilisation/)",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 64,
+    "fields": {
+      "created_at": "2024-02-08T11:35:22.232Z",
+      "updated_at": "2024-02-08T18:01:47.548Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "que-faire-si-ma-boite-email-a-ete-piratee",
+      "question": "Que faire si ma boite email a été piratée ?",
+      "body": "Si votre boîte email a été piratée, il faut agir rapidement pour sécuriser votre compte Aidants Connect. Vous devez contacter l’équipe support à l’adresse suivante : contact@aidantsconnect.beta.gouv.fr",
+      "category": 5,
+      "subcategory": 14
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 57,
+    "fields": {
+      "created_at": "2024-02-08T11:28:26.502Z",
+      "updated_at": "2024-02-08T11:28:26.502Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "que-dit-le-droit-au-sujet-de-la-conservation-",
+      "question": "Que dit le droit au sujet de la conservation des données et des documents officiels ?",
+      "body": "Le droit en vigueur, à savoir la loi Informatique et libertés de 1978 et le RGPD de 2018, précise que les données à caractère personnel doivent être conservées de manière proportionnée au regard des finalités nécessaires. Le RGPD ne définit pas de durée de conservation des données. Une durée de conservation spécifique à un traitement peut être prévue par un texte (loi, arrêté, décret). La CNIL propose aussi des recommandations afin dʼaiguiller les responsables de traitement sur les durées de conservation.",
+      "category": 4,
+      "subcategory": 11
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 12,
+    "fields": {
+      "created_at": "2024-02-06T16:09:54.426Z",
+      "updated_at": "2024-02-06T16:09:54.426Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "les-elus-peuvent-ils-etre-habilites-aidants-c",
+      "question": "Les élus peuvent-ils être habilités Aidants Connect ?",
+      "body": "Pour les communes disposant d’un CCAS, les élus ne peuvent pas être habilités. Nous recommandons aux élus de faire habiliter le CCAS qui est la structure missionnée pour l’accompagnement social d’usagers. Pour les communes ne disposant pas de CCAS (moins de 1500 habitants), nous recommandons lʼhabilitation des services de la commune.\\r\\n\\r\\nDans le cas où l’élu est agent au sein d’un CCAS, ou d’un CIAS, il pourra être habilité en sa qualité d’agent public. Ce cas de figure ne peut valablement être envisagé que lorsque l’élu occupe un emploi dans une structure qui n’intervient pas sur le territoire pour lequel il exerce son mandat (article L 237-1 du code électoral). Par exemple : l’élu d’une commune peut être salarié d’un CCAS présent sur le territoire d’une autre commune. Dans ce cas, il est alors recommandé de faire signer un engagement à utiliser Aidants Connect dans le seul cadre des fonctions professionnelles et strictement dans le ressort territorial de l’employeur, sans jamais intervenir pour un usager, citoyen de la commune pour lequel il détient un mandat électif.",
+      "category": 2,
+      "subcategory": 1
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 13,
+    "fields": {
+      "created_at": "2024-02-06T16:10:25.300Z",
+      "updated_at": "2024-02-06T16:10:25.300Z",
+      "published": true,
+      "sort_order": 5,
+      "slug": "tous-les-usagers-peuvent-ils-etre-accompagnes",
+      "question": "Tous les usagers peuvent-ils être accompagnés dans leurs démarches via la plateforme Aidants Connect ?",
+      "body": "Tous les usagers peuvent être accompagnés dans leurs démarches en ligne sauf les usagers sous tutelle et les usagers sous curatelle. Pour que le mandat Aidants Connect soit validé juridiquement, l’usager doit être en capacité de donner son consentement éclairé pour être accompagné dans ses démarches en ligne avec l’aide d’un aidant professionnel.",
+      "category": 2,
+      "subcategory": 1
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 31,
+    "fields": {
+      "created_at": "2024-02-06T16:24:40.937Z",
+      "updated_at": "2024-02-08T15:29:25.051Z",
+      "published": true,
+      "sort_order": 6,
+      "slug": "comment-garantir-le-consentement-de-lusager",
+      "question": "Comment garantir le consentement de l’usager ?",
+      "body": "Le consentement est un acte positif qui atteste que la personne donne son accord à une action. Dans le cadre du mandat Aidants Connect le consentement de l’usager est recueilli en trois étapes :\\r\\n\\r\\n1. **Lors de la connexion** : l’utilisation de FranceConnect équivaut pour l’usager à montrer une pièce d’identité, son identité est donc garantie ;\\r\\n2. **À la signature du mandat** : une fois le mandat créé, la structure l’imprime en deux exemplaires que l’usager doit signer. Une copie est gardée par la structure et une copie est remise à lʼusager ;\\r\\n3. **Après chaque validation** : la création d’une empreinte numérique unique (appelée « Hash ») permet de garantir l’intégrité du mandat, c’est-à-dire le fait que le document n’a subi aucune modification, volontaire ou involontaire.",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 3,
+    "fields": {
+      "created_at": "2024-02-06T16:00:45.625Z",
+      "updated_at": "2024-02-08T18:02:22.480Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "comment-a-ete-cree-aidants-connect",
+      "question": "Comment a été créé Aidants Connect ?",
+      "body": "Aidants Connect est né d’un besoin de sécurisation juridique exprimé par les aidants professionnels qui manipulent régulièrement les identifiants et mots de passe des usagers, et ce dans un contexte de grande fracture numérique (selon le rapport rendu en avril 2023 par le CREDOC et le CREAD - Université Rennes 2 sur l’état de la société numérique en France, 13 millions de français sont en difficulté avec le numérique et 31,5% en sont plus ou moins éloignés).\\r\\n\\r\\nDurant l’année 2019, un premier prototype a été co-construit avec 250 aidants professionnels au cours d’ateliers Openlabs. Ce prototype a été expérimenté au cours de l’année 2020 au sein de 20 structures expérimentatrices situées dans 10 départements différents :\\r\\n\\r\\n* Le Faitout Connecté (Communauté de communes Champagne-Picarde – Hauts-de-France) - structure labellisée France Services ;\\r\\n* L’association des Centres Sociaux de Douai (Hauts-de-France) ;\\r\\n* L’association de médiation numérique Net Solidaire (Charente-Maritime) ;\\r\\n* La mairie de Préguillac (Charente-Maritime) ;\\r\\n* La mairie de Rioux (Charente-Maritime) ;\\r\\n* La Fabrique citoyenne de Floirac (Gironde) ;\\r\\n* La structure France Services de Chalonnes-sur-Loire (Maine-et-Loire) ;\\r\\n* La structure France Services de Vic-sur-Seille (Moselle) ;\\r\\n* La structure France Services de Ligny-en-Barrois (Meuse) ;\\r\\n* La Maison des Solidarités de Castanet-Tolosan (Communauté d’agglomération du SICOVAL – Haute-Garonne) ;\\r\\n* La médiathèque Simone de Beauvoir (Valence Romans Agglomération – Drôme) ;\\r\\n* Le tiers-lieu « La Palette » (Creuse) - structure labellisée France Services  ;\\r\\n* Le dispositif mobile « Fourgon Connecté » (Pyrénées-Atlantiques) ;\\r\\n* Le CCAS d’Anglet (Pyrénées-Atlantiques) ;\\r\\n* Le PIMMS de Blois (Centre-Val-de-Loire) - structure labellisée France Services  ;\\r\\n* Un service d’action sociale du département d’Eure-et-Loir (Centre-Val-de-Loire).\\r\\n* Le Centre Communal dʼAction Sociale de Roanne (Loire)  \\r\\n* LʼAssociation ASOFT (Drôme)  \\r\\n* Le Foyer des Jeunes Travailleurs de St-Amand-Montrond (Cher)  \\r\\n* Lʼentreprise Mon Assistant Numérique Cambrésis - membre du réseau \"Mon Assistant Numérique\".",
+      "category": 1,
+      "subcategory": 13
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 9,
+    "fields": {
+      "created_at": "2024-02-06T16:07:26.429Z",
+      "updated_at": "2024-02-06T16:07:26.429Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "qui-peut-etre-habilite-a-aidants-connect",
+      "question": "Qui peut être habilité à Aidants Connect ?",
+      "body": "Peuvent être habilités les aidants professionnels qui accompagnent des usagers dans la réalisation de démarches administratives en ligne et qui sont salariés d’une structure éligible à Aidants Connect. \\r\\n\\r\\nPlus précisément il s’agit de toute personne morale de droit public ou privé (administration, association, entreprise) qui :\\r\\n* Intervient dans le cadre d’une mission de service public d’accompagnement à la réalisation de démarches pour les usagers (les maisons de services au public (MSAP), les structures titulaires du label « France services », les agents des collectivités au contact du public, les CCAS, les services publics de proximité, les PIMMS ainsi que les centres médico-sociaux) ;\\r\\n* Est membre du Réseau national de la médiation numérique ou contient dans son objet social la médiation ou l’inclusion numérique, le cas échéant dont les agents ou salariés sont titulaires des titres professionnels adéquats, notamment, le titre professionnel « conseiller en médiation numérique » ;\\r\\n* Participe à la politique d’animation de la vie sociale et développe des prestations de services, individualisées et spécialisées au sens de la circulaire n° 2012-013 de la CNAF ;\\r\\n* Intervient dans les pratiques professionnelles définies à l’article D. 142-1-1 du Code de l’action sociale et des familles, notamment les travailleurs sociaux.\\r\\n\\r\\n(cette liste est non exhaustive)\\r\\n\\r\\nLes aidants familiaux, les bénévoles, les services civiques et les élus ne sont pas éligibles.",
+      "category": 2,
+      "subcategory": 1
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 43,
+    "fields": {
+      "created_at": "2024-02-08T09:42:08.617Z",
+      "updated_at": "2024-02-08T15:34:18.688Z",
+      "published": true,
+      "sort_order": 5,
+      "slug": "jutilise-lidentifiant-et-le-mot-de-passe-fran",
+      "question": "J’utilise l’identifiant et le mot de passe France Connect de l’usager pour valider le mandat mais cela ne fonctionne pas",
+      "body": "**1. Le code erreur reçu est : E010008, E010009 ou E010004**\\r\\n\\r\\nRaisons qui peuvent expliquer lʼimpossibilité de connecter l’usager  : \\r\\n* L’usager n’est pas enregistré dans la base d’état civil de l’INSEE : seules les personnes disposant d’un numéro de sécurité sociale définitif, commençant par 1 ou 2, figurent dans le répertoire national d’identification des personnes physiques ;\\r\\n* Il y a une erreur de saisie lors de l’enregistrement de l’état civil : nom d’usage au lieu du nom de naissance, prénoms composés dont il manque le tiret, commune de naissance incorrecte… ;\\r\\n* L’identité du compte FranceConnect n’est pas conforme à l’état civil : par exemple, le nom d’usage dans le compte Identité numérique La Poste empêche la connexion ;\\r\\n* L’identité de l’usager n’est pas complète : par exemple, il nʼest pas enregistré avec un prénom et il est connu sous le prénom SPC ou SP (sans prénom connu ou sans prénom).\\r\\n\\r\\nEn cas d’erreur E010008, E010009 ou E010004, vérifiez l’état civil de l’usager sur le site service-public.fr.\\r\\n\\r\\n**2. Le code erreur reçu est : E020021 ou E020022**\\r\\n\\r\\nCes erreurs peuvent signifier que vous avez tenté d’utiliser plusieurs comptes pour vous connecter ou que vous avez modifié l’adresse FranceConnect du site souhaité. Dans les deux cas, fermez entièrement votre navigateur internet et renouvelez la connexion FranceConnect. \\r\\n\\r\\n**3. Vous pouvez aussi vérifier la validité du compte de lʼusager en vous y connectant directement depuis le fournisseur d’identité, sans passer par FranceConnect.**\\r\\n\\r\\nSi le compte n’est pas opérationnel, réinitialisez le mot de passe sur le site et reconnectez l’usager via FranceConnect avec le nouveau mot de passe.\\r\\n\\r\\nSi malgré les recommandations ci-dessus, vous rencontrez toujours des difficultés lors de la connexion à FranceConnect, nous vous invitons à [contacter FranceConnect.](https://app.franceconnect.gouv.fr/support/formulaire/faq/contact)",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 8,
+    "fields": {
+      "created_at": "2024-02-06T16:05:20.656Z",
+      "updated_at": "2024-02-08T18:02:52.310Z",
+      "published": true,
+      "sort_order": 8,
+      "slug": "comment-contacter-lequipe-aidants-connect",
+      "question": "Comment contacter l’équipe Aidants Connect ?",
+      "body": "Vous pouvez nous écrire à cette adresse : contact@aidantsconnect.beta.gouv.fr",
+      "category": 1,
+      "subcategory": 13
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 6,
+    "fields": {
+      "created_at": "2024-02-06T16:04:22.771Z",
+      "updated_at": "2024-02-08T18:03:03.510Z",
+      "published": true,
+      "sort_order": 6,
+      "slug": "tous-les-aidants-habilites-peuvent-ils-consul",
+      "question": "Tous les aidants habilités peuvent-ils consulter ou agir sur tous les mandats de la structure ?",
+      "body": "Le mandat Aidants Connect est signé entre la structure et l’usager. Tous les aidants habilités de la structure peuvent accompagner cet usager sur les périmètres et la durée couverts par le mandat.",
+      "category": 1,
+      "subcategory": 13
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 7,
+    "fields": {
+      "created_at": "2024-02-06T16:04:52.576Z",
+      "updated_at": "2024-02-08T18:03:13.388Z",
+      "published": true,
+      "sort_order": 7,
+      "slug": "comment-faire-monter-en-competences-lusagerer",
+      "question": "Comment faire monter en compétences l’usager·ère sur les outils numériques ?",
+      "body": "Au-delà de la protection que propose l’outil, Aidants Connect peut s’inscrire dans un parcours d’autonomisation de l’usager et être utilisé comme un outil pédagogique. Il permet à l’aidant d’expliquer le fonctionnement de FranceConnect et des sites administratifs, et à l’usager de réaliser lui-même une démarche au cours de laquelle l’aidant peut reprendre la main à tout moment. \\r\\n\\r\\nAidants Connect est un outil supplémentaire pour entamer un dialogue et guider l’usager vers des ateliers d’autonomie numérique.",
+      "category": 1,
+      "subcategory": 13
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 16,
+    "fields": {
+      "created_at": "2024-02-06T16:12:19.278Z",
+      "updated_at": "2024-02-06T16:12:19.278Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "quelles-adresses-e-mail-renseigner-dans-le-fo",
+      "question": "Quelles adresses e-mail renseigner dans le formulaire d’habilitation ?",
+      "body": "L’adresse e-mail de l’aidant à habiliter doit être une adresse e-mail professionnelle, nominative et individuelle. Elle doit être associée à une personne physique, à savoir un professionnel bien identifié (prénom.nom@xxx.fr ou p.nom@xxx.fr). L’adresse e-mail étant une donnée à caractère personnel au sens du RGPD, nous nous engageons à garantir la sécurité et la confidentialité de cette donnée comme le précise notre politique de confidentialité. Les adresses e-mail génériques de type contact@, direction@ ccas.ville@, mairie@ ne peuvent donc pas être utilisées pour une habilitation Aidants Connect.\\r\\n\\r\\nIl s’agit d’un prérequis pour garantir la sécurité de l’outil et la fiabilité des traces de connexion. En cas de litige, Aidants Connect permet de retracer les données objectives (traces de connexion sur un site administratif) et de garantir la protection de l’aidant concerné si besoin, ce qui serait impossible avec une adresse mail générique.",
+      "category": 2,
+      "subcategory": 2
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 17,
+    "fields": {
+      "created_at": "2024-02-06T16:12:53.614Z",
+      "updated_at": "2024-02-06T16:12:53.614Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "qui-doit-remplir-le-formulaire-dhabilitation-",
+      "question": "Qui doit remplir le formulaire d’habilitation au sein de la structure ?",
+      "body": "Nous recommandons que le formulaire dʼhabilitation soit rempli par le référent de la structure, chargé de la mise en place dʼAidants Connect. Néanmoins, il est possible qu’un aidant remplisse le formulaire d’habilitation si le référent lui en a donné l’autorisation.",
+      "category": 2,
+      "subcategory": 2
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 18,
+    "fields": {
+      "created_at": "2024-02-06T16:13:23.288Z",
+      "updated_at": "2024-02-06T16:13:23.288Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "quel-est-le-role-dun-referent",
+      "question": "Quel est le rôle d’un référent ?",
+      "body": "Le référent a pour mission d’embarquer les aidants et de les guider dans la prise en main de l’outil. \\r\\nÀ lʼissue de la formation, il est en charge de la première connexion et de lʼassociation des cartes et/ou téléphones aux comptes aidants. En cas de départ, il est responsable de leur désactivation. \\r\\nEnfin, le référent veille à la sécurité de l’outil au quotidien et sensibilise les aidants aux bonnes pratiques.",
+      "category": 2,
+      "subcategory": 3
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 19,
+    "fields": {
+      "created_at": "2024-02-06T16:14:04.229Z",
+      "updated_at": "2024-02-06T16:14:04.229Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "qui-peut-etre-referent-aidants-connect",
+      "question": "Qui peut être référent Aidants Connect ?",
+      "body": "Le référent peut être un aidant professionnel, responsable ou non de la structure. Nous recommandons que le référent sache manipuler l’outil pour accompagner au mieux les aidants habilités. Le référent doit désigner un co-référent qui est idéalement aussi aidant.",
+      "category": 2,
+      "subcategory": 3
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 20,
+    "fields": {
+      "created_at": "2024-02-06T16:15:13.417Z",
+      "updated_at": "2024-02-06T16:15:13.417Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "un-referent-qui-travaille-dans-plusieurs-stru",
+      "question": "Un référent qui travaille dans plusieurs structures peut-il utiliser Aidants Connect ?",
+      "body": "Un référent multi-structure peut utiliser Aidants Connect pour toutes les structures où il travaille à condition de déposer une demande d’habilitation pour chaque lieu d’accueil.",
+      "category": 2,
+      "subcategory": 3
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 21,
+    "fields": {
+      "created_at": "2024-02-06T16:17:28.814Z",
+      "updated_at": "2024-02-06T16:17:28.814Z",
+      "published": true,
+      "sort_order": 6,
+      "slug": "un-aidant-qui-travaille-dans-plusieurs-struct",
+      "question": "Un aidant qui travaille dans plusieurs structures peut-il utiliser Aidants Connect ?",
+      "body": "Un aidant multi-structure peut utiliser Aidants Connect pour toutes les structures où il travaille à condition de déposer une demande d’habilitation pour chaque lieu d’accueil.",
+      "category": 2,
+      "subcategory": 1
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 22,
+    "fields": {
+      "created_at": "2024-02-06T16:18:28.914Z",
+      "updated_at": "2024-02-06T16:18:28.914Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "comment-se-connecter-a-lespace-referent-pour-",
+      "question": "Comment se connecter à l’espace référent pour la première fois ?",
+      "body": "Lors de la première connexion, le référent doit utiliser l’adresse e-mail renseignée dans le formulaire d’habilitation et le code à usage unique à 6 chiffres envoyé dans le kit de bienvenue ou collé sur l’enveloppe.",
+      "category": 3,
+      "subcategory": 4
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 37,
+    "fields": {
+      "created_at": "2024-02-07T08:23:55.622Z",
+      "updated_at": "2024-02-08T11:50:48.149Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "comment-realiser-une-demarche-administrative-",
+      "question": "Comment réaliser une démarche administrative pour le compte d’un usager avec Aidants Connect ?",
+      "body": "Rendez-vous sur le site de la démarche à effectuer puis suivez les étapes décrites dans [le guide “Réaliser la démarche demandée par l’usager”.](https://aidantsconnect.beta.gouv.fr/static/guides_aidants_connect/AC_Guide_RealiserLaDemarche.pdf)",
+      "category": 3,
+      "subcategory": 6
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 33,
+    "fields": {
+      "created_at": "2024-02-06T16:25:59.985Z",
+      "updated_at": "2024-02-06T16:25:59.985Z",
+      "published": true,
+      "sort_order": 8,
+      "slug": "les-usagers-qui-possedent-deja-un-mandat-dans",
+      "question": "Les usagers qui possèdent déjà un mandat dans une structure peuvent-ils être accompagnés par plusieurs aidants ?",
+      "body": "Tous les aidants habilités Aidants Connect au sein d’une même structure ont accès aux mandats de cette structure. Un usager peut ainsi être accompagné par plusieurs aidants au sein d’une même structure. \\r\\nLes aidants habilités travaillant dans une autre structure, eux, n’ont pas accès à ce mandat et aucune information concernant les démarches effectuées ou l’état de ces démarches n’est accessible sur Aidants Connect.",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 34,
+    "fields": {
+      "created_at": "2024-02-06T16:26:31.348Z",
+      "updated_at": "2024-02-06T16:26:31.348Z",
+      "published": true,
+      "sort_order": 9,
+      "slug": "un-usager-peut-il-avoir-des-mandats-dans-diff",
+      "question": "Un usager peut-il avoir des mandats dans différentes structures ?",
+      "body": "Un usager peut avoir des mandats dans différentes structures, et sur le même périmètre, tant que les démarches réalisées ne sont pas les mêmes. Il est de la responsabilité de l’usager de révoquer le premier mandat s’il souhaite transférer l’autorisation de faire en son nom ces démarches à une nouvelle structure. Il est recommandé à l’aidant, lors de l’échange avec l’usager, de lui demander s’il a déjà autorisé une autre personne ou structure à accomplir les mêmes démarches.",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 35,
+    "fields": {
+      "created_at": "2024-02-06T16:26:57.179Z",
+      "updated_at": "2024-02-06T16:26:57.179Z",
+      "published": true,
+      "sort_order": 10,
+      "slug": "pendant-combien-de-temps-conserver-les-mandat",
+      "question": "Pendant combien de temps conserver les mandats papier ? Pourquoi ?",
+      "body": "Il n’existe pas d’obligation légale, néanmoins nous conseillons de conserver une version papier ou électronique du mandat au moins 6 ans après la date d’échéance. \\r\\n\\r\\nLa responsabilité civile ou pénale pouvant être engagée ou une action de recours contre une décision de l’administration menée, il est nécessaire de garder le document pendant une durée relativement longue. Cette indication de 6 ans correspond au délai de prescription de l’action en responsabilité pénale, notamment dans le cadre d’une violation du secret professionnel.",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 28,
+    "fields": {
+      "created_at": "2024-02-06T16:22:36.848Z",
+      "updated_at": "2024-02-08T15:28:19.113Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "est-il-necessaire-pour-lusager-davoir-un-iden",
+      "question": "Est-il nécessaire pour l’usager d’avoir un identifiant et mot de passe sur un site administratif pour la création d’un mandat ?",
+      "body": "Aidants Connect utilise le dispositif FranceConnect pour sécuriser la connexion des usagers. L’usager doit posséder un compte chez l’un des fournisseurs d’identité suivants : \\r\\n\\r\\n* impots.gouv.fr\\r\\n* ameli.fr\\r\\n* msa.fr\\r\\n* l’Identité Numérique La Poste\\r\\n* Yris\\r\\n* France Identité\\r\\n\\r\\n\\r\\nLa cas échéant, et dans le cadre de son mandat, l’aidant peut accompagner l’usager dans la création d’un compte chez l’un de ces fournisseurs d’identité.",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 29,
+    "fields": {
+      "created_at": "2024-02-06T16:23:04.606Z",
+      "updated_at": "2024-02-08T11:47:28.442Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "comment-savoir-a-quel-perimetre-est-associee-",
+      "question": "Comment savoir à quel périmètre est associée la démarche demandée par l’usager ?",
+      "body": "Retrouvez l’ensemble des démarches par périmètre sur le site [service-public.fr](https://www.service-public.fr/particuliers/vosdroits/theme).",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 27,
+    "fields": {
+      "created_at": "2024-02-06T16:21:33.986Z",
+      "updated_at": "2024-02-08T15:27:31.854Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "comment-creer-un-mandat-pour-un-usager",
+      "question": "Comment créer un mandat pour un usager ?",
+      "body": "Pour créer un mandat, l’aidant professionnel doit d’abord [s’authentifier sur la plateforme Aidants Connect.](https://aidantsconnect.beta.gouv.fr/accounts/login/) Une fois connecté, il doit cliquer sur “Mon espace aidant” en haut à droite et accéder à la rubrique “Créer un mandat”. \\r\\n\\r\\nRetrouvez ensuite toutes les étapes de création d’un mandat dans[ le guide “Créer un mandat avec un usager”.](https://aidantsconnect.beta.gouv.fr/static/guides_aidants_connect/AC_Guide_CreerUnMandat.pdf)",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 30,
+    "fields": {
+      "created_at": "2024-02-06T16:23:37.535Z",
+      "updated_at": "2024-02-08T15:28:51.226Z",
+      "published": true,
+      "sort_order": 5,
+      "slug": "que-faire-si-lusager-ne-peut-pas-utiliser-fra",
+      "question": "Que faire si l’usager ne peut pas utiliser FranceConnect ?",
+      "body": "Il est possible de réorienter les usagers qui ne disposent pas de compte FranceConnect vers un organisme référent pour une inscription au Répertoire National dʼIdentification des Personnes Physiques. \\r\\n\\r\\nRetrouvez plus de détails sur la fiche dédiée [aux usagers qui ne peuvent pas se FranceConnecter](https://static1.squarespace.com/static/5d35327b34601e0001589c18/t/60af862b551da913d1902346/1622115884145/FranceConnect4.pdf).",
+      "category": 3,
+      "subcategory": 5
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 40,
+    "fields": {
+      "created_at": "2024-02-07T08:30:17.243Z",
+      "updated_at": "2024-02-07T08:30:17.243Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "je-nai-pas-recu-mon-kit-de-ressources-suite-a",
+      "question": "Je n’ai pas reçu mon kit de ressources suite à la formation des aidants de ma structure",
+      "body": "La réception effective du kit de bienvenue suite à l’habilitation d’un ou plusieurs aidants demande un certain délai. Si vous ne recevez rien dans un délai de trois semaines, contactez-nous à l’adresse contact@aidantsconnect.beta.gouv.fr en nous précisant l’adresse de la structure.",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 41,
+    "fields": {
+      "created_at": "2024-02-07T14:40:56.280Z",
+      "updated_at": "2024-02-07T14:40:56.280Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "jessaie-de-me-connecter-a-mon-espace-aidant-m",
+      "question": "J’essaie de me connecter à mon espace aidant mais cela ne fonctionne pas",
+      "body": "* L’espace aidant est accessible seulement suite à la réalisation du test Pix en fin de formation et à l’activation de la carte (numérique ou physique) par le référent Aidants Connect ;\\r\\n* L’adresse e-mail utilisée pour se connecter doit être celle renseignée dans le formulaire d’habilitation et la carte utilisée doit être celle associée par le référent.\\r\\n\\r\\nSi vous avez vérifié ces éléments et que vous n’arrivez toujours pas à vous connecter, contactez-nous à l’adresse suivante contact@aidantsconnect.beta.gouv.fr en précisant votre adresse e-mail et le numéro de série situé au verso de la carte physique si vous en possédez une.",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 42,
+    "fields": {
+      "created_at": "2024-02-08T09:40:07.964Z",
+      "updated_at": "2024-02-08T09:40:07.964Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "jai-renseigne-mon-adresse-e-mail-ainsi-que-le",
+      "question": "J’ai renseigné mon adresse e-mail ainsi que le code à usage unique à 6 chiffres affiché par ma carte mais je ne reçois pas le lien de connexion",
+      "body": "* Assurez-vous que le lien de connexion n’est pas arrivé dans les spams ;\\r\\n* Assurez-vous que votre collectivité n’est pas équipée d’un système de type “Mailinblack” qui peut bloquer la réception des e-mails d’Aidants Connect. Si tel est le cas, vous devez prendre contact avec la direction des systèmes d’information de votre collectivité afin de “whitelister” (= autoriser) les adresses contenant @aidantsconnect.beta.gouv.fr.",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 44,
+    "fields": {
+      "created_at": "2024-02-08T09:42:58.435Z",
+      "updated_at": "2024-02-08T09:42:58.435Z",
+      "published": true,
+      "sort_order": 6,
+      "slug": "je-rencontre-une-erreur-code-500-erreur-inter",
+      "question": "Je rencontre une erreur 👩🏽200d💻 Code 500 : Erreur interne du serveur",
+      "body": "* Fermez le navigateur et relancez-le ;\\r\\n* Si cela ne fonctionne pas, rendez-vous dans les paramètres de votre navigateur pour supprimer les cookies et vider le cache [mettre la procédure pour les principaux navigateurs : Chrome, Mozilla]",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 45,
+    "fields": {
+      "created_at": "2024-02-08T09:44:31.918Z",
+      "updated_at": "2024-02-08T11:53:34.784Z",
+      "published": true,
+      "sort_order": 7,
+      "slug": "jessaie-dassocier-les-cartes-mais-letat-de-la",
+      "question": "J’essaie d’associer les cartes mais l’état de la demande est “en cours”",
+      "body": "Assurez-vous auprès de l’aidant qu’il a passé la formation puis réalisé et validé le test Pix. Il peut vérifier cette information depuis [son compte Pix ](https://app.pix.fr/connexion)en utilisant l’adresse e-mail renseignée lors de la demande d’habilitation. Si dans “Parcours” le test Pix apparaît avec le statut “À envoyer”, l’aidant doit cliquer sur “Envoyer mes résultats” pour valider son test et activer son compte.\\r\\n\\r\\nRetrouvez le tuto du parcours sur le lien suivant [https://cloud.pix.fr/s/7zrJLZSdkEx6FKH ](https://cloud.pix.fr/s/7zrJLZSdkEx6FKH)\\r\\n\\r\\nSi l’aidant a bien réalisé le test Pix, contactez l’équipe support à l’adresse suivante contact@aidantsconnect.beta.gouv.fr en renseignant le nom et l’adresse e-mail de l’aidant. L’équipe Aidants Connect procèdera à l’activation du compte de l’aidant.",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 38,
+    "fields": {
+      "created_at": "2024-02-07T08:25:40.514Z",
+      "updated_at": "2024-02-08T15:31:34.919Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "quelles-precautions-prendre-lorsque-lon-accom",
+      "question": "Quelles précautions prendre lorsque l’on accomplit des démarches au nom d’un usager ?",
+      "body": "Le mandat est conclu entre une structure habilitée Aidants Connect et l’usager, ce mandat précise le champ d’action et la durée pendant laquelle les aidants de la structure peuvent agir au nom de l’usager. Lors de l’entretien avec l’usager, l’aidant doit aborder les points suivants afin de valider le consentement de l’usager :\\r\\n* vérifier l’objet et le périmètre de l’intervention ;\\r\\n* vérifier que l’usager a bien la capacité à agir (qu’il nʼest pas sous tutelle ou curatelle par exemple) ;\\r\\n* expliquer la ou les raisons pour lesquelles les informations le concernant sont collectées et leur utilité ;\\r\\n* lister et lui rappeler ses droits sur ses données (accès, rectification, suppression, etc.) ;\\r\\n* rappeler la possibilité pour l’usager de résilier à tout moment son mandat ou retirer son consentement à utiliser ses données.\\r\\n\\r\\nLorsque l’aidant exécute ses mandats, il doit en outre prendre les précautions suivantes afin de protéger les informations des usagers :\\r\\n* se déconnecter du compte de l’usager lorsque la démarche est terminée ;\\r\\n* toujours verrouiller sa session sur son ordinateur lorsqu’il s’en s’éloigne ;\\r\\n* sécuriser son smartphone en le verrouillant par un schéma ou un code PIN par exemple.\\r\\n* ranger sa carte Aidants Connect dans un endroit sécurisé",
+      "category": 3,
+      "subcategory": 6
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 46,
+    "fields": {
+      "created_at": "2024-02-08T09:45:11.629Z",
+      "updated_at": "2024-02-08T09:45:11.629Z",
+      "published": true,
+      "sort_order": 8,
+      "slug": "ma-carte-affiche-le-code-bat99",
+      "question": "Ma carte affiche le code BAT99",
+      "body": "Le code BAT99 apparaît lors d’un appui prolongé sur la carte, il s’agit du niveau de la batterie. Un appui court suffit à afficher le code à usage unique à 6 chiffres. Si malgré un appui court, le code à 6 chiffres ne s’affiche pas, contactez-nous à l’adresse suivante contact@aidantsconnect.beta.gouv.fr.",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 48,
+    "fields": {
+      "created_at": "2024-02-08T09:48:14.189Z",
+      "updated_at": "2024-02-08T09:48:14.189Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "que-faire-si-un-aidant-habilite-quitte-la-str",
+      "question": "Que faire si un aidant habilité quitte la structure ?",
+      "body": "Les étapes à suivre lors du départ d’un aidant :\\r\\n\\r\\n* Avant son départ, l’aidant doit remettre au référent sa carte physique s’il en possède une ;\\r\\n* Le référent désactive le compte de l’aidant et délie la carte (physique et/ou numérique) ;\\r\\n* Le référent renvoie la carte physique à l’équipe d’Aidants Connect (à l’attention de Marine Jouan, ANCT, 20 avenue de Ségur, Paris 75007).",
+      "category": 3,
+      "subcategory": 8
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 49,
+    "fields": {
+      "created_at": "2024-02-08T09:51:12.420Z",
+      "updated_at": "2024-02-08T09:51:12.420Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "que-faire-si-un-aidant-habilite-change-de-str",
+      "question": "Que faire si un aidant habilité change de structure et que celle-ci est également habilitée Aidants Connect ?",
+      "body": "Le référent et l’aidant doivent suivre la procédure de départ détaillée ci-dessus. L’aidant doit par la suite nous contacter par mail (contact@aidantsconnect.beta.gouv.fr) pour transférer son habilitation et recevoir des nouveaux accès.\\r\\n\\r\\nSi l’aidant habilité va dans une structure qui n’est pas encore habilitée Aidants Connect, la structure devra déposer une demande d’habilitation.",
+      "category": 3,
+      "subcategory": 8
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 50,
+    "fields": {
+      "created_at": "2024-02-08T09:51:54.789Z",
+      "updated_at": "2024-02-08T09:51:54.789Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "que-faire-si-un-referent-habilite-quitte-la-s",
+      "question": "Que faire si un référent habilité quitte la structure ?",
+      "body": "Les étapes à suivre lors du départ d’un référent :\\r\\n\\r\\n* Avant son départ, le référent doit désigner un nouveau référent depuis son espace ;\\r\\n* Il doit remettre au nouveau référent sa carte physique s’il en possède une ;\\r\\n* Le nouveau référent désactive son compte et délie sa carte\u2028(physique et/ou numérique) ;\\r\\n* Le nouveau référent renvoie la carte physique à l’équipe d’Aidants Connect (à l’attention de Marine Jouan, ANCT, 20 avenue de Ségur, Paris 75007).",
+      "category": 3,
+      "subcategory": 8
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 51,
+    "fields": {
+      "created_at": "2024-02-08T11:21:07.749Z",
+      "updated_at": "2024-02-08T11:21:07.749Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "quel-est-le-niveau-de-protection-juridique-po",
+      "question": "Quel est le niveau de protection juridique pour un aidant en cas de fausses informations ou d’informations erronées ?",
+      "body": "L’aidant n’est pas responsable de l’exactitude des informations transmises par l’usager. Sa responsabilité peut toutefois être engagée s’il ne saisit pas correctement les informations transmises par l’usager. Dans ce cas, le droit de rectification, prévu à l’article 16 du RGPD, permet à l’aidant de contacter l’organisme en question pour modifier les données à caractère personnel de l’usager.",
+      "category": 4,
+      "subcategory": 9
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 52,
+    "fields": {
+      "created_at": "2024-02-08T11:22:31.044Z",
+      "updated_at": "2024-02-08T11:22:31.044Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "quelles-sont-les-limites-de-lintervention-de-",
+      "question": "Quelles sont les limites de l’intervention de l’aidant qui utilise Aidants Connect ?",
+      "body": "L’aidant professionnel est strictement habilité pour réaliser des démarches administratives pour le compte de l’usager sur les périmètres et la durée couverts par le mandat.",
+      "category": 4,
+      "subcategory": 10
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 53,
+    "fields": {
+      "created_at": "2024-02-08T11:25:53.111Z",
+      "updated_at": "2024-02-08T11:25:53.111Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "laidant-est-il-lie-au-secret-professionnel-et",
+      "question": "L’aidant est-il lié au secret professionnel et quelles sont les limites de la confidentialité ?",
+      "body": "L’aidant, ayant un statut professionnel, qu’il travaille pour une personne morale de droit public ou privé, est soumis au secret professionnel et à des obligations de confidentialité. Il s’est engagé contractuellement avec l’usager pour réaliser des démarches administratives en son nom. Dès lors, il se doit de respecter les stipulations du contrat et son statut de professionnel.",
+      "category": 4,
+      "subcategory": 10
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 54,
+    "fields": {
+      "created_at": "2024-02-08T11:26:23.452Z",
+      "updated_at": "2024-02-08T11:26:23.452Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "le-mandat-aidants-connect-couvre-t-il-les-acc",
+      "question": "Le mandat Aidants Connect couvre-t-il les accompagnements aux démarches pour lesquelles un paiement est indispensable ?",
+      "body": "Le mandat Aidants Connect prévoit que les aidants habilités par la structure traitent les données à caractère personnel des usagers pour les seules finalités nécessaires à la démarche et qu’ils recueillent le consentement de l’usager avant d’effectuer d’autres démarches que celles listées dans le mandat. Si le paiement est indispensable pour réaliser une démarche encadrée par le mandat, l’aidant doit s’assurer d’informer et de recueillir le consentement de l’usager.",
+      "category": 4,
+      "subcategory": 10
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 56,
+    "fields": {
+      "created_at": "2024-02-08T11:27:54.291Z",
+      "updated_at": "2024-02-08T11:27:54.291Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "quelle-est-la-responsabilite-de-laidant-si-de",
+      "question": "Quelle est la responsabilité de l’aidant si des documents contenant des données personnelles conservés par la structure sont récupérés par un tiers ?",
+      "body": "La responsabilité de l’aidant peut être engagée si un document ou fichier contenant des données à caractère personnel d’un usager est volé ou détruit. Il appartient à l’aidant de respecter les procédures internes de sa structure qui ont été établies avec le délégué à la protection des données. \\r\\n\\r\\nSi ce sont les identifiants, la carte et/ou le téléphone portable de l’aidant utile à sa connexion qui sont volés, détruits ou perdus, l’équipe d’Aidants Connect doit être informée afin qu’elle puisse procéder à la suppression du compte.",
+      "category": 4,
+      "subcategory": 11
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 47,
+    "fields": {
+      "created_at": "2024-02-08T09:46:15.750Z",
+      "updated_at": "2024-02-08T11:54:08.207Z",
+      "published": true,
+      "sort_order": 9,
+      "slug": "je-ne-trouve-pas-la-reponse-a-mon-probleme",
+      "question": "Je ne trouve pas la réponse à mon problème",
+      "body": "Contactez l’équipe support à l’adresse suivante contact@aidantsconnect.beta.gouv.fr. S’il sʼagit dʼun problème FranceConnect non listé ci-dessus, n’hésitez pas à consulter [la FAQ FranceConnect](https://franceconnect.gouv.fr/faq).",
+      "category": 3,
+      "subcategory": 7
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 59,
+    "fields": {
+      "created_at": "2024-02-08T11:30:19.248Z",
+      "updated_at": "2024-02-08T11:30:19.248Z",
+      "published": true,
+      "sort_order": 5,
+      "slug": "quelle-est-la-valeur-juridique-dun-mandat-sig",
+      "question": "Quelle est la valeur juridique d’un mandat signé par un usager autorisant un aidant à faire une démarche en son nom ?",
+      "body": "Un mandat signé par un usager autorisant un aidant à effectuer une démarche en son nom est généralement valide et a une valeur juridique. Qu’il soit donné à l’oral ou à l’écrit, un mandat est un contrat entre des personnes et/ou des structures. On peut donner mandat pour faire en son nom l’intégralité des démarches qui nous incombent et cela pour la durée que l’on souhaite. Le mandant comme le mandataire peut révoquer le mandat à tout moment.",
+      "category": 4,
+      "subcategory": 11
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 15,
+    "fields": {
+      "created_at": "2024-02-06T16:11:38.911Z",
+      "updated_at": "2024-02-08T11:39:53.160Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "comment-une-structure-peut-elle-etre-habilite",
+      "question": "Comment une structure peut-elle être habilitée Aidants Connect ?",
+      "body": "Pour être habilitée Aidants Connect, une structure doit remplir [le formulaire d’habilitation](https://aidantsconnect.beta.gouv.fr/habilitation) disponible sur le site Aidants Connect. Une seule demande par structure comportant la liste des aidants à habiliter est requise.\\r\\n\\r\\nUne fois la demande renseignée, l’équipe Aidants Connect analyse l’éligibilité de la structure au dispositif Aidants Connect et valide la demande.",
+      "category": 2,
+      "subcategory": 2
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 60,
+    "fields": {
+      "created_at": "2024-02-08T11:30:50.561Z",
+      "updated_at": "2024-02-08T11:56:35.653Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "comment-peut-on-acceder-aux-conditions-genera",
+      "question": "Comment peut-on accéder aux conditions générales d’utilisation de la plateforme ?",
+      "body": "Les conditions générales d’utilisation (un contrat au même titre que le mandat) rappelle que toute personne qui procède à une fausse déclaration est seule responsable et que si l’aidant a utilisé des informations fournies par l’usager qui s’avèrent être fausses ou inexactes, aucun reproche ne peut être fait à l’encontre de l’aidant.\\r\\nLes conditions générales d’utilisation sont accessibles via le lien suivant [https://aidantsconnect.beta.gouv.fr/cgu/](https://aidantsconnect.beta.gouv.fr/cgu/)",
+      "category": 4,
+      "subcategory": 12
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 23,
+    "fields": {
+      "created_at": "2024-02-06T16:19:12.026Z",
+      "updated_at": "2024-02-08T15:26:13.233Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "comment-lier-une-carte-a-un-compte",
+      "question": "Comment lier une carte à un compte ?",
+      "body": "Pour se connecter à son espace Aidants Connect, une carte physique ou numérique est nécessaire. Le référent Aidants Connect doit attribuer une carte à son propre compte, ainsi qu’à chaque compte aidant. Chaque aidant et référent habilités doit disposer d’une carte physique ou numérique personnelle pour se connecter à son espace. \\r\\n\\r\\nRetrouvez toutes les étapes pour lier une carte à un compte dans le guide [“Lier une carte”](https://aidantsconnect.beta.gouv.fr/static/guides_aidants_connect/AC_Guide_LierUneCarte.pdf).",
+      "category": 3,
+      "subcategory": 4
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 36,
+    "fields": {
+      "created_at": "2024-02-07T08:23:33.114Z",
+      "updated_at": "2024-02-08T11:49:21.391Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "quelles-sont-les-demarches-pour-lesquelles-ai",
+      "question": "Quelles sont les démarches pour lesquelles Aidants Connect peut être utilisé ?",
+      "body": "Aidants Connect peut être utilisé sur tous les sites administratifs accessibles via FranceConnect. La liste de ces sites est disponible sur le site [franceconnect.gouv.fr](https://franceconnect.gouv.fr/nos-services) (néanmoins certains des sites de cette liste ne sont pas accessibles via Aidants Connect car ils ne sont pas considérés comme des démarches administratives).",
+      "category": 3,
+      "subcategory": 6
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 55,
+    "fields": {
+      "created_at": "2024-02-08T11:27:16.380Z",
+      "updated_at": "2024-02-08T11:55:18.511Z",
+      "published": true,
+      "sort_order": 1,
+      "slug": "qui-est-responsable-si-une-autre-personne-que",
+      "question": "Qui est responsable si une autre personne que l’aidant réalise des démarches sur l’ordinateur de l’aidant alors que celui-ci n’est pas sécurisé ?",
+      "body": "La responsabilité des structures et des aidants peut être engagée. Il appartient aux aidants et aux structures habilités de sécuriser les postes informatiques et les outils utilisés dans le cadre des mandats par des dispositifs techniques et/ou par des mesures organisationnelles. Il est fortement conseillé d’utiliser des outils de travail adaptés au recueil et à la visualisation des informations personnelles de l’usager.\\r\\n\\r\\nLes aidants doivent se prémunir des risques liés à l’utilisation frauduleuse de leur matériel informatique. Leur ordinateur doit être protégé par un mot de passe, un gestionnaire de mots de passe, un antivirus, un verrouillage automatique,… [voir les recommandations de la CNIL](https://www.cnil.fr/fr/professionnels-du-secteur-social-comment-mieux-proteger-les-donnees-de-vos-usagers-demarches-en-ligne).\\r\\n\\r\\nLes aidants et les structures habilités doivent nous signaler tout vol ou perte de moyens d’identification (téléphone portable, ordinateur, autres…). Nous supprimerons rapidement le compte de l’aidant pour éviter que celui-ci ne soit frauduleusement utilisé par d’autres personnes.",
+      "category": 4,
+      "subcategory": 11
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 58,
+    "fields": {
+      "created_at": "2024-02-08T11:29:25.070Z",
+      "updated_at": "2024-02-08T15:24:21.565Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "quels-risques-prennent-les-aidants-en-gardant",
+      "question": "Quels risques prennent les aidants en gardant les codes ou en consultant une messagerie pour le compte d’autrui ? Quelle est la limite de confidentialité ?",
+      "body": "À ce sujet, la CNIL donne le conseil suivant aux aidants professionnels :\\r\\n\\r\\n« *Pour chacun des usagers que vous accompagnez, utilisez bien un compte de messagerie dédié aux démarches administratives. Si l’usager·ère n’a pas d’adresse électronique, proposez-lui de lui en créer une mais toujours dans le cadre de votre mandat. En fonction des besoins liés à son suivi, il est possible de rediriger tout ou partie des courriers électroniques de l’usager·ère vers votre compte de messagerie professionnelle. Dans ce cas, précisez-le explicitement dans le mandat et n’oubliez pas de supprimer ces courriers électroniques (e-mails) dès la fin de l’accompagnement social. *».\\r\\n\\r\\nLe plus important est toujours d’informer l’usager et de recueillir son consentement lorsque le cadre de l’accompagnement dépasse ce qui a été prévu par le mandat.\\r\\n\\r\\nPour plus de détails, consultez [le site de la CNIL](https://www.cnil.fr/fr/professionnels-du-secteur-social-comment-mieux-proteger-les-donnees-de-vos-usagers-demarches-en-ligne).",
+      "category": 4,
+      "subcategory": 11
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 25,
+    "fields": {
+      "created_at": "2024-02-06T16:20:19.993Z",
+      "updated_at": "2024-02-08T15:26:47.833Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "quelle-est-la-difference-entre-une-carte-nume",
+      "question": "Quelle est la différence entre une carte numérique et une carte physique ?",
+      "body": "La carte dite numérique est une carte dématérialisée sous forme d’application mobile qui génère un code à intervalles réguliers. Ce moyen de connexion est sécurisé, durable et fiable. \\r\\n\\r\\nPour les professionnels ne disposant pas d’application d’authentification OTP, nous recommandons [freeOTP](https://freeotp.github.io/), disponible pour Android et IOS.\\r\\n\\r\\nLa carte dite physique est une carte tangible qui génère un code de connexion à la pression d’un bouton. Elle est envoyée sur demande, à la suite de la formation, par voie postale. Elle est strictement personnelle et doit être conservée de manière sécurisée.",
+      "category": 3,
+      "subcategory": 4
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 62,
+    "fields": {
+      "created_at": "2024-02-08T11:31:55.383Z",
+      "updated_at": "2024-02-08T18:01:34.988Z",
+      "published": true,
+      "sort_order": 2,
+      "slug": "comment-choisir-une-application-otp-sur-son-t",
+      "question": "Comment choisir une application OTP sur son téléphone ?",
+      "body": "Pour accéder à la plateforme Aidants Connect avec son téléphone, nous vous recommandons de télécharger une application gratuite et open source, FreeOTP :\\r\\n* [freeOTP sur l’App Store (Apple) ](https://apps.apple.com/fr/app/freeotp-authenticator/id872559395)\\r\\n* [freeOTP sur le Play Store (Android)](https://play.google.com/store/apps/details?id=org.fedorahosted.freeotp)",
+      "category": 5,
+      "subcategory": 14
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 63,
+    "fields": {
+      "created_at": "2024-02-08T11:32:21.130Z",
+      "updated_at": "2024-02-08T18:01:41.743Z",
+      "published": true,
+      "sort_order": 3,
+      "slug": "pourquoi-utiliser-une-connexion-a-double-fact",
+      "question": "Pourquoi utiliser une connexion à double facteur (2FA) ?",
+      "body": "La connexion à double facteur est une méthode de sécurité supplémentaire lors de l’authentification d’un utilisateur sur une plateforme. Plutôt que de simplement saisir un nom dʼutilisateur et un mot de passe pour accéder à un compte, la connexion à double facteur nécessite une deuxième étape de vérification. \\r\\n\\r\\nChez Aidants Connect, la double authentification s’effectue avec sa carte OTP ou son téléphone avec une application OTP. L’utilisation d’une double authentification pour se connecter renforce considérablement la sécurité des comptes sur Aidants Connect.",
+      "category": 5,
+      "subcategory": 14
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.faqquestion",
+    "pk": 4,
+    "fields": {
+      "created_at": "2024-02-06T16:02:34.811Z",
+      "updated_at": "2024-02-08T18:02:30.264Z",
+      "published": true,
+      "sort_order": 4,
+      "slug": "comment-a-ete-deploye-aidants-connect",
+      "question": "Comment a été déployé Aidants Connect ?",
+      "body": "Dès 2021, la solution Aidants Connect a été déployée par vagues territoriales progressives sur l’ensemble du territoire français. \\r\\n\\r\\nLe détail du calendrier de déploiement est le suivant :\\r\\n\\r\\nMars - avril 2021 :\\r\\n* Hauts-de-France ;\\r\\n* La Réunion & Mayotte ;\\r\\n* Bretagne ;\\r\\n* Auvergne-Rhône Alpes.\\r\\n\\r\\nMai - août 2021 :\\r\\n* Guadeloupe, Martinique & Guyane ;\\r\\n* Nouvelle-Aquitaine ;\\r\\n* Bourgogne-Franche-Comté ;\\r\\n* Île-de-France.\\r\\n\\r\\nSeptembre - décembre 2021 :\\r\\n* Provence-Alpes-Côte dʼAzur & Corse ;\\r\\n* Centre-Val-de-Loire ;\\r\\n* Normandie ;\\r\\n* Occitanie ;\\r\\n* Grand Est ;\\r\\n* Pays-de-la-Loire.\\r\\n\\r\\nDepuis septembre 2021, le service est généralisé au niveau national.",
+      "category": 1,
+      "subcategory": 13
+    }
+  }
+]

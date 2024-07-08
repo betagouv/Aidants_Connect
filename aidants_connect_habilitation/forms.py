@@ -1,4 +1,3 @@
-from distutils.util import strtobool
 from re import sub as re_sub
 from typing import List, Tuple, Union
 from urllib.parse import quote, unquote
@@ -23,15 +22,15 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext as _
 
+from aidants_connect.utils import strtobool
+from aidants_connect_common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
+    CleanEmailMixin,
+    ConseillerNumerique,
     PatchedErrorList,
     PatchedForm,
     PatchedModelForm,
-)
-from aidants_connect_common.utils.constants import (
-    MessageStakeholders,
-    RequestOriginConstants,
 )
 from aidants_connect_common.utils.gouv_address_api import Address, search_adresses
 from aidants_connect_habilitation import models
@@ -148,11 +147,6 @@ class AddressValidatableMixin(Form):
         API returns one result that matches with more than 90% probability.
         """
         raise NotImplementedError()
-
-
-class CleanEmailMixin:
-    def clean_email(self):
-        return self.cleaned_data["email"].lower().strip()
 
 
 class CleanZipCodeMixin:
@@ -362,7 +356,10 @@ class PersonWithResponsibilitiesForm(PatchedModelForm, CleanEmailMixin):
 
 
 class ManagerForm(
-    PersonWithResponsibilitiesForm, AddressValidatableMixin, CleanZipCodeMixin
+    ConseillerNumerique,
+    PersonWithResponsibilitiesForm,
+    AddressValidatableMixin,
+    CleanZipCodeMixin,
 ):
     zipcode = CharField(
         label="Code Postal",
@@ -414,6 +411,8 @@ class ManagerForm(
     class Meta(PersonWithResponsibilitiesForm.Meta):
         model = Manager
         widgets = {"address": TextInput}
+        include = ("conseiller_numerique",)
+        exclude = ("habilitation_request",)
 
 
 class EmailOrganisationValidationError(ValidationError):
@@ -443,7 +442,7 @@ class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
         )
 
 
-class AidantRequestForm(PatchedModelForm, CleanEmailMixin):
+class AidantRequestForm(ConseillerNumerique, PatchedModelForm, CleanEmailMixin):
     def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
         self.organisation = organisation
         super().__init__(*args, **kwargs)
@@ -475,7 +474,7 @@ class AidantRequestForm(PatchedModelForm, CleanEmailMixin):
 
     class Meta:
         model = AidantRequest
-        exclude = ["organisation"]
+        exclude = ["organisation", "habilitation_request"]
 
 
 class BaseAidantRequestFormSet(BaseModelFormSet):

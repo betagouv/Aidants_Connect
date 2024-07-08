@@ -1,0 +1,22 @@
+{% load dsfr_tags %}
+
+{% if success %}
+  <div class="fr-alert fr-alert--success">
+    <h3 class="fr-alert__title">Merci !</h3>
+    <p>Nous venons de vous envoyer le lien vers votre demande dʼhabilitation à lʼadresse indiquée.</p>
+  </div>
+{% else %}
+  <form
+    action="{% url 'habilitation_follow_my_request' %}"
+    method="post"
+    data-action="follow-request-modale#onSubmit:prevent:stop"
+  >
+    {% csrf_token %}
+    {% dsfr_form %}
+    <button
+      class="fr-btn"
+      type="submit"
+      data-follow-request-modale-target="submitBtn"
+    >Recevoir le lien de ma demande</button>
+  </form>
+{% endif %} 

@@ -43,10 +43,17 @@ def mailto_href(recipient: str, subject: str = "", body: str = ""):
 
 
 @register.simple_tag
-def mailto(recipient: str, link_text: str = "", subject: str = "", body: str = ""):
+def mailto(
+    recipient: str,
+    link_text: str = "",
+    subject: str = "",
+    body: str = "",
+    link_class=None,
+):
     link_text = link_text or recipient
     href = mailto_href(recipient, subject, body)
-    return mark_safe(f'<a class="fr-link" href="{href}">{link_text}</a>')
+    link_class = link_class or "fr-link"
+    return mark_safe(f'<a class="{link_class}" href="{href}">{link_text}</a>')
 
 
 @register.simple_tag
@@ -202,9 +209,9 @@ def withdict(parser, token):
 
     For example::
 
-        {% with name=person.name key=person.key as dict %}
+        {% withdict name=person.name key=person.key as dict %}
             {% some_tag_expecting_a_dict doct %}
-        {% endwith %}
+        {% endwithdict %}
 
     """
     bits = token.split_contents()

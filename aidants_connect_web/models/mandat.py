@@ -24,7 +24,7 @@ from phonenumbers import PhoneNumber, PhoneNumberFormat, format_number, is_valid
 from phonenumbers import parse as parse_number
 from phonenumbers import region_code_for_country_code
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     AuthorizationDurationChoices,
     AuthorizationDurations,
 )
@@ -76,6 +76,9 @@ class MandatQuerySet(models.QuerySet):
             ~Q(expiration_date__gt=timezone.now())
             | Q(autorisations__revocation_date__isnull=True)
         )
+
+    def seperatly_revoked(self):
+        return self.exclude(autorisations__revocation_date__isnull=True)
 
 
 class Mandat(models.Model):
@@ -165,7 +168,7 @@ class Mandat(models.Model):
         Returns whether the mandate was explicitely revoked, independently of it's
         expiration date.
         """
-        return not self.autorisations.exclude(revocation_date__isnull=False)
+        return Mandat.objects.seperatly_revoked().filter(pk=self.pk).exists()
 
     def get_absolute_url(self):
         path = reverse("mandat_visualisation", kwargs={"mandat_id": self.pk})

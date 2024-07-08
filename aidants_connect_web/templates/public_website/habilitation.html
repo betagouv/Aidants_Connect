@@ -1,95 +1,103 @@
-{% extends 'public_website/layout/main.html' %}
+{% extends 'public_website/layout/layout_habilitation.html' %}
 
 {% load static %}
 
-{% block extracss %}
-  <link href="{% static 'css/habilitation.css' %}" rel="stylesheet">
-{% endblock extracss %}
-
 {% block title %}Aidants Connect - Habilitation{% endblock %}
+{% block page.title %}Comment être habilité Aidants Connect&nbsp;? {% endblock %}
 
-{% block content %}
-  <div class="fr-container container-habilitation">
-    <h1>Comment être habilité Aidants Connect ?</h1>
+{% block body %}
+  
+  <h2 class="fr-h4 fr-mt-4w">Qui peut être habilité Aidants Connect&nbsp;?</h2>
+  <p class="fr-text--sm fr-mb-2w">
+    Tous les aidants professionnels qui accompagnent des usagers dans la réalisation de démarches administratives en ligne et qui sont salariés d'une structure éligible à Aidants Connect peuvent être habilités. Plus précisément il s'agit de toute personne morale de droit public ou privé qui&nbsp;:
+  </p>
+  <ul class="fr-text--sm fr-mb-2w fr-pl-3w">
+    <li>
+      Intervient dans le cadre d'une mission de service public d'accompagnement à la réalisation de démarches pour les usagers 
+    </li>
+    <li>
+      Participe à la politique d'animation de la vie sociale et développe des prestations de services, individualisées et spécialisées au sens de la circulaire n° 2012-013 de la CNAF
+    </li>
+    <li>
+      Intervient dans les pratiques professionnelles définies à l'article D. 142-1-1 du Code de l'action sociale et des familles
+    </li>
+  </ul>
+  <p class="fr-text--sm fr-mb-0">
+    Les aidants familiaux, les bénévoles, les services civiques et les élus ne sont pas éligibles.
+  </p>
 
-    <ul class="question">
-      <li>Ma structure emploie des aidants professionnels ?</li>
-      <li>Les aidants accompagnent des usagers dans la réalisation de démarches administratives en ligne ?</li>
-    </ul>
-    <p class="so">Alors ma structure est éligible Aidants Connect !</p>
+  <p class="fr-text--sm fr-mb-3w">
+    Pour plus d'informations, <a class="fr-link" href="https://aidantsconnect.beta.gouv.fr/faq/lhabilitation-aidants-connect/">consultez notre FAQ.</a>
+  </p>
 
-    <div class="fr-col-12 fr-col-md-12">
-      <div class="bandeau shadowed">
-        <p>
-          <span aria-hidden="true">⚠️ </span><strong>Attention</strong> : L’équipe Aidants Connect travaille sur des nouvelles modalités de formation et des expérimentations sont en cours.
-Plus d’informations seront prochainement disponibles sur cette page et via notre newsletter.
-        </p>
+  <p class="fr-text--sm fr-mb-3w">
+    Nous vous rappelons que les demandes d'habilitation de particuliers ne sont pas pris en compte.
+  </p>
+
+  <h2 class="fr-h4 fr-mt-4w">Comment se passe l'habilitation&nbsp;?</h2>
+  <div class="fr-grid-row fr-pb-3w">
+    <div class="fr-col-lg-2 fr-col-md-3 fr-col-12 fr-text--center">
+      <img src="{% static 'images/habilitation/habilitation_demande.svg' %}" alt="" />
+    </div>
+    <div class="fr-col-lg-10 fr-col-md-9 fr-col-12 fr-px-4w">
+      <h3 class="fr-h4 fr-mb-2w">Demande d'habilitation</h3>
+      <p class="fr-text--sm fr-mb-2w">Le référent Aidants Connect de la structure dépose une demande d'habilitation pour les aidants salariés qui souhaitent être habilités et formés à Aidants Connect.</p>
+      <p class="fr-info-text">
+        Le référent Aidants Connect est la personne chargée de la mise en place et du suivi d'Aidants Connect au sein de la structure. Il peut être un aidant professionnel, responsable ou non de la structure.
+      </p>
+    </div>
+  </div>
+  <div class="fr-grid-row fr-pb-3w">
+    <div class="fr-col-lg-2 fr-col-md-3 fr-col-12 fr-text--center">
+      <img src="{% static 'images/habilitation/calendrier.svg' %}" alt="" />
+    </div>
+    <div class="fr-col-lg-10 fr-col-md-9 fr-col-12 fr-px-4w">
+      <h3 class="fr-h4 fr-mb-2w">Inscription en formation</h3>
+      <p class="fr-text--sm fr-mb-2w">Suite à la validation de sa demande par Aidants Connect, le référent choisit une date de formation pour chaque aidant et s'inscrit à un webinaire dédié aux référents.</p>
+    </div>
+  </div>
+  <div class="fr-grid-row fr-pb-3w">
+    <div class="fr-col-lg-2 fr-col-md-3 fr-col-12 fr-text--center">
+      <img src="{% static 'images/habilitation/validation.svg' %}" alt="" />
+    </div>
+    <div class="fr-col-lg-10 fr-col-md-9 fr-col-12 fr-px-4w">
+      <h3 class="fr-h4 fr-mb-2w">Validation de l'inscription</h3>
+      <p class="fr-text--sm fr-mb-2w">L'organisme de formation contacte le référent pour valider l'inscription. La formation est payante, une demande de prise en charge est nécessaire.</p>
+      <a href="{% url 'habilitation_faq_formation' %}" class="fr-text--sm fr-btn fr-btn--secondary">Se renseigner sur les modalités de financement<span class="fr-icon-arrow-right-line fr-ml-1w"></span>
+      </a>
+    </div>
+  </div>
+  <div class="fr-grid-row fr-pb-3w">
+    <div class="fr-col-lg-2 fr-col-md-3 fr-col-12 fr-text--center">
+      <img src="{% static 'images/habilitation/formation.svg' %}" alt="" />
+    </div>
+    <div class="fr-col-lg-10 fr-col-md-9 fr-col-12 fr-px-4w">
+      <h3 class="fr-h4 fr-mb-2w">Formation des aidants</h3>
+      <p class="fr-text--sm fr-mb-2w">Les aidants suivent la formation Aidants Connect et réalisent un test PIX qui certifie leur habilitation.</p>
+    </div>
+  </div>
+  <div class="fr-grid-row fr-pb-3w">
+    <div class="fr-col-lg-2 fr-col-md-3 fr-col-12 fr-text--center">
+      <img src="{% static 'images/habilitation/activation.svg' %}" alt="" />
+    </div>
+    <div class="fr-col-lg-10 fr-col-md-9 fr-col-12 fr-px-4w">
+      <h3 class="fr-h4 fr-mb-2w">Activation des comptes</h3>
+      <p class="fr-text--sm fr-mb-2w">Aidants Connect active les comptes des aidants qui peuvent alors réaliser en toute sécurité des démarches en ligne pour le compte d'usagers.</p>
+    </div>
+  </div>
+  <div class="fr-grid-row">
+    <div class="fr-notice fr-notice--info fr-col-12 fr-grid-row fr-px-3w">
+      <div class="fr-col-lg-2 fr-col-md-3 fr-col-12 fr-text--center">
+        <img src="{% static 'images/icons/success.svg' %}" alt="" />
+      </div>
+      <div class="fr-col-lg-10 fr-col-md-9 fr-col-12 fr-px-1w">
+        <h3 class="fr-h4">Vous souhaitez faire une demande d'habilitation ?</h3>
+        <p class="fr-text-default">Vous avez pris connaissance de toutes les informations concernant l’habilitation et l’inscription à Aidants Connect.<br/>
+        Vous pouvez démarrer votre demande d’habilitation en suivant le bouton ci-dessous.</p>
+        <div class="fr-mt-4w">
+          <button class="fr-btn"><a href="{% url 'habilitation_new' %}">Remplir une demande d'habilitation <span class="fr-icon-arrow-right-line fr-ml-1w"></span></a></button>
+        </div>
       </div>
     </div>
-
-    <h2 class="h2-habilitation">Comment se passe l’habilitation ?</h2>
-    <ol class="how">
-      <li class="how_1">
-        <strong>Le référent de structure complète <a href="{% url 'habilitation_new' %}">le formulaire
-        d’habilitation Aidants Connect.</a></strong>
-      </li>
-      <li class="how_2"><strong>Aidants Connect valide la demande.</strong>
-      <li class="how_3"><strong>Dans un délai de deux mois, les aidants suivent gratuitement une formation :</strong>
-        <ul>
-          <li>Une journée dédiée aux sujets d'accompagnement de l'usager, RGPD, France Connect et prise en main de l'outil Aidants Connect</li>
-        </ul>
-      </li>
-      <li class="how_4"><strong>Les aidants certifient leur habilitation en réalisant un test PIX de fin de formation.</strong></li>
-      <li class="how_5"><strong>Aidants Connect active les comptes des aidants et envoie
-        un kit de ressources à la structure.
-        <br><span class="red">Dès lors, les aidants peuvent réaliser des démarches en ligne pour le compte d’usagers !</span></strong>
-      </li>
-    </ol>
-
-    <div class="btn-habilitation">
-      <a href="{% url 'habilitation_new' %}">Je souhaite formuler une demande d’habilitation pour ma structure</a>
-    </div>
-
-    <details class="details-habilitation">
-      <summary class="summary-habilitation h2">Liste des structures éligibles à l’utilisation d’Aidants Connect</summary>
-      <div class="who">
-        <p><b>Toute personne morale de droit public ou privé (administration, association, entreprise) qui :</b></p>
-        <ul>
-          <li>
-            Intervient dans le cadre d’une mission de service public d’accompagnement à la réalisation de démarches pour
-            les usagers (les maisons de services au public (MSAP), les structures titulaires du label « France services
-            »,
-            les agents des collectivités au contact du public, les CCAS, les services publics de proximité, les PIMMS,
-            les
-            centres médico-sociaux et les EPN).
-          </li>
-
-          <li>
-            Est membre du Réseau national de la médiation numérique ou contient dans son objet social la médiation ou
-            l’inclusion numérique, le cas échéant les agents ou salariés sont titulaires des titres professionnels
-            adéquats et notamment, le titre professionnel « conseiller en médiation numérique ».
-          </li>
-
-          <li>
-            Participe à la politique d’animation de la vie sociale et développe des prestations de services,
-            individualisées et spécialisées au sens de la circulaire n°2012-013 de la CNAF.
-          </li>
-
-          <li>
-            Est titulaire d’un marché, d’une subvention ou d’une prestation d’accompagnement en matière d’accompagnement
-            des usagers pour la réalisation des démarches administratives ou d’inclusion numérique.<br>
-            Exemples : les écrivains publics.
-          </li>
-
-          <li>Intervient dans les pratiques professionnelles définies à l’article D. 142-1-1 du Code de l’action sociale
-            et des familles.<br>
-            Exemples : les travailleurs sociaux.
-          </li>
-        </ul>
-        <p><strong>Les aidants familiaux, les bénévoles, les services civiques et les élus ne sont donc pas éligibles.
-          Pour plus d'informations, nous vous invitons à consulter
-          <a href="{% url 'faq_generale' %}">notre FAQ.</a></strong></p>
-      </div>
-    </details>
   </div>
 {% endblock %}

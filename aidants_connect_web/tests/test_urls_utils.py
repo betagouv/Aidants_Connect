@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from aidants_connect_common.utils.urls import join_url_parts
+from aidants_connect_common.utils import join_url_parts
 
 
 class TestUtils(TestCase):

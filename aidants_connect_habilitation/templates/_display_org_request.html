@@ -13,11 +13,14 @@
             {{ issuer.email }}<br>{{ issuer.phone }}
           </p>
         </div>
-        {% if show_all_buttons %}
+        {% if show_edit_buttons %}
           <div class="button-box">
             <a
-              class="fr"
-              href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}">Éditer</a>
+              class="fr-btn"
+              href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}"
+            >
+              Éditer votre profil
+            </a>
           </div>
         {% endif %}
       </div>
@@ -28,17 +31,19 @@
         <div>
           <p>
             <strong>{{ organisation.name }}</strong><br>
-            {{ organisation.address|linebreaksbr }}<br/>
+            {{ organisation.address|linebreaksbr }}<br />
             {{ organisation.zipcode }}
             {{ organisation.city }}
           </p>
           <p>SIRET : {{ organisation.siret }}</p>
         </div>
-        {% if show_all_buttons %}
+        {% if show_edit_buttons %}
           <div class="button-box">
-            <a class="button primary"
-               href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-              Éditer
+            <a
+              class="fr-btn"
+              href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+            >
+              Éditer les informations de lʼorganisation
             </a>
           </div>
         {% endif %}
@@ -79,29 +84,32 @@
           {% endif %}
         </dd>
       </dl>
-      {% if show_all_buttons %}
+      {% if show_edit_buttons %}
         <div class="button-box">
-          <a class="button primary"
-             href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-            Éditer
+          <a
+            class="fr-btn"
+            href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+          >
+            Éditer les informations de lʼorganisation
           </a>
         </div>
       {% endif %}
     </div>
   </div>
 </div>
+
 {# Infos générales #}
 <h3>
   Personnes impliquées
-  {% if display_add_aidants_button %}
-   <a
+  {% if organisation.status in organisation.Status.aidant_registrable %}
+     <a
     id="add-aidants-btn"
-    class="fr-btn fr-btn--icon-left fr-icon-user-add-line margin-bottom-1rem"
+    class="fr-btn fr-btn--icon-left fr-icon-user-add-line fr-mb-2v"
     href="{% url 'habilitation_organisation_add_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
   >
     Ajouter des aidants
   </a>
-{% endif %}
+  {% endif %}
 </h3>
 
 <div class="form-in-3-cols">
@@ -109,31 +117,44 @@
   <div class="fr-grid-row fr-grid-row--gutters">
     <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
       <div class="shadowed with-button-box">
-        <h4 class="h2">Référent de structure</h4>
         {% if organisation.manager %}
-        <div>
-          <p>
-            <strong>{{ organisation.manager.get_full_name }}</strong>
-            <br>{{ organisation.manager.profession }}
-          </p>
-          <p>
-            {{ organisation.manager.email }}<br>{{ organisation.manager.phone }}
-          </p>
-          <p>
-            {{ organisation.manager.address|linebreaksbr }}<br/>
-            {{ organisation.manager.zipcode }}
-            {{ organisation.manager.city }}
-          </p>
-          <p>Ce ou cette référente est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
-        </div>
-        {% else %}
-        <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-          Ajouter un ou une référente</a>
+          <section>
+            <h4 class="h2 fr-mb-5v">Référent de structure</h4>
+            {% if organisation.manager.is_aidant %}
+              <div class="fr-mb-5v">
+                {% include "_formation_registration_button.html" with aidant=organisation.manager %}
+              </div>
+            {% endif %}
+            <p>
+              <strong>{{ organisation.manager.get_full_name }}</strong>
+              <br>{{ organisation.manager.profession }}
+            </p>
+            <p>
+              {{ organisation.manager.email }}<br>{{ organisation.manager.phone }}
+            </p>
+            <p>
+              {{ organisation.manager.address|linebreaksbr }}<br />
+              {{ organisation.manager.zipcode }}
+              {{ organisation.manager.city }}
+            </p>
+            <p>Ce ou cette référente est aussi aidant : {{ organisation.manager.is_aidant|yesno:"Oui,Non" }}</p>
+          </section>
+        {% elif show_edit_buttons %}
+          <a
+            class="fr-btn"
+            href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+          >
+            Ajouter un ou une référente
+          </a>
         {% endif %}
-        {% if show_all_buttons %}
+        {% if show_edit_buttons %}
           <div class="button-box">
-            <a class="fr-btn"
-               href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">Éditer</a>
+            <a
+              class="fr-btn"
+              href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+            >
+              Éditer ce profil
+            </a>
           </div>
         {% endif %}
       </div>
@@ -148,7 +169,12 @@
       {% endif %}
       <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
         <div class="shadowed with-button-box">
-          <h4 class="h2">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
+          <div class="flex fr-mb-5v">
+            <h4 class="h2 fr-col--middle fr-m-0">Aidant <span class="sr-only">{{ forloop.counter }}</span></h4>
+            <span class="spacer"></span>
+            {% include "_formation_registration_button_aidant.html" with aidant=aidant_request %}
+          </div>
+
           <div>
             <p>
               <strong>{{ aidant_request.get_full_name }}</strong><br>
@@ -156,13 +182,28 @@
             </p>
             <p>{{ aidant_request.email }}</p>
           </div>
-          {% if show_all_buttons %}
+          {% if aidant_request.habilitation_request and not organisation.manager.aidant.last_login %}
+            {% if aidant_request.habilitation_request.status_cancellable_by_responsable %}
+              <div>
+                <a
+                  id="cancel-habilitation-request-{{ aidant_request.habilitation_request.pk }}"
+                  class="fr-link fr-link--icon-left fr-text-default--error fr-icon-delete-bin-line"
+                  href="{% url 'habilitation_new_aidant_cancel_habilitation_request' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant_request.pk %}"
+                >
+                  Annuler cette demande d'habilitation
+                </a>
+              </div>
+            {% elif aidant_request.habilitation_request.status == aidant_request.habilitation_request.ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE %}
+              <p class="fr-badge fr-badge--warning">Demande annulée par le ou la référente</p>
+            {% endif %}
+          {% endif %}
+          {% if show_edit_buttons %}
             <div class="button-box">
               <a
-                class="button primary"
+                class="fr-btn"
                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
               >
-                Éditer
+                Éditer ce profil
               </a>
             </div>
           {% endif %}

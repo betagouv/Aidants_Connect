@@ -35,8 +35,10 @@
       {% for notification in referent_notifications %}
         <div
           class="fr-col-12"
+          {% if notification.must_ack %}
           data-controller="notification"
           data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
+          {% endif %}
         >
           <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}">
             <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
@@ -57,10 +59,26 @@
 
     {% include "aidants_connect_web/espace_aidant/statistics.html" %}
 
+    <h2>Configuration</h2>
+     <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">
+       
+      <div class="fr-col-12">
+        <h3>Périmètres disponibles</h3>
+        <form method="post">
+          {% csrf_token %}
+          {% if perimetres_form.demarches.errors %}
+            <div class="notification error" role="alert">{{ perimetres_form.demarches.errors }}</div>
+          {% endif %}
+          {{ perimetres_form.demarches }}
+          <button class="fr-btn float-right" type="submit">Enregistrer les modifications</button>
+        </form>
+      </div>
+    </div>
+
     <div class="title-with-item margin-top-2rem">
       <h2 class="clearfix">Aidants</h2>
       <div>
-        {% if organisation_active_aidants|length > 1 %}{# Organisation has more aidants than just the référent #}
+        {% if organisation_active_aidants|length >= 1 %}
           <a
             href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}"
             class="fr-btn fr-btn--icon-left fr-icon-settings-5-fill"
@@ -155,15 +173,38 @@
                 </div>
               </td>
               <td>
-                {% if request.status_cancellable_by_responsable %}
-                  <a
-                    id="cancel-habilitation-request-{{ request.id }}"
-                    href="{% url "espace_responsable_cancel_habilitation" request_id=request.id %}"
-                    class="fr-btn fr-btn--secondary "
-                  >
-                    Annuler la demande
-                  </a>
-                {% endif %}
+                <ul class="fr-btns-group">
+                  {% if request.status_cancellable_by_responsable %}
+                    <li>
+                      <a
+                        id="cancel-habilitation-request-{{ request.id }}"
+                        href="{% url "espace_responsable_cancel_habilitation" request_id=request.id %}"
+                        class="fr-btn fr-btn--secondary "
+                      >
+                        Annuler la demande
+                      </a>
+                    </li>
+                  {% endif %}
+                  {% if request.status in request.ReferentRequestStatuses.formation_registerable %}
+                    {% if request.formations.exists %}
+                      <li>
+                        <button class="fr-btn" disabled>
+                          Cette personne est inscrite à une formation
+                        </button>
+                      </li>
+                    {% else %}
+                      <li>
+                        <a
+                          id="register-habilitation-request-{{ request.id }}"
+                          href="{% url "espace_responsable_register_formation" request_id=request.id %}"
+                          class="fr-btn fr-btn--secondary"
+                        >
+                          Inscrire à une formation
+                        </a>
+                      </li>
+                    {% endif %}
+                  {% endif %}
+                </ul>
               </td>
             </tr>
           {% endfor %}

@@ -15,7 +15,7 @@ from celery.result import AsyncResult
 from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
-from aidants_connect_common.utils.constants import AuthorizationDurations
+from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_habilitation.tasks import update_pix_and_create_aidant
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import (
@@ -292,8 +292,8 @@ class ExportForBizdevs(TestCase):
         self.assertEqual(
             dedent(
                 f"""
-                prénom,nom,adresse électronique,Téléphone,profession,Aidant - Peut créer des mandats,Carte TOTP active,App OTP,actif,Organisation: Nom,Organisation: Datapass ID,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre de mandats créés,Organisation: Nombre de mandats à distance créés,Organisation: Nombre d'usagers
-                Thierry,Goneau,{self.staff_aidant.email},,secrétaire,True,False,False,True,COMMUNE D'HOULBEC COCHEREL,None,123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,France Services/MSAP,0,None,None,None,5,2,4
+                prénom,nom,adresse électronique,Téléphone,profession,Date d'envoi de l’email d’alerte de désactivation,Est référent,Aidant - Peut créer des mandats,L'aidant est conseiller numérique,Carte TOTP active,Importance de décalage de la carte,totp_card_drift,Date activation carte TOTP,App OTP,actif,S'est connecté⋅e au moins 1 fois,Nombre de mandats créés,Nombre de mandats à distance créés,Nombre de mandats révoqués,Nombre de mandats renouvelés,Nombre de démarches rélisées,Organisation: Nom,Organisation: Datapass ID,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: Labellisation France Services,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre d'usagers
+                Thierry,Goneau,{self.staff_aidant.email},,secrétaire,,False,True,False,False,None,None,None,False,True,False,5,2,0,0,0,COMMUNE D'HOULBEC COCHEREL,None,123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,France Services/MSAP,False,0,None,None,None,4
                 """  # noqa: E501
             ).strip(),
             # Replace Windows' newline separator by Unix'

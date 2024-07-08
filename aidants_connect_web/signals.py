@@ -11,15 +11,23 @@ from django.templatetags.static import static
 from django.urls import reverse
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from ipware import get_client_ip
+from ua_parser import user_agent_parser
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     JournalActionKeywords,
     RequestOriginConstants,
 )
-from aidants_connect_common.utils.email import render_email
-from aidants_connect_common.utils.urls import build_url
-from aidants_connect_web.constants import NotificationType
-from aidants_connect_web.models import Aidant, Journal, Notification
+from aidants_connect_common.utils import build_url, render_email
+from aidants_connect_web import tasks
+from aidants_connect_web.constants import NotificationType, ReferentRequestStatuses
+from aidants_connect_web.models import (
+    Aidant,
+    HabilitationRequest,
+    Journal,
+    Notification,
+)
+from aidants_connect_web.models.aidant import UserFingerprint
 
 aidants__organisations_changed = Signal()
 otp_challenge_failed = Signal()
@@ -28,6 +36,14 @@ aidant_activated = Signal()
 
 
 logger = logging.getLogger()
+
+
+@receiver(post_save, sender=HabilitationRequest)
+def create_or_update_aidant_in_sandbox(
+    sender, instance: HabilitationRequest, created: bool, **_
+):
+    if settings.SANDBOX_API_URL:
+        tasks.create_or_update_aidant_in_sandbox_task.delay(instance.id)
 
 
 @receiver(post_save, sender=Notification)
@@ -80,6 +96,27 @@ def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
             message=text_message,
             html_message=html_message,
         )
+
+    text_message, html_message = render_email(
+        "email/aidant_created.mjml",
+        {
+            "tuto_url": build_url(reverse("ressources")),
+            "etsijaccompagnais_url": (
+                "https://www.etsijaccompagnais.fr/ressources-des-aidants"
+            ),
+            "faq_url": build_url(reverse("faq_generale")),
+            "home_url": build_url(reverse("home_page")),
+            "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,
+        },
+    )
+
+    send_mail(
+        from_email=settings.AC_CONTACT_EMAIL,
+        recipient_list=[aidant.email],
+        subject="Bienvenue parmi nos aidants habilités !",
+        message=text_message,
+        html_message=html_message,
+    )
 
 
 @receiver(card_associated_to_aidant)
@@ -170,15 +207,6 @@ def populate_organisation_type_table(app_config: AppConfig, **_):
             )
 
 
-@receiver(post_migrate)
-def populate_id_generator_table(app_config: AppConfig, **_):
-    if app_config.name == "aidants_connect_web":
-        IdGenerator = app_config.get_model("IdGenerator")
-        IdGenerator.objects.get_or_create(
-            code=settings.DATAPASS_CODE_FOR_ID_GENERATOR, defaults={"last_id": 10000}
-        )
-
-
 @receiver(post_save, sender=Journal)
 def update_activity_tracking_on_new_journal(
     sender, instance: Journal, created: bool, **_
@@ -191,3 +219,30 @@ def update_activity_tracking_on_new_journal(
 
     instance.aidant.activity_tracking_warning_at = None
     instance.aidant.save(update_fields=("activity_tracking_warning_at",))
+
+
+@receiver(user_logged_in)
+def log_user_fingerprint(sender, user: Aidant, request, **kwargs):
+    try:
+        client_ip, _ = get_client_ip(request)
+        ua = request.META.get("HTTP_USER_AGENT")
+        parsed_ua = user_agent_parser.Parse(ua)
+        UserFingerprint.objects.create(
+            user=request.user,
+            ip_address=client_ip,
+            user_agent=ua,
+            parsed_user_agent=parsed_ua,
+        )
+    except Exception:
+        logger.exception("Error while recording user fingerprint")
+
+
+@receiver(post_save, sender=HabilitationRequest)
+def cancel_formation_on_habilitation_cancelation(
+    sender, instance: HabilitationRequest, **_
+):
+    if (
+        ReferentRequestStatuses(instance.status)
+        not in ReferentRequestStatuses.formation_registerable()
+    ):
+        instance.formations.all().delete()

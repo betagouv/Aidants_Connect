@@ -24,7 +24,11 @@ from aidants_connect_web.forms import (
     get_choices_for_remote_method,
 )
 from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    OrganisationFactory,
+    UsagerFactory,
+)
 
 
 @tag("forms")
@@ -298,29 +302,42 @@ class SMSConsentFeatureFlagsTests(TestCase):
 
 
 class MandatFormTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory()
+        cls.organisation_with_disallowed_characters = OrganisationFactory(
+            allowed_demarches=["papiers", "famille", "social"]
+        )
+        super().setUpTestData()
+
     def test_form_renders_item_text_input(self):
-        form = MandatForm()
+        form = MandatForm(self.organisation)
         self.assertIn("argent", form.as_p())
 
     def test_validation_for_blank_items(self):
-        form = MandatForm(data={"demarche": ["argent"], "duree": "SHORT"})
+        form = MandatForm(
+            self.organisation, data={"demarche": ["argent"], "duree": "SHORT"}
+        )
         self.assertTrue(form.is_valid())
 
-        form_2 = MandatForm(data={"demarche": [], "duree": "SHORT"})
+        form_2 = MandatForm(self.organisation, data={"demarche": [], "duree": "SHORT"})
         self.assertFalse(form_2.is_valid())
         self.assertListEqual(
             form_2.errors["demarche"],
             ["Vous devez sélectionner au moins une démarche."],
         )
 
-        form_3 = MandatForm(data={"demarche": ["travail"], "duree": ""})
+        form_3 = MandatForm(
+            self.organisation, data={"demarche": ["travail"], "duree": ""}
+        )
         self.assertFalse(form_3.is_valid())
         self.assertListEqual(
             form_3.errors["duree"], ["Veuillez sélectionner la durée du mandat."]
         )
 
         form_4 = MandatForm(
-            data={"demarche": ["travail"], "duree": "SHORT", "is_remote": True}
+            self.organisation,
+            data={"demarche": ["travail"], "duree": "SHORT", "is_remote": True},
         )
         self.assertFalse(form_4.is_valid())
         self.assertListEqual(
@@ -332,22 +349,24 @@ class MandatFormTests(TestCase):
         )
 
         form_5 = MandatForm(
+            self.organisation,
             data={
                 "demarche": ["travail"],
                 "duree": "SHORT",
                 "is_remote": True,
                 "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
-            }
+            },
         )
         self.assertTrue(form_5.is_valid())
 
         form_6 = MandatForm(
+            self.organisation,
             data={
                 "demarche": ["travail"],
                 "duree": "SHORT",
                 "is_remote": True,
                 "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
-            }
+            },
         )
         self.assertFalse(form_6.is_valid())
         self.assertListEqual(
@@ -359,7 +378,9 @@ class MandatFormTests(TestCase):
         )
 
     def test_non_existing_demarche_triggers_error(self):
-        form = MandatForm(data={"demarche": ["test"], "duree": "16"})
+        form = MandatForm(
+            self.organisation, data={"demarche": ["test"], "duree": "SHORT"}
+        )
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["demarche"],
@@ -367,7 +388,9 @@ class MandatFormTests(TestCase):
         )
 
     def test_non_integer_duree_triggers_error(self):
-        form = MandatForm(data={"demarche": ["argent"], "duree": "test"})
+        form = MandatForm(
+            self.organisation, data={"demarche": ["argent"], "duree": "test"}
+        )
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["duree"],
@@ -377,13 +400,14 @@ class MandatFormTests(TestCase):
     def test_remote_fields_emptied_when_mandate_is_not_remote(self):
         # Remote mandate related fields a cleaned when mandate is not remote
         form = MandatForm(
+            self.organisation,
             data={
                 "demarche": ["argent"],
                 "duree": "SHORT",
                 "is_remote": False,
                 "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
                 "user_phone": "0 800 840 800",
-            }
+            },
         )
         self.assertTrue(form.is_valid())
         self.assertEqual("", form.cleaned_data["remote_constent_method"])
@@ -391,16 +415,40 @@ class MandatFormTests(TestCase):
 
         # Remote mandate related fields a cleaned when mandate is not remote
         form = MandatForm(
+            self.organisation,
             data={
                 "demarche": ["argent"],
                 "duree": "SHORT",
                 "is_remote": True,
                 "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
                 "user_phone": "0 800 840 800",
-            }
+            },
         )
         self.assertTrue(form.is_valid())
         self.assertEqual("", form.cleaned_data["user_phone"])
+
+    def test_disallowed_demarche_triggers_error(self):
+        form = MandatForm(
+            self.organisation_with_disallowed_characters,
+            data={"demarche": ["argent"], "duree": "SHORT"},
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            ["Sélectionnez un choix valide. argent n’en fait pas partie."],
+            form.errors["demarche"],
+        )
+        form = MandatForm(
+            self.organisation_with_disallowed_characters,
+            data={
+                "demarche": ["papiers", "argent", "transports", "justice"],
+                "duree": "SHORT",
+            },
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            "Sélectionnez un choix valide. argent n’en fait pas partie.",
+            form.errors["demarche"][0],
+        )
 
 
 class RecapMandatFormTests(TestCase):
@@ -408,6 +456,7 @@ class RecapMandatFormTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.aidant_thierry = AidantFactory()
+        cls.usager = UsagerFactory()
         device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 
@@ -415,6 +464,7 @@ class RecapMandatFormTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         form_1 = RecapMandatForm(
             aidant=self.aidant_thierry,
+            usager=self.usager,
             data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
         )
         self.assertTrue(form_1.is_valid())
@@ -423,11 +473,13 @@ class RecapMandatFormTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         form_1 = RecapMandatForm(
             aidant=self.aidant_thierry,
+            usager=self.usager,
             data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
         )
         form_1.is_valid()
         form_2 = RecapMandatForm(
             aidant=self.aidant_thierry,
+            usager=self.usager,
             data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
         )
         self.assertFalse(form_2.is_valid())

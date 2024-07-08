@@ -63,14 +63,7 @@ class Authorize(RequireConnectionMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        form = (
-            OAuthParametersFormV2(data=request.GET)
-            if (
-                unquote(request.GET.get("redirect_uri", ""))
-                == settings.FC_AS_FI_CALLBACK_URL_V2
-            )
-            else OAuthParametersForm(data=request.GET)
-        )
+        form = self.get_oauth_parameters_form()
         if form.is_valid():
             self.oauth_parameters_form = form
             self.connection = Connection.objects.create(
@@ -81,14 +74,7 @@ class Authorize(RequireConnectionMixin, FormView):
             return self.form_invalid_get(form)
 
     def post(self, request, *args, **kwargs):
-        self.oauth_parameters_form = (
-            OAuthParametersFormV2(data=request.POST, relaxed=True)
-            if (
-                unquote(request.GET.get("redirect_uri", ""))
-                == settings.FC_AS_FI_CALLBACK_URL_V2
-            )
-            else OAuthParametersForm(data=request.POST, relaxed=True)
-        )
+        self.oauth_parameters_form = self.get_oauth_parameters_form(relaxed=True)
 
         if not self.oauth_parameters_form.is_valid():
             # That case should only happen if, for whatever reason,
@@ -121,10 +107,7 @@ class Authorize(RequireConnectionMixin, FormView):
         return super().post(request, *args, **kwargs)
 
     def form_invalid(self, form):
-        if (
-            "unauthorized_user"
-            in form.errors.get("chosen_usager", PatchedErrorList()).error_codes
-        ):
+        if form.has_error("unauthorized_user", "chosen_usager"):
             log.info(
                 f"User {self.request.POST['chosen_usager']} does not have a valid "
                 f"autorisation with the organisation of aidant with id {self.aidant.id}"
@@ -146,18 +129,13 @@ class Authorize(RequireConnectionMixin, FormView):
         self.request.session["connection"] = self.connection.pk
         return super().form_valid(form)
 
-    def form_invalid_get(self, form):
+    def form_invalid_get(self, form: OAuthParametersForm):
         view_location = f"{self.__module__}.{self.__class__.__name__}"
-        requirement_errors = set()
-        format_validation_errors = set()
+        requirement_errors = set(form.errors_codes.get("required", {}).keys())
+        format_validation_errors = set(form.errors_codes.get("invalid", {}).keys())
         additionnal_keys_errors = set()
-        for field_name, errors in form.errors.items():
-            if "required" in errors.error_codes:
-                requirement_errors.update([field_name])
-            if "invalid" in errors.error_codes:
-                format_validation_errors.update([field_name])
-            if error := errors.get_error_by_code("additionnal_key"):
-                additionnal_keys_errors.update([error.message])
+        for message_list in form.errors_codes.get("invalid", {}).values():
+            additionnal_keys_errors.update(message_list)
 
         if requirement_errors:
             log.info(
@@ -178,7 +156,7 @@ class Authorize(RequireConnectionMixin, FormView):
                 "403 forbidden request: Unexpected parameters: "
                 f"{additionnal_keys_errors!r} @ {view_location}"
             )
-            return HttpResponseForbidden("forbidden parameter value {")
+            return HttpResponseForbidden("forbidden parameter value")
 
         log.warning(f"Uncatched validation error @ {view_location}")
         return HttpResponseBadRequest()
@@ -201,6 +179,21 @@ class Authorize(RequireConnectionMixin, FormView):
                 for user in self.usager_with_active_auth
             ],
         }
+
+    def get_oauth_parameters_form(self, **kwargs):
+        data = self.request.GET if self.request.method == "GET" else self.request.POST
+        return (
+            OAuthParametersFormV2(
+                data=data, organisation=self.aidant.organisation, **kwargs
+            )
+            if (
+                unquote(data.get("redirect_uri", ""))
+                == settings.FC_AS_FI_CALLBACK_URL_V2
+            )
+            else OAuthParametersForm(
+                data=data, organisation=self.aidant.organisation, **kwargs
+            )
+        )
 
     def get_success_url(self):
         parameters = urlencode(self.oauth_parameters_form.cleaned_data)
@@ -257,12 +250,16 @@ class FISelectDemarche(RequireConnectionMixin, FormView):
 
     def get_context_data(self, **kwargs):
         oauth_parameters_form = (
-            OAuthParametersFormV2(data=self.request.GET)
+            OAuthParametersFormV2(
+                data=self.request.GET, organisation=self.aidant.organisation
+            )
             if (
                 unquote(self.request.GET.get("redirect_uri", ""))
                 == settings.FC_AS_FI_CALLBACK_URL_V2
             )
-            else OAuthParametersForm(data=self.request.GET)
+            else OAuthParametersForm(
+                organisation=self.aidant.organisation, data=self.request.GET
+            )
         )
         if oauth_parameters_form.is_valid():
             parameters = urlencode(oauth_parameters_form.cleaned_data)

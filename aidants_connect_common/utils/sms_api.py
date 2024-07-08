@@ -20,8 +20,7 @@ from requests.models import PreparedRequest
 
 __all__ = ["SmsApi", "SmsResponseCallbackInfos"]
 
-from aidants_connect_common.utils.date_time_json_encoder import DateTimeJsonEncoder
-from aidants_connect_common.utils.urls import join_url_parts
+from . import DateTimeJsonEncoder, join_url_parts
 
 logger = logging.getLogger()
 

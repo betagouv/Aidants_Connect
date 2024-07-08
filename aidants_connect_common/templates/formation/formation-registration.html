@@ -1,0 +1,89 @@
+{% extends "layouts/main.html" %}
+
+{% load static dsfr_tags %}
+
+{% block extracss %}
+  <link href="{% static 'css/formation-registration.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    <section>
+      <h1 class="fr-mb-6v">Formation de {{ attendant.get_full_name }}</h1>
+      <p class="fr-text--xl fr-mb-16v">
+        Retrouvez ci-dessous toutes les informations concernant les formations disponibles pour
+        {{ attendant.get_full_name }}.
+      </p>
+    </section>
+    <div class="fr-callout">
+      <p class="fr-callout__text fr-mb-3w">
+        La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023.<br>
+        Cette formation est dorénavant payante et financée seulement dans les 2 cas suivants :
+        <ul>
+        <li>Pour les conseillers numériques, si elle fait partie des modules thématiques choisis lors de la formation initiale ou continue &nbsp;;</li>
+        <li>Pour les aidants des structures adhérentes à l’OPCO Uniformation.</li>
+        </ul>
+      <p>Pour tous les autres cas, la formation doit être financée par la structure.</p>        
+      </p>
+    </div>
+    
+    <p>La formation de 7h correspond à la formation prise en main d’Aidants Connect et celle de 14h à devenir aidant numérique avec Aidants Connect.</p>
+    
+    {% if form.fields.formations.queryset.count == 0 %}
+      <p>Aucune formation nʼest encore disponible.</p>
+    {% else %}
+      <form method="post">
+        {% csrf_token %}
+        {% if form.formation.errors %}
+          <div class="fr-error-text">{{ form.formation.errors }}</div>{% endif %}
+        <table class="fr-table fr-col-12 fr-mb-8v">
+          <thead>
+          <tr>
+            <td>Organisme</td>
+            <td>Dates</td>
+            <td>Durée</td>
+            <td>Format</td>
+            <td>Lieu</td>
+            <td>Sélection</td>
+          </tr>
+          </thead>
+          <tbody>
+          {% for formation_widget in form.formations.subwidgets %}
+            <tr>
+              <td>{{ formation_widget.data.value.instance.type.label }}</td>
+              <td>
+                {{ formation_widget.data.value.instance.date_range_str }} <br />
+                {{ formation_widget.data.value.instance.description|linebreaksbr }}
+              </td>
+              <td>{{ formation_widget.data.value.instance.duration }}h</td>
+              <td>{{ formation_widget.data.value.instance.get_status_display }}</td>
+              <td>{{ formation_widget.data.value.instance.place }}</td>
+              <td class="fr-radio-group option-container">
+                <input
+                  name="{{ formation_widget.data.name }}"
+                  value="{{ formation_widget.data.value }}"
+                  id="formation-{{ formation_widget.data.value }}"
+                  type="radio"
+                  {% if formation_widget.data.selected or formation_widget.data.value in registered_to %}checked{% endif %}
+                >
+                <label class="fr-label" for="formation-{{ formation_widget.data.value }}">
+                  <span class="sr-only">
+                    Inscription à la formation {{ formation_widget.data.label }}, 
+                    {{ formation_widget.data.value.instance.date_range_str|lower }}
+                  </span>
+                </label>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <ul class="fr-btns-group fr-btns-group--inline fr-btns-group--right">
+          <li><a href="{{ cancel_url }}" class="fr-btn fr-btn--secondary">Annuler</a></li>
+          <li>
+            <button class="fr-btn" type="submit">Valider la sélection</button>
+          </li>
+        </ul>
+      </form>
+    {% endif %}
+  </div>
+{% endblock %}

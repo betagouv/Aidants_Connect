@@ -34,7 +34,7 @@
                       Entrez le numéro de série
                     </label>
                     <div class="margin-top-1rem">
-                      <span>GADT000 </span>{{ form.serial_number }}
+                      {{ form.serial_number }}
                     </div>
                     {% if form.errors.serial_number %}
                       <div id="{{ form.serial_number.id_for_label }}__errors">

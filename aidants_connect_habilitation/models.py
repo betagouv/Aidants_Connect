@@ -1,8 +1,10 @@
 from datetime import timedelta
-from typing import Optional
+from functools import cached_property
+from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import SET_NULL, Q
@@ -15,20 +17,21 @@ from django.utils.timezone import now
 
 from phonenumber_field.modelfields import PhoneNumberField
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.utils.email import render_email
-from aidants_connect_common.utils.urls import build_url
-from aidants_connect_web.models import (
-    Aidant,
-    HabilitationRequest,
-    Organisation,
-    OrganisationType,
+from aidants_connect_common.models import FormationAttendant
+from aidants_connect_common.utils import (
+    build_url,
+    generate_new_datapass_id,
+    render_email,
 )
-from aidants_connect_web.utilities import generate_new_datapass_id
+from aidants_connect_web.constants import ReferentRequestStatuses
+
+if TYPE_CHECKING:
+    from aidants_connect_web.models import Organisation
 
 __all__ = [
     "PersonWithResponsibilities",
@@ -188,18 +191,49 @@ class Manager(PersonWithResponsibilities):
 
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
 
+    conseiller_numerique = models.BooleanField(
+        "Est un conseiller numérique", default=False
+    )
+
+    habilitation_request = models.OneToOneField(
+        "aidants_connect_web.HabilitationRequest",
+        related_name="manger_request",
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.CASCADE,
+    )
+
+    @cached_property
+    def aidant(self):
+        from aidants_connect_web.models import Aidant
+
+        try:
+            return Aidant.objects.get(email=self.email)
+        except Aidant.DoesNotExist:
+            return None
+
     class Meta:
         verbose_name = "Référent structure"
         verbose_name_plural = "Référents structure"
+        constraints = (
+            models.CheckConstraint(
+                name="habilitation_request_null_when_manager_is_not_aidant",
+                check=models.Q(is_aidant=True)
+                | models.Q(habilitation_request__isnull=True),
+            ),
+        )
 
 
 class OrganisationRequest(models.Model):
+    Status = RequestStatusConstants
+
     created_at = models.DateTimeField("Date création", auto_now_add=True)
 
     updated_at = models.DateTimeField("Date modification", auto_now=True)
 
     organisation = models.ForeignKey(
-        Organisation,
+        "aidants_connect_web.Organisation",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -237,11 +271,13 @@ class OrganisationRequest(models.Model):
     status = models.CharField(
         "État",
         max_length=150,
-        default=RequestStatusConstants.NEW.name,
-        choices=RequestStatusConstants.choices,
+        default=Status.NEW,
+        choices=Status.choices,
     )
 
-    type = models.ForeignKey(OrganisationType, null=True, on_delete=SET_NULL)
+    type = models.ForeignKey(
+        "aidants_connect_web.OrganisationType", null=True, on_delete=SET_NULL
+    )
 
     type_other = models.CharField(
         "Type de structure si autre",
@@ -379,6 +415,14 @@ class OrganisationRequest(models.Model):
 
     @transaction.atomic
     def accept_request_and_create_organisation(self):
+        # Local import to avoid circular imports
+        from aidants_connect_web.models import (
+            Aidant,
+            HabilitationRequest,
+            Organisation,
+            OrganisationType,
+        )
+
         if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
             return False
 
@@ -434,23 +478,31 @@ class OrganisationRequest(models.Model):
         self.create_aidants(organisation)
 
         if self.manager.is_aidant:
-            HabilitationRequest.objects.get_or_create(
-                email=self.manager.email,
-                organisation=organisation,
-                defaults=dict(
-                    origin=HabilitationRequest.ORIGIN_HABILITATION,
-                    first_name=self.manager.first_name,
-                    last_name=self.manager.last_name,
-                    profession=self.manager.profession,
-                ),
+            self.manager.habilitation_request, _ = (
+                HabilitationRequest.objects.get_or_create(
+                    email=self.manager.email,
+                    organisation=organisation,
+                    defaults=dict(
+                        origin=HabilitationRequest.ORIGIN_HABILITATION,
+                        first_name=self.manager.first_name,
+                        last_name=self.manager.last_name,
+                        profession=self.manager.profession,
+                        conseiller_numerique=self.manager.conseiller_numerique,
+                        status=ReferentRequestStatuses.STATUS_PROCESSING,
+                    ),
+                )
             )
+            self.manager.save(update_fields=("habilitation_request",))
 
         return True
 
     @transaction.atomic
-    def create_aidants(self, organisation: Organisation):
+    def create_aidants(self, organisation: "Organisation"):
+        # Local import to avoid circular imports
+        from aidants_connect_web.models import HabilitationRequest
+
         for aidant in self.aidant_requests.all():
-            HabilitationRequest.objects.get_or_create(
+            hr, _ = HabilitationRequest.objects.get_or_create(
                 email=aidant.email,
                 organisation=organisation,
                 defaults=dict(
@@ -458,8 +510,12 @@ class OrganisationRequest(models.Model):
                     first_name=aidant.first_name,
                     last_name=aidant.last_name,
                     profession=aidant.profession,
+                    conseiller_numerique=aidant.conseiller_numerique,
+                    status=ReferentRequestStatuses.STATUS_PROCESSING,
                 ),
             )
+            aidant.habilitation_request = hr
+            aidant.save(update_fields=("habilitation_request",))
 
     def refuse_request(self):
         if self.status != RequestStatusConstants.AC_VALIDATION_PROCESSING.name:
@@ -559,6 +615,26 @@ class AidantRequest(Person):
         OrganisationRequest,
         on_delete=models.CASCADE,
         related_name="aidant_requests",
+    )
+
+    conseiller_numerique = models.BooleanField(
+        "Est un conseiller numérique", default=False
+    )
+
+    habilitation_request = models.OneToOneField(
+        "aidants_connect_web.HabilitationRequest",
+        related_name="aidant_request",
+        null=True,
+        default=None,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+
+    formations = GenericRelation(
+        FormationAttendant,
+        related_name="aidant_requests",
+        object_id_field="attendant_id",
+        content_type_field="attendant_content_type",
     )
 
     @property

@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from aidants_connect_common.utils.constants import DictChoices, TextChoicesEnum
+from aidants_connect_common.constants import DictChoices, TextChoicesEnum
 
 
 class TestChoicesMeta(TestCase):

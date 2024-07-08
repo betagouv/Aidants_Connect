@@ -1,9 +1,10 @@
 from unittest.mock import Mock, patch
 from urllib.parse import quote, unquote
 
+from django.conf import settings
 from django.test import TestCase, override_settings
 
-from aidants_connect_common.utils.constants import (
+from aidants_connect_common.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
@@ -473,6 +474,22 @@ class TestManagerForm(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual("test@test.test", form.cleaned_data["email"])
 
+    def test_email_conseiller_numerique(self):
+        form = get_form(
+            ManagerForm,
+            ignore_errors=True,
+            conseiller_numerique=True,
+            email="test@test.test",
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["email"][0],
+            "Si la personne fait partie du dispositif conseiller numérique, "
+            "elle doit s'inscrire avec son email "
+            f"{settings.CONSEILLER_NUMERIQUE_EMAIL}",
+        )
+
 
 class TestAidantRequestForm(TestCase):
     def test_clean_aidant_with_same_email_as_manager(self):
@@ -561,6 +578,24 @@ class TestAidantRequestForm(TestCase):
                 f"aidante doit avoir son propre e-mail nominatif."
             ],
             form.errors["email"],
+        )
+
+    def test_email_conseiller_numerique(self):
+        organisation = OrganisationRequestFactory()
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation},
+            conseiller_numerique=True,
+            email="test@test.test",
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["email"][0],
+            "Si la personne fait partie du dispositif conseiller numérique, "
+            "elle doit s'inscrire avec son email "
+            f"{settings.CONSEILLER_NUMERIQUE_EMAIL}",
         )
 
 

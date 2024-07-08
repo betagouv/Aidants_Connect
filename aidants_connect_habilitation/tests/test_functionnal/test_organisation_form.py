@@ -12,8 +12,8 @@ from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
+from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_common.utils.constants import RequestOriginConstants
 from aidants_connect_common.utils.gouv_address_api import Address
 from aidants_connect_habilitation.models import Issuer, OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
@@ -45,7 +45,9 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
         )
-        self.selenium.find_element(By.ID, "id_france_services_label").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_france_services_label ~ label"
+        ).click()
 
         for field in [
             "name",
@@ -90,7 +92,9 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(By.ID, "id_is_private_org").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_is_private_org ~ label"
+        ).click()
 
         for field in [
             "name",
@@ -247,7 +251,9 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(By.ID, "id_is_private_org").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_is_private_org ~ label"
+        ).click()
 
         for field in [
             "name",
@@ -319,8 +325,9 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(By.ID, "id_is_private_org").click()
-
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_is_private_org ~ label"
+        ).click()
         for field in [
             "name",
             "siret",

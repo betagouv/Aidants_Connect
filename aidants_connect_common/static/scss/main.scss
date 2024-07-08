@@ -13,23 +13,27 @@ body {
 ul, ol {
   margin: 0;
   padding: 0;
-  list-style-position: inside;
+  list-style-position: outside;
 }
 
 $main-padding: 3rem;
 
 #main {
-  overflow: hidden;
   flex-grow: 100;
   padding: $main-padding 0;
 }
 
 .main-content-full { // cancels #main padding
-  margin: -$main-padding 0;
+  margin-bottom: -$main-padding;
+  margin-top: -$main-padding;
+
+  .main-content-item {
+    margin-bottom: $main-padding;
+    margin-top: $main-padding;
+  }
 }
 
 h1, .fr-h1 {
-  color: var(--blue-france-sun-113-625);
   margin: 0 0 3rem 0;
 }
 
@@ -41,6 +45,27 @@ h3, .fr-h3, h4, .fr-h4 {
     margin-top: 0;
   }
 }
+
+.fr-text-default {
+  color: var(--text-default-grey) !important;
+}
+.fr-text-blue-france {
+  color: var(--blue-france-sun-113-625);
+}
+.fr-text-grey {
+  color: var(--grey-425-625);
+}
+.fr-text--center {
+  text-align: center;
+}
+
+.contrast-grey-background {
+  background-color: var(--background-contrast-grey);
+}
+.alt-grey-background {
+  background-color: var(--background-alt-grey);
+}
+
 
 .page-main-title {
   color: var(--grey-425-625);
@@ -54,12 +79,25 @@ h3, .fr-h3, h4, .fr-h4 {
   margin: 0 0 3rem 0;
 }
 
+.errorlist  {
+  list-style: none;
+  margin-top: 0;
+  margin-bottom: 1rem ;
+  color: var(--text-active-red-marianne);
+}
+
 p:last-child {
   margin-bottom: 0;
 }
 
 [hidden] {
   display: none !important;
+}
+
+.fr-icon-loader:after,
+.fr-icon-loader:before {
+  -webkit-mask-image: url(../images/icons/AC-loader.svg);
+  mask-image: url(../images/icons/AC-loader.svg)
 }
 
 // From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034
@@ -83,7 +121,12 @@ p:last-child {
 .flex {
   display: flex;
 }
-
+.flex-right {
+  justify-content: right;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
 .width-100 {
   width: 100%;
 }
@@ -97,5 +140,18 @@ p:last-child {
     .fr-grid-row.fr-grid-row--#{$gap-type}-#{$i}v {
       #{$gap-type}: #{$i * 0.25}rem !important;
     }
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none;
+  }
+}
+
+@media print {
+  .no-print,
+  .no-print * {
+    display: none !important;
   }
 }

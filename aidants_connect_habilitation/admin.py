@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.core.mail import send_mail
@@ -9,14 +9,14 @@ from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirec
 from django.shortcuts import render
 from django.template import loader
 from django.urls import path, reverse
-from django.utils.html import linebreaks
+from django.utils.html import linebreaks, urlize
 from django.utils.safestring import mark_safe
 
 from django_reverse_admin import ReverseInlineModelAdmin, ReverseModelAdmin
 
 from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin, admin_site
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
-from aidants_connect_common.utils.email import render_email
+from aidants_connect_common.utils import render_email
 from aidants_connect_habilitation.forms import (
     AdminAcceptationOrRefusalForm,
     RequestMessageForm,
@@ -41,6 +41,7 @@ class OrganisationRequestInline(VisibleToAdminMetier, TabularInline):
     can_delete = False
 
 
+@admin.register(Issuer, site=admin_site)
 class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "email",
@@ -70,6 +71,7 @@ class IssuerAdmin(VisibleToAdminMetier, ModelAdmin):
     resend_confirmation_emails.short_description = "Renvoyer les emails de confirmation"
 
 
+@admin.register(IssuerEmailConfirmation, site=admin_site)
 class EmailConfirmationAdmin(VisibleToTechAdmin, ModelAdmin):
     pass
 
@@ -78,6 +80,7 @@ class AidantRequestInline(VisibleToAdminMetier, TabularInline):
     model = AidantRequest
     show_change_link = True
     extra = 0
+    readonly_fields = ("habilitation_request",)
 
 
 class MessageInline(VisibleToAdminMetier, StackedInline):
@@ -86,9 +89,10 @@ class MessageInline(VisibleToAdminMetier, StackedInline):
 
 
 class ManagerReverseInlineModelAdmin(VisibleToAdminMetier, ReverseInlineModelAdmin):
-    pass
+    readonly_fields = ("habilitation_request",)
 
 
+@admin.register(Manager, site=admin_site)
 class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
     fields = (
         "organisation",
@@ -103,14 +107,16 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "city_insee_code",
         "department_insee_code",
         "is_aidant",
+        "conseiller_numerique",
     )
-    readonly_fields = ("organisation",)
+    readonly_fields = ("organisation", "habilitation_request")
 
     list_display = (
         "first_name",
         "last_name",
         "email",
         "is_aidant",
+        "conseiller_numerique",
         "organisation",
         "zipcode",
     )
@@ -123,6 +129,7 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
     list_filter = ("is_aidant",)
 
 
+@admin.register(OrganisationRequest, site=admin_site)
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
     list_filter = (RegionFilter, DepartmentFilter, "status")
     list_display = ("name", "issuer", "status", "data_pass_id", "created_at")
@@ -208,7 +215,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
             try:
                 if org_request.accept_request_and_create_organisation():
                     orgs_created += 1
-                    self.send_acceptance_email(org_request)
+                    self.send_acceptance_email(request, org_request)
                 else:
                     self.message_user(
                         request,
@@ -327,10 +334,19 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         return HttpResponseRedirect(redirect_path)
 
-    def __accept_request_get(self, request, object_id):
+    def __accept_request_get(self, request: HttpRequest, object_id):
         organisation = OrganisationRequest.objects.get(id=object_id)
         email_body = loader.render_to_string(
-            "email/demande_acceptee.txt", {"organisation": organisation}
+            "email/demande_acceptee.txt",
+            {
+                "organisation": organisation,
+                "organisation_request_url": request.build_absolute_uri(
+                    organisation.get_absolute_url()
+                ),
+                "habilitation_faq_formation": request.build_absolute_uri(
+                    reverse("habilitation_faq_formation")
+                ),
+            },
         )
         email_subject = (
             "Aidants Connect - la demande d'habilitation n° "
@@ -363,7 +379,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         object.accept_request_and_create_organisation()
         subject = form.cleaned_data.get("email_subject")
         body_text = form.cleaned_data.get("email_body")
-        self.send_acceptance_email(object, body_text, subject)
+        self.send_acceptance_email(request, object, body_text, subject)
 
         aidant_count = object.aidant_requests.count()
         if object.manager.is_aidant:
@@ -388,14 +404,25 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         )
         return HttpResponseRedirect(redirect_path)
 
-    def send_acceptance_email(self, organisation, body_text=None, subject=None):
+    def send_acceptance_email(
+        self, request, organisation, body_text=None, subject=None
+    ):
         body_text = body_text or loader.render_to_string(
-            "email/demande_acceptee.txt", {"organisation": organisation}
+            "email/demande_acceptee.txt",
+            {
+                "organisation": organisation,
+                "organisation_request_url": request.build_absolute_uri(
+                    organisation.get_absolute_url()
+                ),
+                "habilitation_faq_formation": request.build_absolute_uri(
+                    reverse("habilitation_faq_formation")
+                ),
+            },
         )
 
         text_message, html_message = render_email(
             "email/empty.mjml",
-            mjml_context={"content": mark_safe(linebreaks(body_text))},
+            mjml_context={"content": mark_safe(urlize(linebreaks(body_text)))},
             text_context={"content": body_text},
         )
 
@@ -405,9 +432,9 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
                 f"{organisation.data_pass_id} a été acceptée"
             )
 
-        recipients = set(organisation.aidant_requests.values_list("email", flat=True))
-        recipients.add(organisation.manager.email)
-        recipients.add(organisation.issuer.email)
+        recipients = {organisation.issuer.email}
+        if organisation.manager:
+            recipients.add(organisation.manager.email)
 
         send_mail(
             from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
@@ -480,7 +507,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
 
         text_message, html_message = render_email(
             "email/empty.mjml",
-            mjml_context={"content": mark_safe(linebreaks(body_text))},
+            mjml_context={"content": mark_safe(urlize(linebreaks(body_text)))},
             text_context={"content": body_text},
         )
 
@@ -557,7 +584,14 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         message.save()
 
 
-admin_site.register(Issuer, IssuerAdmin)
-admin_site.register(Manager, ManagerAdmin)
-admin_site.register(OrganisationRequest, OrganisationRequestAdmin)
-admin_site.register(IssuerEmailConfirmation, EmailConfirmationAdmin)
+@admin.register(AidantRequest, site=admin_site)
+class AidantRequestAdmin(VisibleToTechAdmin, ModelAdmin):
+    list_display = (
+        "__str__",
+        "email",
+        "profession",
+        "organisation",
+        "conseiller_numerique",
+    )
+    raw_id_fields = ("organisation",)
+    readonly_fields = ("habilitation_request",)

@@ -9,9 +9,7 @@ from django.urls import reverse
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
-from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_common.utils.gouv_address_api import Address
@@ -127,27 +125,35 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.assertEqual(len(form_elts), 4)
 
-        form = AidantRequestForm(organisation=organisation)
-
         for i, _ in enumerate(form_elts):
-            for field_name, field in form.fields.items():
-                html_id = f"id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}-{field_name}"
+            form = AidantRequestForm(
+                organisation=organisation,
+                prefix=f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}",
+            )
 
-                try:
-                    field_label = self.selenium.find_element(
-                        By.CSS_SELECTOR, f'[for="{html_id}"]'
-                    )
-                except NoSuchElementException:
-                    self.fail(
-                        f"Label for form element {html_id} not found. "
-                        "Was form 'prefix' or 'auto_id' modified?"
-                    )
+            for bf in form:
+                html_id = f"id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}-{bf.name}"
 
-                self.assertEqual(field_label.text, field.label)
+                for widget in bf.subwidgets:
+                    self.assertIn(html_id, widget.id_for_label)
+                    try:
+                        field_label = self.selenium.find_element(
+                            By.CSS_SELECTOR, f'[for="{widget.id_for_label}"]'
+                        )
+                    except NoSuchElementException:
+                        self.fail(
+                            f"Label for form element {widget.id_for_label} not found. "
+                            "Was form 'prefix' or 'auto_id' modified?"
+                        )
+
+                    self.assertIn(
+                        widget.data.get("label", bf.label),
+                        field_label.get_attribute("innerHTML"),
+                    )
 
     def test_form_loads_manager_data(self):
         issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory(is_aidant=True)
+        manager: Manager = ManagerFactory(is_aidant=True, conseiller_numerique=True)
         form = ManagerForm()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer, manager=manager
@@ -157,6 +163,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         field_names = list(form.fields.keys())
         field_names.remove("is_aidant")
+        field_names.remove("conseiller_numerique")
         field_names.remove("alternative_address")
         field_names.remove("skip_address_validation")
 
@@ -169,6 +176,17 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         self.assertIsNotNone(
             element.get_attribute("selected"),
             "Manager is also an aidant, option should have been checked",
+        )
+
+        self.assertIsNotNone(
+            self.selenium.find_element(
+                By.CSS_SELECTOR,
+                (
+                    f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique "
+                    f'[value="True"]'
+                ),
+            ).get_attribute("checked"),
+            "Manager is also conseiller numérique, option should have been checked",
         )
 
         for field_name in field_names:
@@ -196,31 +214,32 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         field_names = list(form.fields.keys())
         field_names.remove("is_aidant")
+        field_names.remove("conseiller_numerique")
         field_names.remove("alternative_address")
         field_names.remove("skip_address_validation")
+
+        prefix = PersonnelForm.MANAGER_FORM_PREFIX
 
         self.assertIsNone(
             self.selenium.find_element(
                 By.XPATH,
-                f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
-                "//option[normalize-space(text())='Oui']",
+                f"//*[@id='id_{prefix}-is_aidant']//*[normalize-space(text())='Oui']",
+                # noqa: E501
             ).get_attribute("selected"),
             "Manager is not an aidant, checkbox should not have been checked",
         )
 
         Select(
-            self.selenium.find_element(
-                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant"
-            )
+            self.selenium.find_element(By.ID, f"id_{prefix}-is_aidant")
         ).select_by_visible_text("Oui")
 
         self.assertIsNotNone(
             self.selenium.find_element(
                 By.XPATH,
-                f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
-                "//option[normalize-space(text())='Oui']",
+                f"//*[@id='id_{prefix}-is_aidant']//*[normalize-space(text())='Oui']",
+                # noqa: E501
             ).get_attribute("selected"),
-            "New manager is an aidant, checkbox should be checked",
+            "Manager is not an aidant, checkbox should not have been checked",
         )
 
         for field_name in field_names:
@@ -229,26 +248,31 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                     By.CSS_SELECTOR,
                     f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
                 )
+
                 element.clear()
                 element.send_keys(str(getattr(new_manager, field_name)))
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
         organisation.refresh_from_db()
         saved_manager = organisation.manager
 
         for field_name in form.fields:
-            if field_name not in ["alternative_address", "skip_address_validation"]:
+            if field_name not in (
+                "alternative_address",
+                "skip_address_validation",
+                "conseiller_numerique",
+            ):
                 self.assertEqual(
                     getattr(saved_manager, field_name), getattr(new_manager, field_name)
                 )
@@ -265,15 +289,15 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 0)
@@ -302,22 +326,29 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                     By.CSS_SELECTOR,
                     f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}-{field_name}",
                 )
-                element.clear()
-                element.send_keys(aidant_data[field_name])
+
+                if field_name == "conseiller_numerique":
+                    element.find_element(
+                        By.CSS_SELECTOR,
+                        f'[value="{aidant_data["conseiller_numerique"]}"]',
+                    ).click()
+                else:
+                    element.clear()
+                    element.send_keys(aidant_data[field_name])
 
             self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 6)
@@ -351,21 +382,28 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"
                 f"{modified_aidant_idx}-{field_name}",
             )
-            element.clear()
-            element.send_keys(aidant_data[field_name])
+
+            if field_name == "conseiller_numerique":
+                element.find_element(
+                    By.CSS_SELECTOR,
+                    f'[value="{aidant_data["conseiller_numerique"]}"]',
+                ).click()
+            else:
+                element.clear()
+                element.send_keys(aidant_data[field_name])
 
         self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 4)
@@ -400,6 +438,13 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
             )
             field_value = getattr(issuer, field_name)
+            self.assertEqual(element.get_attribute("value"), field_value)
+
+        for field_name in ("zipcode", "city", "address"):
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
+            )
+            field_value = getattr(organisation, field_name)
             self.assertEqual(element.get_attribute("value"), field_value)
 
     def test_cannot_submit_form_without_aidants_displays_errors(self):
@@ -484,6 +529,12 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             )
         ).select_by_visible_text("Oui")
 
+        self.selenium.find_element(
+            By.CSS_SELECTOR,
+            f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique "
+            '[value="False"]',
+        ).click()
+
         # Open dropdown
         self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
 
@@ -495,15 +546,15 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
         organisation.refresh_from_db()
         manager = organisation.manager
@@ -558,6 +609,12 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             )
         ).select_by_visible_text("Oui")
 
+        self.selenium.find_element(
+            By.CSS_SELECTOR,
+            f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique "
+            '[value="False"]',
+        ).click()
+
         # Open dropdown
         self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
 
@@ -568,15 +625,15 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            ),
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
         organisation.refresh_from_db()
         manager = organisation.manager
@@ -642,15 +699,15 @@ class PersonnelRequestFormViewNoJSTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_validation",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
         manager.refresh_from_db()
         self.assertEqual(

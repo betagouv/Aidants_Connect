@@ -1,12 +1,16 @@
 Bonjour,
 
-L’équipe Aidants Connect vous confirme avoir validé l’ajout de l'aidante ou l'aidant {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. Dans votre espace référent, la personne a été ajoutée en bas de la liste des aidants avec un statut « en cours ».
+Nous venons de valider l'éligibilité de l'aidant(e) {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. Vous pouvez dès à présent l’inscrire à une session de formation depuis l'onglet “Demandes en cours” de votre espace référent {{ espace_referent_url }}.
 
-Désormais, l’aidant ou l'aidante est invitée à poursuivre la procédure d’habilitation (participation à la journée de formation + passage du test PIX final). L’organisme de formation va prochainement prendre contact avec vous pour l’organisation de sa formation.
+La formation à Aidants Connect est dorénavant payante et financée seulement dans les 2 cas suivants :
 
+- Pour les conseillers numériques, si elle fait partie des modules thématiques choisis lors de la formation initiale ou continue ;
+
+- Pour les aidants des structures adhérentes à l’OPCO Uniformation.
+
+Retrouvez toutes les informations sur la formation Aidants Connect et ses modalités de financement : {{ formation_url }}.
 
 À bientôt sur Aidants Connect !
-
 L’équipe Aidants Connect
 Accompagnez vos usagers en toute sécurité
 Pour toute demande : contact@aidantsconnect.beta.gouv.fr

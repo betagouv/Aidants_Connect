@@ -3,6 +3,8 @@ import sys
 from django.conf import settings
 from django.urls import include, path
 
+from django_js_reverse.views import urls_js as django_js_reverse_urls
+
 from aidants_connect import views
 from aidants_connect_common.tests import third_party_service_mocks
 from aidants_connect_web.admin import admin_site
@@ -10,6 +12,8 @@ from aidants_connect_web.admin import admin_site
 urlpatterns = [
     path("favicon.ico", views.favicon),
     path(settings.ADMIN_URL, admin_site.urls),
+    path("jsreverse/", django_js_reverse_urls, name="js_reverse"),
+    path("", include("aidants_connect_common.urls")),
     path("", include("aidants_connect_web.urls")),
     path("habilitation/", include("aidants_connect_habilitation.urls")),
     path("", include("aidants_connect_pico_cms.urls")),

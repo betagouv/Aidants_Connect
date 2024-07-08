@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 from urllib.parse import unquote
 
 from django import forms
@@ -8,6 +9,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
 from django.forms import EmailField
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
@@ -16,9 +18,16 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from dsfr.forms import DsfrBaseForm
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
+from pydantic import BaseModel
+from pydantic import ValidationError as PydanticValidationError
+from pydantic import validator
 
-from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
-from aidants_connect_common.utils.constants import AuthorizationDurations as ADKW
+from aidants_connect_common.constants import AuthorizationDurations as ADKW
+from aidants_connect_common.forms import (
+    AcPhoneNumberField,
+    ErrorCodesManipulationMixin,
+    PatchedForm,
+)
 from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import (
@@ -30,10 +39,7 @@ from aidants_connect_web.models import (
     UsagerQuerySet,
 )
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
-from aidants_connect_web.utilities import (
-    generate_sha256_hash,
-    normalize_totp_cart_serial,
-)
+from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
 
@@ -72,10 +78,9 @@ class AidantCreationForm(forms.ModelForm):
         self.fields["organisation"].required = True
 
     def clean(self):
-        super().clean()
-        cleaned_data = self.cleaned_data
+        cleaned_data = super().clean()
         aidant_email = cleaned_data.get("email")
-        if aidant_email in Aidant.objects.all().values_list("username", flat=True):
+        if Aidant.objects.filter(email__iexact=aidant_email).exists():
             self.add_error(
                 "email", forms.ValidationError("This email is already taken")
             )
@@ -189,7 +194,8 @@ def get_choices_for_remote_method():
 
 class MandatForm(PatchedForm):
     demarche = forms.MultipleChoiceField(
-        choices=[(key, value) for key, value in settings.DEMARCHES.items()],
+        label="Sélectionnez la ou les démarches",
+        choices=[],
         required=True,
         widget=MandatDemarcheSelect,
         error_messages={
@@ -200,24 +206,24 @@ class MandatForm(PatchedForm):
     DUREES = [
         (
             ADKW.SHORT,
-            {"label": "Mandat court", "description": "(expire demain)"},
+            {"label": "Mandat court", "description": "expire demain"},
         ),
         (
             ADKW.MONTH,
             {
                 "label": "Mandat d'un mois",
-                "description": f"({ADKW.DAYS[ADKW.MONTH]} jours)",
+                "description": f"{ADKW.DAYS[ADKW.MONTH]} jours",
             },
         ),
         (
             ADKW.LONG,
-            {"label": "Mandat long", "description": "(12 mois)"},
+            {"label": "Mandat long", "description": "12 mois"},
         ),
         (
             ADKW.SEMESTER,
             {
                 "label": "Mandat de 6 mois",
-                "description": f"({ADKW.DAYS[ADKW.SEMESTER]} jours)",
+                "description": f"{ADKW.DAYS[ADKW.SEMESTER]} jours",
             },
         ),
     ]
@@ -231,7 +237,7 @@ class MandatForm(PatchedForm):
     )
 
     is_remote = forms.BooleanField(
-        label="Signature à distance du mandat",
+        label="Je souhaite signer le mandat à distance",
         label_suffix="",
         required=False,
     )
@@ -263,6 +269,14 @@ class MandatForm(PatchedForm):
         ),
         label_suffix="",
     )
+
+    def __init__(self, organisation: Organisation, *args, **kwargs):
+        self.organisation = organisation
+        super().__init__(*args, **kwargs)
+        self.fields["demarche"].choices = [
+            (key, settings.DEMARCHES[key])
+            for key in self.organisation.allowed_demarches
+        ]
 
     def clean_remote_constent_method(self):
         if not self.cleaned_data["is_remote"]:
@@ -326,6 +340,10 @@ class OTPForm(DsfrBaseForm):
             "Entrez le code à 6 chiffres généré par votre téléphone "
             "ou votre carte Aidants Connect"
         ),
+        help_text=(
+            "Un nouveau code à 6 chiffres est généré toutes les minutes "
+            "par votre carte physique ou numérique."
+        ),
         widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )
 
@@ -343,15 +361,32 @@ class OTPForm(DsfrBaseForm):
             raise ValidationError("Ce code n'est pas valide.")
 
 
-class RecapMandatForm(OTPForm, forms.Form):
+class RecapMandatForm(OTPForm):
     personal_data = forms.BooleanField()
+
+    def __init__(self, usager: Usager, aidant: Aidant, *args, **kwargs):
+        super().__init__(aidant, *args, **kwargs)
+        self["personal_data"].label = mark_safe(
+            f"Avoir communiqué à <strong>{usager.get_full_name()}</strong> les "
+            "informations concernant l’objet de l’intervention, la raison pour "
+            "laquelle ses informations sont collectées et leur utilité ; les droits "
+            "sur ses données ET avoir conservé son consentement écrit "
+            "(capture d'écran email, SMS…) pour conclure le mandat et utiliser ses "
+            "données à caractère personnel."
+        )
 
 
 class CarteOTPSerialNumberForm(forms.Form):
     serial_number = forms.CharField()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["serial_number"].widget.attrs.update(
+            {"placeholder": "Ex : GADT000XXXX"}
+        )
+
     def clean_serial_number(self):
-        serial_number = normalize_totp_cart_serial(self.cleaned_data["serial_number"])
+        serial_number = self.cleaned_data["serial_number"]
         try:
             carte = CarteTOTP.objects.get(serial_number=serial_number)
         except CarteTOTP.DoesNotExist:
@@ -427,7 +462,9 @@ class SwitchMainAidantOrganisationForm(forms.Form):
 
 
 class AddOrganisationReferentForm(DsfrBaseForm):
-    candidate = forms.ModelChoiceField(Aidant.objects.none())
+    candidate = forms.ModelChoiceField(
+        label="Nouveau référent", label_suffix=" :", queryset=Aidant.objects.none()
+    )
 
     def __init__(self, organisation: Organisation, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -497,7 +534,7 @@ class DatapassForm(forms.Form):
     organization_type = forms.CharField()
 
 
-class ValidateCGUForm(forms.Form):
+class ValidateCGUForm(DsfrBaseForm):
     agree = forms.BooleanField(
         label="J’ai lu et j’accepte les conditions d’utilisation Aidants Connect.",
         required=True,
@@ -556,7 +593,7 @@ class MassEmailActionForm(forms.Form):
         )
 
 
-class AuthorizeSelectUsagerForm(PatchedForm):
+class AuthorizeSelectUsagerForm(DsfrBaseForm, ErrorCodesManipulationMixin):
     chosen_usager = forms.IntegerField(
         required=True,
         error_messages={
@@ -588,7 +625,7 @@ class AuthorizeSelectUsagerForm(PatchedForm):
             )
 
 
-class OAuthParametersForm(PatchedForm):
+class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
     state = forms.CharField()
     nonce = forms.CharField()
     response_type = forms.CharField()
@@ -596,9 +633,11 @@ class OAuthParametersForm(PatchedForm):
     redirect_uri = forms.CharField()
     scope = forms.CharField()
     acr_values = forms.CharField()
+    claim = forms.JSONField(required=False)
 
-    def __init__(self, *args, relaxed=False, **kwargs):
+    def __init__(self, organisation: Organisation, *args, relaxed=False, **kwargs):
         self.relaxed = relaxed
+        self.organisation = organisation
         super().__init__(*args, **kwargs)
 
     def clean_nonce(self):
@@ -646,8 +685,52 @@ class OAuthParametersForm(PatchedForm):
             raise ValidationError("", "invalid")
         return result
 
+    def clean_claim(self):
+        result = self.cleaned_data.get("claim")
+        if not result:
+            return None
+
+        class Claim(BaseModel):
+            class IdToken(BaseModel):
+                class RepScope(BaseModel):
+                    essential: bool
+                    values: Optional[set[str]] = set()
+
+                    @validator("essential", allow_reuse=True)
+                    def check_true(cls, v):
+                        assert v is True
+                        return v
+
+                    @validator("values", allow_reuse=True)
+                    def check_demarche(cls, v):
+                        assert all(value in settings.DEMARCHES.keys() for value in v)
+                        return v
+
+                rep_scope: RepScope
+
+            id_token: IdToken
+
+        try:
+            unauthorized_perimeters = Claim(**result).id_token.rep_scope.values - set(
+                self.organisation.allowed_demarches
+            )
+
+            if unauthorized_perimeters:
+                raise ValidationError(
+                    f"Unauthorized perimeters: {unauthorized_perimeters}",
+                    code="unauthorized_perimeter",
+                )
+        except (TypeError, PydanticValidationError):
+            raise ValidationError(
+                self.fields["claim"].error_messages["invalid"],
+                code="invalid",
+                params={"value": result},
+            )
+
+        return result
+
     def clean(self):
-        cleaned_data = super().clean()
+        cleaned_data = {k: v for k, v in super().clean().items() if v is not None}
 
         if self.relaxed:
             return cleaned_data
@@ -844,3 +927,14 @@ class CoReferentNonAidantRequestForm(forms.ModelForm, DsfrBaseForm):
             "email",
             "organisation",
         )
+
+
+class OrganisationRestrictDemarchesForm(PatchedForm):
+    demarches = forms.MultipleChoiceField(
+        choices=[(key, value) for key, value in settings.DEMARCHES.items()],
+        required=True,
+        widget=MandatDemarcheSelect,
+        error_messages={
+            "required": _("Vous devez sélectionner au moins une démarche.")
+        },
+    )

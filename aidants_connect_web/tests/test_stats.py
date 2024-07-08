@@ -6,8 +6,8 @@ from django.utils.timezone import now
 from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import Commune, Department, Region
-from aidants_connect_common.utils.constants import JournalActionKeywords
 from aidants_connect_web.constants import OTP_APP_DEVICE_NAME, ReferentRequestStatuses
 from aidants_connect_web.models import (
     Aidant,

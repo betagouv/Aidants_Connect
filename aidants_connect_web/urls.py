@@ -204,10 +204,7 @@ urlpatterns = [
         name="espace_responsable_aidant_change_organisations",
     ),
     path(
-        (
-            "espace-responsable/aidant/<int:aidant_id>/"
-            "supprimer-organisation/<int:organisation_id>/"
-        ),
+        "espace-responsable/aidant/<int:aidant_id>/supprimer-organisation/<int:organisation_id>/",  # noqa: E501
         espace_responsable.RemoveAidantFromOrganisationView.as_view(),
         name="espace_responsable_remove_aidant_from_organisation",
     ),
@@ -231,6 +228,11 @@ urlpatterns = [
         espace_responsable.CancelHabilitationRequestView.as_view(),
         name="espace_responsable_cancel_habilitation",
     ),
+    path(
+        "espace-responsable/aidant-a-former/<int:request_id>/inscription-formation/",
+        espace_responsable.FormationRegistrationView.as_view(),
+        name="espace_responsable_register_formation",
+    ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorize"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
@@ -238,9 +240,15 @@ urlpatterns = [
     path("", service.home_page, name="home_page"),
     path("stats/", service.statistiques, name="statistiques"),
     path("cgu/", service.cgu, name="cgu"),
+    path(
+        "politique_confidentialite/",
+        service.politique_confidentialite,
+        name="politique_confidentialite",
+    ),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
-    path("habilitation", service.habilitation, name="habilitation"),
+    path("formation/", service.formation, name="habilitation_faq_formation"),
+    path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
     path("ressources/", service.ressources, name="ressources"),
     path("accessibilite/", service.accessibilite, name="accessibilite"),
     # # Datapass

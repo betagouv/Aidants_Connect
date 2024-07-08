@@ -1,10 +1,11 @@
+from enum import auto
 from typing import Set
 
 from django.conf import settings
-from django.db.models import TextChoices
+from django.db.models import IntegerChoices, TextChoices
 from django.utils.translation import gettext_lazy as _
 
-from aidants_connect_common.utils.constants import DictChoices, TextChoicesEnum
+from aidants_connect_common.constants import DictChoices, TextChoicesEnum
 
 OTP_APP_DEVICE_NAME = "OTP App for user %s"
 
@@ -17,7 +18,7 @@ class RemoteConsentMethodChoices(DictChoices):
             "la personne accompagnée aussi vite que possible. "
             "Ce mandat vous protège légalement."
         ),
-        "img_src": "images/icons/Papier.svg",
+        "logo": "edit-box-line",
     }
 
     SMS = {
@@ -27,7 +28,7 @@ class RemoteConsentMethodChoices(DictChoices):
             "son consentement. L'exécution du mandat est bloqué tant que "
             "la personne n'a pas répondu positivement."
         ),
-        "img_src": "images/icons/SMS.svg",
+        "logo": "discuss-line",
     }
 
     @staticmethod
@@ -51,7 +52,8 @@ class NotificationType(TextChoicesEnum):
 class ReferentRequestStatuses(TextChoices):
     STATUS_WAITING_LIST_HABILITATION = ("waitling_list", "Liste d'attente")
     STATUS_NEW = ("new", "Nouvelle")
-    STATUS_PROCESSING = ("processing", "En cours")
+    STATUS_PROCESSING = ("processing", "Éligibilité validée")
+    STATUS_PROCESSING_P2P = ("processing_p2p", "Éligibilité validée (pair-à-pair)")
     STATUS_VALIDATED = ("validated", "Validée")
     STATUS_REFUSED = ("refused", "Refusée")
     STATUS_CANCELLED = ("cancelled", "Annulée")
@@ -61,10 +63,24 @@ class ReferentRequestStatuses(TextChoices):
     )
 
     @staticmethod
-    def cancellable_by_responsable() -> Set["ReferentRequestStatuses"]:
-        return {
+    def formation_registerable():
+        return (
+            ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_PROCESSING_P2P,
+            ReferentRequestStatuses.STATUS_VALIDATED,
+        )
+
+    @staticmethod
+    def cancellable_by_responsable():
+        return (
             ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
             ReferentRequestStatuses.STATUS_NEW,
             ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_PROCESSING_P2P,
             ReferentRequestStatuses.STATUS_VALIDATED,
-        }
+        )
+
+
+class HabilitationRequestCourseType(IntegerChoices):
+    CLASSIC = (auto(), "Parcours classique")
+    P2P = (auto(), "Parcours pair-à-pair")

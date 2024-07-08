@@ -1,9 +1,13 @@
 import operator
 from functools import reduce
 
+from django.contrib import admin
 from django.contrib.admin import ModelAdmin, SimpleListFilter, register
-from django.db.models import Q
+from django.contrib.admin.utils import quote
+from django.db.models import Count, F, Q, QuerySet
 from django.forms import CharField, Media
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 
 from import_export.admin import ImportMixin
 from import_export.fields import Field
@@ -14,7 +18,15 @@ from import_export.widgets import BooleanWidget, ForeignKeyWidget
 from aidants_connect import settings
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_common.forms import WidgetAttrMixin
-from aidants_connect_common.models import Commune, Department, Region
+from aidants_connect_common.models import (
+    Commune,
+    Department,
+    Formation,
+    FormationAttendant,
+    FormationOrganization,
+    FormationType,
+    Region,
+)
 from aidants_connect_common.widgets import JSModulePath
 
 
@@ -152,9 +164,9 @@ class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             "zrr_resource_name": ZRRResource.get_display_name(),
         }
 
-    def get_resource_kwargs(self, request, form: CommuneImportForm, *args, **kwargs):
+    def get_resource_kwargs(self, request, form: CommuneImportForm, **kwargs):
         return {
-            **super().get_resource_kwargs(request, *args, **kwargs),
+            **super().get_resource_kwargs(request, **kwargs),
             "commune_zrr_classification": getattr(form, "cleaned_data", {}).get(
                 "commune_zrr_classification", None
             ),
@@ -242,3 +254,99 @@ class DepartmentFilter(SimpleListFilter):
         return queryset.filter(
             **{f"{self.filter_parameter_name}__startswith": department_value}
         )
+
+
+@register(FormationType, site=admin_site)
+class FormationTypeAdmin(VisibleToAdminMetier, ModelAdmin):
+    pass
+
+
+class FormationFillingFilter(SimpleListFilter):
+    title = "Remplissage de la formation"
+
+    parameter_name = "formation_filling"
+
+    def lookups(self, request, model_admin):
+        return ("empty", "Vide"), ("not_empty", "Avec inscrits"), ("full", "Pleine")
+
+    def queryset(self, request, queryset: QuerySet[Formation]):
+        match self.value():
+            case "empty":
+                return queryset.annotate(attendants_count=Count("attendants")).filter(
+                    attendants_count=0
+                )
+            case "not_empty":
+                return queryset.annotate(attendants_count=Count("attendants")).filter(
+                    attendants_count__gt=0, attendants_count__lt=F("max_attendants")
+                )
+            case "full":
+                return queryset.annotate(attendants_count=Count("attendants")).filter(
+                    attendants_count=F("max_attendants")
+                )
+            case _:
+                return queryset
+
+
+@register(Formation, site=admin_site)
+class FormationAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = (
+        "__str__",
+        "start_datetime",
+        "end_datetime",
+        "number_of_attendants",
+        "max_attendants",
+        "status",
+        "place",
+    )
+    raw_id_fields = ("type",)
+    list_filter = (FormationFillingFilter, "status")
+    readonly_fields = ("registered",)
+
+    @admin.display(description="Nombre d'inscrits")
+    def number_of_attendants(self, obj):
+        return obj.number_of_attendants
+
+    @admin.display(description="Personnes inscrites")
+    def registered(self, obj: Formation):
+        if not FormationAttendant.objects.filter(formation=obj).exists():
+            return "Aucune personne inscrite"
+
+        obj_url = "%s?q=%s" % (
+            reverse(
+                "admin:%s_%s_changelist"
+                % (
+                    FormationAttendant._meta.app_label,
+                    FormationAttendant._meta.model_name,
+                ),
+                current_app=self.admin_site.name,
+            ),
+            obj.type.label,
+        )
+        return mark_safe(
+            f'<a href={obj_url} target="_blank" rel="noopener noreferrer">Voir la liste des personnes inscrites</a>'  # noqa: E501
+        )
+
+
+@register(FormationAttendant, site=admin_site)
+class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
+    fields = ("registered", "formation")
+    readonly_fields = fields
+    list_display = ("__str__", "formation")
+    search_fields = ("formation__type__label", "formation__pk")
+
+    @admin.display(description="Personne inscrite")
+    def registered(self, obj: FormationAttendant):
+        ct = obj.attendant_content_type
+        obj_url = reverse(
+            f"admin:{ct.app_label}_{ct.model}_change",
+            args=(quote(obj.pk),),
+            current_app=self.admin_site.name,
+        )
+        return mark_safe(f'<a href="{obj_url}">{obj}</a>')
+
+
+@register(FormationOrganization, site=admin_site)
+class FormationOrganizationAdmin(VisibleToAdminMetier, ModelAdmin):
+    fields = ("name", "contacts")
+    list_display = ("name", "contacts")
+    search_fields = ("name", "contacts")

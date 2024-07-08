@@ -5,12 +5,13 @@ from inspect import signature
 from io import StringIO
 from itertools import chain
 from logging import Logger
-from typing import List, Type
+from typing import List
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models import Count, Field, Model, Q
+from django.db.models import Count, Q
 from django.db.models.constants import LOOKUP_SEP
+from django.db.models.functions import Lower, Trim
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
@@ -22,10 +23,9 @@ from celery.signals import task_postrun
 from celery.utils.log import get_task_logger
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
-from aidants_connect_common.models import Department
-from aidants_connect_common.utils.constants import JournalActionKeywords
-from aidants_connect_common.utils.email import render_email
-from aidants_connect_common.utils.urls import build_url
+from aidants_connect_common.constants import JournalActionKeywords
+from aidants_connect_common.models import Commune, Department
+from aidants_connect_common.utils import build_url, model_fields, render_email
 from aidants_connect_web.models import (
     Aidant,
     Connection,
@@ -37,6 +37,8 @@ from aidants_connect_web.models import (
     Organisation,
     Usager,
 )
+from aidants_connect_web.models.other_models import ReferentsFormation
+from aidants_connect_web.models.utils import LiveStormApi
 from aidants_connect_web.statistics import (
     compute_all_statistics,
     compute_reboarding_statistics_and_synchro_grist,
@@ -325,33 +327,6 @@ def email_old_aidants(*, logger=None):
 
     logger: Logger = logger or get_task_logger(__name__)
 
-    @shared_task
-    def email_one_aidant(a: Aidant):
-        text_message, html_message = render_email(
-            "email/old_aidant_deactivation_warning.mjml",
-            {
-                "email_title": "Votre compte va être désactivé, réagissez !",
-                "user": a,
-                "webinaire_sub_form": settings.WEBINAIRE_SUBFORM_URL,
-            },
-        )
-
-        send_mail(
-            from_email=settings.EMAIL_AIDANT_DEACTIVATION_WARN_FROM,
-            subject=settings.EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT,
-            recipient_list=[a.email],
-            message=text_message,
-            html_message=html_message,
-        )
-
-        a.deactivation_warning_at = timezone.now()
-        a.save()
-
-        logger.info(
-            f"Sent warning notice for aidant {a.get_full_name()} "
-            "not connected recently"
-        )
-
     aidants = Aidant.objects.deactivation_warnable().all()
 
     logger.info(
@@ -359,7 +334,30 @@ def email_old_aidants(*, logger=None):
     )
 
     for aidant in aidants:
-        email_one_aidant(aidant)
+        text_message, html_message = render_email(
+            "email/old_aidant_deactivation_warning.mjml",
+            {
+                "email_title": "Votre compte va être désactivé, réagissez !",
+                "user": aidant,
+                "webinaire_sub_form": settings.WEBINAIRE_SUBFORM_URL,
+            },
+        )
+
+        send_mail(
+            from_email=settings.EMAIL_AIDANT_DEACTIVATION_WARN_FROM,
+            subject=settings.EMAIL_AIDANT_DEACTIVATION_WARN_SUBJECT,
+            recipient_list=[aidant.email],
+            message=text_message,
+            html_message=html_message,
+        )
+
+        aidant.deactivation_warning_at = timezone.now()
+        aidant.save()
+
+        logger.info(
+            f"Sent warning notice for aidant {aidant.get_full_name()} "
+            "not connected recently"
+        )
 
     logger.info(
         f"Sent warning notice for {len(aidants)} aidants not connected recently"
@@ -417,10 +415,22 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "email",
             "phone",
             "profession",
+            "deactivation_warning_at",
+            "referent",
             "can_create_mandats",
+            "conseiller_numerique",
             "active_totp_card",
+            "totp_card_drifted",
+            "totp_card_drift",
+            "totp_card_date_activated",
             "has_otp_app",
             "is_active",
+            "has_connected_once",
+            "nb_mandat_created",
+            "nb_mandat_remote_created",
+            "nb_mandat_revoked",
+            "nb_mandat_renewed",
+            "nb_demarches",
             "organisation__name",
             "organisation__data_pass_id",
             "organisation__siret",
@@ -430,38 +440,21 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "organisation__department_insee_code",
             "organisation__region",
             "organisation__type__name",
+            "organisation__france_services_label",
             "organisation__legal_category",
             "organisation__legal_cat_level_one",
             "organisation__legal_cat_level_two",
             "organisation__legal_cat_level_three",
-            "organisation__nb_mandat_created",
-            "organisation__nb_mandat_remote_created",
             "organisation__nb_usager",
         )
 
         def __init__(self, a: Aidant):
             self.aidant = a
 
-        @staticmethod
-        def __model_fields(model: Type[Model] | None) -> dict[str, Field]:
-            result = {}
-            if not hasattr(model, "_meta"):
-                return result
+        def referent(self):
+            return self.aidant.responsable_de.exists()
 
-            for field in model._meta.fields:
-                result[field.name] = field
-                result[field.attname] = field
-            return result
-
-        def organisation__region(self):
-            qs = Department.objects.filter(
-                insee_code=self.aidant.organisation.department_insee_code
-            )
-            if not qs.exists():
-                return None
-            return qs[0].insee_code
-
-        organisation__region.csv_column = "Organisation: Code INSEE de la région"
+        referent.csv_column = "Est référent"
 
         def active_totp_card(self):
             return getattr(
@@ -474,40 +467,114 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
 
         active_totp_card.csv_column = "Carte TOTP active"
 
+        def totp_card_drifted(self):
+            drift = getattr(
+                getattr(
+                    getattr(self.aidant, "carte_totp", False), "totp_device", False
+                ),
+                "drift",
+                None,
+            )
+            return drift if drift is None else drift > 0
+
+        totp_card_drifted.csv_column = "Carte TOTP décallée"
+
+        def totp_card_drift(self):
+            return getattr(
+                getattr(
+                    getattr(self.aidant, "carte_totp", False), "totp_device", False
+                ),
+                "drift",
+                None,
+            )
+
+        totp_card_drifted.csv_column = "Importance de décalage de la carte"
+
+        def totp_card_date_activated(self):
+            try:
+                Journal.objects.filter(
+                    action=JournalActionKeywords.CARD_ASSOCIATION, aidant=self.aidant
+                ).order_by("creation_date")[0].creation_date
+            except (Journal.DoesNotExist, IndexError):
+                return None
+
+        totp_card_date_activated.csv_column = "Date activation carte TOTP"
+
         def has_otp_app(self):
             return self.aidant.has_otp_app
 
         has_otp_app.csv_column = "App OTP"
 
-        def organisation__nb_mandat_created(self):
+        def has_connected_once(self):
             return Journal.objects.filter(
-                organisation=self.aidant.organisation,
+                aidant=self.aidant, action=JournalActionKeywords.CONNECT_AIDANT
+            ).exists()
+
+        has_connected_once.csv_column = "S'est connecté⋅e au moins 1 fois"
+
+        def nb_mandat_created(self):
+            return Journal.objects.filter(
+                aidant=self.aidant,
                 action=JournalActionKeywords.CREATE_ATTESTATION,
             ).count()
 
-        organisation__nb_mandat_created.csv_column = (
-            "Organisation: Nombre de mandats créés"
-        )
+        nb_mandat_created.csv_column = "Nombre de mandats créés"
 
-        def organisation__nb_mandat_remote_created(self):
+        def nb_mandat_remote_created(self):
             return Journal.objects.filter(
-                organisation=self.aidant.organisation,
+                aidant=self.aidant,
                 action=JournalActionKeywords.CREATE_ATTESTATION,
                 is_remote_mandat=True,
             ).count()
 
-        organisation__nb_mandat_remote_created.csv_column = (
-            "Organisation: Nombre de mandats à distance créés"
-        )
+        nb_mandat_remote_created.csv_column = "Nombre de mandats à distance créés"
+
+        def nb_mandat_revoked(self):
+            return (
+                Journal.objects.filter(
+                    aidant=self.aidant,
+                    action=JournalActionKeywords.CREATE_ATTESTATION,
+                )
+                .exclude(mandat__autorisations__revocation_date__isnull=True)
+                .count()
+            )
+
+        nb_mandat_revoked.csv_column = "Nombre de mandats révoqués"
+
+        def nb_mandat_renewed(self):
+            return Journal.objects.filter(
+                action=JournalActionKeywords.INIT_RENEW_MANDAT,
+                aidant=self.aidant,
+            ).count()
+
+        nb_mandat_renewed.csv_column = "Nombre de mandats renouvelés"
+
+        def nb_demarches(self):
+            return Journal.objects.filter(
+                action=JournalActionKeywords.USE_AUTORISATION,
+                aidant=self.aidant,
+            ).count()
+
+        nb_demarches.csv_column = "Nombre de démarches rélisées"
 
         def organisation__nb_usager(self):
             return Usager.objects.active().visible_by(self.aidant).count()
 
         organisation__nb_usager.csv_column = "Organisation: Nombre d'usagers"
 
+        def organisation__region(self):
+            qs = Department.objects.filter(
+                insee_code=self.aidant.organisation.department_insee_code
+            )
+            if not qs.exists():
+                return None
+            return qs[0].insee_code
+
+        organisation__region.csv_column = "Organisation: Code INSEE de la région"
+
         def values(self) -> list[str]:
             result = []
-            model_fields = self.__model_fields(Aidant)
+            fields = model_fields(Aidant)
 
             for requested_field in self.fields_to_serialize:
                 if hasattr(self, requested_field):
@@ -515,7 +582,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                     if callable(value):
                         value = value()
                     result.append(f"{value}")
-                elif requested_field in model_fields:
+                elif requested_field in fields:
                     result.append(getattr(self.aidant, f"{requested_field}"))
                 elif LOOKUP_SEP in requested_field:
                     related_fields = requested_field.split(LOOKUP_SEP)
@@ -533,7 +600,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
 
         @classmethod
         def header(cls) -> list[str]:
-            model_fields = cls.__model_fields(Aidant)
+            fields = model_fields(Aidant)
 
             result = []
             for requested_field in cls.fields_to_serialize:
@@ -545,11 +612,11 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                             requested_field,
                         )
                     )
-                elif requested_field in model_fields:
-                    result.append(f"{model_fields[requested_field].verbose_name}")
+                elif requested_field in fields:
+                    result.append(f"{fields[requested_field].verbose_name}")
                 elif LOOKUP_SEP in requested_field:
                     model = Aidant
-                    related_model_fields = model_fields
+                    related_model_fields = fields
                     related_fields = requested_field.split(LOOKUP_SEP)
                     final_field = None
                     for related_field in related_fields:
@@ -561,7 +628,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                                 f"{related_field} is not a valid field on model {model}"
                             )
                         model = final_field.related_model
-                        related_model_fields = cls.__model_fields(model)
+                        related_model_fields = model_fields(model)
 
                     result.append(
                         f"{final_field.model._meta.verbose_name.capitalize()}: {final_field.verbose_name}"  # noqa: E501
@@ -612,8 +679,8 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             raise
 
 
-@task_postrun.connect
-def export_for_bizdevs_postrun(task_id, args, kwargs, state, *_1, **_2):
+@task_postrun.connect(sender=export_for_bizdevs)
+def export_for_bizdevs_postrun(args, kwargs, state, *_1, **_2):
     request_pk = (
         signature(export_for_bizdevs)
         .bind_partial(*args, **kwargs)
@@ -657,3 +724,87 @@ def email_activity_tracking_warning(*, logger=None):
         aidant.save(update_fields=("activity_tracking_warning_at",))
 
     logger.info(f"Emailed activity warning to {aidants.count()} aidants")
+
+
+@shared_task
+def email_co_rerefent_creation(aidants_ids: List[int], *, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    aidants = list(Aidant.objects.filter(pk__in=aidants_ids).all())
+    for aidant in aidants:
+        text_message, html_message = render_email("email/co-referent-cration.mjml", {})
+
+        send_mail(
+            from_email=settings.EMAIL_CO_RERERENT_CREATION_FROM,
+            subject="",
+            recipient_list=[aidant.email],
+            message=text_message,
+            html_message=html_message,
+        )
+
+    logger.info(f"Emailed {len(aidants)} aidants about co-referent status accepted")
+
+
+@shared_task
+def create_or_update_aidant_in_sandbox_task(
+    habilitation_request_id: int, *, logger=None
+):
+    logger: Logger = logger or get_task_logger(__name__)
+    r = HabilitationRequest.create_or_update_aidant_in_sandbox(habilitation_request_id)
+    logger.info(
+        f"Aidant task creation sandbox for "
+        f"Habilitation Request PK : {habilitation_request_id}, "
+        f"status : {r.status} "
+    )
+
+
+@shared_task
+def import_referent_formation_from_livestorm(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    api = LiveStormApi(logger=logger)
+    evt = api.get_event_id("Webinaire référent")
+    if not evt:
+        return
+
+    sessions = api.get_sessions_id_for_event(evt)
+    for session in sessions:
+        participants = api.get_people_for_session(session.id)
+        for participant in participants:
+            try:
+                aidant = Aidant.objects.get(email=participant.get_email())
+            except Aidant.DoesNotExist:
+                aidant = None
+
+            try:
+                org = Organisation.objects.annotate(n=Lower(Trim("name"))).get(
+                    n=participant.structure.casefold().strip()
+                )
+            except (Organisation.DoesNotExist, Organisation.MultipleObjectsReturned):
+                org = None
+
+            try:
+                city = Commune.objects.annotate(n=Lower(Trim("name"))).get(
+                    n=participant.city.casefold().strip()
+                )
+            except (Commune.DoesNotExist, Organisation.MultipleObjectsReturned):
+                city = None
+
+            pass
+
+            ReferentsFormation.objects.get_or_create(
+                livestorm_id=participant.id,
+                defaults={
+                    "first_name": participant.first_name,
+                    "last_name": participant.last_name,
+                    "email": participant.get_email(),
+                    "referent": aidant,
+                    "organisation_name": participant.structure,
+                    "address": participant.address,
+                    "zipcode": "",
+                    "city": participant.city,
+                    "city_insee_code": getattr(city, "insee_code", ""),
+                    "organisation": org,
+                    "formation_registration_dt": session.estimated_started_at,
+                },
+            )
