@@ -2,18 +2,19 @@
 
 {% load static ac_common %}
 
-{% block title %}Aidants Connect - Annuler la demande de formation{% endblock %}
+{% block title %}Aidants Connect - Annuler la demande d'habilitation{% endblock %}
 
 {% block content %}
   <section class="section">
     <div class="fr-container">
       {% include "layouts/_messages.html" %}
 
-      <h1>Annuler la demande de formation</h1>
+      <h1>Annuler la demande d'habilitation de l'aidant(e)</h1>
 
       <form method="post">
         {% csrf_token %}
-        <p>Confirmez-vous l’annulation de la demande de formation pour ce profil ?</p>
+        <p>Attention, vous allez annuler la demande d’habilitation de l’aidant(e). Pour annuler l’inscription en formation de l’aidant(e), nous vous invitons à contacter l’organisme de formation en charge de la formation ou de contacter l'équipe Aidants Connect à l’adresse suivante contact@aidantsconnect.beta.gouv.fr .</p>
+        <p>Confirmez-vous l’annulation de la demande d'habilitation pour ce profil ?</p>
 
         <p>
           {{ request.aidant_full_name }}<br/>
@@ -21,13 +22,13 @@
           {{ request.profession }}<br/>
         </p>
 
-        <a class="button" href="{% url 'espace_responsable_organisation' %}">Annuler</a>
+        <a class="button" href="{% url 'espace_responsable_organisation' %}">Retour</a>
 
         <input
           id="submit-button"
           class="button primary float-right"
           type="submit"
-          value="Annuler cette demande"
+          value="Annuler la demande d'habilitation"
         />
       </form>
     </div>
