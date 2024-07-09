@@ -18,6 +18,7 @@
         <li><a href="{{ EMAIL_WELCOME_AIDANT_RESSOURCES_URL }}">Page ressources du site Aidants Connect</a></li>
         <li><a href="{{ EMAIL_WELCOME_AIDANT_FAQ_URL }}">Page FAQ du site Aidants Connect</a></li>
         <li><a href="{{ EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES }}">Fiches tangibles etsijaccompagnais.fr</a></li>
+        <li><a href="{{ EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF }}">Tutoriel interactif Aidants Connect</a></li>
       </ul>
       <p>
         Chaque mois, une newsletter avec des informations et nouveautés sur le dispositif est envoyée.
