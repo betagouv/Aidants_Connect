@@ -762,7 +762,6 @@ class HabilitationRequestCreationFormationTypeForm(forms.Form):
         label_suffix=None,
         choices=Type.choices,
         widget=RadioSelect,
-        initial=Type.CLASSIC,
     )
 
 

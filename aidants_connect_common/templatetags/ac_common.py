@@ -9,6 +9,8 @@ from django.template.defaultfilters import stringfilter
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
+from aidants_connect import utils
+
 register = template.Library()
 
 
@@ -178,6 +180,12 @@ def list_term(context, **kwargs):
     additionnal_cond = kwargs.get("additionnal_cond", False)
 
     return end_term if forloop["last"] and not additionnal_cond else more_term
+
+
+@register.filter
+@stringfilter
+def strtobool(val: str):
+    return utils.strtobool(f"{val}", None)
 
 
 @register.filter

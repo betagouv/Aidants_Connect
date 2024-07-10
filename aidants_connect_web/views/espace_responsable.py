@@ -7,14 +7,17 @@ from itertools import chain
 from django.contrib import messages as django_messages
 from django.db import transaction
 from django.forms import model_to_dict
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
+from django.utils.translation import ngettext
 from django.views.generic import DeleteView, DetailView, FormView, TemplateView
 
 import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.views import (
     FormationRegistrationView as CommonFormationRegistrationView,
@@ -26,6 +29,7 @@ from aidants_connect_web.constants import (
     ReferentRequestStatuses,
 )
 from aidants_connect_web.decorators import (
+    activity_required,
     responsable_logged_required,
     responsable_logged_with_activity_required,
 )
@@ -36,7 +40,7 @@ from aidants_connect_web.forms import (
     CarteTOTPValidationForm,
     ChangeAidantOrganisationsForm,
     CoReferentNonAidantRequestForm,
-    HabilitationRequestCreationForm,
+    NewHabilitationRequestForm,
     OrganisationRestrictDemarchesForm,
     RemoveCardFromAidantForm,
 )
@@ -692,65 +696,51 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
         return super().get_context_data(**kwargs)
 
 
-@responsable_logged_with_activity_required
+@method_decorator(activity_required, name="get")
+@responsable_logged_required
 class NewHabilitationRequest(FormView):
-    template_name = (
-        "aidants_connect_web/espace_responsable/new-habilitation-request.html"
-    )
-    form_class = HabilitationRequestCreationForm
+    template_name = "aidants_connect_web/espace_responsable/new-habilitation-request.html"  # noqa: E501
+    form_class = NewHabilitationRequestForm
+    success_url = reverse_lazy("espace_responsable_organisation")
+    commit_key = "commit"
 
-    def dispatch(self, request, *args, **kwargs):
+    def setup(self, request: HttpRequest, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.commit = strtobool(request.GET.get(self.commit_key, "true"), True)
         self.referent: Aidant = request.user
-        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None) -> NewHabilitationRequestForm:
+        return super().get_form(form_class)
 
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "referent": self.referent}
-
-    def get_success_url(self):
-        return reverse("espace_responsable_organisation")
+        kwargs = super().get_form_kwargs()
+        # Making data mutable for HabilitationRequestCreationFormSet
+        kwargs["data"] = None if (data := kwargs.get("data")) is None else data.copy()
+        return {
+            **kwargs,
+            "form_kwargs": {
+                "habilitation_requests": {
+                    "force_left_form_check": not self.commit,
+                    "form_kwargs": {"referent": self.referent},
+                }
+            },
+        }
 
     def form_valid(self, form):
-        self.habilitation_request = form.save(commit=False)
+        if not self.commit:
+            return self.render_to_response(self.get_context_data(form=form))
 
-        if Aidant.objects.filter(
-            email__iexact=self.habilitation_request.email,
-            organisation__in=self.referent.responsable_de.all(),
-        ).exists():
-            form.add_error(
-                "email",
-                "Il existe déjà un compte aidant pour cette adresse e-mail. "
-                "Vous n’avez pas besoin de déposer une "
-                "nouvelle demande pour cette adresse-ci.",
-            )
-            return super().form_invalid(form)
-
-        if HabilitationRequest.objects.filter(
-            email=self.habilitation_request.email,
-            organisation__in=self.referent.responsable_de.all(),
-        ).exists():
-            form.add_error(
-                "email",
-                "Une demande d’habilitation est déjà en cours pour l’adresse e-mail. "
-                "Vous n’avez pas besoin de déposer une "
-                "nouvelle demande pour cette adresse-ci.",
-            )
-            return super().form_invalid(form)
-
-        self.habilitation_request.origin = HabilitationRequest.ORIGIN_RESPONSABLE
-        self.habilitation_request.save()
+        result: list[HabilitationRequest] = form.save()["habilitation_requests"]
         django_messages.success(
             self.request,
-            (
-                f"La requête d’habilitation pour "
-                f"{self.habilitation_request.first_name} "
-                f"{self.habilitation_request.last_name} a bien été enregistrée."
-            ),
+            ngettext(
+                "La requête d’habilitation pour %(person)s a bien été enregistrée.",
+                "%(len)s requêtes d’habilitation ont bien été enregistrées.",
+                len(result),
+            )
+            % {"person": result[0].get_full_name(), "len": len(result)},
         )
-
         return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs)
 
 
 @responsable_logged_with_activity_required
