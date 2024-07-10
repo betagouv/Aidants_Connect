@@ -3,7 +3,6 @@ from django.urls import reverse
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
-from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
@@ -85,15 +84,15 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_organisation_view",
-            kwargs={
-                "issuer_id": str(organisation.issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_organisation_view",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 4)
