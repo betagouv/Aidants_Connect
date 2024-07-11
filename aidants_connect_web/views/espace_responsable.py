@@ -3,6 +3,7 @@ import logging
 from gettext import ngettext as _
 from io import BytesIO
 from itertools import chain
+from urllib.parse import urlencode as ue
 
 from django.contrib import messages as django_messages
 from django.db import transaction
@@ -702,11 +703,17 @@ class NewHabilitationRequest(FormView):
     template_name = "aidants_connect_web/espace_responsable/new-habilitation-request.html"  # noqa: E501
     form_class = NewHabilitationRequestForm
     success_url = reverse_lazy("espace_responsable_organisation")
-    commit_key = "commit"
+    partial_key = "partial"
+    edit_key = "edit"
 
     def setup(self, request: HttpRequest, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.commit = strtobool(request.GET.get(self.commit_key, "true"), True)
+        self.partial = strtobool(request.GET.get(self.partial_key), False)
+        self.edit_form = (
+            int(request.GET[self.edit_key])
+            if request.GET.get(self.edit_key, "").isdecimal()
+            else None
+        )
         self.referent: Aidant = request.user
 
     def get_form(self, form_class=None) -> NewHabilitationRequestForm:
@@ -720,14 +727,30 @@ class NewHabilitationRequest(FormView):
             **kwargs,
             "form_kwargs": {
                 "habilitation_requests": {
-                    "force_left_form_check": not self.commit,
+                    "edit_form": self.edit_form,
+                    "force_left_form_check": self.partial,
                     "form_kwargs": {"referent": self.referent},
                 }
             },
         }
 
+    def get_context_data(self, **kwargs):
+        base_path = reverse("espace_responsable_aidant_new")
+        partial_qp = {self.partial_key: True}
+        if self.edit_form:
+            partial_qp[self.edit_key] = self.edit_form
+
+        kwargs.update(
+            {
+                "edit_form": self.edit_form,
+                "partial_validate_path": f"{base_path}?{ue(partial_qp)}",
+                "edit_profile_path": f"{base_path}?{ue({self.edit_key: ''})}",
+            }
+        )
+        return super().get_context_data(**kwargs)
+
     def form_valid(self, form):
-        if not self.commit:
+        if self.partial or self.edit_form:
             return self.render_to_response(self.get_context_data(form=form))
 
         result: list[HabilitationRequest] = form.save()["habilitation_requests"]

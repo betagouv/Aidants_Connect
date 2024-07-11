@@ -211,9 +211,8 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         Clicking through Js instead of selenium to prevent
         'element is not clickable because another element obscures it' errors
         """
-        self.selenium.execute_script(
-            "arguments[0].click();", self.selenium.find_element(by, value)
-        )
+        for el in self.selenium.find_elements(by, value):
+            self.selenium.execute_script("arguments[0].click();", el)
 
     def path_matches(
         self, route_name: str, *, kwargs: dict = None, query_params: dict = None

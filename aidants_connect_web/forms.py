@@ -1,7 +1,7 @@
 import itertools
 import re
 from contextlib import contextmanager
-from typing import Optional
+from typing import Iterable, Optional
 from urllib.parse import unquote
 
 from django import forms
@@ -581,13 +581,20 @@ class HabilitationRequestCreationForm(
 class HabilitationRequestCreationFormSet(BaseModelFormSet):
     TEMP_DATA_PREFIX = "__temp__"
 
-    def __init__(self, force_left_form_check, **kwargs):
+    def __init__(self, force_left_form_check, edit_form=None, **kwargs):
         self.extra = 0
         self.force_left_form_check = force_left_form_check
         kwargs.setdefault("queryset", self.model._default_manager.none())
         super().__init__(**kwargs)
 
         self._is_cleaning = False
+        self.edit_form = edit_form
+
+    @property
+    def is_editing(self):
+        return isinstance(self.edit_form, int) and self.edit_form < len(
+            self.cached_forms
+        )
 
     @cached_property
     def has_temp_data(self):
@@ -623,10 +630,38 @@ class HabilitationRequestCreationFormSet(BaseModelFormSet):
 
     @cached_property
     def left_form(self) -> Form:
-        form = self.empty_form
-        form.prefix = self.add_prefix(self.TEMP_DATA_PREFIX)
-        form.empty_permitted = self.left_form_empty_permitted
-        return form
+        if self.is_editing:
+            return self.cached_forms[self.edit_form]
+
+        if (
+            self.cached_management_form.is_bound
+            and not self.cached_management_form.is_valid()
+        ):
+            # There's a problem with the managment data anyway
+            return self.empty_form
+
+        next_idx = (
+            self.cached_management_form.cleaned_data[TOTAL_FORM_COUNT]
+            if self.cached_management_form.is_bound
+            else 0
+        )
+
+        return self._construct_form(
+            next_idx,
+            **{
+                **self.get_form_kwargs(next_idx),
+                "prefix": self.add_prefix(self.TEMP_DATA_PREFIX),
+                "empty_permitted": self.left_form_empty_permitted,
+            },
+        )
+
+    @cached_property
+    def right_forms(self):
+        return [
+            (int(re.search(self.add_prefix(r"(\d+)"), form.prefix)[1]), form)
+            for form in self.forms
+            if form is not self.left_form
+        ]
 
     @cached_property
     def cached_forms(self):
@@ -639,7 +674,7 @@ class HabilitationRequestCreationFormSet(BaseModelFormSet):
             return super().management_form
 
     @cached_property
-    def computed_managment_form(self):
+    def computed_managment_form(self) -> ManagementForm:
         new_data = self.data.copy()
         try:
             curr_form_count = self.cached_management_form.cleaned_data[TOTAL_FORM_COUNT]
@@ -659,7 +694,7 @@ class HabilitationRequestCreationFormSet(BaseModelFormSet):
         return form
 
     @property
-    def management_form(self):
+    def management_form(self) -> ManagementForm:
         if not self.is_bound or not self.has_temp_data or not self._is_cleaning:
             return self.cached_management_form
 
@@ -671,8 +706,8 @@ class HabilitationRequestCreationFormSet(BaseModelFormSet):
         del self.cached_management_form  # noqa
 
     @property
-    def forms(self):
-        if not self._is_cleaning or not self.has_temp_data:
+    def forms(self) -> Iterable[Form]:
+        if self.is_editing or not self._is_cleaning or not self.has_temp_data:
             return self.cached_forms
         return itertools.chain(self.cached_forms, [self.left_form])
 
@@ -684,6 +719,9 @@ class HabilitationRequestCreationFormSet(BaseModelFormSet):
         }
 
     def is_valid(self):
+        if self.is_editing:
+            return super().is_valid()
+
         if not self.is_bound:
             return False
 
@@ -693,7 +731,7 @@ class HabilitationRequestCreationFormSet(BaseModelFormSet):
         return super().is_valid()
 
     def full_clean(self):
-        if not self.has_temp_data:
+        if self.is_editing or not self.has_temp_data:
             return super().full_clean()
 
         with self._cleaning_mode(True, False):
@@ -749,6 +787,9 @@ class HabilitationRequestCreationFormSet(BaseModelFormSet):
             raise
         finally:
             self._is_cleaning = previous_mode if stop_mode is None else stop_mode
+
+    def _get_form_indx(self, form: Form):
+        return
 
 
 class HabilitationRequestCreationFormationTypeForm(forms.Form):
