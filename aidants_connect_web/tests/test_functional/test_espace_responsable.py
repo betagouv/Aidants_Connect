@@ -1,18 +1,25 @@
+import itertools
+
 from django.template.defaultfilters import yesno
 from django.test import tag
 from django.urls import reverse
 
+from faker import Faker
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_web.forms import NewHabilitationRequestForm
+from aidants_connect_web.forms import (
+    HabilitationRequestCreationFormSet,
+    NewHabilitationRequestForm,
+)
 from aidants_connect_web.models import Aidant, HabilitationRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     HabilitationRequestFactory,
     OrganisationFactory,
 )
+from aidants_connect_web.views.espace_responsable import NewHabilitationRequest
 
 
 @tag("functional")
@@ -455,7 +462,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
             self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
 
-        self.selenium.find_element(By.ID, "add-aidant-to-request").click()
+        self.selenium.find_element(By.ID, "partial-submit").click()
         self.wait.until(self.document_loaded())
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
@@ -475,7 +482,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             By.ID,
             self._left_form["email"].id_for_label,
         ).send_keys("test@test.test")
-        self.selenium.find_element(By.ID, "add-aidant-to-request").click()
+        self.selenium.find_element(By.ID, "partial-submit").click()
         self.wait.until(self.document_loaded())
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
@@ -562,7 +569,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             organisation=self.organisation
         )
         self.fill_form(req, self._all_visible_fields, self._custom_getter)
-        self.selenium.find_element(By.ID, "add-aidant-to-request").click()
+        self.selenium.find_element(By.ID, "partial-submit").click()
         self.wait.until(self.document_loaded())
 
         self.assertNormalizedStringEqual(
@@ -571,8 +578,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         )
 
         # open the <details>
-        details = self.selenium.find_element(By.CSS_SELECTOR, "#added-form-0")
-        self.selenium.execute_script("arguments[0].open = true;", details)
+        self.js_click(By.CSS_SELECTOR, "#added-form-0 summary")
         self.assertNormalizedStringEqual(
             " ".join(
                 [
@@ -583,7 +589,9 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
                     f"Organisation {req.organisation}",
                 ]
             ),
-            details.find_element(By.CLASS_NAME, "details-content").text,
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "#added-form-0 .user-informations"
+            ).text,
         )
         # Asserting not new habilitation was created
         self.assertFalse(HabilitationRequest.objects.count())
@@ -614,7 +622,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             organisation=self.organisation
         )
         self.fill_form(req1, self._all_visible_fields, self._custom_getter)
-        self.selenium.find_element(By.ID, "add-aidant-to-request").click()
+        self.selenium.find_element(By.ID, "partial-submit").click()
         self.wait.until(self.document_loaded())
 
         self.assertNormalizedStringEqual(
@@ -623,8 +631,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         )
 
         # open the <details>
-        details = self.selenium.find_element(By.CSS_SELECTOR, "#added-form-0")
-        self.selenium.execute_script("arguments[0].open = true;", details)
+        self.js_click(By.CSS_SELECTOR, "#added-form-0 summary")
         self.assertNormalizedStringEqual(
             " ".join(
                 [
@@ -635,7 +642,9 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
                     f"Organisation {req1.organisation}",
                 ]
             ),
-            details.find_element(By.CLASS_NAME, "details-content").text,
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "#added-form-0 .user-informations"
+            ).text,
         )
         # Asserting not new habilitation was created
         self.assertFalse(HabilitationRequest.objects.count())
@@ -678,9 +687,128 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             },
         )
 
+    def test_editing_profile_checks_erros(self):
+        idx_to_modify = 1
+
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+
+        existing_req = HabilitationRequestFactory(organisation=self.organisation)
+
+        reqs = []
+        for _ in range(3):
+            req = HabilitationRequestFactory.build(organisation=self.organisation)
+            reqs.append(req)
+            self.fill_form(req, self._all_visible_fields, self._custom_getter)
+            self.selenium.find_element(By.ID, "partial-submit").click()
+            self.wait.until(self.document_loaded())
+            self.assertEqual(
+                "Ajouter un autre aidant",
+                self.selenium.find_element(By.ID, "partial-submit").text,
+            )
+
+        self.js_click(By.ID, "edit-button-1")
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_aidant_new",
+                query_params={NewHabilitationRequest.edit_key: idx_to_modify},
+            )
+        )
+        self.assertEqual(
+            "Valider les modifications",
+            self.selenium.find_element(By.ID, "partial-submit").text,
+        )
+
+        # Submit checks
+        self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        ).clear()
+        self.selenium.find_element(By.ID, "partial-submit").click()
+
+        self.assertNormalizedStringEqual(
+            "Ce champ est obligatoire.",
+            self.selenium.find_element(
+                By.CSS_SELECTOR, '#empty-form [id$="email-desc-error"] .errorlist'
+            ).text,
+        )
+
+        # Test conflict with another profile in this request
+        elt = self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        )
+        elt.clear()
+        elt.send_keys(reqs[idx_to_modify + 1].email)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.assertNormalizedStringEqual(
+            "Corrigez les données en double dans email et "
+            "organisation qui doit contenir des valeurs uniques.",
+            self.selenium.find_element(By.CSS_SELECTOR, ".errorlist.nonform").text,
+        )
+
+        # Test conflict with existing request
+        elt = self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        )
+        elt.clear()
+        elt.send_keys(existing_req.email)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.assertNormalizedStringEqual(
+            "Une demande d’habilitation est déjà en cours pour "
+            "l’adresse e-mail. Vous n’avez pas besoin de déposer une nouvelle "
+            "demande pour cette adresse-ci.",
+            self.selenium.find_element(
+                By.CSS_SELECTOR, '#empty-form [id$="email-desc-error"] .errorlist'
+            ).text,
+        )
+
+        while (new_email := Faker().email()) == reqs[idx_to_modify].email:
+            # Select a different email
+            pass
+
+        elt = self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        )
+        elt.clear()
+        elt.send_keys(new_email)
+
+        self.selenium.find_element(By.ID, "form-submit").click()
+        self.wait.until(self.path_matches("espace_responsable_organisation"))
+
+        # Don't forget to modify the data for the test
+        reqs[idx_to_modify].email = new_email
+
+        self.assertEqual(4, len(HabilitationRequest.objects.all()))
+        self.assertEqual(
+            set(
+                HabilitationRequest.objects.values_list(
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "profession",
+                    "conseiller_numerique",
+                    "organisation",
+                ).all()
+            ),
+            {
+                (
+                    req.first_name,
+                    req.last_name,
+                    req.email,
+                    req.profession,
+                    req.conseiller_numerique,
+                    req.organisation.pk,
+                )
+                for req in itertools.chain([existing_req], reqs)
+            },
+        )
+
     @property
     def _left_form(self):
-        return self.empty_form["habilitation_requests"].left_form
+        return self._habilitation_requests_form.left_form
+
+    @property
+    def _habilitation_requests_form(self) -> HabilitationRequestCreationFormSet:
+        return self.empty_form["habilitation_requests"]
 
     @property
     def _course_type_form(self):

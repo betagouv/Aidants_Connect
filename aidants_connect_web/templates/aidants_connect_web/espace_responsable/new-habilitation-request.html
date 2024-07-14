@@ -24,6 +24,7 @@
 
       <section class="habilitation-requests fr-mb-8v">
         <h2>Renseignez les détails du ou des aidants à habiliter</h2>
+        {{ form.habilitation_requests.non_form_errors }}
         <div class="fr-grid-row fr-grid-row--gutters">
           {{ form.habilitation_requests.management_form }}
 
@@ -37,21 +38,21 @@
               {% endfor %}
 
               <button
-                id="add-aidant-to-request"
+                id="partial-submit"
                 class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-user-add-line"
                 type="submit"
-                formaction="{% url 'espace_responsable_aidant_new' %}?commit=false"
+                formaction="{{ partial_validate_path }}"
               >
-                Ajouter un autre aidant
+                {% if edit_form is not None %}Valider les modifications{% else %}Ajouter un autre aidant{% endif %}
               </button>
             </section>
           {% endwith %}
 
-          {% if form.habilitation_requests.forms %}
+          {% if form.habilitation_requests.right_forms|length > 0 %}
             <section id="added-forms" class="fr-col-12 fr-col-md-6 fr-background-contrast--grey fr-p-6v">
               <h3>Aidants ajoutés à la demande</h3>
               <div class="fr-grid-row fr-grid-row--gutters">
-                {% for form in form.habilitation_requests.forms %}
+                {% for form_idx, form in form.habilitation_requests.right_forms %}
                   {# Prevent messing with the absolute positionning of the design #}
                   {# See https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent #}
                   <div class="fr-col-12 fr-col-md-6">
@@ -76,31 +77,37 @@
                         ></span>
                       </summary>
                       <div class="details-content fr-p-4v fr-tile--shadow">
-                        {% with fields="email profession conseiller_numerique organisation" %}
-                          {% for field in fields.split %}
-                            {% with field=form|get_dict_key:field %}
-                              <section class="fr-my-4v">
-                                {% if field == form.conseiller_numerique %}
-                                  <p class="fr-text--sm fr-text-mention--grey">Conseiller numérique</p>
-                                  {{ form.conseiller_numerique.value|strtobool|yesno:"Oui,Non" }}
-                                {% elif field == form.organisation %}
-                                  <p class="fr-text--sm fr-text-mention--grey">Organisation</p>
-                                  {{ form.cleaned_data.organisation.name|stringformat:'s' }}
-                                {% else %}
-                                  <p class="fr-text--sm fr-text-mention--grey">{{ field.label }}</p>
-                                  {{ field.value|stringformat:'s' }}
-                                {% endif %}
-                              </section>
-                            {% endwith %}
-                          {% endfor %}
-                        {% endwith %}
-                        {% comment %}
+                        <section class="user-informations">
+                          {% with fields="email profession conseiller_numerique organisation" %}
+                            {% for field in fields.split %}
+                              {% with field=form|get_dict_key:field %}
+                                <section class="fr-my-4v">
+                                  {% if field == form.conseiller_numerique %}
+                                    <p class="fr-text--sm fr-text-mention--grey">Conseiller numérique</p>
+                                    {{ form.conseiller_numerique.value|strtobool|yesno:"Oui,Non" }}
+                                  {% elif field == form.organisation %}
+                                    <p class="fr-text--sm fr-text-mention--grey">Organisation</p>
+                                    {{ form.cleaned_data.organisation.name|stringformat:'s' }}
+                                  {% else %}
+                                    <p class="fr-text--sm fr-text-mention--grey">{{ field.label }}</p>
+                                    {{ field.value|stringformat:'s' }}
+                                  {% endif %}
+                                </section>
+                              {% endwith %}
+                            {% endfor %}
+                          {% endwith %}
+                        </section>
                         <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
                           <li>
-                            <button class="fr-btn fr-btn--tertiary fr-icon-edit-fill">Éditer</button>
+                            <button
+                              id="edit-button-{{ form_idx }}"
+                              class="fr-btn fr-btn--tertiary fr-icon-edit-fill"
+                              formaction="{{ edit_profile_path }}{{ form_idx }}"
+                            >
+                              Éditer
+                            </button>
                           </li>
                         </ul>
-                        {% endcomment %}
                       </div>
                     </details>
                   </div>

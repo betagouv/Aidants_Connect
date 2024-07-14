@@ -16,7 +16,10 @@ from aidants_connect_web.tests.factories import (
     OrganisationFactory,
 )
 from aidants_connect_web.views import espace_responsable
-from aidants_connect_web.views.espace_responsable import FormationRegistrationView
+from aidants_connect_web.views.espace_responsable import (
+    FormationRegistrationView,
+    NewHabilitationRequest,
+)
 
 
 @tag("responsable-structure")
@@ -80,7 +83,7 @@ class HabilitationRequestsTests(TestCase):
             email = f"angela.dubois{organisation.id}@a.org"
 
             response = self.client.post(
-                f"{self.add_aidant_url}?commit=False",
+                f"{self.add_aidant_url}?{NewHabilitationRequest.partial_key}=True",
                 data={
                     f"{self.prefix}-TOTAL_FORMS": "0",
                     f"{self.prefix}-INITIAL_FORMS": "0",
