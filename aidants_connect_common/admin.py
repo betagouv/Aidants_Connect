@@ -343,7 +343,7 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
         "__str__",
         "formation",
         "get_formation_id_grist",
-        "get_formation_type_labe",
+        "get_formation_type_label",
         "attendant",
         "state",
     )
@@ -351,7 +351,7 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
     list_filter = ["state", "formation__type"]
 
     @admin.display(description="Formation Type", ordering="formation__type__label")
-    def get_formation_type_labe(self, obj):
+    def get_formation_type_label(self, obj):
         return obj.formation.type.label
 
     @admin.display(description="Formation Id Grist", ordering="formation__id_grist")
