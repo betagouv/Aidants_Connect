@@ -125,7 +125,7 @@ class HabilitationRequestsTests(TestCase):
             response = self.client.get(self.organisation_url)
             response_content = response.content.decode("utf-8")
             self.assertIn(
-                "La requête d’habilitation pour Angela Dubois a bien été enregistrée.",
+                "La demande d’habilitation pour Angela Dubois a bien été enregistrée.",
                 response_content,
                 "Confirmation message should be displayed.",
             )
@@ -306,7 +306,7 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.get(self.organisation_url)
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La requête d’habilitation pour Bob Dubois a bien été enregistrée.",
+            "La demande d’habilitation pour Bob Dubois a bien été enregistrée.",
             response_content,
             "Confirmation message should be displayed.",
         )
@@ -344,7 +344,7 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.get(self.organisation_url)
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La requête d’habilitation pour Bob Dubois a bien été enregistrée.",
+            "La demande d’habilitation pour Bob Dubois a bien été enregistrée.",
             response_content,
             "Confirmation message should be displayed.",
         )
