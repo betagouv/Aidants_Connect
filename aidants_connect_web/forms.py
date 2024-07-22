@@ -935,7 +935,7 @@ class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
     redirect_uri = forms.CharField()
     scope = forms.CharField()
     acr_values = forms.CharField()
-    claim = forms.JSONField(required=False)
+    claims = forms.JSONField(required=False)
 
     def __init__(self, organisation: Organisation, *args, relaxed=False, **kwargs):
         self.relaxed = relaxed
@@ -987,8 +987,8 @@ class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
             raise ValidationError("", "invalid")
         return result
 
-    def clean_claim(self):
-        result = self.cleaned_data.get("claim")
+    def clean_claims(self):
+        result = self.cleaned_data.get("claims")
         if not result:
             return None
 
@@ -1024,7 +1024,7 @@ class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
                 )
         except (TypeError, PydanticValidationError):
             raise ValidationError(
-                self.fields["claim"].error_messages["invalid"],
+                self.fields["claims"].error_messages["invalid"],
                 code="invalid",
                 params={"value": result},
             )
