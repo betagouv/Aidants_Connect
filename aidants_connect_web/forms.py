@@ -1,7 +1,6 @@
-import itertools
 import re
-from contextlib import contextmanager
-from typing import Iterable, Optional
+from functools import cached_property
+from typing import Optional
 from urllib.parse import unquote
 
 from django import forms
@@ -17,8 +16,6 @@ from django.forms import (
     RadioSelect,
     modelformset_factory,
 )
-from django.forms.formsets import TOTAL_FORM_COUNT, ManagementForm
-from django.utils.functional import cached_property
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -579,217 +576,57 @@ class HabilitationRequestCreationForm(
 
 
 class HabilitationRequestCreationFormSet(BaseModelFormSet):
-    TEMP_DATA_PREFIX = "__temp__"
-
     def __init__(self, force_left_form_check, edit_form=None, **kwargs):
         self.extra = 0
         self.force_left_form_check = force_left_form_check
         kwargs.setdefault("queryset", self.model._default_manager.none())
         super().__init__(**kwargs)
 
-        self._is_cleaning = False
-        self.edit_form = edit_form
+        self.has_temp_data = any("__prefix__" in k for k in self.data.keys())
+        self.edit_form = (
+            edit_form
+            if isinstance(edit_form, int) and edit_form < len(self.cached_forms)
+            else None
+        )
+        self.is_cleaning = False
 
-    @property
-    def is_editing(self):
-        return isinstance(self.edit_form, int) and self.edit_form < len(
+    @cached_property
+    def cached_forms(self):
+        return super().forms
+
+    @cached_property
+    def forms(self):
+        return (
             self.cached_forms
-        )
-
-    @cached_property
-    def has_temp_data(self):
-        if not self.is_bound:
-            return False
-
-        with self._cleaning_mode(False):
-            form = self.form(  # noqa
-                **{
-                    **self.get_form_kwargs(None),
-                    "data": self.data,
-                    "auto_id": self.auto_id,
-                    "prefix": self.add_prefix(self.TEMP_DATA_PREFIX),
-                }
-            )
-            for field in form:
-                if field.html_name in self.data:
-                    return True
-            return False
-
-    @property
-    def left_form_empty_permitted(self):
-        return not (
-            len(self.cached_forms) == 0
-            and self.has_temp_data
-            or self.force_left_form_check
-            and self.has_temp_data
+            if self.edit_form
+            else [*self.cached_forms, self.left_form]
         )
 
     @property
-    def should_validate_left_form(self):
-        return not self.left_form_empty_permitted or self.has_temp_data
-
-    @cached_property
     def left_form(self) -> Form:
-        if self.is_editing:
-            return self.cached_forms[self.edit_form]
+        return self.cached_forms[self.edit_form] if self.edit_form else self.empty_form
 
-        if (
-            self.cached_management_form.is_bound
-            and not self.cached_management_form.is_valid()
-        ):
-            # There's a problem with the managment data anyway
-            return self.empty_form
-
-        next_idx = (
-            self.cached_management_form.cleaned_data[TOTAL_FORM_COUNT]
-            if self.cached_management_form.is_bound
-            else 0
+    @cached_property  # cached_property will preserve form errors
+    def empty_form(self):
+        empty_form = super().empty_form
+        empty_form.empty_permitted = not (
+            self.force_left_form_check or self.is_bound and len(self.cached_forms) == 0
         )
-
-        return self._construct_form(
-            next_idx,
-            **{
-                **self.get_form_kwargs(next_idx),
-                "prefix": self.add_prefix(self.TEMP_DATA_PREFIX),
-                "empty_permitted": self.left_form_empty_permitted,
-            },
-        )
+        return empty_form
 
     @cached_property
     def right_forms(self):
         return [
-            (int(re.search(self.add_prefix(r"(\d+)"), form.prefix)[1]), form)
-            for form in self.forms
+            (idx, form)
+            for idx, form in enumerate(self.forms)
             if form is not self.left_form
         ]
-
-    @cached_property
-    def cached_forms(self):
-        with self._cleaning_mode(False):
-            return super().forms
-
-    @cached_property
-    def cached_management_form(self):
-        with self._cleaning_mode(False):
-            return super().management_form
-
-    @cached_property
-    def computed_managment_form(self) -> ManagementForm:
-        new_data = self.data.copy()
-        try:
-            curr_form_count = self.cached_management_form.cleaned_data[TOTAL_FORM_COUNT]
-            new_data[self.cached_management_form[TOTAL_FORM_COUNT].html_name] = (
-                f"{curr_form_count + 1}"
-            )
-        except (KeyError, ValidationError):
-            # There's a problem with the managment data anyway
-            return self.cached_management_form
-
-        form = ManagementForm(
-            new_data,
-            auto_id=self.auto_id,
-            prefix=self.prefix,
-        )
-        form.full_clean()
-        return form
-
-    @property
-    def management_form(self) -> ManagementForm:
-        if not self.is_bound or not self.has_temp_data or not self._is_cleaning:
-            return self.cached_management_form
-
-        return self.computed_managment_form
-
-    @management_form.deleter
-    def management_form(self):
-        del self.computed_managment_form  # noqa
-        del self.cached_management_form  # noqa
-
-    @property
-    def forms(self) -> Iterable[Form]:
-        if self.is_editing or not self._is_cleaning or not self.has_temp_data:
-            return self.cached_forms
-        return itertools.chain(self.cached_forms, [self.left_form])
 
     def get_form_kwargs(self, index):
         return {
             **super().get_form_kwargs(index),
-            "empty_permitted": False,
             "data": self.data,
         }
-
-    def is_valid(self):
-        if self.is_editing:
-            return super().is_valid()
-
-        if not self.is_bound:
-            return False
-
-        if self.should_validate_left_form and not self.left_form.is_valid():
-            return False
-
-        return super().is_valid()
-
-    def full_clean(self):
-        if self.is_editing or not self.has_temp_data:
-            return super().full_clean()
-
-        with self._cleaning_mode(True, False):
-            super().full_clean()
-        self.post_clean()
-
-    def post_clean(self):
-        if not self.has_temp_data or not self.left_form.has_changed():
-            return
-
-        if (
-            any(item for item in self.errors)
-            or self.non_form_errors()
-            or not self.left_form.is_valid()
-        ):
-            # Return on any error
-            return
-
-        # Everything is ok. Proceeding to making left_form a regular form
-        curr_form_count = self.management_form.cleaned_data[TOTAL_FORM_COUNT]
-        self.data[self.management_form[TOTAL_FORM_COUNT].html_name] = (
-            f"{curr_form_count + 1}"
-        )
-
-        for field in self.left_form:
-            new_key = field.html_name.replace(
-                self.TEMP_DATA_PREFIX, f"{curr_form_count}"
-            )
-
-            # Replacing left_form keys
-            if (datum := self.data.get(field.html_name)) is not None:
-                self.data[new_key] = datum
-                del self.data[field.html_name]
-
-        self.left_form.prefix = self.add_prefix(curr_form_count)
-        self.forms.append(self.left_form)
-
-        # Invalidating cached properties
-        del self.management_form
-        del self.left_form  # noqa
-        del self.has_temp_data  # noqa
-
-    @contextmanager
-    def _cleaning_mode(self, start_mode=False, stop_mode=None):
-        """
-        Set the Form in a specific cleaning mode to avoid messing with parent's
-        properties
-        """
-        previous_mode, self._is_cleaning = self._is_cleaning, start_mode
-        try:
-            yield
-        except Exception:
-            raise
-        finally:
-            self._is_cleaning = previous_mode if stop_mode is None else stop_mode
-
-    def _get_form_indx(self, form: Form):
-        return
 
 
 class HabilitationRequestCreationFormationTypeForm(forms.Form):
