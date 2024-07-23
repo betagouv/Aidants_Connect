@@ -1,4 +1,5 @@
 {% extends 'layouts/main-legacy.html' %}
+{% load ac_common %}
 
 {% load static %}
 
@@ -10,22 +11,44 @@
 {% block content %}
   <section class="section">
     <div class="container">
-      <p><b>L’Agence Nationale de la Cohésion des Territoires</b> s’engage à rendre son service accessible,
-        conformément à l’article 47 de la loi n° 2005-102 du 11 février 2005.</p>
+      <p>
+        <b>L’Agence Nationale de la Cohésion des Territoires</b> s’engage à rendre son service accessible,
+        conformément à l’article 47 de la loi n° 2005-102 du 11 février 2005.
+      </p>
 
-      <p>A cette fin, l'Agence Nationale de la Cohésion des Territoires met en oeuvre la stratégie et les actions suivantes :</p>
+      <p>
+        À cette fin, l'Agence Nationale de la Cohésion des Territoires met en oeuvre la stratégie et les actions
+        suivantes :
+      </p>
       <ul>
-        <li><a href="https://beta.gouv.fr/accessibilite/schema-pluriannuel">Schéma pluriannuel 2024-2027<a/> de <a href="https://beta.gouv.fr/">l'incubateur de la direction interministérielle du numérique (DINUM)<a/></li>
-        <li>Plan d'action 2024 : au premier semestre 2024, est prévu de recruter un(e) développeur(se) Front End pour une refonte du site avec le Système de Design de l'Etat (DSFR) pour corriger les défauts d’accessibilité. Au deuxième semestre 2024, est prévu de préparer l’audit d'accessibilité avec le pôle numérique inclusif de l'incubateur de la direction interministérielle du numérique (beta.gouv.fr) et d'effectuer l'audit de conformité</li>
+        <li>
+          <a class="fr-link" href="https://beta.gouv.fr/accessibilite/schema-pluriannuel">
+            Schéma pluriannuel 2024-2027
+          </a> de <a class="fr-link" href="https://beta.gouv.fr/">
+            l'incubateur de la direction interministérielle du numérique (DINUM)
+          </a>
+        </li>
+        <li>
+          Plan d'action 2024 : au premier semestre 2024, est prévu de recruter un(e) développeur(se) Front End pour
+          une refonte du site avec le Système de Design de l'Etat (DSFR) pour corriger les défauts d’accessibilité. Au
+          deuxième semestre 2024, est prévu de préparer l’audit d'accessibilité avec le pôle numérique inclusif de
+          l'incubateur de la direction interministérielle du numérique (beta.gouv.fr) et d'effectuer l'audit de
+          conformité
+        </li>
       </ul>
+
       <h1 class="section__title">Déclaration d’accessibilité</h1>
 
       <p>Cette déclaration d’accessibilité s’applique au site web Aidants Connect.</p>
+
       <h2>État de conformité</h2>
+
       <p>
         <span>Aidants Connect</span> est
-        <b><span data-printfilter="lowercase">non conforme</span> avec le
-          <abbr title="Référentiel général d’accessibilité pour les Administrations">RGAA</abbr> 4.1</b>.
+        <strong>
+          <span data-printfilter="lowercase">non conforme</span> avec le
+          <abbr title="Référentiel général d’accessibilité pour les Administrations">RGAA</abbr> 4.1
+        </strong>.
         Non conforme veut dire que moins de 50 % des critères de contrôle du RGAA sont respectés,
         ou que le site n’a pas été audité.
       </p>
@@ -38,7 +61,7 @@
       <h2>Établissement de cette déclaration d’accessibilité</h2>
       <p>Cette déclaration a été établie le <b>15 mars 2021</b>.</p>
       <h3>Technologies utilisées</h3>
-      <p>L’accessibilité d’Aidants Connect s’appuie sur les technologies suivantes :</p>
+      <p>L’accessibilité d’Aidants Connect s’appuie sur les technologies suivantes :</p>
       <ul class="technical-information technologies-used">
         <li>HTML</li>
         <li>CSS</li>
@@ -46,36 +69,48 @@
       </ul>
 
       <h2>Amélioration et contact</h2>
+
       <p>
         Si vous n’arrivez pas à accéder à un contenu ou à un service, vous pouvez contacter le référent d’Aidants
         Connect pour être orienté vers une alternative accessible ou obtenir le contenu sous une autre forme.
       </p>
       <ul class="basic-information feedback h-card">
+        <li>E-mail : {% mailto "contact@aidantsconnect.beta.gouv.fr" %}</li>
         <li>
-          E-mail : <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a>
-        </li>
-        <li>
-          Adresse : <span>20 rue de Ségur, 75007 Paris</span>
+          Adresse :
+          <address>
+            20 rue de Ségur<br />
+            75007 Paris
+          </address>
         </li>
       </ul>
 
-      <h2>Voie de recours</h2>
-      <p>Cette procédure est à utiliser dans le cas suivant : vous avez signalé au responsable du site internet un
-        défaut d’accessibilité qui vous empêche d’accéder à un contenu ou à un des services du portail et vous n’avez
-        pas obtenu de réponse satisfaisante.</p>
+      <h2>Voies de recours</h2>
 
-      <p>Vous pouvez :</p>
+      <p>
+        Cette procédure est à utiliser dans le cas suivant : vous avez signalé au responsable du site internet un
+        défaut d’accessibilité qui vous empêche d’accéder à un contenu ou à un des services du portail et vous n’avez
+        pas obtenu de réponse satisfaisante.
+      </p>
+
+      <p>Vous pouvez :</p>
+
       <ul>
-        <li>Écrire un message au <a href="https://formulaire.defenseurdesdroits.fr/">Défenseur des droits</a> ;</li>
+        <li>Écrire un message au <a href="https://formulaire.defenseurdesdroits.fr/">Défenseur des droits</a> ;</li>
         <li>
           Contacter <a href="https://www.defenseurdesdroits.fr/saisir/delegues">le délégué du Défenseur des droits
           dans votre région</a>
         </li>
-        <li>Envoyer un courrier par la poste (gratuit, ne pas mettre de timbre) :<br>
-          Défenseur des droits<br>
-          Libre réponse 71120 75342 Paris CEDEX 07
+        <li>
+          Envoyer un courrier par la poste (gratuit, ne pas mettre de timbre) :
+          <address>
+            Défenseur des droits<br />
+            Libre réponse<br />
+            71120 75342 Paris CEDEX 07
+          </address>
         </li>
       </ul>
+
       <p>
         Cette déclaration d’accessibilité a été créée le 15 mars 2021 grâce au
         <a href="https://betagouv.github.io/a11y-generateur-declaration/#create">
