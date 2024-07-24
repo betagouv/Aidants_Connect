@@ -192,7 +192,7 @@ class OrganisationResponsables(FormView):
             instance = form.save()
             django_messages.success(
                 self.request,
-                f"Votre requête pour ajouter {instance.get_full_name()} au "
+                f"Votre demande pour ajouter {instance.get_full_name()} au "
                 f"poste de referent non-aidant de {self.organisation} a été prise en "
                 f"compte. Elle va faire l'objet d'un examen de la part de nos équipes.",
             )
@@ -762,8 +762,8 @@ class NewHabilitationRequest(FormView):
         django_messages.success(
             self.request,
             ngettext(
-                "La requête d’habilitation pour %(person)s a bien été enregistrée.",
-                "%(len)s requêtes d’habilitation ont bien été enregistrées.",
+                "La demande d’habilitation pour %(person)s a bien été enregistrée.",
+                "%(len)s demandes d’habilitation ont bien été enregistrées.",
                 len(result),
             )
             % {"person": result[0].get_full_name(), "len": len(result)},
