@@ -6,8 +6,10 @@ from itertools import chain
 from urllib.parse import urlencode as ue
 
 from django.contrib import messages as django_messages
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.forms import model_to_dict
+from django.forms.formsets import TOTAL_FORM_COUNT
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -716,15 +718,9 @@ class NewHabilitationRequest(FormView):
         )
         self.referent: Aidant = request.user
 
-    def get_form(self, form_class=None) -> NewHabilitationRequestForm:
-        return super().get_form(form_class)
-
     def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        # Making data mutable for HabilitationRequestCreationFormSet
-        kwargs["data"] = None if (data := kwargs.get("data")) is None else data.copy()
         return {
-            **kwargs,
+            **super().get_form_kwargs(),
             "form_kwargs": {
                 "habilitation_requests": {
                     "edit_form": self.edit_form,
@@ -749,7 +745,16 @@ class NewHabilitationRequest(FormView):
         )
         return super().get_context_data(**kwargs)
 
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
+        if form["habilitation_requests"].has_temp_data:
+            form = self.confirmed_form(form)
+            if not form.is_valid():
+                # That should *NOT* happen and we need to know if it does
+                raise ValidationError(form.errors)
+
         if self.partial or self.edit_form:
             return self.render_to_response(self.get_context_data(form=form))
 
@@ -764,6 +769,20 @@ class NewHabilitationRequest(FormView):
             % {"person": result[0].get_full_name(), "len": len(result)},
         )
         return super().form_valid(form)
+
+    def confirmed_form(self, form):
+        hab_form = form["habilitation_requests"]
+        next_form_idx = hab_form.management_form.cleaned_data[TOTAL_FORM_COUNT]
+        kwargs = self.get_form_kwargs()
+        kwargs["data"] = {
+            k.replace("__prefix__", f"{next_form_idx}"): v
+            for k, v in self.request.POST.items()
+        }
+        kwargs["data"][hab_form.add_prefix(TOTAL_FORM_COUNT)] = f"{next_form_idx + 1}"
+        # We don't want to check the empty form here since there is
+        # no temporary data anymore
+        kwargs["form_kwargs"]["habilitation_requests"]["force_left_form_check"] = False
+        return self.get_form_class()(**kwargs)
 
 
 @responsable_logged_with_activity_required

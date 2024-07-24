@@ -666,55 +666,6 @@ class TestHabilitationRequestCreationFormSet(TestCase):
             formset=HabilitationRequestCreationFormSet,
         )
 
-    def test_form_has_temp_data(self):
-        # First case: no data bound
-        form = self.form_cls(
-            force_left_form_check=False, form_kwargs={"referent": self.referent}
-        )
-        self.assertFalse(form.has_temp_data)
-
-        # Second case: has data but not blank left_form
-        form = self.form_cls(
-            force_left_form_check=False,
-            form_kwargs={"referent": self.referent},
-            data={
-                "form-TOTAL_FORMS": "1",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-                "form-0-id": "",
-                "form-0-email": "test@test.test",
-                "form-0-first_name": "Sarah",
-                "form-0-last_name": "Lambda",
-                "form-0-profession": "organisatrice",
-                "form-0-organisation": f"{self.referent.organisation.pk}",
-                "form-0-conseiller_numerique": "False",
-            },
-        )
-        self.assertFalse(form.has_temp_data)
-
-        # Third case: has at least one left_form field in its data
-        form = self.form_cls(
-            force_left_form_check=False,
-            form_kwargs={"referent": self.referent},
-            data={
-                "form-TOTAL_FORMS": "1",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-                "form-0-id": "",
-                "form-0-email": "test@test.test",
-                "form-0-first_name": "Sarah",
-                "form-0-last_name": "Lambda",
-                "form-0-profession": "organisatrice",
-                "form-0-organisation": f"{self.referent.organisation.pk}",
-                "form-0-conseiller_numerique": "False",
-                "form-__temp__-last_name": "",
-                "form-__temp__-profession": "animateurice",
-            },
-        )
-        self.assertTrue(form.has_temp_data)
-
     def test_left_form_empty_permitted_no_data(self):
         # We don't want to force validate the left_form if no data is present
         form = self.form_cls(
@@ -725,7 +676,7 @@ class TestHabilitationRequestCreationFormSet(TestCase):
         form = self.form_cls(
             force_left_form_check=True, form_kwargs={"referent": self.referent}
         )
-        self.assertTrue(form.left_form.empty_permitted)
+        self.assertFalse(form.left_form.empty_permitted)
 
     def test_left_form_empty_permitted_no_left_form(self):
         # Data is submitted, but none corresponding to left_form
@@ -755,7 +706,7 @@ class TestHabilitationRequestCreationFormSet(TestCase):
             form_kwargs={"referent": self.referent},
             data=data,
         )
-        self.assertTrue(form.left_form.empty_permitted)
+        self.assertFalse(form.left_form.empty_permitted)
 
     def test_left_form_empty_permitted_with_left_form(self):
         # Data is submitted, with left_form data
@@ -769,13 +720,13 @@ class TestHabilitationRequestCreationFormSet(TestCase):
                 "form-INITIAL_FORMS": "0",
                 "form-MIN_NUM_FORMS": "0",
                 "form-MAX_NUM_FORMS": "1000",
-                "form-__temp__-id": "",
-                "form-__temp__-email": "",
-                "form-__temp__-first_name": "",
-                "form-__temp__-last_name": "",
-                "form-__temp__-profession": "",
-                "form-__temp__-organisation": "",
-                "form-__temp__-conseiller_numerique": "",
+                "form-__prefix__-id": "",
+                "form-__prefix__-email": "",
+                "form-__prefix__-first_name": "",
+                "form-__prefix__-last_name": "",
+                "form-__prefix__-profession": "",
+                "form-__prefix__-organisation": "",
+                "form-__prefix__-conseiller_numerique": "",
             },
         )
         self.assertFalse(form.left_form.empty_permitted)
@@ -798,7 +749,7 @@ class TestHabilitationRequestCreationFormSet(TestCase):
                 "form-0-conseiller_numerique": "False",
             },
         )
-        self.assertTrue(form.left_form.empty_permitted)
+        self.assertFalse(form.left_form.empty_permitted)
 
         # Third case: same as before, with blank left_form submitted
         form = self.form_cls(
@@ -816,13 +767,13 @@ class TestHabilitationRequestCreationFormSet(TestCase):
                 "form-0-profession": "organisatrice",
                 "form-0-organisation": f"{self.referent.organisation.pk}",
                 "form-0-conseiller_numerique": "False",
-                "form-__temp__-id": "",
-                "form-__temp__-email": "",
-                "form-__temp__-first_name": "",
-                "form-__temp__-last_name": "",
-                "form-__temp__-profession": "",
-                "form-__temp__-organisation": "",
-                "form-__temp__-conseiller_numerique": "",
+                "form-__prefix__-id": "",
+                "form-__prefix__-email": "",
+                "form-__prefix__-first_name": "",
+                "form-__prefix__-last_name": "",
+                "form-__prefix__-profession": "",
+                "form-__prefix__-organisation": "",
+                "form-__prefix__-conseiller_numerique": "",
             },
         )
         self.assertFalse(form.left_form.empty_permitted)
@@ -837,17 +788,17 @@ class TestHabilitationRequestCreationFormSet(TestCase):
                 "form-INITIAL_FORMS": "0",
                 "form-MIN_NUM_FORMS": "0",
                 "form-MAX_NUM_FORMS": "1000",
-                "form-__temp__-id": "",
-                "form-__temp__-email": "",
-                "form-__temp__-first_name": "",
-                "form-__temp__-last_name": "",
-                "form-__temp__-profession": "",
-                "form-__temp__-organisation": "",
-                "form-__temp__-conseiller_numerique": "",
+                "form-__prefix__-id": "",
+                "form-__prefix__-email": "",
+                "form-__prefix__-first_name": "",
+                "form-__prefix__-last_name": "",
+                "form-__prefix__-profession": "",
+                "form-__prefix__-organisation": "",
+                "form-__prefix__-conseiller_numerique": "",
             },
         )
         self.assertFalse(form.is_valid())
-        self.assertEqual(0, len(form.forms))
+        self.assertEqual(1, len(form.forms))
         self.assertEqual(
             {
                 "email": [{"message": "Ce champ est obligatoire.", "code": "required"}],
@@ -892,16 +843,16 @@ class TestHabilitationRequestCreationFormSet(TestCase):
             data=data,
         )
         self.assertTrue(form.is_valid())
-        self.assertEqual(1, len(form.forms))
+        self.assertEqual(2, len(form.forms))
 
-        # Second case, force_left_form_check is True but no __temp__ data is present
+        # Second case, force_left_form_check is True but no __prefix__ data is present
         form = self.form_cls(
             force_left_form_check=True,
             form_kwargs={"referent": self.referent},
             data=data,
         )
-        self.assertTrue(form.is_valid())
-        self.assertEqual(1, len(form.forms))
+        self.assertFalse(form.is_valid())
+        self.assertEqual(2, len(form.forms))
 
     def test_is_valid_check_left_form(self):
         data = {
@@ -916,13 +867,13 @@ class TestHabilitationRequestCreationFormSet(TestCase):
             "form-0-profession": "organisatrice",
             "form-0-organisation": f"{self.referent.organisation.pk}",
             "form-0-conseiller_numerique": "False",
-            "form-__temp__-id": "",
-            "form-__temp__-email": "",
-            "form-__temp__-first_name": "",
-            "form-__temp__-last_name": "",
-            "form-__temp__-profession": "",
-            "form-__temp__-organisation": "",
-            "form-__temp__-conseiller_numerique": "",
+            "form-__prefix__-id": "",
+            "form-__prefix__-email": "",
+            "form-__prefix__-first_name": "",
+            "form-__prefix__-last_name": "",
+            "form-__prefix__-profession": "",
+            "form-__prefix__-organisation": "",
+            "form-__prefix__-conseiller_numerique": "",
         }
 
         # Case 1, we don't want to force check empty form
@@ -932,7 +883,7 @@ class TestHabilitationRequestCreationFormSet(TestCase):
             data=data,
         )
         self.assertTrue(form.is_valid())
-        self.assertEqual(1, len(form.forms))
+        self.assertEqual(2, len(form.forms))
         self.assertEqual(data, form.data)
         self.assertEqual(
             [
@@ -944,7 +895,8 @@ class TestHabilitationRequestCreationFormSet(TestCase):
                     "last_name": "Lambda",
                     "organisation": self.referent.organisation,
                     "profession": "organisatrice",
-                }
+                },
+                {},
             ],
             form.cleaned_data,
         )
@@ -956,7 +908,7 @@ class TestHabilitationRequestCreationFormSet(TestCase):
             data=data,
         )
         self.assertFalse(form.is_valid())
-        self.assertEqual(1, len(form.forms))
+        self.assertEqual(2, len(form.forms))
         self.assertEqual(
             {
                 "email": [{"message": "Ce champ est obligatoire.", "code": "required"}],
@@ -980,7 +932,7 @@ class TestHabilitationRequestCreationFormSet(TestCase):
         )
         self.assertRaises(AttributeError, getattr, form, "cleaned_data")
 
-    def test_is_valid_filled_left_form_is_added_to_forms(self):
+    def test_is_valid_filled_left_form_is_validated(self):
         form = self.form_cls(
             force_left_form_check=False,
             form_kwargs={"referent": self.referent},
@@ -996,70 +948,44 @@ class TestHabilitationRequestCreationFormSet(TestCase):
                 "form-0-profession": "organisateurice",
                 "form-0-organisation": f"{self.referent.organisation.pk}",
                 "form-0-conseiller_numerique": "False",
-                "form-__temp__-id": "",
-                "form-__temp__-email": "test2@test.test",
-                "form-__temp__-first_name": "Abdel",
-                "form-__temp__-last_name": "Sigma",
-                "form-__temp__-profession": "organisateurice",
-                "form-__temp__-organisation": f"{self.referent.organisation.pk}",
-                "form-__temp__-conseiller_numerique": "False",
+                "form-__prefix__-id": "",
+                "form-__prefix__-email": "test2@test.test",
+                "form-__prefix__-first_name": "Abdel",
+                "form-__prefix__-last_name": "Sigma",
+                "form-__prefix__-profession": "organisateurice",
+                "form-__prefix__-organisation": f"{self.referent.organisation.pk}",
+                "form-__prefix__-conseiller_numerique": "False",
             },
         )
-        self.assertEqual(1, len(form.forms))
+
         self.assertTrue(form.is_valid())
-        self.assertEqual(2, len(form.forms))
-        self.assertEqual(
-            {
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-                "form-0-id": "",
-                "form-0-email": "test@test.test",
-                "form-0-first_name": "Sarah",
-                "form-0-last_name": "Lambda",
-                "form-0-profession": "organisateurice",
-                "form-0-organisation": f"{self.referent.organisation.pk}",
-                "form-0-conseiller_numerique": "False",
-                "form-1-id": "",
-                "form-1-email": "test2@test.test",
-                "form-1-first_name": "Abdel",
-                "form-1-last_name": "Sigma",
-                "form-1-profession": "organisateurice",
-                "form-1-organisation": f"{self.referent.organisation.pk}",
-                "form-1-conseiller_numerique": "False",
-            },
-            form.data,
-        )
         # Checking data is consistent between form and subforms
         self.assertEqual(form.data, form.forms[0].data)
-        self.assertEqual(form.data, form.forms[1].data)
+        self.assertEqual(form.data, form.left_form.data)
         self.assertEqual(
-            form.cleaned_data,
-            [
-                {
-                    "conseiller_numerique": False,
-                    "email": "test@test.test",
-                    "first_name": "Sarah",
-                    "id": None,
-                    "last_name": "Lambda",
-                    "organisation": self.referent.organisation,
-                    "profession": "organisateurice",
-                },
-                {
-                    "conseiller_numerique": False,
-                    "email": "test2@test.test",
-                    "first_name": "Abdel",
-                    "id": None,
-                    "last_name": "Sigma",
-                    "organisation": self.referent.organisation,
-                    "profession": "organisateurice",
-                },
-            ],
+            form.cleaned_data[0],
+            {
+                "conseiller_numerique": False,
+                "email": "test@test.test",
+                "first_name": "Sarah",
+                "id": None,
+                "last_name": "Lambda",
+                "organisation": self.referent.organisation,
+                "profession": "organisateurice",
+            },
         )
-        self.assertEqual(form.add_prefix(1), form.forms[1].prefix)
-        # Check previous left_form was deleted to host another form data
-        self.assertRaises(AttributeError, getattr, form.left_form, "cleaned_data")
+        self.assertEqual(
+            form.left_form.cleaned_data,
+            {
+                "conseiller_numerique": False,
+                "email": "test2@test.test",
+                "first_name": "Abdel",
+                "id": None,
+                "last_name": "Sigma",
+                "organisation": self.referent.organisation,
+                "profession": "organisateurice",
+            },
+        )
 
     def test_is_valid_duplicate_email_is_not_valid(self):
         data = {
@@ -1074,13 +1000,13 @@ class TestHabilitationRequestCreationFormSet(TestCase):
             "form-0-profession": "organisateurice",
             "form-0-organisation": f"{self.referent.organisation.pk}",
             "form-0-conseiller_numerique": "False",
-            "form-__temp__-id": "",
-            "form-__temp__-email": "test@test.test",
-            "form-__temp__-first_name": "Abdel",
-            "form-__temp__-last_name": "Sigma",
-            "form-__temp__-profession": "organisateurice",
-            "form-__temp__-organisation": f"{self.referent.organisation.pk}",
-            "form-__temp__-conseiller_numerique": "False",
+            "form-__prefix__-id": "",
+            "form-__prefix__-email": "test@test.test",
+            "form-__prefix__-first_name": "Abdel",
+            "form-__prefix__-last_name": "Sigma",
+            "form-__prefix__-profession": "organisateurice",
+            "form-__prefix__-organisation": f"{self.referent.organisation.pk}",
+            "form-__prefix__-conseiller_numerique": "False",
         }
 
         form = self.form_cls(
@@ -1088,9 +1014,8 @@ class TestHabilitationRequestCreationFormSet(TestCase):
             form_kwargs={"referent": self.referent},
             data=data,
         )
-        self.assertEqual(1, len(form.forms))
         self.assertFalse(form.is_valid())
         self.assertEqual(data, form.data)
 
-        self.assertEqual(1, len(form.forms))
-        self.assertEqual(1, len(form.left_form.errors))
+        self.assertEqual(2, len(form.forms))
+        self.assertTrue(any(form.errors))
