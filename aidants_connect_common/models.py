@@ -250,7 +250,7 @@ class Formation(models.Model):
                 f"au {date(self.end_datetime, 'd F Y à H:i')}"
             )
         else:
-            if self.start_datetime.hour == 0:
+            if self.start_datetime.hour in (0, 1, 2):
                 return f"Début le {date(self.start_datetime, 'd F Y')} "
             return f"Début le {date(self.start_datetime, 'd F Y à H:i')} "
 
