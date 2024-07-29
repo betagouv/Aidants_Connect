@@ -1,7 +1,5 @@
 {% extends 'layouts/main.html' %}
-{% load ac_extras ac_common %}
-
-{% load static dsfr_tags %}
+{% load static dsfr_tags ac_extras ac_common widget_tweaks %}
 
 {% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
 
@@ -10,7 +8,16 @@
 {% endblock %}
 
 {% block content %}
-  <div class="fr-container">
+  <div
+    class="fr-container"
+    data-controller="new-habilitation-request"
+    data-new-habilitation-request-loading-class="fr-icon-loader"
+    data-new-habilitation-request-edit-idle-class="fr-icon-edit-fill"
+    data-new-habilitation-request-submit-btn-edit-txt-value="Valider les modifications"
+    data-new-habilitation-request-submit-btn-validate-txt-value="Ajouter un autre aidant"
+    data-new-habilitation-request-submit-btn-edit-class="fr-icon-check-line"
+    data-new-habilitation-request-submit-btn-validate-class="fr-icon-user-add-line"
+  >
     {% include "layouts/_js-unavailable-alert.html" %}
     {% dsfr_django_messages %}
 
@@ -19,103 +26,63 @@
       Pour ajouter un aidant à votre organisation, vous devez formuler une nouvelle demande d’habilitation à l’aide du
       formulaire ci-dessous. Tous les champs sont obligatoires.
     </p>
-    <form method="post" action="{% url 'espace_responsable_aidant_new' %}">
+
+    <form
+      method="post"
+      action="{% url 'espace_responsable_aidant_new' %}"
+      data-new-habilitation-request-target="form"
+    >
       {% csrf_token %}
 
       <section class="habilitation-requests fr-mb-8v">
         <h2>Renseignez les détails du ou des aidants à habiliter</h2>
         {{ form.habilitation_requests.non_form_errors }}
         <div class="fr-grid-row fr-grid-row--gutters">
-          {{ form.habilitation_requests.management_form }}
+          {% for field in form.habilitation_requests.management_form %}
+            {% comment %}
+            	`attr:"autocomplete:off"` prevents browser to cache field values accross refresh.
+            	This messes with js form init.
+            {% endcomment %}
+            {{ field|attr:"autocomplete:off" }}
+          {% endfor %}
 
-          {% with form=form.habilitation_requests.left_form %}
-            <section id="empty-form" class="fr-col-12 fr-col-md-6">
-              {% for field in form %}
-                {% if field.is_hidden %}{{ field.as_hidden }}{% else %}{% dsfr_form_field field %}{% endif %}
-                {% if field.name == "email" %}
-                  <p class="fr-info-text fr-mb-4v">L’email doit être nominatif</p>
-                {% endif %}
+
+          <div class="fr-col-12 fr-col-md-6">
+            <section
+              id="empty-form"
+              data-new-habilitation-request-target="leftFormReplace"
+            >
+              {% for form in form.habilitation_requests.extra_forms %}
+                {% include "aidants_connect_web/espace_responsable/_new-habilitation-request-left-form.html" %}
               {% endfor %}
-
-              <button
-                id="partial-submit"
-                class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-user-add-line"
-                type="submit"
-                formaction="{{ partial_validate_path }}"
-              >
-                {% if edit_form is not None %}Valider les modifications{% else %}Ajouter un autre aidant{% endif %}
-              </button>
             </section>
-          {% endwith %}
 
-          {% if form.habilitation_requests.right_forms|length > 0 %}
-            <section id="added-forms" class="fr-col-12 fr-col-md-6 fr-background-contrast--grey fr-p-6v">
-              <h3>Aidants ajoutés à la demande</h3>
-              <div class="fr-grid-row fr-grid-row--gutters">
-                {% for form_idx, form in form.habilitation_requests.right_forms %}
-                  {# Prevent messing with the absolute positionning of the design #}
-                  {# See https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent #}
-                  <div class="fr-col-12 fr-col-md-6">
-                    <details id="added-form-{{ forloop.counter0 }}">
-                      {{ form.as_hidden }}
-                      <summary class="fr-grid-row fr-grid-row--middle fr-grid-row--gap-2v fr-tile--shadow fr-py-2v fr-px-4v">
-                        <img src="{% static "images/avatar.svg" %}" width="36" height="36" alt="" />
-                        <span class="fr-grid-row--center spacer">
-                        <p class="fr-m-0 fr-text--bold">
-                          {{ form.first_name.value|stringformat:'s' }} {{ form.last_name.value|stringformat:'s' }}
-                        </p>
-                          {% if form.email %}
-                            <p class="details-summary-header fr-m-0 fr-text--overflow-hidden">
-                            {{ form.email.value|stringformat:'s' }}
-                          </p>
-                          {% endif %}
-                      </span>
-                        <span
-                          type="button"
-                          class="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-arrow-up-s-line"
-                          aria-hidden="true"
-                        ></span>
-                      </summary>
-                      <div class="details-content fr-p-4v fr-tile--shadow">
-                        <section class="user-informations">
-                          {% with fields="email profession conseiller_numerique organisation" %}
-                            {% for field in fields.split %}
-                              {% with field=form|get_dict_key:field %}
-                                <section class="fr-my-4v">
-                                  {% if field == form.conseiller_numerique %}
-                                    <p class="fr-text--sm fr-text-mention--grey">Conseiller numérique</p>
-                                    {{ form.conseiller_numerique.value|strtobool|yesno:"Oui,Non" }}
-                                  {% elif field == form.organisation %}
-                                    <p class="fr-text--sm fr-text-mention--grey">Organisation</p>
-                                    {{ form.cleaned_data.organisation.name|stringformat:'s' }}
-                                  {% else %}
-                                    <p class="fr-text--sm fr-text-mention--grey">{{ field.label }}</p>
-                                    {{ field.value|stringformat:'s' }}
-                                  {% endif %}
-                                </section>
-                              {% endwith %}
-                            {% endfor %}
-                          {% endwith %}
-                        </section>
-                        <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
-                          <li>
-                            <button
-                              id="edit-button-{{ form_idx }}"
-                              class="fr-btn fr-btn--tertiary fr-icon-edit-fill"
-                              formaction="{{ edit_profile_path }}{{ form_idx }}"
-                            >
-                              Éditer
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    </details>
-                  </div>
-                {% endfor %}
-              </div>
+            <button
+              id="partial-submit"
+              class="fr-btn fr-btn--secondary fr-btn--icon-left {% if edit_form %}fr-icon-check-line{% else %}fr-icon-user-add-line{% endif %}"
+              type="submit"
+              formaction="{{ partial_validate_path }}"
+              data-action="new-habilitation-request#onPartialSubmit:prevent:stop"
+              data-new-habilitation-request-target="partialSubmitBtn"
+            >
+              {% if edit_form %}Valider les modifications{% else %}Ajouter un autre aidant{% endif %}
+            </button>
+          </div>
 
-            </section>
-          {% endif %}
+          <section
+            id="added-forms"
+            class="fr-col-12 fr-col-md-6 fr-background-contrast--grey fr-p-6v"
+            data-new-habilitation-request-target="rightFormsSection"
+            {% if form.habilitation_requests.initial_forms|length == 0 %}hidden aria-hidden="true"{% endif %}
+          >
+            <h3>Aidants ajoutés à la demande</h3>
+            <div class="fr-grid-row fr-grid-row--gutters" data-new-habilitation-request-target="rightFormsInsert">
+              {% for form in form.habilitation_requests.initial_forms %}
+                {% include "aidants_connect_web/espace_responsable/_new-habilitation-request-profile-card.html" %}
+              {% endfor %}
+            </div>
+          </section>
+
         </div>
       </section>
 
@@ -181,5 +148,62 @@
         Valider la demande d’habilitation
       </button>
     </form>
+
+    <dialog
+      aria-labelledby="confirmation-modal-title"
+      id="confirmation-modal"
+      class="fr-modal"
+      role="alertdialog"
+      data-new-habilitation-request-target="confirmationDialog"
+    >
+      <div class="fr-container fr-container--fluid fr-container-md">
+        <div class="fr-grid-row fr-grid-row--center">
+          <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+            <div class="fr-modal__body">
+              <div class="fr-modal__content">
+                <h1 id="confirmation-modal-title" class="fr-modal__title">
+                  <span class="fr-icon-warning-fill fr-icon--lg"></span>
+                  Attention : vous êtes sur le point d'effacer des données entrées dans le formulaire
+                </h1>
+                <p>
+                  Vous avez entré des informations dans le formulaire d'aidant à habiliter. L'action que vous êtes sur
+                  le
+                  point d'effectuer vous foura perdre les informations entrées. Voulez-vous continuer ?
+                </p>
+              </div>
+              <div class="fr-modal__footer">
+                <div class="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-btns-group--icon-left">
+                  <button
+                    class="fr-btn fr-icon-checkbox-circle-line fr-btn--icon-left"
+                    data-new-habilitation-request-target="dialogConfirmButton"
+                  >
+                    Confirmer
+                  </button>
+                  <button
+                    class="fr-btn fr-icon-checkbox-circle-line fr-btn--icon-left fr-btn--secondary"
+                    autofocus
+                    data-new-habilitation-request-target="dialogCancelButton"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <template data-new-habilitation-request-target="formTpl">
+      {% with form=form.habilitation_requests.empty_form %}
+        {% include "aidants_connect_web/espace_responsable/_new-habilitation-request-left-form.html" %}
+      {% endwith %}
+    </template>
   </div>
 {% endblock content %}
+
+{% block extrajs %}
+  {% stimulusjs %}
+  <script defer type="application/javascript" src="{% url 'js_reverse' %}"></script>
+  <script type="module" src="{% static 'js/new-habilitation-request.js' %}"></script>
+{% endblock %}

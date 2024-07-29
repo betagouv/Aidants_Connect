@@ -6,7 +6,11 @@ from django.urls import reverse
 
 from faker import Faker
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import url_matches
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.support.expected_conditions import (
+    url_matches,
+    visibility_of_element_located,
+)
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.forms import (
@@ -446,8 +450,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         self.empty_form = NewHabilitationRequestForm(
             form_kwargs={
                 "habilitation_requests": {
-                    "force_left_form_check": False,
-                    "form_kwargs": {"referent": self.aidant_responsable},
+                    "form_kwargs": {"referent": self.aidant_responsable}
                 }
             }
         )
@@ -466,7 +469,15 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         self.wait.until(self.document_loaded())
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        self.assertEqual(len(self._all_visible_fields), len(errors))
+        expected = (
+            # We ignore course type error in JS mode since we're only checking
+            # the profile form
+            len(self._all_visible_fields())
+            - len(self._course_type_form.visible_fields())
+            if self.js
+            else len(self._all_visible_fields())
+        )
+        self.assertEqual(expected, len(errors))
 
         for error in errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
@@ -486,7 +497,16 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         self.wait.until(self.document_loaded())
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        self.assertEqual(len(self._all_visible_fields) - 1, len(errors))
+        expected = (
+            # We ignore course type error in JS mode since we're only checking
+            # the profile form
+            len(self._all_visible_fields())
+            - len(self._course_type_form.visible_fields())
+            - 1
+            if self.js
+            else len(self._all_visible_fields()) - 1
+        )
+        self.assertEqual(expected, len(errors))
 
         for error in errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
@@ -506,7 +526,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         self.wait.until(self.document_loaded())
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        self.assertEqual(len(self._all_visible_fields), len(errors))
+        self.assertEqual(len(self._all_visible_fields()), len(errors))
 
         for error in errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
@@ -526,7 +546,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         self.wait.until(self.document_loaded())
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        self.assertEqual(len(self._all_visible_fields) - 1, len(errors))
+        self.assertEqual(len(self._all_visible_fields()) - 1, len(errors))
 
         for error in errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
@@ -542,7 +562,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         req: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
-        self.fill_form(req, self._all_visible_fields, self._custom_getter)
+        self.fill_form(req, self._all_visible_fields(), self._custom_getter)
         self.selenium.find_element(By.ID, "form-submit").click()
         hab: HabilitationRequest = HabilitationRequest.objects.first()
         self.assertEqual(
@@ -568,7 +588,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         req: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
-        self.fill_form(req, self._all_visible_fields, self._custom_getter)
+        self.fill_form(req, self._all_visible_fields(), self._custom_getter)
         self.selenium.find_element(By.ID, "partial-submit").click()
         self.wait.until(self.document_loaded())
 
@@ -621,7 +641,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         req1: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
-        self.fill_form(req1, self._all_visible_fields, self._custom_getter)
+        self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
         self.selenium.find_element(By.ID, "partial-submit").click()
         self.wait.until(self.document_loaded())
 
@@ -652,7 +672,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         req2: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
-        self.fill_form(req2, self._all_visible_fields, self._custom_getter)
+        self.fill_form(req2, self._all_visible_fields(1), self._custom_getter)
 
         # Now submits the form
         self.selenium.find_element(By.ID, "form-submit").click()
@@ -687,19 +707,21 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             },
         )
 
-    def test_editing_profile_checks_erros(self):
+    def test_editing_profile_checks_errors(self):
         idx_to_modify = 1
 
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.document_loaded())
 
         existing_req = HabilitationRequestFactory(organisation=self.organisation)
 
-        reqs = []
-        for _ in range(3):
-            req = HabilitationRequestFactory.build(organisation=self.organisation)
-            reqs.append(req)
-            self.fill_form(req, self._all_visible_fields, self._custom_getter)
+        reqs = [
+            HabilitationRequestFactory.build(organisation=self.organisation)
+            for _ in range(3)
+        ]
+        for i, req in enumerate(reqs):
+            self.fill_form(req, self._all_visible_fields(i), self._custom_getter)
             self.selenium.find_element(By.ID, "partial-submit").click()
             self.wait.until(self.document_loaded())
             self.assertEqual(
@@ -708,12 +730,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             )
 
         self.js_click(By.ID, "edit-button-1")
-        self.wait.until(
-            self.path_matches(
-                "espace_responsable_aidant_new",
-                query_params={NewHabilitationRequest.edit_key: idx_to_modify},
-            )
-        )
+        self.wait.until(self._edition_ready(idx_to_modify, len(reqs)))
         self.assertEqual(
             "Valider les modifications",
             self.selenium.find_element(By.ID, "partial-submit").text,
@@ -724,6 +741,11 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             By.CSS_SELECTOR, '#empty-form input[id$="email"]'
         ).clear()
         self.selenium.find_element(By.ID, "partial-submit").click()
+
+        self.assertEqual(
+            "Valider les modifications",
+            self.selenium.find_element(By.ID, "partial-submit").text,
+        )
 
         self.assertNormalizedStringEqual(
             "Ce champ est obligatoire.",
@@ -804,7 +826,8 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
 
     @property
     def _left_form(self):
-        return self._habilitation_requests_form.left_form
+        self.assertEqual(1, len(self._habilitation_requests_form.extra_forms))
+        return self._habilitation_requests_form.extra_forms[0]
 
     @property
     def _habilitation_requests_form(self) -> HabilitationRequestCreationFormSet:
@@ -814,10 +837,12 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
     def _course_type_form(self):
         return self.empty_form["course_type"]
 
-    @property
-    def _all_visible_fields(self):
+    def _all_visible_fields(self, form_idx=0):
+        form = self._habilitation_requests_form._construct_form(
+            form_idx, **self._habilitation_requests_form.get_form_kwargs(form_idx)
+        )
         return [
-            *self._left_form.visible_fields(),
+            *form.visible_fields(),
             *self._course_type_form.visible_fields(),
         ]
 
@@ -829,9 +854,56 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             else default_getter(data, field)
         )
 
+    def _has_n_cards(self, cards_num):
+        def _predicate(driver: WebDriver) -> bool:
+            return len(driver.find_elements(By.CLASS_NAME, "added-forms")) == cards_num
+
+        return _predicate
+
+    def _edition_ready(self, idx_to_modify, formset_length):
+        return self.path_matches(
+            "espace_responsable_aidant_new",
+            query_params={NewHabilitationRequest.edit_key: idx_to_modify},
+        )
+
 
 @tag("functional")
 class NewHabilitationRequestTestsWithJS(NewHabilitationRequestTestsNoJS):
     """Same tests than NewHabilitationRequestTestsNoJS but with JS enabled"""
 
     js = True
+
+    def test_prevents_form_erase_when_editing(self):
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+        req1: HabilitationRequest = HabilitationRequestFactory.build(
+            organisation=self.organisation
+        )
+        self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.wait.until(self._has_n_cards(1))
+        self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        ).send_keys(req1.email)
+        self.js_click(By.ID, "edit-button-0")
+
+        self.wait.until(
+            visibility_of_element_located((By.ID, "confirmation-modal-title"))
+        )
+
+        actual = self.selenium.execute_script(
+            "return arguments[0].value",
+            self.selenium.find_element(
+                By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+            ),
+        )
+
+        self.assertEqual(
+            req1.email,
+            actual,
+            "Editing form is not correctly filled. "
+            f"Expected email field to be {req1.email}, was {actual}",
+        )
+
+    def _edition_ready(self, idx_to_modify, formset_length):
+        return self._has_n_cards(formset_length - 1)

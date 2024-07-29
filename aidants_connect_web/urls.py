@@ -183,6 +183,16 @@ urlpatterns = [
         name="espace_responsable_aidant_new",
     ),
     path(
+        r"espace-responsable/aidant/ajouter/js/",
+        espace_responsable.NewHabilitationRequestJs.as_view(),
+        name="espace_responsable_aidant_new_js",
+    ),
+    path(
+        r"espace-responsable/aidant/ajouter/js/<int:form_idx>/",
+        espace_responsable.NewHabilitationRequestJs.as_view(),
+        name="espace_responsable_aidant_new_js_edit",
+    ),
+    path(
         "espace-responsable/aidant/<int:aidant_id>/supprimer-carte/",
         espace_responsable.RemoveCardFromAidant.as_view(),
         name="espace_responsable_aidant_remove_card",
