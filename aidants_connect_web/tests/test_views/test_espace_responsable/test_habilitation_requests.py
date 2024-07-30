@@ -74,6 +74,7 @@ class HabilitationRequestsTests(TestCase):
         )
 
     def test_add_aidant_allows_create_aidants_for_all_possible_organisations(self):
+        self.maxDiff = None
         self.client.force_login(self.responsable_tom)
         for idx, organisation in enumerate(self.responsable_tom.responsable_de.all()):
             with transaction.atomic():
@@ -85,23 +86,23 @@ class HabilitationRequestsTests(TestCase):
             response = self.client.post(
                 f"{self.add_aidant_url}?{NewHabilitationRequest.partial_key}=True",
                 data={
-                    f"{self.prefix}-TOTAL_FORMS": "0",
+                    f"{self.prefix}-TOTAL_FORMS": "1",
                     f"{self.prefix}-INITIAL_FORMS": "0",
                     f"{self.prefix}-MIN_NUM_FORMS": "0",
                     f"{self.prefix}-MAX_NUM_FORMS": "1000",
-                    f"{self.prefix}-__prefix__-id": "",
-                    f"{self.prefix}-__prefix__-email": email,
-                    f"{self.prefix}-__prefix__-first_name": "Angela",
-                    f"{self.prefix}-__prefix__-last_name": "Dubois",
-                    f"{self.prefix}-__prefix__-profession": "Assistante sociale",
-                    f"{self.prefix}-__prefix__-organisation": f"{organisation.pk}",
-                    f"{self.prefix}-__prefix__-conseiller_numerique": "False",
+                    f"{self.prefix}-0-id": "",
+                    f"{self.prefix}-0-email": email,
+                    f"{self.prefix}-0-first_name": "Angela",
+                    f"{self.prefix}-0-last_name": "Dubois",
+                    f"{self.prefix}-0-profession": "Assistante sociale",
+                    f"{self.prefix}-0-organisation": f"{organisation.pk}",
+                    f"{self.prefix}-0-conseiller_numerique": "False",
                     "multiform-course_type-type": "1",
                 },
             )
             data = {
-                f"{self.prefix}-TOTAL_FORMS": "1",
-                f"{self.prefix}-INITIAL_FORMS": "0",
+                f"{self.prefix}-TOTAL_FORMS": "2",
+                f"{self.prefix}-INITIAL_FORMS": "1",
                 f"{self.prefix}-MIN_NUM_FORMS": "0",
                 f"{self.prefix}-MAX_NUM_FORMS": "1000",
                 f"{self.prefix}-0-id": "",
@@ -113,7 +114,7 @@ class HabilitationRequestsTests(TestCase):
                 f"{self.prefix}-0-conseiller_numerique": "False",
                 "multiform-course_type-type": "1",
             }
-            self.assertEqual(data, response.context_data["form"].data)
+            self.assertEqual(data, response.context_data["form"].data.dict())
             self.assertEqual(idx, len(HabilitationRequest.objects.all()))
             response = self.client.post(
                 self.add_aidant_url,
@@ -150,17 +151,17 @@ class HabilitationRequestsTests(TestCase):
         lowercased_email = "angela.dubois@doe.du"
 
         data = {
-            f"{self.prefix}-TOTAL_FORMS": "0",
+            f"{self.prefix}-TOTAL_FORMS": "1",
             f"{self.prefix}-INITIAL_FORMS": "0",
             f"{self.prefix}-MIN_NUM_FORMS": "0",
             f"{self.prefix}-MAX_NUM_FORMS": "1000",
-            f"{self.prefix}-__prefix__-id": "",
-            f"{self.prefix}-__prefix__-email": uppercased_email,
-            f"{self.prefix}-__prefix__-first_name": "Angela",
-            f"{self.prefix}-__prefix__-last_name": "Dubois",
-            f"{self.prefix}-__prefix__-profession": "Assistante sociale",
-            f"{self.prefix}-__prefix__-organisation": f"{self.org_a.id}",
-            f"{self.prefix}-__prefix__-conseiller_numerique": "False",
+            f"{self.prefix}-0-id": "",
+            f"{self.prefix}-0-email": uppercased_email,
+            f"{self.prefix}-0-first_name": "Angela",
+            f"{self.prefix}-0-last_name": "Dubois",
+            f"{self.prefix}-0-profession": "Assistante sociale",
+            f"{self.prefix}-0-organisation": f"{self.org_a.id}",
+            f"{self.prefix}-0-conseiller_numerique": "False",
             "multiform-course_type-type": "1",
         }
 
@@ -180,17 +181,17 @@ class HabilitationRequestsTests(TestCase):
         )
 
         data = {
-            f"{self.prefix}-TOTAL_FORMS": "0",
+            f"{self.prefix}-TOTAL_FORMS": "1",
             f"{self.prefix}-INITIAL_FORMS": "0",
             f"{self.prefix}-MIN_NUM_FORMS": "0",
             f"{self.prefix}-MAX_NUM_FORMS": "1000",
-            f"{self.prefix}-__prefix__-id": "",
-            f"{self.prefix}-__prefix__-email": hr.email,
-            f"{self.prefix}-__prefix__-first_name": "Angela",
-            f"{self.prefix}-__prefix__-last_name": "Dubois",
-            f"{self.prefix}-__prefix__-profession": "Assistante sociale",
-            f"{self.prefix}-__prefix__-organisation": f"{self.org_a.id}",
-            f"{self.prefix}-__prefix__-conseiller_numerique": "False",
+            f"{self.prefix}-0-id": "",
+            f"{self.prefix}-0-email": hr.email,
+            f"{self.prefix}-0-first_name": "Angela",
+            f"{self.prefix}-0-last_name": "Dubois",
+            f"{self.prefix}-0-profession": "Assistante sociale",
+            f"{self.prefix}-0-organisation": f"{self.org_a.id}",
+            f"{self.prefix}-0-conseiller_numerique": "False",
             "multiform-course_type-type": "1",
         }
 
@@ -216,23 +217,23 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.post(
             self.add_aidant_url,
             data={
-                f"{self.prefix}-TOTAL_FORMS": "0",
+                f"{self.prefix}-TOTAL_FORMS": "1",
                 f"{self.prefix}-INITIAL_FORMS": "0",
                 f"{self.prefix}-MIN_NUM_FORMS": "0",
                 f"{self.prefix}-MAX_NUM_FORMS": "1000",
-                f"{self.prefix}-__prefix__-id": "",
-                f"{self.prefix}-__prefix__-email": hr.email,
-                f"{self.prefix}-__prefix__-first_name": "Angela",
-                f"{self.prefix}-__prefix__-last_name": "Dubois",
-                f"{self.prefix}-__prefix__-profession": "Assistante sociale",
-                f"{self.prefix}-__prefix__-organisation": f"{self.org_b.id}",
-                f"{self.prefix}-__prefix__-conseiller_numerique": "False",
+                f"{self.prefix}-0-id": "",
+                f"{self.prefix}-0-email": hr.email,
+                f"{self.prefix}-0-first_name": "Angela",
+                f"{self.prefix}-0-last_name": "Dubois",
+                f"{self.prefix}-0-profession": "Assistante sociale",
+                f"{self.prefix}-0-organisation": f"{self.org_b.id}",
+                f"{self.prefix}-0-conseiller_numerique": "False",
                 "multiform-course_type-type": "1",
             },
         )
         self.assertEqual(response.status_code, 200, "Response should not be redirected")
         self.assertFormError(
-            response.context_data["form"]["habilitation_requests"].left_form,
+            response.context_data["form"]["habilitation_requests"].extra_forms[0],
             "email",
             errors=[
                 (
@@ -251,23 +252,23 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.post(
             self.add_aidant_url,
             data={
-                f"{self.prefix}-TOTAL_FORMS": "0",
+                f"{self.prefix}-TOTAL_FORMS": "1",
                 f"{self.prefix}-INITIAL_FORMS": "0",
                 f"{self.prefix}-MIN_NUM_FORMS": "0",
                 f"{self.prefix}-MAX_NUM_FORMS": "1000",
-                f"{self.prefix}-__prefix__-id": "",
-                f"{self.prefix}-__prefix__-email": existing_aidant.email,
-                f"{self.prefix}-__prefix__-first_name": "Bob",
-                f"{self.prefix}-__prefix__-last_name": "Dubois",
-                f"{self.prefix}-__prefix__-profession": "Assistant",
-                f"{self.prefix}-__prefix__-organisation": f"{self.org_b.id}",
-                f"{self.prefix}-__prefix__-conseiller_numerique": "False",
+                f"{self.prefix}-0-id": "",
+                f"{self.prefix}-0-email": existing_aidant.email,
+                f"{self.prefix}-0-first_name": "Bob",
+                f"{self.prefix}-0-last_name": "Dubois",
+                f"{self.prefix}-0-profession": "Assistant",
+                f"{self.prefix}-0-organisation": f"{self.org_b.id}",
+                f"{self.prefix}-0-conseiller_numerique": "False",
                 "multiform-course_type-type": "1",
             },
         )
         self.assertEqual(response.status_code, 200, "Response should not be redirected")
         self.assertFormError(
-            response.context_data["form"]["habilitation_requests"].left_form,
+            response.context_data["form"]["habilitation_requests"].extra_forms[0],
             "email",
             errors=[
                 (
@@ -286,17 +287,17 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.post(
             self.add_aidant_url,
             data={
-                f"{self.prefix}-TOTAL_FORMS": "0",
+                f"{self.prefix}-TOTAL_FORMS": "1",
                 f"{self.prefix}-INITIAL_FORMS": "0",
                 f"{self.prefix}-MIN_NUM_FORMS": "0",
                 f"{self.prefix}-MAX_NUM_FORMS": "1000",
-                f"{self.prefix}-__prefix__-id": "",
-                f"{self.prefix}-__prefix__-email": "b@b.fr",
-                f"{self.prefix}-__prefix__-first_name": "Bob",
-                f"{self.prefix}-__prefix__-last_name": "Dubois",
-                f"{self.prefix}-__prefix__-profession": "Assistant",
-                f"{self.prefix}-__prefix__-organisation": f"{self.org_a.id}",
-                f"{self.prefix}-__prefix__-conseiller_numerique": "False",
+                f"{self.prefix}-0-id": "",
+                f"{self.prefix}-0-email": "b@b.fr",
+                f"{self.prefix}-0-first_name": "Bob",
+                f"{self.prefix}-0-last_name": "Dubois",
+                f"{self.prefix}-0-profession": "Assistant",
+                f"{self.prefix}-0-organisation": f"{self.org_a.id}",
+                f"{self.prefix}-0-conseiller_numerique": "False",
                 "multiform-course_type-type": "1",
             },
         )
@@ -324,17 +325,17 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.post(
             self.add_aidant_url,
             data={
-                f"{self.prefix}-TOTAL_FORMS": "0",
+                f"{self.prefix}-TOTAL_FORMS": "1",
                 f"{self.prefix}-INITIAL_FORMS": "0",
                 f"{self.prefix}-MIN_NUM_FORMS": "0",
                 f"{self.prefix}-MAX_NUM_FORMS": "1000",
-                f"{self.prefix}-__prefix__-id": "",
-                f"{self.prefix}-__prefix__-email": other_aidant.email,
-                f"{self.prefix}-__prefix__-first_name": "Bob",
-                f"{self.prefix}-__prefix__-last_name": "Dubois",
-                f"{self.prefix}-__prefix__-profession": "Assistant sociale",
-                f"{self.prefix}-__prefix__-organisation": f"{self.org_a.id}",
-                f"{self.prefix}-__prefix__-conseiller_numerique": "False",
+                f"{self.prefix}-0-id": "",
+                f"{self.prefix}-0-email": other_aidant.email,
+                f"{self.prefix}-0-first_name": "Bob",
+                f"{self.prefix}-0-last_name": "Dubois",
+                f"{self.prefix}-0-profession": "Assistant sociale",
+                f"{self.prefix}-0-organisation": f"{self.org_a.id}",
+                f"{self.prefix}-0-conseiller_numerique": "False",
                 "multiform-course_type-type": "1",
             },
         )

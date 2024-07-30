@@ -1,6 +1,5 @@
 import re
-from functools import cached_property
-from typing import Optional
+from typing import Iterable, Optional, Sized
 from urllib.parse import unquote
 
 from django import forms
@@ -16,6 +15,7 @@ from django.forms import (
     RadioSelect,
     modelformset_factory,
 )
+from django.forms.formsets import INITIAL_FORM_COUNT, TOTAL_FORM_COUNT
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -576,57 +576,109 @@ class HabilitationRequestCreationForm(
 
 
 class HabilitationRequestCreationFormSet(BaseModelFormSet):
-    def __init__(self, force_left_form_check, edit_form=None, **kwargs):
+    def __init__(self, edit_form: int = None, **kwargs):
         self.extra = 0
-        self.force_left_form_check = force_left_form_check
+        self.min_num = 1
+        self.validate_num = True
+        self.saving = False
+
         kwargs.setdefault("queryset", self.model._default_manager.none())
         super().__init__(**kwargs)
 
-        self.has_temp_data = any("__prefix__" in k for k in self.data.keys())
-        self.edit_form = (
-            edit_form
-            if isinstance(edit_form, int) and edit_form < len(self.cached_forms)
+        self._initial_form_count = (
+            self.management_form.cleaned_data[TOTAL_FORM_COUNT]
+            if self.management_form.is_valid()
             else None
         )
-        self.is_cleaning = False
 
-    @cached_property
-    def cached_forms(self):
-        return super().forms
-
-    @cached_property
-    def forms(self):
-        return (
-            self.cached_forms
-            if self.edit_form
-            else [*self.cached_forms, self.left_form]
-        )
+        self.edit_form = None
+        if isinstance(edit_form, int) and (0 <= edit_form < len(self.initial_forms)):
+            self.edit_form = edit_form
 
     @property
-    def left_form(self) -> Form:
-        return self.cached_forms[self.edit_form] if self.edit_form else self.empty_form
+    def initial_forms(self):
+        if self.saving:
+            return []
 
-    @cached_property  # cached_property will preserve form errors
-    def empty_form(self):
-        empty_form = super().empty_form
-        empty_form.empty_permitted = not (
-            self.force_left_form_check or self.is_bound and len(self.cached_forms) == 0
+        initial_forms = super().initial_forms
+        if self.edit_form is None:
+            return initial_forms
+
+        class Gen(Iterable, Sized):
+            def __init__(self, _forms: list[Form], _edit_form_idx):
+                self.forms = _forms
+                self.edit_form_idx = _edit_form_idx
+
+            def __len__(self):
+                return len(self.forms) - 1
+
+            def __iter__(self):
+                for form in self.forms:
+                    if form.index != self.edit_form_idx:
+                        yield form
+
+        return Gen(initial_forms, self.edit_form)
+
+    @property
+    def extra_forms(self):
+        if self.saving:
+            return self.forms
+
+        if self.edit_form is None:
+            return super().extra_forms
+
+        return [self.forms[self.edit_form]]
+
+    def add_extra(self):
+        """Ensure there's always an extra form"""
+        if (
+            # There a problem with managment form
+            self._initial_form_count is None
+            # Or, extra was already added
+            or self._initial_form_count
+            < self.management_form.cleaned_data[TOTAL_FORM_COUNT]
+            # or we're editing a record in the form
+            or self.edit_form is not None
+            # Or there's already an empty form in self.extra_forms
+            or any(not form.has_changed() for form in self.extra_forms)
+        ):
+            return
+
+        self.data[self.management_form.add_prefix(TOTAL_FORM_COUNT)] = (
+            f"{self._initial_form_count + 1}"
         )
-        return empty_form
+        self.data[self.management_form.add_prefix(INITIAL_FORM_COUNT)] = (
+            f"{self._initial_form_count}"
+        )
+        # Force recreate managment form wit new data
+        del self.management_form  # noqa
+        self.forms.append(
+            self._construct_form(
+                self._initial_form_count,
+                **self.get_form_kwargs(self._initial_form_count),
+            )
+        )
 
-    @cached_property
-    def right_forms(self):
-        return [
-            (idx, form)
-            for idx, form in enumerate(self.forms)
-            if form is not self.left_form
-        ]
+    def _construct_form(self, i, **kwargs):
+        # Skipping BaseModelFormSet._construct_form b/c we don't want the
+        # pk validation mecanism.
+        form = super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+        form.index = i
+        return form
 
-    def get_form_kwargs(self, index):
-        return {
-            **super().get_form_kwargs(index),
-            "data": self.data,
-        }
+    def save(self, commit=True):
+        """
+        BaseModelFormSet.save() only save new objects present in self.extra_forms
+        but this form is tweaked to be used with new objects only.
+        BaseModelFormSet.initial_forms is used to store previous data between
+        POSTs.
+        We need to advertise that we're saving right now and every object should be
+        saved.
+        """
+        self.saving = True
+        result = super().save(commit)
+        self.saving = False
+        return result
 
 
 class HabilitationRequestCreationFormationTypeForm(forms.Form):
