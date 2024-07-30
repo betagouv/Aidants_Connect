@@ -131,7 +131,7 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
 
 @admin.register(OrganisationRequest, site=admin_site)
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
-    list_filter = (RegionFilter, DepartmentFilter, "status")
+    list_filter = (RegionFilter, DepartmentFilter, "status", "is_private_org")
     list_display = ("name", "issuer", "status", "data_pass_id", "created_at")
     search_fields = ("data_pass_id", "name", "uuid")
     raw_id_fields = ("issuer", "organisation")
