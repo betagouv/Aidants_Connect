@@ -346,7 +346,12 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
         "attendant",
         "state",
     )
-    search_fields = ("formation__type__label", "formation__pk", "formation__id_grist")
+    search_fields = (
+        "formation__type__label",
+        "formation__pk",
+        "formation__id_grist",
+        "attendant__email",
+    )
     list_filter = ["state", "formation__type"]
 
     @admin.display(description="Formation Type", ordering="formation__type__label")
