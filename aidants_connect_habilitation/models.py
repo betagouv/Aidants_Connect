@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericRelation
 from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import SET_NULL, Q
@@ -22,7 +21,6 @@ from aidants_connect_common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.models import FormationAttendant
 from aidants_connect_common.utils import (
     build_url,
     generate_new_datapass_id,
@@ -628,13 +626,6 @@ class AidantRequest(Person):
         default=None,
         blank=True,
         on_delete=models.CASCADE,
-    )
-
-    formations = GenericRelation(
-        FormationAttendant,
-        related_name="aidant_requests",
-        object_id_field="attendant_id",
-        content_type_field="attendant_content_type",
     )
 
     @property
