@@ -340,7 +340,6 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
     )
     readonly_fields = fields
     list_display = (
-        "__str__",
         "formation",
         "get_formation_id_grist",
         "get_formation_type_label",
@@ -360,13 +359,12 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
 
     @admin.display(description="Personne inscrite")
     def registered(self, obj: FormationAttendant):
-        ct = obj.attendant_content_type
         obj_url = reverse(
-            f"admin:{ct.app_label}_{ct.model}_change",
+            "otpadmin:aidants_connect_web_habilitationrequest_change",
             args=(quote(obj.pk),),
             current_app=self.admin_site.name,
         )
-        return mark_safe(f'<a href="{obj_url}">{obj}</a>')
+        return mark_safe(f'<a href="{obj_url}">{obj.attendant.get_full_name()}</a>')
 
 
 @register(FormationOrganization, site=admin_site)

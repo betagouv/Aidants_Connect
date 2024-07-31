@@ -5,13 +5,10 @@ from enum import auto
 from typing import TYPE_CHECKING, Any, Self
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import CASCADE, Count
 from django.template.defaultfilters import date
-from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 
@@ -142,16 +139,11 @@ class FormationOrganization(models.Model):
 
 
 class FormationQuerySet(models.QuerySet):
-    def for_attendant_q(self, attendant: HabilitationRequest | AidantRequest):
-        return models.Q(
-            attendants__attendant_id=attendant.pk,
-            attendants__attendant_content_type=ContentType.objects.get_for_model(
-                attendant._meta.model
-            ),
-        )
+    def for_attendant_q(self, attendant: HabilitationRequest):
+        return models.Q(attendants__attendant_id=attendant.pk)
 
     def available_for_attendant(
-        self, after: timedelta, attendant: HabilitationRequest | AidantRequest
+        self, after: timedelta, attendant: HabilitationRequest
     ) -> Self:
         q = models.Q(
             attendants_count__lt=models.F("max_attendants"),
@@ -175,30 +167,18 @@ class FormationQuerySet(models.QuerySet):
             .distinct()
         )
 
-    def for_attendant(self, attendant: HabilitationRequest | AidantRequest) -> Self:
+    def for_attendant(self, attendant: HabilitationRequest) -> Self:
         return self.filter(self.for_attendant_q(attendant))
 
-    def register_attendant(
-        self, attendant: HabilitationRequest | AidantRequest
-    ) -> None:
+    def register_attendant(self, attendant: HabilitationRequest) -> None:
         for formation in self.values_list("pk", flat=True):
             FormationAttendant.objects.get_or_create(
-                formation_id=formation,
-                attendant_id=attendant.pk,
-                attendant_content_type=ContentType.objects.get_for_model(
-                    attendant._meta.model
-                ),
+                formation_id=formation, attendant_id=attendant.pk
             )
 
-    def unregister_attendant(
-        self, attendant: HabilitationRequest | AidantRequest
-    ) -> None:
+    def unregister_attendant(self, attendant: HabilitationRequest) -> None:
         FormationAttendant.objects.filter(
-            formation_id__in=self.values("pk"),
-            attendant_id=attendant.pk,
-            attendant_content_type=ContentType.objects.get_for_model(
-                attendant._meta.model
-            ),
+            formation_id__in=self.values("pk"), attendant_id=attendant.pk
         ).delete()
 
 
@@ -286,14 +266,12 @@ class FormationAttendant(models.Model):
     created_at = models.DateTimeField("Date création", auto_now_add=True, null=True)
     updated_at = models.DateTimeField("Date modification", auto_now=True, null=True)
 
-    attendant_content_type = models.ForeignKey(
-        ContentType,
-        editable=False,
-        related_name="%(app_label)s_%(class)s_formations_attendants",
+    attendant = models.ForeignKey(
+        "aidants_connect_web.HabilitationRequest",
         on_delete=models.CASCADE,
+        related_name="formations",
     )
-    attendant_id = models.PositiveIntegerField()
-    attendant = GenericForeignKey("attendant_content_type", "attendant_id")
+
     formation = models.ForeignKey(
         Formation, on_delete=models.PROTECT, related_name="attendants"
     )
@@ -311,20 +289,11 @@ class FormationAttendant(models.Model):
         "État de la demande", choices=State.choices, default=State.DEFAULT
     )
 
-    @cached_property
-    def target(self):
-        return self.attendant_content_type.get_object_for_this_type(
-            pk=self.attendant_id
-        )
-
-    def __str__(self):
-        return f"{self.target}"
-
     class Meta:
         verbose_name = "Formation : inscrit"
         verbose_name_plural = "Formation : inscrits"
         # One attendant a type can only be registered only once to a specific formation
-        unique_together = ("attendant_content_type", "attendant_id", "formation")
+        unique_together = ("attendant", "formation")
         triggers = [
             pgtrigger.Trigger(
                 name="check_attendants_count",
