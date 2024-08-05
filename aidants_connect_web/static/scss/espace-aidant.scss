@@ -1,6 +1,72 @@
 @use "colors";
 @use "boxes";
 
+.d-table table {
+  overflow: unset;
+  thead, 
+  tbody {
+    background-color: white;
+  }
+}
+.inactives-aidants .d-table {
+  thead, 
+  tbody {
+    background-color: var(--background-alt-grey);
+  }
+}
+.referent-table .referent-attribution {
+  display: none;
+}
+details {
+  position: relative;
+  summary::marker {
+    content: "";
+  }
+  summary {
+    width: 45px;
+    height: 45px;
+    background-color: var(--background-alt-grey);
+    text-align: center;
+    line-height: 45px;
+  }
+  .details-content {
+    position: absolute;
+    background-color: white;
+    border: solid 1px #CECECE;
+    z-index: 1;
+    right: 0px;
+    top: 45px;
+    form, a {
+      width:200px;
+      display: block;
+      background-image: none;
+      &:hover,
+      button:hover {
+        background-color: white;
+        border-bottom: solid 1px var(--border-default-grey);
+      }
+    }
+  }
+  a {
+    background-image: none;
+    line-height: 30px;
+  }
+}
+.unset-summary details {  
+  summary {
+      width: max-content;
+      height: max-content;
+      line-height: 24px;
+      background-color: unset;
+      .fr-btn {
+        padding: 0 16px;
+      }
+  }
+  .details-content a {
+    width: max-content;
+  }
+}
+
 // aidants_connect_web/espace_aidant/home.html
 h3.home-section {
   display: block;
@@ -22,7 +88,7 @@ h3.home-section {
 }
 
 .habilitation-list, .aidants-list {
-  th, {
+  th {
     color: colors.$ac_mid_grey;
     text-align: start;
     font-weight: normal;
@@ -66,20 +132,37 @@ h3.home-section {
 }
 
 // aidants_connect_web/espace_aidant/organisation.html
-.organisation-summary {
-  display: flex;
-  align-items: stretch;
 
-  > [class^="fr-col"] > * {
-    height: 100%;
+.espace-referent {
+
+  .fr-tile:has(input[type="checkbox"]:checked) {
+    background-image: linear-gradient(0deg,var(--border-default-blue-france),var(--border-default-blue-france)),linear-gradient(0deg,var(--border-default-blue-france),var(--border-default-blue-france)),linear-gradient(0deg,var(--border-default-blue-france),var(--border-default-blue-france)),linear-gradient(0deg,var(--border-default-blue-france),var(--border-default-blue-france));
   }
-
-  .organisation-stats {
-    background-color: colors.$blue-aidants;
-
-    & * {
-      color: #FFF;
+  .fr-tile__title::before {
+    background-image: none;
+  }
+  .fr-checkbox-group input[type="checkbox"] + label {
+    margin-left: 0;
+    width: 100%;
+    &::before {
+      right: -1rem;
+      left: unset;
+      top: -1rem;
     }
+    img {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 1rem;
+    }
+    .detailed-radio-select-description {
+      display: none;
+    }
+  }
+  .fr-checkbox-group input[type="checkbox"]:checked + label {
+    color: var(--text-action-high-blue-france);
+  }
+  .fr-input-group > label {
+    display: none;
   }
 }
 

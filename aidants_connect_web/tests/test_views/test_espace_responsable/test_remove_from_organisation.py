@@ -38,7 +38,7 @@ class EspaceResponsableRemoveAidantOrganisationsTest(TestCase):
         response = self.client.post(
             self.get_form_url(aidant, responsable.organisation),
         )
-        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        self.assertRedirects(response, reverse("espace_responsable_aidants"))
         aidant.refresh_from_db()
         self.assertEqual(len(aidant.organisations.all()), 2)
 

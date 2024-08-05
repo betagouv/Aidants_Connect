@@ -58,7 +58,15 @@ h3, .fr-h3, h4, .fr-h4 {
 .fr-text--center {
   text-align: center;
 }
-
+.fr-bordered {
+    border: solid 1px var(--border-default-grey);
+}
+.fr-bordered-blue {
+  border-color: var(--border-default-blue-france)
+}
+.fr-height-100 {
+  height: 100%;
+}
 .contrast-grey-background {
   background-color: var(--background-contrast-grey);
 }
@@ -123,6 +131,9 @@ p:last-child {
 }
 .flex-right {
   justify-content: right;
+}
+.flex-between {
+  justify-content: space-between;
 }
 .flex-wrap {
   flex-wrap: wrap;

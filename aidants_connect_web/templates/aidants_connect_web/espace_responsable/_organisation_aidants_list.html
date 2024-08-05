@@ -1,80 +1,115 @@
 {% load ac_common form_extras ac_extras %}
-<table class="table aidants-list">
-  <thead>
-  <tr>
-    <th>Nom</th>
-    <th>Email</th>
-    <th>Carte(s) Aidants Connect</th>
-    <th><span class="sr-only">Retirer un aidant</span></th>
-  </tr>
-  </thead>
-  <tbody{% class_attr table_class|default:"" %}>
-  {% for aidant in aidants %}
-    <tr>
-      <td>
-        {% if aidant.statut %}
-          {{ aidant.get_full_name }}
-        {% elif aidant.pk == responsable.pk %}
-          {{ aidant.get_full_name }} (Référent)
-        {% else %}
-          <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+<div class="fr-table fr-table--no-caption d-table fr-table--bordered fr-table--layout-fixed">
+  <table>
+    <caption>Table des aidants</caption>
+    <thead>
+      <tr>
+        <th scope="col" class="fr-text--md fr-col-3">Nom</th>
+        <th scope="col" class="fr-text--md fr-col-8">Carte(s) Aidants Connect</th>
+        <th scope="col" class="fr-text--md fr-col-1">
+          <div class="flex flex-right">Outils</div>
+        </th>
+      </tr>
+    </thead>
+    <tbody{% class_attr table_class|default:"" %}>
+    {% for aidant in aidants %}
+      <tr>
+        <td>
+          {% if aidant.statut %}
             {{ aidant.get_full_name }}
-          </a>
-        {% endif %}
-      </td>
-      <td>{% mailto recipient=aidant.email %}</td>
-      <td>
-        {% if aidant.status %}
-          <p class="fr-badge {% referent_request_status_badge aidant.status %}">{{ aidant.get_status_display }}</p>
-        {% else %}
-          {% if aidant.has_a_carte_totp %}
-            <div>
-              {{ aidant.number_totp_card }}
-              {% if not aidant.carte_totp.totp_device.confirmed and aidant.is_active %}
-                <p class="unverified-card-warning shadowed red padding-1rem">
-                  Attention : Le fonctionnement de cette carte n’a pas été vérifié.
-                  Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
-                  de se connecter à Aidants Connect.
-                </p>
-              {% endif %}
-            </div>
+          {% elif aidant.pk == responsable.pk %}
+            {{ aidant.get_full_name }} (Référent)
+          {% else %}
+            <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+              {{ aidant.get_full_name }}
+            </a>
           {% endif %}
-          {% if aidant.has_otp_app %}
-            <p>Une carte numérique est associée à ce profil</p>
+        </td>
+        <td>
+          {% if aidant.status %}
+            <p class="fr-badge {% referent_request_status_badge aidant.status %}">{{ aidant.get_status_display }}</p>
+          {% else %}
+            {% if aidant.has_a_carte_totp %}
+              <div class="fr-text--md">
+                {{ aidant.number_totp_card }}
+                {% if not aidant.carte_totp.totp_device.confirmed and aidant.is_active %}
+                  <div class="fr-alert fr-alert--error fr-mt-2w">
+                    <p>
+                      Attention : Le fonctionnement de cette carte n’a pas été vérifié.
+                      Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
+                      de se connecter à Aidants Connect.
+                    </p>
+                  </div>
+                {% endif %}
+                {% if not aidant.is_active %}
+                  <div class="fr-alert fr-alert--error fr-mt-2w">
+                    <p>Attention, veillez à bien délier et récupérer la carte de cet aidant désactivé</p>
+                  </div>
+                {% endif %}
+              </div>
+            {% else %}
+              <div class="fr-text--md">
+                {% if aidant.is_active %}
+                  <a
+                    id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                    href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-link"
+                  >
+                  Lier une carte
+                  </a>
+                {% else %}
+                  Pas de carte associée
+                {% endif %}
+              </div>
+            {% endif %}
+            {% if aidant.has_otp_app %}
+              <p>Une carte numérique est associée à ce profil</p>
+            {% endif %}
           {% endif %}
-        {% endif %}
-      </td>
-      <td>
-        {% if not aidant.status %}
-        	<ul class="fr-btns-group">
-            <li>
-              {% if aidant.pk != referent.pk and aidant.is_active %}
-                <a
-                  id="remove-aidant-{{ aidant.id }}-from-organisation"
-                  href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
-                  class="fr-btn fr-btn--secondary"
-                >
-                  {% if aidant.organisations.count > 1 %}
-                    Retirer l’aidant de l’organisation
-                  {% else %}
-                    Désactiver l’aidant
-                  {% endif %}
-                </a>
+        </td>
+        <td>
+          <div class="flex flex-right">
+            {% if not aidant.status %}
+              {% if aidant.has_a_carte_totp or aidant.is_active %}
+                <details id="aidant-{{ aidant.id }}-contextual-actions">
+                  <summary>
+                    <span>…</span>
+                  </summary>
+                  <div class="details-content fr-p-2w">
+                    <div class="referent-attribution">
+                      {% if aidant.is_active %}
+                        <form method="post">
+                          {% csrf_token %}
+                          <input type="hidden" name="candidate" value="{{ aidant.pk }}" />
+                          <button type="submit">Désigner comme référent</button>
+                        </form>
+                      {% endif %}
+                    </div>
+                    {% if aidant.pk != referent.pk and aidant.is_active %}
+                      <a
+                        id="remove-aidant-{{ aidant.id }}-from-organisation"
+                        href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}" class="fr-px-1v"
+                      >
+                        {% if aidant.organisations.count > 1 %}
+                          Retirer l’aidant de l’organisation
+                        {% else %}
+                          Désactiver l’aidant
+                        {% endif %}
+                      </a>
+                    {% endif %}
+                    <a
+                      id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                      href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-px-1v"
+                      >
+                      Gérer les cartes OTP
+                    </a>
+                  </div>
+                </details>
               {% endif %}
-            </li>
-            <li>
-              <a
-                id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-                href="{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}"
-                class="fr-btn fr-btn--secondary"
-              >
-                Gérer les cartes OTP
-              </a>
-            </li>
-          </ul>
-        {% endif %} 
-      </td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
