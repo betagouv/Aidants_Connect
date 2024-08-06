@@ -133,6 +133,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "django_otp",
+    "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
@@ -149,6 +150,7 @@ INSTALLED_APPS = [
     "aidants_connect_web",
     "aidants_connect_habilitation",
     "aidants_connect_pico_cms",
+    "aidants_connect_sandbox",
     "aidants_connect_erp",
 ]
 
@@ -811,8 +813,10 @@ LM_SMS_SERVICE_SND_SMS_ENDPOINT = os.getenv("LM_SMS_SERVICE_SND_SMS_ENDPOINT")
 
 # URLS
 SANDBOX_URL = os.getenv("SANDBOX_URL", "")
+SANDBOX_URL_PADDING = os.getenv("SANDBOX_URL", "PADDING_SANDBOX")
 SANDBOX_API_URL = os.getenv("SANDBOX_API_URL", "")
 SANDBOX_API_TOKEN = os.getenv("SANDBOX_API_TOKEN", "TOKEN")
+
 WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
 
 REST_FRAMEWORK = {
@@ -843,3 +847,11 @@ LIVESTORM_API_KEY = os.getenv("LIVESTORM_API_KEY")
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
 FF_EMAIL_CO_RERERENT_CREATION = getenv_bool("FF_EMAIL_CO_RERERENT_CREATION", False)
+
+
+# ######################## SANDBOX SETTING ############################
+
+ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
+AUTO_CREATE_SANDBOX_TOKEN = os.getenv("AUTO_CREATE_SANDBOX_TOKEN", None)
+
+# ######################## END SANDBOX SETTING ############################
