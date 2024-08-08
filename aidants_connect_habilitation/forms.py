@@ -361,6 +361,11 @@ class ManagerForm(
     AddressValidatableMixin,
     CleanZipCodeMixin,
 ):
+    phone = AcPhoneNumberField(
+        initial="",
+        required=True,
+    )
+
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
