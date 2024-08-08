@@ -482,13 +482,7 @@ class TestManagerForm(TestCase):
             email="test@test.test",
         )
 
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors["email"][0],
-            "Si la personne fait partie du dispositif conseiller numérique, "
-            "elle doit s'inscrire avec son email "
-            f"{settings.CONSEILLER_NUMERIQUE_EMAIL}",
-        )
+        self.assertTrue(form.is_valid())
 
 
 class TestAidantRequestForm(TestCase):
@@ -590,12 +584,31 @@ class TestAidantRequestForm(TestCase):
             email="test@test.test",
         )
 
+        self.assertTrue(form.is_valid())
+        # self.assertEqual(
+        #     form.errors["email"][0],
+        #     "Si la personne fait partie du dispositif conseiller numérique, "
+        #     "elle doit s'inscrire avec son email "
+        #     f"{settings.CONSEILLER_NUMERIQUE_EMAIL}",
+        # )
+
+    def test_email_conseiller_numerique_with_deprecated_email(self):
+        organisation = OrganisationRequestFactory()
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation},
+            conseiller_numerique=True,
+            email="test@conseiller-numerique.fr",
+        )
+
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["email"][0],
-            "Si la personne fait partie du dispositif conseiller numérique, "
-            "elle doit s'inscrire avec son email "
-            f"{settings.CONSEILLER_NUMERIQUE_EMAIL}",
+            "Suite à l'annonce de l'arrêt des adresses emails "
+            f"{settings.CONSEILLER_NUMERIQUE_EMAIL}"
+            " le 15 novembre 2024, nous vous invitons à renseigner"
+            " une autre adresse email nominative et professionnelle.",
         )
 
 

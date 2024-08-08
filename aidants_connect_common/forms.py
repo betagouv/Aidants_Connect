@@ -186,15 +186,16 @@ class ConseillerNumerique(Form):
         result = super().clean()
         result.setdefault("conseiller_numerique", None)
         result.setdefault("email", "")
-        if result["conseiller_numerique"] is True and not result["email"].endswith(
+        if result["conseiller_numerique"] is True and result["email"].endswith(
             settings.CONSEILLER_NUMERIQUE_EMAIL
         ):
             self.add_error(
                 "email",
                 (
-                    "Si la personne fait partie du dispositif conseiller numérique, "
-                    "elle doit s'inscrire avec son email "
+                    "Suite à l'annonce de l'arrêt des adresses emails "
                     f"{settings.CONSEILLER_NUMERIQUE_EMAIL}"
+                    " le 15 novembre 2024, nous vous invitons à renseigner"
+                    " une autre adresse email nominative et professionnelle."
                 ),
             )
 
