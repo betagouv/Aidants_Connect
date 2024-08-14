@@ -2,7 +2,7 @@ Bonjour,
 
 Nous vous confirmons que {{person.get_full_name}} a été inscrit à la formation : {{formation.type.label}}, {{formation.date_range_str|lower}}. L’organisme en charge de cette formation prendra prochainement contact avec vous.
 
-Si vous souhaitez modifier ou annuler votre demande, merci de vous rapprocher de l’organisme de formation à cette adresse : 
+Si vous souhaitez modifier ou annuler votre demande, merci de vous rapprocher de l’organisme de formation à cette adresse : {{formation_contacts}}
 
 La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant financée selon differentes modalités.
 

@@ -121,8 +121,20 @@ class FormationOrganizationQuerySet(models.QuerySet):
 
 class FormationOrganization(models.Model):
     name = models.CharField("Nom")
-    contacts = ArrayField(models.EmailField(), default=list)
-
+    contacts = ArrayField(
+        models.EmailField(),
+        default=list,
+        verbose_name="Contacts publics",
+        null=True,
+        blank=True,
+    )
+    private_contacts = ArrayField(
+        models.EmailField(),
+        default=list,
+        verbose_name="Contacts privés",
+        null=True,
+        blank=True,
+    )
     objects = FormationOrganizationQuerySet.as_manager()
 
     def __str__(self):
