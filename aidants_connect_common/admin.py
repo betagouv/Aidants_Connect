@@ -374,6 +374,6 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
 
 @register(FormationOrganization, site=admin_site)
 class FormationOrganizationAdmin(VisibleToAdminMetier, ModelAdmin):
-    fields = ("name", "contacts")
-    list_display = ("name", "contacts")
-    search_fields = ("name", "contacts")
+    fields = ("name", "contacts", "private_contacts")
+    list_display = ("name", "contacts", "private_contacts")
+    search_fields = ("name", "contacts", "private_contacts")

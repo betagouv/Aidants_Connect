@@ -93,9 +93,16 @@ def formation_aidant(instance: FormationAttendant, created: bool, **_):
     if not emails:
         return
 
+    organisation = instance.formation.organisation
+
+    str_contact_emails = ", ".join(organisation.private_contacts)
     text_message, html_message = render_email(
         "email/formation-aidant.mjml",
-        {"person": person, "formation": instance.formation},
+        {
+            "person": person,
+            "formation": instance.formation,
+            "formation_contacts": str_contact_emails,
+        },
     )
 
     send_mail(
