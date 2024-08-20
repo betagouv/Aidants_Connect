@@ -11,7 +11,7 @@
       {% endwith %}
     </p>
   {% endblock %}
-  <div class="fr-mb-4w contrast-grey-background fr-p-4w">
+  <div class="fr-mb-4w fr-background-contrast--grey fr-p-4w">
     {% for title, description in demarches.items %}
     <div class="fr-grid-row">
       <div class="fr-checkbox-group fr-mb-4w">
@@ -26,6 +26,6 @@
 
   <p class="fr-text--lg"><strong>{{ duree|capfirst }}.</strong></p>
   {% if warn_scope %}
-  {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
-{% endif %}
+    {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
+  {% endif %}
 </section>

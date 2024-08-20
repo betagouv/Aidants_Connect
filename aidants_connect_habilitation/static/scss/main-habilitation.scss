@@ -1046,13 +1046,6 @@ footer {
   }
 }
 
-// D'ont display cookie related element on print
-[id^='tarteaucitron'] {
-  @media print {
-    display: none;
-  }
-}
-
 .grid {
   display: grid;
   grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));

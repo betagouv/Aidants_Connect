@@ -1,79 +1,106 @@
-{% extends 'layouts/main-legacy.html' %}
+{% extends 'layouts/main.html' %}
 
-{% load static ac_common %}
+{% load static ac_extras ac_common dsfr_tags %}
 
 {% block title %}Aidants Connect - Usagers{% endblock %}
 
 {% block extracss %}
-  <link href="{% static 'css/users_search.css' %}" rel="stylesheet" />
-{% endblock %}
+  <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
 
 {% block content %}
-  <section
-    class="section"
-    data-controller="search"
-  >
-    <div class="container">
-      <div class="row">
-        <h1 class="margin-bottom-0">Vos usagères et usagers</h1>
-        <a
-          href="{% url 'new_mandat' %}"
+  <div class="fr-container" data-controller="search">
+    <div class="fr-grid-row flex-between fr-mb-6w">
+      <div class="fr-col-sm-6 fr-col-12">
+        <h1 class="fr-mb-2w">Mes mandats</h1>
+      </div>
+      {% dsfr_django_messages %}
+      <div>
+        <a href="{% url 'new_mandat' %}"
           id="add_usager"
-          class="fr-btn fr-btn--icon-left fr-icon-edit-fill"
-        >
-          Ajouter une usagère ou un usager
+          class="fr-btn fr-btn--icon-left fr-icon-add-line">
+          Créer un mandat
         </a>
       </div>
-      {% include "aidants_connect_web/users_search_bar.html" %}
-      {% include "layouts/_messages.html" %}
+    </div>
+  
+    {% include "aidants_connect_web/users_search_bar.html" %}
 
-      <div class="tiles">
-        {% if usagers_dict.total == 0 %}
-        <div class="notification" role="alert">Il n'y a encore personne avec qui vous avez un mandat.</div>
-        {% else %}
-          {% if usagers_dict.with_valid_mandate_count > 0 %}
-          {# <input class="table__filter" type="text" name="input_val" placeholder="Trouver un usager (à venir)" aria-label="Trouver les usagers (à venir)"> #}
-          <h2>Les usagères et usagers avec qui vous avez un mandat actif</h2>
-          <table class="table with-valid-mandate">
-            <thead>
-            <tr>
-              <th scope="col">Nom</th>
-              <th scope="col">Prénom</th>
-              <th scope="col">Date de naissance</th>
-              <th scope="col">Autorisations</th>
-              <th scope="col">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for usager, autorisations in usagers_dict.with_valid_mandate.items %}
+    <h2>Mandats actifs</h2>
+    <div class="fr-table d-table fr-table--bordered fr-table--no-caption">
+      <table class="with-valid-mandate">
+        <caption>Table des mandats actifs</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="fr-col-3">Nom</th>
+            <th scope="col" class="fr-col-2">Date de naissance</th>
+            <th scope="col" class="fr-col-4">Périmètre</th>
+            <th scope="col" class="fr-col-2">Validité</th>
+            <th scope="col" class="fr-col-1"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if valid_mandats|length > 0 %}
+            {% for usager, mandats in valid_mandats.items %}
               {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=True %}
             {% endfor %}
-            </tbody>
-          </table>
+          {% else %}
+            <tr><td colspan="5" class="fr-text-center">Vous n'avez pas de mandats actifs</td></tr>
           {% endif %}
-          {% if usagers_dict.without_valid_mandate_count > 0 %}
-          <h2>Les usagères et usagers avec qui vous avez un mandat passé</h2>
-          <table class="table without-valid-mandate">
-            <thead>
-            <tr>
-              <th scope="col">Nom</th>
-              <th scope="col">Prénom</th>
-              <th scope="col">Date de naissance</th>
-              <th scope="col">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for usager, has_no_autorisations in usagers_dict.without_valid_mandate.items %}
-              {% include "aidants_connect_web/usagers/usager_row.html" with usager=usager with_valid_mandate=False has_no_autorisations=has_no_autorisations %}
-            {% endfor %}
-            </tbody>
-          </table>
-          {% endif %}
+        </tbody>
+      </table>
+    </div>
 
-        {% endif %}
-      </div>
-    <div>
-  </section>
+    <h2>Mandats expirés</h2>
+    <div class="fr-table d-table fr-table--bordered fr-table--no-caption">
+      <table class="without-valid-mandate">
+        <caption>Table des mandats expirés</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="fr-col-3">Nom</th>
+            <th scope="col" class="fr-col-2">Date de naissance</th>
+            <th scope="col" class="fr-col-4">Périmètre</th>
+            <th scope="col" class="fr-col-2"></th>
+            <th scope="col" class="fr-col-1"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if expired_mandats|length > 0 %}
+            {% for usager, mandats in expired_mandats.items %}
+              {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=False %}
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="5" class="fr-text-center">Vous n'avez pas de mandats expirés</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  
+    <h2>Mandats révoqués</h2>
+    <div class="fr-table d-table fr-table--bordered fr-table--no-caption">
+      <table>
+        <caption>Table des mandats révoqués</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="fr-col-3">Nom</th>
+            <th scope="col" class="fr-col-2">Date de naissance</th>
+            <th scope="col" class="fr-col-4">Périmètre</th>
+            <th scope="col" class="fr-col-2"></th>
+            <th scope="col" class="fr-col-1"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if revoked_mandats|length > 0 %}
+            {% for usager, mandats in revoked_mandats.items %}
+              {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=False has_no_autorisations=True %}
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="5" class="fr-text-center fr-background-alt--grey">Vous n'avez pas de mandats révoqués</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 {% endblock content %}
 
 {% block extrajs %}

@@ -133,19 +133,83 @@ def _get_usagers_dict_from_mandats(mandats: Iterable[Mandat]) -> dict:
     }
 
 
+def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple:
+
+    delta = settings.MANDAT_EXPIRED_SOON
+
+    valid_mandats = OrderedDict()
+    expired_mandats = OrderedDict()
+    revoked_mandats = OrderedDict()
+
+    for mandat in mandats:
+
+        expired = mandat.expiration_date if mandat.expiration_date < now() else False
+        autorisations = (
+            mandat.autorisations.filter(revocation_date=None).all().order_by("pk")
+        )
+
+        l_autorisations = list(autorisations.values_list("demarche", flat=True))
+        has_no_autorisations = autorisations.count() == 0
+        expired_soon = ""
+        delta_before_expiration = ""
+
+        if mandat.revocation_date:
+            if mandat.usager not in revoked_mandats:
+                revoked_mandats[mandat.usager] = list()
+
+            revoked_mandats[mandat.usager].append(
+                (mandat, l_autorisations, delta_before_expiration, expired_soon)
+            )
+            continue
+
+        if has_no_autorisations:
+            if mandat.usager not in expired_mandats:
+                expired_mandats[mandat.usager] = list()
+
+            expired_mandats[mandat.usager].append(
+                (mandat, [], delta_before_expiration, expired_soon)
+            )
+            continue
+
+        if not expired:
+            if mandat.usager not in valid_mandats:
+                valid_mandats[mandat.usager] = list()
+
+            expired_soon = mandat.expiration_date - timedelta(days=delta) < now()
+            timedelta_before_expiration = mandat.expiration_date - now()
+            delta_before_expiration = timedelta_before_expiration.days
+            valid_mandats[mandat.usager].append(
+                (mandat, l_autorisations, delta_before_expiration, expired_soon)
+            )
+        else:
+            if mandat.usager not in expired_mandats:
+                expired_mandats[mandat.usager] = list()
+
+            expired_mandats[mandat.usager].append(
+                (mandat, l_autorisations, delta_before_expiration, expired_soon)
+            )
+
+    return valid_mandats, expired_mandats, revoked_mandats
+
+
 @login_required
 @activity_required
 def usagers_index(request):
     aidant = request.user
     mandats = _get_mandats_for_usagers_index(aidant)
     usagers_dict = _get_usagers_dict_from_mandats(mandats)
-
+    valid_mandats, expired_mandats, revoked_mandats = (
+        _get_mandats_dicts_from_queryset_mandats(mandats)
+    )
     return render(
         request,
         "aidants_connect_web/usagers/usagers.html",
         {
             "aidant": aidant,
             "usagers_dict": usagers_dict,
+            "valid_mandats": valid_mandats,
+            "expired_mandats": expired_mandats,
+            "revoked_mandats": revoked_mandats,
         },
     )
 
