@@ -275,6 +275,7 @@ class Mandat(models.Model):
                 AuthorizationDurations.SEMESTER,
             ),
             expiration_date__range=(start, end),
+            autorisations__revocation_date__isnull=True,
         ).order_by("organisation", "expiration_date")
 
     @classmethod
