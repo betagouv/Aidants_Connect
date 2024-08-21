@@ -19,7 +19,6 @@ from aidants_connect_common.utils import PGTriggerExtendedFunc, render_markdown
 from aidants_connect_pico_cms.fields import MarkdownField
 
 if TYPE_CHECKING:
-    from aidants_connect_habilitation.models import AidantRequest
     from aidants_connect_web.models import HabilitationRequest
 
 
@@ -249,10 +248,10 @@ class Formation(models.Model):
     def __str__(self):
         return f"{self.type.label} {self.date_range_str.casefold()}"
 
-    def register_attendant(self, attendant: HabilitationRequest | AidantRequest):
+    def register_attendant(self, attendant: HabilitationRequest):
         Formation.objects.filter(pk=self.pk).register_attendant(attendant)
 
-    def unregister_attendant(self, attendant: HabilitationRequest | AidantRequest):
+    def unregister_attendant(self, attendant: HabilitationRequest):
         Formation.objects.filter(pk=self.pk).unregister_attendant(attendant)
 
     class Meta:
