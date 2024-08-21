@@ -19,7 +19,10 @@ from freezegun import freeze_time
 from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
 
-from aidants_connect_common.constants import JournalActionKeywords
+from aidants_connect_common.constants import (
+    AuthorizationDurations,
+    JournalActionKeywords,
+)
 from aidants_connect_common.models import FormationAttendant
 from aidants_connect_common.tests.factories import FormationFactory
 from aidants_connect_web.constants import (
@@ -584,6 +587,61 @@ class MandatModelTests(TestCase):
         result = mandate._get_mandate_template_path_from_journal_hash()
 
         self.assertEqual(result, f"aidants_connect_web/mandat_templates/{tpl_name}")
+
+    def test_find_soon_expired(self):
+        self.valid_1 = MandatFactory(
+            duree_keyword=AuthorizationDurations.LONG,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        self.valid_2 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SEMESTER,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.valid_3 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SEMESTER,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        Autorisation.objects.create(
+            mandat=self.valid_3,
+            demarche="papiers",
+            revocation_date=None,
+        )
+        Autorisation.objects.create(
+            mandat=self.valid_3,
+            demarche="travail",
+            revocation_date=timezone.now() - timedelta(days=1),
+        )
+
+        self.invalid_1 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SHORT,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        self.invalid_2 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SHORT,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        self.invalid_3 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SHORT,
+            expiration_date=timezone.now()
+            + timedelta(days=settings.MANDAT_EXPIRED_SOON + 1),
+        )
+
+        self.invalid_4 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SEMESTER,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        Autorisation.objects.create(
+            mandat=self.invalid_4,
+            demarche="travail",
+            revocation_date=timezone.now() - timedelta(days=1),
+        )
+
+        self.assertGreaterEqual(Mandat.objects.count(), 7)
+        self.assertEqual(
+            {self.valid_1, self.valid_2, self.valid_3},
+            set(Mandat.find_soon_expired(settings.MANDAT_EXPIRED_SOON).all()),
+        )
 
 
 @tag("models")
