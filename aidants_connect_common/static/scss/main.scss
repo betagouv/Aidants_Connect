@@ -33,13 +33,6 @@ $main-padding: 3rem;
   }
 }
 
-// Don't display cookie related element on print
-#tarteaucitron {
-  @media print {
-    display: none;
-  }
-}
-
 h1, .fr-h1 {
   margin: 0 0 3rem 0;
 }
@@ -65,10 +58,10 @@ h3, .fr-h3, h4, .fr-h4 {
   margin: 0 0 3rem 0;
 }
 
-.errorlist  {
+.errorlist {
   list-style: none;
   margin-top: 0;
-  margin-bottom: 1rem ;
+  margin-bottom: 1rem;
   color: var(--text-active-red-marianne);
 }
 
@@ -107,12 +100,15 @@ p:last-child {
 .flex {
   display: flex;
 }
+
 .flex-right {
   justify-content: right;
 }
+
 .flex-wrap {
   flex-wrap: wrap;
 }
+
 .flex-between {
   justify-content: space-between;
 }
@@ -134,7 +130,7 @@ p:last-child {
 }
 
 .fr-bordered {
-    border: solid 1px var(--border-default-grey);
+  border: solid 1px var(--border-default-grey);
 }
 
 .fr-bordered-blue {
@@ -162,6 +158,11 @@ p:last-child {
 @media print {
   .no-print,
   .no-print * {
+    display: none !important;
+  }
+
+  // Don't display cookie related element on print
+  [id^="tarteaucitron"] {
     display: none !important;
   }
 }
