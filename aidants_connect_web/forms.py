@@ -28,7 +28,7 @@ from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import validator
+from pydantic import field_validator
 
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import (
@@ -887,12 +887,14 @@ class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
                     essential: bool
                     values: Optional[set[str]] = set()
 
-                    @validator("essential", allow_reuse=True)
+                    @field_validator("essential")
+                    @classmethod
                     def check_true(cls, v):
                         assert v is True
                         return v
 
-                    @validator("values", allow_reuse=True)
+                    @field_validator("values")
+                    @classmethod
                     def check_demarche(cls, v):
                         assert all(value in settings.DEMARCHES.keys() for value in v)
                         return v
