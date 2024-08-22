@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "18e5469d0e73eb6e508788fda1f01a7b1ba1d84385ea05ba8fd188907a67c8a1"
+            "sha256": "ef1056d2509aa880108ed6f258040c025160e35b32cee81e26bed565060708f3"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -203,10 +203,10 @@
         },
         "cron-descriptor": {
             "hashes": [
-                "sha256:7b1a00d7d25d6ae6896c0da4457e790b98cba778398a3d48e341e5e0d33f0488",
-                "sha256:a67ba21804983b1427ed7f3e1ec27ee77bf24c652b0430239c268c5ddfbf9dc0"
+                "sha256:736b3ae9d1a99bc3dbfc5b55b5e6e7c12031e7ba5de716625772f8b02dcd6013",
+                "sha256:f51ce4ffc1d1f2816939add8524f206c376a42c87a5fca3091ce26725b3b1bca"
             ],
-            "version": "==1.4.3"
+            "version": "==1.4.5"
         },
         "diff-match-patch": {
             "hashes": [
@@ -259,12 +259,12 @@
         },
         "django-dsfr": {
             "hashes": [
-                "sha256:05a676c82d16c3bb74b6a9ef1b1b036b2b744c98eb3efd288658ac7c286da8a4",
-                "sha256:0cc9ab3e7315f17a609b0b7bfbf5df94ff17ddd31c8c030234aa3dff2255651a"
+                "sha256:c12bafe36ceb381b18fef47c5db1f0dc9fc62841594062caca8311d53fdd6a35",
+                "sha256:d0b57923b25cfe7bf3313d2a8c73d89156679422b98cf07eb635bd0b2848a9d1"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8' and python_version < '4.0'",
-            "version": "==1.3.0"
+            "version": "==1.3.1"
         },
         "django-extensions": {
             "hashes": [
@@ -341,11 +341,11 @@
                 "phonenumberslite"
             ],
             "hashes": [
-                "sha256:bc6eaa49d1f9d870944f5280258db511e3a1ba5e2fbbed255488dceacae45d06",
-                "sha256:f9cdb3de085f99c249328293a3b93d4e5fa440c0c8e3b99eb0d0f54748629797"
+                "sha256:196c917b70c01a98e327f482eb8a4a4a55a29891db551f99078585397370b3ba",
+                "sha256:8a560fe1b01b94c9de8cde22bc373b695f023cc6df4baba00264cb079da9f631"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==7.3.0"
+            "version": "==8.0.0"
         },
         "django-referrer-policy": {
             "hashes": [
@@ -414,11 +414,11 @@
         },
         "idna": {
             "hashes": [
-                "sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc",
-                "sha256:82fee1fc78add43492d3a1898bfa6d8a904cc97d8427f683ed8e798d07761aa0"
+                "sha256:050b4e5baadcd44d760cedbd2b8e639f2ff89bbc7a5730fcc662954303377aac",
+                "sha256:d838c2c0ed6fced7693d5e8ab8e734d5f8fda53a039c0164afb0b82e771e3603"
             ],
-            "markers": "python_version >= '3.5'",
-            "version": "==3.7"
+            "markers": "python_version >= '3.6'",
+            "version": "==3.8"
         },
         "jedi": {
             "hashes": [
@@ -484,10 +484,10 @@
         },
         "phonenumberslite": {
             "hashes": [
-                "sha256:0be9b6e238bb5b668d22f918f2b5e77cd7eff52f7a87faa425d6402da9a52817",
-                "sha256:ddd385c8c1054fdd2eebc17b9d393160c6d72167d6462791fd421406a0ece620"
+                "sha256:63d650f2fe464602c8b01b7e0cda6b7057811a2410cbd1d21d90374642abdc51",
+                "sha256:ab6aa6e5fa115c89ea63e3c316c764ff449f8ecb826499cfc925f6a39f29e174"
             ],
-            "version": "==8.13.43"
+            "version": "==8.13.44"
         },
         "pillow": {
             "hashes": [
@@ -1155,11 +1155,11 @@
         },
         "faker": {
             "hashes": [
-                "sha256:1c44d4bdcad7237516c9a829b6a0bcb031c6a4cb0506207c480c79f74d8922bf",
-                "sha256:4ce108fc96053bbba3abf848e3a2885f05faa938deb987f97e4420deaec541c4"
+                "sha256:0d3c0399204aaf8205cc1750db443474ca0436f177126b2c27b798e8336cc74f",
+                "sha256:6a3a08be54c37e05f7943d7ba5211d252c1de737687a46ad6f29209d8d5db11f"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==27.4.0"
+            "version": "==28.0.0"
         },
         "filelock": {
             "hashes": [
@@ -1205,11 +1205,11 @@
         },
         "idna": {
             "hashes": [
-                "sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc",
-                "sha256:82fee1fc78add43492d3a1898bfa6d8a904cc97d8427f683ed8e798d07761aa0"
+                "sha256:050b4e5baadcd44d760cedbd2b8e639f2ff89bbc7a5730fcc662954303377aac",
+                "sha256:d838c2c0ed6fced7693d5e8ab8e734d5f8fda53a039c0164afb0b82e771e3603"
             ],
-            "markers": "python_version >= '3.5'",
-            "version": "==3.7"
+            "markers": "python_version >= '3.6'",
+            "version": "==3.8"
         },
         "isort": {
             "hashes": [
