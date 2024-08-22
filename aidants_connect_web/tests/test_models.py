@@ -23,7 +23,7 @@ from aidants_connect_common.constants import (
     AuthorizationDurations,
     JournalActionKeywords,
 )
-from aidants_connect_common.models import FormationAttendant
+from aidants_connect_common.models import Formation, FormationAttendant
 from aidants_connect_common.tests.factories import FormationFactory
 from aidants_connect_web.constants import (
     ReferentRequestStatuses,
@@ -964,6 +964,26 @@ class OrganisationModelTests(TestCase):
             aidant_c = AidantFactory(organisation=orga_a, is_active=False)
             aidant_c.organisations.set((orga_a, orga_b))
         self.assertEqual(orga_a.num_active_aidants, 5)
+
+    def test_organisation_allowed_demarches(self):
+        formation: Formation = FormationFactory()
+
+        OrganisationFactory()
+
+        has_unregistered_hab = OrganisationFactory()
+        HabilitationRequestFactory(organisation=has_unregistered_hab)
+        formation.register_attendant(
+            HabilitationRequestFactory(organisation=has_unregistered_hab)
+        )
+
+        other = OrganisationFactory()
+        formation.register_attendant(HabilitationRequestFactory(organisation=other))
+        formation.register_attendant(HabilitationRequestFactory(organisation=other))
+
+        actual = (
+            Organisation.objects.having_formation_unregistered_habilitation_requests().all()  # noqa E501
+        )
+        self.assertEqual({has_unregistered_hab}, set(actual))
 
 
 @tag("models", "aidant")

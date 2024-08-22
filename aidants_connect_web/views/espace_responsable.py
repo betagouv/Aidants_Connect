@@ -258,6 +258,7 @@ class AidantsView(DetailView, FormView):
         return super().form_valid(form)
 
 
+@responsable_logged_with_activity_required
 class DemandesView(DetailView, FormView):
     template_name = "aidants_connect_web/espace_responsable/demandes.html"
     context_object_name = "organisation"
