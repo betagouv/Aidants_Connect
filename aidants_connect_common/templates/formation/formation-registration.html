@@ -46,7 +46,7 @@
           <tbody>
           {% for formation_widget in form.formations.subwidgets %}
             <tr>
-              <td>{{ formation_widget.data.value.instance.type.label }}</td>
+              <td>{{ formation_widget.data.value.instance.type.label }} ({{ formation_widget.data.value.instance.organisation.name }})</td>
               <td>
                 {{ formation_widget.data.value.instance.date_range_str }} <br />
                 {{ formation_widget.data.value.instance.description|linebreaksbr }}

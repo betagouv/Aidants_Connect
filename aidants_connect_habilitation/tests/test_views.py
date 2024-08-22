@@ -23,7 +23,10 @@ from aidants_connect_common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_common.models import Formation
-from aidants_connect_common.tests.factories import FormationFactory
+from aidants_connect_common.tests.factories import (
+    FormationFactory,
+    FormationOrganizationFactory,
+)
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     EmailOrganisationValidationError,
@@ -1495,6 +1498,7 @@ class TestFormationRegistrationView(TestCase):
         cls.formation_ok: Formation = FormationFactory(
             type_label="Des formations et des Hommes",
             start_datetime=now() + timedelta(days=50),
+            organisation=FormationOrganizationFactory(name="Organisation_Formation_OK"),
         )
 
         cls.formation_too_close: Formation = FormationFactory(
@@ -1636,6 +1640,7 @@ class TestFormationRegistrationView(TestCase):
         )
 
         self.assertIn(self.formation_ok.type.label, response.content.decode())
+        self.assertIn(self.formation_ok.organisation.name, response.content.decode())
         self.assertNotIn(self.formation_too_close.type.label, response.content.decode())
         self.assertNotIn(self.formation_full.type.label, response.content.decode())
 
