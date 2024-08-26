@@ -147,6 +147,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "type_other",
         "name",
         "siret",
+        "legal_category",
         "address",
         "zipcode",
         "city",
