@@ -446,9 +446,10 @@ STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.1/dist/stimulus.umd.js"
 MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
-SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert?listID=09a44be1-412f-4190-a3fe-6eaac71c9f00&formID=gJOzUSbKRDWeSVyadSRTTw&timezone=Europe/Paris&timezoneOffset=+2"  # noqa: E501
+SARBACANE_CONNECT_URL = (
+    "https://api.sarbacane.com/v1/forms/contacts/upsert"  # noqa: E501
+)
 COOKIE_BANNER_JS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.js"
-COOKIE_BANNER_CSS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/css/tarteaucitron.css"
 COOKIE_BANNER_LANG_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/lang/tarteaucitron.fr.js"
 )
@@ -507,7 +508,12 @@ CSP_SCRIPT_SRC = (
 CSP_STYLE_SRC = (
     "'self'",
     MD_EDITOR_CSS_URL,
-    COOKIE_BANNER_CSS_URL,
+)
+
+CSP_STYLE_SRC_ATTR = (
+    "'unsafe-hashes'",
+    "'sha256-I/4Jcdrg5KNFrU0X4p2nNmjeGh9aI+9ac0cUllI5SwY='",
+    "'sha256-vYd+FsML43MBXhP+pXOhW9h0Cdq43hkCe4Im/yyvhss='",
 )
 
 CSP_OBJECT_SRC = ("'none'",)
