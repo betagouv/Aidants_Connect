@@ -1,9 +1,14 @@
 from django.conf import settings
 from django.contrib import admin, messages
-from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
+from django.contrib.admin import (
+    ModelAdmin,
+    SimpleListFilter,
+    StackedInline,
+    TabularInline,
+)
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.core.mail import send_mail
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
@@ -129,11 +134,53 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
     list_filter = ("is_aidant",)
 
 
+class OrganisationPublicPrivateFilter(SimpleListFilter):
+    title = "Structures Publiques / Privées INSEE"
+    parameter_name = "public_private_insee"
+
+    def value(self):
+        return super().value()
+
+    def lookups(self, request, model_admin):
+        return [
+            (1, "Structures publiques"),
+            (2, "Structures privées"),
+        ]
+
+    def queryset(self, request, queryset):
+        match self.value():
+            case "1":
+                return queryset.filter(
+                    Q(legal_category__startswith="4")
+                    | Q(legal_category__startswith="7")
+                )
+            case "2":
+                return queryset.exclude(
+                    Q(legal_category__startswith="4")
+                    | Q(legal_category__startswith="7")
+                )
+            case _:
+                return queryset
+
+
 @admin.register(OrganisationRequest, site=admin_site)
 class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
-    list_filter = (RegionFilter, DepartmentFilter, "status", "is_private_org")
-    list_display = ("name", "issuer", "status", "data_pass_id", "created_at")
-    search_fields = ("data_pass_id", "name", "uuid")
+    list_filter = (
+        RegionFilter,
+        DepartmentFilter,
+        "status",
+        "is_private_org",
+        OrganisationPublicPrivateFilter,
+    )
+    list_display = (
+        "name",
+        "issuer",
+        "status",
+        "data_pass_id",
+        "created_at",
+        "legal_category",
+    )
+    search_fields = ("data_pass_id", "name", "uuid", "siret")
     raw_id_fields = ("issuer", "organisation")
     fields = (
         "issuer",

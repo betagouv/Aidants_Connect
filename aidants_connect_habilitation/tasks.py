@@ -10,6 +10,18 @@ from metabasepy import Client
 
 from aidants_connect_web.models import HabilitationRequest
 
+from .insee_utils import get_client_insee_api
+from .utils import get_and_save_insee_informations, get_orga_req_without_legal_category
+
+
+def update_legal_category_for_organisation_request(*, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    api = get_client_insee_api()
+    orga_reqs = get_orga_req_without_legal_category()
+    for orga_req in orga_reqs:
+        get_and_save_insee_informations(orga_req, api)
+
 
 def update_pix_and_create_aidant(json_result):
     for person in json_result:
