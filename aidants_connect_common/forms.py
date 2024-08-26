@@ -120,16 +120,16 @@ class AcPhoneNumberField(PhoneNumberField):
 
     regions = settings.FRENCH_REGION_CODES
 
-    def to_python(self, value: PhoneNumber | str):
+    def to_python(self, value: PhoneNumber | str | None):
+        if value in validators.EMPTY_VALUES:
+            return self.empty_value
+
         for region in self.regions:
             # value can be of type PhoneNumber in which case `to_python`
             # does not convert it again using the new region. We need
             # to force conversion of value to string here to ensure
             # the correct region is used.
-            phone_number = to_python(f"{value}", region=region)
-
-            if phone_number in validators.EMPTY_VALUES:
-                return self.empty_value
+            phone_number = to_python(value, region=region)
 
             if phone_number and phone_number.is_valid():
                 return phone_number

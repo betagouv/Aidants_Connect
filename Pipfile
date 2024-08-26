@@ -21,7 +21,7 @@ django-js-reverse = "~=0.10.0"
 django-magicauth = "==1.0.2"
 django-nested-admin = "~=4.0"
 django-otp = "~=1.5"
-django-phonenumber-field = {version = "~=7.0", extras = ["phonenumberslite"]}
+django-phonenumber-field = {version = "~=8.0", extras = ["phonenumberslite"]}
 django-referrer-policy = "==1.0"
 django-reverse-admin = "==2.9.6"
 gunicorn = "==22.0.0"
