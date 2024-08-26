@@ -18,7 +18,7 @@ summary {
   position: absolute;
   background-color: var(--background-default-grey);
   border: solid 1px #CECECE;
-  z-index: 1;
+  z-index: 100;
   right: 0;
   top: 45px;
 }
@@ -28,26 +28,12 @@ summary {
   line-height: 30px;
 }
 
-.d-table table {
-  display: table;
+.fr-table__container {
+  overflow: visible;
 }
 
-.d-table table thead,
-.d-table table tbody {
-  background-color: var(--background-default-grey);
-  color: var(--text-default-grey);
+.auth-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
 }
-
-.d-table table thead {
-  background-image: linear-gradient(0deg, var(--border-action-high-blue-france), var(--border-action-high-blue-france));
-}
-
-.fr-table--bordered tbody .severals-mandates tr {
-  background-color: var(--background-alt-grey);
-  background-image: none;
-}
-
-.d-table table th,
-.d-table table td {
-  font-size: 1rem;
-} 
