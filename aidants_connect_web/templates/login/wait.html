@@ -1,29 +1,23 @@
-{% load static %}
-<!doctype html>
-<html lang="fr" dir="ltr">
-<head>
-  <title>Aidants Connect - Connexion en cours</title>
-  <meta charset="utf-8">
-  <link href="{% static 'css/template.min.css' %}" rel="stylesheet">
-</head>
-<body>
-<div class="section container">
-  <div class="navbar__home">
-      <img class="navbar__gouvfr" src="{% static 'images/Marianne_logo_1120.png' %}" alt="" />
-      <img class="navbar__logo" src="{% static 'images/aidants-connect_logo.png' %}"  alt="Aidants Connect" />
+{% extends "layouts/main.html" %}
+
+{% block content %}
+  <div class="fr-container">
+    <h1>Connexion en cours…</h1>
+    <p>Veuillez patienter quelques instants.</p>
+    <p>
+      Si rien ne se passe d'ici {{ WAIT_SECONDS }} seconde{{ WAIT_SECONDS|pluralize }},
+      veuillez cliquer sur ce bouton :
+    </p>
+    <a class="fr-btn" id="connect_me" href="{{ next_step_url }}">Se connecter</a>
+    <input type="hidden" id="wait_time" value="{{ WAIT_SECONDS }}">
   </div>
-  <h1>Connexion en cours…</h1>
-  <p>Veuillez patienter quelques instants.</p>
-  <p>Si rien ne se passe d'ici {{ WAIT_SECONDS }} seconde{{ WAIT_SECONDS|pluralize }}, veuillez cliquer sur ce bouton :</p>
-  <a class="button" id="connect_me" href="{{ next_step_url }}">Se connecter</a>
-</div>
-<input type="hidden" id="wait_time" value="{{ WAIT_SECONDS }}">
-<script>
-    var waitSeconds = parseInt(document.getElementById('wait_time').value);
-    setTimeout(function () {
-        url = document.getElementById('connect_me').href;
-        window.location.replace(url);
-    }, waitSeconds * 1000);
-</script>
-</body>
-</html>
+{% endblock %}
+
+{% block extrajs %}
+  <script nonce="{{request.csp_nonce}}">
+      const waitSeconds = Number.parseInt(document.getElementById('wait_time').value);
+      setTimeout(function () {
+          window.location.replace(document.querySelector("#connect_me").href);
+      }, waitSeconds * 1000);
+  </script>
+{% endblock %}
