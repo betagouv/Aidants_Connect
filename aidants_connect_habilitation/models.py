@@ -287,6 +287,9 @@ class OrganisationRequest(models.Model):
     # Organisation
     name = models.TextField("Nom de la structure")
     siret = models.BigIntegerField("N° SIRET")
+    legal_category = models.CharField(
+        "categorieJuridiqueUniteLegale", max_length=30, default="0"
+    )
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
