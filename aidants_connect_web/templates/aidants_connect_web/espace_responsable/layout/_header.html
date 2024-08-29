@@ -4,16 +4,36 @@
 
 {% block nav_menu %}
   <li class="fr-nav__item">
-    <a class="fr-nav__link" target="_self" href="{% url 'espace_responsable_aidants' %}">Aidants</a>
+    <a
+      class="fr-nav__link"
+      target="_self"
+      href="{% url 'espace_responsable_aidants' %}"
+      {% if view_name == 'espace_responsable_aidants' %}aria-current="true"{% endif %}
+    >Aidants</a>
   </li>
   <li class="fr-nav__item">
-    <a class="fr-nav__link" target="_self" href="{% url 'espace_responsable_referents' %}">Référents</a>
+    <a
+      class="fr-nav__link"
+      target="_self"
+      href="{% url 'espace_responsable_referents' %}"
+      {% if view_name == 'espace_responsable_referents' %}aria-current="true"{% endif %}
+    >Référents</a>
   </li>
   <li class="fr-nav__item">
-    <a class="fr-nav__link" target="_self" href="{% url 'espace_responsable_demandes' %}">Demandes en cours</a>
+    <a
+      class="fr-nav__link"
+      target="_self"
+      href="{% url 'espace_responsable_demandes' %}"
+      {% if view_name == 'espace_responsable_demandes' %}aria-current="true"{% endif %}
+    >Demandes en cours</a>
   </li>
   <li class="fr-nav__item">
-    <a class="fr-nav__link" target="_self" href="{% url 'espace_responsable_organisation' %}">Mon organisation</a>
+    <a
+      class="fr-nav__link"
+      target="_self"
+      href="{% url 'espace_responsable_organisation' %}"
+      {% if view_name == 'espace_responsable_organisation' %}aria-current="true"{% endif %}
+    >Mon organisation</a>
   </li>
   <li class="fr-nav__item">
     <a class="fr-nav__link" target="_self" href="{% url 'ressources' %}">Ressources</a>

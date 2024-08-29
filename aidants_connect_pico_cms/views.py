@@ -16,7 +16,7 @@ class TestimoniesView(RedirectView):
         if not testimony_qs.exists():
             return reverse("espace_aidant_home")
 
-        return reverse("temoignage-detail", kwargs={"slug": testimony_qs.first().slug})
+        return reverse("temoignages_detail", kwargs={"slug": testimony_qs.first().slug})
 
 
 class TestimonyView(DetailView):

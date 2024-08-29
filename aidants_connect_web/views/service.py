@@ -41,10 +41,7 @@ def home_page(request):
     return render(
         request,
         "public_website/home_page.html",
-        context={
-            "testimonies": testimonies_qs[:3],
-            "has_more_testimonies": testimonies_qs.count() > 3,
-        },
+        context={"testimonies": testimonies_qs[:3]},
     )
 
 

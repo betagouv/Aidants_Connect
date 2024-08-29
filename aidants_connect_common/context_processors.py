@@ -1,5 +1,6 @@
 from django.conf import settings
 
+from aidants_connect_pico_cms.models import Testimony
 from aidants_connect_web.models import Aidant
 
 
@@ -9,6 +10,7 @@ def settings_variables(request):
         "user_is_responsable_structure": (
             isinstance(request.user, Aidant) and request.user.is_responsable_structure
         ),
+        "testimonies_count": Testimony.objects.for_display().count(),
         "SUPPORT_EMAIL": settings.SUPPORT_EMAIL,
         "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,
         "SITE_DESCRIPTION": settings.SITE_DESCRIPTION,
