@@ -129,6 +129,16 @@
                   </a>
                 </li>
                 <li class="fr-nav__item">
+                  <a
+                    class="fr-nav__link"
+                    target="_self"
+                    href="{% url 'temoignages' %}"
+                    {% if view_name|startswith:'temoignages' %}aria-current="true"{% endif %}
+                  >
+                    Témoignages
+                  </a>
+                </li>
+                <li class="fr-nav__item">
                   <a class="fr-nav__link" target="_self" href="{% mailto_href "contact@aidantsconnect.beta.gouv.fr" %}">
                     Contacter lʼéquipe
                   </a>
