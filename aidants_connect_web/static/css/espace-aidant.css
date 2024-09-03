@@ -21,11 +21,13 @@ summary {
   z-index: 100;
   right: 0;
   top: 45px;
+  width: max-content;
 }
 
 .details-content a {
   background-image: none;
   line-height: 30px;
+  display: block;
 }
 
 .fr-table__container {

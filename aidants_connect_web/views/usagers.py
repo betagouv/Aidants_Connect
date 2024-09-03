@@ -9,7 +9,7 @@ from django.db.models.functions import Concat
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import localdate, now, timedelta
 from django.views.generic import DetailView
 
 from aidants_connect_web.decorators import activity_required
@@ -176,7 +176,7 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
                 valid_mandats[mandat.usager] = list()
 
             expired_soon = mandat.expiration_date - timedelta(days=delta) < now()
-            timedelta_before_expiration = mandat.expiration_date - now()
+            timedelta_before_expiration = mandat.expiration_date.date() - localdate()
             delta_before_expiration = timedelta_before_expiration.days
             valid_mandats[mandat.usager].append(
                 (mandat, l_autorisations, delta_before_expiration, expired_soon)

@@ -50,9 +50,11 @@
               <div>
                 <a class="" href="{{ usager.renew_mandate_url }}">Renouveler</a>
               </div>
-              <div>
-                <a class="" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
-              </div>
+              {% if with_valid_mandate %}
+                <div>
+                  <a class="" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
+                </div>
+              {% endif %}
             </div>
           </details>
         </td>
@@ -98,9 +100,11 @@
                 <div>
                   <a class="" href="{{ usager.renew_mandate_url }}">Renouveler</a>
                 </div>
-                <div>
-                  <a class="" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
-                </div>
+                {% if with_valid_mandate %}
+                  <div>
+                    <a class="" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
+                  </div>
+                {% endif %}
               </div>
             </details>
           </td>
