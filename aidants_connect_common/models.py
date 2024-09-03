@@ -134,6 +134,13 @@ class FormationOrganization(models.Model):
         null=True,
         blank=True,
     )
+    type = models.ForeignKey(
+        FormationType, default=None, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    region = models.ForeignKey(
+        Region, default=None, null=True, blank=True, on_delete=models.SET_NULL
+    )
+
     objects = FormationOrganizationQuerySet.as_manager()
 
     def __str__(self):
