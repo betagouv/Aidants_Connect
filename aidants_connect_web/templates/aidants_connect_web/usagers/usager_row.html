@@ -20,15 +20,17 @@
     {% else %}
       {% for mandat in mandats %}
         <td>
-          {% for autorisation in mandat.1 %}
-            {% if mandat.3 == true %}
-              <p class="{{ auth_badge_classes }} fr-badge--error">{{ autorisation }} </p>
-            {% elif with_valid_mandate == False %}
-              <p class="{{ auth_badge_classes }}">{{ autorisation }} </p>
-            {% else %}
-              <p class="{{ auth_badge_classes }} fr-badge--info">{{ autorisation }} </p>
-            {% endif %}
-          {% endfor %}
+          <div class="auth-badges">
+            {% for autorisation in mandat.1 %}
+              {% if mandat.3 == true %}
+                <p class="{{ auth_badge_classes }} fr-badge--error">{{ autorisation }} </p>
+              {% elif with_valid_mandate == False %}
+                <p class="{{ auth_badge_classes }}">{{ autorisation }} </p>
+              {% else %}
+                <p class="{{ auth_badge_classes }} fr-badge--info">{{ autorisation }} </p>
+              {% endif %}
+            {% endfor %}
+          </div>
         </td>
         {% if with_valid_mandate %}
           <td {% if mandat.3 == True %}class="fr-icon-warning-fill"{% endif %}>
