@@ -1,0 +1,17 @@
+{% load ac_common %}
+
+{% for organisation in organisations %}
+  <div class="fr-grid-row border-bottom">
+    <div class="fr-col-4 fr-background-contrast--grey fr-p-4v">
+      <p><strong>{{ organisation.name }}</strong></p>
+      <p><strong>Familles Rurale<br />{{ organisation.region.name }}</strong></p>
+    </div>
+    <div class="fr-col-8 formation-public-contacts">
+      {% for contact in organisation.contacts %}
+        <p class="fr-p-4v fr-m-0 fr-background-alt--grey border-bottom">{% mailto contact %}</p>
+      {% empty %}
+        <p>Aucun contact public nʼest disponible pour cette organisation</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}

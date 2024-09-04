@@ -589,7 +589,6 @@ class HabilitationRequestCancelationView(LateStageRequestView, FormView):
 
 
 class ManagerFormationRegistrationView(AidantFormationRegistrationView):
-
     def get_person(self):
         return get_object_or_404(
             Manager, organisation=self.organisation, is_aidant=True
