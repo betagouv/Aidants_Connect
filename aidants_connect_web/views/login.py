@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.core.mail import get_connection, send_mail
-from django.core.mail.backends.smtp import EmailBackend
 from django.template.defaultfilters import urlencode
 from django.urls import reverse
 from django.views.generic import RedirectView
@@ -29,7 +28,7 @@ class ACSendEMailForTokenMixin:
         )
         connection = None
         if tld_need_another_stmp(user_email):
-            backup_backend = EmailBackend(
+            connection = get_connection(
                 host=settings.BACKUP_EMAIL_HOST,
                 port=settings.BACKUP_EMAIL_PORT,
                 username=settings.BACKUP_EMAIL_USERNAME,
@@ -37,7 +36,6 @@ class ACSendEMailForTokenMixin:
                 use_tls=settings.BACKUP_EMAIL_USE_TLS,
                 use_ssl=settings.BACKUP_EMAIL_USE_SSL,
             )
-            connection = get_connection(backup_backend)
 
         send_mail(
             subject=self.email_subject,
