@@ -7,6 +7,7 @@ name = "pypi"
 python_version = "3.11"
 
 [packages]
+api-insee = "1.5"
 celery = {version = "==5.4.0", extras = ["redis"]}
 django = "~=4.2.16"
 djangorestframework = "~=3.15"
