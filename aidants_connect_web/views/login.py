@@ -31,8 +31,8 @@ class ACSendEMailForTokenMixin:
             connection = get_connection(
                 host=settings.BACKUP_EMAIL_HOST,
                 port=settings.BACKUP_EMAIL_PORT,
-                username=settings.BACKUP_EMAIL_USERNAME,
-                password=settings.BACKUP_EMAIL_PASSWORD,
+                username=settings.BACKUP_EMAIL_HOST_USER,
+                password=settings.BACKUP_EMAIL_HOST_PASSWORD,
                 use_tls=settings.BACKUP_EMAIL_USE_TLS,
                 use_ssl=settings.BACKUP_EMAIL_USE_SSL,
             )
