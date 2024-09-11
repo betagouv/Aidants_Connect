@@ -944,8 +944,8 @@ class ValidationRequestFormViewTests(TestCase):
             self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(response, self.template_name)
-        # expected button count = 5 -> issuer, org, more info, manager, aidant
-        self.assertContains(response, "Éditer", 5)
+        # expected button count = 4 -> issuer, org,, manager, aidant
+        self.assertContains(response, "Éditer", 4)
 
     def test_do_the_job_and_redirect_valid_post_to_org_view(self):
         self.assertIsNone(self.organisation.data_pass_id)
@@ -953,6 +953,7 @@ class ValidationRequestFormViewTests(TestCase):
 
         cleaned_data = {
             "cgu": True,
+            "not_free": True,
             "dpo": True,
             "professionals_only": True,
             "without_elected": True,
@@ -999,6 +1000,7 @@ class ValidationRequestFormViewTests(TestCase):
 
         cleaned_data = {
             "cgu": True,
+            "not_free": True,
             "dpo": True,
             "professionals_only": True,
             "without_elected": True,
@@ -1033,6 +1035,7 @@ class ValidationRequestFormViewTests(TestCase):
     def test_post_no_manager_raises_error(self):
         valid_data = {
             "cgu": True,
+            "not_free": True,
             "dpo": True,
             "professionals_only": True,
             "without_elected": True,
@@ -1055,6 +1058,7 @@ class ValidationRequestFormViewTests(TestCase):
     def test_post_invalid_data(self):
         valid_data = {
             "cgu": True,
+            "not_free": True,
             "dpo": True,
             "professionals_only": True,
             "without_elected": True,

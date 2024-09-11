@@ -76,7 +76,7 @@
               {% if mandat.3 == True %}
                 <p class="{{ auth_badge_classes }} fr-badge--warning">{{ autorisation }} </p>
               {% elif with_valid_mandate == False %}
-                <p class="{{ auth_badge_classes }}">{{ autorisation }} </p>
+                <p class="{{ auth_badge_classes }} fr-text-mention--grey">{{ autorisation }} </p>
               {% else %}
                 <p class="{{ auth_badge_classes }} fr-badge--info">{{ autorisation }} </p>
               {% endif %}

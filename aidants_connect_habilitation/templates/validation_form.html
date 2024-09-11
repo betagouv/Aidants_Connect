@@ -1,59 +1,136 @@
-{% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras %}
+{% extends 'layouts/main.html' %}
+{% load static ac_common form_extras dsfr_tags %}
 
 {% block title %}
-  Aidants Connect — Récapitulatif pour {{ organisation.name }}
+  Récapitulatif pour {{ organisation.name }} - Aidants Connect
+{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/generic-habilitation-request-profile-card.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-  <div class="fr-container">
-    {% include 'edito/_titre_formulaire_habilitation.html' %}
-    {% include 'layouts/_breadcrumbs.html' %}
-    <h2>Récapitulatif de la demande</h2>
-    <p class="subtitle">
-      Vous retrouverez ici les informations principales saisies dans le formulaire.
-      Il est possible de les modifier si besoin.
-    </p>
 
-    {{ form.non_field_errors }}
-    {% include "_display_org_request.html" with show_edit_buttons=True %}
-    <h3>Information complémentaire</h3>
-    <form method="post">
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-8">
-        <div class="shadowed padding-2rem">
-          <h4 class="h3">Une question ? Une précision ?</h4>
-          <p class="more-info-messages">Si vous souhaitez ajouter une précision ou nous poser une question, c’est ici que ça se passe ! Saisissez votre message ci-dessous, il nous sera envoyé avec votre demande.</p>
-          <div class="fr-grid-row">
-            <label class="fr-col-4" for="{{ form.content.id_for_label }}">Votre message</label>
-            <div class="fr-col-8">
-              {% csrf_token %}
-              {{ form.message_content }}
-            </div>
+  <div class="fr-container">
+    <h1>Récapitulatif de la demande</h1>
+    {% include '_recap_general_info.html' with show_edit_buttons=True %}
+    <div class="fr-alert fr-alert--info">
+      <h3 class="fr-alert__title">Une question ?</h3>
+      <p>
+        Si vous souhaitez ajouter une précision sur votre formulaire ou nous poser une question,
+        vous pouvez nous contacter à l’adresse suivante :<br />
+        {% mailto "contact@aidantsconnect.beta.gouv.fr" %}
+      </p>
+    </div>
+    <div class="fr-mt-6w">
+      <div class="flex flex-between">
+        <h2>Personnes impliquées</h2>
+        <div>
+          {% if organisation.status in organisation.Status.aidant_registrable %}
+            <a
+              id="add-aidants-btn"
+              class="fr-btn fr-btn--icon-left fr-icon-user-add-line fr-mb-2v"
+              href="{% url 'habilitation_organisation_add_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+            >
+              Ajouter un aidant à la demande
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      <p>Il vous est encore possible d’ajouter ou de supprimer des aidants de votre demande. Vous pouvez également
+        vérifier
+        les informations saisies ci-dessous.</p>
+      <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v fr-background-contrast--grey fr-p-3w">
+        <div class="fr-col-12 fr-col-md-4 fr-height-100">
+          <h3 class="fr-h5">Référents</h3>
+          <div class="fr-card fr-tile--shadow fr-p-2v">
+            {% if organisation.manager %}
+              <div class="flex fr-mb-3w">
+                <img src="{% static "images/avatar.svg" %}" width="36" height="36" alt="" />
+                <div class="fr-my-auto fr-ml-1w">
+                  <strong>{{ organisation.manager.get_full_name }}</strong>
+                </div>
+              </div>
+              <div class="fr-mb-2w">
+                <p class="fr-badge fr-badge--sm fr-badge--no-icon fr-badge--info">référent</p>
+                {% if organisation.manager.is_aidant %}
+                  <p class="fr-badge fr-badge--sm fr-badge--purple-glycine">aidant</p>
+                {% endif %}
+              </div>
+              <div class="fr-text--xs fr-text-mention--grey fr-m-0">Email</div>
+              <div class="fr-text--sm fr-mb-2w">{{ organisation.manager.email }}</div>
+              <div class="fr-text--xs fr-text-mention--grey fr-m-0">Profession</div>
+              <div class="fr-text--sm fr-mb-2w">{{ organisation.manager.profession }}</div>
+              <div class="fr-text--xs fr-text-mention--grey fr-m-0">Conseiller numérique</div>
+              <div class="fr-text--sm fr-mb-2w">{{ organisation.manager.conseiller_numerique|yesno:"Oui,Non" }}</div>
+              <div class="fr-text--xs fr-text-mention--grey fr-m-0">Organisation</div>
+              <div class="fr-text--sm fr-mb-2w">{{ organisation.manager.organisation }}</div>
+
+              <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
+                <li>
+                  <a
+                    href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+                    {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
+                    class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
+                  >
+                    Éditer
+                  </a>
+                </li>
+              </ul>
+            {% else %}
+              <ul class="fr-btns-group fr-m-4v">
+                <li>
+                  <a
+                    href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+                    {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
+                    class="fr-btn fr-m-0 width-100"
+                  >
+                    Ajouter un ou une référente
+                  </a>
+                </li>
+              </ul>
+            {% endif %}
           </div>
         </div>
-      </div>
-    </div>
-    <h3>Validation de la demande</h3>
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-8">
-        <div class="shadowed padding-2rem">
-          <h4 class="h2">Modalités d'utilisation</h4>
-            {% checkbox_fr_grid_row form.cgu %}
-            {% checkbox_fr_grid_row form.dpo %}
-            {% checkbox_fr_grid_row form.professionals_only %}
-            {% checkbox_fr_grid_row form.without_elected %}
-            <div class="button-box">
-              <a class="button"
-                 href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-                Revenir à l’étape précédente
-              </a>
-              <button class="fr-btn" type="submit">Soumettre la demande</button>
+        <div class="fr-col-12 fr-col-md-8 fr-height-100">
+          <h3 class="fr-h5">Aidants</h3>
+          {% if habilitation_requests %}
+            <div class="fr-grid-row fr-grid-row--gutters">
+              {% for habilitation_request in habilitation_requests %}
+                {% include "habilitation/generic-habilitation-request-profile-card.html" %}
+              {% endfor %}
             </div>
+          {% else %}
+            <div class="fr-pt-2w fr-text-mention--grey">
+              Vous n'avez pas encore ajouté d'aidant à votre demande
+            </div>
+          {% endif %}
         </div>
       </div>
+
     </div>
+  </div>
+
+  <div class="fr-container fr-mt-6w">
+    <h2>Validation de la demande</h2>
+    <form method="post">
+      <div class="fr-bordered fr-p-4w fr-mb-6w">
+        {% csrf_token %}
+        <h3 class="fr-h6">Conditions et modalités d’utilisation</h3>
+        {% dsfr_form_field form.cgu %}
+        {% dsfr_form_field form.not_free %}
+        <h3 class="fr-h6 fr-mt-3w">Personnes impliquées</h3>
+        {% dsfr_form_field form.dpo %}
+        {% dsfr_form_field form.professionals_only %}
+        {% dsfr_form_field form.without_elected %}
+      </div>
+      <a
+        class="fr-btn fr-btn--secondary"
+        href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+      >
+        Revenir à l’étape précédente
+      </a>
+      <button class="fr-btn" type="submit">Soumettre la demande</button>
     </form>
-    {% include "_more-info.html" %}
-  </div>{# fr-container #}
+  </div>
 {% endblock %}

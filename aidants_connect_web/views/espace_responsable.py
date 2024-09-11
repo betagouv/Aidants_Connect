@@ -283,7 +283,6 @@ class DemandesView(DetailView, FormView):
         return self.organisation
 
     def get_context_data(self, **kwargs):
-
         organisation_habilitation_requests = self.object.habilitation_requests.filter(
             status__in=[
                 ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
@@ -968,8 +967,13 @@ class NewHabilitationRequestJs(NewHabilitationRequest):
     def form_valid(self, form):
         if self.edit_form is None:
             self.template_name = "aidants_connect_web/espace_responsable/_new-habilitation-request-profile-card.html"  # noqa: E501
+
+        form = self.get_partial_form(form)
         return self.render_to_response(
-            self.get_context_data(form=self.get_partial_form(form)), status=201
+            self.get_context_data(
+                form=form, habilitation_request=form.profile_card_context
+            ),
+            status=201,
         )
 
 

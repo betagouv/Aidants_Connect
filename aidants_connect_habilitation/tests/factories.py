@@ -98,6 +98,7 @@ class OrganisationRequestFactory(DjangoModelFactory):
     avg_nb_demarches = FuzzyInteger(0)
 
     cgu = True
+    not_free = True
     dpo = True
     professionals_only = True
     without_elected = True

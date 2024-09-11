@@ -335,6 +335,7 @@ class OrganisationRequest(models.Model):
 
     # Checkboxes
     cgu = models.BooleanField("J'accepte les CGU", default=False)
+    not_free = models.BooleanField("La formation est payante", default=False)
     dpo = models.BooleanField("Le DPO est informé", default=False)
     professionals_only = models.BooleanField(
         "La structure ne contient que des aidants professionnels", default=False
@@ -396,6 +397,7 @@ class OrganisationRequest(models.Model):
 
     def prepare_request_for_ac_validation(self, form_data: dict):
         self.cgu = form_data["cgu"]
+        self.not_free = form_data["not_free"]
         self.dpo = form_data["dpo"]
         self.professionals_only = form_data["professionals_only"]
         self.without_elected = form_data["without_elected"]
@@ -577,6 +579,11 @@ class OrganisationRequest(models.Model):
                 check=Q(status=RequestStatusConstants.NEW.name)
                 | (~Q(status=RequestStatusConstants.NEW.name) & Q(cgu=True)),
                 name="cgu_checked",
+            ),
+            models.CheckConstraint(
+                check=Q(status=RequestStatusConstants.NEW.name)
+                | (~Q(status=RequestStatusConstants.NEW.name) & Q(not_free=True)),
+                name="not_free_checked",
             ),
             models.CheckConstraint(
                 check=Q(status=RequestStatusConstants.NEW.name)

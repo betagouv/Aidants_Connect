@@ -404,7 +404,7 @@ class TestPersonnelForm(TestCase):
 
 
 class TestValidationFormForm(TestCase):
-    names_attr = ["cgu", "dpo", "professionals_only", "without_elected"]
+    names_attr = ["cgu", "not_free", "dpo", "professionals_only", "without_elected"]
 
     def test_form_valid_only_with_four_enabled_choices(self):
         form = ValidationForm()
@@ -421,6 +421,7 @@ class TestValidationFormForm(TestCase):
     def test_form_valid_works(self):
         orga_request = DraftOrganisationRequestFactory(
             cgu=False,
+            not_free=False,
             dpo=False,
             professionals_only=False,
             without_elected=False,

@@ -4,6 +4,7 @@
 {% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
 
 {% block extracss %}
+  <link href="{% static 'css/generic-habilitation-request-profile-card.css' %}" rel="stylesheet">
   <link href="{% static 'css/new-habilitation-request.css' %}" rel="stylesheet">
 {% endblock %}
 
@@ -90,7 +91,7 @@
             <h3>Aidants ajoutés à la demande</h3>
             <div class="fr-grid-row fr-grid-row--gutters" data-new-habilitation-request-target="rightFormsInsert">
               {% for form in form.habilitation_requests.initial_forms %}
-                {% include "aidants_connect_web/espace_responsable/_new-habilitation-request-profile-card.html" %}
+                {% include "aidants_connect_web/espace_responsable/_new-habilitation-request-profile-card.html" with habilitation_request=form.profile_card_context %}
               {% endfor %}
             </div>
           </section>

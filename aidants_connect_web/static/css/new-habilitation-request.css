@@ -9,34 +9,35 @@ details {
   position: relative;
 }
 
-details * {
+details.added-forms * {
   box-sizing: border-box;
 }
 
-details summary {
+details.added-forms summary {
+  flex-wrap: nowrap;
   height: 100%;
   min-height: 4rem;
   position: relative;
   z-index: 10;
 }
 
-details[open] .details-summary-header {
+details.added-forms[open] .details-summary-header {
   display: none;
 }
 
-details[open] .fr-icon-arrow-up-s-line::before {
+details.added-forms[open] .fr-icon-arrow-up-s-line::before {
   -webkit-mask-image: url(/static/dsfr/dist/icons/system/arrow-down-s-line.svg);
   mask-image: url(/static/dsfr/dist/icons/system/arrow-down-s-line.svg);
 }
 
-details .details-content {
+details.added-forms .details-content {
   padding: inherit;
   position: absolute;
   width: 100%;
   z-index: 0;
 }
 
-details .details-content .fr-btns-group .fr-btn {
+details.added-forms .details-content .fr-btns-group .fr-btn {
   margin-bottom: 0;
   margin-top: 0;
 }
