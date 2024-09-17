@@ -6,7 +6,7 @@
       <mj-text>Madame, Monsieur,</mj-text>
       <mj-text>
         <p>
-          Nous vous confirmons que {{person.get_full_name}} a été inscrit(e) à la formation : {{formation.type.label}},
+          Nous vous confirmons que {{person.get_full_name}} a été inscrit(e) à la formation : {{formation.organisation.name}} / {{formation.type.label}},
           {{formation.date_range_str|lower}}.L’organisme en charge de cette formation prendra prochainement contact avec vous.
         </p>
         <p>
