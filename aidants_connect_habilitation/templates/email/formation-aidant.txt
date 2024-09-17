@@ -1,6 +1,6 @@
 Bonjour,
 
-Nous vous confirmons que {{person.get_full_name}} a été inscrit à la formation : {{formation.type.label}}, {{formation.date_range_str|lower}}. L’organisme en charge de cette formation prendra prochainement contact avec vous.
+Nous vous confirmons que {{person.get_full_name}} a été inscrit à la formation : {{formation.organisation.name}} / {{formation.type.label}}, {{formation.date_range_str|lower}}. L’organisme en charge de cette formation prendra prochainement contact avec vous.
 
 Si vous souhaitez modifier ou annuler votre demande, merci de vous rapprocher de l’organisme de formation à cette adresse : {{formation_contacts}}
 
