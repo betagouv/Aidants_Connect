@@ -705,8 +705,13 @@ class PersonnelForm:
 class ValidationForm(PatchedForm):
     cgu = BooleanField(
         required=True,
-        label='J’ai pris connaissance des <a href="{url}">'
+        label='J’ai pris connaissance des <a href="{url}" class="fr-link">'
         "conditions générales d’utilisation</a> et je les valide.",
+    )
+    not_free = BooleanField(
+        required=True,
+        label="Je confirme avoir compris que la formation est payante "
+        "et je me suis renseigné(e) sur les modalités de financements disponibles.",
     )
     dpo = BooleanField(
         required=True,

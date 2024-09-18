@@ -906,7 +906,10 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
 
     def _has_n_cards(self, cards_num):
         def _predicate(driver: WebDriver) -> bool:
-            return len(driver.find_elements(By.CLASS_NAME, "added-forms")) == cards_num
+            return (
+                len(driver.find_elements(By.CLASS_NAME, "request-card-details"))
+                == cards_num
+            )
 
         return _predicate
 

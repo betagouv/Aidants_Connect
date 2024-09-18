@@ -1,0 +1,37 @@
+details.request-card-details {
+  height: 100%;
+  position: relative;
+}
+
+details.request-card-details * {
+  box-sizing: border-box;
+}
+
+details.request-card-details summary {
+  flex-wrap: nowrap;
+  height: 100%;
+  min-height: 4rem;
+  position: relative;
+  z-index: 10;
+}
+
+details.request-card-details[open] .details-summary-header {
+  display: none;
+}
+
+details.request-card-details[open] .fr-icon-arrow-up-s-line::before {
+  -webkit-mask-image: url(/static/dsfr/dist/icons/system/arrow-down-s-line.svg);
+  mask-image: url(/static/dsfr/dist/icons/system/arrow-down-s-line.svg);
+}
+
+details.request-card-details .details-content {
+  padding: inherit;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
+details.request-card-details .details-content .fr-btns-group .fr-btn {
+  margin-bottom: 0;
+  margin-top: 0;
+}

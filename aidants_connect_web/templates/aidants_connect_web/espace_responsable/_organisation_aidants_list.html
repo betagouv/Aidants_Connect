@@ -70,7 +70,7 @@
           <div class="flex flex-right">
             {% if not aidant.status %}
               {% if aidant.has_a_carte_totp or aidant.is_active %}
-                <details id="aidant-{{ aidant.id }}-contextual-actions">
+                <details id="aidant-{{ aidant.id }}-contextual-actions" class="menu-table">
                   <summary>
                     <span>…</span>
                   </summary>

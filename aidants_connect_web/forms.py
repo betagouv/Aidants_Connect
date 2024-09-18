@@ -16,6 +16,7 @@ from django.forms import (
     modelformset_factory,
 )
 from django.forms.formsets import INITIAL_FORM_COUNT, TOTAL_FORM_COUNT
+from django.template.defaultfilters import yesno
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -30,6 +31,7 @@ from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import field_validator
 
+from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
@@ -523,6 +525,41 @@ class HabilitationRequestCreationForm(
         self.fields["organisation"].queryset = Organisation.objects.filter(
             responsables=self.referent
         ).order_by("name")
+
+    @property
+    def profile_card_context(self):
+        email = str(self["email"].value())
+        return {
+            "form": self,
+            "details_id": (
+                f"added-form-{self.index}" if hasattr(self, "index") else None
+            ),
+            "user": {
+                "full_name": (
+                    f'{self["first_name"].value()} {self["last_name"].value()}'
+                ),
+                "email": email,
+                "details_fields": [
+                    # email profession conseiller_numerique organisation
+                    {"label": "Email", "value": email},
+                    {"label": "Profession", "value": self["profession"].value()},
+                    {
+                        "label": "Conseiller numérique",
+                        "value": yesno(
+                            strtobool(self["conseiller_numerique"].value()), "Oui,Non"
+                        ),
+                    },
+                    {
+                        "label": "Organisation",
+                        "value": getattr(
+                            getattr(self, "cleaned_data", {}).get("organisation"),
+                            "name",
+                            "",
+                        ),
+                    },
+                ],
+            },
+        }
 
     def clean_email(self):
         email = super().clean_email()

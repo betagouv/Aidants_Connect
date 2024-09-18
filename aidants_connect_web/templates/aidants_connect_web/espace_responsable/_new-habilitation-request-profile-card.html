@@ -1,66 +1,17 @@
+{% extends "habilitation/generic-habilitation-request-profile-card.html" %}
 {% load static ac_common ac_extras %}
 
-{# Prevent messing with the absolute positionning of the design #}
-{# See https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent #}
-<div
-  class="fr-col-12 fr-col-md-6"
-  data-new-habilitation-request-target="addedForm{{ form.index }}Container"
->
-  <details id="added-form-{{ form.index }}" class="added-forms">
-    {{ form.as_hidden }}
-    <summary class="fr-grid-row fr-grid-row--middle fr-grid-row--gap-2v fr-tile--shadow fr-py-2v fr-px-4v">
-      <img src="{% static "images/avatar.svg" %}" width="36" height="36" alt="" />
-      <span class="fr-grid-row--center spacer">
-      <p class="fr-m-0 fr-text--bold">
-        {{ form.first_name.value|stringformat:'s' }} {{ form.last_name.value|stringformat:'s' }}
-      </p>
-        {% if form.email %}
-          <p class="details-summary-header fr-m-0 fr-text--overflow-hidden">
-          {{ form.email.value|stringformat:'s' }}
-        </p>
-        {% endif %}
-    </span>
-      <span
-        type="button"
-        class="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-arrow-up-s-line"
-        aria-hidden="true"
-      ></span>
-    </summary>
-    <div class="details-content fr-p-4v fr-tile--shadow">
-      <section class="user-informations">
-        {% with fields="email profession conseiller_numerique organisation" %}
-          {% for field in fields.split %}
-            {% with field=form|get_dict_key:field %}
-              <section class="fr-my-4v">
-                {% if field == form.conseiller_numerique %}
-                  <p class="fr-text--sm fr-text-mention--grey">Conseiller numérique</p>
-                  {{ form.conseiller_numerique.value|strtobool|yesno:"Oui,Non" }}
-                {% elif field == form.organisation %}
-                  <p class="fr-text--sm fr-text-mention--grey">Organisation</p>
-                  {{ form.cleaned_data.organisation.name|stringformat:'s' }}
-                {% else %}
-                  <p class="fr-text--sm fr-text-mention--grey">{{ field.label }}</p>
-                  {{ field.value|stringformat:'s' }}
-                {% endif %}
-              </section>
-            {% endwith %}
-          {% endfor %}
-        {% endwith %}
-      </section>
-      <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
-        <li>
-          <button
-            id="edit-button-{{ form.index }}"
-            class="fr-btn fr-btn--tertiary fr-icon-edit-fill"
-            formaction="{{ edit_profile_path }}{{ form.index }}"
-            data-form-idx="{{ form.index }}"
-            data-action="new-habilitation-request#onEdit:prevent:stop"
-            data-new-habilitation-request-target="editBtn"
-          >
-            Éditer
-          </button>
-        </li>
-      </ul>
-    </div>
-  </details>
-</div>
+{% block container_args %}data-new-habilitation-request-target="addedForm{{ habilitation_request.form.index }}Container"{% endblock %}
+{% block details_introduction %}{{ habilitation_request.form.as_hidden }}{% endblock %}
+{% block action_buttons %}
+  <button
+    id="edit-button-{{ habilitation_request.form.index }}"
+    class="fr-btn fr-btn--tertiary fr-icon-edit-fill"
+    formaction="{{ edit_profile_path }}{{ habilitation_request.form.index }}"
+    data-form-idx="{{ habilitation_request.form.index }}"
+    data-action="new-habilitation-request#onEdit:prevent:stop"
+    data-new-habilitation-request-target="editBtn"
+  >
+    Éditer
+  </button>
+{% endblock %}
