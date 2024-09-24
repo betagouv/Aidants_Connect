@@ -1,6 +1,5 @@
 import functools
 from copy import deepcopy
-from datetime import timedelta
 from inspect import signature
 from itertools import accumulate
 from typing import Iterable, Tuple, Union
@@ -143,7 +142,7 @@ class FormationRegistrationForm(DsfrBaseForm):
     def __init__(self, attendant: Model, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["formations"].queryset = Formation.objects.available_for_attendant(
-            timedelta(days=settings.TIMEDELTA_IN_DAYS_FOR_INSCRIPTION), attendant
+            attendant
         )
 
 
