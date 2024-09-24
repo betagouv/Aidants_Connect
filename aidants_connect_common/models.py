@@ -160,13 +160,22 @@ class FormationQuerySet(models.QuerySet):
     def for_attendant_q(self, attendant: HabilitationRequest):
         return models.Q(attendants__attendant_id=attendant.pk)
 
-    def available_for_attendant(
-        self, after: timedelta, attendant: HabilitationRequest
-    ) -> Self:
+    def available_for_attendant(self, attendant: HabilitationRequest) -> Self:
+        att_count = settings.SHORT_TIMEDELTA_ATTENDANTS_COUNT_FOR_INSCRIPTION
+        short_td = timedelta(days=settings.SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION)
+        long_td = timedelta(days=settings.TIMEDELTA_IN_DAYS_FOR_INSCRIPTION)
+
         q = models.Q(
             attendants_count__lt=models.F("max_attendants"),
-            start_datetime__gte=now() + after,
             state=Formation.State.ACTIVE,
+        ) & (
+            models.Q(
+                attendants_count__gt=att_count, start_datetime__gte=now() + long_td
+            )
+            | models.Q(
+                attendants_count__lte=att_count,
+                start_datetime__gte=now() + short_td,
+            )
         )
 
         q = (
