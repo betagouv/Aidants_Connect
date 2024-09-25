@@ -6,27 +6,16 @@ from django.urls import reverse
 
 from faker import Faker
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.models import Issuer
 from aidants_connect_habilitation.tests.factories import IssuerFactory
 
 
 @tag("functional")
 class IssuerFormViewTests(FunctionalTestCase):
-    def test_display_correct_railway(self):
-        self.__open_form_url()
-
-        issuer_station: WebElement = self.selenium.find_elements(
-            By.XPATH, "//*[contains(@class, 'habilitation-breadcrumbs')]//li"
-        )[HabilitationFormStep.ISSUER.value - 1]
-
-        self.assertIn("active", issuer_station.get_attribute("class").split())
-
     def test_submit_form_without_phone_passes(self):
         email = Faker().email()
         issuer = IssuerFactory.build(email=email)
@@ -91,10 +80,7 @@ class IssuerFormViewTests(FunctionalTestCase):
         send_mail_mock.reset_mock()
         send_mail_mock.assert_not_called()
 
-        self.selenium.find_element(
-            By.XPATH,
-            """//button[normalize-space() = "Renvoyer l'email de confirmation"]""",
-        ).click()
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
         send_mail_mock.assert_called_with(
             from_email=ANY,

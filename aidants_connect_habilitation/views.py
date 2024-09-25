@@ -221,7 +221,6 @@ class IssuerEmailConfirmationWaitingView(
         return self.render_to_response(
             {
                 **self.get_context_data(**kwargs),
-                "email_confirmation_sent": True,
                 "support_email": settings.EMAIL_CONFIRMATION_SUPPORT_CONTACT_EMAIL,
                 "support_subject": settings.EMAIL_CONFIRMATION_SUPPORT_CONTACT_SUBJECT,
                 "support_body": settings.EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY,

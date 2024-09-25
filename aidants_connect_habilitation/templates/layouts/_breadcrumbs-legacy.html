@@ -1,0 +1,46 @@
+<div class="fr-col-12 fr-col-md-8">
+  <ol class="habilitation-breadcrumbs">
+    {# STEP 1 ======================================================================= #}
+    <li class="{% if step and step == step.ISSUER %}active{% endif %}">
+      {% if step.value > step.ISSUER.value and issuer %}
+        <a
+          class="fr-link" href="{% url 'habilitation_issuer_page' issuer_id=issuer.issuer_id %}"
+          title="Modifier mes informations demandeur"
+        >
+          Le demandeur
+        </a>
+      {% else %}
+        Le demandeur
+      {% endif %}
+    </li>
+    {# STEP 2 ======================================================================= #}
+    <li class="{% if step and step == step.ORGANISATION %}active{% endif %}">
+      {% if step.value > step.ORGANISATION.value and organisation %}
+        <a
+          class="fr-link"
+          href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+          title="Modifier la structure {{ organisation }}"
+        >
+          La structure
+        </a>
+      {% else %}
+        La structure
+      {% endif %}
+    </li>
+    {# STEP 3 ======================================================================= #}
+    <li class="{% if step and step == step.PERSONNEL %}active{% endif %}">
+      {% if step > step.PERSONNEL.value and organisation %}
+        <a
+          class="fr-link"
+          href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+        >
+          Les personnes<br>impliquées
+        </a>
+      {% else %}
+        Les personnes<br>impliquées
+      {% endif %}
+    </li>
+    {# STEP 4 ======================================================================= #}
+    <li class="{% if step and step == step.SUMMARY %}active{% endif %}">Récapitulatif<br>& validation</li>
+  </ol>
+</div>
