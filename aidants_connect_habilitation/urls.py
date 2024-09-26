@@ -86,4 +86,9 @@ urlpatterns = [
         AddAidantsRequestView.as_view(),
         name="habilitation_organisation_add_aidants",
     ),
+    path(
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/modifier-demandeur/",
+        ModifyIssuerFormView.as_view(),
+        name="habilitation_modify_issuer_on_organisation",
+    ),
 ]

@@ -1,0 +1,12 @@
+{% load dsfr_tags %}
+<fieldset class="fr-fieldset">
+  <legend class="fr-fieldset__legend">Conditions et modalités d’utilisation</legend>
+  {% dsfr_form_field form.cgu %}
+  {% dsfr_form_field form.not_free %}
+</fieldset>
+<fieldset class="fr-fieldset">
+  <legend class="fr-fieldset__legend">Personnes impliquées</legend>
+  {% dsfr_form_field form.dpo %}
+  {% dsfr_form_field form.professionals_only %}
+  {% dsfr_form_field form.without_elected %}
+</fieldset>

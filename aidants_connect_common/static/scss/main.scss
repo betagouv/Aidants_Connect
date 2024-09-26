@@ -12,6 +12,7 @@ body {
 
 ul, ol {
   margin: var(--text-spacing);
+
   p:has(+&) {
     margin-bottom: var(--xl-block);
   }
@@ -146,7 +147,7 @@ p:last-child {
   height: 100%;
 }
 
-.fr-btn.fr-btn--warning {
+.fr-btn.fr-btn--warning:not(:disabled) {
   --hover-tint: var(--hover);
   --idle: transparent;
   --hover: var(--background-action-high-warning-hover);

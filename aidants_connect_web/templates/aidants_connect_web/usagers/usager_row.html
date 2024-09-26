@@ -12,7 +12,7 @@
         {{ usager.family_name }}
       </a>
     </td>
-    <td>{{ usager.birthdate |date:"d F" }}</td>
+    <td>{{ usager.birthdate|date:"d F" }}</td>
     {% if mandats|length > 1 %}
       <td></td>
       <td></td>
@@ -44,7 +44,7 @@
         <td></td>
       {% else %}
         <td>
-          <details>
+          <details name="mandat-action">
             <summary>
               <span>…</span>
             </summary>
@@ -94,7 +94,7 @@
           <td></td>
         {% else %}
           <td>
-            <details>
+            <details name="mandat-action">
               <summary>
                 <span>…</span>
               </summary>

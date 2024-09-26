@@ -227,7 +227,8 @@ class NewIssuerFormView(HabilitationStepMixin, FormView):
 
     def form_valid(self, form: IssuerForm):
         self.saved_model: Issuer = form.save()
-        IssuerEmailConfirmation.for_issuer(self.saved_model).send(self.request)
+        if not self.saved_model.email_verified:
+            IssuerEmailConfirmation.for_issuer(self.saved_model).send(self.request)
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -313,10 +314,29 @@ class ModifyIssuerFormView(VerifiedEmailIssuerView, NewIssuerFormView):
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.ISSUER
 
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.organisation = None
+        if "issuer_id" in kwargs and "uuid" in kwargs:
+            self.organisation = get_object_or_404(
+                OrganisationRequest,
+                issuer__issuer_id=kwargs["issuer_id"],
+                uuid=kwargs["uuid"],
+            )
+
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "instance": self.issuer}
 
     def get_success_url(self):
+        if self.organisation:
+            return reverse(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": self.saved_model.issuer_id,
+                    "uuid": self.organisation.uuid,
+                },
+            )
+
         return reverse(
             "habilitation_new_organisation",
             kwargs={"issuer_id": self.saved_model.issuer_id},
@@ -430,7 +450,7 @@ class PersonnelRequestFormView(
 
 
 class ValidationRequestFormView(OnlyNewRequestsView, FormView):
-    template_name = "validation_form.html"
+    template_name = "aidants_connect_habilitation/validation_request_form_view/validation_form.html"  # noqa: E501
     form_class = ValidationForm
 
     @property
@@ -438,37 +458,18 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
         return HabilitationFormStep.SUMMARY
 
     def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "organisation": self.organisation,
-            "habilitation_requests": [
-                {
-                    "user": {
-                        "full_name": it.get_full_name(),
-                        "email": it.email,
-                        "edit_href": reverse(
-                            "habilitation_new_aidants",
-                            kwargs={
-                                "issuer_id": it.organisation.issuer.issuer_id,
-                                "uuid": it.organisation.uuid,
-                            },
-                        ),
-                        "details_fields": [
-                            # email profession conseiller_numerique organisation
-                            {"label": "Email", "value": it.email},
-                            {"label": "Profession", "value": it.profession},
-                            {
-                                "label": "Conseiller numérique",
-                                "value": yesno(it.conseiller_numerique, "Oui,Non"),
-                            },
-                            {"label": "Organisation", "value": it.organisation},
-                        ],
-                    }
-                }
-                for it in self.organisation.aidant_requests.all()
-            ],
-            "type_other": RequestOriginConstants.OTHER.value,
-        }
+        kwargs.update(
+            {
+                "organisation": self.organisation,
+                # using a generator to avoid unneccessary computations
+                "habilitation_requests": (
+                    ProfileCardAidantRequestPresenter(it)
+                    for it in self.organisation.aidant_requests.all()
+                ),
+                "type_other": RequestOriginConstants.OTHER.value,
+            }
+        )
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse(
@@ -478,6 +479,15 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
                 "uuid": str(self.organisation.uuid),
             },
         )
+
+    def get_initial(self):
+        return {
+            "cgu": self.organisation.cgu,
+            "not_free": self.organisation.not_free,
+            "dpo": self.organisation.dpo,
+            "professionals_only": self.organisation.professionals_only,
+            "without_elected": self.organisation.without_elected,
+        }
 
     def form_valid(self, form):
         form.save(self.organisation)

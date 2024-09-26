@@ -1,0 +1,17 @@
+{% extends "habilitation/generic-habilitation-request-profile-card.html" %}
+{% load ac_common ac_extras dsfr_tags static %}
+
+{% block details_subtitles %}
+  {% if organisation.manager.aidant.last_login %}
+    <a
+      href="{% url 'espace_responsable_organisation' %}"
+      class="fr-btn"
+    >
+      Gérer les formations sur mon espace référent
+    </a>
+  {% elif aidant.habilitation_request.formations.exists %}
+    {% dsfr_badge label="Cette personne est inscrite" extra_classes="fr-badge--sm fr-badge--success" %}
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock details_subtitles %}

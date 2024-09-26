@@ -13,9 +13,10 @@
   {% importmap nonce=request.csp_nonce %}
 
   {% dsfr_css %}
-  <link rel="stylesheet" href="{% static 'dsfr/dist/utility/utility.min.css' %}">
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
-  <link href="{% static 'css/dsfr-theme-tac.min.css' %}" rel="stylesheet">
+  {% for css in form.media.render_css|default:"" %}
+    {{ css }}
+  {% endfor %}
   {# Extra styles #}
   {% block extracss %}{% endblock %}
 
@@ -84,6 +85,9 @@
 <script defer src="{{ COOKIE_BANNER_LANG_URL }}"></script>
 <script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>
 <script defer src="{% static 'js/cookie-banner.js' %}"></script>
+{% for js in form.media.render_js|default:"" %}
+  {{ js }}
+{% endfor %}
 {% block extrajs %}{% endblock %}
 </body>
 </html>
