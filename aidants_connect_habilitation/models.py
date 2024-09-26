@@ -20,6 +20,7 @@ from aidants_connect_common.constants import (
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
+    RequestStatusDescs,
 )
 from aidants_connect_common.utils import (
     build_url,
@@ -351,6 +352,9 @@ class OrganisationRequest(models.Model):
     @property
     def status_label(self):
         return RequestStatusConstants[self.status].label
+
+    def status_desc(self):
+        return RequestStatusDescs[self.status].label
 
     def __str__(self):
         return self.name

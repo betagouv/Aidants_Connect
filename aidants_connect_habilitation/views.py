@@ -28,6 +28,7 @@ from aidants_connect_habilitation.forms import (
     OrganisationRequestForm,
     PersonnelForm,
     RequestMessageForm,
+    RequestViewForm,
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
@@ -467,7 +468,32 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
         return {
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
-            "aidants": self.organisation.aidant_requests,
+            "habilitation_requests": [
+                {
+                    "user": {
+                        "full_name": it.get_full_name(),
+                        "email": it.email,
+                        "edit_href": reverse(
+                            "habilitation_new_aidants",
+                            kwargs={
+                                "issuer_id": it.organisation.issuer_id,
+                                "uuid": it.organisation.uuid,
+                            },
+                        ),
+                        "details_fields": [
+                            # email profession conseiller_numerique organisation
+                            {"label": "Email", "value": it.email},
+                            {"label": "Profession", "value": it.profession},
+                            {
+                                "label": "Conseiller numérique",
+                                "value": yesno(it.conseiller_numerique, "Oui,Non"),
+                            },
+                            {"label": "Organisation", "value": it.organisation},
+                        ],
+                    }
+                }
+                for it in self.organisation.aidant_requests.all()
+            ],
         }
 
     def get_success_url(self):
@@ -492,6 +518,18 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
             )
 
         return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        form: RequestViewForm = self.get_form()
+        if self.organisation.manager is None:
+            form.add_error(
+                None,
+                "Veuillez ajouter le ou la référente de la structure avant validation.",
+            )
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 
 class AddAidantsRequestView(LateStageRequestView, FormView):

@@ -759,6 +759,20 @@ class ValidationForm(PatchedForm):
     save.alters_data = True
 
 
+class RequestViewForm(PatchedForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(
+        self, organisation: OrganisationRequest, commit=True
+    ) -> OrganisationRequest:
+        organisation.prepare_request_for_ac_validation(self.cleaned_data)
+        return organisation
+
+    save.alters_data = True
+
+
 class RequestMessageForm(PatchedModelForm):
     content = CharField(label="Votre message", widget=Textarea(attrs={"rows": 2}))
 

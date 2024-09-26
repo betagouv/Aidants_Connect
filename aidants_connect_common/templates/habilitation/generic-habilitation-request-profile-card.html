@@ -31,19 +31,21 @@
           </section>
         {% endfor %}
       </section>
-      <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
-        <li>
-          {% block action_buttons %}
-            <a
-              href="{{ habilitation_request.user.edit_href }}"
-              {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
-              class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
-            >
-              Éditer
-            </a>
-          {% endblock action_buttons %}
-        </li>
-      </ul>
+      {% if organisation.status in organisation.Status.aidant_registrable %}
+        <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
+          <li>
+            {% block action_buttons %}
+              <a
+                href="{{ habilitation_request.user.edit_href }}"
+                {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
+                class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
+              >
+                Éditer
+              </a>
+            {% endblock %}
+          </li>
+        </ul>
+      {% endif %}
     </div>
   </details>
 </div>

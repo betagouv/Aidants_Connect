@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db.models import Choices, IntegerChoices, TextChoices
 from django.db.models.enums import ChoicesMeta as DjangoChoicesMeta
 from django.utils.functional import Promise, classproperty
+from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 
 __all__ = [
@@ -253,11 +254,14 @@ class RequestOriginConstants(IntegerChoices):
 
 class RequestStatusConstants(TextChoicesEnum):
     NEW = "Brouillon"
-    AC_VALIDATION_PROCESSING = "En attente de validation par Aidants Connect"
-    VALIDATED = "Validée"
-    REFUSED = "Refusée"
+    AC_VALIDATION_PROCESSING = mark_safe(
+        "En attente de validation d’éligibilité avant inscription en "
+        "formation des aidants"
+    )
+    VALIDATED = "Éligibilité validée"
+    REFUSED = "Éligibilité Refusée"
     CLOSED = "Clôturée"
-    CHANGES_REQUIRED = "Modifications demandées"
+    CHANGES_REQUIRED = "Demande de modifications par l’équipe Aidants Connect"
     CHANGES_PROPOSED = "Modifications proposées par Aidants Connect"
 
     @classproperty
@@ -274,7 +278,32 @@ class RequestStatusConstants(TextChoicesEnum):
     @classproperty
     def validatable(cls):
         """Statuses that allow to validate an habilitation request"""
-        return cls.NEW, cls.CHANGES_REQUIRED, cls.CHANGES_PROPOSED
+        return (cls.NEW, cls.CHANGES_REQUIRED, cls.CHANGES_PROPOSED)
+
+
+class RequestStatusDescs(TextChoicesEnum):
+    NEW = ""
+    AC_VALIDATION_PROCESSING = mark_safe(
+        "Votre demande d’habilitation est en cours d’instruction "
+        "par nos équipes. Vous serez prochainement notifié de la décision de nos "
+        "équipes concernant votre dossier."
+    )
+    VALIDATED = mark_safe(
+        "Félicitations, votre demande d’habilitation a été acceptée par Aidants "
+        "Connect !<br/><br/>"
+        "Vous pouvez désormais inscrire le référent sur un webinaire d’information"
+        "dédié aux référents et inscrire les aidants en formation.<br/><br/>"
+    )
+    REFUSED = ""
+    CLOSED = ""
+    CHANGES_REQUIRED = mark_safe(
+        "L'équipe Aidants Connect a étudié votre demande d’habilitation et souhaite"
+        " que vous y apportiez des modifications. N’oubliez pas de valider à nouveau"
+        " votre demande d’habilitation en cliquant sur le bouton “Soumettre la "
+        "demande” pour que l'équipe Aidants Connect prenne en compte vos modifications"
+        " et valide votre demande"
+    )
+    CHANGES_PROPOSED = ""
 
 
 class MessageStakeholders(TextChoicesEnum):
