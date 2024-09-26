@@ -19,6 +19,9 @@ from aidants_connect_web.tests.factories import HabilitationRequestFactory
 
 @tag("functional")
 class AddAidantsRequestViewTests(FunctionalTestCase):
+    def setUp(self):
+        self.add_aidant_css = "#add-aidants-btn"
+
     def test_add_aidant_button_shown_in_readonly_view_under_correct_conditions(self):
         unauthorized_statuses = set(RequestStatusConstants) - set(
             RequestStatusConstants.aidant_registrable
@@ -29,9 +32,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 status=status
             )
             self.__open_readonly_view_url(organisation)
-
-            self.selenium.find_element(By.CSS_SELECTOR, ".fr-container")
-            self.assertElementNotFound(By.CSS_SELECTOR, "#add-aidants-btn")
+            self.assertElementNotFound(By.CSS_SELECTOR, self.add_aidant_css)
 
         for status in RequestStatusConstants.aidant_registrable:
             organisation: OrganisationRequest = OrganisationRequestFactory(
@@ -39,7 +40,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             )
             self.__open_readonly_view_url(organisation)
 
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidants-btn").click()
+            self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
 
             path = reverse(
                 "habilitation_organisation_add_aidants",
