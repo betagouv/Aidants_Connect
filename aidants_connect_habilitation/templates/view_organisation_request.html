@@ -1,46 +1,36 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 {% load ac_common form_extras static %}
 
 {% block title %}
-  Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
+  Demande d'habilitation pour {{ organisation.name }} - Aidants Connect
 {% endblock title %}
+
+{% block extracss %}
+  <link href="{% static 'css/generic-habilitation-request-profile-card.css' %}" rel="stylesheet">
+{% endblock extracss %}
 
 {% block content %}
   <div class="fr-container">
-    <h1>Demande d’habilitation n° {{ organisation.data_pass_id }}</h1>
-    <p class="subtitle">
-
-    </p>
-    <h2>Votre demande</h2>
-    <p>
-      Votre demande est actuellement dans l'état <strong>«&nbsp;{{ organisation.status_label }}&nbsp;»</strong>.
-      <br>
-      {% include "edito/_aide_etats_demandes_habilitation.html" with status=organisation.status %}
-    </p>
-    <h2>Rappel de votre saisie</h2>
-    {% if organisation.status in organisation.Status.validatable %}
-      <a
-        id="modify-btn"
-        class="fr-btn margin-bottom-1rem"
-        href="{% url 'habilitation_validation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-      >
-        Modifier votre demande
-      </a>
-    {% endif %}
-
-    {% include "_display_org_request.html" with show_edit_buttons=False %}
-
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <p class="fr-col more-info">
-        Pour modifier cette demande (ajouter un aidant, etc.), envoyez votre requête par mail à lʼadresse
-        {% mailto AC_CONTACT_EMAIL %}.
+    <h1>Demande n° {{ organisation.data_pass_id }}</h1>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w">
+      <div class="fr-col-12">
+        <div class="fr-alert fr-alert--{% if organisation.status == organisation.Status.VALIDATED %}success {% elif organisation.status == organisation.status.CHANGES_REQUIRED %}warning{% else %}info{% endif %} fr-height-100">
+        <h3 class="fr-alert__title fr-mb-0">Statut : {{ organisation.status_enum.label }}</h3>
+        {% if organisation.status_enum.description %}
+          <section>{{ organisation.status_enum.description }}</section>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+    {% include 'aidants_connect_habilitation/common/_recap_general_info.html' %}
+    <div class="fr-alert fr-alert--info fr-my-6w">
+      <h3 class="fr-alert__title fr-mb-0">Une question ?</h3>
+      <p>
+        Si vous souhaitez ajouter une précision sur votre formulaire ou nous poser une question,
+        vous pouvez nous contacter à l’adresse suivante : {% mailto "contact@aidantsconnect.beta.gouv.fr" %}
       </p>
     </div>
-
-  </div>{# fr-container #}
+    {% include 'aidants_connect_habilitation/common/_recap_personnes.html' %}
+  </div>
 {% endblock content %}
 
-{% block extrajs %}
-  {% stimulusjs %}
-  <script defer src="{% static 'js/message-form.mjs' %}"></script>
-{% endblock extrajs %}

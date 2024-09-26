@@ -28,6 +28,7 @@ from aidants_connect_habilitation.forms import (
     OrganisationRequestForm,
     PersonnelForm,
     RequestMessageForm,
+    RequestViewForm,
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
@@ -162,6 +163,43 @@ class AdressAutocompleteJSMixin:
 
 
 """Real views"""
+
+
+class ProfileCardAidantRequestPresenter:
+    def __init__(self, req: AidantRequest):
+        self.req = req
+
+    @property
+    def obj(self):
+        return self
+
+    @property
+    def edit_endpoint(self):
+        return reverse(
+            "api_habilitation_aidant_edit",
+            kwargs={
+                "issuer_id": self.req.organisation.issuer.issuer_id,
+                "uuid": self.req.organisation.uuid,
+                "aidant_id": self.req.pk,
+            },
+        )
+
+    @property
+    def user(self):
+        return {
+            "full_name": self.req.get_full_name(),
+            "email": self.req.email,
+            "details_fields": [
+                # email profession conseiller_numerique organisation
+                {"label": "Email", "value": self.req.email},
+                {"label": "Profession", "value": self.req.profession},
+                {
+                    "label": "Conseiller numérique",
+                    "value": yesno(self.req.conseiller_numerique, "Oui,Non"),
+                },
+                {"label": "Organisation", "value": self.req.organisation},
+            ],
+        }
 
 
 class NewHabilitationView(RedirectView):
@@ -393,7 +431,7 @@ class PersonnelRequestFormView(
 
 
 class ValidationRequestFormView(OnlyNewRequestsView, FormView):
-    template_name = "validation_form.html"
+    template_name = "aidants_connect_habilitation/validation_request_form_view/validation_form.html"  # noqa: E501
     form_class = ValidationForm
 
     @property
@@ -401,37 +439,18 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
         return HabilitationFormStep.SUMMARY
 
     def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "organisation": self.organisation,
-            "habilitation_requests": [
-                {
-                    "user": {
-                        "full_name": it.get_full_name(),
-                        "email": it.email,
-                        "edit_href": reverse(
-                            "habilitation_new_aidants",
-                            kwargs={
-                                "issuer_id": it.organisation.issuer.issuer_id,
-                                "uuid": it.organisation.uuid,
-                            },
-                        ),
-                        "details_fields": [
-                            # email profession conseiller_numerique organisation
-                            {"label": "Email", "value": it.email},
-                            {"label": "Profession", "value": it.profession},
-                            {
-                                "label": "Conseiller numérique",
-                                "value": yesno(it.conseiller_numerique, "Oui,Non"),
-                            },
-                            {"label": "Organisation", "value": it.organisation},
-                        ],
-                    }
-                }
-                for it in self.organisation.aidant_requests.all()
-            ],
-            "type_other": RequestOriginConstants.OTHER.value,
-        }
+        kwargs.update(
+            {
+                "organisation": self.organisation,
+                # using a generator to avoid unneccessary computations
+                "habilitation_requests": (
+                    ProfileCardAidantRequestPresenter(it)
+                    for it in self.organisation.aidant_requests.all()
+                ),
+                "type_other": RequestOriginConstants.OTHER.value,
+            }
+        )
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse(
@@ -441,6 +460,15 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
                 "uuid": str(self.organisation.uuid),
             },
         )
+
+    def get_initial(self):
+        return {
+            "cgu": self.organisation.cgu,
+            "not_free": self.organisation.not_free,
+            "dpo": self.organisation.dpo,
+            "professionals_only": self.organisation.professionals_only,
+            "without_elected": self.organisation.without_elected,
+        }
 
     def form_valid(self, form):
         form.save(self.organisation)
@@ -467,7 +495,11 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
         return {
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
-            "aidants": self.organisation.aidant_requests,
+            # using a generator to avoid unneccessary computations
+            "habilitation_requests": (
+                ProfileCardAidantRequestPresenter(it)
+                for it in self.organisation.aidant_requests.all()
+            ),
         }
 
     def get_success_url(self):
@@ -492,6 +524,18 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
             )
 
         return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        form: RequestViewForm = self.get_form()
+        if self.organisation.manager is None:
+            form.add_error(
+                None,
+                "Veuillez ajouter le ou la référente de la structure avant validation.",
+            )
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 
 class AddAidantsRequestView(LateStageRequestView, FormView):
