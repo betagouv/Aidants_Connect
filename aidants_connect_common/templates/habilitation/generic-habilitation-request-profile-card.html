@@ -2,8 +2,22 @@
 
 {# Prevent messing with the absolute positionning of the design #}
 {# See https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent #}
-<div class="fr-col-12 fr-col-md-6 request-card" {% block container_args %}{% endblock %}>
-  <details {% if habilitation_request.details_id %}id="{{ habilitation_request.details_id }}" {% endif %}class="request-card-details">
+<div
+  class="fr-col-12 fr-col-md-6 request-card"
+  {% block container_args %}
+    {% if habilitation_request.edit_endpoint %}
+  data-controller="profile-edit-card"
+  data-profile-edit-card-id-value="{{ habilitation_request.req.pk }}"
+  data-profile-edit-card-enpoint-value="{{ habilitation_request.edit_endpoint }}"
+  data-profile-edit-card-profile-edit-modal-outlet="#profile-edit-modal"
+    {% endif %}
+  {% endblock container_args %}
+>
+  <details
+    {% if habilitation_request.details_id %}id="{{ habilitation_request.details_id }}"{% endif %}
+    class="request-card-details"
+    name="generic-hab-request"
+  >
     {% block details_introduction %}{% endblock %}
     <summary
       class="fr-grid-row fr-grid-row--middle fr-grid-row--gap-2v fr-tile--shadow fr-py-2v fr-px-4v"
@@ -12,9 +26,11 @@
       <img src="{% static "images/avatar.svg" %}" width="36" height="36" alt="" />
       <span class="fr-grid-row--center fr-text--overflow-hidden spacer">
         <p class="fr-m-0 fr-text--bold">{{ habilitation_request.user.full_name }}</p>
-        {% if habilitation_request.user.email %}
-          <p class="details-summary-header fr-m-0 fr-text--overflow-hidden">{{ habilitation_request.user.email }}</p>
-        {% endif %}
+        {% block details_subtitles %}
+          {% if habilitation_request.user.email %}
+            <p class="details-summary-header fr-m-0 fr-text--overflow-hidden">{{ habilitation_request.user.email }}</p>
+          {% endif %}
+        {% endblock details_subtitles %}
       </span>
       <span
         type="button"
@@ -31,16 +47,16 @@
           </section>
         {% endfor %}
       </section>
-      <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
+      <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline fr-mb-n4v">
         <li>
           {% block action_buttons %}
-            <a
-              href="{{ habilitation_request.user.edit_href }}"
+            <button
               {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
               class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
+              data-action="profile-edit-card#onEdit:prevent:stop"
             >
               Éditer
-            </a>
+            </button>
           {% endblock action_buttons %}
         </li>
       </ul>

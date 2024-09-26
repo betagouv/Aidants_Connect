@@ -256,25 +256,6 @@ class WithDictNode(Node):
             return self.nodelist.render(context)
 
 
-@register.filter(is_safe=True)
-def strfmt(args, format_string):
-    """
-    Shortcup to `str.format`.
-
-    Usage:
-
-    ```
-    {{ ctx_variable|strfmt:"The sum of 1 + 2 is {0}" }}
-    ```
-    See: https://docs.python.org/3/library/stdtypes.html#str.format
-    """
-    kwargs = {}
-    if isinstance(args, dict):
-        kwargs.update(args)
-        args = tuple()
-    if isinstance(args, Iterable) and not isinstance(args, str):
-        args = tuple(args)
-    else:
-        args = (str(args),)
-
-    return format_html(format_string, *args, **kwargs)
+@register.simple_tag
+def hidden():
+    return mark_safe('hidden aria-hidden="true"')

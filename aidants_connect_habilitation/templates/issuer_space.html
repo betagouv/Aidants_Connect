@@ -1,9 +1,9 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras %}
+{% load form_extras static %}
 
 {% block title %}
   Aidants Connect - Mon espace habilitation
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container">
@@ -47,7 +47,7 @@
         {% for organisation in issuer.organisation_requests.all %}
           <div class="fr-col-12 fr-col-md-4">
             <div class="shadowed with-button-box">
-              <h3 class="h2">{{ organisation.name }} - <i>{{ organisation.status_label }}</i></h3>
+              <h3 class="h2">{{ organisation.name }} - <i>{{ organisation.get_status_display }}</i></h3>
               <p>
                 {{ organisation.address|linebreaksbr }}<br>{{ organisation.zipcode }} {{ organisation.city }}
                 {% if organisation.status == "NEW" %}
@@ -98,4 +98,4 @@
     {% include "_more-info.html" %}
   </div>
 
-{% endblock %}
+{% endblock content %}

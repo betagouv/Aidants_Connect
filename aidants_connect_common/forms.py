@@ -23,7 +23,7 @@ from django.forms import (
     RadioSelect,
     TypedChoiceField,
 )
-from django.forms.utils import ErrorList, pretty_name
+from django.forms.utils import ErrorList, RenderableFormMixin, pretty_name
 from django.utils.datastructures import MultiValueDict
 from django.utils.html import format_html
 from django.utils.translation import ngettext
@@ -232,7 +232,7 @@ class DeclarativeFormMetaclass(MediaDefiningClass):
         return new_class
 
 
-class BaseMultiForm(metaclass=DeclarativeFormMetaclass):
+class BaseMultiForm(RenderableFormMixin, metaclass=DeclarativeFormMetaclass):
     def __init__(
         self,
         data=None,
