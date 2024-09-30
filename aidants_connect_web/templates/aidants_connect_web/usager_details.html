@@ -30,8 +30,8 @@
         <div id="active-mandat-panel" class="panel">
           <div class="row">
             <h4 class="margin-bottom-0">
-              <span aria-hidden="true">📝&nbsp;</span>Mandat valable encore {{ mandat.expiration_date | timeuntil }}
-              <small title="{{ mandat.expiration_date }}">(jusqu'au {{ mandat.expiration_date | date:"d F Y" }})</small>
+              <span aria-hidden="true">📝&nbsp;</span>Mandat valable encore {{ mandat.expiration_date|timeuntil }}
+              <small title="{{ mandat.expiration_date }}">(jusqu'au {{ mandat.expiration_date|date:"d F Y" }})</small>
             </h4>
             <div class="btn-group-right-with-gap">
               <a
@@ -58,12 +58,12 @@
             </div>
           </div>
           <ul class="label-list">
-            <li class="label">Réalisé le <span title="{{ mandat.creation_date }}">{{ mandat.creation_date | date:"d F Y" }}</span></li>
+            <li class="label">Réalisé le <span title="{{ mandat.creation_date }}">{{ mandat.creation_date|date:"d F Y" }}</span></li>
             <li class="label">{{ mandat.get_duree_keyword_display }}</li>
             <li class="label">Signé {% if mandat.is_remote %}<span>à distance</span>{% else %}<span>en présence</span>{% endif %}</li>
           </ul>
           <br />
-          <h5>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count | pluralize }}</h5>
+          <h5>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count|pluralize }}</h5>
           <div>
             <table class="table">
               <thead>
@@ -84,7 +84,7 @@
                     <td>{{ autorisation.demarche }}</td>
                     <td>
                       {% if not autorisation.revocation_date %}
-                        <span title="{{ mandat.expiration_date }}">{{ mandat.expiration_date | date:"d F Y" }}</span>
+                        <span title="{{ mandat.expiration_date }}">{{ mandat.expiration_date|date:"d F Y" }}</span>
                       {% else %}
                         <span class="text-red">Révoquée le {{ autorisation.revocation_date }}</span>
                       {% endif %}
@@ -127,11 +127,11 @@
             <h4>
               {% spaceless %}
               {% if mandat.was_explicitly_revoked %}
-              <span aria-hidden="true">📝&nbsp;</span>Mandat révoqué depuis {{ mandat.revocation_date | timesince }}
-              <small title="{{ mandat.revocation_date }}">(le {{ mandat.revocation_date | date:"d F Y" }})</small>
+              <span aria-hidden="true">📝&nbsp;</span>Mandat révoqué depuis {{ mandat.revocation_date|timesince }}
+              <small title="{{ mandat.revocation_date }}">(le {{ mandat.revocation_date|date:"d F Y" }})</small>
               {% else %}
-              <span aria-hidden="true">📝&nbsp;</span>Mandat expiré depuis {{ mandat.expiration_date | timesince }}
-              <small title="{{ mandat.expiration_date }}">(le {{ mandat.expiration_date | date:"d F Y" }})</small>
+              <span aria-hidden="true">📝&nbsp;</span>Mandat expiré depuis {{ mandat.expiration_date|timesince }}
+              <small title="{{ mandat.expiration_date }}">(le {{ mandat.expiration_date|date:"d F Y" }})</small>
               {% endif %}
               {% endspaceless %}
             </h4>
@@ -155,12 +155,12 @@
             </div>
           </div>
           <ul class="label-list">
-            <li class="label">Réalisé le <span title="{{ mandat.creation_date }}">{{ mandat.creation_date | date:"d F Y" }}</span></li>
+            <li class="label">Réalisé le <span title="{{ mandat.creation_date }}">{{ mandat.creation_date|date:"d F Y" }}</span></li>
             <li class="label">{{ mandat.get_duree_keyword_display }}</li>
             <li class="label">Signé {% if mandat.is_remote %}<span>à distance</span>{% else %}<span>en présence</span>{% endif %}</li>
           </ul>
           <br />
-          <h5>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count | pluralize }}</h5>
+          <h5>{{ mandat.autorisations.count }} démarche{{ mandat.autorisations.count|pluralize }}</h5>
           <div>
             <table class="table">
               <thead>
@@ -181,7 +181,7 @@
                     <td>{{ autorisation.demarche }}</td>
                     <td>
                       {% if not autorisation.revocation_date %}
-                        <span title="{{ mandat.expiration_date }}">{{ mandat.expiration_date | date:"d F Y" }}</span>
+                        <span title="{{ mandat.expiration_date }}">{{ mandat.expiration_date|date:"d F Y" }}</span>
                       {% else %}
                         <span class="text-red">Révoquée le {{ autorisation.revocation_date }}</span>
                       {% endif %}

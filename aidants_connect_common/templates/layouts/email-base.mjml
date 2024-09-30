@@ -50,7 +50,7 @@
             <br/>
             Pour toute demande : {% mailto "contact@aidantsconnect.beta.gouv.fr" %}
           </mj-text>
-          {% endblock %}
+          {% endblock email_signature %}
         </mj-column>
       </mj-section>
     </mj-wrapper>

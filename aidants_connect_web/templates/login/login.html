@@ -1,13 +1,13 @@
 {% extends 'layouts/main.html' %}
-{% load static ac_common dsfr_tags %}
+{% load ac_common dsfr_tags static %}
 
 {% block extracss %}
   <link href="{% static 'css/login.css' %}" rel="stylesheet">
-{% endblock %}
+{% endblock extracss %}
 
 {% block title %}
   Connectez-vous{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container main-content-full">

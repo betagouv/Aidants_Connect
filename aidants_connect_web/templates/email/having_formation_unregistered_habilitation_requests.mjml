@@ -14,4 +14,4 @@
     <mj-button href="{{ habilitation_requests_url }}">Aller sur ma demande d’habilitation</mj-button>
   </mj-column>
 </mj-section>
-{% endblock %}
+{% endblock email_body %}

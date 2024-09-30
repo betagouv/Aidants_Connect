@@ -6,11 +6,11 @@
       <mj-text>Madame, Monsieur,</mj-text>
       <mj-text>
         <p>
-          Nous vous confirmons que {{person.get_full_name}} a été inscrit(e) à la formation : {{formation.organisation.name}} / {{formation.type.label}},
-          {{formation.date_range_str|lower}}.L’organisme en charge de cette formation prendra prochainement contact avec vous.
+          Nous vous confirmons que {{ person.get_full_name }} a été inscrit(e) à la formation : {{ formation.organisation.name }} / {{ formation.type.label }},
+          {{ formation.date_range_str|lower }}.L’organisme en charge de cette formation prendra prochainement contact avec vous.
         </p>
         <p>
-          Si vous souhaitez modifier ou annuler votre demande, merci de vous rapprocher de l’organisme de formation à cette adresse : {{formation_contacts}}</p>
+          Si vous souhaitez modifier ou annuler votre demande, merci de vous rapprocher de l’organisme de formation à cette adresse : {{ formation_contacts }}</p>
         <p>La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant financée selon différentes modalités.</p>
         <p>Nous vous invitons à vous rendre sur <a href="https://tally.so/r/mO0Xkg">ce simulateur de financement</a> pour découvrir comment la financer.</p>
         <p><strong>Attention :</strong> il peut arriver que dans certains cas (structures non adhérentes à l'OPCO Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être financée par la structure.</p>
@@ -23,4 +23,4 @@
       </mj-text>
     </mj-column>
   </mj-section>
-{% endblock %}
+{% endblock email_body %}

@@ -1,4 +1,4 @@
-{% load static ac_common %}
+{% load ac_common static %}
 
 {% include 'layouts/_skip-links.html' %}
 
@@ -144,7 +144,7 @@
                   </a>
                 </li>
               {% endif %}
-            {% endblock %}
+            {% endblock nav_menu %}
             {% with user_organisations=request.user.organisations.all %}
               {% if user_is_authenticated and user_organisations|length > 1 %}
                 <div class="spacer"></div>

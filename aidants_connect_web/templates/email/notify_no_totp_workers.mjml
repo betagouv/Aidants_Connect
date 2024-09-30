@@ -1,6 +1,6 @@
 {% extends "layouts/email-base.mjml" %}
 
-{% load ac_extras ac_common %}
+{% load ac_common ac_extras %}
 
 {% block email_body %}
   <mj-section>
@@ -69,4 +69,4 @@
       </mj-text>
     </mj-column>
   </mj-section>
-{% endblock %}
+{% endblock email_body %}

@@ -1,4 +1,4 @@
-{% load static dsfr_tags ac_common %}
+{% load ac_common dsfr_tags static %}
 <!doctype html>
 <html lang="fr" data-fr-scheme="light">
 <head>
@@ -67,7 +67,7 @@
 
 <main id="main" tabindex="-1">
   {% block content %}
-  {% endblock %}
+  {% endblock content %}
 </main>
 
 {% block footer %}

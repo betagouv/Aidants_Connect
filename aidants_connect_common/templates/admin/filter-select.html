@@ -1,4 +1,4 @@
-{% load i18n static ac_common %}
+{% load ac_common i18n static %}
 <details data-controller="admin-filter-select" data-filter-title="{{ title }}" open>
   <summary>
     {% blocktranslate with filter_title=title %} By {{ filter_title }} {% endblocktranslate %}

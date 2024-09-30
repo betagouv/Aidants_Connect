@@ -1,13 +1,13 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras %}
+{% load form_extras static %}
 
 {% block body_class %}
 remove-footer-margin
-{% endblock %}
+{% endblock body_class %}
 
 {% block title %}
   Aidants Connect - {{ object.name }}, {{ object.job }}
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container">
@@ -68,4 +68,4 @@ remove-footer-margin
 
     </div>
   </div>
-{% endblock %}
+{% endblock content %}
