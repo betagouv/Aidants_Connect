@@ -1,9 +1,9 @@
 {% extends 'layouts/main.html' %}
-{% load static ac_common dsfr_tags %}
+{% load ac_common dsfr_tags static %}
 
 {% block title %}
   Aidants Connect - FAQ {{ object.name }}
-{% endblock %}
+{% endblock title %}
 
 {% block nav %}
     {% include 'public_website/layout/_header.html' %}
@@ -81,4 +81,4 @@
       {# /Questions #}
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

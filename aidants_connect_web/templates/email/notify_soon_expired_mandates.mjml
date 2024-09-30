@@ -35,4 +35,4 @@
       <mj-text>Merci de ne pas répondre à cet email.</mj-text>
     </mj-column>
   </mj-section>
-{% endblock %}
+{% endblock email_body %}

@@ -11,13 +11,13 @@
     <a class="fr-btn" id="connect_me" href="{{ next_step_url }}">Se connecter</a>
     <input type="hidden" id="wait_time" value="{{ WAIT_SECONDS }}">
   </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extrajs %}
-  <script nonce="{{request.csp_nonce}}">
+  <script nonce="{{ request.csp_nonce }}">
       const waitSeconds = Number.parseInt(document.getElementById('wait_time').value);
       setTimeout(function () {
           window.location.replace(document.querySelector("#connect_me").href);
       }, waitSeconds * 1000);
   </script>
-{% endblock %}
+{% endblock extrajs %}

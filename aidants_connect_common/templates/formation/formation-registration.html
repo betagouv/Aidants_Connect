@@ -1,10 +1,8 @@
-{% extends "layouts/main.html" %}{% load ac_common %}
-
-{% load static dsfr_tags %}
+{% extends "layouts/main.html" %}{% load ac_common dsfr_tags static %}
 
 {% block extracss %}
   <link href="{% static 'css/formation-registration.css' %}" rel="stylesheet">
-{% endblock %}
+{% endblock extracss %}
 
 {% block content %}
   <div class="fr-container">
@@ -139,10 +137,10 @@
       {% endif %}
     {% endif %}
   </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extrajs %}
   {% stimulusjs %}
   <script defer src="{% url 'js_reverse' %}"></script>
   <script defer type="module" src="{% static 'js/formation-informations.js' %}"></script>
-{% endblock %}
+{% endblock extrajs %}
