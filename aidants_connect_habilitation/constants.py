@@ -1,13 +1,28 @@
-from enum import IntEnum, auto, unique
+from enum import auto
+from typing import Self
+
+from django.db.models import IntegerChoices
+from django.utils.version import PY311
+
+if PY311:
+    from enum import property as enum_property
+else:
+    from types import DynamicClassAttribute as enum_property
 
 
-@unique
-class HabilitationFormStep(IntEnum):
-    ISSUER = auto()
-    ORGANISATION = auto()
-    PERSONNEL = auto()
-    SUMMARY = auto()
+class HabilitationFormStep(IntegerChoices):
+    ISSUER = auto(), "Le demandeur"
+    ORGANISATION = auto(), "La structure"
+    PERSONNEL = auto(), "Les personnes impliquées"
+    SUMMARY = auto(), "Récapitulatif & validation"
 
-    @classmethod
-    def size(cls):
-        return len(cls)
+    @enum_property
+    def enum(self):
+        return self.__class__
+
+    @enum_property
+    def next(self) -> Self | None:
+        try:
+            return list(self.__class__)[self.value]
+        except IndexError:
+            return None
