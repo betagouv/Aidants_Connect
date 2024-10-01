@@ -412,7 +412,7 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
                         "edit_href": reverse(
                             "habilitation_new_aidants",
                             kwargs={
-                                "issuer_id": it.organisation.issuer_id,
+                                "issuer_id": it.organisation.issuer.issuer_id,
                                 "uuid": it.organisation.uuid,
                             },
                         ),
