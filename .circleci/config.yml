@@ -82,22 +82,10 @@ jobs:
             - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
 
       - run:
-          name: check Django missing migrations
-          command: |
-            . /tmp/venv/bin/activate
-            ./manage.py makemigrations --no-input --dry-run --check
-      - run:
           name: run linting
           command: |
             . /tmp/venv/bin/activate
-            echo "************** Running black **************"
-            black --check .
-            echo "************** Running flak8 **************"
-            flake8
-            echo "************** Running isort **************"
-            isort . --check
-            echo "************** Running djade **************"
-            djade **/templates/**/*.html **/templates/**/*.mjml
+            pre-commit run --from-ref=main --to-ref=HEAD
   test:
     executor: testbed
     parallelism: 8
