@@ -22,12 +22,12 @@ from typing import Optional, Union
 from django.conf import global_settings
 from django.utils.translation import gettext_noop
 
+import dj_database_url
 import sentry_sdk
 from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
-from aidants_connect.postgres_url import turn_psql_url_into_param
 from aidants_connect.utils import strtobool
 
 load_dotenv(verbose=True)
@@ -203,41 +203,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "aidants_connect.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-postgres_url = os.getenv("POSTGRESQL_URL")
-if postgres_url:
-    environment_info = turn_psql_url_into_param(postgres_url)
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": environment_info.get("db_name"),
-            "USER": environment_info.get("db_user"),
-            "PASSWORD": environment_info.get("db_password"),
-            "HOST": environment_info.get("db_host"),
-            "PORT": environment_info.get("db_port"),
-        }
-    }
-
-    ssl_option = environment_info.get("sslmode")
-
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DATABASE_NAME"),
-            "USER": os.getenv("DATABASE_USER"),
-            "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-            "HOST": os.getenv("DATABASE_HOST"),
-            "PORT": os.getenv("DATABASE_PORT"),
-        }
-    }
-
-    ssl_option = os.getenv("DATABASE_SSL")
-
-if ssl_option:
-    DATABASES["default"]["OPTIONS"] = {"sslmode": ssl_option}
+DATABASES = {
+    "default": dj_database_url.config(
+        default="postgres://localhost:5432/aidants_connect",
+        ssl_require=True if not DEBUG else None,
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators

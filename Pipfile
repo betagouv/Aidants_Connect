@@ -10,6 +10,7 @@ python_version = "3.11"
 api-insee = "1.5"
 celery = {version = "==5.4.0", extras = ["redis"]}
 django = "~=4.2.16"
+dj-database-url = "~=2.2"
 djangorestframework = "~=3.15"
 django-blocklist = "==2.6"
 django-celery-beat = "==2.6.0"
@@ -22,6 +23,7 @@ django-js-reverse = "~=0.10.0"
 django-magicauth = "==1.0.2"
 django-nested-admin = "~=4.0"
 django-otp = "~=1.5"
+django-pgtrigger = "~=4.11.0"
 django-phonenumber-field = {version = "~=8.0", extras = ["phonenumberslite"]}
 django-referrer-policy = "==1.0"
 django-reverse-admin = "==2.9.6"
@@ -43,7 +45,6 @@ whitenoise = "~=6.2"
 grist-api = "0.1.0"
 ua-parser = "==0.18.0"
 sortedcontainers = "~=2.4.0"
-django-pgtrigger = "~=4.11.0"
 
 [dev-packages]
 pipenv = "*"
