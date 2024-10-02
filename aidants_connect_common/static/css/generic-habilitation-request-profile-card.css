@@ -28,7 +28,7 @@ details.request-card-details .details-content {
   padding: inherit;
   position: absolute;
   width: 100%;
-  z-index: 0;
+  z-index: 11;
 }
 
 details.request-card-details .details-content .fr-btns-group .fr-btn {

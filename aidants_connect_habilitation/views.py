@@ -443,6 +443,15 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
             },
         )
 
+    def get_initial(self):
+        return {
+            "cgu": self.organisation.cgu,
+            "not_free": self.organisation.not_free,
+            "dpo": self.organisation.dpo,
+            "professionals_only": self.organisation.professionals_only,
+            "without_elected": self.organisation.without_elected,
+        }
+
     def form_valid(self, form):
         form.save(self.organisation)
         return super().form_valid(form)
@@ -476,7 +485,7 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
                         "edit_href": reverse(
                             "habilitation_new_aidants",
                             kwargs={
-                                "issuer_id": it.organisation.issuer_id,
+                                "issuer_id": it.organisation.issuer.issuer_id,
                                 "uuid": it.organisation.uuid,
                             },
                         ),

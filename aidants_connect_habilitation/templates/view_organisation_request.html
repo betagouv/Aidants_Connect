@@ -1,31 +1,33 @@
 {% extends 'layouts/main.html' %}
-{% load static form_extras ac_common %}
+{% load ac_common form_extras static %}
 
 {% block title %}
-Demande d'habilitation pour {{ organisation.name }} - Aidants Connect
-{% endblock %}
+  Demande d'habilitation pour {{ organisation.name }} - Aidants Connect
+{% endblock title %}
 
 {% block extracss %}
   <link href="{% static 'css/generic-habilitation-request-profile-card.css' %}" rel="stylesheet">
-{% endblock %}
+{% endblock extracss %}
 
 {% block content %}
   <div class="fr-container">
     <h1>Demande n° {{ organisation.data_pass_id }}</h1>
-    <div class="fr-alert fr-alert--{% if organisation.status == 'VALIDATED' %}success{% elif organisation.status == 'CHANGES_REQUIRED' %}warning{% else %}info{% endif %} fr-mb-6w">
-      <h3 class="fr-alert__title fr-mb-0">Statut : {{ organisation.status_label }}</h3>
-      <p>{{ organisation.status_desc }}</p>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w">
+      {% if organisation.status == 'VALIDATED' %}
+        <div class="fr-col-md-4 fr-col-12 fr-my-3v fr-background-contrast--info fr-p-4w">
+          <div class="fr-mb-2w"><span class="fr-icon-list-unordered fr-mr-1w"></span><strong>À faire pour compléter la demande :</strong></div>
+          <div><span class="fr-icon-check-line- fr-mr-1w"></span>Inscrire le référent au webinaire</div>
+          <div>Choisir le mode de connexion du référent</div>
+          <div>Inscrire les aidants en formation</div>
+        </div>
+      {% endif %}
+      <div class="{% if organisation.status == 'VALIDATED' %}fr-col-md-8 {% endif %} fr-col-12">
+        <div class="fr-alert fr-alert--{% if organisation.status == 'VALIDATED' %}success {% elif organisation.status == 'CHANGES_REQUIRED' %}warning{% else %}info{% endif %}">
+          <h3 class="fr-alert__title fr-mb-0">Statut : {{ organisation.status_label }}</h3>
+          <p>{{ organisation.status_desc }}</p>
+        </div>
+      </div>
     </div>
-    {% if organisation.status in organisation.status.validatable %}
-      <a
-        id="modify-btn"
-        class="fr-btn margin-bottom-1rem"
-        href="{% url 'habilitation_validation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-      >
-        Modifier votre demande
-      </a>
-    {% endif %}
-
     {% include '_recap_general_info.html' %}
     <div class="fr-alert fr-alert--info fr-my-6w">
       <h3 class="fr-alert__title fr-mb-0">Une question ?</h3>
@@ -33,16 +35,10 @@ Demande d'habilitation pour {{ organisation.name }} - Aidants Connect
       </p>
     </div>
     {% include '_recap_personnes.html' %}
-
-    <form method="post">
-      {% csrf_token %}
-      <button class="fr-btn" type="submit">Soumettre la demande</button>
-    </form>
   </div>
-{% endblock %}
-
+{% endblock content %}
 
 {% block extrajs %}
   {% stimulusjs %}
   <script defer src="{% static 'js/message-form.js' %}"></script>
-{% endblock %}
+{% endblock extrajs %}

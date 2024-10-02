@@ -3,7 +3,7 @@
 {# Prevent messing with the absolute positionning of the design #}
 {# See https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent #}
 <div class="fr-col-12 fr-col-md-6 request-card" {% block container_args %}{% endblock %}>
-  <details {% if habilitation_request.details_id %}id="{{ habilitation_request.details_id }}" {% endif %}class="request-card-details">
+  <details {% if habilitation_request.details_id %}id="{{ habilitation_request.details_id }}" {% endif %}class="request-card-details" name="aidant-details">
     {% block details_introduction %}{% endblock %}
     <summary
       class="fr-grid-row fr-grid-row--middle fr-grid-row--gap-2v fr-tile--shadow fr-py-2v fr-px-4v"
