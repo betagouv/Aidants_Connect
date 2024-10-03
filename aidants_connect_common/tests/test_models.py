@@ -95,7 +95,7 @@ class FormationTests(TestCase):
         # Formation available for attendant
         self.assertEqual(Formation.objects.available_for_attendant(self.hab).count(), 2)
 
-    def test_display_formations_with_few_registered(self):
+    def test_display_formations_with_lot_of_registered(self):
         # Total formations count
         self.assertEqual(Formation.objects.count(), 3)
         self.assertEqual(Formation.objects.available_for_attendant(self.hab).count(), 2)
@@ -131,13 +131,13 @@ class FormationTests(TestCase):
                     type=self.other_type,
                 )
                 self.assertEqual(
-                    Formation.objects.available_for_attendant(self.hab).count(), 3
+                    Formation.objects.available_for_attendant(self.hab).count(), 2
                 )
 
         with self.subTest(
-            f"Not showing formations starting in more than "
+            f"Showing formations starting in less than "
             f"{settings.TIMEDELTA_IN_DAYS_FOR_INSCRIPTION} "
-            f"days with a enough registered"
+            f"days with a lot registered"
         ):
             with transaction.atomic():
                 form: Formation = FormationFactory(

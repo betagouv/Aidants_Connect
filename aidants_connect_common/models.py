@@ -170,11 +170,11 @@ class FormationQuerySet(models.QuerySet):
             state=Formation.State.ACTIVE,
         ) & (
             models.Q(
-                attendants_count__gt=att_count, start_datetime__gte=now() + long_td
+                attendants_count__gt=att_count, start_datetime__gte=now() + short_td
             )
             | models.Q(
                 attendants_count__lte=att_count,
-                start_datetime__gte=now() + short_td,
+                start_datetime__gte=now() + long_td,
             )
         )
 
