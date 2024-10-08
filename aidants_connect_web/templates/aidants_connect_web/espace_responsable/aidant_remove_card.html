@@ -1,11 +1,10 @@
-{% extends 'layouts/main-legacy.html' %}
-{% load static ac_extras dsfr_tags %}
+{% extends 'layouts/main.html' %}
+{% load ac_extras dsfr_tags static %}
 
 {% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
+  <div class="fr-container">
       {% include "layouts/_messages.html" %}
       <h1>
         Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte
@@ -23,10 +22,8 @@
         action="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
       >
         {% csrf_token %}
-        {% dsfr_form %}
+        {{ form }}
         <button class="fr-btn" type="submit">Dissocier</button>
       </form>
-
-    </div>
-  </section>
+  </div>
 {% endblock content %}
