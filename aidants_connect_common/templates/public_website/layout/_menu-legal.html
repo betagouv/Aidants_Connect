@@ -9,12 +9,12 @@
     </button>
     <div class="fr-collapse" id="fr-sidemenu-wrapper">
       <ul class="fr-sidemenu__list">
-        <li class="fr-sidemenu__item {% if request.resolver_match.url_name == 'cgu' %} fr-sidemenu__item--active{% endif %}">
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'cgu' %} fr-sidemenu__item--active{% endif %}">
           <a
             class="fr-sidemenu__link"
             target="_self"
             href="{% url 'cgu' %}"
-            {% if request.resolver_match.url_name == 'espace_aidant_cgu' %}aria-current="true"{% endif %}
+            {% if request.resolver_match.url_name == 'cgu' %}aria-current="page"{% endif %}
             >Conditions générales d'utilisation</a
           >
         </li>
@@ -23,8 +23,17 @@
             class="fr-sidemenu__link" 
             target="_self"
             href="{% url 'politique_confidentialite' %}" 
-            {% if request.resolver_match.url_name == 'politique_confidentialite' %}aria-current="true"{% endif %}
+            {% if request.resolver_match.url_name == 'politique_confidentialite' %}aria-current="page"{% endif %}
             >Politique de Confidentialité</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'accessibilite' %} fr-sidemenu__item--active{% endif %}">
+          <a 
+            class="fr-sidemenu__link" 
+            target="_self"
+            href="{% url 'accessibilite' %}" 
+            {% if request.resolver_match.url_name == 'accessibilite' %}aria-current="page"{% endif %}
+            >Déclaration d'accessibilité</a
           >
         </li>
       </ul>

@@ -274,7 +274,7 @@ urlpatterns = [
     path("formation/", service.formation, name="habilitation_faq_formation"),
     path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
     path("ressources/", service.ressources, name="ressources"),
-    path("accessibilite/", service.accessibilite, name="accessibilite"),
+    path("accessibilite/", service.AccessibiliteView.as_view(), name="accessibilite"),
     # # Datapass
     path(
         "datapass_receiver/",
