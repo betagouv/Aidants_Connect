@@ -12,17 +12,18 @@
 {% block content %}
   <div class="fr-container">
     <h1>Demande n° {{ organisation.data_pass_id }}</h1>
-    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w">
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w"><!-- 
       {% if organisation.status == 'VALIDATED' %}
         <div class="fr-col-md-4 fr-col-12 fr-my-3v fr-background-contrast--info fr-p-4w">
           <div class="fr-mb-2w"><span class="fr-icon-list-unordered fr-mr-1w"></span><strong>À faire pour compléter la demande :</strong></div>
-          <div><span class="fr-icon-check-line- fr-mr-1w"></span>Inscrire le référent au webinaire</div>
-          <div>Choisir le mode de connexion du référent</div>
-          <div>Inscrire les aidants en formation</div>
+          <div class="fr-text-default--success fr-mb-1w"><span class="fr-icon-check-line fr-mr-1w"></span>Inscrire le référent au webinaire</div>
+          <div class="fr-mb-1w"><span class="fr-icon-time-line fr-mr-1w"></span>Choisir le mode de connexion du référent</div>
+          <div><span class="fr-icon-time-line fr-mr-1w"></span>Inscrire les aidants en formation</div>
         </div>
-      {% endif %}
-      <div class="{% if organisation.status == 'VALIDATED' %}fr-col-md-8 {% endif %} fr-col-12">
-        <div class="fr-alert fr-alert--{% if organisation.status == 'VALIDATED' %}success {% elif organisation.status == 'CHANGES_REQUIRED' %}warning{% else %}info{% endif %}">
+      {% endif %} -->
+      <!--<div class="{% if organisation.status == 'VALIDATED' %}fr-col-md-8{% endif %} fr-col-12"> -->
+      <div class="fr-col-12">
+        <div class="fr-alert fr-alert--{% if organisation.status == 'VALIDATED' %}success {% elif organisation.status == 'CHANGES_REQUIRED' %}warning{% else %}info{% endif %} fr-height-100">
           <h3 class="fr-alert__title fr-mb-0">Statut : {{ organisation.status_label }}</h3>
           <p>{{ organisation.status_desc }}</p>
         </div>

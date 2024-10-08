@@ -12,7 +12,9 @@
       <img src="{% static "images/avatar.svg" %}" width="36" height="36" alt="" />
       <span class="fr-grid-row--center fr-text--overflow-hidden spacer">
         <p class="fr-m-0 fr-text--bold">{{ habilitation_request.user.full_name }}</p>
-        {% if habilitation_request.user.email %}
+        {% if organisation.status == 'VALIDATED' %}
+          {% include "_formation_registration_button.html" with aidant=habilitation_request %}
+        {% elif habilitation_request.user.email %}
           <p class="details-summary-header fr-m-0 fr-text--overflow-hidden">{{ habilitation_request.user.email }}</p>
         {% endif %}
       </span>
@@ -30,6 +32,12 @@
             {{ field.value }}
           </section>
         {% endfor %}
+        {% if organisation.status == 'VALIDATED' %}
+          <section class="fr-my-4v">
+            {% include "_formation_registration_button.html" with aidant=habilitation_request.user %}
+          </section>
+        {% endif %}
+        
       </section>
       {% if organisation.status in organisation.Status.aidant_registrable %}
         <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
