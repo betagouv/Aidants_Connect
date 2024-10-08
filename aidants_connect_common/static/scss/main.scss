@@ -11,9 +11,10 @@ body {
 }
 
 ul, ol {
-  margin: 0;
-  padding: 0;
-  list-style-position: outside;
+  margin: var(--text-spacing);
+  p:has(+&) {
+    margin-bottom: var(--xl-block);
+  }
 }
 
 $main-padding: 3rem;
