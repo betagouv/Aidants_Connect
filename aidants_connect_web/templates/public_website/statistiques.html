@@ -107,7 +107,7 @@
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   {{ data|json_script:"data" }}
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
   const data = JSON.parse(document.getElementById('data').textContent);
 
   var ctx = document.getElementById('mandats-chart').getContext('2d');
