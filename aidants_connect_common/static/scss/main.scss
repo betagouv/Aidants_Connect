@@ -146,6 +146,24 @@ p:last-child {
   height: 100%;
 }
 
+.fr-btn.fr-btn--warning {
+  --hover-tint: var(--hover);
+  --idle: transparent;
+  --hover: var(--background-action-high-warning-hover);
+  --active: var(--background-action-high-warning-active);
+  align-items: center;
+  background-color: var(--background-action-high-warning);
+  color: var(--text-inverted-warning);
+
+  &.fr-btn--secondary {
+    --hover: inherit;
+    --active: inherit;
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px var(--border-action-high-warning);
+    color: var(--text-default-warning);
+  }
+}
+
 @for $i from 0 through 32 {
   @each $gap-type in gap, row-gap, column-gap {
     .fr-grid-row.fr-grid-row--#{$gap-type}-#{$i}v {
