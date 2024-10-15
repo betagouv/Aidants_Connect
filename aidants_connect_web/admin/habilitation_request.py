@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, SimpleListFilter
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.forms import ChoiceField
@@ -17,6 +17,7 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
+from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils import build_url, render_email
 from aidants_connect_web.constants import ReferentRequestStatuses
@@ -89,6 +90,7 @@ class HabilitationRequestResource(resources.ModelResource):
         model = HabilitationRequest
         fields = (
             "created_at",
+            "updated_at",
             "organisation__data_pass_id",
             "organisation__name",
             "organisation__type__name",
@@ -215,6 +217,21 @@ class HabilitationRequestRegionFilter(RegionFilter):
     filter_parameter_name = "organisation__zipcode"
 
 
+class HabilitationRequestOrgaTypeFilter(SimpleListFilter):
+    title = "Type de l'organisation"
+
+    parameter_name = "orga_type_id"
+
+    def lookups(self, request, model_admin):
+        return RequestOriginConstants.choices
+
+    def queryset(self, request, queryset):
+        orga_type_id = self.value()
+        if not orga_type_id:
+            return
+        return queryset.filter(organisation__type=orga_type_id)
+
+
 class HabilitationRequestImportForm(ImportForm):
     import_choices = ChoiceField(
         label="Type d'import d'aidant à former",
@@ -237,6 +254,7 @@ class ConfirmHabilitationRequestImportForm(ConfirmImportForm):
 
 class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
+        "updated_at",
         "email",
         "first_name",
         "last_name",
@@ -252,6 +270,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     list_filter = (
         HabilitationRequestRegionFilter,
         HabilitationDepartmentFilter,
+        HabilitationRequestOrgaTypeFilter,
         "status",
         "origin",
         "test_pix_passed",
