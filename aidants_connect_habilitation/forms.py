@@ -707,7 +707,8 @@ class PersonnelForm:
     save.alters_data = True
 
 
-class ValidationForm(PatchedForm):
+class ValidationForm(DsfrBaseForm):
+    template_name = "aidants_connect_habilitation/forms/validation.html"  # noqa: E501
     cgu = BooleanField(
         required=True,
         label='J’ai pris connaissance des <a href="{url}" class="fr-link">'
@@ -754,6 +755,19 @@ class ValidationForm(PatchedForm):
                 sender=MessageStakeholders.ISSUER.name,
                 content=self.cleaned_data["message_content"],
             )
+        return organisation
+
+    save.alters_data = True
+
+
+class RequestViewForm(PatchedForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(
+        self, organisation: OrganisationRequest, commit=True
+    ) -> OrganisationRequest:
+        organisation.prepare_request_for_ac_validation(self.cleaned_data)
         return organisation
 
     save.alters_data = True

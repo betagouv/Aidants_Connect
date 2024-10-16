@@ -1,9 +1,9 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras %}
+{% load form_extras static %}
 
 {% block title %}
   Aidants Connect - Mon espace habilitation
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container">
@@ -72,11 +72,16 @@
               </p>
               <div class="button-box">
                 {% if organisation.status == "NEW" %}
-                  <a href="{% url "habilitation_validation" issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+                  <a href='{% url "habilitation_validation" issuer_id=issuer.issuer_id uuid=organisation.uuid %}'
                      class="button primary">Soumettre la demande</a>
+                {% elif organisation.status == "CHANGES_REQUIRED" %}
+                  <a class="button primary"
+                     href='{% url "habilitation_validation" issuer_id=issuer.issuer_id uuid=organisation.uuid %}'>
+                    Voir
+                  </a>
                 {% else %}
                   <a class="button primary"
-                     href="{% url "habilitation_organisation_view" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+                     href='{% url "habilitation_organisation_view" issuer_id=issuer.issuer_id uuid=organisation.uuid %}'>
                     Voir
                   </a>
                 {% endif %}
@@ -98,4 +103,4 @@
     {% include "_more-info.html" %}
   </div>
 
-{% endblock %}
+{% endblock content %}
