@@ -1,0 +1,38 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bienvenue sur Aidants Connect,</mj-text>
+    <mj-text>
+      Votre compte vient d’être créé. Pour y accéder, vous devez utiliser la carte Aidants Connect reçue et activée par
+      votre référent. Vous pourrez ensuite créer vos premiers mandats et accompagner les usagers dans la réalisation de
+      leurs démarches en ligne.
+    </mj-text>
+    <mj-text>
+      <p>📚 En attendant, voici quelques ressources à votre disposition :</p>
+      <ul>
+        <li>
+          <a href="{{ tuto_url }}">Guides de prise en main et tutoriel interactif</a>
+        </li>
+        <li>
+          <a href="{{ etsijaccompagnais_url }}">Fiches tangibles Etsijaccompagnais</a>
+        </li>
+        <li>
+          <a href="{{ faq_url }}">Foire aux questions</a>
+        </li>
+      </ul>
+    </mj-text>
+    <mj-text>
+      🗞️ Chaque mois, une newsletter avec des informations et nouveautés sur le dispositif est envoyée. Pour la
+      recevoir, <a href="{{ home_url }}">n’hésitez pas à vous inscrire ici</a>
+    </mj-text>
+    <mj-text>
+      ⚙️ Si vous rencontrez des difficultés de connexion ou pour toute autre question, contactez-nous à l’adresse
+      suivante : {% mailto AC_CONTACT_EMAIL %}.
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock email_body %}

@@ -4,12 +4,12 @@
 #
 version: "2.1"
 orbs:
-  browser-tools: circleci/browser-tools@1.2.4
+  browser-tools: circleci/browser-tools@1.4.8
 
 parameters:
   python-img-tag:
     type: string
-    default: "3.11.4-browsers"
+    default: "3.11.10-browsers"
   db-img-tag:
     type: string
     default: "12.12"
@@ -18,7 +18,7 @@ parameters:
     default: "~/repo"
   cache-version:
     type: string
-    default: "v4-dependencies"
+    default: "v5-dependencies"
 
 executors:
   testbed:
@@ -82,17 +82,10 @@ jobs:
             - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
 
       - run:
-          name: check Django missing migrations
-          command: |
-            . /tmp/venv/bin/activate
-            ./manage.py makemigrations --no-input --dry-run --check
-      - run:
           name: run linting
           command: |
             . /tmp/venv/bin/activate
-            black --check .
-            flake8
-            isort . --check
+            pre-commit run --from-ref=main --to-ref=HEAD
   test:
     executor: testbed
     parallelism: 8

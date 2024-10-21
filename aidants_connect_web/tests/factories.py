@@ -38,6 +38,19 @@ class OrganisationFactory(DjangoModelFactory):
     siret = 123
     address = "45 avenue du Général de Gaulle, 27120 HOULBEC COCHEREL"
 
+    @post_generation
+    def with_aidants(self, create, extracted, **_):
+        if not create:
+            return
+
+        if not (isdigit := f"{extracted}".isdigit()) and extracted is not True:
+            return
+
+        extracted = int(f"{extracted}") if isdigit else random.randint(3, 10)
+
+        for i in range(extracted):
+            AidantFactory(organisation=self)
+
     class Meta:
         model = Organisation
 

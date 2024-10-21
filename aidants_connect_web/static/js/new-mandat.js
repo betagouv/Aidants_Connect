@@ -5,6 +5,8 @@ import {BaseController} from "./base-controller.js"
 (function () {
     const REMOTE_METHOD_EVENT_NAME = "changed"
     const REMOTE_METHOD_EVENT_NAME_PREFIX = "remoteconsent"
+    const IS_REMOTE_METHOD_EVENT_NAME = "changed"
+    const IS_REMOTE_METHOD_EVENT_NAME_PREFIX = "isremote"
 
     class MandateFormController extends BaseController {
         connect () {
@@ -51,6 +53,11 @@ import {BaseController} from "./base-controller.js"
             this.mutateVisibility(value, this.remoteConsentSectionTarget);
             this.remoteLabelTextTargets.forEach(elt => this.mutateVisibility(value, elt));
             this.requiredInputTargets.forEach(elt => this.mutateRequirement(value, elt));
+
+            this.dispatch(
+                IS_REMOTE_METHOD_EVENT_NAME,
+                {detail: {isRemote: value}, prefix: IS_REMOTE_METHOD_EVENT_NAME_PREFIX}
+            )
         }
 
         static targets = [
@@ -73,10 +80,19 @@ import {BaseController} from "./base-controller.js"
         connect () {
             if (this.hasRequiredInputsTarget) {
                 this.boundRemoteMethodTriggered = this.remoteMethodTriggered.bind(this);
-                document.querySelector("[data-controller='mandate-form-controller']").addEventListener(
+                this.mandateFormControllerElt.addEventListener(
                     `${REMOTE_METHOD_EVENT_NAME_PREFIX}:${REMOTE_METHOD_EVENT_NAME}`, this.boundRemoteMethodTriggered
                 );
+
+                this.boundIsRemoteTriggered = this.isRemoteTriggered.bind(this);
+                this.mandateFormControllerElt.addEventListener(
+                    `${IS_REMOTE_METHOD_EVENT_NAME_PREFIX}:${IS_REMOTE_METHOD_EVENT_NAME}`, this.boundIsRemoteTriggered
+                );
             }
+        }
+
+        get mandateFormControllerElt() {
+            return document.querySelector("[data-controller='mandate-form-controller']");
         }
 
         remoteMethodTriggered (event) {
@@ -85,10 +101,18 @@ import {BaseController} from "./base-controller.js"
             this.requiredInputsTarget.querySelectorAll("input").forEach(elt => this.mutateRequirement(state, elt));
         }
 
+        isRemoteTriggered (event) {
+            this.mutateVisibility(event.detail.isRemote, this.requiredInputsTarget);
+            this.requiredInputsTarget.querySelectorAll("input").forEach(elt => this.mutateRequirement(event.detail.isRemote, elt));
+        }
+
         disconnect () {
             if (this.hasRequiredInputsTarget) {
-                this.element.removeEventListener(
+                this.mandateFormControllerElt.removeEventListener(
                     `${REMOTE_METHOD_EVENT_NAME_PREFIX}:${REMOTE_METHOD_EVENT_NAME}`, this.boundRemoteMethodTriggered
+                );
+                this.mandateFormControllerElt.removeEventListener(
+                    `${IS_REMOTE_METHOD_EVENT_NAME_PREFIX}:${IS_REMOTE_METHOD_EVENT_NAME}`, this.boundIsRemoteTriggered
                 );
             }
         }

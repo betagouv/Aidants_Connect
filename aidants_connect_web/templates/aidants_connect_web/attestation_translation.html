@@ -1,6 +1,6 @@
 {% extends 'layouts/main-habilitation.html' %}
 
-{% load static ac_common %}
+{% load ac_common static %}
 
 {% block title %}Aidants Connect - Impression du mandat{% endblock %}
 
@@ -92,11 +92,11 @@
   </div>
 {% endblock content %}
 
-{% block footer %}{% endblock footer %}
+{% block footer %}{% endblock %}
 
 {% block extrajs %}
   {% if available_translations|length > 0 %}
     {% stimulusjs %}
     <script defer type="module" src="{% static 'js/mandate-translation.js' %}"></script>
   {% endif %}
-{% endblock %}
+{% endblock extrajs %}

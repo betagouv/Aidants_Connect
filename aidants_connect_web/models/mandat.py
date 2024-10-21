@@ -14,6 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import IntegrityError, models, transaction
 from django.db.models import SET_NULL, Q, QuerySet
 from django.template import defaultfilters, loader
+from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -134,6 +135,13 @@ class Mandat(models.Model):
         return (
             not self.is_expired or self.objects.renewable().filter(mandat=self).exists()
         )
+
+    @property
+    def remaining_timedelta(self):
+        td = self.expiration_date - timezone.now()
+        if td.days <= 0:
+            return "moins d'un jour"
+        return f"{td.days} jour{pluralize(td.days)}"
 
     @cached_property
     def revocation_date(self) -> Optional[datetime]:
@@ -275,6 +283,7 @@ class Mandat(models.Model):
                 AuthorizationDurations.SEMESTER,
             ),
             expiration_date__range=(start, end),
+            autorisations__revocation_date__isnull=True,
         ).order_by("organisation", "expiration_date")
 
     @classmethod

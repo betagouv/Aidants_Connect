@@ -7,8 +7,6 @@ from textwrap import dedent
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericRelation
-from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.models import IntegerChoices
 from django.db.transaction import atomic
@@ -16,12 +14,9 @@ from django.utils.functional import cached_property
 
 import pgtrigger
 import requests
+from pgtrigger import Func
 
-from aidants_connect_common.models import FormationAttendant
-from aidants_connect_common.utils import PGTriggerExtendedFunc
-from aidants_connect_habilitation.models import AidantRequest
-
-from ..constants import ReferentRequestStatuses
+from ..constants import HabilitationRequestCourseType, ReferentRequestStatuses
 from .aidant import Aidant
 from .organisation import Organisation
 
@@ -30,6 +25,7 @@ logger = logging.getLogger()
 
 class HabilitationRequest(models.Model):
     ReferentRequestStatuses = ReferentRequestStatuses
+    CourseType = HabilitationRequestCourseType
 
     ORIGIN_DATAPASS = "datapass"
     ORIGIN_RESPONSABLE = "responsable"
@@ -62,7 +58,7 @@ class HabilitationRequest(models.Model):
         "État",
         blank=False,
         max_length=150,
-        default=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+        default=ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
         choices=ReferentRequestStatuses.choices,
     )
     origin = models.CharField(
@@ -80,11 +76,11 @@ class HabilitationRequest(models.Model):
     test_pix_passed = models.BooleanField("Test PIX", default=False)
     date_test_pix = models.DateTimeField("Date test PIX", null=True, blank=True)
 
-    formations = GenericRelation(
-        FormationAttendant,
-        related_name="aidant_requests",
-        object_id_field="attendant_id",
-        content_type_field="attendant_content_type",
+    course_type = models.IntegerField(
+        "Type de parcours",
+        editable=False,
+        choices=CourseType.choices,
+        default=CourseType.CLASSIC,
     )
 
     def get_full_name(self):
@@ -191,44 +187,29 @@ class HabilitationRequest(models.Model):
         )
         verbose_name = "aidant à former"
         verbose_name_plural = "aidants à former"
-        triggers = [
+        triggers = (
             pgtrigger.Trigger(
-                name="check_attendants_count",
-                when=pgtrigger.After,
-                operation=pgtrigger.Insert,
-                declare=[
-                    ("attendants_count", "INTEGER"),
-                ],
-                func=PGTriggerExtendedFunc(
+                name="check_p2p_course_type",
+                when=pgtrigger.Before,
+                operation=pgtrigger.Update,
+                func=Func(
                     dedent(
-                        """
+                        f"""
                         -- Prevent concurrent inserts from multiple transactions
-                        LOCK TABLE {meta.db_table} IN EXCLUSIVE MODE;
+                        LOCK TABLE {{meta.db_table}} IN EXCLUSIVE MODE;
 
-                        UPDATE {FormationAttendant_meta.db_table} fa
-                        SET {FormationAttendant_columns.attendant_id} = NEW.{meta.pk.name}, {FormationAttendant_columns.attendant_content_type} = ct1.{ContentType_meta.pk.column}
-                        FROM {ContentType_meta.db_table} ct1
-                        INNER JOIN {AidantRequest_meta.db_table} ar
-                        ON LOWER(ar.{AidantRequest_columns.email}) = LOWER(NEW.{columns.email})
-                        INNER JOIN {ContentType_meta.db_table} ct2
-                        ON ct2.{ContentType_columns.app_label} = '{AidantRequest_meta.app_label}'
-                        AND ct2.{ContentType_columns.model} = '{AidantRequest_meta.model_name}'
-                        WHERE ct1.{ContentType_columns.app_label} = '{meta.app_label}'
-                        AND ct1.{ContentType_columns.model} = '{meta.model_name}'
-                        AND fa.{FormationAttendant_columns.attendant_id} = ar.{AidantRequest_meta.pk.column}
-                        AND fa.{FormationAttendant_columns.attendant_content_type} = ct2.{ContentType_meta.pk.column};
+                        IF NEW.{{columns.status}} = '{ReferentRequestStatuses.STATUS_PROCESSING_P2P}' THEN
+                            NEW.{{columns.course_type}} := '{HabilitationRequestCourseType.P2P}';
+                        ELSIF NEW.{{columns.status}} = '{ReferentRequestStatuses.STATUS_PROCESSING}' THEN
+                            NEW.{{columns.course_type}} := {HabilitationRequestCourseType.CLASSIC};
+                        END IF;
 
                         RETURN NEW;
                         """  # noqa: E501
-                    ).strip(),
-                    additionnal_models={
-                        "FormationAttendant": FormationAttendant,
-                        "ContentType": ContentType,
-                        "AidantRequest": AidantRequest,
-                    },
+                    ).strip()
                 ),
-            )
-        ]
+            ),
+        )
 
 
 def _filepath_generator():

@@ -11,6 +11,7 @@ from django.forms import (
     ChoiceField,
     Form,
     HiddenInput,
+    ModelForm,
     RadioSelect,
     Textarea,
     TextInput,
@@ -20,20 +21,22 @@ from django.forms import (
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
+
+from dsfr.forms import DsfrBaseForm
 
 from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import MessageStakeholders, RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
+    CleanEmailMixin,
+    ConseillerNumerique,
     PatchedErrorList,
     PatchedForm,
     PatchedModelForm,
 )
 from aidants_connect_common.utils.gouv_address_api import Address, search_adresses
 from aidants_connect_habilitation import models
-from aidants_connect_habilitation.constants import CONSEILLER_NUMERIQUE_EMAIL
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Manager,
@@ -149,38 +152,6 @@ class AddressValidatableMixin(Form):
         raise NotImplementedError()
 
 
-class CleanEmailMixin:
-    def clean_email(self):
-        return self.cleaned_data["email"].lower().strip()
-
-
-class ConseillerNumerique(Form):
-    conseiller_numerique = TypedChoiceField(
-        label=mark_safe(
-            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
-        ),
-        label_suffix=" :",
-        choices=(("", ""), (True, "Oui"), (False, "Non")),
-        coerce=lambda value: bool(strtobool(value)),
-    )
-
-    def clean(self):
-        result = super().clean()
-        if result.get("conseiller_numerique", None) is True and not result.get(
-            "email", ""
-        ).endswith(CONSEILLER_NUMERIQUE_EMAIL):
-            self.add_error(
-                "email",
-                (
-                    "Si la personne fait partie du dispositif conseiller numérique, "
-                    "elle doit s'inscrire avec son email "
-                    f"{CONSEILLER_NUMERIQUE_EMAIL}"
-                ),
-            )
-
-        return result
-
-
 class CleanZipCodeMixin:
     def clean_zipcode(self):
         data: str = re_sub(r"\s+", "", self.cleaned_data["zipcode"]).strip()
@@ -190,7 +161,9 @@ class CleanZipCodeMixin:
         return data
 
 
-class IssuerForm(PatchedModelForm, CleanEmailMixin):
+class IssuerForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
+    template_name = "aidants_connect_habilitation/forms/issuer.html"
+
     phone = AcPhoneNumberField(
         initial="",
         label="Téléphone",
@@ -198,8 +171,8 @@ class IssuerForm(PatchedModelForm, CleanEmailMixin):
     )
 
     def __init__(self, *args, render_non_editable=False, **kwargs):
-        super().__init__(*args, **kwargs)
         self.render_non_editable = render_non_editable
+        super().__init__(*args, **kwargs)
         if self.render_non_editable:
             self.auto_id = False
             for name, field in self.fields.items():
@@ -393,6 +366,11 @@ class ManagerForm(
     AddressValidatableMixin,
     CleanZipCodeMixin,
 ):
+    phone = AcPhoneNumberField(
+        initial="",
+        required=True,
+    )
+
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
@@ -732,8 +710,13 @@ class PersonnelForm:
 class ValidationForm(PatchedForm):
     cgu = BooleanField(
         required=True,
-        label='J’ai pris connaissance des <a href="{url}">'
+        label='J’ai pris connaissance des <a href="{url}" class="fr-link">'
         "conditions générales d’utilisation</a> et je les valide.",
+    )
+    not_free = BooleanField(
+        required=True,
+        label="Je confirme avoir compris que la formation est payante "
+        "et je me suis renseigné(e) sur les modalités de financements disponibles.",
     )
     dpo = BooleanField(
         required=True,

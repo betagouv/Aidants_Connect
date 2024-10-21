@@ -76,6 +76,17 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
     def _open_modale(self):
         def try_open_modal(driver):
             try:
+                # First close modal if opened
+                self.selenium.execute_script(
+                    "arguments[0].click();",
+                    self.selenium.find_element(By.ID, "fr-modal-follow-hab-request"),
+                )
+                self.wait.until(
+                    invisibility_of_element_located(
+                        (By.ID, "fr-modal-follow-hab-request")
+                    ),
+                    "Modal was already opened and couldn't be closed.",
+                )
                 self.selenium.find_element(
                     By.ID, "follow-my-habilitation-request-btn"
                 ).click()
@@ -86,12 +97,15 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
                 (By.ID, "fr-modal-follow-hab-request-title")
             )(driver)
 
+        self.wait.until(self.document_loaded())
         self.wait.until(try_open_modal)
 
     def _close_modale(self):
-        self.selenium.find_element(
-            By.CSS_SELECTOR, '[data-controller="follow-request-modale"] .fr-btn--close'
-        ).click()
+        # Not using WebElement.click modal may not be visible (already closed)
+        self.selenium.execute_script(
+            "arguments[0].click();",
+            self.selenium.find_element(By.ID, "fr-modal-follow-hab-request"),
+        )
 
         self.wait.until(
             invisibility_of_element_located((By.ID, "fr-modal-follow-hab-request"))

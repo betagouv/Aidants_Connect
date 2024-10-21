@@ -1,0 +1,74 @@
+<h2>Information générales</h2>
+<div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">
+  <div class="fr-col-12 fr-col-md-4">
+    <h3 class="fr-h5">Personne effectuant la demande</h3>
+  </div>
+  <div class="fr-col-12 fr-col-md-8">
+    <h3 class="fr-h5">Structure</h3>
+  </div>
+  <div class="fr-col-12 fr-col-md-4">
+    <div class="fr-bordered fr-p-4w flex flex-between flex-column fr-height-100 ">
+      <div>
+        <p>
+          <strong>{{ issuer.get_full_name }}</strong><br/>
+          <span class="fr-text-mention--grey fr-text--sm">{{ issuer.profession }}</span>
+        </p>
+        <p class="fr-text--sm">
+          {{ issuer.email }}<br>{{ issuer.phone }}
+        </p>
+      </div>
+      {% if show_edit_buttons %}
+        <div class="fr-mt-3w flex flex-right fr-link">
+          <a
+              class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-pencil-fill"
+              href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}"
+              >
+              Éditer
+            </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="fr-col-12 fr-col-md-8">
+    <div class="fr-bordered fr-p-4w">
+      <div class="fr-grid-row fr-grid-row--gutters fr-text--sm">
+        <div class="fr-col-12 fr-col-md-6">
+          <div class="fr-grid-row">
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Type de Structure</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text--md"><strong>{{ organisation.type }}</strong></div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Nom</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text--md"><strong>{{ organisation.name }}</strong></div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Adresse postale</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
+              {{ organisation.address|linebreaksbr }}<br/>
+              {{ organisation.zipcode }}
+              {{ organisation.city }}
+            </div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">SIRET</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w">{{ organisation.siret }}</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Site web</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w">{{ organisation.web_site}}</div>
+          </div>
+        </div>
+        <div class="fr-col-12 fr-col-md-6">
+          <div class="fr-grid-row">
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Structure privée</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w">{{ organisation.is_private_org|yesno:"Oui,Non" }}</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Label France Services</div>
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w">{{ organisation.france_services_label|yesno:"Oui,Non" }}</div>
+          </div>
+          <div class="fr-text-mention--grey">Missions</div>
+          <div>{{ organisation.mission_description|linebreaksbr }}</div>
+        </div>
+      </div>
+      <div class="fr-mt-3w flex flex-right fr-link">
+        <a
+          class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-pencil-fill"
+          href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+          >
+          Éditer
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

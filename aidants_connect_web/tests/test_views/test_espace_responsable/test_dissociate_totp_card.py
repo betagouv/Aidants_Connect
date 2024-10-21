@@ -45,7 +45,7 @@ class DissociateCarteTOTPTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_organisation"),
+            reverse("espace_responsable_aidants"),
             fetch_redirect_response=False,
         )
         response = self.client.get(response.url, follow=True)

@@ -54,6 +54,11 @@ class OrganisationRequestTests(TestCase):
             OrganisationRequestFactory(cgu=False)
         self.assertIn("cgu_checked", str(cm.exception))
 
+    def test_not_free_checked_constraint(self):
+        with self.assertRaises(IntegrityError) as cm:
+            OrganisationRequestFactory(not_free=False)
+        self.assertIn("not_free_checked", str(cm.exception))
+
     def test_dpo_checked_constraint(self):
         with self.assertRaises(IntegrityError) as cm:
             OrganisationRequestFactory(dpo=False)

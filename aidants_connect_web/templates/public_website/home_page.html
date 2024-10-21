@@ -14,12 +14,11 @@
         🎉 Nouveauté : Les inscriptions aux formations Aidants Connect sont de retour !
       </h3>
       <p>
-        Plusieurs webinaires d'information présenteront les nouvelles modalités de formation et de financement. Ces
-        webinaires se dérouleront aux dates suivantes : mercredi 22 mai à 14h ; mercredi 29 mai à 14h ; mercredi 12 juin à 14h ; mercredi 26 juin à 14h (heure métropole).
+        Plusieurs webinaires d'information présenteront les nouvelles modalités de formation et de financement.
       </p>
       <p>
-        Pour y accéder, il vous suffit de <a
-        href="https://webinaire.numerique.gouv.fr//meeting/signin/31150/creator/9817/hash/9a27df264fb8c0dec8c66ddfee02e1e11246d4c7"
+        Pour vous inscrire, il vous suffit de <a
+        href="https://app.livestorm.co/aidants-connect/webinaire-dinformation-aidants-connect?s=6e66cc17-a18e-4fa6-bd38-6f6eae468743"
         class="fr-link"
         target="_blank"
       >
@@ -157,7 +156,7 @@
           </div>
         </section>
       {% endfor %}
-      {% if has_more_testimonies %}
+      {% if testimonies_count > 3 %}
         <section class="testimony-container">
           <div class="shadowed">
             <img
@@ -168,7 +167,7 @@
               height="150"
             />
             <div class="infos">
-              <div class="person-name">Plus de témoigagnes…</div>
+              <div class="person-name">Plus de témoignages…</div>
               <div>Aidants Connect a aidé vos homologues dans leur démarche d’accompagnement</div>
               <a class="fr-btn" href="{% url 'temoignages' %}">Voir tous les témoignages</a>
             </div>

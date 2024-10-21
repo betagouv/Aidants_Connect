@@ -48,7 +48,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         aidant_b.organisations.set(
             (aidant_b.organisation, self.responsable_tom.organisation)
         )
-        response = self.client.get("/espace-responsable/organisation/")
+        response = self.client.get(reverse("espace_responsable_aidants"))
         self.assertContains(response, aidant_a.first_name)
         self.assertContains(response, aidant_b.first_name)
 
@@ -288,39 +288,6 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
 
 
 @tag("responsable-structure")
-class EspaceResponsableAddAidant(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.client = Client()
-        cls.responsable_tom = AidantFactory()
-        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
-
-        cls.id_organisation = cls.responsable_tom.organisation.id
-        cls.add_aidant_url = "/espace-responsable/aidant/ajouter/"
-        cls.autre_organisation = OrganisationFactory()
-
-    def test_add_aidant_url_triggers_the_right_view(self):
-        self.client.force_login(self.responsable_tom)
-        found = resolve(self.add_aidant_url)
-        self.assertEqual(
-            found.func.view_class, espace_responsable.NewHabilitationRequest
-        )
-
-    def test_add_aidant_url_triggers_the_right_template(self):
-        self.client.force_login(self.responsable_tom)
-        response = self.client.get(self.add_aidant_url)
-        self.assertEqual(
-            response.status_code,
-            200,
-            f"trying to get {self.add_aidant_url}",
-        )
-        self.assertTemplateUsed(
-            response,
-            "aidants_connect_web/espace_responsable/new-habilitation-request.html",
-        )
-
-
-@tag("responsable-structure")
 class InsistOnTOTPDeviceActivationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -465,8 +432,8 @@ class DesignationOfAnotherResponsable(TestCase):
 
     def test_link_is_visible_if_there_is_an_aidant_to_become_responsable(self):
         self.client.force_login(self.respo)
-        response = self.client.get(self.orga_url)
-        self.assertContains(response, "Désigner un ou une référente")
+        response = self.client.get(reverse("espace_responsable_referents"))
+        self.assertContains(response, "Ajouter un ou une référente")
 
     def test_current_aidant_can_become_responsable(self):
         self.client.force_login(self.respo)

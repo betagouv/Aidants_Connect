@@ -9,7 +9,7 @@
         <p>Bonjour,</p>
         <p>
           L’équipe Aidants Connect vous confirme avoir refusé l'ajout de l'aidant ou l'aidante
-          {{aidant.first_name}} {{aidant.last_name}} {% mailto aidant.email %}.
+          {{ aidant.first_name }} {{ aidant.last_name }} {% mailto aidant.email %}.
           En général, cela signifie que l’adresse mail de la personne à ajouter ne correspond pas aux pré-requis de
           l’outil : l’adresse mail doit être nominative et accessible par une seule personne.
         </p>
@@ -20,4 +20,4 @@
       </mj-text>
     </mj-column>
   </mj-section>
-{% endblock %}
+{% endblock email_body %}

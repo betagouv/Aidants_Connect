@@ -75,9 +75,14 @@ class AidantResource(resources.ModelResource):
             "can_create_mandats",
             "conseiller_numerique",
             "phone",
+            "carte_totp",
+            "datapass_id",
+            "respo_de_datapass_id",
+            "token",
+            "totp_drift",
         )
 
-    def before_save_instance(self, instance: Aidant, using_transactions, dry_run):
+    def before_save_instance(self, instance: Aidant, row, **kwargs):
         if not instance.email:
             instance.email = instance.username
 
@@ -96,7 +101,7 @@ class AidantResource(resources.ModelResource):
         if token and len(token) == 6 and token.isnumeric():
             add_static_token(row["username"], token)
 
-    def after_save_instance(self, instance: Aidant, using_transactions, dry_run):
+    def after_save_instance(self, instance: Aidant, row, **kwargs):
         if hasattr(instance, "carte_ac") and instance.carte_ac is not None:
             card_sn = instance.carte_ac
             # instance.carte_ac is the sn the import added to the aidant instance,

@@ -97,6 +97,27 @@ def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
             html_message=html_message,
         )
 
+    text_message, html_message = render_email(
+        "email/aidant_created.mjml",
+        {
+            "tuto_url": build_url(reverse("ressources")),
+            "etsijaccompagnais_url": (
+                "https://www.etsijaccompagnais.fr/ressources-des-aidants"
+            ),
+            "faq_url": build_url(reverse("faq_generale")),
+            "home_url": build_url(reverse("home_page")),
+            "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,
+        },
+    )
+
+    send_mail(
+        from_email=settings.AC_CONTACT_EMAIL,
+        recipient_list=[aidant.email],
+        subject="Bienvenue parmi nos aidants habilités !",
+        message=text_message,
+        html_message=html_message,
+    )
+
 
 @receiver(card_associated_to_aidant)
 def send_user_welcome_email(sender, otp_device: TOTPDevice, **_):

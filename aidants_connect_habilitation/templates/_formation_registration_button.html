@@ -1,0 +1,23 @@
+{% if aidant.habilitation_request.status in aidant.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+  {% if organisation.manager.aidant.last_login %}
+    <a
+      href="{% url 'espace_responsable_organisation' %}"
+      class="fr-btn"
+    >
+      Gérer les formations sur mon espace référent
+    </a>
+  {% elif aidant.habilitation_request.formations.exists %}
+    <button class="fr-btn" disabled>
+      Cette personne est inscrite à une formation
+    </button>
+  {% else %}
+    {% block url_registration %}
+        <a
+          href="{% url 'habilitation_manager_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+          class="fr-btn"
+        >
+          Inscrire à une formation
+        </a>
+    {% endblock %}
+  {% endif %}
+{% endif %}

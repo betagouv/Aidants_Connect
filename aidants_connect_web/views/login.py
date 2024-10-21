@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.core.mail import get_connection, send_mail
 from django.template.defaultfilters import urlencode
 from django.urls import reverse
 from django.views.generic import RedirectView
@@ -13,7 +15,40 @@ class LoginRedirect(RedirectView):
     permanent = True
 
 
-class LoginView(magicauth_views.LoginView):
+def tld_need_another_stmp(user_email):
+    tdls_need_another_smtp = settings.TDL_NEED_BACKUP_SMTP.split(",")
+    tld = user_email.rsplit("@", 1)[1]
+    return tld in tdls_need_another_smtp
+
+
+class ACSendEMailForTokenMixin:
+    def send_email(self, user, user_email, token, extra_context=None):
+        text_message, html_message = self.render_email(
+            self.get_email_context(user, token, extra_context)
+        )
+        connection = None
+        if tld_need_another_stmp(user_email):
+            connection = get_connection(
+                host=settings.BACKUP_EMAIL_HOST,
+                port=settings.BACKUP_EMAIL_PORT,
+                username=settings.BACKUP_EMAIL_HOST_USER,
+                password=settings.BACKUP_EMAIL_HOST_PASSWORD,
+                use_tls=settings.BACKUP_EMAIL_USE_TLS,
+                use_ssl=settings.BACKUP_EMAIL_USE_SSL,
+            )
+
+        send_mail(
+            subject=self.email_subject,
+            message=text_message,
+            from_email=self.from_email,
+            html_message=html_message,
+            recipient_list=[user_email],
+            fail_silently=False,
+            connection=connection,
+        )
+
+
+class LoginView(ACSendEMailForTokenMixin, magicauth_views.LoginView):
     form_class = LoginEmailForm
     otp_form_class = DsfrOtpForm
 

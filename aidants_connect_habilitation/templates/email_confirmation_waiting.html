@@ -1,54 +1,52 @@
-{% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras ac_common %}
+{% extends 'layouts/main.html' %}
+{% load static dsfr_tags %}
 
 {% block title %}
-  Aidants Connect - Confirmez votre email
+  Aidants Connect - Nouveau demandeur
 {% endblock %}
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col">
-        <h1>Formulaire d’habilitation</h1>
-      </div>
+    <div class="fr-mb-8v">
+      <h1 class="fr-mb-2v">Formulaire d’habilitation</h1>
+      <p class="fr-text--lg">
+        Vous vous êtes informé sur l’habilitation et vous avez pris connaissance des
+        <a href="{% url 'habilitation_faq_formation' %}" class="fr-link">modalités de financement</a> ?
+      </p>
     </div>
-
-    {% include "layouts/_breadcrumbs.html" %}
+    {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Nous vous rappelons que les demandes d’habilitation faites par des particuliers ne sont pas prises en compte." %}
 
     <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-8">
-        <form method="post">
-          <h2>Confirmation de votre email</h2>
-          <div class="shadowed fr-p-8v">
-            {% csrf_token %}
-            {{ form.non_field_errors }}
-
-            {% if email_confirmation_sent %}
-              <p>Un email de confirmation vient de vous être renvoyé.</p>
+      <div class="fr-col-12 fr-col-md-6">
+        {% include "layouts/_breadcrumbs.html" %}
+        <form method="post" class="fr-my-8v">
+          {% csrf_token %}
+          <fieldset class="fr-fieldset">
+            <legend class="fr-fieldset__legend">Confirmation de votre email</legend>
+            <div class="fr-fieldset__element fr-my-8v">
               <p>
-                Si vous ne le recevez toujours pas, vous pouvez
-                {% mailto link_text='tenter de nous contacter en suivant ce lien' recipient=support_email subject=support_subject body=support_body %}
-                ou nous envoyer un email à l'adresse <code>{{ support_email }}</code>.
-              </p>
-            {% else %}
-              <p>
-                Un email vous a été envoyé à l'adresse email que vous avez renseignée.
+                Un email vous a été envoyé à l’adresse mail renseignée.<br />
                 <strong>Veuillez cliquer sur le lien inclus dans cet email afin de confirmer votre adresse.</strong>
               </p>
               <p>
-                <i>Si vous n’avez pas reçu cet email, vous pouvez utiliser le bouton ci-dessous afin de déclencher un nouvel envoi.</i>
+                <em>
+                  Si vous n’avez pas reçu cet email, vous pouvez utiliser le bouton ci-dessous afin de déclencher un
+                  nouvel envoi.
+                </em>
               </p>
-            {% endif %}
-
-            <div class="button-box">
-              <button type="submit" class="fr-btn">Renvoyer l'email de confirmation</button>
             </div>
-          </div>
+          </fieldset>
+          <section class="fr-btns-group fr-btns-group--inline fr-btns-group--right">
+            <ul>
+              <li>
+                <input type="submit" class="fr-btn" value="Renvoyer l'email de confirmation">
+              </li>
+            </ul>
+          </section>
         </form>
+
+        {% dsfr_alert type="info" extra_classes="fr-alert--sm" content="Les informations saisies sont sauvegardées à chaque étape. Vous pouvez revenir plus tard en cliquant sur le lien reçu par email." %}
       </div>
     </div>
-
-    {% include "_more-info.html" %}
-
   </div>
 {% endblock %}

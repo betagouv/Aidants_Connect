@@ -2,41 +2,42 @@
 {% load static form_extras ac_common %}
 
 {% block title %}
-Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
+  Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
 {% endblock %}
 
 {% block content %}
-<div class="fr-container">
-  <h1>Demande d’habilitation n° {{ organisation.data_pass_id }}</h1>
-  <p class="subtitle">
+  <div class="fr-container">
+    <h1>Demande d’habilitation n° {{ organisation.data_pass_id }}</h1>
+    <p class="subtitle">
 
-  </p>
-  <h2>Votre demande</h2>
-  <p>
-    Votre demande est actuellement dans l'état <strong>«&nbsp;{{ organisation.status_label }}&nbsp;»</strong>.
-    <br>
-    {% include "edito/_aide_etats_demandes_habilitation.html" with status=organisation.status %}
-  </p>
-  <h2>Rappel de votre saisie</h2>
-  {% if display_modify_button %}
-  <a
-  id="modify-btn"
-  class="fr-btn margin-bottom-1rem"
-  href="{% url 'habilitation_validation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-  >
-    Modifier votre demande
-  </a>
-  {% endif %}
-  {% include "_display_org_request.html" with show_all_buttons=False %}
-
-  <div class="fr-grid-row fr-grid-row--gutters">
-    <p class="fr-col more-info">
-      Pour modifier cette demande (ajouter un aidant, etc.), envoyez votre requête par mail à lʼadresse 
-      {% mailto AC_CONTACT_EMAIL %}.
     </p>
-  </div>
+    <h2>Votre demande</h2>
+    <p>
+      Votre demande est actuellement dans l'état <strong>«&nbsp;{{ organisation.status_label }}&nbsp;»</strong>.
+      <br>
+      {% include "edito/_aide_etats_demandes_habilitation.html" with status=organisation.status %}
+    </p>
+    <h2>Rappel de votre saisie</h2>
+    {% if organisation.status in organisation.Status.validatable %}
+      <a
+        id="modify-btn"
+        class="fr-btn margin-bottom-1rem"
+        href="{% url 'habilitation_validation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+      >
+        Modifier votre demande
+      </a>
+    {% endif %}
 
-</div>{# fr-container #}
+    {% include "_display_org_request.html" with show_edit_buttons=False %}
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <p class="fr-col more-info">
+        Pour modifier cette demande (ajouter un aidant, etc.), envoyez votre requête par mail à lʼadresse
+        {% mailto AC_CONTACT_EMAIL %}.
+      </p>
+    </div>
+
+  </div>{# fr-container #}
 {% endblock %}
 
 

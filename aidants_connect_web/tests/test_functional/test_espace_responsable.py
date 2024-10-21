@@ -1,12 +1,29 @@
+import itertools
+
+from django.template.defaultfilters import yesno
 from django.test import tag
 from django.urls import reverse
 
+from faker import Faker
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import url_matches
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.support.expected_conditions import (
+    url_matches,
+    visibility_of_element_located,
+)
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
+from aidants_connect_web.forms import (
+    HabilitationRequestCreationFormSet,
+    NewHabilitationRequestForm,
+)
+from aidants_connect_web.models import Aidant, HabilitationRequest
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    HabilitationRequestFactory,
+    OrganisationFactory,
+)
+from aidants_connect_web.views.espace_responsable import NewHabilitationRequest
 
 
 @tag("functional")
@@ -189,72 +206,91 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         )
 
     def test_grouped_autorisations(self):
-        root_path = reverse("espace_responsable_organisation")
-
-        self.open_live_url(root_path)
+        self.open_live_url(reverse("espace_responsable_aidants"))
 
         # Login
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         # Check button text
-        button = self.selenium.find_element(
-            By.ID,
-            f"remove-aidant-{self.aidant_with_multiple_orgs.pk}-from-organisation",
-        )
-        self.assertEqual(
-            "Retirer l’aidant de l’organisation",
-            button.text,
-        )
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_with_multiple_orgs.pk}-contextual-actions"
+        ):
+            button = self.selenium.find_element(
+                By.ID,
+                f"remove-aidant-{self.aidant_with_multiple_orgs.pk}-from-organisation",
+            )
 
-        button = self.selenium.find_element(
-            By.ID, f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation"
-        )
-        self.assertEqual("Désactiver l’aidant", button.text)
+            self.assertEqual(
+                "Retirer l’aidant de l’organisation",
+                button.text,
+            )
+
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            button = self.selenium.find_element(
+                By.ID,
+                f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation",
+            )
+            self.assertEqual("Désactiver l’aidant", button.text)
 
         self.assertElementNotFound(
             By.ID, f"remove-aidant-{self.aidant_responsable.pk}-from-organisation"
         )
 
-        # Let's try those btns shall we?
-        button.click()
-        path = reverse(
-            "espace_responsable_remove_aidant_from_organisation",
-            kwargs={
-                "organisation_id": self.organisation.pk,
-                "aidant_id": self.aidant_active_with_card.pk,
-            },
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            # Let's try those btns shall we?
+            self.selenium.find_element(
+                By.ID,
+                f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation",
+            ).click()
+
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_remove_aidant_from_organisation",
+                kwargs={
+                    "organisation_id": self.organisation.pk,
+                    "aidant_id": self.aidant_active_with_card.pk,
+                },
+            )
         )
-        self.wait.until(url_matches(f"^.+{path}$"))
 
         self.selenium.find_element(
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Confirmer']"
         ).click()
 
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         self.assertElementNotFound(
             By.ID, f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation"
         )
 
-        self.selenium.find_element(
-            By.ID,
-            f"remove-aidant-{self.aidant_with_multiple_orgs.pk}-from-organisation",
-        ).click()
-        path = reverse(
-            "espace_responsable_remove_aidant_from_organisation",
-            kwargs={
-                "organisation_id": self.organisation.pk,
-                "aidant_id": self.aidant_with_multiple_orgs.pk,
-            },
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_with_multiple_orgs.pk}-contextual-actions"
+        ):
+            self.selenium.find_element(
+                By.ID,
+                f"remove-aidant-{self.aidant_with_multiple_orgs.pk}-from-organisation",
+            ).click()
+
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_remove_aidant_from_organisation",
+                kwargs={
+                    "organisation_id": self.organisation.pk,
+                    "aidant_id": self.aidant_with_multiple_orgs.pk,
+                },
+            )
         )
-        self.wait.until(url_matches(f"^.+{path}$"))
 
         self.selenium.find_element(
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Confirmer']"
         ).click()
 
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         self.assertElementNotFound(
             By.ID,
@@ -262,20 +298,23 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         )
 
     def test_remove_card_from_aidant(self):
-        root_path = reverse("espace_responsable_organisation")
-
-        self.open_live_url(root_path)
+        self.open_live_url(reverse("espace_responsable_aidants"))
 
         # Login
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         # First aidant: disabled
         self.assertIsNotNone(self.aidant_inactive_with_card.carte_totp)
 
-        self.selenium.find_element(
-            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_inactive_with_card.pk}"
-        ).click()
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_inactive_with_card.pk}-contextual-actions"
+        ):
+            self.selenium.find_element(
+                By.ID,
+                f"manage-totp-cards-for-aidant-{self.aidant_inactive_with_card.pk}",
+            ).click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_choose_totp",
@@ -288,8 +327,8 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             f"remove-totp-card-from-aidant-{self.aidant_inactive_with_card.pk}",
         )
         self.assertEqual("Délier la carte physique", button1.text)
-
         button1.click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_aidant_remove_card",
@@ -301,12 +340,15 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Dissocier']"
         ).click()
 
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
-        # Return on manage cards page
-        self.selenium.find_element(
-            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_inactive_with_card.pk}"
-        ).click()
+        self.open_live_url(
+            reverse(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_inactive_with_card.id},
+            )
+        )
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_choose_totp",
@@ -314,17 +356,22 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             )
         )
         self.assertElementNotFound(
-            By.ID, f"remove-totp-card-from-aidant-{self.aidant_inactive_with_card.pk}"
+            By.ID, f"aidant-{self.aidant_inactive_with_card.pk}-contextual-actions"
         )
 
         self.aidant_inactive_with_card.refresh_from_db()
         with self.assertRaises(Aidant.carte_totp.RelatedObjectDoesNotExist):
             self.aidant_inactive_with_card.carte_totp
 
-        self.open_live_url(reverse("espace_responsable_organisation"))
-        self.selenium.find_element(
-            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
-        ).click()
+        self.open_live_url(reverse("espace_responsable_aidants"))
+
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            self.selenium.find_element(
+                By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
+            ).click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_choose_totp",
@@ -332,13 +379,29 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             )
         )
         self.assertIsNotNone(self.aidant_active_with_card.carte_totp)
-        button2 = self.selenium.find_element(
-            By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_with_card.pk}"
-        )
-        self.assertEqual("Délier la carte physique", button2.text)
 
-        # First aidant: active
-        button2.click()
+        self.open_live_url(reverse("espace_responsable_aidants"))
+
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            button2 = self.selenium.find_element(
+                By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
+            )
+            self.assertEqual("Gérer les cartes OTP", button2.text)
+            button2.click()
+
+        self.wait.until(
+            self.path_matches(
+                "espace_responsable_choose_totp",
+                kwargs={"aidant_id": self.aidant_active_with_card.pk},
+            )
+        )
+
+        self.selenium.find_element(
+            By.ID, f"remove-totp-card-from-aidant-{self.aidant_active_with_card.pk}"
+        ).click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_aidant_remove_card",
@@ -350,11 +413,15 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             By.XPATH, "//button[@type='submit' and normalize-space(text())='Dissocier']"
         ).click()
 
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
-        self.selenium.find_element(
-            By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
-        ).click()
+        with self.details_opened(
+            By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
+        ):
+            self.selenium.find_element(
+                By.ID, f"manage-totp-cards-for-aidant-{self.aidant_active_with_card.pk}"
+            ).click()
+
         self.wait.until(
             self.path_matches(
                 "espace_responsable_choose_totp",
@@ -415,3 +482,481 @@ class RestrictDemarchesTests(FunctionalTestCase):
             "Vous devez sélectionner au moins une démarche.",
             self.selenium.find_element(By.CSS_SELECTOR, ".notification.error").text,
         )
+
+
+@tag("functional")
+class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
+    js = False
+
+    def setUp(self):
+        self.organisation = OrganisationFactory(allowed_demarches=[], with_aidants=True)
+        self.aidant_responsable: Aidant = AidantFactory(
+            organisation=self.organisation,
+            post__with_otp_device=True,
+            post__is_organisation_manager=True,
+        )
+
+        self.path = reverse("espace_responsable_aidant_new")
+        self.empty_form = NewHabilitationRequestForm(
+            form_kwargs={
+                "habilitation_requests": {
+                    "form_kwargs": {"referent": self.aidant_responsable}
+                }
+            }
+        )
+
+    def test_submit_form_errors(self):
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+
+        # First form is empty
+
+        # unrequire fields to be able to submit
+        for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
+            self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
+
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.wait.until(self.document_loaded())
+
+        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
+        expected = (
+            # We ignore course type error in JS mode since we're only checking
+            # the profile form
+            len(self._all_visible_fields())
+            - len(self._course_type_form.visible_fields())
+            if self.js
+            else len(self._all_visible_fields())
+        )
+        self.assertEqual(expected, len(errors))
+
+        for error in errors:
+            self.assertIn("Ce champ est obligatoire.", error.text)
+
+        # First form is not empty but not filled either
+        self.open_live_url(self.path)
+
+        # unrequire fields to be able to submit
+        for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
+            self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
+
+        self.selenium.find_element(
+            By.ID,
+            self._left_form["email"].id_for_label,
+        ).send_keys("test@test.test")
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.wait.until(self.document_loaded())
+
+        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
+        expected = (
+            # We ignore course type error in JS mode since we're only checking
+            # the profile form
+            len(self._all_visible_fields())
+            - len(self._course_type_form.visible_fields())
+            - 1
+            if self.js
+            else len(self._all_visible_fields()) - 1
+        )
+        self.assertEqual(expected, len(errors))
+
+        for error in errors:
+            self.assertIn("Ce champ est obligatoire.", error.text)
+
+        # ----------------------------------------------------------------------------
+        # Testing submit for button
+        # ----------------------------------------------------------------------------
+
+        # First form is not empty but not filled either
+        self.open_live_url(self.path)
+
+        # unrequire fields to be able to submit
+        for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
+            self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
+
+        self.selenium.find_element(By.ID, "form-submit").click()
+        self.wait.until(self.document_loaded())
+
+        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
+        self.assertEqual(len(self._all_visible_fields()), len(errors))
+
+        for error in errors:
+            self.assertIn("Ce champ est obligatoire.", error.text)
+
+        # First form is not empty but not filled either
+        self.open_live_url(self.path)
+        self.selenium.find_element(
+            By.ID,
+            self._left_form["email"].id_for_label,
+        ).send_keys("test@test.test")
+
+        # unrequire fields to be able to submit
+        for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
+            self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
+
+        self.selenium.find_element(By.ID, "form-submit").click()
+        self.wait.until(self.document_loaded())
+
+        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
+        self.assertEqual(len(self._all_visible_fields()) - 1, len(errors))
+
+        for error in errors:
+            self.assertIn("Ce champ est obligatoire.", error.text)
+
+        # ----------------------------------------------------------------------------
+        # Asserting not new habilitation was created
+        # ----------------------------------------------------------------------------
+        self.assertFalse(HabilitationRequest.objects.count())
+
+    def test_submitting_request(self):
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+        req: HabilitationRequest = HabilitationRequestFactory.build(
+            organisation=self.organisation
+        )
+        self.fill_form(req, self._all_visible_fields(), self._custom_getter)
+        self.selenium.find_element(By.ID, "form-submit").click()
+        hab: HabilitationRequest = HabilitationRequest.objects.first()
+        self.assertEqual(
+            {
+                req.get_full_name(),
+                req.email,
+                req.profession,
+                req.conseiller_numerique,
+                req.organisation,
+            },
+            {
+                hab.get_full_name(),
+                hab.email,
+                hab.profession,
+                hab.conseiller_numerique,
+                hab.organisation,
+            },
+        )
+
+    def test_adding_profile_then_submitting_empty(self):
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+        req: HabilitationRequest = HabilitationRequestFactory.build(
+            organisation=self.organisation
+        )
+        self.fill_form(req, self._all_visible_fields(), self._custom_getter)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.wait.until(self.document_loaded())
+
+        self.assertNormalizedStringEqual(
+            f"{req.get_full_name()} {req.email}",
+            self.selenium.find_element(By.CSS_SELECTOR, "#added-form-0 summary").text,
+        )
+
+        # open the <details>
+        self.js_click(By.CSS_SELECTOR, "#added-form-0 summary")
+        self.assertNormalizedStringEqual(
+            " ".join(
+                [
+                    f"Email {req.email}",
+                    f"Profession {req.profession}",
+                    "Conseiller numérique",
+                    f"{yesno(req.conseiller_numerique, 'Oui,Non')}",
+                    f"Organisation {req.organisation}",
+                ]
+            ),
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "#added-form-0 .user-informations"
+            ).text,
+        )
+        # Asserting not new habilitation was created
+        self.assertFalse(HabilitationRequest.objects.count())
+        # Now submits the form
+        self.selenium.find_element(By.ID, "form-submit").click()
+        hab: HabilitationRequest = HabilitationRequest.objects.first()
+        self.assertEqual(
+            {
+                req.get_full_name(),
+                req.email,
+                req.profession,
+                req.conseiller_numerique,
+                req.organisation,
+            },
+            {
+                hab.get_full_name(),
+                hab.email,
+                hab.profession,
+                hab.conseiller_numerique,
+                hab.organisation,
+            },
+        )
+
+    def test_adding_profile_then_submitting_filled_form(self):
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+        req1: HabilitationRequest = HabilitationRequestFactory.build(
+            organisation=self.organisation
+        )
+        self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.wait.until(self.document_loaded())
+
+        self.assertNormalizedStringEqual(
+            f"{req1.get_full_name()} {req1.email}",
+            self.selenium.find_element(By.CSS_SELECTOR, "#added-form-0 summary").text,
+        )
+
+        # open the <details>
+        self.js_click(By.CSS_SELECTOR, "#added-form-0 summary")
+        self.assertNormalizedStringEqual(
+            " ".join(
+                [
+                    f"Email {req1.email}",
+                    f"Profession {req1.profession}",
+                    "Conseiller numérique",
+                    f"{yesno(req1.conseiller_numerique, 'Oui,Non')}",
+                    f"Organisation {req1.organisation}",
+                ]
+            ),
+            self.selenium.find_element(
+                By.CSS_SELECTOR, "#added-form-0 .user-informations"
+            ).text,
+        )
+        # Asserting not new habilitation was created
+        self.assertFalse(HabilitationRequest.objects.count())
+
+        req2: HabilitationRequest = HabilitationRequestFactory.build(
+            organisation=self.organisation
+        )
+        self.fill_form(req2, self._all_visible_fields(1), self._custom_getter)
+
+        # Now submits the form
+        self.selenium.find_element(By.ID, "form-submit").click()
+        self.assertEqual(
+            set(
+                HabilitationRequest.objects.values_list(
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "profession",
+                    "conseiller_numerique",
+                    "organisation",
+                ).all()
+            ),
+            {
+                (
+                    req1.first_name,
+                    req1.last_name,
+                    req1.email,
+                    req1.profession,
+                    req1.conseiller_numerique,
+                    req1.organisation.pk,
+                ),
+                (
+                    req2.first_name,
+                    req2.last_name,
+                    req2.email,
+                    req2.profession,
+                    req2.conseiller_numerique,
+                    req2.organisation.pk,
+                ),
+            },
+        )
+
+    def test_editing_profile_checks_errors(self):
+        idx_to_modify = 1
+
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.document_loaded())
+
+        existing_req = HabilitationRequestFactory(organisation=self.organisation)
+
+        reqs = [
+            HabilitationRequestFactory.build(organisation=self.organisation)
+            for _ in range(3)
+        ]
+        for i, req in enumerate(reqs):
+            self.fill_form(req, self._all_visible_fields(i), self._custom_getter)
+            self.selenium.find_element(By.ID, "partial-submit").click()
+            self.wait.until(self.document_loaded())
+            self.assertEqual(
+                "Ajouter un autre aidant",
+                self.selenium.find_element(By.ID, "partial-submit").text,
+            )
+
+        self.js_click(By.ID, "edit-button-1")
+        self.wait.until(self._edition_ready(idx_to_modify, len(reqs)))
+        self.assertEqual(
+            "Valider les modifications",
+            self.selenium.find_element(By.ID, "partial-submit").text,
+        )
+
+        # Submit checks
+        self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        ).clear()
+        self.selenium.find_element(By.ID, "partial-submit").click()
+
+        self.assertEqual(
+            "Valider les modifications",
+            self.selenium.find_element(By.ID, "partial-submit").text,
+        )
+
+        self.assertNormalizedStringEqual(
+            "Ce champ est obligatoire.",
+            self.selenium.find_element(
+                By.CSS_SELECTOR, '#empty-form [id$="email-desc-error"] .errorlist'
+            ).text,
+        )
+
+        # Test conflict with another profile in this request
+        elt = self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        )
+        elt.clear()
+        elt.send_keys(reqs[idx_to_modify + 1].email)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.assertNormalizedStringEqual(
+            "Corrigez les données en double dans email et "
+            "organisation qui doit contenir des valeurs uniques.",
+            self.selenium.find_element(By.CSS_SELECTOR, ".errorlist.nonform").text,
+        )
+
+        # Test conflict with existing request
+        elt = self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        )
+        elt.clear()
+        elt.send_keys(existing_req.email)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.assertNormalizedStringEqual(
+            "Une demande d’habilitation est déjà en cours pour "
+            "l’adresse e-mail. Vous n’avez pas besoin de déposer une nouvelle "
+            "demande pour cette adresse-ci.",
+            self.selenium.find_element(
+                By.CSS_SELECTOR, '#empty-form [id$="email-desc-error"] .errorlist'
+            ).text,
+        )
+
+        while (new_email := Faker().email()) == reqs[idx_to_modify].email:
+            # Select a different email
+            pass
+
+        elt = self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        )
+        elt.clear()
+        elt.send_keys(new_email)
+
+        self.selenium.find_element(By.ID, "form-submit").click()
+        self.wait.until(self.path_matches("espace_responsable_demandes"))
+
+        # Don't forget to modify the data for the test
+        reqs[idx_to_modify].email = new_email
+
+        self.assertEqual(4, len(HabilitationRequest.objects.all()))
+        self.assertEqual(
+            set(
+                HabilitationRequest.objects.values_list(
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "profession",
+                    "conseiller_numerique",
+                    "organisation",
+                ).all()
+            ),
+            {
+                (
+                    req.first_name,
+                    req.last_name,
+                    req.email,
+                    req.profession,
+                    req.conseiller_numerique,
+                    req.organisation.pk,
+                )
+                for req in itertools.chain([existing_req], reqs)
+            },
+        )
+
+    @property
+    def _left_form(self):
+        self.assertEqual(1, len(self._habilitation_requests_form.extra_forms))
+        return self._habilitation_requests_form.extra_forms[0]
+
+    @property
+    def _habilitation_requests_form(self) -> HabilitationRequestCreationFormSet:
+        return self.empty_form["habilitation_requests"]
+
+    @property
+    def _course_type_form(self):
+        return self.empty_form["course_type"]
+
+    def _all_visible_fields(self, form_idx=0):
+        form = self._habilitation_requests_form._construct_form(
+            form_idx, **self._habilitation_requests_form.get_form_kwargs(form_idx)
+        )
+        return [
+            *form.visible_fields(),
+            *self._course_type_form.visible_fields(),
+        ]
+
+    @staticmethod
+    def _custom_getter(data, field, default_getter):
+        return (
+            default_getter(data, "course_type")
+            if field == "type"
+            else default_getter(data, field)
+        )
+
+    def _has_n_cards(self, cards_num):
+        def _predicate(driver: WebDriver) -> bool:
+            return (
+                len(driver.find_elements(By.CLASS_NAME, "request-card-details"))
+                == cards_num
+            )
+
+        return _predicate
+
+    def _edition_ready(self, idx_to_modify, formset_length):
+        return self.path_matches(
+            "espace_responsable_aidant_new",
+            query_params={NewHabilitationRequest.edit_key: idx_to_modify},
+        )
+
+
+@tag("functional")
+class NewHabilitationRequestTestsWithJS(NewHabilitationRequestTestsNoJS):
+    """Same tests than NewHabilitationRequestTestsNoJS but with JS enabled"""
+
+    js = True
+
+    def test_prevents_form_erase_when_editing(self):
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+        req1: HabilitationRequest = HabilitationRequestFactory.build(
+            organisation=self.organisation
+        )
+        self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.wait.until(self._has_n_cards(1))
+        self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        ).send_keys(req1.email)
+        self.js_click(By.ID, "edit-button-0")
+
+        self.wait.until(
+            visibility_of_element_located((By.ID, "confirmation-modal-title"))
+        )
+
+        actual = self.selenium.execute_script(
+            "return arguments[0].value",
+            self.selenium.find_element(
+                By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+            ),
+        )
+
+        self.assertEqual(
+            req1.email,
+            actual,
+            "Editing form is not correctly filled. "
+            f"Expected email field to be {req1.email}, was {actual}",
+        )
+
+    def _edition_ready(self, idx_to_modify, formset_length):
+        return self._has_n_cards(formset_length - 1)

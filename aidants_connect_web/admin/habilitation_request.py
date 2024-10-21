@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, SimpleListFilter
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.forms import ChoiceField
@@ -17,6 +17,7 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
+from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils import build_url, render_email
 from aidants_connect_web.constants import ReferentRequestStatuses
@@ -39,27 +40,27 @@ class HabilitationRequestResource(resources.ModelResource):
     )
     responsable__last_name = Field(
         attribute="organisation__responsables",
-        column_name="Responsable Aidants Connect (Nom)",
+        # column_name="Responsable Aidants Connect (Nom)",
         widget=ManyToManyWidget(Aidant, field="last_name", separator="\n"),
     )
     responsable__first_name = Field(
         attribute="organisation__responsables",
-        column_name="Responsable Aidants Connect (Prénom)",
+        # column_name="Responsable Aidants Connect (Prénom)",
         widget=ManyToManyWidget(Aidant, field="first_name", separator="\n"),
     )
     responsable__profession = Field(
         attribute="organisation__responsables",
-        column_name="Intitulé de poste du responsable Aidants Connect",
+        # column_name="Intitulé de poste du responsable Aidants Connect",
         widget=ManyToManyWidget(Aidant, field="profession", separator="\n"),
     )
-    reponsable__email = Field(
+    responsable__email = Field(
         attribute="organisation__responsables",
-        column_name="Responsable Aidants Connect (adresse mail)",
+        # column_name="Responsable Aidants Connect (adresse mail)",
         widget=ManyToManyWidget(Aidant, field="email", separator="\n"),
     )
     responsable__phone = Field(
         attribute="organisation__responsables",
-        column_name="Téléphone responsable Aidants Connect",
+        # column_name="Téléphone responsable Aidants Connect",
         widget=ManyToManyWidget(Aidant, field="phone", separator="\n"),
     )
     last_name = Field(attribute="last_name", column_name="Nom de l'aidant à former")
@@ -78,12 +79,36 @@ class HabilitationRequestResource(resources.ModelResource):
     )
     organisation__city = Field(attribute="organisation__city", column_name="Ville")
 
-    organisation_departement = Field(column_name="Département")
-    organisation_region = Field(column_name="Région")
+    organisation_departement = Field(
+        # column_name="Département"
+    )
+    organisation_region = Field(
+        # column_name="Région"
+    )
 
     class Meta:
         model = HabilitationRequest
-        fields = set()
+        fields = (
+            "created_at",
+            "updated_at",
+            "organisation__data_pass_id",
+            "organisation__name",
+            "organisation__type__name",
+            "responsable__last_name",
+            "responsable__first_name",
+            "responsable__profession",
+            "responsable__email",
+            "responsable__phone",
+            "last_name",
+            "first_name",
+            "email",
+            "profession",
+            "organisation__address",
+            "organisation__zipcode",
+            "organisation__city",
+            "organisation_departement",
+            "organisation_region",
+        )
 
     def _get_department_from_zipcode(self, habilitation_request):
         zipcode = habilitation_request.organisation.zipcode or ""
@@ -128,7 +153,15 @@ class HabilitationRequestImportResource(resources.ModelResource):
 
     class Meta:
         model = HabilitationRequest
-        fields = set()
+        fields = (
+            "organisation__data_pass_id",
+            "last_name",
+            "first_name",
+            "email",
+            "profession",
+            "status",
+            "origin",
+        )
         import_id_fields = ("email", "organisation__data_pass_id")
 
 
@@ -141,11 +174,11 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
     )
     date_formation = Field(attribute="date_formation")
 
-    def before_import_row(self, row, row_number=None, **kwargs):
+    def before_import_row(self, row, **kwargs):
         fieldname = "data_pass_id"
         if not (Organisation.objects.filter(data_pass_id=row[fieldname]).exists()):
             raise ValidationError("Organisation does not exist")
-        return super().before_import_row(row, row_number, **kwargs)
+        return super().before_import_row(row, **kwargs)
 
     # skip new rows
     def skip_row(self, instance, original, row, import_validation_errors=None):
@@ -158,7 +191,7 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
         if instance.test_pix_passed:
             instance.validate_and_create_aidant()
 
-    def after_save_instance(self, instance, using_transactions, dry_run):
+    def after_save_instance(self, instance, row, **kwargs):
         aidants_a_former = HabilitationRequest.objects.filter(email=instance.email)
         for aidant in aidants_a_former:
             if not aidant.formation_done:
@@ -167,11 +200,11 @@ class HabilitationRequestImportDateFormationResource(resources.ModelResource):
                 aidant.save()
                 if aidant.test_pix_passed:
                     aidant.validate_and_create_aidant()
-        return super().after_save_instance(instance, using_transactions, dry_run)
+        return super().after_save_instance(instance, row, **kwargs)
 
     class Meta:
         model = HabilitationRequest
-        fields = set()
+        fields = ("email", "organisation__data_pass_id", "date_formation")
         import_id_fields = ("email", "organisation__data_pass_id")
         skip_unchanged = True
 
@@ -182,6 +215,21 @@ class HabilitationDepartmentFilter(DepartmentFilter):
 
 class HabilitationRequestRegionFilter(RegionFilter):
     filter_parameter_name = "organisation__zipcode"
+
+
+class HabilitationRequestOrgaTypeFilter(SimpleListFilter):
+    title = "Type de l'organisation"
+
+    parameter_name = "orga_type_id"
+
+    def lookups(self, request, model_admin):
+        return RequestOriginConstants.choices
+
+    def queryset(self, request, queryset):
+        orga_type_id = self.value()
+        if not orga_type_id:
+            return
+        return queryset.filter(organisation__type=orga_type_id)
 
 
 class HabilitationRequestImportForm(ImportForm):
@@ -206,6 +254,7 @@ class ConfirmHabilitationRequestImportForm(ConfirmImportForm):
 
 class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
+        "updated_at",
         "email",
         "first_name",
         "last_name",
@@ -221,6 +270,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     list_filter = (
         HabilitationRequestRegionFilter,
         HabilitationDepartmentFilter,
+        HabilitationRequestOrgaTypeFilter,
         "status",
         "origin",
         "test_pix_passed",
@@ -239,8 +289,10 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     import_export_change_list_template = (
         "aidants_connect_web/admin/habilitation_request/change_list.html"
     )
+    import_form_class = HabilitationRequestImportForm
+    confirm_form_class = ConfirmHabilitationRequestImportForm
 
-    def get_import_resource_kwargs(self, request, form, *args, **kwargs):
+    def get_import_resource_kwargs(self, request, form, **kwargs):
         cleaned_data = getattr(form, "cleaned_data", False)
         if (
             isinstance(form, ConfirmHabilitationRequestImportForm)
@@ -250,7 +302,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             self.import_choices = cleaned_data["import_choices"]
         return kwargs
 
-    def get_import_resource_classes(self):
+    def get_import_resource_classes(self, request):
         import_choices = getattr(self, "import_choices", False)
         if import_choices and import_choices == "FORMATION_DATE":
             return [HabilitationRequestImportDateFormationResource]
@@ -258,12 +310,6 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             return [HabilitationRequestImportResource]
 
         return self.resource_classes
-
-    def get_import_form(self):
-        return HabilitationRequestImportForm
-
-    def get_confirm_import_form(self):
-        return ConfirmHabilitationRequestImportForm
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -340,7 +386,10 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             f"{habilitation_requests.count()} demandes sont maintenant en cours.",
         )
 
-    mark_processing.short_description = "Passer « en cours » les demandes sélectionnées"
+    mark_processing.short_description = (
+        "Passer les demandes sélectionnées au statut "
+        f"« {ReferentRequestStatuses.STATUS_PROCESSING.label} »"
+    )
 
     def send_validation_email(self, aidant):
         text_message, html_message = render_email(

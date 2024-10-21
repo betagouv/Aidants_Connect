@@ -1,0 +1,17 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour,</mj-text>
+    <mj-text>
+      La prochaine étape de la procédure d’habilitation à Aidants Connect est la formation des aidants. Rendez-vous sur
+      votre demande d’habilitation, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date
+      de formation pour chaque aidant.
+    </mj-text>
+    <mj-button href="{{ habilitation_requests_url }}">Aller sur ma demande d’habilitation</mj-button>
+  </mj-column>
+</mj-section>
+{% endblock email_body %}

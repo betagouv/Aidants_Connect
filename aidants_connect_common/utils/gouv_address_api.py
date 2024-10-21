@@ -5,7 +5,7 @@ from typing import List, Union
 from django.conf import settings
 
 import requests as python_request
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from requests.exceptions import RequestException
 
 logger = logging.getLogger()
@@ -39,7 +39,8 @@ class Address(BaseModel):
     context: Context
     type: AddressType
 
-    @validator("context", pre=True)
+    @field_validator("context", mode="before")
+    @classmethod
     def parse_context(cls, value: Union[str, dict]):
         if isinstance(value, str):
             department_number, department_name, *region = value.split(",")

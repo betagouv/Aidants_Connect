@@ -169,6 +169,21 @@ urlpatterns = [
         name="espace_responsable_organisation",
     ),
     path(
+        "espace-responsable/aidants/",
+        espace_responsable.AidantsView.as_view(),
+        name="espace_responsable_aidants",
+    ),
+    path(
+        "espace-responsable/referents/",
+        espace_responsable.ReferentsView.as_view(),
+        name="espace_responsable_referents",
+    ),
+    path(
+        "espace-responsable/demandes/",
+        espace_responsable.DemandesView.as_view(),
+        name="espace_responsable_demandes",
+    ),
+    path(
         "espace-responsable/organisation/<int:organisation_id>/responsables/",
         espace_responsable.OrganisationResponsables.as_view(),
         name="espace_responsable_organisation_responsables",
@@ -182,6 +197,16 @@ urlpatterns = [
         "espace-responsable/aidant/ajouter/",
         espace_responsable.NewHabilitationRequest.as_view(),
         name="espace_responsable_aidant_new",
+    ),
+    path(
+        r"espace-responsable/aidant/ajouter/js/",
+        espace_responsable.NewHabilitationRequestJs.as_view(),
+        name="espace_responsable_aidant_new_js",
+    ),
+    path(
+        r"espace-responsable/aidant/ajouter/js/<int:form_idx>/",
+        espace_responsable.NewHabilitationRequestJs.as_view(),
+        name="espace_responsable_aidant_new_js_edit",
     ),
     path(
         "espace-responsable/aidant/<int:aidant_id>/supprimer-carte/",
@@ -250,7 +275,7 @@ urlpatterns = [
     path("formation/", service.formation, name="habilitation_faq_formation"),
     path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
     path("ressources/", service.ressources, name="ressources"),
-    path("accessibilite/", service.accessibilite, name="accessibilite"),
+    path("accessibilite/", service.AccessibiliteView.as_view(), name="accessibilite"),
     # # Datapass
     path(
         "datapass_receiver/",

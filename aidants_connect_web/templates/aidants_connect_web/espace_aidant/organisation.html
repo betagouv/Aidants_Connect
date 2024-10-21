@@ -1,6 +1,6 @@
 {% extends 'layouts/main-habilitation.html' %}
 
-{% load static %}
+{% load static dsfr_tags %}
 
 {% block title %}Aidants Connect - Mon organisation{% endblock %}
 
@@ -10,8 +10,10 @@
 
 {% block content %}
   <div class="fr-container">
-    {% include "layouts/_messages.html" %}
     <h1>Mon organisation</h1>
+
+    {% dsfr_django_messages %}
+
     <h2>{{ organisation.name }}</h2>
     <p class="subtitle">
       Retrouvez dans cette section, des ressources à votre disposition, susceptibles de vous aider dans vos

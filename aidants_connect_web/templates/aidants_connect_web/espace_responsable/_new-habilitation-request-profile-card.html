@@ -1,0 +1,17 @@
+{% extends "habilitation/generic-habilitation-request-profile-card.html" %}
+{% load static ac_common ac_extras %}
+
+{% block container_args %}data-new-habilitation-request-target="addedForm{{ habilitation_request.form.index }}Container"{% endblock %}
+{% block details_introduction %}{{ habilitation_request.form.as_hidden }}{% endblock %}
+{% block action_buttons %}
+  <button
+    id="edit-button-{{ habilitation_request.form.index }}"
+    class="fr-btn fr-btn--tertiary fr-icon-edit-fill"
+    formaction="{{ edit_profile_path }}{{ habilitation_request.form.index }}"
+    data-form-idx="{{ habilitation_request.form.index }}"
+    data-action="new-habilitation-request#onEdit:prevent:stop"
+    data-new-habilitation-request-target="editBtn"
+  >
+    Éditer
+  </button>
+{% endblock %}

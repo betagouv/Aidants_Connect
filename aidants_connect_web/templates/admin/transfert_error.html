@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load static ac_common ac_extras i18n %}
+{% load ac_common ac_extras i18n static %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -7,7 +7,7 @@
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
   <link rel="stylesheet" type="text/css" href="{% static "css/admin/transfert_error.css" %}">
   {{ media.css }}
-{% endblock %}
+{% endblock extrastyle %}
 
 {% block content %}
   <h1>⚠&nbsp;Certains mandats n'ont pas pu être transférés vers la nouvelle organiation</h1>
@@ -35,4 +35,4 @@
   <div class="submit-row">
     <a href="{% url 'otpadmin:aidants_connect_web_mandat_changelist' %}" class="default">Compris</a>
   </div>
-{% endblock %}
+{% endblock content %}

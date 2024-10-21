@@ -808,3 +808,26 @@ def import_referent_formation_from_livestorm(*, logger=None):
                     "formation_registration_dt": session.estimated_started_at,
                 },
             )
+
+
+@shared_task
+def notifiy_organisation_having_formation_unregistered_habilitation_requests():
+    for (
+        org
+    ) in Organisation.objects.having_formation_unregistered_habilitation_requests():
+        text_message, html_message = render_email(
+            "email/having_formation_unregistered_habilitation_requests.mjml",
+            {
+                "habilitation_requests_url": build_url(
+                    reverse("espace_responsable_demandes")
+                )
+            },
+        )
+
+        send_mail(
+            from_email=settings.SUPPORT_EMAIL,
+            subject="Sessions de formation à Aidants Connect",
+            recipient_list=org.responsables.values_list("email", flat=True),
+            message=text_message,
+            html_message=html_message,
+        )

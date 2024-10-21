@@ -63,7 +63,7 @@ class Testimony(CmsContent):
         return self.profile_picture_url or static("images/default-profile-picture.png")
 
     def get_absolute_url(self):
-        return reverse("temoignage-detail", kwargs={"slug": self.slug})
+        return reverse("temoignages_detail", kwargs={"slug": self.slug})
 
     class Meta:
         verbose_name = "Témoignage"
@@ -123,7 +123,7 @@ class FaqCategory(FaqSection):
         )
 
     def get_absolute_url(self):
-        return reverse("faq-category-detail", kwargs={"slug": self.slug})
+        return reverse("faq_category_detail", kwargs={"slug": self.slug})
 
     class Meta:
         verbose_name = "Catégorie FAQ"

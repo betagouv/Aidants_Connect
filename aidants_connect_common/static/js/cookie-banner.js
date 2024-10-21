@@ -20,7 +20,7 @@
         "handleBrowserDNTRequest": false,
         "removeCredit": false,
         "moreInfoLink": true,
-        "useExternalCss": false,
+        "useExternalCss": true,
         "useExternalJs": false,
         "readmoreLink": "",
         "mandatory": true,

@@ -6,6 +6,7 @@ from django.forms import Form
 from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.defaultfilters import yesno
 from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
@@ -51,6 +52,9 @@ __all__ = [
     "ValidationRequestFormView",
     "ReadonlyRequestView",
     "AddAidantsRequestView",
+    "AidantFormationRegistrationView",
+    "HabilitationRequestCancelationView",
+    "ManagerFormationRegistrationView",
 ]
 
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
@@ -123,10 +127,7 @@ class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
                 issuer_id=self.issuer.issuer_id,
             )
 
-        if (
-            self.organisation.status != RequestStatusConstants.NEW.name
-            and self.organisation.status != RequestStatusConstants.CHANGES_REQUIRED.name
-        ):
+        if self.organisation.status not in RequestStatusConstants.validatable:
             return redirect(
                 "habilitation_organisation_view",
                 issuer_id=self.issuer.issuer_id,
@@ -220,7 +221,6 @@ class IssuerEmailConfirmationWaitingView(
         return self.render_to_response(
             {
                 **self.get_context_data(**kwargs),
-                "email_confirmation_sent": True,
                 "support_email": settings.EMAIL_CONFIRMATION_SUPPORT_CONTACT_EMAIL,
                 "support_subject": settings.EMAIL_CONFIRMATION_SUPPORT_CONTACT_SUBJECT,
                 "support_body": settings.EMAIL_CONFIRMATION_SUPPORT_CONTACT_BODY,
@@ -404,7 +404,32 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
         return {
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
-            "aidants": self.organisation.aidant_requests,
+            "habilitation_requests": [
+                {
+                    "user": {
+                        "full_name": it.get_full_name(),
+                        "email": it.email,
+                        "edit_href": reverse(
+                            "habilitation_new_aidants",
+                            kwargs={
+                                "issuer_id": it.organisation.issuer.issuer_id,
+                                "uuid": it.organisation.uuid,
+                            },
+                        ),
+                        "details_fields": [
+                            # email profession conseiller_numerique organisation
+                            {"label": "Email", "value": it.email},
+                            {"label": "Profession", "value": it.profession},
+                            {
+                                "label": "Conseiller numérique",
+                                "value": yesno(it.conseiller_numerique, "Oui,Non"),
+                            },
+                            {"label": "Organisation", "value": it.organisation},
+                        ],
+                    }
+                }
+                for it in self.organisation.aidant_requests.all()
+            ],
             "type_other": RequestOriginConstants.OTHER.value,
         }
 
@@ -443,23 +468,6 @@ class ReadonlyRequestView(LateStageRequestView, FormView):
             **super().get_context_data(**kwargs),
             "organisation": self.organisation,
             "aidants": self.organisation.aidant_requests,
-            "display_add_aidants_button": (
-                self.organisation.status
-                in [
-                    RequestStatusConstants.NEW.name,
-                    RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-                    RequestStatusConstants.VALIDATED.name,
-                ]
-            ),
-            "display_modify_button": (
-                self.organisation.status
-                in [RequestStatusConstants.CHANGES_REQUIRED.name]
-            ),
-            "manager_is_active": (
-                (aidant := Aidant.objects.filter(email=self.organisation.manager.email))
-                and aidant.exists()
-                and aidant.first().last_login
-            ),
         }
 
     def get_success_url(self):
@@ -490,11 +498,7 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
     template_name = "add_aidants_request.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if self.organisation.status not in [
-            RequestStatusConstants.NEW.name,
-            RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            RequestStatusConstants.VALIDATED.name,
-        ]:
+        if self.organisation.status not in self.organisation.Status.aidant_registrable:
             messages.error(
                 request,
                 "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
@@ -610,7 +614,6 @@ class HabilitationRequestCancelationView(LateStageRequestView, FormView):
 
 
 class ManagerFormationRegistrationView(AidantFormationRegistrationView):
-
     def get_person(self):
         return get_object_or_404(
             Manager, organisation=self.organisation, is_aidant=True

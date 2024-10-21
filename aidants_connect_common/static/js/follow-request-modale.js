@@ -53,12 +53,16 @@ import {BaseController} from "./base-controller.js"
             if (value) {
                 // Remove errors
                 this.formContentTarget.querySelectorAll(".fr-alert--error").forEach(el => el.remove());
+                this.submitBtnTargets.forEach(elt => elt.setAttribute("disabled", "disabled"));
+                this.submitBtnTargets.forEach(elt => elt.classList.add(...this.loadingClasses));
             } else {
-
+                this.submitBtnTargets.forEach(elt => elt.removeAttribute("disabled"));
+                this.submitBtnTargets.forEach(elt => elt.classList.remove(...this.loadingClasses));
             }
         }
 
-        static targets = ["formContent", "unknownErrorMsgTpl", "formTpl", "dialogBtnTpl"]
+        static classes = ["loading"]
+        static targets = ["formContent", "submitBtn", "unknownErrorMsgTpl", "formTpl", "dialogBtnTpl"]
         static values = {submitRequestOngoing: {type: Boolean, default: false}}
     }
 

@@ -3,7 +3,7 @@
   class="shadowed padding-1-5rem margin-bottom-2rem mandate-summary-block mandate-elements-summary"
 >
   {% block summary %}
-    <p>
+    <p  class="fr-text--lg fr-mb-4w">
       {% with demarches.items|length as nb_demarches %}
         <strong>{{ usager.get_full_name }}</strong> autorise <strong>{{ organisation.name }}</strong> à réaliser à sa
         place {{ nb_demarches|pluralize:"la démarche,les démarches" }} administrative{{ nb_demarches|pluralize }}
@@ -11,19 +11,21 @@
       {% endwith %}
     </p>
   {% endblock %}
-  <ul>
+  <div class="fr-mb-4w fr-background-contrast--grey fr-p-4w">
     {% for title, description in demarches.items %}
-      <li>
-        <div class="fr-grid-row">
-          <strong class="fr-col-12 fr-col-md-4">{{ title }}</strong>
-          <span class="fr-col-12 fr-col-md-8">{{ description }}</span>
-        </div>
-      </li>
+    <div class="fr-grid-row">
+      <div class="fr-checkbox-group fr-mb-4w">
+        <input checked disabled name="checkboxes-disabled" id="checkboxes-disabled-{{ title }}" type="checkbox" aria-describedby="checkboxes-disabled-messages">
+        <label class="fr-label" for="checkboxes-disabled-{{ title }}"></label>
+      </div>
+      <div class="fr-text--lead fr-mb-1w"><strong>{{ title }}</strong></div>
+      <div class="fr-ml-4w fr-col-12"> {{ description }}</div>
+    </div>
     {% endfor %}
+  </div>
 
-    {% if warn_scope %}
-      {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
-    {% endif %}
-  </ul>
-  <p><strong>{{ duree|capfirst }}.</strong></p>
+  <p class="fr-text--lg"><strong>{{ duree|capfirst }}.</strong></p>
+  {% if warn_scope %}
+    {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
+  {% endif %}
 </section>

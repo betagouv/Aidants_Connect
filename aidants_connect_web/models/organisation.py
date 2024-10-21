@@ -51,6 +51,13 @@ class OrganisationManager(models.Manager):
             is_active=True,
         ).distinct()
 
+    def having_formation_unregistered_habilitation_requests(self):
+        return self.filter(
+            is_active=True,
+            habilitation_requests__isnull=False,
+            habilitation_requests__formations=None,
+        ).distinct()
+
 
 def organisation_allowed_demarches():
     return list(settings.DEMARCHES.keys())
