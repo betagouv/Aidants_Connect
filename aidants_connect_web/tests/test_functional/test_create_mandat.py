@@ -40,15 +40,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(welcome_aidant, "Vos usagères et usagers")
-
-        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
-        self.assertEqual(1, len(usagers_before))
         self.assertEqual(
-            "Il n'y a encore personne avec qui vous avez un mandat.",
-            usagers_before[0].text.strip(),
+            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
+
+        tables = self.selenium.find_elements(By.TAG_NAME, "table")
+        self.assertEqual(3, len(tables))
+        for table in tables:
+            self.assertIn("Vous n'avez pas de mandats", table.text)
 
         # Create new mandat
         self.selenium.find_element(By.ID, "add_usager").click()
@@ -76,13 +75,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)
-
-        # Nouvelle mire dialog
-        if len(self.selenium.find_elements(By.ID, "message-on-login")) > 0:
-            temp_test_nouvelle_mire_masquer = self.selenium.find_element(
-                By.ID, "message-on-login-close"
-            )
-            temp_test_nouvelle_mire_masquer.click()
 
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element(
@@ -138,15 +130,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(welcome_aidant, "Vos usagères et usagers")
-
-        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
-        self.assertEqual(1, len(usagers_before))
         self.assertEqual(
-            "Il n'y a encore personne avec qui vous avez un mandat.",
-            usagers_before[0].text.strip(),
+            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
+
+        tables = self.selenium.find_elements(By.TAG_NAME, "table")
+        self.assertEqual(3, len(tables))
+        for table in tables:
+            self.assertIn("Vous n'avez pas de mandats", table.text)
 
         # Create new mandat
         self.selenium.find_element(By.ID, "add_usager").click()
@@ -201,13 +192,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         fc_button = self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect")
         fc_button.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-
-        # Nouvelle mire dialog
-        if len(self.selenium.find_elements(By.ID, "message-on-login")) > 0:
-            temp_test_nouvelle_mire_masquer = self.selenium.find_element(
-                By.ID, "message-on-login-close"
-            )
-            temp_test_nouvelle_mire_masquer.click()
 
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element(
@@ -274,15 +258,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(welcome_aidant, "Vos usagères et usagers")
-
-        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
-        self.assertEqual(1, len(usagers_before))
         self.assertEqual(
-            "Il n'y a encore personne avec qui vous avez un mandat.",
-            usagers_before[0].text.strip(),
+            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
+
+        tables = self.selenium.find_elements(By.TAG_NAME, "table")
+        self.assertEqual(3, len(tables))
+        for table in tables:
+            self.assertIn("Vous n'avez pas de mandats", table.text)
 
         # Create new mandat
         self.selenium.find_element(By.ID, "add_usager").click()
@@ -388,13 +371,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         """
         )
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-
-        # Nouvelle mire dialog
-        if len(self.selenium.find_elements(By.ID, "message-on-login")) > 0:
-            temp_test_nouvelle_mire_masquer = self.selenium.find_element(
-                By.ID, "message-on-login-close"
-            )
-            temp_test_nouvelle_mire_masquer.click()
 
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element(

@@ -15,4 +15,4 @@
     <mj-button href="{{ espace_aidant }}">Découvrir</mj-button>
   </mj-column>
 </mj-section>
-{% endblock %}
+{% endblock email_body %}

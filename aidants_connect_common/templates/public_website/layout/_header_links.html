@@ -59,3 +59,15 @@
     Aide
   </a>
 </li>
+{% if testimonies_count > 0 %}
+  <li class="fr-nav__item">
+    <a
+      class="fr-nav__link"
+      target="_self"
+      href="{% url 'temoignages' %}"
+      {% if view_name|startswith:'temoignages' %}aria-current="true"{% endif %}
+    >
+      Témoignages
+    </a>
+  </li>
+{% endif %}

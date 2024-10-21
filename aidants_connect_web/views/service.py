@@ -10,6 +10,7 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.generic import TemplateView
 
 from aidants_connect_pico_cms.models import Testimony
 from aidants_connect_web.forms import OTPForm
@@ -41,10 +42,7 @@ def home_page(request):
     return render(
         request,
         "public_website/home_page.html",
-        context={
-            "testimonies": testimonies_qs[:3],
-            "has_more_testimonies": testimonies_qs.count() > 3,
-        },
+        context={"testimonies": testimonies_qs[:3]},
     )
 
 
@@ -210,8 +208,8 @@ def mentions_legales(request):
     return render(request, "public_website/mentions_legales.html")
 
 
-def accessibilite(request):
-    return render(request, "public_website/accessibilite.html")
+class AccessibiliteView(TemplateView):
+    template_name = "public_website/accessibilite.html"
 
 
 def ressources(request):

@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericRelation
 from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import SET_NULL, Q
@@ -22,7 +21,6 @@ from aidants_connect_common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.models import FormationAttendant
 from aidants_connect_common.utils import (
     build_url,
     generate_new_datapass_id,
@@ -289,6 +287,9 @@ class OrganisationRequest(models.Model):
     # Organisation
     name = models.TextField("Nom de la structure")
     siret = models.BigIntegerField("N° SIRET")
+    legal_category = models.CharField(
+        "categorieJuridiqueUniteLegale", max_length=30, default="0"
+    )
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
@@ -334,6 +335,7 @@ class OrganisationRequest(models.Model):
 
     # Checkboxes
     cgu = models.BooleanField("J'accepte les CGU", default=False)
+    not_free = models.BooleanField("La formation est payante", default=False)
     dpo = models.BooleanField("Le DPO est informé", default=False)
     professionals_only = models.BooleanField(
         "La structure ne contient que des aidants professionnels", default=False
@@ -395,6 +397,7 @@ class OrganisationRequest(models.Model):
 
     def prepare_request_for_ac_validation(self, form_data: dict):
         self.cgu = form_data["cgu"]
+        self.not_free = form_data["not_free"]
         self.dpo = form_data["dpo"]
         self.professionals_only = form_data["professionals_only"]
         self.without_elected = form_data["without_elected"]
@@ -579,6 +582,11 @@ class OrganisationRequest(models.Model):
             ),
             models.CheckConstraint(
                 check=Q(status=RequestStatusConstants.NEW.name)
+                | (~Q(status=RequestStatusConstants.NEW.name) & Q(not_free=True)),
+                name="not_free_checked",
+            ),
+            models.CheckConstraint(
+                check=Q(status=RequestStatusConstants.NEW.name)
                 | (~Q(status=RequestStatusConstants.NEW.name) & Q(dpo=True)),
                 name="dpo_checked",
             ),
@@ -628,13 +636,6 @@ class AidantRequest(Person):
         default=None,
         blank=True,
         on_delete=models.CASCADE,
-    )
-
-    formations = GenericRelation(
-        FormationAttendant,
-        related_name="aidant_requests",
-        object_id_field="attendant_id",
-        content_type_field="attendant_content_type",
     )
 
     @property

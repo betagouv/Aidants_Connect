@@ -277,10 +277,13 @@ pre-commit install
 
 La CSP (content security policy) de Aidants Connect fonctionne en liste blanche : elle nécessite de lister tous les scripts inline (dans des balises `<script>`).
 
-Si vous devez modifier ou ajouter un bout de JavaScript inline, mettez à jour la constante `CSP_SCRIPT_SRC` dans le fichier `settings.py`.
+Si vous devez modifier ou ajouter un bout de JavaScript inline, vous pouvez [utiliser la propriété `csp_nonce` de l'objet `HttpRequest` générée par `django-csp`](https://django-csp.readthedocs.io/en/3.8/nonce.html#middleware) :
 
-Pour calculer le hash à mettre, le plus simple est d'ouvrir la page sur Chrome et de chercher dans la console le message commençant par "Refused to execute inline script".
-Il mentionne le hash (commençant par `'sha256-`) à ajouter à la CSP.
+```django
+<script nonce="{{request.csp_nonce}}">
+    var hello="world";
+</script>
+```
 
 ### CSS et SCSS
 

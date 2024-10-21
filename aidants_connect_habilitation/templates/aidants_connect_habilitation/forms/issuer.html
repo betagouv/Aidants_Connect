@@ -1,0 +1,34 @@
+{% load dsfr_tags %}
+{% if errors %}
+  <section class="fr-my-4v fr-input-group fr-input-group--error">
+    {{ errors }}
+  </section>
+{% endif %}
+<fieldset class="fr-fieldset">
+  <legend class="fr-fieldset__legend">Identité</legend>
+
+  <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+    {% dsfr_form_field form.last_name %}
+  </div>
+  <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+    {% dsfr_form_field form.first_name %}
+  </div>
+  <div class="fr-fieldset__element">
+    {% dsfr_form_field form.profession %}
+  </div>
+</fieldset>
+<fieldset class="fr-fieldset">
+  <legend class="fr-fieldset__legend">Contact</legend>
+
+  <div class="fr-fieldset__element">
+    {% dsfr_form_field form.email %}
+    <p class="fr-text--sm fr-info-text">
+      Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et accessible par une seule 
+      personne. Toute saisie d’email de contact générique entrainera un blocage de la demande d’habilitation.
+    </p>
+  </div>
+
+  <div class="fr-fieldset__element">
+    {% dsfr_form_field form.phone %}
+  </div>
+</fieldset>

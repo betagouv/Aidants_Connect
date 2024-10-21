@@ -1,4 +1,5 @@
 import re
+from collections.abc import Iterable
 from urllib.parse import quote, urlencode
 
 from django import template
@@ -7,7 +8,10 @@ from django.template import TemplateSyntaxError
 from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
 from django.template.defaultfilters import stringfilter
 from django.templatetags.static import static
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+
+from aidants_connect import utils
 
 register = template.Library()
 
@@ -182,6 +186,12 @@ def list_term(context, **kwargs):
 
 @register.filter
 @stringfilter
+def strtobool(val: str):
+    return utils.strtobool(f"{val}", None)
+
+
+@register.filter
+@stringfilter
 def camel(value: str):
     splitted = value.split("_")
     if len(splitted) > 1:
@@ -210,7 +220,7 @@ def withdict(parser, token):
     For example::
 
         {% withdict name=person.name key=person.key as dict %}
-            {% some_tag_expecting_a_dict doct %}
+            {% some_tag_expecting_a_dict dict %}
         {% endwithdict %}
 
     """
@@ -244,3 +254,27 @@ class WithDictNode(Node):
         values = {key: val.resolve(context) for key, val in self.extra_context.items()}
         with context.push(**{self.variable_name: values}):
             return self.nodelist.render(context)
+
+
+@register.filter(is_safe=True)
+def strfmt(args, format_string):
+    """
+    Shortcup to `str.format`.
+
+    Usage:
+
+    ```
+    {{ ctx_variable|strfmt:"The sum of 1 + 2 is {0}" }}
+    ```
+    See: https://docs.python.org/3/library/stdtypes.html#str.format
+    """
+    kwargs = {}
+    if isinstance(args, dict):
+        kwargs.update(args)
+        args = tuple()
+    if isinstance(args, Iterable) and not isinstance(args, str):
+        args = tuple(args)
+    else:
+        args = (str(args),)
+
+    return format_html(format_string, *args, **kwargs)

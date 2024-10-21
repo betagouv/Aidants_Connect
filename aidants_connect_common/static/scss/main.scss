@@ -11,9 +11,10 @@ body {
 }
 
 ul, ol {
-  margin: 0;
-  padding: 0;
-  list-style-position: outside;
+  margin: var(--text-spacing);
+  p:has(+&) {
+    margin-bottom: var(--xl-block);
+  }
 }
 
 $main-padding: 3rem;
@@ -46,27 +47,6 @@ h3, .fr-h3, h4, .fr-h4 {
   }
 }
 
-.fr-text-default {
-  color: var(--text-default-grey) !important;
-}
-.fr-text-blue-france {
-  color: var(--blue-france-sun-113-625);
-}
-.fr-text-grey {
-  color: var(--grey-425-625);
-}
-.fr-text--center {
-  text-align: center;
-}
-
-.contrast-grey-background {
-  background-color: var(--background-contrast-grey);
-}
-.alt-grey-background {
-  background-color: var(--background-alt-grey);
-}
-
-
 .page-main-title {
   color: var(--grey-425-625);
   font-size: 1.25rem;
@@ -79,10 +59,10 @@ h3, .fr-h3, h4, .fr-h4 {
   margin: 0 0 3rem 0;
 }
 
-.errorlist  {
+.errorlist {
   list-style: none;
   margin-top: 0;
-  margin-bottom: 1rem ;
+  margin-bottom: 1rem;
   color: var(--text-active-red-marianne);
 }
 
@@ -121,18 +101,67 @@ p:last-child {
 .flex {
   display: flex;
 }
+
 .flex-right {
   justify-content: right;
 }
+
 .flex-wrap {
   flex-wrap: wrap;
 }
+
+.flex-between {
+  justify-content: space-between;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
 .width-100 {
-  width: 100%;
+  width: 100% !important;
 }
 
 .spacer {
   flex-grow: 10;
+}
+
+.fr-text--overflow-hidden {
+  overflow: hidden;
+}
+
+.fr-text--center {
+  text-align: center;
+}
+
+.fr-bordered {
+  border: solid 1px var(--border-default-grey);
+}
+
+.fr-bordered-blue {
+  border-color: var(--border-default-blue-france)
+}
+
+.fr-height-100 {
+  height: 100%;
+}
+
+.fr-btn.fr-btn--warning {
+  --hover-tint: var(--hover);
+  --idle: transparent;
+  --hover: var(--background-action-high-warning-hover);
+  --active: var(--background-action-high-warning-active);
+  align-items: center;
+  background-color: var(--background-action-high-warning);
+  color: var(--text-inverted-warning);
+
+  &.fr-btn--secondary {
+    --hover: inherit;
+    --active: inherit;
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px var(--border-action-high-warning);
+    color: var(--text-default-warning);
+  }
 }
 
 @for $i from 0 through 32 {
@@ -152,6 +181,11 @@ p:last-child {
 @media print {
   .no-print,
   .no-print * {
+    display: none !important;
+  }
+
+  // Don't display cookie related element on print
+  [id^="tarteaucitron"] {
     display: none !important;
   }
 }

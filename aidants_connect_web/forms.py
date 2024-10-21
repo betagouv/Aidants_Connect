@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Iterable, Optional, Sized
 from urllib.parse import unquote
 
 from django import forms
@@ -8,28 +8,45 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
-from django.forms import EmailField
+from django.forms import (
+    BaseModelFormSet,
+    EmailField,
+    Form,
+    RadioSelect,
+    modelformset_factory,
+)
+from django.forms.formsets import INITIAL_FORM_COUNT, TOTAL_FORM_COUNT
+from django.template.defaultfilters import yesno
+from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from dsfr.forms import DsfrBaseForm
+from dsfr.forms import DsfrBaseForm, DsfrDjangoTemplates
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import validator
+from pydantic import field_validator
 
+from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
+    BaseModelMultiForm,
+    CleanEmailMixin,
+    ConseillerNumerique,
+    CustomBoundFieldForm,
     ErrorCodesManipulationMixin,
     PatchedForm,
 )
 from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
-from aidants_connect_web.constants import RemoteConsentMethodChoices
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    RemoteConsentMethodChoices,
+)
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
@@ -490,10 +507,16 @@ class ChangeAidantOrganisationsForm(forms.Form):
         self.initial["organisations"] = self.aidant.organisations.all()
 
 
-class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
+class HabilitationRequestCreationForm(
+    ConseillerNumerique,
+    CleanEmailMixin,
+    forms.ModelForm,
+    DsfrBaseForm,
+    CustomBoundFieldForm,
+):
     organisation = forms.ModelChoiceField(
         queryset=Organisation.objects.none(),
-        empty_label="Choisir...",
+        empty_label="Choisir…",
     )
 
     def __init__(self, referent, *args, **kwargs):
@@ -503,12 +526,79 @@ class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
             responsables=self.referent
         ).order_by("name")
 
+    @property
+    def profile_card_context(self):
+        email = str(self["email"].value())
+        return {
+            "form": self,
+            "details_id": (
+                f"added-form-{self.index}" if hasattr(self, "index") else None
+            ),
+            "user": {
+                "full_name": (
+                    f'{self["first_name"].value()} {self["last_name"].value()}'
+                ),
+                "email": email,
+                "details_fields": [
+                    # email profession conseiller_numerique organisation
+                    {"label": "Email", "value": email},
+                    {"label": "Profession", "value": self["profession"].value()},
+                    {
+                        "label": "Conseiller numérique",
+                        "value": yesno(
+                            strtobool(self["conseiller_numerique"].value()), "Oui,Non"
+                        ),
+                    },
+                    {
+                        "label": "Organisation",
+                        "value": getattr(
+                            getattr(self, "cleaned_data", {}).get("organisation"),
+                            "name",
+                            "",
+                        ),
+                    },
+                ],
+            },
+        }
+
+    def clean_email(self):
+        email = super().clean_email()
+
+        if Aidant.objects.filter(
+            email__iexact=email,
+            organisation__in=self.referent.responsable_de.all(),
+        ).exists():
+            raise ValidationError(
+                "Il existe déjà un compte aidant pour cette adresse e-mail. "
+                "Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci."
+            )
+
+        if HabilitationRequest.objects.filter(
+            email=email,
+            organisation__in=self.referent.responsable_de.all(),
+        ).exists():
+            raise ValidationError(
+                "Une demande d’habilitation est déjà en cours pour l’adresse e-mail. "
+                "Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci.",
+            )
+
+        return email
+
+    def as_hidden(self):
+        return format_html_join("\n", "{}", ((bf.as_hidden(),) for bf in self))
+
+    def save(self, commit=True):
+        self.instance.origin = HabilitationRequest.ORIGIN_RESPONSABLE
+        return super().save(commit)
+
     class Meta:
         model = HabilitationRequest
         fields = (
             "email",
-            "last_name",
             "first_name",
+            "last_name",
             "profession",
             "organisation",
         )
@@ -521,8 +611,146 @@ class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
             }
         }
 
-    def clean_email(self):
-        return self.cleaned_data.get("email").lower()
+
+class HabilitationRequestCreationFormSet(BaseModelFormSet):
+    def __init__(self, edit_form: int = None, **kwargs):
+        self.extra = 0
+        self.min_num = 1
+        self.validate_num = True
+        self.saving = False
+
+        kwargs.setdefault("queryset", self.model._default_manager.none())
+        super().__init__(**kwargs)
+
+        self._initial_form_count = (
+            self.management_form.cleaned_data[TOTAL_FORM_COUNT]
+            if self.management_form.is_valid()
+            else None
+        )
+
+        self.edit_form = None
+        if isinstance(edit_form, int) and (0 <= edit_form < len(self.initial_forms)):
+            self.edit_form = edit_form
+
+    @property
+    def initial_forms(self):
+        if self.saving:
+            return []
+
+        initial_forms = super().initial_forms
+        if self.edit_form is None:
+            return initial_forms
+
+        class Gen(Iterable, Sized):
+            def __init__(self, _forms: list[Form], _edit_form_idx):
+                self.forms = _forms
+                self.edit_form_idx = _edit_form_idx
+
+            def __len__(self):
+                return len(self.forms) - 1
+
+            def __iter__(self):
+                for form in self.forms:
+                    if form.index != self.edit_form_idx:
+                        yield form
+
+        return Gen(initial_forms, self.edit_form)
+
+    @property
+    def extra_forms(self):
+        if self.saving:
+            return self.forms
+
+        if self.edit_form is None:
+            return super().extra_forms
+
+        return [self.forms[self.edit_form]]
+
+    def add_extra(self):
+        """Ensure there's always an extra form"""
+        if (
+            # There a problem with managment form
+            self._initial_form_count is None
+            # Or, extra was already added
+            or self._initial_form_count
+            < self.management_form.cleaned_data[TOTAL_FORM_COUNT]
+            # or we're editing a record in the form
+            or self.edit_form is not None
+            # Or there's already an empty form in self.extra_forms
+            or any(not form.has_changed() for form in self.extra_forms)
+        ):
+            return
+
+        self.data[self.management_form.add_prefix(TOTAL_FORM_COUNT)] = (
+            f"{self._initial_form_count + 1}"
+        )
+        self.data[self.management_form.add_prefix(INITIAL_FORM_COUNT)] = (
+            f"{self._initial_form_count}"
+        )
+        # Force recreate managment form wit new data
+        del self.management_form  # noqa
+        self.forms.append(
+            self._construct_form(
+                self._initial_form_count,
+                **self.get_form_kwargs(self._initial_form_count),
+            )
+        )
+
+    def _construct_form(self, i, **kwargs):
+        # Skipping BaseModelFormSet._construct_form b/c we don't want the
+        # pk validation mecanism.
+        form = super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+        form.index = i
+        return form
+
+    def save(self, commit=True):
+        """
+        BaseModelFormSet.save() only save new objects present in self.extra_forms
+        but this form is tweaked to be used with new objects only.
+        BaseModelFormSet.initial_forms is used to store previous data between
+        POSTs.
+        We need to advertise that we're saving right now and every object should be
+        saved.
+        """
+        self.saving = True
+        result = super().save(commit)
+        self.saving = False
+        return result
+
+
+class HabilitationRequestCreationFormationTypeForm(forms.Form):
+    Type = HabilitationRequestCourseType
+
+    type = forms.ChoiceField(
+        label=(
+            "Renseignez le type de formation souhaité "
+            "pour la liste des aidants à habiliter."
+        ),
+        label_suffix=None,
+        choices=Type.choices,
+        widget=RadioSelect,
+    )
+
+
+class NewHabilitationRequestForm(BaseModelMultiForm):
+    habilitation_requests = modelformset_factory(
+        HabilitationRequestCreationForm.Meta.model,
+        HabilitationRequestCreationForm,
+        formset=HabilitationRequestCreationFormSet,
+    )
+
+    course_type = HabilitationRequestCreationFormationTypeForm
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("renderer", DsfrDjangoTemplates())  # Patched in Django 5)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        super().save(commit=False)
+        for form in self["habilitation_requests"].forms:
+            form.instance.course_type = self["course_type"].cleaned_data["type"]
+
+        return super().save(commit)
 
 
 class DatapassForm(forms.Form):
@@ -633,7 +861,7 @@ class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
     redirect_uri = forms.CharField()
     scope = forms.CharField()
     acr_values = forms.CharField()
-    claim = forms.JSONField(required=False)
+    claims = forms.JSONField(required=False)
 
     def __init__(self, organisation: Organisation, *args, relaxed=False, **kwargs):
         self.relaxed = relaxed
@@ -685,8 +913,8 @@ class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
             raise ValidationError("", "invalid")
         return result
 
-    def clean_claim(self):
-        result = self.cleaned_data.get("claim")
+    def clean_claims(self):
+        result = self.cleaned_data.get("claims")
         if not result:
             return None
 
@@ -696,12 +924,14 @@ class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
                     essential: bool
                     values: Optional[set[str]] = set()
 
-                    @validator("essential", allow_reuse=True)
+                    @field_validator("essential")
+                    @classmethod
                     def check_true(cls, v):
                         assert v is True
                         return v
 
-                    @validator("values", allow_reuse=True)
+                    @field_validator("values")
+                    @classmethod
                     def check_demarche(cls, v):
                         assert all(value in settings.DEMARCHES.keys() for value in v)
                         return v
@@ -722,7 +952,7 @@ class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
                 )
         except (TypeError, PydanticValidationError):
             raise ValidationError(
-                self.fields["claim"].error_messages["invalid"],
+                self.fields["claims"].error_messages["invalid"],
                 code="invalid",
                 params={"value": result},
             )

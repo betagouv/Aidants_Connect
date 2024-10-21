@@ -23,7 +23,10 @@ from aidants_connect_common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_common.models import Formation
-from aidants_connect_common.tests.factories import FormationFactory
+from aidants_connect_common.tests.factories import (
+    FormationFactory,
+    FormationOrganizationFactory,
+)
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     EmailOrganisationValidationError,
@@ -941,8 +944,8 @@ class ValidationRequestFormViewTests(TestCase):
             self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(response, self.template_name)
-        # expected button count = 5 -> issuer, org, more info, manager, aidant
-        self.assertContains(response, "Éditer", 5)
+        # expected button count = 4 -> issuer, org,, manager, aidant
+        self.assertContains(response, "Éditer", 4)
 
     def test_do_the_job_and_redirect_valid_post_to_org_view(self):
         self.assertIsNone(self.organisation.data_pass_id)
@@ -950,6 +953,7 @@ class ValidationRequestFormViewTests(TestCase):
 
         cleaned_data = {
             "cgu": True,
+            "not_free": True,
             "dpo": True,
             "professionals_only": True,
             "without_elected": True,
@@ -996,6 +1000,7 @@ class ValidationRequestFormViewTests(TestCase):
 
         cleaned_data = {
             "cgu": True,
+            "not_free": True,
             "dpo": True,
             "professionals_only": True,
             "without_elected": True,
@@ -1030,6 +1035,7 @@ class ValidationRequestFormViewTests(TestCase):
     def test_post_no_manager_raises_error(self):
         valid_data = {
             "cgu": True,
+            "not_free": True,
             "dpo": True,
             "professionals_only": True,
             "without_elected": True,
@@ -1052,6 +1058,7 @@ class ValidationRequestFormViewTests(TestCase):
     def test_post_invalid_data(self):
         valid_data = {
             "cgu": True,
+            "not_free": True,
             "dpo": True,
             "professionals_only": True,
             "without_elected": True,
@@ -1495,6 +1502,7 @@ class TestFormationRegistrationView(TestCase):
         cls.formation_ok: Formation = FormationFactory(
             type_label="Des formations et des Hommes",
             start_datetime=now() + timedelta(days=50),
+            organisation=FormationOrganizationFactory(name="Organisation_Formation_OK"),
         )
 
         cls.formation_too_close: Formation = FormationFactory(
@@ -1636,6 +1644,7 @@ class TestFormationRegistrationView(TestCase):
         )
 
         self.assertIn(self.formation_ok.type.label, response.content.decode())
+        self.assertIn(self.formation_ok.organisation.name, response.content.decode())
         self.assertNotIn(self.formation_too_close.type.label, response.content.decode())
         self.assertNotIn(self.formation_full.type.label, response.content.decode())
 

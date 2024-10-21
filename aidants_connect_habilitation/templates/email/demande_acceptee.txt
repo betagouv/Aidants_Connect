@@ -6,13 +6,15 @@ La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, d
 
 Quelles sont les modalités de financement de la formation ?
 
-La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant payante et financée seulement dans les 2 cas suivants :
+La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant financée selon différentes modalités.
 
-- Pour les conseillers numériques, si elle fait partie des modules thématiques choisis lors de la formation initiale ou continue ;
+Nous vous invitons à vous rendre sur ce simulateur de financement https://tally.so/r/mO0Xkg pour découvrir comment la financer.
 
-- Pour les aidants des structures adhérentes à l’OPCO Uniformation (suite à l’inscription en formation, un devis sera adressé à la structure et une demande de prise en charge sera à effectuer auprès d’Uniformation).
+Attention : il peut arriver que dans certains cas (structures non adhérentes à l'OPCO uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être financée par la structure.
 
-Pour tous les autres cas, la formation doit être financée par la structure. Retrouvez plus de détails sur notre site internet : {{ habilitation_faq_formation }}
+Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.
+
+Retrouvez plus de détails sur notre site internet : {{ habilitation_faq_formation }}
 
 Comment inscrire les aidants en formation ?
 
@@ -25,5 +27,7 @@ Comment s'inscrire au wébinaire référent ?
 En parallèle de la formation, le ou la référent(e) Aidants Connect est tenu(e) de participer à un webinaire de présentation de l’outil et du rôle de référent. L'inscription se fait via ce formulaire : https://app.livestorm.co/aidants-connect/webinaire-referent?type=detailed
 
 Une fois les aidants formés, un kit de bienvenue, contenant les accès aux comptes, sera livré par voie postale à l’adresse de la structure.
+
+Nous vous rappelons que les personnes accompagnées via Aidants Connect doivent être en capacité de donner leur consentement pour conclure un mandat. Les personnes sous tutelle ou sous curatelle ne peuvent pas être accompagnées via Aidants Connect.
 
 Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.

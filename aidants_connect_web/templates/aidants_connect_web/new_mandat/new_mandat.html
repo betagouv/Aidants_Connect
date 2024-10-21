@@ -18,12 +18,15 @@
       Créer ou renouveler un mandat{% if aidant.organisations.count > 1 %} pour {{ aidant.organisation }}{% endif %}
     </h1>
     {% if aidant.organisations.count > 1 %}
-      <div class="notification warning">
+      <div class="fr-alert fr-alert--warning fr-my-8v">
         <p>Attention, vous allez créer un mandat au nom de cette structure :</p>
         <p><strong>{{ aidant.organisation }}</strong><br>{{ aidant.organisation.address }}</p>
         <p>
           Si ce n’est pas la bonne structure,
-          <a href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}">
+          <a
+            href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
+            class="fr-link"
+          >
             vous pouvez en changer
           </a>.
         </p>
@@ -34,8 +37,8 @@
       administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
       moment.</p>
     <div class="fr-callout fr-icon-information-line">
-      <h3 class="fr-callout__title">Avec ce mandat, l’aidant s’engage à:</h3>
-      <p class="fr-callout__text">
+      <h3 class="fr-callout__title">Avec ce mandat, l’aidant s’engage à :</h3>
+      <article class="fr-callout__text">
         <ul>
           <li>
             réaliser les démarches listées dans le mandat à partir des informations que vous lui avez données ;
@@ -50,16 +53,16 @@
             sécuriser l’ensemble de vos informations et les supprimer lorsqu’elles ne sont plus utiles.
           </li>
         </ul>
-      </p>
+      </article>
     </div>
-    <p class="fr-text--lg"><span class="fr-icon-file-text-fill fr-text-blue-france fr-mr-1w"></span><strong>Ressources</strong></p>
+    <p class="fr-text--lg"><span class="fr-icon-file-text-fill fr-text-title--blue-france fr-mr-1w"></span><strong>Ressources</strong></p>
     <div class="fr-grid-row fr-grid-row--gutters fr-mb-1w">
       <div class="fr-col-md-6 fr-col-md">
         <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
           <div class="fr-tile__body mandate-translation-section">
               <div class="fr-tile__content">
                   <h3 class="fr-tile__title">
-                      <a class="fr-text-default" href="{% url 'mandate_translation' %}">Mandat type avec traductions disponibles</a>
+                      <a class="fr-text-default--grey" href="{% url 'mandate_translation' %}">Mandat type avec traductions disponibles</a>
                   </h3>
                   <p class="fr-tile__detail fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.</p>
               </div>
@@ -131,7 +134,7 @@
         <fieldset class="is-remote-section fr-fieldset">
           <section class="fr-checkbox-group">
             {% dsfr_form_field form.is_remote %}
-            <div class="fr-text-grey fr-text--xs fr-ml-4w">Vous devrez imprimer le mandat et le faire signer à la personne accompagnée aussi vite que possible. Ce mandat vous protège légalement.</div>
+            <div class="fr-text-default--grey fr-text--xs fr-ml-4w">Vous devrez imprimer le mandat et le faire signer à la personne accompagnée aussi vite que possible. Ce mandat vous protège légalement.</div>
           </section>
           <section
             class="mandate-remote-method-section"
@@ -178,7 +181,7 @@
                     aria-hidden="true"
                     data-remote-method-controller-target="requiredInputs"
                   >
-                    {% field_as_p form.user_phone p_classes="fr-my-1w fr-ml-4w" %}
+                    {% dsfr_form_field form.user_phone %}
                     
                     {% dsfr_form_field form.user_remote_contact_verified %}
                   </div>
@@ -187,8 +190,6 @@
             {% endfor %}
           </section>
         </fieldset>
-
-        
 
         {% block input_submit_form %}
           <h3 class="fr-label title-count">Connectez l’usager à FranceConnect</h3>
@@ -204,7 +205,6 @@
   </div>
 {% endblock content %}
 
-</div>
 {% block extrajs %}
   {% stimulusjs %}
   <script defer type="module" src="{% static 'js/new-mandat.js' %}"></script>

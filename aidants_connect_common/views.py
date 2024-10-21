@@ -5,13 +5,13 @@ from django.db import transaction
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.views import View
-from django.views.generic import FormView
+from django.views.generic import DetailView, FormView
 
 from aidants_connect_common.forms import (
     FollowMyHabilitationRequesrForm,
     FormationRegistrationForm,
 )
-from aidants_connect_common.models import Formation
+from aidants_connect_common.models import Formation, FormationOrganization, Region
 from aidants_connect_common.utils import issuer_exists_send_reminder_email
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
@@ -88,16 +88,32 @@ class FormationRegistrationView(FormView):
         }
 
     def get_context_data(self, **kwargs):
-        kwargs.update(
-            {
-                "registered_to": self.get_habilitation_request().formations.values_list(
-                    "formation", flat=True
-                ),
-                "attendant": self.attendant,
-                "cancel_url": self.get_cancel_url(),
-            }
-        )
-        return super().get_context_data(**kwargs)
+        ctx = super().get_context_data(**kwargs)
+
+        return {
+            **ctx,
+            "registered_to": self.get_habilitation_request().formations.values_list(
+                "formation", flat=True
+            ),
+            "formation_regions": Region.objects.filter(
+                pk__in=ctx["form"]
+                .fields["formations"]
+                .queryset.values_list("organisation__region", flat=True)
+            ).distinct(),
+            "attendant": self.attendant,
+            "cancel_url": self.get_cancel_url(),
+        }
+
+
+class FormationsInformations(DetailView):
+    template_name = "formation/_formation-information.html"
+    queryset = Region.objects.all()
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "organisations": FormationOrganization.objects.filter(region=self.object),
+        }
 
 
 class FollowMyHabilitationRequestView(FormView):

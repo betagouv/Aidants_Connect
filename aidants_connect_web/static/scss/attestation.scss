@@ -1,19 +1,15 @@
-@use "colors";
-
 .fr-container {
-
   .attestation-content {
     .navbar {
-      @media not print {
-        display: none;
-      }
       .header-logo img:last-of-type {
         margin-bottom: 4rem;
       }
     }
+
     ul {
       padding: 0 0 0 2rem;
     }
+
     p {
       margin-bottom: .5rem;
     }
@@ -26,11 +22,6 @@
     .img-qrcode {
       height: 10em;
     }
-
-    @media print {
-      border: 1px solid black;
-      padding: 1rem;
-    }
   }
 
   .notification {
@@ -38,8 +29,9 @@
   }
 
   .text-center {
-    text-align: center;  
+    text-align: center;
   }
+
   .attestation-content h1 {
     font-size: 1.5rem;
     margin: 0 3rem 2rem;
@@ -59,27 +51,36 @@
   }
 }
 
+// PDF
+@media not print {
+  .navbar {
+    display: none;
+  }
+}
 
 @media print {
   @page {
     size: auto; /* auto is the initial value */
-    margin: 1rem 2rem 1rem 2rem; /* this affects the margin in the printer settings */
+    margin: 0; /* this affects the margin in the printer settings */
   }
 
-  body, p {
-    font-size: 11px !important;
+  :root {
+    font-size: 8.5pt;
     line-height: 1rem;
   }
 
-  li {
-    margin: 0;
-    padding: 0;
+  body {
+    margin: 2rem;
   }
 
-  .fr-container {
-    border: 0;
+  #main, [class*="fr-col"], .fr-container, li {
+    margin: 0;
     padding: 0;
-    margin: 1em;
     width: auto;
+  }
+
+  .attestation-content {
+    border: 1px solid black;
+    padding: 1rem;
   }
 }

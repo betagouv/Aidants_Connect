@@ -2,7 +2,7 @@
   <button class="fr-btn" data-action-print>Imprimer le mandat</button>
 </div>
 
-<script type="application/javascript">
+<script type="application/javascript" nonce="{{ request.csp_nonce }}">
     "use strict";
     new Promise(resolve => window.addEventListener("load", resolve)).then(() => {
         document.querySelector("button[data-action-print]").addEventListener("click", () => window.print());

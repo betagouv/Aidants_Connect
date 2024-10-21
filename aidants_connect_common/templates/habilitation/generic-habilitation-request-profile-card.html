@@ -1,0 +1,49 @@
+{% load ac_common ac_extras static %}
+
+{# Prevent messing with the absolute positionning of the design #}
+{# See https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent #}
+<div class="fr-col-12 fr-col-md-6 request-card" {% block container_args %}{% endblock %}>
+  <details {% if habilitation_request.details_id %}id="{{ habilitation_request.details_id }}" {% endif %}class="request-card-details">
+    {% block details_introduction %}{% endblock %}
+    <summary
+      class="fr-grid-row fr-grid-row--middle fr-grid-row--gap-2v fr-tile--shadow fr-py-2v fr-px-4v"
+      title="{{ habilitation_request.user.full_name }} {{ habilitation_request.user.email }}"
+    >
+      <img src="{% static "images/avatar.svg" %}" width="36" height="36" alt="" />
+      <span class="fr-grid-row--center fr-text--overflow-hidden spacer">
+        <p class="fr-m-0 fr-text--bold">{{ habilitation_request.user.full_name }}</p>
+        {% if habilitation_request.user.email %}
+          <p class="details-summary-header fr-m-0 fr-text--overflow-hidden">{{ habilitation_request.user.email }}</p>
+        {% endif %}
+      </span>
+      <span
+        type="button"
+        class="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-arrow-up-s-line"
+        aria-hidden="true"
+      ></span>
+    </summary>
+    <div class="details-content fr-p-4v fr-tile--shadow">
+      <section class="user-informations">
+        {% for field in habilitation_request.user.details_fields %}
+          <section class="fr-my-4v">
+            <p class="fr-text--sm fr-text-mention--grey">{{ field.label }}</p>
+            {{ field.value }}
+          </section>
+        {% endfor %}
+      </section>
+      <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline">
+        <li>
+          {% block action_buttons %}
+            <a
+              href="{{ habilitation_request.user.edit_href }}"
+              {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
+              class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
+            >
+              Éditer
+            </a>
+          {% endblock action_buttons %}
+        </li>
+      </ul>
+    </div>
+  </details>
+</div>

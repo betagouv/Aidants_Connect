@@ -297,9 +297,13 @@ class FormationAdmin(VisibleToAdminMetier, ModelAdmin):
         "max_attendants",
         "status",
         "place",
+        "id_grist",
+        "type",
+        "organisation",
     )
     raw_id_fields = ("type",)
-    list_filter = (FormationFillingFilter, "status")
+    search_fields = ("id", "place", "id_grist")
+    list_filter = (FormationFillingFilter, "status", "type", "organisation")
     readonly_fields = ("registered",)
 
     @admin.display(description="Nombre d'inscrits")
@@ -329,24 +333,47 @@ class FormationAdmin(VisibleToAdminMetier, ModelAdmin):
 
 @register(FormationAttendant, site=admin_site)
 class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
-    fields = ("registered", "formation")
+    fields = (
+        "registered",
+        "formation",
+        "get_formation_id_grist",
+    )
     readonly_fields = fields
-    list_display = ("__str__", "formation")
-    search_fields = ("formation__type__label", "formation__pk")
+    list_display = (
+        "formation",
+        "get_formation_id_grist",
+        "get_formation_type_label",
+        "attendant",
+        "state",
+    )
+    search_fields = (
+        "formation__type__label",
+        "formation__pk",
+        "formation__id_grist",
+        "attendant__email",
+    )
+    list_filter = ["state", "formation__type"]
+
+    @admin.display(description="Formation Type", ordering="formation__type__label")
+    def get_formation_type_label(self, obj):
+        return obj.formation.type.label
+
+    @admin.display(description="Formation Id Grist", ordering="formation__id_grist")
+    def get_formation_id_grist(self, obj):
+        return obj.formation.id_grist
 
     @admin.display(description="Personne inscrite")
     def registered(self, obj: FormationAttendant):
-        ct = obj.attendant_content_type
         obj_url = reverse(
-            f"admin:{ct.app_label}_{ct.model}_change",
+            "otpadmin:aidants_connect_web_habilitationrequest_change",
             args=(quote(obj.pk),),
             current_app=self.admin_site.name,
         )
-        return mark_safe(f'<a href="{obj_url}">{obj}</a>')
+        return mark_safe(f'<a href="{obj_url}">{obj.attendant.get_full_name()}</a>')
 
 
 @register(FormationOrganization, site=admin_site)
 class FormationOrganizationAdmin(VisibleToAdminMetier, ModelAdmin):
-    fields = ("name", "contacts")
-    list_display = ("name", "contacts")
-    search_fields = ("name", "contacts")
+    fields = ("name", "contacts", "private_contacts")
+    list_display = ("name", "contacts", "private_contacts")
+    search_fields = ("name", "contacts", "private_contacts")

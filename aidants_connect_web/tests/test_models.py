@@ -5,7 +5,6 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
@@ -20,11 +19,12 @@ from freezegun import freeze_time
 from phonenumbers import PhoneNumberFormat, format_number
 from phonenumbers import parse as parse_number
 
-from aidants_connect_common.constants import JournalActionKeywords
-from aidants_connect_common.models import FormationAttendant
+from aidants_connect_common.constants import (
+    AuthorizationDurations,
+    JournalActionKeywords,
+)
+from aidants_connect_common.models import Formation, FormationAttendant
 from aidants_connect_common.tests.factories import FormationFactory
-from aidants_connect_habilitation.models import AidantRequest
-from aidants_connect_habilitation.tests.factories import AidantRequestFactory
 from aidants_connect_web.constants import (
     ReferentRequestStatuses,
     RemoteConsentMethodChoices,
@@ -588,6 +588,61 @@ class MandatModelTests(TestCase):
 
         self.assertEqual(result, f"aidants_connect_web/mandat_templates/{tpl_name}")
 
+    def test_find_soon_expired(self):
+        self.valid_1 = MandatFactory(
+            duree_keyword=AuthorizationDurations.LONG,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        self.valid_2 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SEMESTER,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.valid_3 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SEMESTER,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        Autorisation.objects.create(
+            mandat=self.valid_3,
+            demarche="papiers",
+            revocation_date=None,
+        )
+        Autorisation.objects.create(
+            mandat=self.valid_3,
+            demarche="travail",
+            revocation_date=timezone.now() - timedelta(days=1),
+        )
+
+        self.invalid_1 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SHORT,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        self.invalid_2 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SHORT,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        self.invalid_3 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SHORT,
+            expiration_date=timezone.now()
+            + timedelta(days=settings.MANDAT_EXPIRED_SOON + 1),
+        )
+
+        self.invalid_4 = MandatFactory(
+            duree_keyword=AuthorizationDurations.SEMESTER,
+            expiration_date=timezone.now() + timedelta(days=1),
+        )
+        Autorisation.objects.create(
+            mandat=self.invalid_4,
+            demarche="travail",
+            revocation_date=timezone.now() - timedelta(days=1),
+        )
+
+        self.assertGreaterEqual(Mandat.objects.count(), 7)
+        self.assertEqual(
+            {self.valid_1, self.valid_2, self.valid_3},
+            set(Mandat.find_soon_expired(settings.MANDAT_EXPIRED_SOON).all()),
+        )
+
 
 @tag("models")
 class AutorisationModelTests(TestCase):
@@ -909,6 +964,26 @@ class OrganisationModelTests(TestCase):
             aidant_c = AidantFactory(organisation=orga_a, is_active=False)
             aidant_c.organisations.set((orga_a, orga_b))
         self.assertEqual(orga_a.num_active_aidants, 5)
+
+    def test_organisation_allowed_demarches(self):
+        formation: Formation = FormationFactory()
+
+        OrganisationFactory()
+
+        has_unregistered_hab = OrganisationFactory()
+        HabilitationRequestFactory(organisation=has_unregistered_hab)
+        formation.register_attendant(
+            HabilitationRequestFactory(organisation=has_unregistered_hab)
+        )
+
+        other = OrganisationFactory()
+        formation.register_attendant(HabilitationRequestFactory(organisation=other))
+        formation.register_attendant(HabilitationRequestFactory(organisation=other))
+
+        actual = (
+            Organisation.objects.having_formation_unregistered_habilitation_requests().all()  # noqa E501
+        )
+        self.assertEqual({has_unregistered_hab}, set(actual))
 
 
 @tag("models", "aidant")
@@ -2078,46 +2153,6 @@ class HabilitationRequestTests(TestCase):
             db_hab_request.status, ReferentRequestStatuses.STATUS_REFUSED.value
         )
 
-    def test_check_attendants_count_trigger(self):
-        # Prevent aidants_connect_web.signals.cancel_formation_on_habilitation_cancelation from triggering  # noqa: E501
-        with mute_signals(pre_save, post_save):
-            ar1 = AidantRequestFactory()
-            hr1 = HabilitationRequestFactory()
-            FormationAttendant.objects.create(
-                attendant=ar1, formation=FormationFactory()
-            )
-            FormationAttendant.objects.create(
-                attendant=hr1, formation=FormationFactory()
-            )
-
-            ar2 = AidantRequestFactory()
-            FormationAttendant.objects.create(
-                attendant=ar2, formation=FormationFactory()
-            )
-
-            arct = ContentType.objects.get_for_model(AidantRequest)
-            hrct = ContentType.objects.get_for_model(HabilitationRequest)
-
-        self.assertEqual(
-            {(ar1.pk, arct.pk), (hr1.pk, hrct.pk), (ar2.pk, arct.pk)},
-            set(
-                FormationAttendant.objects.all().values_list(
-                    "attendant_id", "attendant_content_type"
-                )
-            ),
-        )
-        with mute_signals(pre_save, post_save):
-            hr2 = HabilitationRequestFactory(email=ar2.email)
-
-        self.assertEqual(
-            {(ar1.pk, arct.pk), (hr1.pk, hrct.pk), (hr2.pk, hrct.pk)},
-            set(
-                FormationAttendant.objects.all().values_list(
-                    "attendant_id", "attendant_content_type"
-                )
-            ),
-        )
-
     @mute_signals(pre_save, post_save)
     def test_check_p2p_course_type_trigger(self):
         hr1: HabilitationRequest = HabilitationRequestFactory(
@@ -2399,8 +2434,9 @@ class FormationAttendantTests(TestCase):
     def test_I_cant_regester_more_aidant_than_max_attendees(self):
         formation = FormationFactory(max_attendants=2)
 
-        aidant_request = AidantRequestFactory()
-        FormationAttendant.objects.create(formation=formation, attendant=aidant_request)
+        FormationAttendant.objects.create(
+            formation=formation, attendant=HabilitationRequestFactory()
+        )
 
         habilitation_request = HabilitationRequestFactory()
         last = FormationAttendant.objects.create(
@@ -2414,7 +2450,7 @@ class FormationAttendantTests(TestCase):
         with transaction.atomic():
             with self.assertRaises(IntegrityError):
                 FormationAttendant.objects.create(
-                    formation=formation, attendant=AidantRequestFactory()
+                    formation=formation, attendant=HabilitationRequestFactory()
                 )
 
         self.assertEqual(
@@ -2428,7 +2464,7 @@ class FormationAttendantTests(TestCase):
         # Cancelled registration don't prevent from registering an attendant
         FormationAttendant.objects.create(
             formation=formation,
-            attendant=AidantRequestFactory(),
+            attendant=HabilitationRequestFactory(),
             state=FormationAttendant.State.CANCELLED,
         )
 
@@ -2437,7 +2473,7 @@ class FormationAttendantTests(TestCase):
         )
 
         FormationAttendant.objects.create(
-            formation=formation, attendant=AidantRequestFactory()
+            formation=formation, attendant=HabilitationRequestFactory()
         )
 
         self.assertEqual(
@@ -2446,16 +2482,16 @@ class FormationAttendantTests(TestCase):
 
         with self.assertRaises(IntegrityError):
             FormationAttendant.objects.create(
-                formation=formation, attendant=AidantRequestFactory()
+                formation=formation, attendant=HabilitationRequestFactory()
             )
 
     def test_I_cant_register_an_attendant_to_a_formation_twice(self):
         formation = FormationFactory(max_attendants=2)
-        aidant_request = AidantRequestFactory()
+        hab_request = HabilitationRequestFactory()
 
-        FormationAttendant.objects.create(formation=formation, attendant=aidant_request)
+        FormationAttendant.objects.create(formation=formation, attendant=hab_request)
 
         with self.assertRaises(IntegrityError):
             FormationAttendant.objects.create(
-                formation=formation, attendant=aidant_request
+                formation=formation, attendant=hab_request
             )

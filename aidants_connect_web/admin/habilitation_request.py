@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, SimpleListFilter
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.forms import ChoiceField
@@ -17,6 +17,7 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
+from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils import build_url, render_email
 from aidants_connect_web.constants import ReferentRequestStatuses
@@ -39,27 +40,27 @@ class HabilitationRequestResource(resources.ModelResource):
     )
     responsable__last_name = Field(
         attribute="organisation__responsables",
-        column_name="Responsable Aidants Connect (Nom)",
+        # column_name="Responsable Aidants Connect (Nom)",
         widget=ManyToManyWidget(Aidant, field="last_name", separator="\n"),
     )
     responsable__first_name = Field(
         attribute="organisation__responsables",
-        column_name="Responsable Aidants Connect (Prénom)",
+        # column_name="Responsable Aidants Connect (Prénom)",
         widget=ManyToManyWidget(Aidant, field="first_name", separator="\n"),
     )
     responsable__profession = Field(
         attribute="organisation__responsables",
-        column_name="Intitulé de poste du responsable Aidants Connect",
+        # column_name="Intitulé de poste du responsable Aidants Connect",
         widget=ManyToManyWidget(Aidant, field="profession", separator="\n"),
     )
-    reponsable__email = Field(
+    responsable__email = Field(
         attribute="organisation__responsables",
-        column_name="Responsable Aidants Connect (adresse mail)",
+        # column_name="Responsable Aidants Connect (adresse mail)",
         widget=ManyToManyWidget(Aidant, field="email", separator="\n"),
     )
     responsable__phone = Field(
         attribute="organisation__responsables",
-        column_name="Téléphone responsable Aidants Connect",
+        # column_name="Téléphone responsable Aidants Connect",
         widget=ManyToManyWidget(Aidant, field="phone", separator="\n"),
     )
     last_name = Field(attribute="last_name", column_name="Nom de l'aidant à former")
@@ -78,20 +79,25 @@ class HabilitationRequestResource(resources.ModelResource):
     )
     organisation__city = Field(attribute="organisation__city", column_name="Ville")
 
-    organisation_departement = Field(column_name="Département")
-    organisation_region = Field(column_name="Région")
+    organisation_departement = Field(
+        # column_name="Département"
+    )
+    organisation_region = Field(
+        # column_name="Région"
+    )
 
     class Meta:
         model = HabilitationRequest
         fields = (
             "created_at",
+            "updated_at",
             "organisation__data_pass_id",
             "organisation__name",
             "organisation__type__name",
             "responsable__last_name",
             "responsable__first_name",
             "responsable__profession",
-            "reponsable__email",
+            "responsable__email",
             "responsable__phone",
             "last_name",
             "first_name",
@@ -211,6 +217,21 @@ class HabilitationRequestRegionFilter(RegionFilter):
     filter_parameter_name = "organisation__zipcode"
 
 
+class HabilitationRequestOrgaTypeFilter(SimpleListFilter):
+    title = "Type de l'organisation"
+
+    parameter_name = "orga_type_id"
+
+    def lookups(self, request, model_admin):
+        return RequestOriginConstants.choices
+
+    def queryset(self, request, queryset):
+        orga_type_id = self.value()
+        if not orga_type_id:
+            return
+        return queryset.filter(organisation__type=orga_type_id)
+
+
 class HabilitationRequestImportForm(ImportForm):
     import_choices = ChoiceField(
         label="Type d'import d'aidant à former",
@@ -233,6 +254,7 @@ class ConfirmHabilitationRequestImportForm(ConfirmImportForm):
 
 class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = (
+        "updated_at",
         "email",
         "first_name",
         "last_name",
@@ -248,6 +270,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     list_filter = (
         HabilitationRequestRegionFilter,
         HabilitationDepartmentFilter,
+        HabilitationRequestOrgaTypeFilter,
         "status",
         "origin",
         "test_pix_passed",

@@ -1,0 +1,12 @@
+Bonjour,
+
+La prochaine étape de la procédure d’habilitation à Aidants Connect est la formation des aidants. Rendez-vous sur votre demande d’habilitation, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date de formation pour chaque aidant.
+
+Aller sur ma demande d’habilitation : {{ habilitation_requests_url }}
+
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr
