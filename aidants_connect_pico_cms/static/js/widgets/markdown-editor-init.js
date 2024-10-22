@@ -1,13 +1,13 @@
-import {MarkdownEditor} from "./markdown-editor.js";
+import { MarkdownEditor } from "./markdown-editor.js";
 
-(function () {
+(() => {
+  function init() {
+    const container = document.querySelector(
+      "[data-markdown-editor-target='textareaContainer']",
+    ).parentNode;
+    container.dataset.controller = "markdown-editor";
+    Stimulus.Application.start().register("markdown-editor", MarkdownEditor);
+  }
 
-
-    function init() {
-        const container = document.querySelector("[data-markdown-editor-target='textareaContainer']").parentNode;
-        container.dataset.controller = "markdown-editor";
-        Stimulus.Application.start().register("markdown-editor", MarkdownEditor);
-    }
-
-    new Promise(resolve => window.addEventListener("load", resolve)).then(init);
+  new Promise((resolve) => window.addEventListener("load", resolve)).then(init);
 })();
