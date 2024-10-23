@@ -66,7 +66,6 @@ class CommuneImportForm(ImportForm, WidgetAttrMixin):
         return super().media + Media(
             js=(
                 settings.STIMULUS_JS_URL,
-                JSModulePath("js/base-controller.js"),
                 JSModulePath("js/communes-import-form.js"),
             ),
         )

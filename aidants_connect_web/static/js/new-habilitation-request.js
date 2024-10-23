@@ -1,7 +1,4 @@
-"use strict";
-
-import {BaseController} from "./base-controller.js"
-
+import {BaseController, aidantsConnectApplicationReady} from "AidantsConnectApplication"
 
 /**
  * @property {HTMLFormElement} formTarget
@@ -30,6 +27,29 @@ import {BaseController} from "./base-controller.js"
  * @property {String} submitBtnEditTxtValue
  */
 class NewHabilitationRequest extends BaseController {
+    static targets = [
+        "form",
+        "leftFormReplace",
+        "partialSubmitBtn",
+        "rightFormsSection",
+        "rightFormsInsert",
+        "formTpl",
+        "editBtn",
+        "confirmationDialog",
+        "dialogConfirmButton",
+        "dialogCancelButton",
+    ]
+    static values = {
+        nbFormCount: {type: Number, default: 0},
+        loading: {type: Boolean, default: false},
+        leftFormIdx: {type: Number, default: 0},
+        modalOpened: {type: Boolean, default: false},
+        editing: {type: Boolean, default: false},
+        submitBtnValidateTxt: String,
+        submitBtnEditTxt: String,
+    }
+    static classes = ["loading", "editIdle", "submitBtnEdit", "submitBtnValidate"]
+
     initialize() {
         this.nbFormCountValue = Number.parseInt(this.mgmtNbFormsInput.value);
         if (this.formTarget.querySelectorAll('input[name*="__prefix__"]').length > 0) {
@@ -212,32 +232,6 @@ class NewHabilitationRequest extends BaseController {
         this.nbFormCountValue = this.nbFormCountValue + 1;
         this.editingValue = false;
     }
-
-    static targets = [
-        "form",
-        "leftFormReplace",
-        "partialSubmitBtn",
-        "rightFormsSection",
-        "rightFormsInsert",
-        "formTpl",
-        "editBtn",
-        "confirmationDialog",
-        "dialogConfirmButton",
-        "dialogCancelButton",
-    ]
-    static values = {
-        nbFormCount: {type: Number, default: 0},
-        loading: {type: Boolean, default: false},
-        leftFormIdx: {type: Number, default: 0},
-        modalOpened: {type: Boolean, default: false},
-        editing: {type: Boolean, default: false},
-        submitBtnValidateTxt: String,
-        submitBtnEditTxt: String,
-    }
-    static classes = ["loading", "editIdle", "submitBtnEdit", "submitBtnValidate"]
 }
 
-new Promise(resolve => window.addEventListener("load", resolve)).then(() => {
-    const application = Stimulus.Application.start();
-    application.register("new-habilitation-request", NewHabilitationRequest);
-});
+aidantsConnectApplicationReady.then(application => application.register("new-habilitation-request", NewHabilitationRequest));

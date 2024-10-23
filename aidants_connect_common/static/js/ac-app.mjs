@@ -1,4 +1,6 @@
-export class BaseController extends Stimulus.Controller {
+import {Application, Controller} from "Stimulus"
+
+class BaseController extends Controller {
     noop() { /* Does nothing */ }
     showElement(elt) {
         elt.removeAttribute("hidden");
@@ -20,3 +22,8 @@ export class BaseController extends Stimulus.Controller {
         else elt.removeAttribute("required");
     }
 }
+
+const AidantsConnectApplication = new Application();
+const aidantsConnectApplicationReady = AidantsConnectApplication.start().then(() => AidantsConnectApplication)
+
+export {AidantsConnectApplication, aidantsConnectApplicationReady, BaseController}
