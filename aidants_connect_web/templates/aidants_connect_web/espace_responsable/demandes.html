@@ -1,5 +1,5 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
-{% load static ac_common ac_extras dsfr_tags %}
+{% load ac_common ac_extras dsfr_tags static %}
 
 {% block title %}Demandes d'habilitation - Aidants Connect{% endblock %}
 
@@ -223,5 +223,5 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/notifications.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/new-mandat.mjs' %}"></script>
+{% endblock extrajs %}

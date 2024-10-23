@@ -1,8 +1,6 @@
 {% extends 'layouts/main.html' %}
 
-{% load dsfr_tags %}
-
-{% load static form_extras ac_common %}
+{% load ac_common dsfr_tags form_extras static %}
 
 {% block title %}Aidants Connect - Nouveau mandat{% endblock %}
 
@@ -167,7 +165,7 @@
 
                 <label for="{{ subfield.id_for_label }}" {% class_attr subfield.data.label_classes %}>
                   <div class="{{ subfield.data.input_wrapper_base_class }}-label-text-and-description">
-                    <span class="fr-icon-{{subfield.data.logo}} fr-mr-1w"></span>
+                    <span class="fr-icon-{{ subfield.data.logo }} fr-mr-1w"></span>
                     <span class="{{ subfield.data.input_wrapper_base_class }}-text">{{ subfield.choice_label }} : </span>
                     <span class="{{ subfield.data.input_wrapper_base_class }}-description fr-text--sm">
                       {{ subfield.data.description }}
@@ -199,7 +197,7 @@
               <span class="fr-connect__brand">FranceConnect</span>
             </button>
           </section>
-        {% endblock %}
+        {% endblock input_submit_form %}
       </div>
     </form>
   </div>
@@ -207,5 +205,5 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/new-mandat.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/new-mandat.mjs' %}"></script>
+{% endblock extrajs %}

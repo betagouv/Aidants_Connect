@@ -1,12 +1,12 @@
 {% extends 'layouts/main.html' %}
-{% load static dsfr_tags ac_extras ac_common widget_tweaks %}
+{% load ac_common ac_extras dsfr_tags static widget_tweaks %}
 
 {% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/generic-habilitation-request-profile-card.css' %}" rel="stylesheet">
   <link href="{% static 'css/new-habilitation-request.css' %}" rel="stylesheet">
-{% endblock %}
+{% endblock extracss %}
 
 {% block content %}
   <div
@@ -218,5 +218,5 @@
 {% block extrajs %}
   {% stimulusjs %}
   <script defer type="application/javascript" src="{% url 'js_reverse' %}"></script>
-  <script type="module" src="{% static 'js/new-habilitation-request.js' %}"></script>
-{% endblock %}
+  <script type="module" src="{% static 'js/new-habilitation-request.mjs' %}"></script>
+{% endblock extrajs %}

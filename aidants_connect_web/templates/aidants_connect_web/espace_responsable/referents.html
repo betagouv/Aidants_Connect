@@ -1,5 +1,5 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
-{% load static ac_common ac_extras %}
+{% load ac_common ac_extras static %}
 
 {% block title %}Référents - Aidants Connect{% endblock %}
 
@@ -100,5 +100,5 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/notifications.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/new-mandat.mjs' %}"></script>
+{% endblock extrajs %}
