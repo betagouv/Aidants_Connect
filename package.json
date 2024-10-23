@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "sass": "^1.79.4",
+    "Stimulus": "npm:stimulus@^3.2.2",
+    "AidantsConnectApplication": "file:./aidants_connect_common/static/js/ac-app.mjs"
+  },
+  "imports": {
+    "Stimulus": "@hotwired/stimulus"
+  }
+}

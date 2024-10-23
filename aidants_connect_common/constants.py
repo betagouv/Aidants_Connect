@@ -6,7 +6,14 @@ from django.conf import settings
 from django.db.models import Choices, IntegerChoices, TextChoices
 from django.db.models.enums import ChoicesMeta as DjangoChoicesMeta
 from django.utils.functional import Promise, classproperty
+from django.utils.safestring import mark_safe
 from django.utils.timezone import now
+from django.utils.version import PY311
+
+if PY311:
+    from enum import property as enum_property
+else:
+    from types import DynamicClassAttribute as enum_property
 
 __all__ = [
     "DictChoices",
@@ -253,12 +260,44 @@ class RequestOriginConstants(IntegerChoices):
 
 class RequestStatusConstants(TextChoicesEnum):
     NEW = "Brouillon"
-    AC_VALIDATION_PROCESSING = "En attente de validation par Aidants Connect"
-    VALIDATED = "Validée"
-    REFUSED = "Refusée"
+    AC_VALIDATION_PROCESSING = mark_safe(
+        "En attente de validation d’éligibilité avant inscription en "
+        "formation des aidants"
+    )
+    VALIDATED = "Éligibilité validée"
+    REFUSED = "Éligibilité Refusée"
     CLOSED = "Clôturée"
-    CHANGES_REQUIRED = "Modifications demandées"
+    CHANGES_REQUIRED = "Demande de modifications par l’équipe Aidants Connect"
     CHANGES_PROPOSED = "Modifications proposées par Aidants Connect"
+
+    @enum_property
+    def description(self):
+        match self:
+            case self.AC_VALIDATION_PROCESSING:
+                return mark_safe(
+                    "<p>Votre demande d’habilitation est en cours d’instruction "
+                    "par nos équipes. Vous serez prochainement notifié de la "
+                    "décision de nos équipes concernant votre dossier."
+                )
+            case self.VALIDATED:
+                return mark_safe(
+                    "<p>Félicitations, votre demande d’habilitation a été acceptée par "
+                    "Aidants Connect !</p>"
+                    "<p>Vous pouvez désormais inscrire le référent sur un webinaire "
+                    "d’information dédié aux référents et inscrire les aidants en "
+                    "formation.</p>"
+                )
+            case self.CHANGES_REQUIRED:
+                return mark_safe(
+                    "<p>L'équipe Aidants Connect a étudié votre demande d’habilitation "
+                    "et souhaite que vous y apportiez des modifications. N’oubliez pas "
+                    "de valider à nouveau votre demande d’habilitation en cliquant sur "
+                    "le bouton « Soumettre la demande » pour que l'équipe Aidants "
+                    "Connect prenne en compte vos modifications et valide votre "
+                    "demande</p>"
+                )
+            case _:
+                return ""
 
     @classproperty
     def aidant_registrable(cls):

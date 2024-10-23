@@ -236,7 +236,7 @@ class TestBaseMultiForm(TestCase):
         self.assertEqual(
             "<_TestMultiForm bound=False, valid=Unknown, "
             f"form_classes={{'test': {_TestForm}, 'tests': {_TestFormset}}}>",
-            str(_TestMultiForm()),
+            f"{_TestMultiForm()!r}",
         )
         form = _TestMultiForm()
         form = _TestMultiForm(
@@ -253,7 +253,7 @@ class TestBaseMultiForm(TestCase):
         self.assertEqual(
             "<_TestMultiForm bound=True, valid=True, "
             f"form_classes={{'test': {_TestForm}, 'tests': {_TestFormset}}}>",
-            str(form),
+            f"{form!r}",
         )
 
     def test_extend(self):
