@@ -28,7 +28,7 @@
           data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
           {% endif %}
         >
-          <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}"> 
+          <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}">
             <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
             <p>{{ notification.to_html }}</p>
             {% if notification.must_ack %}
@@ -89,7 +89,7 @@
       {% endif %}
     </div>
   </div>
-    
+
   {% if organisation_inactive_referents %}
     <div class="fr-container inactives-aidants fr-mt-4w">
       <h2 class="fr-h3" id="inactive-referents">Référents désactivés</h2>

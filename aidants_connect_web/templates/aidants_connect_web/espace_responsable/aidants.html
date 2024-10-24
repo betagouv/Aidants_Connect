@@ -10,7 +10,7 @@
 {% block content %}
   <div class="fr-container">
     <h1>Aidants</h1>
-  
+
     {% dsfr_django_messages %}
 
     <div class="fr-grid-row fr-grid-row--gutters">
@@ -28,7 +28,7 @@
           data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
           {% endif %}
         >
-          <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}"> 
+          <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}">
             <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
             <p>{{ notification.to_html }}</p>
             {% if notification.must_ack %}

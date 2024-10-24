@@ -10,7 +10,7 @@
 {% block content %}
   <div class="fr-container">
     <h1>Demandes en cours</h1>
-  
+
     {% dsfr_django_messages %}
 
     <div class="fr-grid-row fr-grid-row--gutters">
@@ -28,7 +28,7 @@
           data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
           {% endif %}
         >
-          <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}"> 
+          <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}">
             <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
             <p>{{ notification.to_html }}</p>
             {% if notification.must_ack %}
@@ -82,20 +82,20 @@
                   <span class="fr-badge fr-badge--success">inscrit</span>
                 {% else %}
                   <span class="fr-badge fr-badge--warning">non inscrit</span>
-                  
-                {% endif %} 
+
+                {% endif %}
               </td>
               <td>
                 <div class="flex flex-right">
                   {% if not validation.formations.exists %}
-                    <a 
+                    <a
                       id="register-habilitation-request-{{ validation.id }}"
                       href="{% url 'espace_responsable_register_formation' request_id=validation.id %}"
                       class="fr-mr-2w fr-btn fr-btn--secondary fr-text--sm"
                     >
                       Inscrire à une formation
                     </a>
-                  {% endif %} 
+                  {% endif %}
                   {% if validation.status_cancellable_by_responsable %}
                     <details>
                       <summary>
@@ -192,7 +192,7 @@
         </thead>
         <tbody>
           {% if organisation_habilitation_refused %}
-          
+
             {% for refus in organisation_habilitation_refused %}
             <tr>
               <td class="fr-text--md">
