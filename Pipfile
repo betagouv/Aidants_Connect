@@ -11,11 +11,12 @@ api-insee = "1.5"
 celery = {version = "==5.4.0", extras = ["redis"]}
 django = "~=4.2.16"
 dj-database-url = "~=2.2"
+dj-importmap = "==0.0.2"
 djangorestframework = "~=3.15"
 django-blocklist = "==2.6"
 django-celery-beat = "==2.6.0"
 django-csp = "==3.8"
-django-dsfr = "~=1.0"
+django-dsfr = "~=1.4"
 django-extensions = "~=3.2.1"
 django-import-export = {version =  "~=4.0", extras = ["all"]}
 django-ipware = "~=7.0.1"

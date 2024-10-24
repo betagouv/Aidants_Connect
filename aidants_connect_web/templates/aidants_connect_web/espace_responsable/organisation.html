@@ -1,7 +1,6 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
-{% load dsfr_tags %}
-{% load static ac_common ac_extras %}
+{% load ac_common ac_extras dsfr_tags static %}
 
 {% block title %}Mon organisation - Aidants Connect{% endblock %}
 
@@ -80,5 +79,5 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/notifications.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/new-mandat.mjs' %}"></script>
+{% endblock extrajs %}

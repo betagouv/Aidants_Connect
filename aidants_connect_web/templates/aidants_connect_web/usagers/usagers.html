@@ -1,6 +1,6 @@
 {% extends 'layouts/main.html' %}
 
-{% load static ac_extras ac_common dsfr_tags %}
+{% load ac_common ac_extras dsfr_tags static %}
 
 {% block title %}Aidants Connect - Usagers{% endblock %}
 
@@ -136,5 +136,5 @@
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/users-search.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/users-search.mjs' %}"></script>
+{% endblock extrajs %}

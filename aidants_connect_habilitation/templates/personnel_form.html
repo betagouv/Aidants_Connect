@@ -1,9 +1,9 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras ac_common %}
+{% load ac_common form_extras static %}
 
 {% block title %}
   Aidants Connect - Personnes impliquées dans la structure {{ organisation }}
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div
@@ -174,14 +174,14 @@
       {% include "_aidant_form.html" with form=form.aidants_formset.empty_form %}
     </template>
   </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extrajs %}
   {{ issuer_data|json_script:"issuer-data" }}
   {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/personnel-form.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/personnel-form.mjs' %}"></script>
+{% endblock extrajs %}
 
 {% block extracss %}
   <link href="{% static 'css/personnel_form.css' %}" rel="stylesheet">
-{% endblock %}
+{% endblock extracss %}

@@ -15,7 +15,6 @@ from import_export.forms import ImportForm
 from import_export.resources import ModelResource
 from import_export.widgets import BooleanWidget, ForeignKeyWidget
 
-from aidants_connect import settings
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_common.forms import WidgetAttrMixin
 from aidants_connect_common.models import (
@@ -63,13 +62,7 @@ class CommuneImportForm(ImportForm, WidgetAttrMixin):
 
     @property
     def media(self):
-        return super().media + Media(
-            js=(
-                settings.STIMULUS_JS_URL,
-                JSModulePath("js/base-controller.js"),
-                JSModulePath("js/communes-import-form.js"),
-            ),
-        )
+        return super().media + Media(js=[JSModulePath("js/communes-import-form.mjs")])
 
 
 class CommuneResource(ModelResource):

@@ -1,9 +1,9 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras ac_common %}
+{% load ac_common form_extras static %}
 
 {% block title %}
   Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container">
@@ -38,10 +38,9 @@
     </div>
 
   </div>{# fr-container #}
-{% endblock %}
-
+{% endblock content %}
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script defer src="{% static 'js/message-form.js' %}"></script>
-{% endblock %}
+  <script defer src="{% static 'js/message-form.mjs' %}"></script>
+{% endblock extrajs %}

@@ -137,6 +137,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
     "django_extensions",
+    "importmap",
     "pgtrigger",
     "import_export",
     "phonenumber_field",
@@ -191,6 +192,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "dsfr.context_processors.site_config",
+                "importmap.context_processors.importmap",
                 "aidants_connect_common.context_processors.settings_variables",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
@@ -265,6 +267,7 @@ ACTIVITY_CHECK_DURATION = timedelta(minutes=ACTIVITY_CHECK_THRESHOLD)
 AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 
 JS_REVERSE_EXCLUDE_NAMESPACES = ["admin", "djdt", "otpadmin"]
+JS_MINIFY = False
 
 DEMARCHES = {
     "papiers": {
@@ -413,13 +416,11 @@ X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
 # Scripts and other resources
-STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.1/dist/stimulus.umd.js"
+STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.2/dist/stimulus.umd.js"
 MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
-SARBACANE_CONNECT_URL = (
-    "https://api.sarbacane.com/v1/forms/contacts/upsert"  # noqa: E501
-)
+SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert"
 COOKIE_BANNER_JS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.js"
 COOKIE_BANNER_LANG_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/lang/tarteaucitron.fr.js"
@@ -427,7 +428,7 @@ COOKIE_BANNER_LANG_URL = (
 COOKIE_BANNER_SERVICES_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.services.js"
 )
-AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa: E501
+AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.beta.gouv.fr")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
 
@@ -458,6 +459,7 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
+    STIMULUS_JS_URL.replace("umd.js", "js"),
     MD_EDITOR_JS_URL,
     SARBACANE_SCRIPT_URL,
     COOKIE_BANNER_JS_URL,

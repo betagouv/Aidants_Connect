@@ -19,7 +19,10 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
+    - id: check-yaml
     - id: end-of-file-fixer
+    - id: trailing-whitespace
+    - id: debug-statements
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:

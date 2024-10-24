@@ -1,4 +1,6 @@
-export class MarkdownEditor extends Stimulus.Controller {
+import {Controller} from "Stimulus"
+
+export class MarkdownEditor extends Controller {
     initialize() {
         this.textareaContainerTarget.parentElement.classList.add("markdown-editor");
         // Since we can only set values on the textarea widget, we need to replicate data values set on it

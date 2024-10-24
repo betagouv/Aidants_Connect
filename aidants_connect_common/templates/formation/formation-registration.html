@@ -79,7 +79,7 @@
                           {% if formation_widget.data.selected or formation_widget.data.value in registered_to %}checked{% endif %}
                         > <label class="fr-label" for="formation-{{ formation_widget.data.value }}">
                           <span class="sr-only">
-                            Inscription à la formation {{ formation_widget.data.label }}, 
+                            Inscription à la formation {{ formation_widget.data.label }},
                             {{ formation_widget.data.value.instance.date_range_str|lower }}
                           </span> </label>
                       </td>
@@ -142,5 +142,5 @@
 {% block extrajs %}
   {% stimulusjs %}
   <script defer src="{% url 'js_reverse' %}"></script>
-  <script defer type="module" src="{% static 'js/formation-informations.js' %}"></script>
+  <script defer type="module" src="{% static 'js/formation-informations.mjs' %}"></script>
 {% endblock extrajs %}
