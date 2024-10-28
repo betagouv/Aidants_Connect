@@ -4,10 +4,6 @@
 
 {% block title %}Aidants Connect - Associer la carte à {{ aidant.get_full_name }}{% endblock %}
 
-{% block extracss %}
-  <link href="{% static 'css/espace_aidant.css' %}" rel="stylesheet">
-{% endblock extracss %}
-
 {% block content %}
   <div class="fr-container">
     {% include "layouts/_messages.html" %}
