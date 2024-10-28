@@ -1,5 +1,4 @@
 import re
-from collections.abc import Iterable
 from urllib.parse import quote, urlencode
 
 from django import template
@@ -7,7 +6,6 @@ from django.conf import settings
 from django.template import TemplateSyntaxError
 from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
 from django.template.defaultfilters import stringfilter
-from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from aidants_connect import utils
@@ -248,25 +246,6 @@ class WithDictNode(Node):
             return self.nodelist.render(context)
 
 
-@register.filter(is_safe=True)
-def strfmt(args, format_string):
-    """
-    Shortcup to `str.format`.
-
-    Usage:
-
-    ```
-    {{ ctx_variable|strfmt:"The sum of 1 + 2 is {0}" }}
-    ```
-    See: https://docs.python.org/3/library/stdtypes.html#str.format
-    """
-    kwargs = {}
-    if isinstance(args, dict):
-        kwargs.update(args)
-        args = tuple()
-    if isinstance(args, Iterable) and not isinstance(args, str):
-        args = tuple(args)
-    else:
-        args = (str(args),)
-
-    return format_html(format_string, *args, **kwargs)
+@register.simple_tag
+def hidden():
+    return mark_safe('hidden aria-hidden="true"')
