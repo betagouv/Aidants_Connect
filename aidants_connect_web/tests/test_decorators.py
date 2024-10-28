@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import transaction
 from django.test import TestCase, tag
 from django.utils import timezone
 
@@ -63,8 +64,8 @@ class RespoStructureRequiredTests(TestCase):
         cls.responsable_georges = AidantFactory(
             organisation=cls.aidant_thierry.organisation,
             can_create_mandats=False,
+            post__is_organisation_manager=True,
         )
-        cls.responsable_georges.responsable_de.add(cls.aidant_thierry.organisation)
         cls.responsable_georges.responsable_de.add(OrganisationFactory())
 
     def test_responsable_can_access_decorated_page(self):
@@ -73,6 +74,15 @@ class RespoStructureRequiredTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_non_responsable_user_cannot_access_decorated_page(self):
-        self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/espace-responsable/organisation/")
-        self.assertEqual(response.status_code, 302)
+        with self.subTest("Aidant is not referent"):
+            self.client.force_login(self.aidant_thierry)
+            response = self.client.get("/espace-responsable/organisation/")
+            self.assertEqual(response.status_code, 302)
+
+        with self.subTest("Aidant is referent of a different organisation"):
+            with transaction.atomic():
+                self.aidant_thierry.responsable_de.add(OrganisationFactory())
+
+            self.client.force_login(self.aidant_thierry)
+            response = self.client.get("/espace-responsable/organisation/")
+            self.assertEqual(response.status_code, 302)

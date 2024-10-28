@@ -16,9 +16,7 @@ from aidants_connect_web.views import espace_responsable
 class EspaceResponsableOrganisationPage(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.client = Client()
-        cls.responsable_tom = AidantFactory()
-        cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
+        cls.responsable_tom = AidantFactory(post__is_organisation_manager=True)
         cls.id_organisation = cls.responsable_tom.organisation.id
         cls.autre_organisation = OrganisationFactory()
 
@@ -103,11 +101,24 @@ class EspaceResponsableOrganisationPage(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
-            response, "aidants_connect_web/espace_responsable/organisation.html"
+            response, espace_responsable.OrganisationView.template_name
         )
         self.assertEqual(
             response.context_data["form"].errors["demarches"][0],
             "Vous devez sélectionner au moins une démarche.",
+        )
+
+    def test_I_cant_manage_organisation_without_rights(self):
+        self.responsable_rachida = AidantFactory(post__is_organisation_manager=True)
+        self.responsable_rachida.organisations.add(self.responsable_tom.organisation)
+
+        response = self.client.post(
+            reverse("espace_responsable_organisation"),
+            data={"demarches": []},
+        )
+        self.assertNotEquals(response.status_code, 200)
+        self.assertTemplateNotUsed(
+            response, espace_responsable.OrganisationView.template_name
         )
 
 

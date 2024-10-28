@@ -82,18 +82,18 @@ class OrganisationView(DetailView, FormView):
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
         # Needed when following the FormView path
-        self.object = self.get_object()
+        self.organisation = self.get_object()
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
-        self.organisation: Organisation = self.referent.organisation
-
-        if not self.organisation:
-            django_messages.error(
-                self.request, "Vous n'êtes pas rattaché à une organisation."
+        if not hasattr(self, "object"):
+            self.object = get_object_or_404(
+                Organisation,
+                pk=self.referent.organisation.pk,
+                responsables=self.referent,
             )
-            return redirect("espace_aidant_home")
-        return self.organisation
+
+        return self.object
 
     def get_context_data(self, **kwargs):
         return {
