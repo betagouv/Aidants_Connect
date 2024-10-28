@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 
 from aidants_connect_habilitation.views import (
     AddAidantsRequestView,
@@ -86,5 +86,4 @@ urlpatterns = [
         AddAidantsRequestView.as_view(),
         name="habilitation_organisation_add_aidants",
     ),
-    path("api/", include("aidants_connect_habilitation.api.urls")),
 ]

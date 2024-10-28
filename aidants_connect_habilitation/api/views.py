@@ -27,6 +27,12 @@ class PersonnelRequestEditView(OnlyNewRequestsView, FormView):
             pk=self.kwargs.get("aidant_id"),
         )
 
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
     def get_form_kwargs(self):
         return {
             "organisation": self.organisation,
@@ -59,6 +65,9 @@ class PersonnelRequestEditView(OnlyNewRequestsView, FormView):
             return "aidants_connect_habilitation/validation_request_form_view/_habilitation-request-profile-card.html"  # noqa: E501
         else:
             return "forms/form.html"
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form), status=422)
 
     def form_valid(self, form):
         habilitation_request = form.save()

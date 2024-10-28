@@ -11,7 +11,7 @@ import {aidantsConnectApplicationReady, BaseController} from "AidantsConnectAppl
  * @property {ProfileEditCard[]} profileEditCardOutlets
  * @property {Number} idValue
  * @property {Number} stateValue
- * @property {Number} displayValue
+ * @property {Boolean} displayValue
  */
 class ProfileEditModal extends BaseController {
     static STATES = Object.freeze({

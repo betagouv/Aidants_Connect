@@ -16,6 +16,9 @@
   <link rel="stylesheet" href="{% static 'dsfr/dist/utility/utility.min.css' %}">
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
   <link href="{% static 'css/dsfr-theme-tac.min.css' %}" rel="stylesheet">
+  {% if form.media %}
+    {{ form.media.render_css }}
+  {% endif %}
   {# Extra styles #}
   {% block extracss %}{% endblock %}
 
@@ -84,6 +87,9 @@
 <script defer src="{{ COOKIE_BANNER_LANG_URL }}"></script>
 <script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>
 <script defer src="{% static 'js/cookie-banner.js' %}"></script>
+{% if form.media %}
+  {{ form.media.render_js }}
+{% endif %}
 {% block extrajs %}{% endblock %}
 </body>
 </html>

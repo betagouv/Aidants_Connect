@@ -9,10 +9,6 @@
   <link href="{% static 'css/generic-habilitation-request-profile-card.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-{% block extrajs %}
-	<script type="module" src="{% static 'js/generic-habilitation-request-profile-card.mjs' %}"></script>
-{% endblock extrajs %}
-
 {% block content %}
   <div class="fr-container" data-controller="profile-edit-card">
     {% if organisation.status == organisation.Status.NEW %}
@@ -69,3 +65,7 @@
     </form>
   </div>
 {% endblock content %}
+
+{% block extrajs %}
+	<script type="module" src="{% static 'js/generic-habilitation-request-profile-card.mjs' %}"></script>
+{% endblock extrajs %}

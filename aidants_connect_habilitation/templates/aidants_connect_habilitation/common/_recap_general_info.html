@@ -17,7 +17,7 @@
           {{ issuer.email }}<br>{{ issuer.phone }}
         </p>
       </div>
-      {% if show_edit_buttons %}
+      {% if show_edit_buttons or organisation.status in organisation.Status.validatable %}
         <div class="fr-mt-3w flex flex-right fr-link">
           <a
             class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-pencil-fill"
@@ -61,13 +61,13 @@
           <div>{{ organisation.mission_description|linebreaksbr }}</div>
         </div>
       </div>
-      {% if show_edit_buttons or organisation.status == organisation.Status.CHANGES_REQUIRED %}
+      {% if show_edit_buttons or organisation.status in organisation.Status.validatable %}
         <div class="fr-mt-3w flex flex-right fr-link">
           <a
             class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-pencil-fill"
             href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
           >
-            Éditer
+            Éditer votre demande
           </a>
         </div>
       {% endif %}
