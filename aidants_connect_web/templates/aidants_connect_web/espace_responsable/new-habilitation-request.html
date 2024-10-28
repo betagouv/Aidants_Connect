@@ -1,4 +1,4 @@
-{% extends 'layouts/main.html' %}
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 {% load ac_common ac_extras dsfr_tags static widget_tweaks %}
 
 {% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
@@ -216,7 +216,6 @@
 {% endblock content %}
 
 {% block extrajs %}
-  {% stimulusjs %}
   <script defer type="application/javascript" src="{% url 'js_reverse' %}"></script>
   <script type="module" src="{% static 'js/new-habilitation-request.mjs' %}"></script>
 {% endblock extrajs %}
