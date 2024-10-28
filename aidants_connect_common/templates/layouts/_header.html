@@ -80,7 +80,7 @@
                     class="fr-nav__link"
                     target="_self"
                     href="
-                      {% if user_is_responsable_structure %}{% url 'espace_responsable_organisation' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
+                      {% if view_name|startswith:'espace_responsable' %}{% url 'espace_responsable_organisation' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
                     {% if view_name|startswith:'espace_aidant' or view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
                   >
                     Mon organisation
