@@ -14,7 +14,7 @@ from selenium.webdriver.support.select import Select
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_common.utils.gouv_address_api import Address
 from aidants_connect_habilitation.forms import (
-    AidantRequestForm,
+    AidantRequestFormLegacy,
     IssuerForm,
     ManagerForm,
     PersonnelForm,
@@ -126,7 +126,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         self.assertEqual(len(form_elts), 4)
 
         for i, _ in enumerate(form_elts):
-            form = AidantRequestForm(
+            form = AidantRequestFormLegacy(
                 organisation=organisation,
                 prefix=f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}",
             )
@@ -317,8 +317,8 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         self._open_form_url(issuer, organisation)
 
         for i in range(2, 6):
-            aidant_form: AidantRequestForm = get_form(
-                AidantRequestForm, form_init_kwargs={"organisation": organisation}
+            aidant_form: AidantRequestFormLegacy = get_form(
+                AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
             )
             aidant_data = aidant_form.cleaned_data
             for field_name in aidant_form.fields:
@@ -372,8 +372,8 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{modified_aidant_idx}-email",
         ).get_attribute("value")
 
-        new_aidant_form: AidantRequestForm = get_form(
-            AidantRequestForm, form_init_kwargs={"organisation": organisation}
+        new_aidant_form: AidantRequestFormLegacy = get_form(
+            AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
         )
         aidant_data = new_aidant_form.cleaned_data
         for field_name in new_aidant_form.fields:

@@ -13,7 +13,7 @@
     </p>
     <h2>Votre demande</h2>
     <p>
-      Votre demande est actuellement dans l'état <strong>«&nbsp;{{ organisation.status_label }}&nbsp;»</strong>.
+      Votre demande est actuellement dans l'état <strong>«&nbsp;{{ organisation.get_status_display }}&nbsp;»</strong>.
       <br>
       {% include "edito/_aide_etats_demandes_habilitation.html" with status=organisation.status %}
     </p>
