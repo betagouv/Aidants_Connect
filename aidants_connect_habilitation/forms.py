@@ -452,7 +452,45 @@ class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
         )
 
 
-class AidantRequestForm(ConseillerNumerique, PatchedModelForm, CleanEmailMixin):
+# TODO: Remove and replace by AidantRequestForm when PersonnelRequestFormView is ported to DSFR  # noqa: E501
+class AidantRequestFormLegacy(ConseillerNumerique, PatchedModelForm, CleanEmailMixin):
+    def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
+        self.organisation = organisation
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = super().clean_email()
+
+        query = Q(organisation=self.organisation) & Q(email__iexact=email)
+        if getattr(self.instance, "pk"):
+            # This user already exists, and we need to verify that
+            # we are not trying to modify its email with the email
+            # of antoher aidant in the organisation
+            query = query & ~Q(pk=self.instance.pk)
+        if AidantRequest.objects.filter(query).exists():
+            raise EmailOrganisationValidationError(email)
+
+        if (
+            self.organisation.manager
+            and self.organisation.manager.is_aidant
+            and self.organisation.manager.email == email
+        ):
+            raise ManagerEmailOrganisationValidationError(email)
+
+        return email
+
+    def save(self, commit=True):
+        self.instance.organisation = self.organisation
+        return super().save(commit)
+
+    class Meta:
+        model = AidantRequest
+        exclude = ["organisation", "habilitation_request"]
+
+
+class AidantRequestForm(ModelForm, ConseillerNumerique, CleanEmailMixin, DsfrBaseForm):
+    template_name = "aidants_connect_habilitation/forms/aidant.html"
+
     def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
         self.organisation = organisation
         super().__init__(*args, **kwargs)
@@ -550,10 +588,13 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
 
 
 AidantRequestFormSet = modelformset_factory(
-    AidantRequestForm.Meta.model, AidantRequestForm, formset=BaseAidantRequestFormSet
+    AidantRequestFormLegacy.Meta.model,
+    AidantRequestFormLegacy,
+    formset=BaseAidantRequestFormSet,
 )
 
 
+# TODO: Replace implementation with BaseMultiForm when PersonnelRequestFormView is ported to DSFR  # noqa: E501
 class PersonnelForm:
     MANAGER_FORM_PREFIX = "manager"
     AIDANTS_FORMSET_PREFIX = "aidants"
@@ -707,7 +748,8 @@ class PersonnelForm:
     save.alters_data = True
 
 
-class ValidationForm(PatchedForm):
+class ValidationForm(DsfrBaseForm):
+    template_name = "aidants_connect_habilitation/forms/validation.html"  # noqa: E501
     cgu = BooleanField(
         required=True,
         label='J’ai pris connaissance des <a href="{url}" class="fr-link">'
@@ -754,6 +796,19 @@ class ValidationForm(PatchedForm):
                 sender=MessageStakeholders.ISSUER.name,
                 content=self.cleaned_data["message_content"],
             )
+        return organisation
+
+    save.alters_data = True
+
+
+class RequestViewForm(PatchedForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(
+        self, organisation: OrganisationRequest, commit=True
+    ) -> OrganisationRequest:
+        organisation.prepare_request_for_ac_validation(self.cleaned_data)
         return organisation
 
     save.alters_data = True

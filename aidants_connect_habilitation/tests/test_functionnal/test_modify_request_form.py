@@ -6,7 +6,7 @@ from selenium.webdriver.support.expected_conditions import url_matches
 
 from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_habilitation.forms import AidantRequestForm
+from aidants_connect_habilitation.forms import AidantRequestFormLegacy
 from aidants_connect_habilitation.models import AidantRequest, OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
@@ -19,6 +19,9 @@ from aidants_connect_web.tests.factories import HabilitationRequestFactory
 
 @tag("functional")
 class AddAidantsRequestViewTests(FunctionalTestCase):
+    def setUp(self):
+        self.add_aidant_css = "#add-aidants-btn"
+
     def test_add_aidant_button_shown_in_readonly_view_under_correct_conditions(self):
         unauthorized_statuses = set(RequestStatusConstants) - set(
             RequestStatusConstants.aidant_registrable
@@ -29,9 +32,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 status=status
             )
             self.__open_readonly_view_url(organisation)
-
-            self.selenium.find_element(By.CSS_SELECTOR, ".fr-container")
-            self.assertElementNotFound(By.CSS_SELECTOR, "#add-aidants-btn")
+            self.assertElementNotFound(By.CSS_SELECTOR, self.add_aidant_css)
 
         for status in RequestStatusConstants.aidant_registrable:
             organisation: OrganisationRequest = OrganisationRequestFactory(
@@ -39,7 +40,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             )
             self.__open_readonly_view_url(organisation)
 
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidants-btn").click()
+            self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
 
             path = reverse(
                 "habilitation_organisation_add_aidants",
@@ -61,8 +62,8 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
         self.__open_form_url(organisation)
 
         for i in range(2):
-            aidant_form: AidantRequestForm = get_form(
-                AidantRequestForm, form_init_kwargs={"organisation": organisation}
+            aidant_form: AidantRequestFormLegacy = get_form(
+                AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
             )
             aidant_data = aidant_form.cleaned_data
             for field_name in aidant_form.fields:

@@ -349,8 +349,8 @@ class OrganisationRequest(models.Model):
         return RequestStatusConstants[self.status] == RequestStatusConstants.NEW
 
     @property
-    def status_label(self):
-        return RequestStatusConstants[self.status].label
+    def status_enum(self):
+        return RequestStatusConstants[self.status]
 
     def __str__(self):
         return self.name
@@ -481,19 +481,20 @@ class OrganisationRequest(models.Model):
         self.create_aidants(organisation)
 
         if self.manager.is_aidant:
-            self.manager.habilitation_request, _ = (
-                HabilitationRequest.objects.get_or_create(
-                    email=self.manager.email,
-                    organisation=organisation,
-                    defaults=dict(
-                        origin=HabilitationRequest.ORIGIN_HABILITATION,
-                        first_name=self.manager.first_name,
-                        last_name=self.manager.last_name,
-                        profession=self.manager.profession,
-                        conseiller_numerique=self.manager.conseiller_numerique,
-                        status=ReferentRequestStatuses.STATUS_PROCESSING,
-                    ),
-                )
+            (
+                self.manager.habilitation_request,
+                _,
+            ) = HabilitationRequest.objects.get_or_create(
+                email=self.manager.email,
+                organisation=organisation,
+                defaults=dict(
+                    origin=HabilitationRequest.ORIGIN_HABILITATION,
+                    first_name=self.manager.first_name,
+                    last_name=self.manager.last_name,
+                    profession=self.manager.profession,
+                    conseiller_numerique=self.manager.conseiller_numerique,
+                    status=ReferentRequestStatuses.STATUS_PROCESSING,
+                ),
             )
             self.manager.save(update_fields=("habilitation_request",))
 

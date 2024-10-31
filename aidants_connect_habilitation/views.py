@@ -164,6 +164,43 @@ class AdressAutocompleteJSMixin:
 """Real views"""
 
 
+class ProfileCardAidantRequestPresenter:
+    def __init__(self, req: AidantRequest):
+        self.req = req
+
+    @property
+    def obj(self):
+        return self.req
+
+    @property
+    def edit_endpoint(self):
+        return reverse(
+            "api_habilitation_aidant_edit",
+            kwargs={
+                "issuer_id": self.req.organisation.issuer.issuer_id,
+                "uuid": self.req.organisation.uuid,
+                "aidant_id": self.req.pk,
+            },
+        )
+
+    @property
+    def user(self):
+        return {
+            "full_name": self.req.get_full_name(),
+            "email": self.req.email,
+            "details_fields": [
+                # email profession conseiller_numerique organisation
+                {"label": "Email", "value": self.req.email},
+                {"label": "Profession", "value": self.req.profession},
+                {
+                    "label": "Conseiller numérique",
+                    "value": yesno(self.req.conseiller_numerique, "Oui,Non"),
+                },
+                {"label": "Organisation", "value": self.req.organisation},
+            ],
+        }
+
+
 class NewHabilitationView(RedirectView):
     permanent = True
     pattern_name = "habilitation_new_issuer"

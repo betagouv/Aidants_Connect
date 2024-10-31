@@ -12,6 +12,7 @@ from django.db import models
 from django.test import override_settings, tag
 from django.urls import reverse
 
+from faker.proxy import Faker
 from selenium.common.exceptions import (
     NoSuchElementException,
     StaleElementReferenceException,
@@ -34,6 +35,7 @@ CustomGetter = Callable[[models.Model | Mapping, str, DefaultGetter], Any]
 @tag("functional")
 class FunctionalTestCase(StaticLiveServerTestCase):
     js = True
+    faker = Faker()
 
     @classmethod
     def setUpClass(cls):
