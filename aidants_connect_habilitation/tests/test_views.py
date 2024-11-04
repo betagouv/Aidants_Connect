@@ -867,7 +867,7 @@ class ValidationRequestFormViewTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.pattern_name = "habilitation_validation"
-        cls.template_name = "validation_form.html"
+        cls.template_name = "aidants_connect_habilitation/validation_request_form_view/validation_form.html"  # noqa: E501
         cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             manager=ManagerFactory()
         )
@@ -1724,7 +1724,6 @@ class TestFormationRegistrationView(TestCase):
 
 
 class TestHabilitationRequestCancelationView(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.organisation = OrganisationRequestFactory()
