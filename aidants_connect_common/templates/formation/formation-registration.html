@@ -41,35 +41,24 @@
         {% csrf_token %}
         {% if form.formation.errors %}
           <div class="fr-error-text">{{ form.formation.errors }}</div>{% endif %}
-        <div class="fr-table fr-table--lg" id="table-sm-component">
+        <div class="fr-table fr-table--lg fr-table--no-scroll" id="table-sm-component">
           <div class="fr-table__wrapper">
             <div class="fr-table__container">
               <div class="fr-table__content">
                 <table>
                   <thead>
-                  <tr>
-                    <th scope="col">Organisme</th>
-                    <th scope="col">Dates</th>
-                    <th scope="col">Durée</th>
-                    <th scope="col">Format</th>
-                    <th scope="col">Lieu</th>
-                    <th scope="col">Sélection</th>
-                  </tr>
+                    <tr>
+                      <th scope="col">Sélection</th>
+                      <th scope="col">Organisme</th>
+                      <th scope="col">Dates</th>
+                      <th scope="col">Durée</th>
+                      <th scope="col">Format</th>
+                      <th scope="col">Lieu</th>
+                    </tr>
                   </thead>
                   <tbody>
                   {% for formation_widget in form.formations.subwidgets %}
                     <tr data-row-key="{{ forloop.counter }}">
-                      <td>
-                        {{ formation_widget.data.value.instance.type.label }}
-                        ({{ formation_widget.data.value.instance.organisation.name }})
-                      </td>
-                      <td>
-                        {{ formation_widget.data.value.instance.date_range_str }}
-                        <br /> {{ formation_widget.data.value.instance.description|linebreaksbr }}
-                      </td>
-                      <td>{{ formation_widget.data.value.instance.duration }}h</td>
-                      <td>{{ formation_widget.data.value.instance.get_status_display }}</td>
-                      <td>{{ formation_widget.data.value.instance.place }}</td>
                       <td class="fr-radio-group option-container">
                         <input
                           name="{{ formation_widget.data.name }}"
@@ -83,6 +72,17 @@
                             {{ formation_widget.data.value.instance.date_range_str|lower }}
                           </span> </label>
                       </td>
+                      <td>
+                        {{ formation_widget.data.value.instance.type.label }}
+                        ({{ formation_widget.data.value.instance.organisation.name }})
+                      </td>
+                      <td>
+                        {{ formation_widget.data.value.instance.date_range_str }}
+                        <br /> {{ formation_widget.data.value.instance.description|linebreaksbr }}
+                      </td>
+                      <td>{{ formation_widget.data.value.instance.duration }}h</td>
+                      <td>{{ formation_widget.data.value.instance.get_status_display }}</td>
+                      <td>{{ formation_widget.data.value.instance.place }}</td>
                     </tr>
                   {% endfor %}
                   </tbody>
