@@ -1,6 +1,6 @@
 {% extends 'layouts/main-habilitation.html' %}
 
-{% load static ac_common %}
+{% load ac_common static %}
 
 {% block title %}Aidants Connect - Espace Aidant{% endblock %}
 
@@ -189,7 +189,7 @@
     </section>
     <section class="section ">
       <h3 class="home-section">Vos ressources</h3>
-      {% include 'public_website/resource_list.html' %}
+      {% include 'public_website/_ressource_externe.html' %}
     </section>
 
   </div>
