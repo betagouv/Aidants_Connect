@@ -1,0 +1,48 @@
+<nav class="fr-sidemenu fr-sidemenu--sticky" aria-labelledby="fr-sidemenu-title">
+  <div class="fr-sidemenu__inner">
+    <button
+      class="fr-sidemenu__btn"
+      aria-controls="fr-sidemenu-wrapper"
+      aria-expanded="false"
+    >Menu
+    </button>
+    <div class="fr-collapse" id="fr-sidemenu-wrapper">
+      <div class="fr-sidemenu__title" id="fr-sidemenu-title">Menu</div>
+      <ul class="fr-sidemenu__list">
+        <li class="fr-sidemenu__item {% if request.resolver_match.url_name == 'habilitation_faq_habilitation' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="#ressource_demarrer"
+
+            >Bien démarrer</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'habilitation_faq_formation' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="#video"
+            >Vidéos</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'habilitation_faq_formation' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="#kit"
+            >Kit de communication</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'habilitation_faq_formation' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="#externe"
+            >Ressources externes</a
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

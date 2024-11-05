@@ -1,174 +1,29 @@
-{% extends 'public_website/layout/main-legacy.html' %}
+{% extends 'public_website/layout/layout_ressources.html' %}
 
 {% load static %}
 
+{% block title %}Ressources - Aidants Connect{% endblock %}
+
 {% block extracss %}
-  <link href="{% static 'css/home.css' %}" rel="stylesheet">
+  <link href="{% static 'css/ressources.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-{% block content %}
+{% block body %}
   <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-12">
-        <h1>Ressources</h1>
-        <p class="subtitle">
-          Retrouvez dans cette section, des ressources à votre disposition, susceptibles de vous aider dans vos
-          démarches d’accompagnement.
-        </p>
-        <h2 class="h3">Bien démarrer</h2>
-        <div class="internal-ressource fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
-          <div class="fr-col-12 fr-col-md-3">
-            <div class="card-ressource">
-              <img src="{% static 'images/auth-ressource.png' %}" alt="" />
-              <div class="card-content">
-                <div><span class="tag">Équipe Aidants Connect</span></div>
-                <div class="h1 blue-text">
-                  <span class="red-text">S’authentifier</span> sur la plateforme Aidants Connect
-                </div>
-                <div class="button-box">
-                  <a
-                    class="fr-btn"
-                    href="{% static 'guides_aidants_connect/AC_Guide_Sauthentifier.pdf' %}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Consulter
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="fr-col-12 fr-col-md-3">
-            <div class="card-ressource">
-              <img src="{% static 'images/mandat-creation-ressource.png' %}" alt="" />
-              <div class="card-content">
-                <div><span class="tag">Équipe Aidants Connect</span></div>
-                <div class="h1"><span class="red-text">Créer un mandat</span> avec un usager</div>
-                <div class="button-box">
-                  <a
-                    class="fr-btn"
-                    href="{% static 'guides_aidants_connect/AC_Guide_CreerUnMandat.pdf' %}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Consulter
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="fr-col-12 fr-col-md-3">
-            <div class="card-ressource">
-              <img src="{% static 'images/demarche-creation-ressource.png' %}" alt="" />
-              <div class="card-content">
-                <div><span class="tag">Équipe Aidants Connect</span></div>
-                <div class="h1"><span class="red-text">Réaliser la démarche</span> avec un usager</div>
-                <div class="button-box">
-                  <a
-                    class="fr-btn"
-                    href="{% static 'guides_aidants_connect/AC_Guide_RealiserLaDemarche.pdf' %}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Consulter
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="fr-col-12 fr-col-md-3">
-            <div class="card-ressource">
-              <img src="{% static 'images/card-ressource.png' %}" alt="" />
-              <div class="card-content">
-                <div><span class="tag">Équipe Aidants Connect</span></div>
-                <div class="h1 blue-text">
-                  <span class="red-text">Lier une carte</span> à un aidant
-                </div>
-                <div class="button-box">
-                  <a
-                    class="fr-btn"
-                    href="{% static 'guides_aidants_connect/AC_Guide_LierUneCarte.pdf' %}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Consulter
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="internal-ressource fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
-          <div class="fr-col-12 fr-col-md-3">
-            <div class="card-ressource">
-              <img src="{% static 'images/fiches-pratiques.png' %}" alt="" />
-              <div class="card-content">
-                <div><span class="tag">Équipe Aidants Connect</span></div>
-                <div class="h1">Fiches pratiques et vidéos</div>
-                <div class="button-box">
-                  <a class="fr-btn" href="{% url 'guide_utilisation' %}">Consulter</a>
-                </div>
-              </div>
-            </div>
-          </div>
-          {% if should_render_testimonies %}
-            <div class="fr-col-12 fr-col-md-3">
-              <div class="card-ressource">
-                <img src="{% static 'images/testimonies.png' %}" alt="" />
-                <div class="card-content">
-                  <div><span class="tag">Équipe Aidants Connect</span></div>
-                  <div class="h1">Témoignages d'aidants</div>
-                  <div class="button-box">
-                    <a class="fr-btn" href="{% url 'temoignages' %}">Consulter</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          {% endif %}
-            <div class="fr-col-12 fr-col-md-3">
-              <div class="card-ressource">
-                <img src="{% static 'images/AC-VignettepourSite-4P-Pref.png' %}" alt="" />
-                <div class="card-content">
-                  <div><span class="tag">Équipe Aidants Connect</span></div>
-                  <div class="h1">5 bonnes raisons d’utiliser Aidants Connect</div>
-                  <div class="button-box">
-                  <a
-                    class="fr-btn"
-                    href="{% static 'guides_aidants_connect/AC_Depliant4P_2024.pdf' %}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Consulter
-                  </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="fr-col-12 fr-col-md-3">
-              <div class="card-ressource">
-                <img src="{% static 'images/AC-tuto-ressource.png' %}" alt="" />
-                <div class="card-content">
-                  <div><span class="tag">Équipe Aidants Connect</span></div>
-                  <div class="h1">Tutoriel interactif Aidants Connect</div>
-                  <div class="button-box">
-                  <a
-                    class="fr-btn"
-                    href="https://www.etsijaccompagnais.fr/tutoriel-aidants-connect"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Consulter
-                  </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-        </div>
-
-        <h2 class="h3">Ressources externes</h2>
-        {% include 'public_website/resource_list.html' %}
-      </div>
+    <div id="ressource_demarrer" class="fr-mb-8w">
+      {% include "public_website/_ressource_demarrer.html" %}
+    </div>
+    <div id="video" class="fr-mb-8w">
+      {% include 'public_website/_ressource_video.html' %}
+    </div>
+    <!-- Bloc Kit de communication pas prêt pour le moment -->
+    <!-- <div id="kit" class="fr-mb-8w">
+      <h2 class="h3">Kit de communication</h2>
+      {% include 'public_website/_ressource_kit.html' %}
+    </div> -->
+    <div id="externe">
+      <h2 class="h3">Ressources externes</h2>
+      {% include 'public_website/_ressource_externe.html' %}
     </div>
   </div>
-{% endblock content %}
+{% endblock body %}
