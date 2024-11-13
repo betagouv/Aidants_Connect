@@ -14,14 +14,21 @@ from aidants_connect_habilitation.views import (
 
 class PersonnelRequestEditView(OnlyNewRequestsView, FormView):
     form_class = AidantRequestForm
-    template_name = "forms/form.html"
+
+    @property
+    def template_name(self):
+        return (
+            "habilitation/generic-habilitation-request-profile-card.html#habilitation-profile-card"  # noqa: E501
+            if self._form_valid
+            else "forms/form.html"
+        )
 
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.SUMMARY
 
     def setup(self, request, *args, **kwargs):
-        self.success = False
+        self._form_valid = False
         super().setup(request, *args, **kwargs)
         self.aidant_request = get_object_or_404(
             AidantRequest,
@@ -37,39 +44,37 @@ class PersonnelRequestEditView(OnlyNewRequestsView, FormView):
         }
 
     def get_context_data(self, **kwargs):
-        if "habilitation_request" in kwargs:
-            kwargs["habilitation_request"] = ProfileCardAidantRequestPresenter(
-                kwargs["habilitation_request"]
-            )
-
-        kwargs.update(
-            {
-                "action": reverse(
-                    "api_habilitation_aidant_edit",
-                    kwargs={
-                        "issuer_id": self.organisation.issuer.issuer_id,
-                        "uuid": self.organisation.uuid,
-                        "aidant_id": self.aidant_request.pk,
-                    },
-                )
-            }
+        context = super().get_context_data(**kwargs)
+        return (
+            self.get_form_valid_context_data(**context)
+            if self._form_valid
+            else self.get_form_invalid_context_data(**context)
         )
-        return super().get_context_data(**kwargs)
 
-    def get_template_names(self):
-        if self.success:
-            return "aidants_connect_habilitation/common/_habilitation-request-profile-card.html"  # noqa: E501
+    def get_form_valid_context_data(self, **kwargs):
+        kwargs["action"] = reverse(
+            "api_habilitation_aidant_edit",
+            kwargs={
+                "issuer_id": self.organisation.issuer.issuer_id,
+                "uuid": self.organisation.uuid,
+                "aidant_id": self.aidant_request.pk,
+            },
+        )
+        return kwargs
 
-        return super().get_template_names()
+    def get_form_invalid_context_data(self, **kwargs):
+        return kwargs
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form), status=422)
 
     def form_valid(self, form):
         habilitation_request = form.save()
-        self.success = True
+        self._form_valid = True
         return self.render_to_response(
-            self.get_context_data(habilitation_request=habilitation_request)
+            self.get_context_data(
+                object=ProfileCardAidantRequestPresenter(habilitation_request)
+            )
         )
 
     def delete(self, request, *args, **kwargs):

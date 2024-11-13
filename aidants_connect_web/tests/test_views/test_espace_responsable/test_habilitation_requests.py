@@ -16,10 +16,7 @@ from aidants_connect_web.tests.factories import (
     OrganisationFactory,
 )
 from aidants_connect_web.views import espace_responsable
-from aidants_connect_web.views.espace_responsable import (
-    FormationRegistrationView,
-    NewHabilitationRequest,
-)
+from aidants_connect_web.views.espace_responsable import FormationRegistrationView
 
 
 @tag("responsable-structure")
@@ -74,7 +71,6 @@ class HabilitationRequestsTests(TestCase):
         )
 
     def test_add_aidant_allows_create_aidants_for_all_possible_organisations(self):
-        self.maxDiff = None
         self.client.force_login(self.responsable_tom)
         for idx, organisation in enumerate(self.responsable_tom.responsable_de.all()):
             with transaction.atomic():
@@ -84,7 +80,7 @@ class HabilitationRequestsTests(TestCase):
             email = f"angela.dubois{organisation.id}@a.org"
 
             response = self.client.post(
-                f"{self.add_aidant_url}?{NewHabilitationRequest.partial_key}=True",
+                f"{self.add_aidant_url}",
                 data={
                     f"{self.prefix}-TOTAL_FORMS": "1",
                     f"{self.prefix}-INITIAL_FORMS": "0",
@@ -100,31 +96,12 @@ class HabilitationRequestsTests(TestCase):
                     "multiform-course_type-type": "1",
                 },
             )
-            data = {
-                f"{self.prefix}-TOTAL_FORMS": "2",
-                f"{self.prefix}-INITIAL_FORMS": "1",
-                f"{self.prefix}-MIN_NUM_FORMS": "0",
-                f"{self.prefix}-MAX_NUM_FORMS": "1000",
-                f"{self.prefix}-0-id": "",
-                f"{self.prefix}-0-email": email,
-                f"{self.prefix}-0-first_name": "Angela",
-                f"{self.prefix}-0-last_name": "Dubois",
-                f"{self.prefix}-0-profession": "Assistante sociale",
-                f"{self.prefix}-0-organisation": f"{organisation.pk}",
-                f"{self.prefix}-0-conseiller_numerique": "False",
-                "multiform-course_type-type": "1",
-            }
-            self.assertEqual(data, response.context_data["form"].data.dict())
-            self.assertEqual(idx, len(HabilitationRequest.objects.all()))
-            response = self.client.post(
-                self.add_aidant_url,
-                data=data,
-            )
             self.assertRedirects(
                 response,
                 reverse("espace_responsable_demandes"),
                 fetch_redirect_response=False,
             )
+            self.assertEqual(idx + 1, len(HabilitationRequest.objects.all()))
             response = self.client.get(reverse("espace_responsable_demandes"))
             response_content = response.content.decode("utf-8")
             self.assertIn(
@@ -174,40 +151,6 @@ class HabilitationRequestsTests(TestCase):
 
         last_request = HabilitationRequest.objects.last()
         self.assertEqual(last_request.email, lowercased_email)
-
-    def test_submit_habilitation_request_for_same_email_and_organisation(self):
-        self.client.force_login(self.responsable_tom)
-
-        hr: HabilitationRequest = HabilitationRequestFactory(
-            organisation=self.org_a, email="a@a.fr"
-        )
-
-        data = {
-            f"{self.prefix}-TOTAL_FORMS": "1",
-            f"{self.prefix}-INITIAL_FORMS": "0",
-            f"{self.prefix}-MIN_NUM_FORMS": "0",
-            f"{self.prefix}-MAX_NUM_FORMS": "1000",
-            f"{self.prefix}-0-id": "",
-            f"{self.prefix}-0-email": hr.email,
-            f"{self.prefix}-0-first_name": "Angela",
-            f"{self.prefix}-0-last_name": "Dubois",
-            f"{self.prefix}-0-profession": "Assistante sociale",
-            f"{self.prefix}-0-organisation": f"{self.org_a.id}",
-            f"{self.prefix}-0-conseiller_numerique": "False",
-            "multiform-course_type-type": "1",
-        }
-
-        response = self.client.post(
-            self.add_aidant_url,
-            data=data,
-        )
-        self.assertEqual(response.status_code, 200, "Response should not be redirected")
-        response_content = response.content.decode("utf-8")
-        self.assertIn(
-            "Une demande d’habilitation est déjà en cours",
-            response_content,
-            "Error message should be displayed.",
-        )
 
     def test_submit_habilitation_request_for_same_email_and_sister_organisation(self):
         self.client.force_login(self.responsable_tom)

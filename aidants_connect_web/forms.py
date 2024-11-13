@@ -1,5 +1,5 @@
 import re
-from typing import Iterable, Optional, Sized
+from typing import Optional
 from urllib.parse import unquote
 
 from django import forms
@@ -8,15 +8,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
-from django.forms import (
-    BaseModelFormSet,
-    EmailField,
-    Form,
-    RadioSelect,
-    modelformset_factory,
-)
-from django.forms.formsets import INITIAL_FORM_COUNT, TOTAL_FORM_COUNT
-from django.template.defaultfilters import yesno
+from django.forms import BaseModelFormSet, EmailField, RadioSelect, modelformset_factory
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -31,7 +23,6 @@ from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import field_validator
 
-from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
@@ -514,6 +505,7 @@ class HabilitationRequestCreationForm(
     DsfrBaseForm,
     CustomBoundFieldForm,
 ):
+    template_name = "aidants_connect_web/forms/habilitation-request-creation-form.html"  # noqa: E501
     organisation = forms.ModelChoiceField(
         queryset=Organisation.objects.none(),
         empty_label="Choisir…",
@@ -525,41 +517,6 @@ class HabilitationRequestCreationForm(
         self.fields["organisation"].queryset = Organisation.objects.filter(
             responsables=self.referent
         ).order_by("name")
-
-    @property
-    def profile_card_context(self):
-        email = str(self["email"].value())
-        return {
-            "form": self,
-            "details_id": (
-                f"added-form-{self.index}" if hasattr(self, "index") else None
-            ),
-            "user": {
-                "full_name": (
-                    f'{self["first_name"].value()} {self["last_name"].value()}'
-                ),
-                "email": email,
-                "details_fields": [
-                    # email profession conseiller_numerique organisation
-                    {"label": "Email", "value": email},
-                    {"label": "Profession", "value": self["profession"].value()},
-                    {
-                        "label": "Conseiller numérique",
-                        "value": yesno(
-                            strtobool(self["conseiller_numerique"].value()), "Oui,Non"
-                        ),
-                    },
-                    {
-                        "label": "Organisation",
-                        "value": getattr(
-                            getattr(self, "cleaned_data", {}).get("organisation"),
-                            "name",
-                            "",
-                        ),
-                    },
-                ],
-            },
-        }
 
     def clean_email(self):
         email = super().clean_email()
@@ -613,109 +570,18 @@ class HabilitationRequestCreationForm(
 
 
 class HabilitationRequestCreationFormSet(BaseModelFormSet):
-    def __init__(self, edit_form: int = None, **kwargs):
+    def __init__(
+        self,
+        data=None,
+        files=None,
+        auto_id="id_%s",
+        prefix=None,
+        **kwargs,
+    ):
+        kwargs["queryset"] = self.model._default_manager.none()
+        super().__init__(data, files, auto_id, prefix, **kwargs)
         self.extra = 0
         self.min_num = 1
-        self.validate_num = True
-        self.saving = False
-
-        kwargs.setdefault("queryset", self.model._default_manager.none())
-        super().__init__(**kwargs)
-
-        self._initial_form_count = (
-            self.management_form.cleaned_data[TOTAL_FORM_COUNT]
-            if self.management_form.is_valid()
-            else None
-        )
-
-        self.edit_form = None
-        if isinstance(edit_form, int) and (0 <= edit_form < len(self.initial_forms)):
-            self.edit_form = edit_form
-
-    @property
-    def initial_forms(self):
-        if self.saving:
-            return []
-
-        initial_forms = super().initial_forms
-        if self.edit_form is None:
-            return initial_forms
-
-        class Gen(Iterable, Sized):
-            def __init__(self, _forms: list[Form], _edit_form_idx):
-                self.forms = _forms
-                self.edit_form_idx = _edit_form_idx
-
-            def __len__(self):
-                return len(self.forms) - 1
-
-            def __iter__(self):
-                for form in self.forms:
-                    if form.index != self.edit_form_idx:
-                        yield form
-
-        return Gen(initial_forms, self.edit_form)
-
-    @property
-    def extra_forms(self):
-        if self.saving:
-            return self.forms
-
-        if self.edit_form is None:
-            return super().extra_forms
-
-        return [self.forms[self.edit_form]]
-
-    def add_extra(self):
-        """Ensure there's always an extra form"""
-        if (
-            # There a problem with managment form
-            self._initial_form_count is None
-            # Or, extra was already added
-            or self._initial_form_count
-            < self.management_form.cleaned_data[TOTAL_FORM_COUNT]
-            # or we're editing a record in the form
-            or self.edit_form is not None
-            # Or there's already an empty form in self.extra_forms
-            or any(not form.has_changed() for form in self.extra_forms)
-        ):
-            return
-
-        self.data[self.management_form.add_prefix(TOTAL_FORM_COUNT)] = (
-            f"{self._initial_form_count + 1}"
-        )
-        self.data[self.management_form.add_prefix(INITIAL_FORM_COUNT)] = (
-            f"{self._initial_form_count}"
-        )
-        # Force recreate managment form wit new data
-        del self.management_form  # noqa
-        self.forms.append(
-            self._construct_form(
-                self._initial_form_count,
-                **self.get_form_kwargs(self._initial_form_count),
-            )
-        )
-
-    def _construct_form(self, i, **kwargs):
-        # Skipping BaseModelFormSet._construct_form b/c we don't want the
-        # pk validation mecanism.
-        form = super(BaseModelFormSet, self)._construct_form(i, **kwargs)
-        form.index = i
-        return form
-
-    def save(self, commit=True):
-        """
-        BaseModelFormSet.save() only save new objects present in self.extra_forms
-        but this form is tweaked to be used with new objects only.
-        BaseModelFormSet.initial_forms is used to store previous data between
-        POSTs.
-        We need to advertise that we're saving right now and every object should be
-        saved.
-        """
-        self.saving = True
-        result = super().save(commit)
-        self.saving = False
-        return result
 
 
 class HabilitationRequestCreationFormationTypeForm(forms.Form):
@@ -731,11 +597,16 @@ class HabilitationRequestCreationFormationTypeForm(forms.Form):
         widget=RadioSelect,
     )
 
+    def as_hidden(self):
+        return format_html_join("\n", "{}", ((bf.as_hidden(),) for bf in self))
+
 
 class NewHabilitationRequestForm(BaseModelMultiForm):
     habilitation_requests = modelformset_factory(
         HabilitationRequestCreationForm.Meta.model,
         HabilitationRequestCreationForm,
+        extra=0,
+        min_num=1,
         formset=HabilitationRequestCreationFormSet,
     )
 

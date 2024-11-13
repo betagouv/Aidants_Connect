@@ -1,0 +1,13 @@
+<form method="post" action="{% url 'api_espace_responsable_aidant_new_edit' idx=idx %}">
+  {% csrf_token %}
+  {{ form.habilitation_requests.management_form }}
+  {{ form.habilitation_requests.non_form_errors }}
+  {% for form in form.habilitation_requests %}
+    {% if forloop.counter0 == idx %}
+      <section data-test="edited-form">{{ form }}</section>
+    {% else %}
+      {{ form.as_hidden }}
+    {% endif %}
+  {% endfor %}
+  {{ form.course_type.as_hidden }}
+</form>

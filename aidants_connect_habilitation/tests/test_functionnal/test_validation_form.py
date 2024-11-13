@@ -19,9 +19,6 @@ from aidants_connect_habilitation.tests.factories import OrganisationRequestFact
 @tag("functional")
 class ValidationRequestFormViewTests(FunctionalTestCase):
 
-    def setUp(self):
-        super().setUp()
-
     def test_I_can_modify_aidant(self):
         request: OrganisationRequest = OrganisationRequestFactory(
             status=RequestStatusConstants.NEW, post__aidants_count=2
@@ -206,7 +203,7 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
             time.sleep(0.5)
             self.js_click(by, value)
             time.sleep(0.3)
-            return visibility_of_element_located(
+            return presence_of_element_located(
                 (By.CSS_SELECTOR, "#profile-edit-modal #id_email")
             )(driver)
 

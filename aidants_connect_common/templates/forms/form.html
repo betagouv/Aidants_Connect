@@ -1,4 +1,8 @@
+{% load partials %}
+
+{% partialdef form %}{{ form }}{% endpartialdef %}
+
 <form method="post" action="{{ action }}">
   {% csrf_token %}
-  {{ form }}
+  {% partial form %}
 </form>

@@ -1,10 +1,13 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
-{% load ac_common ac_extras dsfr_tags static widget_tweaks %}
+{% load ac_common ac_extras dsfr_tags partials static widget_tweaks %}
+
+{% partialdef habilitation-profile-card %}
+  {% include "habilitation/generic-habilitation-request-profile-card.html#habilitation-profile-card" with additionnal_form_target="#new-habilitation-request-form" profile_cards_wrapper_attrs='data-new-habilitation-request-target="rightFormsInsert"' %}
+{% endpartialdef %}
 
 {% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
 
 {% block extracss %}
-  <link href="{% static 'css/generic-habilitation-request-profile-card.css' %}" rel="stylesheet">
   <link href="{% static 'css/new-habilitation-request.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
@@ -14,8 +17,6 @@
     data-controller="new-habilitation-request"
     data-new-habilitation-request-loading-class="fr-icon-loader"
     data-new-habilitation-request-edit-idle-class="fr-icon-edit-fill"
-    data-new-habilitation-request-submit-btn-edit-txt-value="Valider les modifications"
-    data-new-habilitation-request-submit-btn-validate-txt-value="Ajouter un autre aidant"
     data-new-habilitation-request-submit-btn-edit-class="fr-icon-check-line"
     data-new-habilitation-request-submit-btn-validate-class="fr-icon-user-add-line"
   >
@@ -28,22 +29,28 @@
       formulaire ci-dessous. Tous les champs sont obligatoires.
     </p>
     <p>
-      La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant financée selon différentes modalités.
+      La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en
+      2023. Cette formation est dorénavant financée selon différentes modalités.
     </p>
     <p>
-      Nous vous invitons à vous rendre sur ce <a href="https://tally.so/r/mO0Xkg">simulateur de financement</a> pour découvrir comment la financer.
+      Nous vous invitons à vous rendre sur ce <a href="https://tally.so/r/mO0Xkg">simulateur de financement</a>
+      pour découvrir comment la financer.
     </p>
     <p>
-      <strong>Attention:</strong> il peut arriver que dans certains cas (structures non adhérentes à l'OPCO Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être financée par la structure.
+      <strong>Attention :</strong> il peut arriver que dans certains cas (structures non adhérentes à l'OPCO
+      Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être
+      financée par la structure.
     </p>
     <p>
       Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.
     </p>
 
     <form
+      id="new-habilitation-request-form"
       method="post"
       action="{% url 'espace_responsable_aidant_new' %}"
       data-new-habilitation-request-target="form"
+      {% hidden %}
     >
       {% csrf_token %}
 
@@ -56,52 +63,45 @@
             	`attr:"autocomplete:off"` prevents browser to cache field values accross refresh.
             	This messes with js form init.
             {% endcomment %}
-            {{ field|attr:"autocomplete:off" }}
+            {% with controller_target_attr=field.name|strfmt:"data-new-habilitation-request-target:{}" %}
+              {{ field|attr:"autocomplete:off"|attr:controller_target_attr }}
+            {% endwith %}
           {% endfor %}
-
 
           <div class="fr-col-12 fr-col-md-6">
             <section
               id="empty-form"
               data-new-habilitation-request-target="leftFormReplace"
             >
-              {% for form in form.habilitation_requests.extra_forms %}
-                {% include "aidants_connect_web/espace_responsable/_new-habilitation-request-left-form.html" %}
-              {% endfor %}
+              {{ form.habilitation_requests.forms|last }}
             </section>
 
             <button
               id="partial-submit"
-              class="fr-btn fr-btn--secondary fr-btn--icon-left {% if edit_form %}fr-icon-check-line{% else %}fr-icon-user-add-line{% endif %}"
+              class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-user-add-line"
               type="submit"
-              formaction="{{ partial_validate_path }}"
               data-action="new-habilitation-request#onPartialSubmit:prevent:stop"
-              data-new-habilitation-request-target="partialSubmitBtn"
+              data-new-habilitation-request-target="submitBtn"
+              disabled
             >
-              {% if edit_form %}Valider les modifications{% else %}Ajouter un autre aidant{% endif %}
+              Ajouter un autre aidant
             </button>
           </div>
 
           <section
             id="added-forms"
             class="fr-col-12 fr-col-md-6 fr-background-contrast--grey fr-p-6v"
-            data-new-habilitation-request-target="rightFormsSection"
-            {% if form.habilitation_requests.initial_forms|length == 0 %}hidden aria-hidden="true"{% endif %}
+            {% if form.habilitation_requests.initial_forms|length == 0 %}{% hidden %}{% endif %}
+            data-new-habilitation-request-target="rightFormsInsertContainer"
           >
             <h3>Aidants ajoutés à la demande</h3>
-            <div class="fr-grid-row fr-grid-row--gutters" data-new-habilitation-request-target="rightFormsInsert">
-              {% for form in form.habilitation_requests.initial_forms %}
-                {% include "aidants_connect_web/espace_responsable/_new-habilitation-request-profile-card.html" with habilitation_request=form.profile_card_context %}
-              {% endfor %}
-            </div>
+            {% include "habilitation/generic-habilitation-request-profile-card.html" with additionnal_form_target="#new-habilitation-request-form" profile_cards_wrapper_attrs='data-new-habilitation-request-target="rightFormsInsert"' %}
           </section>
-
         </div>
       </section>
 
       <section class="course-type">
         <h2>Choisissez le type de formation</h2>
-
         {# Inline checkboxes not yet supported by django-dsfr #}
         <fieldset
           class="fr-fieldset{% if form.course_type.type.errors %} fr-fieldset--error{% endif %}"
@@ -157,7 +157,13 @@
           {% endif %}
         </fieldset>
       </section>
-      <button id="form-submit" class="fr-btn fr-btn--icon-left fr-icon-check-line" type="submit">
+      <button
+        id="form-submit"
+        class="fr-btn fr-btn--icon-left fr-icon-check-line"
+        type="submit"
+        data-new-habilitation-request-target="submitBtn"
+        disabled
+      >
         Valider la demande d’habilitation
       </button>
     </form>
@@ -208,9 +214,7 @@
     </dialog>
 
     <template data-new-habilitation-request-target="formTpl">
-      {% with form=form.habilitation_requests.empty_form %}
-        {% include "aidants_connect_web/espace_responsable/_new-habilitation-request-left-form.html" %}
-      {% endwith %}
+      {{ form.habilitation_requests.empty_form }}
     </template>
   </div>
 {% endblock content %}

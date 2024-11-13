@@ -69,7 +69,7 @@ class ProfileEditModal extends BaseController {
      * @param {String|Promise<String>} content Modal content as HTML string or promise that resolves into HTML string
      * @param {String} id Id of the item being edited
      */
-    createAndShow ({title = undefined, content, id} = {}) {
+    async createAndShow ({title = undefined, content, id} = {}) {
         this.idValue = id
         if (content instanceof Promise) {
             this.stateValue = MODAL_STATES.LOADING;
@@ -77,15 +77,16 @@ class ProfileEditModal extends BaseController {
             content = Promise.resolve(content);
         }
 
-        content.then(html => {
-            this.contentTarget.innerHTML = html;
+        try {
+            this.contentTarget.innerHTML = await content;
             this.idValue = id;
             this.stateValue = MODAL_STATES.IDLE;
-        }).catch(() => {
+        } catch (e) {
+            console.error(e)
             this.stateValue = MODAL_STATES.ERROR;
-        })
-
-        this.displayValue = true
+        } finally {
+            this.displayValue = true
+        }
     }
 
     onValidate (evt) {
@@ -203,16 +204,26 @@ class ProfileEditModal extends BaseController {
 /**
  * @property {String} idValue
  * @property {String} enpointValue
+ * @property {String} additionalFormValue
  * @property {ProfileEditModal} profileEditModalOutlet
  */
 class ProfileEditCard extends Controller {
-    static values = {id: String, enpoint: String}
+    static values = {id: String, enpoint: String, additionalForm: {type: String, default: undefined}}
     static outlets = ["profile-edit-modal"]
 
-    onEdit (elt) {
+    onEdit (evt) {
+        evt.preventDefault()
+        evt.stopPropagation()
+
+        const additionnalForm = document.querySelector(this.additionalFormValue);
+        let urlParams = "";
+        if (additionnalForm instanceof HTMLFormElement) {
+            urlParams = `?${new URLSearchParams(new FormData(additionnalForm))}`
+        }
+
         this.profileEditModalOutlet.createAndShow({
             id: this.idValue,
-            content: fetch(this.enpointValue).then(async response => {
+            content: fetch(`${this.enpointValue}${urlParams}`).then(async response => {
                 if (!response.ok) {
                     throw response.statusText
                 }
@@ -223,10 +234,8 @@ class ProfileEditCard extends Controller {
 
     /** @returns {Promise<String|undefined>} */
     async validate () {
-        return fetch(this.enpointValue, {
-            body: new FormData(this.profileEditModalOutlet.contentTarget.querySelector("form")),
-            method: "POST",
-        }).then(async response => {
+        const body = new FormData(this.profileEditModalOutlet.contentTarget.querySelector("form"))
+        return fetch(this.enpointValue, {body, method: "POST"}).then(async response => {
             // Error in the form, we return the HTML so that modal can display it
             if (response.status === 422) {
                 return await response.text()
@@ -260,5 +269,8 @@ class ProfileEditCard extends Controller {
     }
 }
 
-aidantsConnectApplicationReady.then(/** @param {Stimulus.Application} app */ app => app.register("profile-edit-modal", ProfileEditModal))
-aidantsConnectApplicationReady.then(/** @param {Stimulus.Application} app */ app => app.register("profile-edit-card", ProfileEditCard))
+aidantsConnectApplicationReady.then(/** @param {Stimulus.Application} app */ app => {
+    document.querySelector("main #modal-dest").insertAdjacentHTML("beforeend", document.querySelector("template#profile-edit-modal-tpl").innerHTML)
+    app.register("profile-edit-modal", ProfileEditModal)
+    app.register("profile-edit-card", ProfileEditCard)
+})
