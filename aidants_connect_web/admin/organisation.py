@@ -11,6 +11,7 @@ from import_export.results import RowResult
 
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
+from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 
 from .utils import SpecificDeleteActionsMixin
@@ -180,6 +181,21 @@ class WithoutDatapassIdFilter(SimpleListFilter):
             return queryset.filter(data_pass_id=None)
 
 
+class OrganisationTypeFilter(SimpleListFilter):
+    title = "Type réduit de l'organisation"
+
+    parameter_name = "orga_type_id"
+
+    def lookups(self, request, model_admin):
+        return RequestOriginConstants.choices
+
+    def queryset(self, request, queryset):
+        orga_type_id = self.value()
+        if not orga_type_id:
+            return
+        return queryset.filter(type=orga_type_id)
+
+
 class OrganisationAdmin(
     SpecificDeleteActionsMixin,
     ImportMixin,
@@ -210,6 +226,7 @@ class OrganisationAdmin(
         DepartmentFilter,
         "is_active",
         "france_services_label",
+        OrganisationTypeFilter,
         "type",
         WithoutDatapassIdFilter,
         "is_experiment",
