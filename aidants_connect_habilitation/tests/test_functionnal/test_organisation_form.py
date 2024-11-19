@@ -92,9 +92,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(
-            By.CSS_SELECTOR, "#id_is_private_org ~ label"
-        ).click()
 
         for field in [
             "name",
@@ -102,7 +99,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",  # needed only if is_private_org=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
@@ -251,14 +247,10 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(
-            By.CSS_SELECTOR, "#id_is_private_org ~ label"
-        ).click()
 
         for field in [
             "name",
             "siret",
-            "partner_administration",  # needed only if is_private_org=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
@@ -325,9 +317,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(
-            By.CSS_SELECTOR, "#id_is_private_org ~ label"
-        ).click()
+
         for field in [
             "name",
             "siret",
@@ -335,7 +325,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "zipcode",
             "city",
             "web_site",
-            "partner_administration",  # needed only if is_private_org=True
             "mission_description",
             "avg_nb_demarches",
         ]:
@@ -454,9 +443,7 @@ class PersonnelRequestFormViewNoJSTests(FunctionalTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
         self.selenium.find_element(
-            By.XPATH,
-            "//*[@id='id_alternative_address']"
-            f"//*[normalize-space(text())='{selected_address}']",
+            By.XPATH, f"//*[contains(text(),'{selected_address}')]"
         ).click()
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()

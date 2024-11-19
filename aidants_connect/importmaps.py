@@ -8,4 +8,5 @@ importmaps = {
     "MarkdownEditor": static("js/widgets/markdown-editor.mjs"),
     "ChartJS": settings.CHARTS_JS_URL,
     "ChartJSDatalabel": settings.CHARTS_JS_DATALABEL_URL,
+    "autoComplete": settings.AUTOCOMPLETE_SCRIPT_SRC,
 }

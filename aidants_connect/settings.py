@@ -429,7 +429,7 @@ COOKIE_BANNER_LANG_URL = (
 COOKIE_BANNER_SERVICES_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.services.js"
 )
-AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa
+AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"  # noqa
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.beta.gouv.fr")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
 CHARTS_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js@3.0.0/dist/chart.min.js"

@@ -470,7 +470,6 @@ class NewOrganisationRequestFormViewTests(TestCase):
             OrganisationRequestForm, type_id=RequestOriginConstants.MEDIATHEQUE.value
         ).clean()
         cleaned_data["type"] = cleaned_data["type"].id
-        cleaned_data.pop("is_private_org")
         cleaned_data.pop("france_services_label")
 
         response = self.client.post(
@@ -599,7 +598,6 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
 
         # it is not enough to set these keys to False,
         # we need to unset them from the POST as they are checkboxes in the form.
-        cleaned_data.pop("is_private_org")
         cleaned_data.pop("france_services_label")
 
         self.assertNotEqual(model.name, new_name)

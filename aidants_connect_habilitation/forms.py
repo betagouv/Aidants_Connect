@@ -2,6 +2,7 @@ from re import sub as re_sub
 from typing import List, Tuple, Union
 from urllib.parse import quote, unquote
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.forms import (
@@ -11,6 +12,7 @@ from django.forms import (
     ChoiceField,
     Form,
     HiddenInput,
+    Media,
     ModelForm,
     RadioSelect,
     Textarea,
@@ -19,6 +21,7 @@ from django.forms import (
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext as _
@@ -35,8 +38,10 @@ from aidants_connect_common.forms import (
     PatchedErrorList,
     PatchedForm,
     PatchedModelForm,
+    WidgetAttrMixin,
 )
 from aidants_connect_common.utils.gouv_address_api import Address, search_adresses
+from aidants_connect_common.widgets import JSModulePath
 from aidants_connect_habilitation import models
 from aidants_connect_habilitation.models import (
     AidantRequest,
@@ -47,7 +52,7 @@ from aidants_connect_habilitation.models import (
 from aidants_connect_web.models import OrganisationType
 
 
-class AddressValidatableMixin(Form):
+class AddressValidatableMixin(Form, WidgetAttrMixin):
     DEFAULT_CHOICE = "DEFAULT"
 
     # Necessary so dynamically setting properties
@@ -199,15 +204,25 @@ class IssuerForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
 
 
 class OrganisationRequestForm(
-    PatchedModelForm, AddressValidatableMixin, CleanZipCodeMixin
+    ModelForm, DsfrBaseForm, AddressValidatableMixin, CleanZipCodeMixin
 ):
-    type = ChoiceField(required=True, choices=RequestOriginConstants.choices)
+    template_name = "aidants_connect_habilitation/forms/organisation.html"
+    type = ChoiceField(
+        required=True, choices=RequestOriginConstants.choices, label="Type de structure"
+    )
     type_other = CharField(
         label="Veuillez préciser le type d’organisation", required=False
     )
 
+    france_services_label = BooleanField(
+        label="Structure labellisée France Services", required=False
+    )
+    france_services_number = CharField(
+        label="Numéro d’immatriculation France Services", required=False
+    )
+
     name = CharField(
-        label="Nom de la structure",
+        label="Nom",
     )
 
     zipcode = CharField(
@@ -229,41 +244,14 @@ class OrganisationRequestForm(
     city_insee_code = CharField(widget=HiddenInput(), required=False)
     department_insee_code = CharField(widget=HiddenInput(), required=False)
 
-    is_private_org = BooleanField(
-        label=(
-            "Cochez cette case si vous faites cette demande pour une structure privée "
-            "(hors associations)"
-        ),
-        required=False,
-    )
-
-    partner_administration = CharField(
-        label="Renseignez l’administration avec laquelle vous travaillez",
-        required=False,
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.widget_attrs(
-            "type",
-            {
-                "data-action": "change->dynamic-form#onTypeChange",
-                "data-dynamic-form-target": "typeInput",
-            },
-        )
-        self.widget_attrs(
-            "is_private_org",
-            {
-                "data-action": "change->dynamic-form#onIsPrivateOrgChange",
-                "data-dynamic-form-target": "privateOrgInput",
-            },
-        )
-        self.widget_attrs(
-            "france_services_label",
-            {
-                "data-action": "change->dynamic-form#onFranceServicesChange",
-                "data-dynamic-form-target": "franceServicesInput",
-            },
+    @property
+    def media(self):
+        return Media(
+            css={"all": (static("css/autocomplete.css"),)},
+            js=(
+                JSModulePath("js/organisation-form.mjs"),
+                JSModulePath("js/address-autocomplete.mjs"),
+            ),
         )
 
     def clean_type(self):
@@ -280,18 +268,6 @@ class OrganisationRequestForm(
             )
 
         return self.data["type_other"]
-
-    def clean_partner_administration(self):
-        if not self.data.get("is_private_org", False):
-            return ""
-
-        if not self.data["partner_administration"]:
-            raise ValidationError(
-                "Vous avez indiqué que la structure est privée : merci de renseigner "
-                "votre administration partenaire."
-            )
-
-        return self.data["partner_administration"]
 
     def clean_france_services_number(self):
         if not self.data.get("france_services_label", False):
@@ -326,6 +302,17 @@ class OrganisationRequestForm(
         self.cleaned_data["city_insee_code"] = address.citycode
         self.cleaned_data["department_insee_code"] = address.context.department_number
 
+    def get_context(self):
+        return {
+            **super().get_context(),
+            "GOUV_ADDRESS_SEARCH_API_DISABLED": (
+                settings.GOUV_ADDRESS_SEARCH_API_DISABLED
+            ),
+            "GOUV_ADDRESS_SEARCH_API_BASE_URL": (
+                settings.GOUV_ADDRESS_SEARCH_API_BASE_URL
+            ),
+        }
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
@@ -338,8 +325,6 @@ class OrganisationRequestForm(
             "city",
             "city_insee_code",
             "department_insee_code",
-            "is_private_org",
-            "partner_administration",
             "france_services_label",
             "france_services_number",
             "web_site",
