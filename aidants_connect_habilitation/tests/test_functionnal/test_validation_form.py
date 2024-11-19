@@ -1,14 +1,8 @@
-import time
-
 from django.test import tag
 from django.urls import reverse
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import (
-    invisibility_of_element_located,
-    presence_of_element_located,
-    visibility_of_element_located,
-)
+from selenium.webdriver.support import expected_conditions
 
 from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
@@ -18,49 +12,42 @@ from aidants_connect_habilitation.tests.factories import OrganisationRequestFact
 
 @tag("functional")
 class ValidationRequestFormViewTests(FunctionalTestCase):
+    def setUp(self):
+        self.request: OrganisationRequest = OrganisationRequestFactory(
+            status=RequestStatusConstants.NEW, post__aidants_count=2
+        )
+        self.url = reverse(
+            "habilitation_validation",
+            kwargs={
+                "issuer_id": self.request.issuer.issuer_id,
+                "uuid": self.request.uuid,
+            },
+        )
 
     def test_I_can_modify_aidant(self):
-        request: OrganisationRequest = OrganisationRequestFactory(
-            status=RequestStatusConstants.NEW, post__aidants_count=2
-        )
-
-        self.open_live_url(
-            reverse(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": request.issuer.issuer_id,
-                    "uuid": request.uuid,
-                },
-            )
-        )
+        self.open_live_url(self.url)
 
         # Modify once
-        self._fill_form_with_correct_email_and_assert(request.aidant_requests.first())
+        self._fill_form_with_correct_email_and_assert(
+            self.request.aidant_requests.first()
+        )
 
         # Modify twice
-        self._fill_form_with_correct_email_and_assert(request.aidant_requests.last())
+        self._fill_form_with_correct_email_and_assert(
+            self.request.aidant_requests.last()
+        )
 
         # Modify thrice
-        self._fill_form_with_correct_email_and_assert(request.aidant_requests.last())
+        self._fill_form_with_correct_email_and_assert(
+            self.request.aidant_requests.last()
+        )
 
     def test_handle_errors(self):
-        request: OrganisationRequest = OrganisationRequestFactory(
-            status=RequestStatusConstants.NEW, post__aidants_count=2
-        )
+        self.open_live_url(self.url)
 
-        self.open_live_url(
-            reverse(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": request.issuer.issuer_id,
-                    "uuid": request.uuid,
-                },
-            )
-        )
-
-        aidant: AidantRequest = request.aidant_requests.first()
-        new_email = request.aidant_requests.last().email
-        self._open_modale(By.ID, f"edit-button-{aidant.pk}")
+        aidant: AidantRequest = self.request.aidant_requests.first()
+        new_email = self.request.aidant_requests.last().email
+        self._try_open_modal(By.ID, f"edit-button-{aidant.pk}")
         email_input = self.selenium.find_element(
             By.CSS_SELECTOR, "#profile-edit-modal #id_email"
         )
@@ -72,7 +59,7 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
         ).click()
 
         self.wait.until(
-            presence_of_element_located(
+            expected_conditions.presence_of_element_located(
                 (By.CSS_SELECTOR, "#id_email-desc-error .fr-error-text")
             )
         )
@@ -90,65 +77,42 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
         self.assertNotEqual(aidant.email, new_email)
 
         # Now modify with a correct address
-        self._fill_form_with_correct_email_and_assert(aidant)
+        self._fill_form_with_correct_email_and_assert(aidant, modal_opened=True)
 
     def test_delete(self):
-        request: OrganisationRequest = OrganisationRequestFactory(
-            status=RequestStatusConstants.NEW, post__aidants_count=2
-        )
+        self.open_live_url(self.url)
 
-        self.open_live_url(
-            reverse(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": request.issuer.issuer_id,
-                    "uuid": request.uuid,
-                },
-            )
-        )
-
-        aidant: AidantRequest = request.aidant_requests.first()
-        self._open_modale(By.ID, f"edit-button-{aidant.pk}")
+        aidant: AidantRequest = self.request.aidant_requests.first()
+        self._try_open_modal(By.ID, f"edit-button-{aidant.pk}")
 
         self.selenium.find_element(
             By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-suppress"
         ).click()
 
-        self.wait.until(self._modal_closed)
+        self.wait.until(self._modal_closed())
 
         self.assertElementNotFound(By.ID, f"profile-edit-card-{aidant.pk}")
         self.assertEqual(
-            {request.aidant_requests.last()}, set(request.aidant_requests.all())
+            {self.request.aidant_requests.last()},
+            set(self.request.aidant_requests.all()),
         )
 
     def test_modify_issuer(self):
-        request: OrganisationRequest = OrganisationRequestFactory(
-            status=RequestStatusConstants.NEW, post__aidants_count=2
-        )
-
-        self.open_live_url(
-            reverse(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": request.issuer.issuer_id,
-                    "uuid": request.uuid,
-                },
-            )
-        )
+        self.open_live_url(self.url)
 
         self.selenium.find_element(By.ID, "tests-issuer-edit-button").click()
         self.wait.until(
             self.path_matches(
                 "habilitation_modify_issuer_on_organisation",
                 kwargs={
-                    "issuer_id": f"{request.issuer.issuer_id}",
-                    "uuid": f"{request.uuid}",
+                    "issuer_id": f"{self.request.issuer.issuer_id}",
+                    "uuid": f"{self.request.uuid}",
                 },
             )
         )
 
         for _ in range(10):
-            if (new_email := self.faker.email()) != request.issuer.email:
+            if (new_email := self.faker.email()) != self.request.issuer.email:
                 break
         else:
             self.fail("This shouldn't happen")
@@ -162,8 +126,8 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
             self.path_matches(
                 "habilitation_validation",
                 kwargs={
-                    "issuer_id": f"{request.issuer.issuer_id}",
-                    "uuid": f"{request.uuid}",
+                    "issuer_id": f"{self.request.issuer.issuer_id}",
+                    "uuid": f"{self.request.uuid}",
                 },
             )
         )
@@ -172,14 +136,13 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
             new_email, self.selenium.find_element(By.ID, "test-issuer-infos").text
         )
 
-    def _fill_form_with_correct_email_and_assert(self, request: AidantRequest):
+    def _fill_form_with_correct_email_and_assert(
+        self, request: AidantRequest, modal_opened=False
+    ):
         new_email = self._get_new_valid_email(request)
-        self._open_modale(By.ID, f"edit-button-{request.pk}")
-        self.wait.until(
-            visibility_of_element_located(
-                (By.CSS_SELECTOR, "#profile-edit-modal #id_email")
-            )
-        )
+        if not modal_opened:
+            self._try_open_modal(By.ID, f"edit-button-{request.pk}")
+
         email_input = self.selenium.find_element(
             By.CSS_SELECTOR, "#profile-edit-modal #id_email"
         )
@@ -188,39 +151,69 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
         self.selenium.find_element(
             By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
         ).click()
-        self.wait.until(self._modal_closed)
+        self.wait.until(self._modal_closed())
 
         request.refresh_from_db()
         self.assertEqual(request.email, new_email)
 
-    def _modal_closed(self, driver):
-        return invisibility_of_element_located(
-            (By.CSS_SELECTOR, "#profile-edit-modal #id_email")
-        )(driver)
+    def _modal_closed(self):
+        def modal_has_no_open_attr(driver):
+            try:
+                with self.implicitely_wait(0.1, driver):
+                    element_attribute = driver.find_element(
+                        By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"
+                    ).get_attribute("open")
+                return element_attribute is None
+            except:  # noqa: E722
+                return False
 
-    def _open_modale(self, by, value):
-        def try_open_modal(driver):
-            time.sleep(0.5)
-            self.js_click(by, value)
-            time.sleep(0.3)
-            return presence_of_element_located(
-                (By.CSS_SELECTOR, "#profile-edit-modal #id_email")
-            )(driver)
+        return expected_conditions.all_of(
+            expected_conditions.invisibility_of_element_located(
+                (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+            ),
+            modal_has_no_open_attr,
+        )
 
-        self.wait.until(self.document_loaded())
-        self.wait.until(try_open_modal)
-
-    def _close_modale(self):
-        def try_close_modale(driver):
-            # Not using WebElement.click modal may not be visible (already closed)
-            self.js_click(
-                By.CSS_SELECTOR,
-                '#profile-edit-modal [aria-controls="profile-edit-modal"]',
+    def _try_open_modal(self, by, value: str):
+        self._try_close_modal()
+        self.js_click(by, value)
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.text_to_be_present_in_element_attribute(
+                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"),
+                    "open",
+                    "true",
+                ),
+                "Modal was not opened",
             )
-            return self._modal_closed(driver)
+
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (
+                        By.CSS_SELECTOR,
+                        '#modal-dest #profile-edit-modal input[id$="email"]',
+                    )
+                ),
+                "Modal seems opened but form seems not visible",
+            )
+
+    def _try_close_modal(self):
+        def dsfr_ready(driver):
+            result = driver.execute_script("return document.dsfrReady")
+            return result
 
         self.wait.until(self.document_loaded())
-        self.wait.until(try_close_modale)
+        self.wait.until(dsfr_ready)
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+                ),
+                "Modal didn't seem to have been initialized",
+            )
+
+            self.js_click(By.TAG_NAME, "body")
+            self.wait.until(self._modal_closed(), "Modal seems to be still visible")
 
     def _get_new_valid_email(self, request: AidantRequest):
         emails = request.organisation.aidant_requests.values_list("email", flat=True)
@@ -230,3 +223,30 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
                 return new_email
 
         self.fail("This shouldn't happen")
+
+
+@tag("functional")
+class ReadonlyRequestView(ValidationRequestFormViewTests):
+    def setUp(self):
+        self.request: OrganisationRequest = OrganisationRequestFactory(
+            status=RequestStatusConstants.CHANGES_REQUIRED, post__aidants_count=2
+        )
+        self.url = reverse(
+            "habilitation_organisation_view",
+            kwargs={
+                "issuer_id": self.request.issuer.issuer_id,
+                "uuid": self.request.uuid,
+            },
+        )
+
+    def test_I_can_modify_aidant(self):
+        super().test_I_can_modify_aidant()
+
+    def test_handle_errors(self):
+        super().test_handle_errors()
+
+    def test_delete(self):
+        super().test_delete()
+
+    def test_modify_issuer(self):
+        super().test_modify_issuer()

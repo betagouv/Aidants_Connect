@@ -950,7 +950,12 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         )
 
     def _try_close_modal(self):
+        def dsfr_ready(driver):
+            result = driver.execute_script("return document.dsfrReady")
+            return result
+
         self.wait.until(self.document_loaded())
+        self.wait.until(dsfr_ready)
         with self.implicitely_wait(0.1):
             self.wait.until(
                 expected_conditions.presence_of_element_located(

@@ -13,7 +13,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.template.defaultfilters import yesno
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
-from django.utils.html import format_html_join
 from django.utils.translation import ngettext
 from django.views.generic import DeleteView, DetailView, FormView, TemplateView
 
@@ -909,9 +908,7 @@ class HabilitationRequestItemPresenter(GenericHabilitationRequestPresenter):
 
     @property
     def form(self) -> str:
-        return format_html_join(
-            "\n", "{}", ((field.as_hidden(),) for field in self._form)
-        )
+        return self._form.as_hidden()
 
     @property
     def details_id(self):

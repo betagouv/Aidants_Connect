@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import Any
 from uuid import UUID
 
@@ -13,7 +14,6 @@ from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
 
 from aidants_connect_common.constants import (
-    MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
@@ -29,7 +29,6 @@ from aidants_connect_habilitation.forms import (
     IssuerForm,
     OrganisationRequestForm,
     PersonnelForm,
-    RequestMessageForm,
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
@@ -38,7 +37,6 @@ from aidants_connect_habilitation.models import (
     IssuerEmailConfirmation,
     Manager,
     OrganisationRequest,
-    RequestMessage,
 )
 
 __all__ = [
@@ -110,16 +108,12 @@ class LateStageRequestView(VerifiedEmailIssuerView, View):
             uuid = UUID(kwargs.get("uuid"))
         except ValueError:
             raise Http404()
-        self.organisation = get_object_or_404(
+        self.organisation: OrganisationRequest = get_object_or_404(
             OrganisationRequest, uuid=uuid, issuer=self.issuer
         )
 
 
-class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView):
-    @property
-    def step(self) -> HabilitationFormStep:
-        raise NotImplementedError()
-
+class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView, ABC):
     def dispatch(self, request, *args, **kwargs):
         if not self.issuer.email_verified:
             # Duplicate logic of VerifiedEmailIssuerView
@@ -164,48 +158,6 @@ class AdressAutocompleteJSMixin:
 
 
 """Real views"""
-
-
-class ProfileCardAidantRequestPresenter(GenericHabilitationRequestPresenter):
-
-    def __init__(self, req: AidantRequest):
-        self.req = req
-
-    @property
-    def pk(self):
-        return self.req.pk
-
-    @property
-    def edit_endpoint(self):
-        return reverse(
-            "api_habilitation_aidant_edit",
-            kwargs={
-                "issuer_id": self.req.organisation.issuer.issuer_id,
-                "uuid": self.req.organisation.uuid,
-                "aidant_id": self.req.pk,
-            },
-        )
-
-    @property
-    def full_name(self) -> str:
-        return self.req.get_full_name()
-
-    @property
-    def email(self) -> str:
-        return self.req.email
-
-    @property
-    def details_fields(self) -> list[dict[str, Any]]:
-        return [
-            # email profession conseiller_numerique organisation
-            {"label": "Email", "value": self.req.email},
-            {"label": "Profession", "value": self.req.profession},
-            {
-                "label": "Conseiller numérique",
-                "value": yesno(self.req.conseiller_numerique, "Oui,Non"),
-            },
-            {"label": "Organisation", "value": self.req.organisation},
-        ]
 
 
 class NewHabilitationView(RedirectView):
@@ -456,9 +408,63 @@ class PersonnelRequestFormView(
         )
 
 
-class ValidationRequestFormView(OnlyNewRequestsView, FormView):
-    template_name = "aidants_connect_habilitation/validation_request_form_view/validation_form.html"  # noqa: E501
+class ProfileCardAidantRequestPresenter(GenericHabilitationRequestPresenter):
+    def __init__(self, org: OrganisationRequest, req: AidantRequest):
+        self.org: OrganisationRequest = org
+        self.req: AidantRequest = req
+
+    @property
+    def pk(self):
+        return self.req.pk
+
+    @property
+    def edit_endpoint(self):
+        if self.org.status not in self.org.Status.aidant_registrable:
+            return None
+
+        return reverse(
+            "api_habilitation_aidant_edit",
+            kwargs={
+                "issuer_id": self.req.organisation.issuer.issuer_id,
+                "uuid": self.req.organisation.uuid,
+                "aidant_id": self.req.pk,
+            },
+        )
+
+    @property
+    def edit_href(self) -> str | None:
+        return None
+
+    @property
+    def full_name(self) -> str:
+        return self.req.get_full_name()
+
+    @property
+    def email(self) -> str:
+        return self.req.email
+
+    @property
+    def details_fields(self) -> list[dict[str, Any]]:
+        return [
+            # email profession conseiller_numerique organisation
+            {"label": "Email", "value": self.req.email},
+            {"label": "Profession", "value": self.req.profession},
+            {
+                "label": "Conseiller numérique",
+                "value": yesno(self.req.conseiller_numerique, "Oui,Non"),
+            },
+            {"label": "Organisation", "value": self.req.organisation},
+        ]
+
+
+class BaseValidationRequestFormView(
+    HabilitationStepMixin, LateStageRequestView, FormView
+):
+    # fmt: off
+    template_name = "aidants_connect_habilitation/validation_request_form_view.html"  # noqa: E501
+    # fmt: on
     form_class = ValidationForm
+    presenter_class = ProfileCardAidantRequestPresenter
 
     @property
     def step(self) -> HabilitationFormStep:
@@ -470,8 +476,10 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
                 "organisation": self.organisation,
                 # using a generator to avoid unneccessary computations
                 "habilitation_requests": (
-                    ProfileCardAidantRequestPresenter(it)
-                    for it in self.organisation.aidant_requests.all()
+                    self.presenter_class(self.organisation, it)
+                    for it in self.organisation.aidant_requests.prefetch_related(
+                        "habilitation_request"
+                    ).all()
                 ),
                 "type_other": RequestOriginConstants.OTHER.value,
             }
@@ -513,39 +521,26 @@ class ValidationRequestFormView(OnlyNewRequestsView, FormView):
             return self.form_invalid(form)
 
 
-class ReadonlyRequestView(LateStageRequestView, FormView):
-    template_name = "view_organisation_request.html"
-    form_class = RequestMessageForm
+class ValidationRequestFormView(OnlyNewRequestsView, BaseValidationRequestFormView):
+    pass
 
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "organisation": self.organisation,
-            "aidants": self.organisation.aidant_requests,
-        }
 
-    def get_success_url(self):
-        return self.organisation.get_absolute_url()
+class ReadOnlyProfileCardAidantRequestPresenter(ProfileCardAidantRequestPresenter):
+    @property
+    def summary_second_line_tpl(self):
+        return "aidants_connect_habilitation/validation_request_form_view.html#summary-second-line"  # noqa: E501
 
-    def form_valid(self, form):
-        message: RequestMessage = form.save(commit=False)
-        message.sender = MessageStakeholders.ISSUER.name
-        message.organisation = self.organisation
-        message.save()
+    @property
+    def organisation(self):
+        return self.org
 
-        if self.request.GET.get("http-api", False):
-            return self.response_class(
-                request=self.request,
-                template="request_messages/_message_item.html",
-                context={
-                    "message": message,
-                    "issuer": self.issuer,
-                },
-                using=self.template_engine,
-                content_type="text/html; charset=utf-8",
-            )
+    @property
+    def habilitation_request(self):
+        return self.req.habilitation_request
 
-        return super().form_valid(form)
+
+class ReadonlyRequestView(BaseValidationRequestFormView):
+    presenter_class = ReadOnlyProfileCardAidantRequestPresenter
 
 
 class AddAidantsRequestView(LateStageRequestView, FormView):

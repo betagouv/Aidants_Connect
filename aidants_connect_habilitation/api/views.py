@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import FormView
@@ -7,12 +7,12 @@ from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import AidantRequestForm
 from aidants_connect_habilitation.models import AidantRequest
 from aidants_connect_habilitation.views import (
-    OnlyNewRequestsView,
+    LateStageRequestView,
     ProfileCardAidantRequestPresenter,
 )
 
 
-class PersonnelRequestEditView(OnlyNewRequestsView, FormView):
+class PersonnelRequestEditView(LateStageRequestView, FormView):
     form_class = AidantRequestForm
 
     @property
@@ -30,6 +30,10 @@ class PersonnelRequestEditView(OnlyNewRequestsView, FormView):
     def setup(self, request, *args, **kwargs):
         self._form_valid = False
         super().setup(request, *args, **kwargs)
+
+        if self.organisation.status not in self.organisation.Status.aidant_registrable:
+            raise Http404
+
         self.aidant_request = get_object_or_404(
             AidantRequest,
             organisation=self.organisation,
@@ -73,7 +77,9 @@ class PersonnelRequestEditView(OnlyNewRequestsView, FormView):
         self._form_valid = True
         return self.render_to_response(
             self.get_context_data(
-                object=ProfileCardAidantRequestPresenter(habilitation_request)
+                object=ProfileCardAidantRequestPresenter(
+                    self.organisation, habilitation_request
+                )
             )
         )
 

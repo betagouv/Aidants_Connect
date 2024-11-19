@@ -25,7 +25,7 @@ from django.forms import (
 )
 from django.forms.utils import ErrorList, pretty_name
 from django.utils.datastructures import MultiValueDict
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 from django.utils.translation import ngettext
 
 from dsfr.forms import DsfrBaseForm
@@ -35,6 +35,11 @@ from phonenumbers.phonenumber import PhoneNumber
 
 from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Formation
+
+
+class AsHiddenMixin:
+    def as_hidden(self):
+        return format_html_join("\n", "{}", ((bf.as_hidden(),) for bf in self))
 
 
 class PatchedErrorList(ErrorList):

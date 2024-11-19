@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core import mail
 from django.db import models
-from django.test import override_settings, tag
+from django.test import tag
 from django.urls import reverse
 
 from faker.proxy import Faker
@@ -31,7 +31,6 @@ DefaultGetter = Callable[[models.Model | Mapping, str], Any]
 CustomGetter = Callable[[models.Model | Mapping, str, DefaultGetter], Any]
 
 
-@override_settings(DEBUG=True)
 @tag("functional")
 class FunctionalTestCase(StaticLiveServerTestCase):
     js = True

@@ -26,9 +26,10 @@ from django.utils.translation import gettext as _
 from dsfr.forms import DsfrBaseForm
 
 from aidants_connect.utils import strtobool
-from aidants_connect_common.constants import MessageStakeholders, RequestOriginConstants
+from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
+    AsHiddenMixin,
     CleanEmailMixin,
     ConseillerNumerique,
     PatchedErrorList,
@@ -42,7 +43,6 @@ from aidants_connect_habilitation.models import (
     Manager,
     OrganisationRequest,
     PersonWithResponsibilities,
-    RequestMessage,
 )
 from aidants_connect_web.models import OrganisationType
 
@@ -748,7 +748,7 @@ class PersonnelForm:
     save.alters_data = True
 
 
-class ValidationForm(DsfrBaseForm):
+class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     template_name = "aidants_connect_habilitation/forms/validation.html"  # noqa: E501
     cgu = BooleanField(
         required=True,
@@ -777,9 +777,6 @@ class ValidationForm(DsfrBaseForm):
         "Aidants Connect. Le ou la référente Aidants Connect ainsi que les aidants "
         "à habiliter ne sont pas des élus.",
     )
-    message_content = CharField(
-        label="Votre message", required=False, widget=Textarea(attrs={"rows": 4})
-    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -790,12 +787,6 @@ class ValidationForm(DsfrBaseForm):
         self, organisation: OrganisationRequest, commit=True
     ) -> OrganisationRequest:
         organisation.prepare_request_for_ac_validation(self.cleaned_data)
-        if self.cleaned_data["message_content"] != "":
-            RequestMessage.objects.create(
-                organisation=organisation,
-                sender=MessageStakeholders.ISSUER.name,
-                content=self.cleaned_data["message_content"],
-            )
         return organisation
 
     save.alters_data = True
