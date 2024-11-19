@@ -46,6 +46,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         firefox_options.headless = settings.HEADLESS_FUNCTIONAL_TESTS
         if settings.HEADLESS_FUNCTIONAL_TESTS:
             firefox_options.add_argument("--headless")
+        firefox_options.log.level = "trace"
 
         # Allow pasting in console
         firefox_options.set_preference("devtools.selfxss.count", 1_000_000)
@@ -53,7 +54,6 @@ class FunctionalTestCase(StaticLiveServerTestCase):
 
         cls.selenium = WebDriver(options=firefox_options)
         cls.selenium.implicitly_wait(10)
-        cls.selenium.maximize_window()
         cls.wait = WebDriverWait(cls.selenium, 10)
 
         # In some rare cases, the first connection to the Django LiveServer
@@ -229,8 +229,6 @@ class FunctionalTestCase(StaticLiveServerTestCase):
                 "arguments[0].setAttribute('open', 'open')", elt
             )
             yield
-        except Exception:
-            raise
         finally:
             # If we moved away from the page (for instance when POSTing a form)
             # the element is stale so we ignore this exception
@@ -238,6 +236,17 @@ class FunctionalTestCase(StaticLiveServerTestCase):
                 self.selenium.execute_script(
                     "arguments[0].removeAttribute('open')", elt
                 )
+
+    @contextlib.contextmanager
+    def implicitely_wait(self, time_to_wait: float, driver=None):
+        """time_to_wait: time to wait in seconds"""
+        driver = driver or self.selenium
+        implicit_wait = driver.timeouts.implicit_wait
+        driver.implicitly_wait(0.1)
+        try:
+            yield
+        finally:
+            driver.implicitly_wait(implicit_wait)
 
     def path_matches(
         self, route_name: str, *, kwargs: dict = None, query_params: dict = None
@@ -256,16 +265,12 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         return _predicate
 
     def assertElementNotFound(self, by=By.ID, value: Optional[str] = None):
-        implicit_wait = self.selenium.timeouts.implicit_wait
-        self.selenium.implicitly_wait(0.1)
         self.wait.until(self.document_loaded())
-        try:
+        with self.implicitely_wait(0.1):
             with self.assertRaises(
                 NoSuchElementException, msg="Found element expected to be absent"
             ):
                 self.selenium.find_element(by=by, value=value)
-        finally:
-            self.selenium.implicitly_wait(implicit_wait)
 
     def assertNormalizedStringEqual(self, first, second):
         """

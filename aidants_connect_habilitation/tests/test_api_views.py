@@ -47,9 +47,13 @@ class HabilitationRequestsTests(TestCase):
                 ),
             )
             self.assertEqual(response.status_code, 200)
-            self.assertTemplateUsed(
-                response,
-                "aidants_connect_habilitation/common/_habilitation-request-profile-card.html",  # noqa: E501
+            # self.assertTemplateUsed is not working with django-template-partials
+            self.assertEqual(
+                set(response.template_name),
+                {
+                    "habilitation/generic-habilitation-request-profile-card.html"
+                    "#habilitation-profile-card"
+                },
             )
 
     def test_post(self):

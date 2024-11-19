@@ -6,11 +6,7 @@ from django.urls import reverse
 
 from faker import Faker
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.support.expected_conditions import (
-    url_matches,
-    visibility_of_element_located,
-)
+from selenium.webdriver.support import expected_conditions
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.forms import (
@@ -23,7 +19,6 @@ from aidants_connect_web.tests.factories import (
     HabilitationRequestFactory,
     OrganisationFactory,
 )
-from aidants_connect_web.views.espace_responsable import NewHabilitationRequest
 
 
 @tag("functional")
@@ -79,13 +74,11 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         )
 
     def test_aidants_actions(self):
-        root_path = reverse("espace_responsable_organisation")
-
-        self.open_live_url(root_path)
+        self.open_live_url(reverse("espace_responsable_organisation"))
 
         # Login
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(url_matches(f"^.+{root_path}$"))
+        self.wait.until(self.path_matches("espace_responsable_organisation"))
 
         # Can't add or validate card for inactive aidant with card; can remove card
         self.open_live_url(
@@ -485,9 +478,7 @@ class RestrictDemarchesTests(FunctionalTestCase):
 
 
 @tag("functional")
-class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
-    js = False
-
+class NewHabilitationRequestTests(FunctionalTestCase):
     def setUp(self):
         self.organisation = OrganisationFactory(allowed_demarches=[], with_aidants=True)
         self.aidant_responsable: Aidant = AidantFactory(
@@ -516,7 +507,13 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
 
         self.selenium.find_element(By.ID, "partial-submit").click()
-        self.wait.until(self.document_loaded())
+
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (By.CLASS_NAME, "errorlist")
+                )
+            )
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
         expected = (
@@ -524,8 +521,6 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             # the profile form
             len(self._all_visible_fields())
             - len(self._course_type_form.visible_fields())
-            if self.js
-            else len(self._all_visible_fields())
         )
         self.assertEqual(expected, len(errors))
 
@@ -539,12 +534,17 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
             self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
 
-        self.selenium.find_element(
-            By.ID,
-            self._left_form["email"].id_for_label,
-        ).send_keys("test@test.test")
+        self.selenium.find_element(By.CSS_SELECTOR, '[id$="email"]').send_keys(
+            "test@test.test"
+        )
         self.selenium.find_element(By.ID, "partial-submit").click()
-        self.wait.until(self.document_loaded())
+
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (By.CLASS_NAME, "errorlist")
+                )
+            )
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
         expected = (
@@ -553,8 +553,6 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             len(self._all_visible_fields())
             - len(self._course_type_form.visible_fields())
             - 1
-            if self.js
-            else len(self._all_visible_fields()) - 1
         )
         self.assertEqual(expected, len(errors))
 
@@ -583,10 +581,9 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
 
         # First form is not empty but not filled either
         self.open_live_url(self.path)
-        self.selenium.find_element(
-            By.ID,
-            self._left_form["email"].id_for_label,
-        ).send_keys("test@test.test")
+        self.selenium.find_element(By.CSS_SELECTOR, '[id$="email"]').send_keys(
+            "test@test.test"
+        )
 
         # unrequire fields to be able to submit
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
@@ -663,7 +660,7 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
                 By.CSS_SELECTOR, "#added-form-0 .user-informations"
             ).text,
         )
-        # Asserting not new habilitation was created
+        # Asserting no new habilitation was created
         self.assertFalse(HabilitationRequest.objects.count())
         # Now submits the form
         self.selenium.find_element(By.ID, "form-submit").click()
@@ -779,38 +776,34 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
                 self.selenium.find_element(By.ID, "partial-submit").text,
             )
 
-        self.js_click(By.ID, "edit-button-1")
-        self.wait.until(self._edition_ready(idx_to_modify, len(reqs)))
-        self.assertEqual(
-            "Valider les modifications",
-            self.selenium.find_element(By.ID, "partial-submit").text,
-        )
+        self._try_open_modal(By.ID, "edit-button-1")
 
         # Submit checks
         self.selenium.find_element(
-            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+            By.CSS_SELECTOR, '[data-test="edited-form"] input[id$="email"]'
         ).clear()
-        self.selenium.find_element(By.ID, "partial-submit").click()
 
-        self.assertEqual(
-            "Valider les modifications",
-            self.selenium.find_element(By.ID, "partial-submit").text,
-        )
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+        ).click()
 
         self.assertNormalizedStringEqual(
             "Ce champ est obligatoire.",
             self.selenium.find_element(
-                By.CSS_SELECTOR, '#empty-form [id$="email-desc-error"] .errorlist'
+                By.CSS_SELECTOR,
+                '[data-test="edited-form"] [id$="email-desc-error"] .errorlist',
             ).text,
         )
 
         # Test conflict with another profile in this request
         elt = self.selenium.find_element(
-            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+            By.CSS_SELECTOR, '[data-test="edited-form"] input[id$="email"]'
         )
         elt.clear()
         elt.send_keys(reqs[idx_to_modify + 1].email)
-        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+        ).click()
         self.assertNormalizedStringEqual(
             "Corrigez les données en double dans email et "
             "organisation qui doit contenir des valeurs uniques.",
@@ -819,30 +812,41 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
 
         # Test conflict with existing request
         elt = self.selenium.find_element(
-            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+            By.CSS_SELECTOR, '[data-test="edited-form"] input[id$="email"]'
         )
         elt.clear()
         elt.send_keys(existing_req.email)
-        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+        ).click()
         self.assertNormalizedStringEqual(
             "Une demande d’habilitation est déjà en cours pour "
             "l’adresse e-mail. Vous n’avez pas besoin de déposer une nouvelle "
             "demande pour cette adresse-ci.",
             self.selenium.find_element(
-                By.CSS_SELECTOR, '#empty-form [id$="email-desc-error"] .errorlist'
+                By.CSS_SELECTOR,
+                '[data-test="edited-form"] [id$="email-desc-error"] .errorlist',
             ).text,
         )
 
-        while (new_email := Faker().email()) == reqs[idx_to_modify].email:
-            # Select a different email
-            pass
+        for _ in range(10):
+            if (
+                new_email := Faker().email()
+            ) not in HabilitationRequest.objects.all().values_list("email", flat=True):
+                break
+        else:
+            self.fail("Coundl't generate a new email")
 
         elt = self.selenium.find_element(
-            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+            By.CSS_SELECTOR, '[data-test="edited-form"] input[id$="email"]'
         )
         elt.clear()
         elt.send_keys(new_email)
 
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+        ).click()
+        self.wait.until(self._modal_closed())
         self.selenium.find_element(By.ID, "form-submit").click()
         self.wait.until(self.path_matches("espace_responsable_demandes"))
 
@@ -874,10 +878,33 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             },
         )
 
-    @property
-    def _left_form(self):
-        self.assertEqual(1, len(self._habilitation_requests_form.extra_forms))
-        return self._habilitation_requests_form.extra_forms[0]
+    def test_prevents_form_erase_when_editing(self):
+        self.open_live_url(self.path)
+        self.login_aidant(self.aidant_responsable)
+        req1: HabilitationRequest = HabilitationRequestFactory.build(
+            organisation=self.organisation
+        )
+        self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+        ).send_keys(req1.email)
+
+        self._try_open_modal(By.ID, "edit-button-0")
+
+        actual = self.selenium.execute_script(
+            "return arguments[0].value",
+            self.selenium.find_element(
+                By.CSS_SELECTOR, '#empty-form input[id$="email"]'
+            ),
+        )
+
+        self.assertEqual(
+            req1.email,
+            actual,
+            "Editing form is not correctly filled. "
+            f"Expected email field to be {req1.email}, was {actual}",
+        )
 
     @property
     def _habilitation_requests_form(self) -> HabilitationRequestCreationFormSet:
@@ -904,59 +931,55 @@ class NewHabilitationRequestTestsNoJS(FunctionalTestCase):
             else default_getter(data, field)
         )
 
-    def _has_n_cards(self, cards_num):
-        def _predicate(driver: WebDriver) -> bool:
-            return (
-                len(driver.find_elements(By.CLASS_NAME, "request-card-details"))
-                == cards_num
+    def _modal_closed(self):
+        def modal_has_no_open_attr(driver):
+            try:
+                with self.implicitely_wait(0.1, driver):
+                    element_attribute = driver.find_element(
+                        By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"
+                    ).get_attribute("open")
+                return element_attribute is None
+            except:  # noqa: E722
+                return False
+
+        return expected_conditions.all_of(
+            expected_conditions.invisibility_of_element_located(
+                (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+            ),
+            modal_has_no_open_attr,
+        )
+
+    def _try_close_modal(self):
+        self.wait.until(self.document_loaded())
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+                ),
+                "Modal didn't seem to have been initialized",
             )
 
-        return _predicate
+            self.js_click(By.TAG_NAME, "body")
 
-    def _edition_ready(self, idx_to_modify, formset_length):
-        return self.path_matches(
-            "espace_responsable_aidant_new",
-            query_params={NewHabilitationRequest.edit_key: idx_to_modify},
-        )
+            self.wait.until(self._modal_closed(), "Modal seems to be still visible")
 
+    def _try_open_modal(self, by, value: str):
+        self._try_close_modal()
+        self.js_click(by, value)
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.text_to_be_present_in_element_attribute(
+                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"), "open", "true"
+                ),
+                "Modal was not opened",
+            )
 
-@tag("functional")
-class NewHabilitationRequestTestsWithJS(NewHabilitationRequestTestsNoJS):
-    """Same tests than NewHabilitationRequestTestsNoJS but with JS enabled"""
-
-    js = True
-
-    def test_prevents_form_erase_when_editing(self):
-        self.open_live_url(self.path)
-        self.login_aidant(self.aidant_responsable)
-        req1: HabilitationRequest = HabilitationRequestFactory.build(
-            organisation=self.organisation
-        )
-        self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
-        self.selenium.find_element(By.ID, "partial-submit").click()
-        self.wait.until(self._has_n_cards(1))
-        self.selenium.find_element(
-            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
-        ).send_keys(req1.email)
-        self.js_click(By.ID, "edit-button-0")
-
-        self.wait.until(
-            visibility_of_element_located((By.ID, "confirmation-modal-title"))
-        )
-
-        actual = self.selenium.execute_script(
-            "return arguments[0].value",
-            self.selenium.find_element(
-                By.CSS_SELECTOR, '#empty-form input[id$="email"]'
-            ),
-        )
-
-        self.assertEqual(
-            req1.email,
-            actual,
-            "Editing form is not correctly filled. "
-            f"Expected email field to be {req1.email}, was {actual}",
-        )
-
-    def _edition_ready(self, idx_to_modify, formset_length):
-        return self._has_n_cards(formset_length - 1)
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (
+                        By.CSS_SELECTOR,
+                        '#modal-dest #profile-edit-modal input[id$="-email"]',
+                    )
+                ),
+                "Modal seems opened but form seems not visible",
+            )

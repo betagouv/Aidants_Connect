@@ -1,6 +1,6 @@
 {% load dsfr_tags %}
 
-{% if non_form_errors %}{{ non_form_errors }}{% endif %} 
+{% if non_form_errors %}{{ non_form_errors }}{% endif %}
 {% for field in form %}
   {% if field.is_hidden %}{{ field.as_hidden }}{% else %}{% dsfr_form_field field %}{% endif %}
   {% if field.name == "email" %}

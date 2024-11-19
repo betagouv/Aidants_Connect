@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 from django.conf import settings
@@ -17,6 +18,7 @@ from aidants_connect_common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_common.forms import PatchedModelForm
+from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 from aidants_connect_common.utils import issuer_exists_send_reminder_email
 from aidants_connect_common.views import (
     FormationRegistrationView as CommonFormationRegistrationView,
@@ -164,13 +166,14 @@ class AdressAutocompleteJSMixin:
 """Real views"""
 
 
-class ProfileCardAidantRequestPresenter:
+class ProfileCardAidantRequestPresenter(GenericHabilitationRequestPresenter):
+
     def __init__(self, req: AidantRequest):
         self.req = req
 
     @property
-    def obj(self):
-        return self.req
+    def pk(self):
+        return self.req.pk
 
     @property
     def edit_endpoint(self):
@@ -184,21 +187,25 @@ class ProfileCardAidantRequestPresenter:
         )
 
     @property
-    def user(self):
-        return {
-            "full_name": self.req.get_full_name(),
-            "email": self.req.email,
-            "details_fields": [
-                # email profession conseiller_numerique organisation
-                {"label": "Email", "value": self.req.email},
-                {"label": "Profession", "value": self.req.profession},
-                {
-                    "label": "Conseiller numérique",
-                    "value": yesno(self.req.conseiller_numerique, "Oui,Non"),
-                },
-                {"label": "Organisation", "value": self.req.organisation},
-            ],
-        }
+    def full_name(self) -> str:
+        return self.req.get_full_name()
+
+    @property
+    def email(self) -> str:
+        return self.req.email
+
+    @property
+    def details_fields(self) -> list[dict[str, Any]]:
+        return [
+            # email profession conseiller_numerique organisation
+            {"label": "Email", "value": self.req.email},
+            {"label": "Profession", "value": self.req.profession},
+            {
+                "label": "Conseiller numérique",
+                "value": yesno(self.req.conseiller_numerique, "Oui,Non"),
+            },
+            {"label": "Organisation", "value": self.req.organisation},
+        ]
 
 
 class NewHabilitationView(RedirectView):

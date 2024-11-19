@@ -137,6 +137,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
     "django_extensions",
+    "template_partials",
     "importmap",
     "pgtrigger",
     "import_export",

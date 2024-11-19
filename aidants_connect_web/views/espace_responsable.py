@@ -3,15 +3,17 @@ import logging
 from gettext import ngettext as _
 from io import BytesIO
 from itertools import chain
-from urllib.parse import urlencode as ue
+from typing import Any
 
 from django.contrib import messages as django_messages
 from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
+from django.template.defaultfilters import yesno
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
+from django.utils.html import format_html_join
 from django.utils.translation import ngettext
 from django.views.generic import DeleteView, DetailView, FormView, TemplateView
 
@@ -20,6 +22,7 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import RequestStatusConstants
+from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 from aidants_connect_common.views import (
     FormationRegistrationView as CommonFormationRegistrationView,
 )
@@ -858,27 +861,73 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
         return super().get_context_data(**kwargs)
 
 
+class HabilitationRequestItemPresenter(GenericHabilitationRequestPresenter):
+    def __init__(self, form, idx):
+        super().__init__()
+        self._form = form
+        self.idx = idx
+
+    @property
+    def pk(self):
+        return self.idx
+
+    @property
+    def edit_endpoint(self):
+        return reverse(
+            "api_espace_responsable_aidant_new_edit", kwargs={"idx": self.idx}
+        )
+
+    @property
+    def full_name(self) -> str:
+        return f'{self._form["first_name"].value()} {self._form["last_name"].value()}'
+
+    @property
+    def email(self) -> str:
+        return str(self._form["email"].value())
+
+    @property
+    def details_fields(self) -> list[dict[str, Any]]:
+        return [
+            # email profession conseiller_numerique organisation
+            {"label": "Email", "value": self.email},
+            {"label": "Profession", "value": self._form["profession"].value()},
+            {
+                "label": "Conseiller numérique",
+                "value": yesno(
+                    strtobool(self._form["conseiller_numerique"].value()), "Oui,Non"
+                ),
+            },
+            {
+                "label": "Organisation",
+                "value": getattr(
+                    getattr(self._form, "cleaned_data", {}).get("organisation"),
+                    "name",
+                    "",
+                ),
+            },
+        ]
+
+    @property
+    def form(self) -> str:
+        return format_html_join(
+            "\n", "{}", ((field.as_hidden(),) for field in self._form)
+        )
+
+    @property
+    def details_id(self):
+        return f"added-form-{self.idx}"
+
+
 @method_decorator(activity_required, name="get")
 @responsable_logged_required
 class NewHabilitationRequest(FormView):
     template_name = "aidants_connect_web/espace_responsable/new-habilitation-request.html"  # noqa: E501
     form_class = NewHabilitationRequestForm
     success_url = reverse_lazy("espace_responsable_demandes")
-    partial_key = "partial"
-    edit_key = "edit"
 
     def setup(self, request: HttpRequest, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.partial = strtobool(request.GET.get(self.partial_key), False)
-        self.edit_form = self.get_edit_form(request, *args, **kwargs)
         self.referent: Aidant = request.user
-
-    def get_edit_form(self, request: HttpRequest, *args, **kwargs):
-        return (
-            int(request.GET[self.edit_key])
-            if request.GET.get(self.edit_key, "").isdecimal()
-            else None
-        )
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -886,40 +935,32 @@ class NewHabilitationRequest(FormView):
             {
                 "form_kwargs": {
                     "habilitation_requests": {
-                        "edit_form": self.edit_form,
-                        "form_kwargs": {"referent": self.referent},
+                        "form_kwargs": {"referent": self.referent}
                     }
-                },
+                }
             }
         )
-        if "data" in kwargs:
-            # make data mutable for form
-            kwargs["data"] = kwargs["data"].copy()
 
         return kwargs
 
     def get_context_data(self, **kwargs):
-        base_path = reverse("espace_responsable_aidant_new")
-        partial_qp = {self.partial_key: True}
-        if self.edit_form:
-            partial_qp[self.edit_key] = self.edit_form
-
-        kwargs.update(
+        context = super().get_context_data(**kwargs)
+        context.update(
             {
-                "edit_form": self.edit_form,
-                "partial_validate_path": f"{base_path}?{ue(partial_qp)}",
-                "edit_profile_path": f"{base_path}?{ue({self.edit_key: ''})}",
+                "objects": (
+                    # Using a generator for efficiecy
+                    HabilitationRequestItemPresenter(form, idx)
+                    for idx, form in enumerate(
+                        context["form"]["habilitation_requests"].forms
+                    )
+                    if form.is_bound and form.is_valid()
+                ),
             }
         )
-        return super().get_context_data(**kwargs)
+
+        return context
 
     def form_valid(self, form):
-        if self.partial:
-            form["habilitation_requests"].add_extra()
-
-        if self.partial or self.edit_form is not None:
-            return self.render_to_response(self.get_context_data(form=form))
-
         result: list[HabilitationRequest] = form.save()["habilitation_requests"]
         django_messages.success(
             self.request,
@@ -931,50 +972,6 @@ class NewHabilitationRequest(FormView):
             % {"person": result[0].get_full_name(), "len": len(result)},
         )
         return super().form_valid(form)
-
-
-@responsable_logged_required
-class NewHabilitationRequestJs(NewHabilitationRequest):
-    template_name = "aidants_connect_web/espace_responsable/_new-habilitation-request-left-form.html"  # noqa: E501
-    force_partial = True
-
-    def get_edit_form(self, request: HttpRequest, *args, **kwargs):
-        return kwargs.get("form_idx")
-
-    def _allowed_methods(self):
-        return ["POST, PUT"]
-
-    def get(self, request, *args, **kwargs):
-        return self.http_method_not_allowed(request, *args, **kwargs)
-
-    def get_partial_form(self, form):
-        return (
-            form["habilitation_requests"].extra_forms[-1]
-            if self.edit_form is None
-            else form["habilitation_requests"].forms[self.edit_form]
-        )
-
-    def form_invalid(self, form):
-        self.template_name = "aidants_connect_web/espace_responsable/_new-habilitation-request-left-form.html"  # noqa: E501
-        return self.render_to_response(
-            self.get_context_data(
-                form=self.get_partial_form(form),
-                non_form_errors=form["habilitation_requests"].non_form_errors(),
-            ),
-            status=200,
-        )
-
-    def form_valid(self, form):
-        if self.edit_form is None:
-            self.template_name = "aidants_connect_web/espace_responsable/_new-habilitation-request-profile-card.html"  # noqa: E501
-
-        form = self.get_partial_form(form)
-        return self.render_to_response(
-            self.get_context_data(
-                form=form, habilitation_request=form.profile_card_context
-            ),
-            status=201,
-        )
 
 
 @responsable_logged_with_activity_required

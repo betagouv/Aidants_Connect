@@ -28,6 +28,7 @@ django-pgtrigger = "~=4.11.0"
 django-phonenumber-field = {version = "~=8.0", extras = ["phonenumberslite"]}
 django-referrer-policy = "==1.0"
 django-reverse-admin = "==2.9.6"
+django-template-partials = "==24.4"
 gunicorn = "==22.0.0"
 markdown = "~=3.5"
 metabasepy = "==1.12.0"

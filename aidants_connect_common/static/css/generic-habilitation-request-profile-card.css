@@ -7,7 +7,7 @@ details.request-card-details * {
   box-sizing: border-box;
 }
 
-details.request-card-details summary {
+details.request-card-details[open] summary {
   flex-wrap: nowrap;
   height: 100%;
   min-height: 4rem;

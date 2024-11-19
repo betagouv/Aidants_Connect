@@ -22,6 +22,10 @@ urlpatterns = [
         "api/habilitation/",
         include("aidants_connect_habilitation.api.urls"),
     ),
+    path(
+        "api/web/",
+        include("aidants_connect_web.api.urls"),
+    ),
 ]
 
 if "test" in sys.argv:
