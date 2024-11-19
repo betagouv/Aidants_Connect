@@ -1,3 +1,6 @@
-.active-mandat-revoked-autorisation, #mandats-revoques {
+.active-mandat-revoked-autorisation {
   color: var(--text-mention-grey);
+}
+.usager-action {
+  width: 250px;
 }

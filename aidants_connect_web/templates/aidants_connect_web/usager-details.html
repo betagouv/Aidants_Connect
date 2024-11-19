@@ -100,7 +100,7 @@
                       <tr>
                         <th scope="col">Thématique administrative</th>
                         <th scope="col">Révocation</th>
-                        <th scope="col">Actions</th>
+                        <th scope="col" class="usager-action">Actions</th>
                       </tr>
                       </thead>
                       <tbody>
@@ -118,7 +118,7 @@
                               <span class="sr-only">Cette autorisation nʼa pas été révoquée.</span>
                             {% endif %}
                           </td>
-                          <td>
+                          <td class="usager-action">
                             {% if aidant.can_create_mandats and not autorisation.revocation_date %}
                               <a
                                 id="mandat-{{ mandat.pk }}-auth-revocation-{{ autorisation.demarche }}"
