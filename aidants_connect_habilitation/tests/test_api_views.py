@@ -25,6 +25,14 @@ class HabilitationRequestsTests(TestCase):
         cls.aidant_req1: AidantRequest = AidantRequestFactory(organisation=cls.org)
         cls.aidant_req2: AidantRequest = AidantRequestFactory(organisation=cls.org)
 
+        cls.unmodifiable_orgs = [
+            OrganisationRequestFactory(status=status, post__aidants_count=1)
+            for status in (
+                set(RequestStatusConstants)
+                - set(RequestStatusConstants.aidant_registrable)
+            )
+        ]
+
     def test_triggers_the_right_view(self):
         found = resolve(self._get_url(self.aidant_req1))
         self.assertEqual(found.func.view_class, PersonnelRequestEditView)
@@ -55,6 +63,25 @@ class HabilitationRequestsTests(TestCase):
                     "#habilitation-profile-card"
                 },
             )
+
+    def test_404_on_aidant_not_registrable(self):
+        with self.subTest("GET"):
+            for organisation in self.unmodifiable_orgs:
+                aidant = organisation.aidant_requests.first()
+                with self.subTest(f"{organisation.status}"):
+                    response = self.client.get(self._get_url(aidant))
+                    self.assertEqual(404, response.status_code)
+
+        with self.subTest("POST"):
+            for organisation in self.unmodifiable_orgs:
+                aidant = organisation.aidant_requests.first()
+                new_email = self._get_new_valid_email(aidant)
+                with self.subTest(f"{organisation.status}"):
+                    response = self.client.get(
+                        self._get_url(aidant),
+                        data=self._get_valid_data(self.aidant_req1, email=new_email),
+                    )
+                    self.assertEqual(404, response.status_code)
 
     def test_post(self):
         with self.subTest("with errors"):

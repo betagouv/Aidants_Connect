@@ -28,10 +28,13 @@ class ProfileEditModal extends BaseController {
         display: {type: Boolean, default: false},
     }
 
+    get modal () {
+        return dsfr(this.element).modal
+    }
+
     initialize () {
         /** @type {{String: ProfileEditCard}} */
         this.profileEditCards = {}
-        this.timeoutId = undefined;
     }
 
     stateValueChanged (state) {
@@ -42,16 +45,10 @@ class ProfileEditModal extends BaseController {
     }
 
     displayValueChanged (display) {
-        try {  // Prevent stimulus from crashing when DSFR is not ready yet
-            if (display) {
-                // Prevent the modal content from being erased in the future
-                // if we're about to display it
-                clearTimeout(this.timeoutId);
-                dsfr(this.element).modal.disclose();
-            } else {
-                dsfr(this.element).modal.conceal();
-            }
-        } catch {}
+        if (this.stateValue === MODAL_STATES.NOT_READY) {
+            return
+        }
+        display ? this.modal.disclose() : this.modal.conceal()
     }
 
     /**@param {ProfileEditCard} outlet  */
@@ -148,11 +145,8 @@ class ProfileEditModal extends BaseController {
     onConceal (evt) {
         // Reflect changes produced by clicking outside the dialog
         this.displayValue = false
-        this.timeoutId = setTimeout(() => {
-            // Modify display after modal has disapeared
-            this.contentTarget.innerHTML = ""
-            this.stateValue = MODAL_STATES.IDLE
-        }, 300)
+        this.contentTarget.innerHTML = ""
+        this.stateValue = MODAL_STATES.IDLE
     }
 
     // region elements visibility
@@ -223,11 +217,16 @@ class ProfileEditCard extends Controller {
 
         this.profileEditModalOutlet.createAndShow({
             id: this.idValue,
-            content: fetch(`${this.enpointValue}${urlParams}`).then(async response => {
-                if (!response.ok) {
-                    throw response.statusText
+            content: new Promise(async (resolve, reject) => {
+                const response = await fetch(`${this.enpointValue}${urlParams}`);
+                if (response.redirected) {
+                    window.location.replace(response.url)
+                    return // Don't resolve to prevent modal from opening
                 }
-                return await response.text();
+                if (!response.ok) {
+                    return reject(response.statusText)
+                }
+                resolve(await response.text());
             })
         });
     }
@@ -271,6 +270,43 @@ class ProfileEditCard extends Controller {
 
 aidantsConnectApplicationReady.then(/** @param {Stimulus.Application} app */ app => {
     document.querySelector("main #modal-dest").insertAdjacentHTML("beforeend", document.querySelector("template#profile-edit-modal-tpl").innerHTML)
-    app.register("profile-edit-modal", ProfileEditModal)
-    app.register("profile-edit-card", ProfileEditCard)
+
+    // Wait for DSFR to init the modale
+    function dsfrPoll () {
+        let resolve = undefined
+        let reject = undefined
+        let tries = 0
+
+        const promise = new Promise((res, rej) => {
+            resolve = res;
+            reject = rej;
+        });
+
+        const interval = setInterval(() => {
+            if (tries >= 10) {
+                clearInterval(interval)
+                return reject()
+            }
+
+            try {
+                const el = document.querySelector("main #modal-dest #profile-edit-modal")
+                if (typeof dsfr(el).modal.conceal  === "function") {
+                    clearInterval(interval)
+                    return resolve()
+                }
+            } catch {
+                /* Let it poll */
+            } finally {
+                tries++
+            }
+        }, 50)
+
+        return promise
+    }
+
+    dsfrPoll().then(() => {
+        app.register("profile-edit-modal", ProfileEditModal)
+        app.register("profile-edit-card", ProfileEditCard)
+        document.dsfrReady = true;
+    })
 })

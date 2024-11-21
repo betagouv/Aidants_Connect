@@ -9,6 +9,12 @@
 	See https://github.com/carltongibson/django-template-partials
 {% endcomment %}
 
+{% partialdef summary-second-line %}
+  {% if object.email %}
+    <span class="hide-header fr-m-0 fr-text--overflow-hidden">{{ object.email }}</span>
+  {% endif %}
+{% endpartialdef %}
+
 {% partialdef habilitation-profile-card %}
   {# Prevent messing with the absolute positionning of the design #}
   {# See https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent #}
@@ -36,12 +42,10 @@
       >
         {{ object.form|safe }}
         <img src="{% static "images/avatar.svg" %}" width="36" height="36" alt="" />
-        <span class="fr-grid-row--center fr-text--overflow-hidden spacer">
-        <p class="fr-m-0 fr-text--bold">{{ object.full_name }}</p>
-          {% if object.email %}
-            <p class="details-summary-header fr-m-0 fr-text--overflow-hidden">{{ object.email }}</p>
-          {% endif %}
-      </span>
+        <span class="header-infos spacer">
+          <span class="fr-m-0 fr-text--bold">{{ object.full_name }}</span>
+          {% include object.summary_second_line_tpl %}
+        </span>
         <span
           type="button"
           class="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-arrow-up-s-line"
@@ -57,19 +61,21 @@
             </section>
           {% endfor %}
         </section>
-        <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline fr-mb-n4v">
-          <li>
-            {% block action_buttons %}
-              <button
-                id="edit-button-{{ object.pk }}"
-                class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
-                data-action="profile-edit-card#onEdit"
-              >
-                Éditer
-              </button>
-            {% endblock action_buttons %}
-          </li>
-        </ul>
+        {% if object.edit_href or object.edit_endpoint %}
+          <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline fr-mb-n4v">
+            <li>
+              {% if object.edit_endpoint %}
+                <button
+                  id="edit-button-{{ object.pk }}"
+                  class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
+                  data-action="profile-edit-card#onEdit"
+                >
+                  Éditer
+                </button>
+              {% endif %}
+            </li>
+          </ul>
+        {% endif %}
       </div>
     </details>
   </div>

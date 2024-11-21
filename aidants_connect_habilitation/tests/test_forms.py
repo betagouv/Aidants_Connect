@@ -5,7 +5,6 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 
 from aidants_connect_common.constants import (
-    MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
@@ -431,19 +430,15 @@ class TestValidationFormForm(TestCase):
         form = ValidationForm(
             data={name: True for name in TestValidationFormForm.names_attr}
         )
-        form.data["message_content"] = "Bonjour"
         form.is_valid()
 
         orga = form.save(organisation=orga_request)
         self.assertEqual(
             orga.status, RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
-        [
-            self.assertTrue(getattr(orga, name))
-            for name in TestValidationFormForm.names_attr
-        ]
-        self.assertEqual(orga.messages.all()[0].content, "Bonjour")
-        self.assertEqual(orga.messages.all()[0].sender, MessageStakeholders.ISSUER.name)
+        for name in TestValidationFormForm.names_attr:
+            with self.subTest(f"{name} field validated"):
+                self.assertTrue(getattr(orga, name))
 
 
 class TestManagerForm(TestCase):

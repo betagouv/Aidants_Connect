@@ -3,8 +3,19 @@ details.request-card-details {
   position: relative;
 }
 
+details.request-card-details summary {
+  flex-wrap: nowrap;
+}
+
 details.request-card-details * {
   box-sizing: border-box;
+}
+
+details.request-card-details .header-infos {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 details.request-card-details[open] summary {
@@ -15,7 +26,7 @@ details.request-card-details[open] summary {
   z-index: calc(var(--ground) + 510);
 }
 
-details.request-card-details[open] .details-summary-header {
+details.request-card-details[open] .hide-header {
   display: none;
 }
 

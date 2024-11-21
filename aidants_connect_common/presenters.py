@@ -24,7 +24,7 @@ class GenericHabilitationRequestPresenter(ABC):
 
     @property
     @abstractmethod
-    def edit_endpoint(self) -> str:
+    def edit_endpoint(self) -> str | None:
         pass
 
     @property
@@ -49,3 +49,7 @@ class GenericHabilitationRequestPresenter(ABC):
         Use this with formsets.
         """
         return ""
+
+    @property
+    def summary_second_line_tpl(self):
+        return "habilitation/generic-habilitation-request-profile-card.html#summary-second-line"  # noqa: E501

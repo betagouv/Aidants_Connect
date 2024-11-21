@@ -1,0 +1,284 @@
+{% extends 'layouts/main.html' %}
+{% load ac_common dsfr_tags form_extras partials static %}
+
+
+{% comment %}
+  |--------------------------------------------------------------------------------------------------------------------|
+  |                                                      Partials                                                      |
+  |--------------------------------------------------------------------------------------------------------------------|
+{% endcomment %}
+{% partialdef summary-second-line %}
+  {% if object.habilitation_request.status in object.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+    {% if object.habilitation_request.formations.exists %}
+      {% dsfr_badge label="Inscrit" extra_classes="fr-badge--success fr-badge--sm hide-header" %}
+    {% else %}
+      {% if object.organisation.manager.aidant.last_login %}
+        {% url "espace_responsable_organisation" as formation_url %}
+      {% else %}
+        {% url 'habilitation_new_aidant_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=object.pk as formation_url %}
+      {% endif %}
+      <a href="{{ formation_url }}" class="fr-link hide-header">Inscrire en formation</a>
+    {% endif %}
+  {% elif object.email %}
+    {% include "habilitation/generic-habilitation-request-profile-card.html#summary-second-line" %}
+  {% endif %}
+{% endpartialdef %}
+{% comment %}
+  |--------------------------------------------------------------------------------------------------------------------|
+{% endcomment %}
+
+{% block title %}
+  Demande d'habilitation pour {{ organisation.name }} - Aidants Connect
+{% endblock title %}
+
+{% block content %}
+  <div class="fr-container" data-controller="profile-edit-card">
+    {% if organisation.status == organisation.Status.NEW %}
+      <h1>Récapitulatif de la demande</h1>
+    {% else %}
+      <h1>Demande n° {{ organisation.data_pass_id }}</h1>
+      <div class="fr-alert fr-alert--warning fr-mb-6w">
+        <h3 class="fr-alert__title fr-mb-0">Statut : {{ organisation.status_enum.label }}</h3>
+        {% if organisation.status_enum.description %}
+          <section>{{ organisation.status_enum.description }}</section>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% comment %}
+      |----------------------------------------------------------------------------------------------------------------|
+    	|                                           Informations organisation                                            |
+      |----------------------------------------------------------------------------------------------------------------|
+    {% endcomment %}
+    <h2>Information générales</h2>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">
+      <div class="fr-col-12 fr-col-md-4">
+        <h3 class="fr-h5 fr-mb-0">Personne effectuant la demande</h3>
+      </div>
+      <div class="fr-col-12 fr-col-md-8 fr-pb-0">
+        <h3 class="fr-h5 fr-mb-0">Structure</h3>
+      </div>
+      <div class="fr-col-12 fr-col-md-4 fr-pb-0">
+        <div class="fr-bordered fr-p-4w flex flex-between flex-column fr-height-100 ">
+          <div id="test-issuer-infos">
+            <p>
+              <strong>{{ issuer.get_full_name }}</strong><br />
+              <span class="fr-text-mention--grey fr-text--sm">{{ issuer.profession }}</span>
+            </p>
+            <p class="fr-text--sm">
+              {{ issuer.email }}<br>{{ issuer.phone }}
+            </p>
+          </div>
+          <div class="fr-mt-3w flex flex-right fr-link">
+            <a
+              id="tests-issuer-edit-button"
+              class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-pencil-fill"
+              href="{% url 'habilitation_modify_issuer_on_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+            >
+              Éditer
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="fr-col-12 fr-col-md-8">
+        <div class="fr-bordered fr-p-4w">
+          <div class="fr-grid-row fr-grid-row--gutters fr-text--sm">
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-grid-row">
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Type de Structure</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text--md"><strong>{{ organisation.type }}</strong></div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Nom</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text--md"><strong>{{ organisation.name }}</strong></div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Adresse postale</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
+                  {{ organisation.address|linebreaksbr }}<br />
+                  {{ organisation.zipcode }}
+                  {{ organisation.city }}
+                </div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">SIRET</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w">{{ organisation.siret }}</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Site web</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w">{{ organisation.web_site }}</div>
+              </div>
+            </div>
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-grid-row">
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Structure privée</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w">{{ organisation.is_private_org|yesno:"Oui,Non" }}</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w fr-text-mention--grey">Label France Services</div>
+                <div class="fr-col-12 fr-col-md-6 fr-mb-2w">{{ organisation.france_services_label|yesno:"Oui,Non" }}</div>
+              </div>
+              <div class="fr-text-mention--grey">Missions</div>
+              <div>{{ organisation.mission_description|linebreaksbr }}</div>
+            </div>
+          </div>
+          {% if organisation.status in organisation.Status.validatable %}
+            <div class="fr-mt-3w flex flex-right fr-link">
+              <a
+                class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-pencil-fill"
+                href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+              >
+                Éditer votre demande
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% comment %}
+      |----------------------------------------------------------------------------------------------------------------|
+    {% endcomment %}
+
+    <div class="fr-alert fr-alert--info">
+      <h3 class="fr-alert__title">Une question ?</h3>
+      <p>
+        Si vous souhaitez ajouter une précision sur votre formulaire ou nous poser une question,
+        vous pouvez nous contacter à l’adresse suivante :<br />
+        {% mailto "contact@aidantsconnect.beta.gouv.fr" %}
+      </p>
+    </div>
+
+    {% comment %}
+      |----------------------------------------------------------------------------------------------------------------|
+    	|                                             Informations personnes                                             |
+      |----------------------------------------------------------------------------------------------------------------|
+    {% endcomment %}
+    <div class="fr-mt-6w">
+      <div class="flex flex-between">
+        <h2>Personnes impliquées</h2>
+        <div>
+          {% if organisation.status in organisation.Status.aidant_registrable %}
+            <a
+              id="add-aidants-btn"
+              class="fr-btn fr-btn--icon-left fr-icon-user-add-line fr-mb-2v"
+              href="{% url 'habilitation_organisation_add_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+            >
+              Ajouter un aidant à la demande
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      <p>
+        Il vous est encore possible d’ajouter ou de supprimer des aidants de votre demande. Vous pouvez également
+        vérifier les informations saisies ci-dessous.
+      </p>
+      <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v fr-background-contrast--grey fr-p-3w fr-mx-0">
+        <div class="fr-col-12 fr-col-md-4 fr-height-100">
+          <h3 class="fr-h5">Référents</h3>
+          <div class="fr-card fr-tile--shadow fr-p-4v">
+            {% if organisation.manager %}
+              <div class="flex fr-mb-3w">
+                <img src="{% static 'images/avatar.svg' %}" width="36" height="36" alt="" />
+                <div class="fr-my-auto fr-ml-1w">
+                  <strong>{{ organisation.manager.get_full_name }}</strong>
+                </div>
+              </div>
+              <div class="fr-mb-2w">
+                <p class="fr-badge fr-badge--sm fr-badge--no-icon fr-badge--info">référent</p>
+                {% if organisation.manager.is_aidant %}
+                  <p class="fr-badge fr-badge--sm fr-badge--purple-glycine">aidant</p>
+                {% endif %}
+              </div>
+              <div class="fr-text--xs fr-text-mention--grey fr-m-0">Email</div>
+              <div class="fr-text--sm fr-mb-2w">{{ organisation.manager.email }}</div>
+              <div class="fr-text--xs fr-text-mention--grey fr-m-0">Profession</div>
+              <div class="fr-text--sm fr-mb-2w">{{ organisation.manager.profession }}</div>
+              <div class="fr-text--xs fr-text-mention--grey fr-m-0">Conseiller numérique</div>
+              <div class="fr-text--sm fr-mb-2w">{{ organisation.manager.conseiller_numerique|yesno:"Oui,Non" }}</div>
+              <div class="fr-text--xs fr-text-mention--grey fr-m-0">Organisation</div>
+              <div class="fr-text--sm fr-mb-2w">{{ organisation.manager.organisation }}</div>
+
+              {% if organisation.manager.is_aidant and organisation.manager.habilitation_request.status in organisation.manager.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+                <div class="fr-text--xs fr-text-mention--grey fr-m-0">Organisation</div>
+                {% for formation_attendant in organisation.manager.habilitation_request.formations.all %}
+                  <p class="fr-text-default--success fr-icon fr-text--sm fr-m-0">
+                    <span class="fr-icon-check-line fr-icon--sm fr-mr-1v" aria-hidden="true"></span>
+                    Inscrit au wébinaire référent du {{ formation_attendant.formation.start_datetime|date:"d/m/y" }}
+                  </p>
+                {% endfor %}
+                {% if organisation.manager.aidant.last_login %}
+                  {% url "espace_responsable_organisation" as formation_url %}
+                {% else %}
+                  {% url 'habilitation_manager_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid as formation_url %}
+                {% endif %}
+                <p class="fr-m-0">
+                  <a
+                    href="{{ formation_url }}"
+                    class="fr-link fr-link--icon-left fr-icon-arrow-right-line fr-text--sm"
+                  >
+                    Inscrire en formation
+                  </a>
+                </p>
+              {% endif %}
+
+              <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline fr-mb-n4v">
+                {% if organisation.status in organisation.Status.aidant_registrable %}
+                  <li>
+                    <a
+                      href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+                      {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
+                      class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
+                    >
+                      Éditer
+                    </a>
+                  </li>
+                {% endif %}
+              </ul>
+            {% else %}
+              <ul class="fr-btns-group fr-m-4v">
+                <li>
+                  <a
+                    href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+                    {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
+                    class="fr-btn fr-m-0 width-100"
+                  >
+                    Ajouter un ou une référente
+                  </a>
+                </li>
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+        <div class="fr-col-12 fr-col-md-8 fr-height-100">
+          <h3 class="fr-h5">Aidants</h3>
+          {% if habilitation_requests %}
+            {% include "habilitation/generic-habilitation-request-profile-card.html" with objects=habilitation_requests %}
+          {% else %}
+            <div class="fr-pt-2w fr-text-mention--grey">
+              Vous n'avez pas encore ajouté d'aidant à votre demande
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+    {% comment %}
+      |----------------------------------------------------------------------------------------------------------------|
+    {% endcomment %}
+  </div>
+
+  {% if organisation.status in organisation.Status.validatable %}
+    <div class="fr-container fr-mt-6w">
+      <h2{% if organisation.status != organisation.Status.NEW %} hidden{% endif %}>Validation de la demande</h2>
+      <form method="post">
+        {% csrf_token %}
+        {% if organisation.status != organisation.Status.NEW %}{{ form.as_hidden }}{% else %}{{ form }}{% endif %}
+        <ul class="fr-btns-group fr-btns-group--inline fr-btns-group--right">
+          {% if organisation.status == organisation.Status.NEW %}
+            <li>
+              <a
+                class="fr-btn fr-btn--secondary"
+                href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+              >
+                Revenir à l’étape précédente
+              </a>
+            </li>
+          {% endif %}
+          <li>
+            <button class="fr-btn" type="submit" data-test="submit">Soumettre la demande</button>
+          </li>
+        </ul>
+      </form>
+    </div>
+  {% endif %}
+{% endblock content %}

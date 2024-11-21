@@ -9,7 +9,6 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
 from django.forms import BaseModelFormSet, EmailField, RadioSelect, modelformset_factory
-from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
@@ -26,6 +25,7 @@ from pydantic import field_validator
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
+    AsHiddenMixin,
     BaseModelMultiForm,
     CleanEmailMixin,
     ConseillerNumerique,
@@ -504,6 +504,7 @@ class HabilitationRequestCreationForm(
     forms.ModelForm,
     DsfrBaseForm,
     CustomBoundFieldForm,
+    AsHiddenMixin,
 ):
     template_name = "aidants_connect_web/forms/habilitation-request-creation-form.html"  # noqa: E501
     organisation = forms.ModelChoiceField(
@@ -543,9 +544,6 @@ class HabilitationRequestCreationForm(
 
         return email
 
-    def as_hidden(self):
-        return format_html_join("\n", "{}", ((bf.as_hidden(),) for bf in self))
-
     def save(self, commit=True):
         self.instance.origin = HabilitationRequest.ORIGIN_RESPONSABLE
         return super().save(commit)
@@ -584,7 +582,7 @@ class HabilitationRequestCreationFormSet(BaseModelFormSet):
         self.min_num = 1
 
 
-class HabilitationRequestCreationFormationTypeForm(forms.Form):
+class HabilitationRequestCreationFormationTypeForm(DsfrBaseForm, AsHiddenMixin):
     Type = HabilitationRequestCourseType
 
     type = forms.ChoiceField(
@@ -596,9 +594,6 @@ class HabilitationRequestCreationFormationTypeForm(forms.Form):
         choices=Type.choices,
         widget=RadioSelect,
     )
-
-    def as_hidden(self):
-        return format_html_join("\n", "{}", ((bf.as_hidden(),) for bf in self))
 
 
 class NewHabilitationRequestForm(BaseModelMultiForm):

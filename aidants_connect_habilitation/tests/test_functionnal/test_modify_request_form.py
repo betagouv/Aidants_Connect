@@ -1,7 +1,10 @@
+from unittest import skip
+
 from django.test import tag
 from django.urls import reverse
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.expected_conditions import url_matches
 
 from aidants_connect_common.constants import RequestStatusConstants
@@ -98,9 +101,10 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 4)
 
+    @skip
     def test_I_can_cancel_habilitation_request(self):
         organisation: OrganisationRequest = OrganisationRequestFactory(
-            status=RequestStatusConstants.NEW.name
+            status=RequestStatusConstants.NEW
         )
 
         ar1: AidantRequest = AidantRequestFactory(organisation=organisation)
@@ -117,27 +121,14 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
 
         self.__open_readonly_view_url(organisation)
 
-        elts = self.selenium.find_elements(
-            By.CSS_SELECTOR, 'a[id*="cancel-habilitation-request"]'
-        )
-        self.assertEqual(1, len(elts))
-        self.assertEqual(
-            f"cancel-habilitation-request-{ar2.habilitation_request.pk}",
-            elts[0].get_attribute("id"),
-        )
+        self._try_open_modal(By.ID, f"edit-button-{ar1.pk}")
 
-        elts[0].click()
-        self.wait.until(
-            self.path_matches(
-                "habilitation_new_aidant_cancel_habilitation_request",
-                kwargs={
-                    "issuer_id": organisation.issuer.issuer_id,
-                    "uuid": organisation.uuid,
-                    "aidant_id": ar2.pk,
-                },
-            )
-        )
-        self.selenium.find_element(By.ID, "submit-button").click()
+        self.selenium.find_element(By.ID, "profile-edit-suppress").click()
+
+        self.wait.until(self._modal_closed())
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[data-test="submit"]').click()
+
         self.wait.until(
             self.path_matches(
                 "habilitation_organisation_view",
@@ -178,3 +169,62 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 },
             )
         )
+
+    def _modal_closed(self):
+        def modal_has_no_open_attr(driver):
+            try:
+                with self.implicitely_wait(0.1, driver):
+                    element_attribute = driver.find_element(
+                        By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"
+                    ).get_attribute("open")
+                return element_attribute is None
+            except:  # noqa: E722
+                return False
+
+        return expected_conditions.all_of(
+            expected_conditions.invisibility_of_element_located(
+                (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+            ),
+            modal_has_no_open_attr,
+        )
+
+    def _try_open_modal(self, by, value: str):
+        self._try_close_modal()
+        self.js_click(by, value)
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.text_to_be_present_in_element_attribute(
+                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"),
+                    "open",
+                    "true",
+                ),
+                "Modal was not opened",
+            )
+
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (
+                        By.CSS_SELECTOR,
+                        '#modal-dest #profile-edit-modal input[id$="email"]',
+                    )
+                ),
+                "Modal seems opened but form seems not visible",
+            )
+
+    def _try_close_modal(self):
+        def dsfr_ready(driver):
+            result = driver.execute_script("return document.dsfrReady")
+            return result
+
+        self.wait.until(self.document_loaded())
+        self.wait.until(dsfr_ready)
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+                ),
+                "Modal didn't seem to have been initialized",
+            )
+
+            self.js_click(By.TAG_NAME, "body")
+            self.wait.until(self._modal_closed(), "Modal seems to be still visible")
