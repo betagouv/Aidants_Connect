@@ -82,7 +82,7 @@ class OrganisationRequestFactory(DjangoModelFactory):
 
     status = RequestStatusConstants.AC_VALIDATION_PROCESSING.name
 
-    type_id = RequestOriginConstants.SECRETARIATS_MAIRIE.value
+    type_id = RequestOriginConstants.FRANCE_SERVICE.value
     name = FactoryFaker("company")
     siret = FuzzyInteger(111_111_111, 999_999_999)
     address = FactoryFaker("street_address")

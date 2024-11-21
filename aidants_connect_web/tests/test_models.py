@@ -775,7 +775,7 @@ class AutorisationModelTests(TestCase):
 @tag("models")
 class OrganisationModelTests(TestCase):
     def test_create_and_retrieve_organisation(self):
-        self.assertEqual(OrganisationType.objects.count(), 12)
+        self.assertEqual(OrganisationType.objects.count(), 29)
         o_type = OrganisationTypeFactory(name="CCAS")
         OrganisationFactory(
             name="Girard S.A.R.L",
@@ -784,7 +784,7 @@ class OrganisationModelTests(TestCase):
             address="3 rue du chat, 27120 Houlbec-Cocherel",
         )
         self.assertEqual(Organisation.objects.count(), 1)
-        self.assertEqual(OrganisationType.objects.count(), 13)
+        self.assertEqual(OrganisationType.objects.count(), 30)
         organisation = Organisation.objects.all()[0]
         self.assertEqual(organisation.name, "Girard S.A.R.L")
         self.assertEqual(organisation.type, o_type)

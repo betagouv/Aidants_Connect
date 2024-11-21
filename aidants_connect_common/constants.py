@@ -238,23 +238,37 @@ class AuthorizationDurationChoices(TextChoices):
 
 
 class RequestOriginConstants(IntegerChoices):
-    FRANCE_SERVICE = (1, "France Services/MSAP")
-    CCAS = (2, "CCAS")
+    ASSOCIATIONS = (13, "Associations")
+    COMCOMMUNE = (20, "Communautés de Commune")
+    CLINIQUE_PRIVE = (557, "Clinique privée")
+    CONSEIL_DEP = (242, "Conseils Départementaux (CD)")
+    CHRS = (393, "Centres d’hébergement et de réinsertion sociale (CHRS)")
+    CHU = (255, "Centres d’hébergement d’urgence (CHU)")
+    CIAS = (91, " Centres intercommunaux d’action sociale (CIAS)")
+    EHPAD = (
+        247,
+        "Établissement d’hébergement pour personnes âgées dépendantes (EHPAD)",
+    )
+    ESAT = (60, "Établissement ou service d’aide par le travail (ESAT)")
+    GIP = (94, "Groupement d’intérêt public (GIP)")
+    GUICHET = (8, "Guichet d’accueil d’opérateur de service public")
+    EPCI = (32, "Intercommunalité (EPCI)")
+    MAISON_EMPLOI = (144, "Maison de l’emploi")
+    MAISON_QUARTIER = (238, "Maison de quartier")
+    MAISON_JEUNE = (459, "Maison des jeunes et de la culture")
+    MS_AGRICOLE = (578, "Mutualité Sociale Agricole")
+    MISSION_LOCAL = (35, "Mission Locale")
+    MUNICIPALITE = (30, "Municipalités")
+    PIMMS = (577, "Point Information Médiation Multi Services (PIMMS)")
+    PREF_SOUSPREF = (55, "Préfecture, Sous - Préfecture")
+    REGIE_QUARTIER = (29, "Régie de quartier")
+    TIERS_LIEU = (202, "Tiers-lieu")
+    UDAF = (358, "Union Départementale d’Aide aux Familles (UDAF)")
+    FRANCE_SERVICE = (1, "Réseau France Services")
+    CCAS = (2, "Centres communaux d’action sociale (CCAS)")
     CENTRES_SOCIAUX = (3, "Centres sociaux")
-    SECRETARIATS_MAIRIE = (4, "Sécrétariats de mairie")
+    MEDIATHEQUE = (6, "Bibliothèque / Médiathèque")
     MAISONS_SOLIDARITE = (5, "Maisons départementales des solidarités")
-    MEDIATHEQUE = (6, "Médiathèque")
-    GUICHET_AUTRE = (7, "Autre guichet d’accueil de service public de proximité")
-    GUICHET_OPERATEUR = (
-        8,
-        "Guichet d’accueil d’opérateur de service public (CAF, France Travail, etc.)",
-    )
-    AUTRES_ASSOS = (
-        9,
-        "Autres associations d’accompagnement des publics ou de médiation numérique",
-    )
-    SMS = (10, "Structure médico-sociale (CSAPA, CHU, CMS)")
-    INDEP = (11, "Indépendant")
     OTHER = (12, "Autre")
 
 
