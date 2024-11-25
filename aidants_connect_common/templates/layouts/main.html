@@ -14,6 +14,7 @@
 
   {% dsfr_css %}
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
+  <link href="{% static 'css/dsfr-theme-tac.css' %}" rel="stylesheet">
   {% for css in form.media.render_css|default:"" %}
     {{ css }}
   {% endfor %}
