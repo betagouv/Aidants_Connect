@@ -1,1 +1,69 @@
-.stats-container{display:flex;flex-direction:column-reverse;justify-content:left}.stats-number{font-size:2.25rem;color:#1b4991;font-weight:bold;text-align:center}.stats-text{font-size:1.125rem;color:#1b4991;font-weight:bold;text-align:center;margin:0}.stats-shadowed{padding:1rem 0 0 0}/*# sourceMappingURL=statistics.css.map */
+.fr-title-icon-left[class*="fr-icon-"]::before {
+  color: var(--blue-france-sun-113-625);
+  margin-left: -.125rem;
+  margin-right: .5rem;
+}
+
+.fr-icon-statistics-use::before {
+  mask-image: url(/static/images/icons/statistiques-utilisation.svg);
+}
+
+.fr-icon-statistics-type-demarche::before {
+  mask-image: url(/static/images/icons/statistiques-type-demarche.svg);
+}
+
+.fr-icon-statistics-deployment::before {
+  mask-image: url(/static/images/icons/statistiques-utilisation.svg);
+}
+
+.stats-container {
+  border: solid 1px var(--border-default-grey);
+  padding: 2rem;
+  margin: 0 0 1.5rem 0;
+}
+
+@media (max-width: 991px) {
+  .stats-container {
+    padding: 0.5rem;
+  }
+}
+
+.stat-col {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  margin: 0;
+  text-align: center;
+}
+
+.stat-col .stat-number {
+  display: block;
+  color: var(--artwork-minor-blue-france);
+  font-size: 3rem;
+  line-height: 3.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.grid--gap {
+  gap: 1.5rem;
+}
+
+.grid > [class*="fr-col"] {
+  width: 100%;
+  max-width: 100%;
+}
+
+.grid > .fr-col-4 {
+  grid-column: span 4;
+}
+
+.grid > .fr-col-6 {
+  grid-column: span 6;
+}
+
+#mandats-chart {
+  height: 32rem;
+}

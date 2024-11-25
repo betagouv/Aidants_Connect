@@ -116,7 +116,7 @@ class EspaceResponsableOrganisationPage(TestCase):
             reverse("espace_responsable_organisation"),
             data={"demarches": []},
         )
-        self.assertNotEquals(response.status_code, 200)
+        self.assertNotEqual(response.status_code, 200)
         self.assertTemplateNotUsed(
             response, espace_responsable.OrganisationView.template_name
         )

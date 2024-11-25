@@ -4,7 +4,7 @@ from datetime import datetime
 from django.conf import settings
 from django.test import TestCase, tag
 from django.test.client import Client
-from django.urls import resolve
+from django.urls import resolve, reverse
 from django.utils import timezone
 
 from freezegun import freeze_time
@@ -248,49 +248,40 @@ class StatistiquesTests(TestCase):
         )
 
     def test_stats_url_triggers_the_statistiques_view(self):
-        found = resolve("/stats/")
-        self.assertEqual(found.func, service.statistiques)
+        found = resolve(reverse("statistiques"))
+        self.assertEqual(found.func.view_class, service.StatistiquesView)
 
     def test_stats_url_triggers_the_statistiques_template(self):
-        response = self.client.get("/stats/")
+        response = self.client.get(reverse("statistiques"))
         self.assertTemplateUsed(response, "public_website/statistiques.html")
 
     def test_stats_show_the_correct_number_of_aidants_non_staff_organisation(self):
         # aidants should be non-staff_organisation
-        response = self.client.get("/stats/")
+        response = self.client.get(reverse("statistiques"))
         self.assertEqual(
-            response.context["aidants_count"], 1, "Should count aidant_thierry alone"
+            response.context["deployment_section"][0]["Aidants habilités"],
+            1,
+            "Should count aidant_thierry alone",
         )
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
         # mandats should be non-staff_organisation and active
-        response = self.client.get("/stats/")
-        self.assertEqual(response.context["mandats_count"], 2)
-        self.assertEqual(response.context["active_mandats_count"], 1)
-
-    def test_usager_without_recent_mandat_are_not_counted_as_recent(self):
-        # Usagers should be non-staff_organisation related and if current,
-        # should have been created recenlty
-        response = self.client.get("/stats/")
-        self.assertEqual(response.context["usagers_with_mandat_count"], 2)
-        self.assertEqual(response.context["usagers_with_active_mandat_count"], 1)
-
-    def test_old_autorisation_use_are_not_counted_as_recent(self):
-        response = self.client.get("/stats/")
-        self.assertEqual(response.context["autorisation_use_count"], 3)
-        self.assertEqual(response.context["autorisation_use_recent_count"], 2)
+        response = self.client.get(reverse("statistiques"))
+        self.assertEqual(response.context["usage_section"]["Mandats créés"], 2)
 
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,
-        response = self.client.get("/stats/")
-        self.assertEqual(response.context["usagers_helped_count"], 2)
-        self.assertEqual(response.context["usagers_helped_recent_count"], 1)
+        response = self.client.get(reverse("statistiques"))
+        self.assertEqual(
+            response.context["usage_section"]["Démarches administratives réalisées"], 3
+        )
+        self.assertEqual(response.context["usage_section"]["Personnes accompagnées"], 2)
 
     def test_all_help_is_counted_for_demarche_stat_except_staff_organisation(self):
         # "statistiques_demarches"is sorted from most to least popular
-        response = self.client.get("/stats/")
-        self.assertEqual(response.context["demarches_count"][0]["value"], 3)
-        self.assertEqual(response.context["demarches_count"][1]["value"], 0)
+        response = self.client.get(reverse("statistiques"))
+        self.assertEqual(response.context["data"]["values"][0], 3)
+        self.assertEqual(response.context["data"]["values"][1], 0)
 
 
 @tag("service")
