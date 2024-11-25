@@ -8,13 +8,13 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import DetailView, FormView, TemplateView
+from django.views.generic import FormView, TemplateView
 from django.views.generic.edit import BaseFormView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
 from aidants_connect_web.constants import NotificationType
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
-from aidants_connect_web.models import Aidant, Journal, Notification, Organisation
+from aidants_connect_web.models import Aidant, Journal, Notification
 
 logger = getLogger()
 
@@ -41,40 +41,6 @@ class Home(TemplateView):
                 ),
             ),
             "sandbox_url": settings.SANDBOX_URL,
-        }
-
-
-@method_decorator(login_required, name="dispatch")
-class OrganisationView(DetailView):
-    template_name = "aidants_connect_web/espace_aidant/organisation.html"
-    context_object_name = "organisation"
-    model = Organisation
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-
-        context = self.get_context_data(
-            object=self.object, **self.get_organisation_context_data()
-        )
-        return self.render_to_response(context)
-
-    def get_object(self, queryset=None):
-        self.aidant: Aidant = self.request.user
-        self.organisation: Organisation = self.aidant.organisation
-
-        if not self.organisation:
-            django_messages.error(
-                self.request, "Vous n'êtes pas rattaché à une organisation."
-            )
-            return redirect("espace_aidant_home")
-        return self.organisation
-
-    def get_organisation_context_data(self, **kwargs):
-        return {
-            "aidant": self.aidant,
-            "organisation_active_aidants": (
-                self.organisation.aidants.active().order_by("last_name")
-            ),
         }
 
 
