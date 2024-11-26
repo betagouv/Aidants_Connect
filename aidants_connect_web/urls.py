@@ -29,11 +29,6 @@ urlpatterns = [
     # espace aidant : home, organisation
     path("espace-aidant/", espace_aidant.Home.as_view(), name="espace_aidant_home"),
     path(
-        "espace-aidant/organisation/",
-        espace_aidant.OrganisationView.as_view(),
-        name="espace_aidant_organisation",
-    ),
-    path(
         "espace-aidant/valider-cgu",
         espace_aidant.ValidateCGU.as_view(),
         name="espace_aidant_cgu",

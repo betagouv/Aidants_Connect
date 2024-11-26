@@ -79,11 +79,10 @@
                   <a
                     class="fr-nav__link"
                     target="_self"
-                    href="
-                      {% if view_name|startswith:'espace_responsable' %}{% url 'espace_responsable_organisation' %}{% else %}{% url 'espace_aidant_organisation' %}{% endif %}"
-                    {% if view_name|startswith:'espace_aidant' or view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
+                    href="{% url 'espace_aidant_home' %}"
+                      {% if view_name|startswith:'espace_aidant' %}aria-current="true"{% endif %}
                   >
-                    Mon organisation
+                    Accueil
                   </a>
                 </li>
                 <li class="fr-nav__item">
