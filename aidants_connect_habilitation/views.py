@@ -306,6 +306,7 @@ class NewOrganisationRequestFormView(
     HabilitationStepMixin, VerifiedEmailIssuerView, FormView, AdressAutocompleteJSMixin
 ):
     template_name = "organisation_form.html"
+    form_class = OrganisationRequestForm
 
     @property
     def step(self) -> HabilitationFormStep:
