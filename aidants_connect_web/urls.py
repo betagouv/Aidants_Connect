@@ -247,7 +247,7 @@ urlpatterns = [
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # public_website
     path("", service.home_page, name="home_page"),
-    path("stats/", service.statistiques, name="statistiques"),
+    path("stats/", service.StatistiquesView.as_view(), name="statistiques"),
     path("cgu/", service.cgu, name="cgu"),
     path(
         "politique_confidentialite/",
