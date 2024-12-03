@@ -1,0 +1,55 @@
+{% load ac_common static %}
+<div class="fr-grid-row fr-grid-row--gutters">
+  <div class="fr-col-md-4 fr-col-12">
+    <div class="fr-card fr-enlarge-link fr-card--horizontal fr-card--horizontal-tier">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          {% if view|startswith:'referent' %}
+            <h3 class="fr-card__title">
+              <a href="https://app.livestorm.co/aidants-connect/webinaire-referent">Prochains webinaires référents</a>
+            </h3>
+            <p class="fr-card__desc">L’équipe Aidants Connect vous présente le dispositif et le rôle de référent</p>
+          {% else %}
+            <h3 class="fr-card__title">
+              <a href="https://app.livestorm.co/aidants-connect/session-de-reembarquement-la-parole-aux-aidants">Prochains webinaires aidants</a>
+            </h3>
+            <p class="fr-card__desc">L’équipe Aidants Connect et un aidant professionnel habilité répondent à vos questions</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="fr-card__header fr-background-contrast--blue-france fr-grid-row fr-grid-row--middle fr-px-3w">
+        <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/digital/calendar.svg' %}" alt="" />
+      </div>
+    </div>
+  </div>
+  <div class="fr-col-md-4 fr-col-12">
+    <div class="fr-card fr-enlarge-link fr-card--horizontal fr-card--horizontal-tier">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">
+            <a href="https://app.livestorm.co/aidants-connect/webinaire-juridique">Prochains webinaires juridiques</a>
+          </h3>
+          <p class="fr-card__desc">Nos juristes répondent à vos questions (droit à l'erreur, gestion des données personnelles, etc.)</p>
+        </div>
+      </div>
+      <div class="fr-card__header fr-background-contrast--blue-france fr-grid-row fr-grid-row--middle fr-px-3w">
+        <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/institutions/justice.svg' %}" alt="" />
+      </div>
+    </div>
+  </div>
+  <div class="fr-col-md-4 fr-col-12" hidden>
+    <div class="fr-card fr-enlarge-link fr-card--horizontal fr-card--horizontal-tier">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">
+            <a href="#">Auto-formation</a>
+          </h3>
+          <p class="fr-card__desc">Description texte SM regular Lorem ipsum dolor sit amet, consectetur adipiscing elit,</p>
+        </div>
+      </div>
+      <div class="fr-card__header fr-background-contrast--blue-france fr-grid-row fr-grid-row--middle fr-px-3w">
+        <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/leisure/book.svg' %}" alt="" />
+      </div>
+    </div>
+  </div>
+</div>

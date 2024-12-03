@@ -7,6 +7,14 @@
     <a
       class="fr-nav__link"
       target="_self"
+      href="{% url 'espace_responsable' %}"
+      {% if view_name == 'espace_responsable' %} aria-current="true"{% endif %}
+    >Accueil</a>
+  </li>
+  <li class="fr-nav__item">
+    <a
+      class="fr-nav__link"
+      target="_self"
       href="{% url 'espace_responsable_aidants' %}"
       {% if view_name == 'espace_responsable_aidants' %}aria-current="true"{% endif %}
     >Aidants</a>
@@ -36,11 +44,8 @@
     >Mon organisation</a>
   </li>
   <li class="fr-nav__item">
-    <a class="fr-nav__link" target="_self" href="{% url 'ressources' %}">Ressources</a>
-  </li>
-  <li class="fr-nav__item">
-    <a class="fr-nav__link" target="_self" href="{% mailto_href "contact@aidantsconnect.beta.gouv.fr" %}">
-      Contacter lʼéquipe
+    <a class="fr-nav__link" target="_self" href="{% url 'faq_generale' %}">
+      Aide
     </a>
   </li>
-{% endblock %}
+{% endblock nav_menu %}
