@@ -4,35 +4,9 @@ body {
   counter-reset: fr-label;
 }
 
-
-
 /* New css */
 .border {
   border-bottom: solid 1px var(--border-active-blue-france);
-}
-.fr-tile__title:not( a)::before {
-  background-image: linear-gradient(0deg,var(--border-active-blue-france),var(--border-active-blue-france));
-}
-
-details {
-  position: relative;
-  summary::marker {
-    content: "";
-  }
-  .details-content {
-    position: absolute;
-    top: 31px;
-    left: -16px;
-    padding: .5rem 1rem;
-    background-color: white;
-    z-index: 1;
-    border: solid 1px;
-    width: 100%;
-    text-align: left;
-    a {
-      display: block;
-    }
-  } 
 }
 fieldset {
   border: none;
@@ -54,7 +28,7 @@ fieldset {
 }
 .mandat-demarche {
   .detailed-radio-select-label-text {
-    display: block; 
+    display: block;
   }
 }
 .mandat-duree {

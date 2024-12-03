@@ -53,60 +53,7 @@
         </ul>
       </article>
     </div>
-    <p class="fr-text--lg"><span class="fr-icon-file-text-fill fr-text-title--blue-france fr-mr-1w"></span><strong>Ressources</strong></p>
-    <div class="fr-grid-row fr-grid-row--gutters fr-mb-1w">
-      <div class="fr-col-md-6 fr-col-md">
-        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body mandate-translation-section">
-              <div class="fr-tile__content">
-                  <h3 class="fr-tile__title">
-                      <a class="fr-text-default--grey" href="{% url 'mandate_translation' %}">Mandat type avec traductions disponibles</a>
-                  </h3>
-                  <p class="fr-tile__detail fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.</p>
-              </div>
-          </div>
-        </div>
-      </div>
-      <div class="fr-col-md-6 fr-col-md">
-        <div class="fr-tile fr-tile--horizontal ">
-          <div class="fr-tile__body">
-              <div class="fr-tile__content fr-pb-2W">
-                <h3 class="fr-tile__title">Fiches pratiques pour les usagers</h3>
-                <div class="fr-tile__detail flex-wrap">
-
-                  <p class="fr-col-12 fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention, ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.
-                  </p>
-                    <ul class="fr-btns-group fr-btns-group--inline-lg fr-col-12 fr-mt-2w flex-right">
-                    <li>
-                        <button class="fr-btn fr-btn--secondary">
-                          <a href="https://www.etsijaccompagnais.fr/ressources-des-aidants" target="_blank">
-                            Version française
-                          </a>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="fr-btn fr-btn--secondary">
-                          <details>
-                            <summary>Versions traduites</summary>
-                            <div class="details-content">
-                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiches_Anglais.pdf" target="_blank">Anglais</a>
-                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiches_Dari.pdf" target="_blank">Dari</a>
-                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiche_Bengali-rmb7.pdf" target="_blank"> Bengali</a>
-                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiche_Pashto.pdf" target="_blank">Pashto</a>
-                              <a class="fr-mt-1w" href="https://www.etsijaccompagnais.fr/s/Fiche_Arabe.pdf" target="_blank">Arabe</a>
-                            </div>
-                          </details>
-
-                        </button>
-                    </li>
-                  </ul>
-              </div>
-              </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="border fr-mb-16v"></div>
+    {% include "aidants_connect_web/common/resources-block.html" %}
     <h2 class="fr-mb-16v">Création de Mandat</h2>
     <form
       method="post"

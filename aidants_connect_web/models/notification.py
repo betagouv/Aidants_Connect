@@ -27,6 +27,8 @@ class NotificationQuerySet(models.QuerySet):
 
 
 class Notification(MarkdownContentMixin):
+    NotificationType = NotificationType
+
     type = models.CharField(choices=NotificationType.choices)
     aidant = models.ForeignKey(
         Aidant, on_delete=models.CASCADE, related_name="notifications"

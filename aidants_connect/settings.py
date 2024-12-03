@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
     "rest_framework",
     "django_otp",
     "django_otp.plugins.otp_static",
@@ -507,7 +508,7 @@ CSP_FRAME_SRC = (
     ),
 )
 
-CSP_INCLUDE_NONCE_IN = ("script-src",)
+CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
 
 if not GOUV_ADDRESS_SEARCH_API_DISABLED:
     CSP_CONNECT_SRC = (*CSP_CONNECT_SRC, GOUV_ADDRESS_SEARCH_API_BASE_URL)

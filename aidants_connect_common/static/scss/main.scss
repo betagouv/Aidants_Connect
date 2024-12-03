@@ -25,9 +25,18 @@ $main-padding: 3rem;
   padding: $main-padding 0;
 }
 
-.main-content-full { // cancels #main padding
-  margin-bottom: -$main-padding;
-  margin-top: -$main-padding;
+.main-content-fluid { // cancels #main padding
+  &:first-child {
+    margin-top: -$main-padding;
+  }
+
+  &:last-child {
+    margin-bottom: -$main-padding;
+  }
+
+  &.main-content-fluid--padding {
+    padding: $main-padding 0;
+  }
 
   .main-content-item {
     margin-bottom: $main-padding;
@@ -73,6 +82,12 @@ p:last-child {
 
 [hidden] {
   display: none !important;
+}
+
+.fr-title-icon-left[class*="fr-icon-"]::before {
+  color: var(--blue-france-sun-113-625);
+  margin-left: -.125rem;
+  margin-right: .5rem;
 }
 
 .fr-icon-loader:after,
