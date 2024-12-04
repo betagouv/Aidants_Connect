@@ -1,0 +1,163 @@
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+
+{% load ac_common static %}
+
+{% block title %}Espace Référent - Aidants Connect{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <div class="espace-referent">
+    <div class="fr-container-fluid fr-background-contrast--pink-tuile fr-py-12w">
+      {% include "layouts/_messages.html" %}
+      <div class="fr-container">
+        <h1>Bienvenue {{ referent.get_full_name }} !</h1>
+        <div class="fr-grid-row fr-grid-row--gutters">
+          <div class=" fr-col-md-3 fr-col-12">
+            <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link" >
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a href="{% url 'espace_responsable_aidants' %}">Gérer les comptes des aidants</a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogramm">
+                  <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/system/success.svg' %}" alt="" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class=" fr-col-md-3 fr-col-12">
+            <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link" >
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a href="{% url 'espace_responsable_aidant_new' %}">Habiliter de nouveaux aidants</a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogramm">
+                  <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/digital/avatar.svg' %}" alt="" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class=" fr-col-md-3 fr-col-12">
+            <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link" >
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a href="{% url 'espace_responsable_referents' %}">Désigner un co-référent</a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogramm">
+                  <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/environment/human-cooperation.svg' %}" alt="" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class=" fr-col-md-3 fr-col-12">
+            <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link" >
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a href="{% url 'espace_responsable_organisation' %}">Configurer les thématiques</a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogramm">
+                  <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/system/system.svg' %}" alt="" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fr-col-md-3 fr-col-12" hidden>
+            <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link" >
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    <a href="#">Gérer les cartes </a>
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogramm">
+                  <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/document/national-identity-card.svg' %}" alt="" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class=" fr-col-md-3 fr-col-12">
+            <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link" >
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    {% mailto AC_CONTACT_EMAIL link_text="Contacter l'équipe" %}
+                  </h3>
+                </div>
+              </div>
+              <div class="fr-tile__header">
+                <div class="fr-tile__pictogramm">
+                  <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/digital/mail-send.svg' %}" alt="" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-container">
+      <h2 class="fr-h3 fr-mb-2w fr-mt-6w"><span class="fr-icon-information-fill fr-text-title--blue-france fr-mr-1w" aria-hidden="true"></span>Informations</h2>
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-4">
+          <div class="fr-bordered fr-bordered-blue fr-p-4w fr-height-100">
+            {% if organisation.data_pass_id %}
+              <h3 class="fr-h5 fr-mb-1w">Numéro d’habilitation</h3>
+              <p>{{ organisation.data_pass_id }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="fr-col-12 fr-col-md-8">
+          <div class="fr-bordered fr-bordered-blue fr-p-4w fr-height-100">
+            <div class="fr-grid-row">
+              <div class="fr-col-12 fr-mb-2w">
+                <h3 class="fr-h5 fr-mb-1w">
+                  <span class="fr-icon-line-chart-line fr-mr-1w" aria-hidden="true"></span>
+                  Statistiques
+                </h3>
+              </div>
+              <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
+                <h4 class="fr-h6 fr-mb-1w">Mandats créés</h4>
+                <p class="h2 margin-top-1rem">{{ organisation.num_mandats }}</p>
+              </div>
+              <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
+                <h4 class="fr-h6 fr-mb-1w">Aidants actifs</h4>
+                <p class="h2 margin-top-1rem">{{ organisation.num_active_aidants }}</p>
+              </div>
+            </div>
+            <div class="fr-grid-row">
+              <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
+                <h4 class="fr-h6 fr-mb-1w">Mandats actifs</h4>
+                <p class="h2 margin-top-1rem">{{ organisation.num_active_mandats }}</p>
+              </div>
+              <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
+                <h4 class="fr-h6 fr-mb-1w">Usagers accompagnés</h4>
+                <p class="h2 margin-top-1rem">{{ organisation.num_usagers }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="fr-h3 fr-mb-2w fr-mt-6w"><span class="fr-icon-book-2-fill fr-text-title--blue-france fr-mr-1w" aria-hidden="true"></span>Formation continue</h2>
+      {% include "aidants_connect_web/espace_aidant/formation_continue.html" with view="referent" %}
+    </div>
+  </div>
+{% endblock content %}

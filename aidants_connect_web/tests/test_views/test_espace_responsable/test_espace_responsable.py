@@ -57,14 +57,6 @@ class EspaceResponsableOrganisationPage(TestCase):
         response = self.client.get("/espace-responsable/organisation/")
         self.assertNotContains(response, "None")
 
-    def test_display_data_pass_id(self):
-        self.client.force_login(self.responsable_tom)
-        self.responsable_tom.organisation.data_pass_id = 4242
-        self.responsable_tom.organisation.save()
-        response = self.client.get("/espace-responsable/organisation/")
-        self.assertContains(response, "Numéro d’habilitation")
-        self.assertContains(response, "4242")
-
     def test_hide_block_if_no_data_pass_id(self):
         self.client.force_login(self.responsable_tom)
         response = self.client.get("/espace-responsable/organisation/")

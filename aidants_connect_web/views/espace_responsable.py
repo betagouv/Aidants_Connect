@@ -120,6 +120,37 @@ class OrganisationView(DetailView, FormView):
 @responsable_logged_required
 # We don't want to check activity on POST route
 @responsable_logged_with_activity_required(method_name="get")
+class HomeView(DetailView, FormView):
+    template_name = "aidants_connect_web/espace_responsable/home.html"
+    context_object_name = "organisation"
+    model = Organisation
+    form_class = OrganisationRestrictDemarchesForm
+    success_url = reverse_lazy("espace_responsable_organisation")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        if not hasattr(self, "object"):
+            self.object = get_object_or_404(
+                Organisation,
+                pk=self.referent.organisation.pk,
+                responsables=self.referent,
+            )
+
+        return self.object
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "referent": self.referent,
+        }
+
+
+@responsable_logged_required
+# We don't want to check activity on POST route
+@responsable_logged_with_activity_required(method_name="get")
 class ReferentsView(DetailView, FormView):
     template_name = "aidants_connect_web/espace_responsable/referents.html"
     context_object_name = "organisation"
