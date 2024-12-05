@@ -19,21 +19,30 @@
           >
         </li>
         <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'politique_confidentialite' %} fr-sidemenu__item--active{% endif %}">
-          <a 
-            class="fr-sidemenu__link" 
+          <a
+            class="fr-sidemenu__link"
             target="_self"
-            href="{% url 'politique_confidentialite' %}" 
+            href="{% url 'politique_confidentialite' %}"
             {% if request.resolver_match.url_name == 'politique_confidentialite' %}aria-current="page"{% endif %}
             >Politique de Confidentialité</a
           >
         </li>
         <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'accessibilite' %} fr-sidemenu__item--active{% endif %}">
-          <a 
-            class="fr-sidemenu__link" 
+          <a
+            class="fr-sidemenu__link"
             target="_self"
-            href="{% url 'accessibilite' %}" 
+            href="{% url 'accessibilite' %}"
             {% if request.resolver_match.url_name == 'accessibilite' %}aria-current="page"{% endif %}
             >Déclaration d'accessibilité</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'mentions_legales' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'mentions_legales' %}"
+            {% if request.resolver_match.url_name == 'mentions_legales' %}aria-current="page"{% endif %}
+            >Mentions Légales</a
           >
         </li>
       </ul>
