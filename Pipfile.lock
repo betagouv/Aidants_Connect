@@ -960,7 +960,7 @@
                 "sha256:ff02b6d461a6de369f07ec15e465a88895f3223eb75073ffea56b84d9331f607"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2.27.1"
+            "version": "==2.23.4"
         },
         "pygments": {
             "hashes": [
