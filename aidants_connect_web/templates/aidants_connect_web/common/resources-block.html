@@ -1,0 +1,122 @@
+<style nonce="{{ request.csp_nonce }}">
+  .fr-tile__title:not( a)::before {
+    background-image: linear-gradient(0deg, var(--border-active-blue-france), var(--border-active-blue-france));
+  }
+
+  details {
+    position: relative;
+  }
+
+  details .details-content {
+    position: absolute;
+    top: calc(2.5rem + 1px);
+    left: 0;
+    padding: .5rem 1rem;
+    background-color: white;
+    z-index: 1;
+    border: solid 1px;
+    width: calc(100% - 2rem - 2px);
+    text-align: left;
+  }
+
+  details .details-content a {
+    display: block;
+  }
+
+  details .details-content a:first-child {
+    margin-top: 0;
+  }
+</style>
+
+<h3 class="fr-title-icon-left fr-icon-file-text-fill">Ressources</h3>
+<div class="fr-grid-row fr-grid-row--gutters fr-mb-1w">
+  <div class="fr-col-md-6 fr-col-md">
+    <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
+      <div class="fr-tile__body mandate-translation-section">
+        <div class="fr-tile__content">
+          <h3 class="fr-tile__title">
+            <a class="fr-text-default--grey" href="{% url 'mandate_translation' %}">Mandat type avec traductions
+              disponibles</a>
+          </h3>
+          <p class="fr-tile__detail fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention,
+            ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique
+            valide.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fr-col-md-6 fr-col-md">
+    <div class="fr-tile fr-tile--horizontal ">
+      <div class="fr-tile__body">
+        <div class="fr-tile__content fr-pb-2W">
+          <h3 class="fr-tile__title">Fiches pratiques pour les usagers</h3>
+          <div class="fr-tile__detail flex-wrap">
+            <p class="fr-col-12 fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention, ces
+              traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.
+            </p>
+            <ul class="fr-btns-group fr-btns-group--inline-lg fr-col-12 fr-mt-2w flex-right">
+              <li>
+                <button class="fr-btn fr-btn--secondary">
+                  <a
+                    href="https://www.etsijaccompagnais.fr/ressources-des-aidants"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Version française
+                  </a>
+                </button>
+              </li>
+              <li>
+                <details class="fr-btn fr-btn--secondary">
+                  <summary>Versions traduites</summary>
+                  <div class="details-content">
+                    <a
+                      class="fr-mt-1w"
+                      href="https://www.etsijaccompagnais.fr/s/Fiches_Anglais.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Anglais
+                    </a>
+                    <a
+                      class="fr-mt-1w"
+                      href="https://www.etsijaccompagnais.fr/s/Fiches_Dari.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Dari
+                    </a>
+                    <a
+                      class="fr-mt-1w"
+                      href="https://www.etsijaccompagnais.fr/s/Fiche_Bengali-rmb7.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Bengali
+                    </a>
+                    <a
+                      class="fr-mt-1w"
+                      href="https://www.etsijaccompagnais.fr/s/Fiche_Pashto.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Pashto
+                    </a>
+                    <a
+                      class="fr-mt-1w"
+                      href="https://www.etsijaccompagnais.fr/s/Fiche_Arabe.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Arabe
+                    </a>
+                  </div>
+                </details>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

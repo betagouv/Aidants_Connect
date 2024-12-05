@@ -1,9 +1,3 @@
-.fr-title-icon-left[class*="fr-icon-"]::before {
-  color: var(--blue-france-sun-113-625);
-  margin-left: -.125rem;
-  margin-right: .5rem;
-}
-
 .fr-icon-statistics-use::before {
   mask-image: url(/static/images/icons/statistiques-utilisation.svg);
 }

@@ -1,45 +1,14 @@
-details {
-  position: relative;
+:root {
+  --espace-aidant-header-background: var(--blue-france-950-100);
+}
+:root[data-fr-theme=dark] {
+  --espace-aidant-header-background: var(--blue-france-925-125);
 }
 
-summary::marker {
-  content: "";
+.espace-aidant-header {
+  background-color: var(--espace-aidant-header-background);
 }
 
-.menu-table summary {
-  width: 45px;
-  height: 45px;
-  background-color: var(--background-alt-grey);
-  text-align: center;
-  line-height: 45px;
-}
-
-summary .fr-btn {
-  min-height: unset;
-}
-
-.details-content {
-  position: absolute;
-  background-color: var(--background-default-grey);
-  border: solid 1px #CECECE;
-  z-index: 100;
-  right: 0;
-  top: 45px;
-  width: max-content;
-}
-
-.details-content a {
-  background-image: none;
-  line-height: 30px;
-  display: block;
-}
-
-.fr-table__container {
-  overflow: visible;
-}
-
-.auth-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
+.fr-card__title {
+  flex-grow: 10;
 }

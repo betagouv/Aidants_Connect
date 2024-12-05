@@ -1,181 +1,80 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
+{% load ac_common dsfr_tags partials static widget_tweaks %}
 
-{% load ac_common static %}
+{% partialdef messages %}
+  {% include "aidants_connect_web/espace_aidant/notifications.html" with user=aidant %}
+  {% include "layouts/_messages.html" %}
+  {% for notification in notifications %}
+    <div
+      class="fr-col-12 fr-my-4v"
+      {% if notification.must_ack %}
+      data-controller="notification"
+      data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
+      {% endif %}
+    >
+      <div class="fr-alert{% if notification.type == notification.NotificationType.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION.value %} fr-alert--info{% else %} fr-alert--info{% endif %}">
+        <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
+        <p>{{ notification.to_html }}</p>
+        {% if notification.must_ack %}
+          <button
+            class="fr-btn--close fr-btn"
+            title="Masquer le message"
+            data-action="notification#markRead"
+          >
+            Masquer le message
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+{% endpartialdef %}
 
-{% block title %}Aidants Connect - Espace Aidant{% endblock %}
+{% block title %}Espace Aidant - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-  <div class="fr-container">
-    {% include "layouts/_messages.html" %}
-    <h1>
-      {% if aidant.can_create_mandats %}Espace Aidant{% else %}Aidants Connect{% endif %}
-      {% if aidant.first_name %}<p class="h2">Bienvenue, {{ aidant.first_name }} !</p>{% endif %}
-    </h1>
-    <p class="subtitle">
-      Gérez vos mandats et personnes accompagnées depuis votre espace Aidant.
-      Si vous avez besoin d’aide, nos équipes sont également joignables depuis cette
-      page.
-    </p>
-    {% include "aidants_connect_web/espace_aidant/notifications.html" with user=aidant %}
-    {% if aidant.organisations.count > 1 %}
-      <div class="notification full-width">
-        Votre organisation active est <strong>{{ aidant.organisation }}</strong>
-        — {{ aidant.organisation.address }}.
+  <section class="main-content-fluid main-content-fluid--padding espace-aidant-header">
+    <div class="fr-container">
+      <h1>Bienvenue{% if aidant.first_name %}, {{ aidant.first_name }}{% endif %} !</h1>
+
+      {% partial messages %}
+
+      <div class="fr-grid-row fr-grid-row--gutters fr-mt-12v">
+        {% for tile in main_tiles %}
+          <div class="fr-col-12 fr-col-md-3">
+            {% dsfr_tile tile %}
+          </div>
+        {% endfor %}
       </div>
-    {% endif %}
-    {% for notification in notifications %}
-      <div
-        class="fr-col-12 fr-my-4v"
-        {% if notification.must_ack %}
-        data-controller="notification"
-        data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
-        {% endif %}
-      >
-        <div class="fr-alert{% if notification.type == notification_type.WARNING.value %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION.value %} fr-alert--info{% else %} fr-alert--info{% endif %}">
-          <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
-          <p>{{ notification.to_html }}</p>
-          {% if notification.must_ack %}
-            <button
-              class="fr-btn--close fr-btn"
-              title="Masquer le message"
-              data-action="notification#markRead"
-            >
-              Masquer le message
-            </button>
-          {% endif %}
-        </div>
+    </div>
+  </section>
+
+  <section class="fr-container fr-mt-12v">
+    <h2 class="fr-title-icon-left fr-icon-book-2-fill fr-mb-4v fr-mt-12v">Formation continue</h2>
+
+    {% include "aidants_connect_web/espace_aidant/formation_continue.html" %}
+
+    <h2 class="fr-title-icon-left fr-icon-file-text-fill fr-mb-4v fr-mt-12v">Ressources</h2>
+
+    {% for title, tiles in resources_tiles.items %}
+      <h3>{{ title }}</h3>
+
+      <div class="fr-grid-row fr-grid-row--gutters">
+        {% for tile in tiles %}
+          <div class="fr-col-12 fr-col-md-3">
+            {% dsfr_card tile %}
+          </div>
+        {% endfor %}
       </div>
     {% endfor %}
-    <section class="section tiles aidant-home-services">
-      <h3 class="home-section">Vos services</h3>
-      <div class="fr-grid-row fr-grid-row--gutters">
-        {% if aidant.is_responsable_structure %}
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="fr-tile fr-enlarge-link">
-              <div class="fr-tile__body">
-                <div class="fr-tile__content">
-                  <h3 class="fr-tile__title">
-                    <a id="view_organisation" href="{% url 'espace_responsable_organisation' %}">Mon espace référent</a>
-                  </h3>
-                </div>
-              </div>
-              <div class="fr-tile__header">
-                <div class="fr-tile__pictogram">🏢</div>
-              </div>
-            </div>
-          </div>
-          {% if not aidant.has_a_totp_device %}
-            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-              <div class="fr-tile fr-enlarge-link">
-                <div class="fr-tile__body">
-                  <div class="fr-tile__content">
-                    <h3 class="fr-tile__title">
-                      <a
-                        id="view_organisation"
-                        href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
-                      >
-                        Activer ma carte
-                      </a>
-                    </h3>
-                  </div>
-                </div>
-                <div class="fr-tile__header">
-                  <div class="fr-tile__pictogram">💳</div>
-                </div>
-              </div>
-            </div>
-          {% endif %}
-        {% endif %}
-        {% if aidant.can_create_mandats %}
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="fr-tile fr-enlarge-link">
-              <div class="fr-tile__body">
-                <div class="fr-tile__content">
-                  <h3 class="fr-tile__title">
-                    <a id="view_mandats" href="{% url 'usagers' %}">Mes mandats</a>
-                  </h3>
-                </div>
-              </div>
-              <div class="fr-tile__header">
-                <div class="fr-tile__pictogram">📂</div>
-              </div>
-            </div>
-          </div>
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="fr-tile fr-enlarge-link">
-              <div class="fr-tile__body">
-                <div class="fr-tile__content">
-                  <h3 class="fr-tile__title">
-                    <a id="add_usager" href="{% url 'new_mandat' %}">Créer un mandat</a>
-                  </h3>
-                </div>
-              </div>
-              <div class="fr-tile__header">
-                <div class="fr-tile__pictogram">📝</div>
-              </div>
-            </div>
-          </div>
-        {% endif %}
 
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <div class="fr-tile fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
-                  <a id="ask_for_help" href="{{ sos_href }}">J’ai besoin d’aide</a>
-                </h3>
-              </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogram">🆘</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <div class="fr-tile fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
-                  <a id="help_tutorial" href="https://www.etsijaccompagnais.fr/tutoriel-aidants-connect">
-                    Tutoriel Aidants Connect
-                  </a>
-                </h3>
-              </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogram">💡</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <div class="fr-tile fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
-                  <a href="{% url 'sandbox_presentation' %}">
-                    Site bac à sable
-                  </a>
-                </h3>
-              </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogram">
-                <img alt="" class="icon" src="{% static "images/icons/sandbox-icon.png" %}">
-              </div>
-            </div>
-          </div>
-        </div>
-    </section>
-    <section class="section ">
-      <h3 class="home-section">Vos ressources</h3>
-      {% include 'public_website/_ressource_externe.html' %}
-    </section>
-
-  </div>
+    {% include "aidants_connect_web/common/resources-block.html" %}
+  </section>
 {% endblock content %}
+
+{% block extrajs %}
+  <script type="module" src="{% static 'js/notifications.mjs' %}"></script>
+{% endblock extrajs %}
