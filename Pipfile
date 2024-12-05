@@ -9,7 +9,7 @@ python_version = "3.11"
 [packages]
 api-insee = "1.5"
 celery = {version = "==5.4.0", extras = ["redis"]}
-django = "~=4.2.16"
+django = "~=4.2"
 dj-database-url = "~=2.2"
 dj-importmap = "==0.0.2"
 djangorestframework = "~=3.15"
