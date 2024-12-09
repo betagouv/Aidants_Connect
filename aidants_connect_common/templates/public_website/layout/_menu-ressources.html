@@ -9,7 +9,7 @@
     <div class="fr-collapse" id="fr-sidemenu-wrapper">
       <div class="fr-sidemenu__title" id="fr-sidemenu-title">Menu</div>
       <ul class="fr-sidemenu__list">
-        <li class="fr-sidemenu__item {% if request.resolver_match.url_name == 'habilitation_faq_habilitation' %} fr-sidemenu__item--active{% endif %}">
+        <li class="fr-sidemenu__item">
           <a
             class="fr-sidemenu__link"
             target="_self"
@@ -18,7 +18,16 @@
             >Bien démarrer</a
           >
         </li>
-        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'habilitation_faq_formation' %} fr-sidemenu__item--active{% endif %}">
+        <li class="fr-sidemenu__item">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="#fiches"
+            >Fiches pratiques</a
+          >
+        </li>
+        </li>
+        <li class="fr-sidemenu__item">
           <a
             class="fr-sidemenu__link"
             target="_self"
@@ -26,15 +35,15 @@
             >Vidéos</a
           >
         </li>
-        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'habilitation_faq_formation' %} fr-sidemenu__item--active{% endif %}">
+<!--         <li class="fr-sidemenu__item">
           <a
             class="fr-sidemenu__link"
             target="_self"
             href="#kit"
             >Kit de communication</a
           >
-        </li>
-        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'habilitation_faq_formation' %} fr-sidemenu__item--active{% endif %}">
+        </li> -->
+        <li class="fr-sidemenu__item">
           <a
             class="fr-sidemenu__link"
             target="_self"
