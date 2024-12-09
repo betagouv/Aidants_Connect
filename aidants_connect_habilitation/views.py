@@ -12,6 +12,7 @@ from django.template.defaultfilters import yesno
 from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
+from django.views.generic.edit import UpdateView
 
 from aidants_connect_common.constants import (
     RequestOriginConstants,
@@ -27,8 +28,8 @@ from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     IssuerForm,
+    ManagerForm,
     OrganisationRequestForm,
-    PersonnelForm,
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
@@ -319,7 +320,7 @@ class NewOrganisationRequestFormView(
 
     def get_success_url(self):
         return reverse(
-            "habilitation_new_aidants",
+            "habilitation_new_referent",
             kwargs={
                 "issuer_id": str(self.issuer.issuer_id),
                 "uuid": str(self.saved_model.uuid),
@@ -349,18 +350,18 @@ class ModifyOrganisationRequestFormView(
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class PersonnelRequestFormView(
-    OnlyNewRequestsView, FormView, AdressAutocompleteJSMixin
+class ReferentRequestFormView(
+    OnlyNewRequestsView, UpdateView, AdressAutocompleteJSMixin
 ):
-    template_name = "personnel_form.html"
+    template_name = "referent_form.html"
+    form_class = ManagerForm
 
     @property
     def step(self) -> HabilitationFormStep:
-        return HabilitationFormStep.PERSONNEL
+        return HabilitationFormStep.REFERENT
 
-    def form_valid(self, form: PersonnelForm):
-        form.save()
-        return super().form_valid(form)
+    def get_object(self, queryset=None):
+        return getattr(self.organisation, "manager", None)
 
     def get_context_data(self, **kwargs):
         issuer_data = model_to_dict(
@@ -379,25 +380,45 @@ class PersonnelRequestFormView(
         }
 
     def get_form(self, form_class=None):
-        form = PersonnelForm(organisation=self.organisation, **self.get_form_kwargs())
-        self.define_html_attributes(form.manager_form)
+        form = self.get_form_class()(
+            organisation=self.organisation, **self.get_form_kwargs()
+        )
+        self.define_html_attributes(form)
         return form
 
+    def get_success_url(self):
+        return reverse(
+            "habilitation_new_aidants",
+            kwargs={
+                "issuer_id": str(self.issuer.issuer_id),
+                "uuid": str(self.organisation.uuid),
+            },
+        )
+
+
+class PersonnelRequestFormView(
+    OnlyNewRequestsView, FormView, AdressAutocompleteJSMixin
+):
+    template_name = "personnel_form.html"
+    form_class = AidantRequestFormSet
+
+    @property
+    def step(self) -> HabilitationFormStep:
+        return HabilitationFormStep.PERSONNEL
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        kwargs.update({"organisation": self.organisation})
+        return super().get_context_data(**kwargs)
+
     def get_form_kwargs(self):
-        form_kwargs = super().get_form_kwargs()
-
-        manager = self.organisation.manager
-        aidant_qs = self.organisation.aidant_requests
-
-        if aidant_qs.count() > 0:
-            form_kwargs[f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}_queryset"] = (
-                aidant_qs.all()
-            )
-
-        if manager:
-            form_kwargs[f"{PersonnelForm.MANAGER_FORM_PREFIX}_instance"] = manager
-
-        return form_kwargs
+        return {
+            **super().get_form_kwargs(),
+            "organisation": self.organisation,
+        }
 
     def get_success_url(self):
         return reverse(
@@ -546,6 +567,7 @@ class ReadonlyRequestView(BaseValidationRequestFormView):
 
 class AddAidantsRequestView(LateStageRequestView, FormView):
     template_name = "add_aidants_request.html"
+    form_class = AidantRequestFormSet
 
     def dispatch(self, request, *args, **kwargs):
         if self.organisation.status not in self.organisation.Status.aidant_registrable:
@@ -564,10 +586,12 @@ class AddAidantsRequestView(LateStageRequestView, FormView):
             )
         return super().dispatch(request, *args, **kwargs)
 
-    def get_form(self, form_class=None):
-        return AidantRequestFormSet(
-            organisation=self.organisation, **self.get_form_kwargs()
-        )
+    def get_form_kwargs(self):
+        return {
+            **super().get_form_kwargs(),
+            "organisation": self.organisation,
+            "queryset": AidantRequest.objects.none(),
+        }
 
     def get_context_data(self, **kwargs):
         return {
