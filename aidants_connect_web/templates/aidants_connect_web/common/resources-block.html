@@ -26,12 +26,15 @@
   details .details-content a:first-child {
     margin-top: 0;
   }
+  details summary::marker {
+    content: "";
+  }
 </style>
 
-<h3 class="fr-title-icon-left fr-icon-file-text-fill">Ressources</h3>
+
 <div class="fr-grid-row fr-grid-row--gutters fr-mb-1w">
   <div class="fr-col-md-6 fr-col-md">
-    <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
+    <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
       <div class="fr-tile__body mandate-translation-section">
         <div class="fr-tile__content">
           <h3 class="fr-tile__title">
@@ -46,17 +49,17 @@
     </div>
   </div>
   <div class="fr-col-md-6 fr-col-md">
-    <div class="fr-tile fr-tile--horizontal ">
+    <div class="fr-tile fr-tile--horizontal fr-tile--sm">
       <div class="fr-tile__body">
-        <div class="fr-tile__content fr-pb-2W">
+        <div class="fr-tile__content fr-pb-0">
           <h3 class="fr-tile__title">Fiches pratiques pour les usagers</h3>
-          <div class="fr-tile__detail flex-wrap">
+          <div class="fr-tile__desc flex-wrap">
             <p class="fr-col-12 fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention, ces
               traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.
             </p>
             <ul class="fr-btns-group fr-btns-group--inline-lg fr-col-12 fr-mt-2w flex-right">
               <li>
-                <button class="fr-btn fr-btn--secondary">
+                <button class="fr-btn fr-btn--secondary fr-text--sm">
                   <a
                     href="https://www.etsijaccompagnais.fr/ressources-des-aidants"
                     target="_blank"
@@ -67,7 +70,7 @@
                 </button>
               </li>
               <li>
-                <details class="fr-btn fr-btn--secondary">
+                <details class="fr-btn fr-btn--secondary fr-text--sm fr-mr-0">
                   <summary>Versions traduites</summary>
                   <div class="details-content">
                     <a
