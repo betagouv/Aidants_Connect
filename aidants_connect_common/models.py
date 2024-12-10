@@ -160,7 +160,7 @@ class FormationQuerySet(models.QuerySet):
     def for_attendant_q(self, attendant: HabilitationRequest):
         return models.Q(attendants__attendant_id=attendant.pk)
 
-    def available_for_attendant(self, attendant: HabilitationRequest) -> Self:
+    def get_q_available_now(self):
         att_count = settings.SHORT_TIMEDELTA_ATTENDANTS_COUNT_FOR_INSCRIPTION
         short_td = timedelta(days=settings.SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION)
         long_td = timedelta(days=settings.TIMEDELTA_IN_DAYS_FOR_INSCRIPTION)
@@ -177,7 +177,19 @@ class FormationQuerySet(models.QuerySet):
                 start_datetime__gte=now() + long_td,
             )
         )
+        return q
 
+    def available_now(self):
+        q = self.get_q_available_now()
+        return (
+            self.annotate(attendants_count=Count("attendants"))
+            .filter(q)
+            .order_by("start_datetime")
+            .distinct()
+        )
+
+    def available_for_attendant(self, attendant: HabilitationRequest) -> Self:
+        q = self.get_q_available_now()
         q = (
             (
                 (q & models.Q(type_id=settings.PK_MEDNUM_FORMATION_TYPE))
@@ -335,13 +347,13 @@ class FormationAttendant(models.Model):
                     -- prevent concurrent inserts from multiple transactions
                     LOCK TABLE {{meta.db_table}} IN EXCLUSIVE MODE;
 
-                    SELECT INTO attendants_count COUNT(*) 
+                    SELECT INTO attendants_count COUNT(*)
                     FROM {{meta.db_table}}
                     WHERE {{columns.formation}} = NEW.{{columns.formation}}
                     AND {{columns.state}} != {FormationAttendantState.CANCELLED};
 
                     SELECT {{Formation_columns.max_attendants}} INTO max_attendants_count
-                    FROM {{Formation_meta.db_table}} 
+                    FROM {{Formation_meta.db_table}}
                     WHERE {{Formation_meta.pk.name}} = NEW.{{columns.formation}};
 
                     IF attendants_count >= max_attendants_count THEN

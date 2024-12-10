@@ -1,0 +1,26 @@
+{% extends 'public_website/layout/layout_habilitation.html' %}
+{% load ac_common %}
+
+{% block title %}Aidants Connect - Listing Formations{% endblock %}
+
+{% block page.title %}Liste des formations actives{% endblock %}
+
+{% block menu %}
+{% endblock menu %}
+
+{% block body %}
+
+  <h2 class="fr-h4 fr-mb-3w">Formations ouvertes à l'inscription ce jour</h2>
+
+
+        <div class="fr-grid-row">
+        <div class="fr-col-md-8 fr-col-12">
+          <ul>
+          {% for formation in list_formations %}
+          <li>{{ formation.type.label }} - Début : {{ formation.start_datetime|date:"d F Y" }} - Durée en heures : {{ formation.duration }} - Lieu : {{ formation.place }}  - Nb Inscrits : {{ formation.number_of_attendants }} Nb Max: {{ formation.max_attendants }} </li>
+          {% endfor %}
+          </ul>
+        </div>
+        </div>
+
+{% endblock body %}
