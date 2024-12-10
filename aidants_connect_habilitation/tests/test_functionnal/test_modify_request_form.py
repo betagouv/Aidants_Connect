@@ -5,7 +5,6 @@ from django.urls import reverse
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.expected_conditions import url_matches
 
 from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
@@ -45,19 +44,19 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
 
             self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
 
-            path = reverse(
-                "habilitation_organisation_add_aidants",
-                kwargs={
-                    "issuer_id": str(organisation.issuer.issuer_id),
-                    "uuid": str(organisation.uuid),
-                },
+            self.wait.until(
+                self.path_matches(
+                    "habilitation_organisation_add_aidants",
+                    kwargs={
+                        "issuer_id": str(organisation.issuer.issuer_id),
+                        "uuid": str(organisation.uuid),
+                    },
+                )
             )
-
-            self.wait.until(url_matches(f"^.+{path}$"))
 
     def test_can_correctly_add_new_aidants(self):
         organisation: OrganisationRequest = OrganisationRequestFactory(
-            status=RequestStatusConstants.NEW.name, post__aidants_count=2
+            status=RequestStatusConstants.NEW, post__aidants_count=2
         )
 
         self.assertEqual(organisation.aidant_requests.count(), 2)

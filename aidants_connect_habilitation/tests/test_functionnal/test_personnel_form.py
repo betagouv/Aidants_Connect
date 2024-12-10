@@ -1,9 +1,8 @@
-from random import randint
 from typing import List
 from unittest.mock import Mock, patch
 
 from django.conf import settings
-from django.test import modify_settings, override_settings, tag
+from django.test import override_settings, tag
 from django.urls import reverse
 
 from selenium.common.exceptions import NoSuchElementException
@@ -17,7 +16,6 @@ from aidants_connect_habilitation.forms import (
     AidantRequestFormLegacy,
     IssuerForm,
     ManagerForm,
-    PersonnelForm,
 )
 from aidants_connect_habilitation.models import (
     AidantRequest,
@@ -33,17 +31,426 @@ from aidants_connect_habilitation.tests.factories import (
 )
 from aidants_connect_habilitation.tests.utils import get_form, load_json_fixture
 
-FIXED_PORT = randint(8081, 8179)
+
+@tag("functional")
+class ReferentRequestFormViewTests(FunctionalTestCase):
+    def test_form_loads_manager_data(self):
+        issuer: Issuer = IssuerFactory()
+        manager: Manager = ManagerFactory(is_aidant=True, conseiller_numerique=True)
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer, manager=manager
+        )
+        form = ManagerForm(organisation=organisation)
+
+        self._open_form_url(issuer, organisation)
+
+        field_names = list(form.fields.keys())
+        field_names.remove("is_aidant")
+        field_names.remove("conseiller_numerique")
+        field_names.remove("alternative_address")
+        field_names.remove("skip_address_validation")
+
+        element: WebElement = self.selenium.find_element(
+            By.XPATH,
+            "//*[@id='id_is_aidant']//option[normalize-space(text())='Oui']",
+        )
+
+        self.assertIsNotNone(
+            element.get_attribute("selected"),
+            "Manager is also an aidant, option should have been checked",
+        )
+
+        self.assertIsNotNone(
+            self.selenium.find_element(
+                By.CSS_SELECTOR, '#id_conseiller_numerique [value="True"]'
+            ).get_attribute("checked"),
+            "Manager is also conseiller numérique, option should have been checked",
+        )
+
+        for field_name in field_names:
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR,
+                f"#manager-subform #id_{field_name}",
+            )
+
+            self.assertEqual(
+                element.get_attribute("value"), getattr(manager, field_name)
+            )
+
+    def test_form_modify_manager_data(self):
+        issuer: Issuer = IssuerFactory()
+        manager: Manager = ManagerFactory(is_aidant=False)
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer, manager=manager
+        )
+        form = ManagerForm(organisation=organisation)
+
+        self._open_form_url(issuer, organisation)
+
+        new_manager: Manager = ManagerFactory.build(is_aidant=True)
+
+        field_names = list(form.fields.keys())
+        field_names.remove("is_aidant")
+        field_names.remove("conseiller_numerique")
+        field_names.remove("alternative_address")
+        field_names.remove("skip_address_validation")
+
+        self.assertIsNone(
+            self.selenium.find_element(
+                By.XPATH,
+                "//*[@id='id_is_aidant']//*[normalize-space(text())='Oui']",
+                # noqa: E501
+            ).get_attribute("selected"),
+            "Manager is not an aidant, checkbox should not have been checked",
+        )
+
+        Select(
+            self.selenium.find_element(By.ID, "id_is_aidant")
+        ).select_by_visible_text("Oui")
+
+        self.assertIsNotNone(
+            self.selenium.find_element(
+                By.XPATH,
+                "//*[@id='id_is_aidant']//*[normalize-space(text())='Oui']",
+                # noqa: E501
+            ).get_attribute("selected"),
+            "Manager is not an aidant, checkbox should not have been checked",
+        )
+
+        for field_name in field_names:
+            if field_name not in ["city_insee_code", "department_insee_code"]:
+                element: WebElement = self.selenium.find_element(
+                    By.CSS_SELECTOR,
+                    f"#manager-subform #id_{field_name}",
+                )
+
+                element.clear()
+                element.send_keys(str(getattr(new_manager, field_name)))
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        self.wait.until(
+            self.path_matches(
+                "habilitation_new_aidants",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
+        )
+
+        organisation.refresh_from_db()
+        saved_manager = organisation.manager
+
+        for field_name in form.fields:
+            if field_name not in (
+                "alternative_address",
+                "skip_address_validation",
+                "conseiller_numerique",
+            ):
+                self.assertEqual(
+                    getattr(saved_manager, field_name), getattr(new_manager, field_name)
+                )
+
+    def test_issuer_form_is_rendered_harmless(self):
+        issuer: Issuer = IssuerFactory()
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer,
+        )
+
+        self._open_form_url(issuer, organisation)
+
+        for name in IssuerForm().fields.keys():
+            el_id = f"id_{name}"
+            el = self.selenium.find_element(By.ID, el_id)
+            el_name_attr = el.get_attribute("name")
+            self.assertEqual(
+                el_name_attr,
+                "",
+                f"""Element <{el.tag_name} id="{el_id}"> from issuer form should not """
+                f"have `name` attribute set (current value is '{el_name_attr}')",
+            )
+
+    def test_js_its_me_button_fills_manager_form(self):
+        issuer: Issuer = IssuerFactory()
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer,
+        )
+
+        form = IssuerForm()
+
+        self._open_form_url(issuer, organisation)
+
+        for field_name in form.fields:
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
+            )
+            self.assertEqual(element.get_attribute("value"), "")
+
+        self.selenium.find_element(By.CSS_SELECTOR, "#its-me-manager").click()
+
+        for field_name in form.fields:
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
+            )
+            field_value = getattr(issuer, field_name)
+            self.assertEqual(element.get_attribute("value"), field_value)
+
+        for field_name in ("zipcode", "city", "address"):
+            element: WebElement = self.selenium.find_element(
+                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
+            )
+            field_value = getattr(organisation, field_name)
+            self.assertEqual(element.get_attribute("value"), field_value)
+
+    def test_js_I_must_select_a_correct_address(self):
+        with self.settings(
+            GOUV_ADDRESS_SEARCH_API_DISABLED=False,
+            GOUV_ADDRESS_SEARCH_API_BASE_URL=(
+                f"{self.live_server_url}{reverse('test_address_api_segur')}"
+            ),
+        ):
+            with self.modify_settings(
+                CSP_CONNECT_SRC={
+                    "append": (
+                        f"{self.live_server_url}{reverse('test_address_api_segur')}"
+                    )
+                },
+                CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
+            ):
+                issuer: Issuer = IssuerFactory()
+                organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+                    issuer=issuer
+                )
+
+                manager: Manager = ManagerFactory.build(
+                    address="15 avenue de segur", zipcode="", city=""
+                )
+
+                self._open_form_url(issuer, organisation)
+
+                # Fill form
+                for item in [
+                    "last_name",
+                    "first_name",
+                    "email",
+                    "phone",
+                    "address",
+                    "profession",
+                ]:
+                    value = str(getattr(manager, item))
+                    self.selenium.find_element(
+                        By.CSS_SELECTOR, f"#manager-subform #id_{item}"
+                    ).send_keys(value)
+
+                Select(
+                    self.selenium.find_element(By.ID, "id_is_aidant")
+                ).select_by_visible_text("Oui")
+
+                self.selenium.find_element(
+                    By.CSS_SELECTOR,
+                    '#id_conseiller_numerique [value="False"]',
+                ).click()
+
+                # Open dropdown
+                self.selenium.find_element(
+                    By.CSS_SELECTOR, "#manager-subform #id_address"
+                ).click()
+
+                selected_address = "Avenue de Ségur 75007 Paris"
+                # Select result
+                self.selenium.find_element(
+                    By.XPATH, f"//*[contains(text(),'{selected_address}')]"
+                ).click()
+
+                self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+                self.wait.until(
+                    self.path_matches(
+                        "habilitation_new_aidants",
+                        kwargs={
+                            "issuer_id": str(organisation.issuer.issuer_id),
+                            "uuid": str(organisation.uuid),
+                        },
+                    )
+                )
+
+                organisation.refresh_from_db()
+                manager = organisation.manager
+                self.assertEqual(manager.address, "Avenue de Ségur")
+                self.assertEqual(manager.zipcode, "75007")
+                self.assertEqual(manager.city, "Paris")
+                self.assertEqual(manager.city_insee_code, "75107")
+
+    def test_js_I_can_submit_an_address_that_is_not_found(self):
+        with self.settings(
+            GOUV_ADDRESS_SEARCH_API_DISABLED=False,
+            GOUV_ADDRESS_SEARCH_API_BASE_URL=(
+                f"{self.live_server_url}{reverse('test_address_api_no_result')}"
+            ),
+        ):
+            with self.modify_settings(
+                CSP_CONNECT_SRC={
+                    "append": (
+                        f"{self.live_server_url}{reverse('test_address_api_no_result')}"
+                    )
+                },
+                CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
+            ):
+                address = "15 avenue de segur"
+                issuer: Issuer = IssuerFactory()
+                organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+                    issuer=issuer
+                )
+
+                manager: Manager = ManagerFactory.build(
+                    address=address, zipcode="37000", city="Orléans"
+                )
+
+                self._open_form_url(issuer, organisation)
+
+                # Fill form
+                for item in [
+                    "last_name",
+                    "first_name",
+                    "email",
+                    "phone",
+                    "address",
+                    "profession",
+                    "zipcode",
+                    "city",
+                ]:
+                    value = str(getattr(manager, item))
+                    self.selenium.find_element(
+                        By.CSS_SELECTOR, f"#manager-subform #id_{item}"
+                    ).send_keys(value)
+
+                Select(
+                    self.selenium.find_element(By.ID, "id_is_aidant")
+                ).select_by_visible_text("Oui")
+
+                self.selenium.find_element(
+                    By.CSS_SELECTOR,
+                    '#id_conseiller_numerique [value="False"]',
+                ).click()
+
+                # Open dropdown
+                self.selenium.find_element(
+                    By.CSS_SELECTOR, "#manager-subform #id_address"
+                ).click()
+
+                self.assertEqual(
+                    f"Aucun résultat trouvé pour la requête « {address} »",
+                    self.selenium.find_element(By.CSS_SELECTOR, ".no-result").text,
+                )
+
+                self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+                self.wait.until(
+                    self.path_matches(
+                        "habilitation_new_aidants",
+                        kwargs={
+                            "issuer_id": str(organisation.issuer.issuer_id),
+                            "uuid": str(organisation.uuid),
+                        },
+                    ),
+                )
+
+                organisation.refresh_from_db()
+                manager = organisation.manager
+                self.assertEqual(manager.address, "15 avenue de segur")
+                self.assertEqual(manager.zipcode, "37000")
+                self.assertEqual(manager.city, "Orléans")
+
+    def _open_form_url(
+        self,
+        issuer: Issuer,
+        organisation_request: OrganisationRequest,
+    ):
+        self.open_live_url(
+            reverse(
+                "habilitation_new_referent",
+                kwargs={
+                    "issuer_id": issuer.issuer_id,
+                    "uuid": organisation_request.uuid,
+                },
+            )
+        )
 
 
-def _django_server_url(path):
-    return f"http://localhost:{FIXED_PORT}{path}"
+@tag("functional")
+class ReferentRequestFormViewNoJSTests(FunctionalTestCase):
+    js = False
+
+    @override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=False)
+    @patch("aidants_connect_habilitation.forms.search_adresses")
+    def test_I_must_select_a_correct_address(self, search_adresses_mock: Mock):
+        expected_address = "Rue de Paris 45000 Orléans"
+        selected_address = "Rue du Parc 45000 Orléans"
+
+        def search_adresses(query_string: str) -> List[Address]:
+            if query_string == expected_address:
+                result = [
+                    Address(**item["properties"])
+                    for item in load_json_fixture("address_results.json")["features"]
+                ]
+                return result
+
+            self.fail(f"Expected manager with address '{expected_address}'")
+
+        search_adresses_mock.side_effect = search_adresses
+
+        issuer: Issuer = IssuerFactory()
+        manager: Manager = ManagerFactory(
+            address="Rue de Paris", zipcode="45000", city="Orléans"
+        )
+        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
+            issuer=issuer, manager=manager
+        )
+
+        self._open_form_url(issuer, organisation)
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        self.selenium.find_element(
+            By.XPATH, f"//*[contains(text(),'{selected_address}')]"
+        ).click()
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        self.wait.until(
+            self.path_matches(
+                "habilitation_new_aidants",
+                kwargs={
+                    "issuer_id": str(organisation.issuer.issuer_id),
+                    "uuid": str(organisation.uuid),
+                },
+            )
+        )
+
+        manager.refresh_from_db()
+        self.assertEqual(
+            selected_address, f"{manager.address} {manager.zipcode} {manager.city}"
+        )
+
+    def _open_form_url(
+        self,
+        issuer: Issuer,
+        organisation_request: OrganisationRequest,
+    ):
+        self.open_live_url(
+            reverse(
+                "habilitation_new_referent",
+                kwargs={
+                    "issuer_id": issuer.issuer_id,
+                    "uuid": organisation_request.uuid,
+                },
+            )
+        )
 
 
 @tag("functional")
 class PersonnelRequestFormViewTests(FunctionalTestCase):
-    port = FIXED_PORT
-
     def test_js_managment_form_aidant_count_is_modified(self):
         issuer: Issuer = IssuerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
@@ -128,14 +535,11 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         for i, _ in enumerate(form_elts):
             form = AidantRequestFormLegacy(
                 organisation=organisation,
-                prefix=f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}",
+                prefix=f"form-{i}",
             )
 
             for bf in form:
-                html_id = f"id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}-{bf.name}"
-
                 for widget in bf.subwidgets:
-                    self.assertIn(html_id, widget.id_for_label)
                     try:
                         field_label = self.selenium.find_element(
                             By.CSS_SELECTOR, f'[for="{widget.id_for_label}"]'
@@ -151,138 +555,11 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                         field_label.get_attribute("innerHTML"),
                     )
 
-    def test_form_loads_manager_data(self):
-        issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory(is_aidant=True, conseiller_numerique=True)
-        form = ManagerForm()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer, manager=manager
-        )
-
-        self._open_form_url(issuer, organisation)
-
-        field_names = list(form.fields.keys())
-        field_names.remove("is_aidant")
-        field_names.remove("conseiller_numerique")
-        field_names.remove("alternative_address")
-        field_names.remove("skip_address_validation")
-
-        element: WebElement = self.selenium.find_element(
-            By.XPATH,
-            f"//*[@id='id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant']"
-            "//option[normalize-space(text())='Oui']",
-        )
-
-        self.assertIsNotNone(
-            element.get_attribute("selected"),
-            "Manager is also an aidant, option should have been checked",
-        )
-
-        self.assertIsNotNone(
-            self.selenium.find_element(
-                By.CSS_SELECTOR,
-                (
-                    f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique "
-                    f'[value="True"]'
-                ),
-            ).get_attribute("checked"),
-            "Manager is also conseiller numérique, option should have been checked",
-        )
-
-        for field_name in field_names:
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR,
-                f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
-            )
-
-            self.assertEqual(
-                element.get_attribute("value"), getattr(manager, field_name)
-            )
-
-    def test_form_modify_manager_data(self):
-        issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory(is_aidant=False)
-        form = ManagerForm()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer,
-            manager=manager,
-        )
-
-        self._open_form_url(issuer, organisation)
-
-        new_manager: Manager = ManagerFactory.build(is_aidant=True)
-
-        field_names = list(form.fields.keys())
-        field_names.remove("is_aidant")
-        field_names.remove("conseiller_numerique")
-        field_names.remove("alternative_address")
-        field_names.remove("skip_address_validation")
-
-        prefix = PersonnelForm.MANAGER_FORM_PREFIX
-
-        self.assertIsNone(
-            self.selenium.find_element(
-                By.XPATH,
-                f"//*[@id='id_{prefix}-is_aidant']//*[normalize-space(text())='Oui']",
-                # noqa: E501
-            ).get_attribute("selected"),
-            "Manager is not an aidant, checkbox should not have been checked",
-        )
-
-        Select(
-            self.selenium.find_element(By.ID, f"id_{prefix}-is_aidant")
-        ).select_by_visible_text("Oui")
-
-        self.assertIsNotNone(
-            self.selenium.find_element(
-                By.XPATH,
-                f"//*[@id='id_{prefix}-is_aidant']//*[normalize-space(text())='Oui']",
-                # noqa: E501
-            ).get_attribute("selected"),
-            "Manager is not an aidant, checkbox should not have been checked",
-        )
-
-        for field_name in field_names:
-            if field_name not in ["city_insee_code", "department_insee_code"]:
-                element: WebElement = self.selenium.find_element(
-                    By.CSS_SELECTOR,
-                    f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{field_name}",
-                )
-
-                element.clear()
-                element.send_keys(str(getattr(new_manager, field_name)))
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        self.wait.until(
-            self.path_matches(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": str(organisation.issuer.issuer_id),
-                    "uuid": str(organisation.uuid),
-                },
-            )
-        )
-
-        organisation.refresh_from_db()
-        saved_manager = organisation.manager
-
-        for field_name in form.fields:
-            if field_name not in (
-                "alternative_address",
-                "skip_address_validation",
-                "conseiller_numerique",
-            ):
-                self.assertEqual(
-                    getattr(saved_manager, field_name), getattr(new_manager, field_name)
-                )
-
     def test_form_submit_no_aidants(self):
         issuer: Issuer = IssuerFactory()
         manager: Manager = ManagerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer,
-            manager=manager,
+            issuer=issuer, manager=manager
         )
 
         self._open_form_url(issuer, organisation)
@@ -306,8 +583,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         issuer: Issuer = IssuerFactory()
         manager: Manager = ManagerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer,
-            manager=manager,
+            issuer=issuer, manager=manager
         )
 
         # Setup 2 initial requests
@@ -324,7 +600,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             for field_name in aidant_form.fields:
                 element: WebElement = self.selenium.find_element(
                     By.CSS_SELECTOR,
-                    f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{i}-{field_name}",
+                    f"#id_form-{i}-{field_name}",
                 )
 
                 if field_name == "conseiller_numerique":
@@ -357,8 +633,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         issuer: Issuer = IssuerFactory()
         manager: Manager = ManagerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer,
-            manager=manager,
+            issuer=issuer, manager=manager
         )
 
         for _ in range(4):
@@ -368,8 +643,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         modified_aidant_idx = 2
         modified_aidant_email = self.selenium.find_element(
-            By.CSS_SELECTOR,
-            f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-{modified_aidant_idx}-email",
+            By.CSS_SELECTOR, f"#id_form-{modified_aidant_idx}-email"
         ).get_attribute("value")
 
         new_aidant_form: AidantRequestFormLegacy = get_form(
@@ -379,8 +653,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         for field_name in new_aidant_form.fields:
             element: WebElement = self.selenium.find_element(
                 By.CSS_SELECTOR,
-                f"#id_{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"
-                f"{modified_aidant_idx}-{field_name}",
+                f"#id_form-{modified_aidant_idx}-{field_name}",
             )
 
             if field_name == "conseiller_numerique":
@@ -415,303 +688,32 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         for field_name in new_aidant_form.fields:
             self.assertEqual(getattr(saved_aidant, field_name), aidant_data[field_name])
 
-    def test_js_its_me_button_fills_manager_form(self):
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer,
-        )
-
-        form = IssuerForm()
-
-        self._open_form_url(issuer, organisation)
-
-        for field_name in form.fields:
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
-            )
-            self.assertEqual(element.get_attribute("value"), "")
-
-        self.selenium.find_element(By.CSS_SELECTOR, "#its-me-manager").click()
-
-        for field_name in form.fields:
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
-            )
-            field_value = getattr(issuer, field_name)
-            self.assertEqual(element.get_attribute("value"), field_value)
-
-        for field_name in ("zipcode", "city", "address"):
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR, f"#manager-subform [name$='{field_name}']"
-            )
-            field_value = getattr(organisation, field_name)
-            self.assertEqual(element.get_attribute("value"), field_value)
-
     def test_cannot_submit_form_without_aidants_displays_errors(self):
         issuer: Issuer = IssuerFactory()
         manager: Manager = ManagerFactory(is_aidant=False)
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=issuer, manager=manager
         )
-        self._open_form_url(issuer, organisation)
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        error_element = self.selenium.find_element(
-            By.CSS_SELECTOR, ".aidant-forms p.errorlist"
-        )
-
-        self.assertEqual(
-            error_element.text,
-            "Vous devez déclarer au moins 1 aidant si le ou la référente de "
-            "l'organisation n'est pas elle-même déclarée comme aidante",
-        )
-
-        error_element = self.selenium.find_element(
-            By.CSS_SELECTOR, "#manager-subform p.errorlist"
-        )
-
-        self.assertEqual(
-            error_element.text,
-            "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
-        )
-
-        error_element = self.selenium.find_element(
-            By.CSS_SELECTOR, ".aidant-forms p.errorlist"
-        )
-
-        self.assertEqual(
-            error_element.text,
-            "Vous devez déclarer au moins 1 aidant si le ou la référente de "
-            "l'organisation n'est pas elle-même déclarée comme aidante",
-        )
-
-    @override_settings(
-        GOUV_ADDRESS_SEARCH_API_DISABLED=False,
-        GOUV_ADDRESS_SEARCH_API_BASE_URL=_django_server_url(
-            reverse("test_address_api_segur")
-        ),
-    )
-    @modify_settings(
-        CSP_CONNECT_SRC={
-            "append": _django_server_url(reverse("test_address_api_segur"))
-        },
-        CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
-    )
-    def test_js_I_must_select_a_correct_address(self):
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer
-        )
-
-        manager: Manager = ManagerFactory.build(
-            address="15 avenue de segur", zipcode="", city=""
-        )
-
-        self._open_form_url(issuer, organisation)
-
-        # Fill form
-        for item in [
-            "last_name",
-            "first_name",
-            "email",
-            "phone",
-            "address",
-            "profession",
-        ]:
-            value = str(getattr(manager, item))
-            selector = f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{item}"
-            self.selenium.find_element(By.CSS_SELECTOR, selector).send_keys(value)
-
-        Select(
-            self.selenium.find_element(
-                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant"
-            )
-        ).select_by_visible_text("Oui")
-
-        self.selenium.find_element(
-            By.CSS_SELECTOR,
-            f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique "
-            '[value="False"]',
-        ).click()
-
-        # Open dropdown
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
-
-        selected_address = "Avenue de Ségur 75007 Paris"
-        # Select result
-        self.selenium.find_element(
-            By.XPATH, f"//*[normalize-space(text())='{selected_address}']"
-        ).click()
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        self.wait.until(
-            self.path_matches(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": str(organisation.issuer.issuer_id),
-                    "uuid": str(organisation.uuid),
-                },
-            )
-        )
-
-        organisation.refresh_from_db()
-        manager = organisation.manager
-        self.assertEqual(manager.address, "Avenue de Ségur")
-        self.assertEqual(manager.zipcode, "75007")
-        self.assertEqual(manager.city, "Paris")
-        self.assertEqual(manager.city_insee_code, "75107")
-
-    @override_settings(
-        GOUV_ADDRESS_SEARCH_API_DISABLED=False,
-        GOUV_ADDRESS_SEARCH_API_BASE_URL=_django_server_url(
-            reverse("test_address_api_no_result")
-        ),
-    )
-    @modify_settings(
-        CSP_CONNECT_SRC={
-            "append": _django_server_url(reverse("test_address_api_no_result"))
-        },
-        CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
-    )
-    def test_js_I_can_submit_an_address_that_is_not_found(self):
-        address = "15 avenue de segur"
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer
-        )
-
-        manager: Manager = ManagerFactory.build(
-            address=address, zipcode="37000", city="Orléans"
-        )
-
-        self._open_form_url(issuer, organisation)
-
-        # Fill form
-        for item in [
-            "last_name",
-            "first_name",
-            "email",
-            "phone",
-            "address",
-            "profession",
-            "zipcode",
-            "city",
-        ]:
-            value = str(getattr(manager, item))
-            selector = f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-{item}"
-            self.selenium.find_element(By.CSS_SELECTOR, selector).send_keys(value)
-
-        Select(
-            self.selenium.find_element(
-                By.ID, f"id_{PersonnelForm.MANAGER_FORM_PREFIX}-is_aidant"
-            )
-        ).select_by_visible_text("Oui")
-
-        self.selenium.find_element(
-            By.CSS_SELECTOR,
-            f"#id_{PersonnelForm.MANAGER_FORM_PREFIX}-conseiller_numerique "
-            '[value="False"]',
-        ).click()
-
-        # Open dropdown
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_manager-address").click()
-
-        self.assertEqual(
-            f"Aucun résultat trouvé pour la requête « {address} »",
-            self.selenium.find_element(By.CSS_SELECTOR, ".no-result").text,
-        )
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        self.wait.until(
-            self.path_matches(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": str(organisation.issuer.issuer_id),
-                    "uuid": str(organisation.uuid),
-                },
-            ),
-        )
-
-        organisation.refresh_from_db()
-        manager = organisation.manager
-        self.assertEqual(manager.address, "15 avenue de segur")
-        self.assertEqual(manager.zipcode, "37000")
-        self.assertEqual(manager.city, "Orléans")
-
-    def _open_form_url(
-        self,
-        issuer: Issuer,
-        organisation_request: OrganisationRequest,
-    ):
         self.open_live_url(
             reverse(
                 "habilitation_new_aidants",
                 kwargs={
                     "issuer_id": issuer.issuer_id,
-                    "uuid": organisation_request.uuid,
+                    "uuid": organisation.uuid,
                 },
             )
         )
 
+        self.selenium.find_element(By.CSS_SELECTOR, '[data-test="validate"]').click()
 
-@tag("functional")
-class PersonnelRequestFormViewNoJSTests(FunctionalTestCase):
-    js = False
-
-    @override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=False)
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_I_must_select_a_correct_address(self, search_adresses_mock: Mock):
-        expected_address = "Rue de Paris 45000 Orléans"
-        selected_address = "Rue du Parc 45000 Orléans"
-
-        def search_adresses(query_string: str) -> List[Address]:
-            if query_string == expected_address:
-                result = [
-                    Address(**item["properties"])
-                    for item in load_json_fixture("address_results.json")["features"]
-                ]
-                return result
-
-            self.fail(f"Expected manager with address '{expected_address}'")
-
-        search_adresses_mock.side_effect = search_adresses
-
-        issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory(
-            address="Rue de Paris", zipcode="45000", city="Orléans"
-        )
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer, manager=manager
+        error_element = self.selenium.find_element(
+            By.CSS_SELECTOR, ".aidant-forms p.errorlist"
         )
 
-        self._open_form_url(issuer, organisation)
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        self.selenium.find_element(
-            By.XPATH,
-            "//*[@id='id_manager-alternative_address']"
-            f"//*[normalize-space(text())='{selected_address}']",
-        ).click()
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        self.wait.until(
-            self.path_matches(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": str(organisation.issuer.issuer_id),
-                    "uuid": str(organisation.uuid),
-                },
-            )
-        )
-
-        manager.refresh_from_db()
         self.assertEqual(
-            selected_address, f"{manager.address} {manager.zipcode} {manager.city}"
+            error_element.text,
+            "Vous devez déclarer au moins 1 aidant si le ou la référente de "
+            "l'organisation n'est pas elle-même déclarée comme aidante",
         )
 
     def _open_form_url(

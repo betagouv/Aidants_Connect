@@ -30,9 +30,7 @@ from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     EmailOrganisationValidationError,
     IssuerForm,
-    ManagerForm,
     OrganisationRequestForm,
-    PersonnelForm,
 )
 from aidants_connect_habilitation.models import (
     AidantRequest,
@@ -487,7 +485,7 @@ class NewOrganisationRequestFormViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_new_aidants",
+                "habilitation_new_referent",
                 kwargs={
                     "issuer_id": self.issuer.issuer_id,
                     "uuid": self.issuer.organisation_requests.first().uuid,
@@ -609,7 +607,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_new_aidants",
+                "habilitation_new_referent",
                 kwargs={
                     "issuer_id": model.issuer.issuer_id,
                     "uuid": model.uuid,
@@ -641,72 +639,49 @@ class PersonnelRequestFormViewTests(TestCase):
     def test_has_errors_on_aidants_with_same_email(self):
         aidants_email = Faker().email()
 
-        manager_data = utils.get_form(
-            ManagerForm, form_init_kwargs={"prefix": PersonnelForm.MANAGER_FORM_PREFIX}
-        ).data
-
         aidants_data = utils.get_form(
             AidantRequestFormSet,
             ignore_errors=True,
             form_init_kwargs={
                 "organisation": self.organisation,
                 "initial": 2,
-                "prefix": PersonnelForm.AIDANTS_FORMSET_PREFIX,
             },
             email=aidants_email,
         ).data
 
         response = self.client.post(
             self.__get_url(self.issuer.issuer_id, self.organisation.uuid),
-            data={**manager_data, **aidants_data},
+            data=aidants_data,
         )
 
         self.assertTemplateUsed(response, self.template_name)
 
         self.assertIn(
             str(EmailOrganisationValidationError(aidants_email)),
-            str(
-                response.context_data["form"]
-                .aidants_formset.forms[0]
-                .errors["email"]
-                .data
-            ),
+            str(response.context_data["form"].forms[0].errors["email"].data),
         )
 
         self.assertFalse(response.context_data["form"].is_valid())
 
         aidant: AidantRequest = AidantRequestFactory(organisation=self.organisation)
 
-        manager_data = utils.get_form(
-            ManagerForm, form_init_kwargs={"prefix": PersonnelForm.MANAGER_FORM_PREFIX}
-        ).data
-
         aidants_data = utils.get_form(
             AidantRequestFormSet,
             ignore_errors=True,
-            form_init_kwargs={
-                "organisation": self.organisation,
-                "initial": 1,
-                "prefix": PersonnelForm.AIDANTS_FORMSET_PREFIX,
-            },
+            form_init_kwargs={"organisation": self.organisation, "initial": 1},
             email=aidant.email,
         ).data
 
         response = self.client.post(
             self.__get_url(self.issuer.issuer_id, self.organisation.uuid),
-            data={**manager_data, **aidants_data},
+            data=aidants_data,
         )
 
         self.assertTemplateUsed(response, self.template_name)
 
         self.assertIn(
             str(EmailOrganisationValidationError(aidant.email)),
-            str(
-                response.context_data["form"]
-                .aidants_formset.forms[0]
-                .errors["email"]
-                .data
-            ),
+            str(response.context_data["form"].forms[0].errors["email"].data),
         )
 
         self.assertFalse(response.context_data["form"].is_valid())
@@ -811,21 +786,13 @@ class AidantsRequestFormViewTests(TestCase):
     def test_redirect_valid_post_to_validation(self):
         organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
-        manager_data = utils.get_form(ManagerForm).data
         aidants_data = utils.get_form(
             AidantRequestFormSet, form_init_kwargs={"organisation": organisation}
         ).data
 
-        # Logic to manually put prefix on form data
-        # See https://docs.djangoproject.com/fr/4.0/ref/forms/api/#django.forms.Form.prefix # noqa:E501
-        cleaned_data = {
-            **{f"manager-{k}": v for k, v in manager_data.items()},
-            **{k.replace("form-", "aidants-"): v for k, v in aidants_data.items()},
-        }
-
         response = self.client.post(
             self.get_url(organisation.issuer.issuer_id, organisation.uuid),
-            cleaned_data,
+            aidants_data,
         )
 
         self.assertRedirects(

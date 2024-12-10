@@ -122,7 +122,7 @@ class AddressAutoComplete extends BaseController {
         } catch (e) {
             // If thrown error is resulting from an abortion, then we are running another
             // search, so we should not notify the end of the request. Otherwise, we totally should.
-            if (e instanceof DOMException && e.name !== "AbortError") {
+            if (e instanceof DOMException && e.name === "AbortError") {
                 this.requestOngoingValue = false;
             } else {
                 console.error(e)

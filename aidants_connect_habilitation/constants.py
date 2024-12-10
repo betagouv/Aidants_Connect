@@ -13,7 +13,8 @@ else:
 class HabilitationFormStep(IntegerChoices):
     ISSUER = auto(), "Le demandeur"
     ORGANISATION = auto(), "La structure"
-    PERSONNEL = auto(), "Les personnes impliquées"
+    REFERENT = auto(), "Le référent Aidants Connect"
+    PERSONNEL = auto(), "Les aidants de ma structure"
     SUMMARY = auto(), "Récapitulatif & validation"
 
     @enum_property
