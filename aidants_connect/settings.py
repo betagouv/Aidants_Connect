@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from django.conf import global_settings
+from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_noop
 
 import dj_database_url
@@ -849,3 +850,6 @@ LIVESTORM_API_KEY = os.getenv("LIVESTORM_API_KEY")
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
 FF_EMAIL_CO_RERERENT_CREATION = getenv_bool("FF_EMAIL_CO_RERERENT_CREATION", False)
+
+
+URL_FORMATION = os.getenv("URL_FORMATION", get_random_string(12))

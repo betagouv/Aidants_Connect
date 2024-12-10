@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import include, path, re_path
 
 from magicauth import settings as magicauth_settings
@@ -9,6 +10,7 @@ from aidants_connect_web.views import (
     datapass,
     espace_aidant,
     espace_responsable,
+    formations,
     id_provider,
     login,
     mandat,
@@ -301,6 +303,11 @@ urlpatterns = [
         name="sandbox_presentation",
     ),
     path("api/", include(api_router.urls)),
+    path(
+        f"formations/{settings.URL_FORMATION}/listing",
+        formations.FormationsListing.as_view(),
+        name="listing_formations",
+    ),
 ]
 
 urlpatterns.extend(magicauth_urls)
