@@ -1,5 +1,5 @@
 {% extends 'public_website/layout/layout_habilitation.html' %}
-{% load ac_common %}
+{% load ac_common dsfr_tags static %}
 
 {% block title %}Aidants Connect - Formation{% endblock %}
 
@@ -21,14 +21,12 @@
     <div class="fr-alert fr-alert--info fr-my-4v">
     <h3 class="fr-alert__title">Information financement France Numérique Ensemble</h3>
     <p>Des modalités de financement seront possibles via les gouvernances France Numérique Ensemble à partir du second semestre 2024, dans la limite de 20000 euros par département. Le mode opératoire pour avoir accès au financement via France Numérique Ensemble sera communiqué prochainement.</p>
-     </p>
     </div>
-  <p>La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. <strong>Cette formation est dorénavant financée selon différentes modalités.</strong></p>  
-  <p>Nous vous invitons à vous rendre sur <a href="https://tally.so/r/mO0Xkg">ce simulateur de financement</a> pour découvrir comment la financer.</p> 
-  <p><strong>Attention:</strong> il peut arriver que dans certains cas (structures non adhérentes à l'OPCO Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être financée par la structure.</p>  
+  <p>La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. <strong>Cette formation est dorénavant financée selon différentes modalités.</strong></p>
+  <p>Nous vous invitons à vous rendre sur <a href="https://tally.so/r/mO0Xkg">ce simulateur de financement</a> pour découvrir comment la financer.</p>
+  <p><strong>Attention :</strong> il peut arriver que dans certains cas (structures non adhérentes à l'OPCO Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être financée par la structure.</p>
   <p>Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.</p>
-   
-  </section>
+
   <h2 class="fr-h4 fr-mb-3w">Comment s’inscrire en formation&nbsp;?</h2>
   <p>
     Si ma structure n’est pas encore habilitée, l’inscription se fait suite à la <a class="fr-link" href="{% url 'habilitation_new' %}">demande d’habilitation</a> de la structure. Après vérification de l’éligibilité par Aidants Connect, un mail est envoyé au demandeur et au référent avec un lien vers le formulaire d’inscription aux sessions.</p>
@@ -77,8 +75,16 @@
           <p class="fr-text--xs">les frais annexes ne sont pas pris en charge</p>
           <p class="fr-mt-4w fr-mb-2w"><strong>Organismes qui dispensent cette formation</strong></p>
           <ul class="fr-pl-3w">
-            <li>Familles Rurales</li>
-            <li>Un consortium d'organismes de formation piloté par la Mednum</li>
+            <li>
+              Familles Rurales<br />
+              {% static "guides_aidants_connect/Familles Rurales - Programme de formation Etre aidant numérique.pdf" as url1 %}
+              {% dsfr_link url=url1 label="Télécharger le programme" extra_classes="fr-text--sm fr-link--download" %}
+            </li>
+            <li>
+              La MedNum<br />
+              {% static "guides_aidants_connect/Mednum - Programme de formation Aidants Connect.pdf" as url2 %}
+              {% dsfr_link url=url2 label="Télécharger le programme" extra_classes="fr-text--sm fr-link--download" %}
+            </li>
           </ul>
         </div>
       </div>
@@ -99,7 +105,7 @@
             <li>Connaître le cadre réglementaire de la fonction d'aidant numérique</li>
           </ul>
           <h5 class="fr-mt-4w">Méthodes pédagogiques</h5>
-          <ul class="fr-pl-3w">
+          <ul>
             <li>Mises en situation</li>
             <li>Réflexion sur les problématiques rencontrées</li>
             <li>Étude de cas concrets</li>
@@ -113,8 +119,12 @@
           <p class="fr-mb-0">644€ TTC</p>
           <p class="fr-text--xs">les frais annexes ne sont pas pris en charge</p>
           <p class="fr-mt-4w fr-mb-2w"><strong>Organismes qui dispensent cette formation</strong></p>
-          <ul class="fr-pl-3w">
-            <li>Familles Rurales</li>
+          <ul>
+            <li>
+              Familles Rurales<br />
+              {% static "guides_aidants_connect/Familles Rurales - Programme de formation Etre aidant numérique.pdf" as url3 %}
+              {% dsfr_link url=url3 label="Télécharger le programme" extra_classes="fr-text--sm fr-link--download" %}
+            </li>
           </ul>
         </div>
       </div>
