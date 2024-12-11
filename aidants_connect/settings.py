@@ -134,6 +134,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "rest_framework",
+    "rest_framework.authtoken",
     "django_otp",
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
@@ -815,6 +816,11 @@ SANDBOX_API_TOKEN = os.getenv("SANDBOX_API_TOKEN", "TOKEN")
 WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
 }
@@ -855,3 +861,4 @@ FF_EMAIL_CO_RERERENT_CREATION = getenv_bool("FF_EMAIL_CO_RERERENT_CREATION", Fal
 
 
 URL_FORMATION = os.getenv("URL_FORMATION", get_random_string(12))
+URL_FNEAPI = os.getenv("URL_FNEAPI", get_random_string(12))
