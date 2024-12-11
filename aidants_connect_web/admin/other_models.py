@@ -20,6 +20,10 @@ from ..tasks import email_co_rerefent_creation
 
 logger = logging.getLogger()
 
+from rest_framework.authtoken.admin import TokenAdmin
+
+TokenAdmin.raw_id_fields = ["user"]
+
 
 class ConnectionAdmin(ModelAdmin):
     list_display = ("id", "usager", "aidant", "complete")

@@ -1,9 +1,13 @@
 from django.http import Http404, HttpResponse
 from django.views.generic import FormView
 
-from rest_framework import viewsets
+from rest_framework import permissions, viewsets
 
-from aidants_connect_web.api.serializers import OrganisationSerializer
+from aidants_connect_web.api.serializers import (
+    FNEAidantSerializer,
+    FNEOrganisationSerializer,
+    OrganisationSerializer,
+)
 from aidants_connect_web.decorators import responsable_logged_required
 from aidants_connect_web.forms import NewHabilitationRequestForm
 from aidants_connect_web.models import Aidant, Organisation
@@ -15,6 +19,24 @@ class OrganisationViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_url_kwarg = "uuid"
     queryset = Organisation.objects.filter(is_active=True).order_by("pk").all()
     serializer_class = OrganisationSerializer
+
+
+class FNEOrganisationViewSet(viewsets.ReadOnlyModelViewSet):
+    lookup_field = "uuid"
+    lookup_url_kwarg = "uuid"
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Organisation.objects.filter(is_active=True).order_by("pk")
+    serializer_class = FNEOrganisationSerializer
+
+
+class FNEAidantViewSet(viewsets.ReadOnlyModelViewSet):
+    lookup_field = "id"
+    lookup_url_kwarg = "id"
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Aidant.objects.filter(
+        is_staff=False, is_superuser=False, can_create_mandats=True
+    ).order_by("pk")
+    serializer_class = FNEAidantSerializer
 
 
 @responsable_logged_required
