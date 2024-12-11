@@ -53,7 +53,7 @@ class Home(TemplateView):
         )
 
         common_infos = {
-            "extra_classes": "fr-tile--horizontal",
+            "extra_classes": "fr-tile--horizontal fr-tile--sm",
             "heading_tag": self.tiles_heading_tag,
         }
 
