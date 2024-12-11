@@ -12,3 +12,27 @@
 .fr-card__title {
   flex-grow: 10;
 }
+details[name="mandat-action"] {
+  position: relative;
+  width: fit-content;
+}
+details[name="mandat-action"] summary {
+  width: 32px;
+  height: 32px;
+  text-align: center;
+}
+details[name="mandat-action"] summary::marker {
+  content: '';
+}
+details[name="mandat-action"] .details-content {
+  width: fit-content;
+  border: solid 1px var(--grey-975-75-active);
+  position: absolute;
+  background-color: var(--background-default-grey);
+  right: 20px;
+  z-index: 1;
+  bottom: 8px;
+}
+details[name="mandat-action"] .details-content a {
+  background-image: none;
+}

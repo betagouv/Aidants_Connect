@@ -1,5 +1,6 @@
 import logging
 from collections import OrderedDict
+from datetime import date
 from typing import Iterable
 
 from django.conf import settings
@@ -281,6 +282,14 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
         )
         return redirect("espace_aidant_home")
 
+    revoked_autorisation = []
+    if autorisation.demarche in settings.DEMARCHES:
+        revoked_autorisation.append(
+            (
+                settings.DEMARCHES[autorisation.demarche]["titre"],
+                settings.DEMARCHES[autorisation.demarche]["description"],
+            )
+        )
     if request.method == "POST":
         form = request.POST
 
@@ -304,6 +313,7 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
             "aidant": aidant,
             "usager": aidant.get_usager(usager_id),
             "autorisation": autorisation,
+            "revoked_autorisation": revoked_autorisation,
         },
     )
 
@@ -323,6 +333,15 @@ def autorisation_cancelation_success(request, usager_id, autorisation_id):
         )
         return redirect("espace_aidant_home")
 
+    revoked_autorisation = []
+    if authorization.demarche in settings.DEMARCHES:
+        revoked_autorisation.append(
+            (
+                settings.DEMARCHES[authorization.demarche]["titre"],
+                settings.DEMARCHES[authorization.demarche]["description"],
+            )
+        )
+
     if not authorization.is_revoked:
         django_messages.error(request, "Cette autorisation est encore active.")
         return redirect("espace_aidant_home")
@@ -336,6 +355,7 @@ def autorisation_cancelation_success(request, usager_id, autorisation_id):
             "humanized_auth": humanize_demarche_names(authorization.demarche),
             "usager": aidant.get_usager(usager_id),
             "authorization": authorization,
+            "revoked_autorisation": revoked_autorisation,
         },
     )
 
@@ -395,12 +415,20 @@ def confirm_mandat_cancelation(request, mandat_id):
 
     usager = mandat.usager
     remaining_autorisations = []
+    revoked_autorisations = []
 
     if mandat.is_active:
         for autorisation in mandat.autorisations.filter(revocation_date=None):
             remaining_autorisations.append(
                 humanize_demarche_names(autorisation.demarche)
-            )
+            ),
+            if autorisation.demarche in settings.DEMARCHES:
+                revoked_autorisations.append(
+                    (
+                        settings.DEMARCHES[autorisation.demarche]["titre"],
+                        settings.DEMARCHES[autorisation.demarche]["description"],
+                    )
+                )
 
         if request.method == "POST":
             if request.POST:
@@ -424,6 +452,7 @@ def confirm_mandat_cancelation(request, mandat_id):
                         "usager_name": usager.get_full_name(),
                         "usager_id": usager.id,
                         "mandat": mandat,
+                        "revoked_autorisations": revoked_autorisations,
                         "remaining_autorisations": remaining_autorisations,
                         "error": "Une erreur s'est produite lors "
                         "de la révocation du mandat",
@@ -440,6 +469,7 @@ def confirm_mandat_cancelation(request, mandat_id):
             "usager_id": usager.id,
             "mandat": mandat,
             "remaining_autorisations": remaining_autorisations,
+            "revoked_autorisations": revoked_autorisations,
         },
     )
 
@@ -454,9 +484,22 @@ def mandat_cancelation_success(request, mandat_id: int):
         django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
         return redirect("espace_aidant_home")
     user = mandate.usager
+    revoked_autorisations = []
+
     if mandate.is_active:
         django_messages.error(request, "Ce mandat est toujours actif.")
         return redirect("usager_details", usager_id=user.id)
+    else:
+        for autorisation in mandate.autorisations.filter(
+            revocation_date__date=date.today()
+        ):
+            if autorisation.demarche in settings.DEMARCHES:
+                revoked_autorisations.append(
+                    (
+                        settings.DEMARCHES[autorisation.demarche]["titre"],
+                        settings.DEMARCHES[autorisation.demarche]["description"],
+                    )
+                ),
 
     return render(
         request,
@@ -466,6 +509,7 @@ def mandat_cancelation_success(request, mandat_id: int):
             "aidant": aidant,
             "mandat": mandate,
             "usager": user,
+            "revoked_autorisations": revoked_autorisations,
         },
     )
 

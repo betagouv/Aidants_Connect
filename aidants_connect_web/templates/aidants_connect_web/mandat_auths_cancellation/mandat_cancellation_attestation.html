@@ -1,8 +1,8 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
 {% load static %}
 
-{% block title %}Aidants Connect - Impression du mandat{% endblock %}
+{% block title %}Impression de la révocation - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/attestation.css' %}" rel="stylesheet">
@@ -13,41 +13,43 @@
   <div class="no-print">{{ block.super }}</div>{% endblock nav %}
 
 {% block content %}
-  <div class="fr-container clearfix">
-    <div class="fr-grid-row no-print margin-bottom-4rem">
-      <h1 class="full-width">Révocation d'un mandat via le service « Aidants Connect »</h1>
-      <section class="fr-col-12 fr-col-md-7">
-        <p class="subtitle">
-          Le mandat a été révoqué avec succès.<br />
-          Veuillez l’imprimer afin de le faire signer par le mandant.
-        </p>
-      </section>
-      <section class="fr-col-12 fr-col-md-5">
-        {% include 'aidants_connect_web/_attestation-print.html' %}
-      </section>
-    </div>
-
-    <div class="attestation-content">
-      <header class="navbar fr-grid-row fr-grid-row--gutters">
-        <div class="fr-col-8">
-          {% include "layouts/_header_logos.html" %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <h1 class="no-print">Révocation d'un mandat via le service Aidants Connect</h1>
+      <div class="fr-col-md-8 fr-col-12">
+        <div class="attestation-content">
+          <header class="navbar fr-grid-row fr-grid-row--gutters">
+            <div class="fr-col-8">
+              {% include "layouts/_header_logos.html" %}
+            </div>
+          </header>
+          <h1>Mandat pour réaliser des démarches en ligne avec le service « Aidants Connect »
+          </h1>
+          <p class="fr-my-8v">
+            Je soussigné(e), <strong>{{ usager_name }}</strong> souhaite révoquer le mandat « Aidants Connect » créé
+            le {{ creation_date }} avec <strong>{{ organisation }}</strong>.
+          </p>
+          <p class="fr-my-8v">
+            Fait à
+            <strong {% if organisation.display_address == "" %}class="organisation-address"{% endif %}>{{ organisation.display_address }}</strong>,
+            le <strong>{{ revocation_date }}</strong>
+          </p>
+          <p class="fr-my-8v">Le mandant</p>
         </div>
-      </header>
-
-      <p class="fr-my-8v">
-        Je soussigné(e), <strong>{{ usager_name }}</strong> souhaite révoquer le mandat « Aidants Connect » créé
-        le {{ creation_date }} avec <strong>{{ organisation }}</strong>.
-      </p>
-
-      <p class="fr-my-8v">
-        Fait à
-        <strong {% if organisation.display_address == "" %}class="organisation-address"{% endif %}>{{ organisation.display_address }}</strong>,
-        le <strong>{{ revocation_date }}</strong>
-      </p>
-
-      <p class="fr-my-8v">Le mandant</p>
+      </div>
+      <div class="fr-col-md-4 fr-col-12 no-print">
+        <div class="fr-callout">
+          <p class="fr-text">
+            Le mandat a été révoqué avec succès.<br />
+            Veuillez l’imprimer afin de le faire signer par le mandant.
+          </p>
+          <div class="fr-mb-2w">
+            {% include 'aidants_connect_web/_attestation-print.html' %}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock content %}
 
-{% block footer %}{% endblock footer %}
+{% block footer %}{% endblock %}
