@@ -1,0 +1,48 @@
+{% load ac_common dsfr_tags widget_tweaks %}
+
+<div data-controller="manager-form">
+  <section class="fr-mb-5v">
+    <button id="its-me-manager" class="fr-btn fr-btn--secondary" data-action="manager-form#onManagerItsMeBtnClicked:stop:prevent">
+      Remplir avec mes informations
+    </button>
+  </section>
+
+  <fieldset class="fr-fieldset">
+    <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+      {% dsfr_form_field form.last_name %}
+    </div>
+    <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+      {% dsfr_form_field form.first_name %}
+    </div>
+    <div class="fr-fieldset__element">{% dsfr_form_field form.profession %}</div>
+    <div class="fr-fieldset__element">{% dsfr_form_field form.is_aidant|dsfr_inline %}</div>
+    <div class="fr-fieldset__element">{% dsfr_form_field form.conseiller_numerique|dsfr_inline %}</div>
+  </fieldset>
+
+  <fieldset class="fr-fieldset">
+    <legend class="fr-fieldset__legend">Contact</legend>
+
+    <div class="fr-fieldset__element">
+      {% dsfr_form_field form.email %}
+      <p class="fr-info-text fr-mb-4v fr-mt-n2v">L’email doit être nominatif</p>
+    </div>
+
+    <div class="fr-fieldset__element ">{% dsfr_form_field form.phone %}</div>
+  </fieldset>
+
+  <fieldset class="fr-fieldset">
+    <legend class="fr-fieldset__legend">
+      Adresse d’intervention du référent
+    </legend>
+    <p class="fr-fieldset__element">
+      Il s’agit notamment de l’adresse de réception du kit de bienvenue et des cartes Aidants Connect.
+    </p>
+
+    <div class="fr-fieldset__element">{% dsfr_form_field form.address_same_as_org|dsfr_inline %}</div>
+    <div class="fr-fieldset__element" data-manager-form-target="addressContainer" {% hidden %}>
+      {{ form.address_fieldset }}
+    </div>
+  </fieldset>
+
+  {{ issuer_data|json_script:"issuer-data" }}
+</div>

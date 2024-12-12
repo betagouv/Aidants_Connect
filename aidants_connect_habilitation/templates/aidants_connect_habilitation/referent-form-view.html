@@ -1,0 +1,42 @@
+{% extends 'layouts/main.html' %}
+{% load ac_common form_extras static %}
+
+{% block title %}
+  Aidants Connect - Personnes impliquées dans la structure {{ organisation }}
+{% endblock title %}
+
+{% block content %}
+  <div class="fr-container">
+    {% include 'layouts/_js-unavailable-alert.html' %}
+
+    <h1 class="fr-mb-2v">Formulaire d’habilitation</h1>
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-6">
+        {% include "layouts/_breadcrumbs.html" %}
+        <form method="post" class="fr-my-8v">
+          {% csrf_token %}
+          {{ form }}
+
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
+            <li>
+              <a
+                class="fr-btn fr-btn--secondary"
+                href="{% url 'habilitation_modify_organisation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+              >
+                Revenir à l’étape précédente
+              </a>
+            </li>
+            <li>
+              <input type="submit" class="fr-btn" value="Passer à l’étape suivante">
+            </li>
+          </ul>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block extracss %}
+  <link href="{% static 'css/personnel-form.css' %}" rel="stylesheet">
+{% endblock extracss %}

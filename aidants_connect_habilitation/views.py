@@ -5,7 +5,6 @@ from uuid import UUID
 from django.conf import settings
 from django.contrib import messages
 from django.forms import Form
-from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import yesno
@@ -18,7 +17,6 @@ from aidants_connect_common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.forms import PatchedModelForm
 from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 from aidants_connect_common.utils import issuer_exists_send_reminder_email
 from aidants_connect_common.views import (
@@ -28,8 +26,8 @@ from aidants_connect_habilitation.constants import HabilitationFormStep
 from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     IssuerForm,
-    ManagerForm,
     OrganisationRequestForm,
+    ReferentForm,
     ValidationForm,
 )
 from aidants_connect_habilitation.models import (
@@ -132,30 +130,6 @@ class OnlyNewRequestsView(HabilitationStepMixin, LateStageRequestView, ABC):
             )
 
         return super().dispatch(request, *args, **kwargs)
-
-
-class AdressAutocompleteJSMixin:
-    def define_html_attributes(self, form: PatchedModelForm):
-        form.widget_attrs(
-            "address",
-            {
-                "data-address-autocomplete-target": "autcompleteInput",
-                "data-action": "focus->address-autocomplete#onAutocompleteFocus",
-            },
-        )
-        form.widget_attrs(
-            "zipcode", {"data-address-autocomplete-target": "zipcodeInput"}
-        )
-
-        form.widget_attrs("city", {"data-address-autocomplete-target": "cityInput"})
-        form.widget_attrs(
-            "city_insee_code",
-            {"data-address-autocomplete-target": "cityInseeCodeInput"},
-        )
-        form.widget_attrs(
-            "department_insee_code",
-            {"data-address-autocomplete-target": "dptInseeCodeInput"},
-        )
 
 
 """Real views"""
@@ -304,7 +278,7 @@ class ModifyIssuerFormView(VerifiedEmailIssuerView, NewIssuerFormView):
 
 
 class NewOrganisationRequestFormView(
-    HabilitationStepMixin, VerifiedEmailIssuerView, FormView, AdressAutocompleteJSMixin
+    HabilitationStepMixin, VerifiedEmailIssuerView, FormView
 ):
     template_name = "organisation_form.html"
     form_class = OrganisationRequestForm
@@ -327,11 +301,6 @@ class NewOrganisationRequestFormView(
             },
         )
 
-    def get_form(self, form_class=None):
-        form = OrganisationRequestForm(**self.get_form_kwargs())
-        self.define_html_attributes(form)
-        return form
-
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
@@ -350,11 +319,9 @@ class ModifyOrganisationRequestFormView(
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
 
-class ReferentRequestFormView(
-    OnlyNewRequestsView, UpdateView, AdressAutocompleteJSMixin
-):
-    template_name = "referent_form.html"
-    form_class = ManagerForm
+class ReferentRequestFormView(OnlyNewRequestsView, UpdateView):
+    template_name = "aidants_connect_habilitation/referent-form-view.html"
+    form_class = ReferentForm
 
     @property
     def step(self) -> HabilitationFormStep:
@@ -364,27 +331,16 @@ class ReferentRequestFormView(
         return getattr(self.organisation, "manager", None)
 
     def get_context_data(self, **kwargs):
-        issuer_data = model_to_dict(
-            self.issuer, exclude=[*IssuerForm.Meta.exclude, "id"]
-        )
-        issuer_data.update(
-            model_to_dict(self.organisation, fields=("zipcode", "city", "address"))
-        )
-        # Fields of type PhoneNumberField are not natively JSON serializable
-        issuer_data["phone"] = str(issuer_data["phone"])
         return {
             **super().get_context_data(**kwargs),
-            "issuer_form": IssuerForm(instance=self.issuer, render_non_editable=True),
-            "issuer_data": issuer_data,
             "organisation": self.organisation,
         }
 
-    def get_form(self, form_class=None):
-        form = self.get_form_class()(
-            organisation=self.organisation, **self.get_form_kwargs()
-        )
-        self.define_html_attributes(form)
-        return form
+    def get_form_kwargs(self):
+        return {
+            **super().get_form_kwargs(),
+            "organisation": self.organisation,
+        }
 
     def get_success_url(self):
         return reverse(
@@ -396,9 +352,7 @@ class ReferentRequestFormView(
         )
 
 
-class PersonnelRequestFormView(
-    OnlyNewRequestsView, FormView, AdressAutocompleteJSMixin
-):
+class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
     template_name = "personnel_form.html"
     form_class = AidantRequestFormSet
 

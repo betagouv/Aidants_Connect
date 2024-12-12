@@ -183,7 +183,9 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
 
 
 class DsfrOtpForm(OTPForm, DsfrBaseForm):
-    pass
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(user, *args, **kwargs)
 
 
 def get_choices_for_remote_method():

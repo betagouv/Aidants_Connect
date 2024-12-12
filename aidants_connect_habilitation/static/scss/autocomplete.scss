@@ -1,5 +1,9 @@
 @use "colors";
 
+.fr-fieldset__element:last-child, .fr-fieldset__element--inline {
+  margin-bottom: 0;
+}
+
 .autocomplete-input_wrapper {
   display: inline-block;
   position: relative;
