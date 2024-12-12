@@ -213,7 +213,7 @@
                 {% if organisation.status in organisation.Status.aidant_registrable %}
                   <li>
                     <a
-                      href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+                      href="{% url 'habilitation_new_referent' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
                       {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
                       class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
                     >
@@ -226,7 +226,7 @@
               <ul class="fr-btns-group fr-m-4v">
                 <li>
                   <a
-                    href="{% url 'habilitation_new_aidants' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+                    href="{% url 'habilitation_new_referent' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
                     {% if habilitation_request.details_id %}id="edit-button-{{ habilitation_request.details_id }}"{% endif %}
                     class="fr-btn fr-m-0 width-100"
                   >
