@@ -1,36 +1,26 @@
-{% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras %}
+{% extends 'layouts/main.html' %}
+{% load form_extras static %}
 
 {% block title %}
-  Aidants Connect - Confirmez votre email
-{% endblock %}
+  Confirmez votre email - Aidants Connect
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col">
-        <h1>Formulaire d’habilitation</h1>
-      </div>
-    </div>
-
-    {% include "layouts/_breadcrumbs-legacy.html" %}
-
+    <h1 class="fr-mb-0">Formulaire d’habilitation</h1>
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8">
+        {% include "layouts/_breadcrumbs.html" %}
         <form method="post">
-          <h2>Votre email est confirmé ! </h2>
-          <div class="shadowed fr-p-8v">
+          <div class="fr-alert fr-alert--info fr-mb-8w">
+            <h2 class="fr-alert__title">Votre email est confirmé !</h2>
+            <p>Votre adresse de contact est bien confirmée.
+              Vous pouvez reprendre votre demande en cliquant sur le bouton ci-dessous.</p>
+          </div>
+          <div class="fr-mt-4w">
             {% csrf_token %}
             {{ form.non_field_errors }}
-
-            <p>
-              Votre adresse de contact est bien confirmée.
-              Vous pouvez reprendre votre demande en cliquant sur le bouton ci-dessous.
-            </p>
-
-            <div class="button-box">
-              <button type="submit" class="fr-btn">Continuer ma demande</button>
-            </div>
+            <button type="submit" class="fr-btn">Continuer ma demande</button>
           </div>
         </form>
       </div>
@@ -39,4 +29,4 @@
     {% include "_more-info.html" %}
 
   </div>
-{% endblock %}
+{% endblock content %}
