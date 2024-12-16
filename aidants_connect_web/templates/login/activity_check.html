@@ -1,18 +1,24 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
 {% load dsfr_tags static %}
 
-{% block title %}Aidants Connect - Session expirée{% endblock %}
+{% block title %}Session expirée - Aidants Connect{% endblock %}
 
 {% block content %}
   <section class="section">
     <div class="fr-container">
-      <div class="fr-grid-row fr-grid-row--center">
-        <h2 class="fr-mt-16v">Bonjour {{ aidant.get_full_name }}, votre session a expiré</h2>
-        <form method="post" class="fr-col-12 fr-col-sm-6 fr-col-md-4">
-          {% dsfr_form %}
-          {% csrf_token %}
-          <button type="submit" class="fr-btn">Valider</button>
+      <div class="fr-grid-row">
+        <div class="fr-col-md-6 fr-col-sm-8 fr-col-12">
+          <h1 class="fr-mb-4w fr-mt-6w">Bonjour {{ aidant.get_full_name }}</h1>
+          <p></p>
+          <div class="fr-alert fr-alert--info fr-mb-6w">
+            <p>Votre session a expiré<p>
+          </div>
+          <form method="post">
+            {% dsfr_form %}
+            {% csrf_token %}
+            <button type="submit" class="fr-btn">Valider</button>
+          </div>
         </form>
       </div>
     </div>
