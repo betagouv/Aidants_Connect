@@ -1,32 +1,41 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
 {% load static %}
 
-{% block title %}Aidants Connect - Confirmer la révocation de l'autorisation{% endblock %}
+{% block title %}Révocation de l'autorisation - Aidants Connect{% endblock %}
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-grid-row fr-grid-row--center fr-my-8v">
-      <h2>Confirmer la révocation de l'autorisation</h2>
-
+    <h1>Confirmer la révocation de l'autorisation</h1>
+    <p class="fr-text--xl fr-mb-6w">Merci de vérifier les informations ci-dessous avant de valider la révocation de l'autorisation</p>
+    <div class="fr-grid-row fr-my-8v">
       <form method="post" class="fr-col-12 fr-col-md-6">
         {% if error %}<div class="fr-alert fr-alert--error" role="alert">{{ error }}</div>{% endif %}
-
+        <div class="fr-background-alt--grey fr-p-4w fr-mb-6w">
+          <h2 class="fr-h6">Rappel de l'autorisation en cours de révocation</h2>
+          <p>Usager : <strong>{{ usager }}</strong></p>
+          <p><strong>Thématique administrative associée : </strong></p>
+          <div class="remaining-autorisations fr-checkbox-group fr-mb-3w">
+            {% for autorisation in revoked_autorisation %}
+              <input checked disabled type="checkbox" id="checkboxes-disabled-{{ autorisation }}">
+              <label class="fr-label fr-text-default--grey" for="checkboxes-disabled-{{ autorisation }}"><strong>{{ autorisation.0 }}</strong></label>
+              <div class="fr-my-1w fr-ml-4w">{{ autorisation.1 }}</div>
+            {% endfor %}
+          </div>
+          <p>Date de l'autorisation : <strong>{{ autorisation.creation_date|date:"d F Y" }}</strong></p>
+          <p>Expiration de l'autorisation : <strong>{{ autorisation.expiration_date|date:"d F Y" }}</strong></p>
+          </div>
         <p>
-          L'autorisation avec l'usager <strong>{{ usager }}</strong>,
-          pour la démarche <strong>{{ autorisation.demarche }}</strong>,
-          créé le <strong>{{ autorisation.creation_date | date:"d F Y" }}</strong> et expirant le
-          <strong>{{ autorisation.expiration_date | date:"d F Y" }}</strong>,
-          va être <strong>révoquée</strong>.
-        </p>
-        <p>
-          Cliquez sur le bouton "Je confirme" pour confirmer l'action.
+          Souhaitez-vous confirmer la révocation de cette autorisation ?
         </p>
 
         {% csrf_token %}
-        <a href="{% url 'espace_responsable_organisation' %}" class="fr-btn">Annuler</a>
-        <button class="warning fr-btn float-right" type="submit">Confirmer</button>
-      </form>
+        <div class="flex flex-between">
+
+          <a href="{% url 'espace_responsable_organisation' %}" class="fr-btn fr-btn--secondary">Annuler</a>
+          <button class="warning fr-btn float-right" type="submit">Révoquer l'autorisation</button>
+        </div>
+        </form>
     </div>
   </div>
 {% endblock content %}
