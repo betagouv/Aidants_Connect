@@ -26,8 +26,8 @@ class Migration(migrations.Migration):
             """,
             elidable=True
         ),
-        migrations.AddConstraint(
-            model_name='manager',
-            constraint=models.CheckConstraint(check=models.Q(('is_aidant', True), ('habilitation_request__isnull', True), _connector='OR'), name='habilitation_request_null_when_manager_is_not_aidant'),
-        ),
+        # migrations.AddConstraint(
+        #     model_name='manager',
+        #     constraint=models.CheckConstraint(check=models.Q(('is_aidant', True), ('habilitation_request__isnull', True), _connector='OR'), name='habilitation_request_null_when_manager_is_not_aidant'),
+        # ),
     ]
