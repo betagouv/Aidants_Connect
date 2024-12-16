@@ -1,0 +1,47 @@
+details.request-card-details {
+  height: 100%;
+  position: relative;
+}
+
+details.request-card-details summary {
+  flex-wrap: nowrap;
+}
+
+details.request-card-details * {
+  box-sizing: border-box;
+}
+
+details.request-card-details .header-infos {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+details.request-card-details[open] summary {
+  flex-wrap: nowrap;
+  height: 100%;
+  min-height: 4rem;
+  position: relative;
+  z-index: calc(var(--ground) + 510);
+}
+
+details.request-card-details[open] .hide-header {
+  display: none;
+}
+
+details.request-card-details[open] .fr-icon-arrow-up-s-line::before {
+  -webkit-mask-image: url(/static/dsfr/dist/icons/system/arrow-down-s-line.svg);
+  mask-image: url(/static/dsfr/dist/icons/system/arrow-down-s-line.svg);
+}
+
+details.request-card-details .details-content {
+  padding: inherit;
+  position: absolute;
+  width: 100%;
+}
+
+#profile-edit-modal .loader {
+  display: block;
+  margin: auto;
+}

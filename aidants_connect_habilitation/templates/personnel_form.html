@@ -1,9 +1,9 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras ac_common %}
+{% load ac_common form_extras static %}
 
 {% block title %}
   Aidants Connect - Personnes impliquées dans la structure {{ organisation }}
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div
@@ -11,7 +11,7 @@
     data-controller="personnel-form"
   >
     {% include 'edito/_titre_formulaire_habilitation.html' %}
-    {% include "layouts/_breadcrumbs.html" %}
+    {% include "layouts/_breadcrumbs-legacy.html" %}
 
     <h2>Personnes impliquées</h2>
     <p class="subtitle">
@@ -23,111 +23,9 @@
 
     <form method="post" class="form-in-3-cols">
       {% csrf_token %}
-      {{ form.errors }}
+      {{ form.non_form_errors }}
 
-      {{ form.aidants_formset.management_form }}
-
-      <h3>Référents</h3>
-
-      <div class="fr-grid-row fr-grid-row--gutters">
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <section class="shadowed">
-            <h4 class="h2">Demandeur</h4>
-            <fieldset>
-              <legend class="sr-only">Demandeur</legend>
-              <h5 class="h3">Identité</h5>
-              {% field_as_narrow_fr_grid_row issuer_form.last_name %}
-              {% field_as_narrow_fr_grid_row issuer_form.first_name %}
-              {% field_as_narrow_fr_grid_row issuer_form.profession %}
-              <h5 class="h3">Contact</h5>
-              {% field_as_narrow_fr_grid_row issuer_form.email %}
-              {% field_as_narrow_fr_grid_row issuer_form.phone %}
-            </fieldset>
-          </section>
-        </div>
-        <div class="fr-col-12 fr-col-md-6 fr-col-lg-8">
-          <section
-            class="shadowed"
-            data-controller="address-autocomplete"
-            data-address-autocomplete-api-base-url-value="{{ GOUV_ADDRESS_SEARCH_API_BASE_URL }}"
-          >
-            <h4 class="h2">Référents Aidants Connect</h4>
-            {{ form.manager_form.non_field_errors }}
-            <fieldset
-              id="manager-subform"
-              data-personnel-form-target="managerSubform"
-            >
-              <legend class="sr-only">Référents Aidants Connect</legend>
-              <button
-                id="its-me-manager"
-                class="fr-btn"
-                type="button"
-                data-action="personnel-form#onManagerItsMeBtnClicked"
-              >
-                <span aria-hidden="true">👋 </span>C’est moi ! Remplir avec mes infos
-              </button>
-              <div class="fr-grid-row"></div>
-              <div class="fr-grid-row fr-grid-row--gutters">
-                <div class="fr-col-12 fr-col-md-6 fr-col-lg-6">
-                  <h5 class="h3">Identité</h5>
-                  {% field_as_narrow_fr_grid_row form.manager_form.last_name %}
-                  {% field_as_narrow_fr_grid_row form.manager_form.first_name %}
-                  {% field_as_narrow_fr_grid_row form.manager_form.profession %}
-                  {% field_as_p form.manager_form.is_aidant %}
-                  {% field_as_p form.manager_form.conseiller_numerique %}
-                </div>
-                <div class="fr-col-12 fr-col-md-6 fr-col-lg-6">
-                  <h5 class="h3">Contact</h5>
-                  {% field_as_narrow_fr_grid_row form.manager_form.phone %}
-                  {% field_as_narrow_fr_grid_row form.manager_form.email %}
-                  <h4 class="warning">
-                    <b>Attention :</b> Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et
-                    accessible par une seule personne.
-                    Toute saisie d’email de contact générique entrainera un blocage de la demande d’habilitation.
-                  </h4>
-
-                  {% include "_address_validatable_mixin.html" with form=form.manager_form %}
-
-                  {% field_as_narrow_fr_grid_row form.manager_form.address %}
-
-                  {% with errors=form.manager_form.zipcode.errors|add:form.manager_form.city.errors %}
-                    <div
-                      class="form-grid-row fr-grid-row form-grid-row-narrow fr-grid-row--gutters {% if errors %}form-grid-row-error{% endif %}"
-                    >
-                      <div class="fr-col-12 fr-col-md-5 fr-col-lg-12">
-                        <label for="{{ form.manager_form.zipcode.id_for_label }}">
-                          {{ form.manager_form.zipcode.label }}
-                        </label>&nbsp;/&nbsp;<label for="{{ form.manager_form.city.id_for_label }}">
-                          {{ form.manager_form.city.label }}
-                        </label>
-                      </div>
-                      <div class="fr-col-4 fr-col-md-2 fr-col-lg-4 zipcode-container">
-                        {{ form.manager_form.zipcode }}
-                      </div>
-                      <div class="fr-col-8 fr-col-md-5 fr-col-lg-8 city-container">
-                        {{ form.manager_form.city }}
-                      </div>
-                      <div class="fr-col-8 fr-col-md-5 fr-col-lg-8 city-container">
-                        {{ form.manager_form.city_insee_code }}
-                        {{ form.manager_form.department_insee_code }}
-                      </div>
-                    </div>
-
-
-                    {% if errors %}
-                      <div class="fr-grid-row fr-grid-row--gutters">
-                        <div class="errors fr-col-12">{{ errors }}</div>
-                      </div>
-                    {% endif %}
-                  {% endwith %}
-                </div>
-              </div>
-
-              {% include "layouts/autocomplete.html" %}
-          </fieldset>
-          </section>
-        </div>
-      </div>
+      {{ form.management_form }}
 
       <h3>
         Aidants
@@ -150,10 +48,10 @@
       </h4>
 
       <section class="aidant-forms">
-        {{ form.aidants_formset.non_form_errors }}
+        {{ form.non_form_errors }}
 
         <div class="fr-grid-row fr-grid-row--gutters" data-personnel-form-target="aidantFormset">
-          {% for aidant_form in form.aidants_formset %}
+          {% for aidant_form in form %}
             {% include "_aidant_form.html" with form=aidant_form %}
           {% endfor %}
         </div>
@@ -164,24 +62,22 @@
            href="{% url 'habilitation_modify_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
           Revenir à l’étape précédente
         </a>
-        <button type="submit" class="fr-btn">Valider cette étape</button>
+        <button type="submit" class="fr-btn" data-test="validate">Valider cette étape</button>
       </div>
     </form>
 
     {% include "_more-info.html" %}
 
     <template data-personnel-form-target="aidantFormTemplate" hidden>
-      {% include "_aidant_form.html" with form=form.aidants_formset.empty_form %}
+      {% include "_aidant_form.html" with form=form.empty_form %}
     </template>
   </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extrajs %}
-  {{ issuer_data|json_script:"issuer-data" }}
-  {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/personnel-form.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/personnel-form.mjs' %}"></script>
+{% endblock extrajs %}
 
 {% block extracss %}
   <link href="{% static 'css/personnel_form.css' %}" rel="stylesheet">
-{% endblock %}
+{% endblock extracss %}

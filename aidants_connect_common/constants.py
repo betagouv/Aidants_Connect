@@ -5,8 +5,15 @@ from typing import List, Tuple
 from django.conf import settings
 from django.db.models import Choices, IntegerChoices, TextChoices
 from django.db.models.enums import ChoicesMeta as DjangoChoicesMeta
-from django.utils.functional import Promise
+from django.utils.functional import Promise, classproperty
+from django.utils.safestring import mark_safe
 from django.utils.timezone import now
+from django.utils.version import PY311
+
+if PY311:
+    from enum import property as enum_property
+else:
+    from types import DynamicClassAttribute as enum_property
 
 __all__ = [
     "DictChoices",
@@ -231,34 +238,96 @@ class AuthorizationDurationChoices(TextChoices):
 
 
 class RequestOriginConstants(IntegerChoices):
-    FRANCE_SERVICE = (1, "France Services/MSAP")
-    CCAS = (2, "CCAS")
+    ASSOCIATIONS = (13, "Associations")
+    COMCOMMUNE = (20, "Communautés de Commune")
+    CLINIQUE_PRIVE = (557, "Clinique privée")
+    CONSEIL_DEP = (242, "Conseils Départementaux (CD)")
+    CHRS = (393, "Centres d’hébergement et de réinsertion sociale (CHRS)")
+    CHU = (255, "Centres d’hébergement d’urgence (CHU)")
+    CIAS = (91, " Centres intercommunaux d’action sociale (CIAS)")
+    EHPAD = (
+        247,
+        "Établissement d’hébergement pour personnes âgées dépendantes (EHPAD)",
+    )
+    ESAT = (60, "Établissement ou service d’aide par le travail (ESAT)")
+    GIP = (94, "Groupement d’intérêt public (GIP)")
+    GUICHET = (8, "Guichet d’accueil d’opérateur de service public")
+    EPCI = (32, "Intercommunalité (EPCI)")
+    MAISON_EMPLOI = (144, "Maison de l’emploi")
+    MAISON_QUARTIER = (238, "Maison de quartier")
+    MAISON_JEUNE = (459, "Maison des jeunes et de la culture")
+    MS_AGRICOLE = (578, "Mutualité Sociale Agricole")
+    MISSION_LOCAL = (35, "Mission Locale")
+    MUNICIPALITE = (30, "Municipalités")
+    PIMMS = (577, "Point Information Médiation Multi Services (PIMMS)")
+    PREF_SOUSPREF = (55, "Préfecture, Sous - Préfecture")
+    REGIE_QUARTIER = (29, "Régie de quartier")
+    TIERS_LIEU = (202, "Tiers-lieu")
+    UDAF = (358, "Union Départementale d’Aide aux Familles (UDAF)")
+    FRANCE_SERVICE = (1, "Réseau France Services")
+    CCAS = (2, "Centres communaux d’action sociale (CCAS)")
     CENTRES_SOCIAUX = (3, "Centres sociaux")
-    SECRETARIATS_MAIRIE = (4, "Sécrétariats de mairie")
+    MEDIATHEQUE = (6, "Bibliothèque / Médiathèque")
     MAISONS_SOLIDARITE = (5, "Maisons départementales des solidarités")
-    MEDIATHEQUE = (6, "Médiathèque")
-    GUICHET_AUTRE = (7, "Autre guichet d’accueil de service public de proximité")
-    GUICHET_OPERATEUR = (
-        8,
-        "Guichet d’accueil d’opérateur de service public (CAF, France Travail, etc.)",
-    )
-    AUTRES_ASSOS = (
-        9,
-        "Autres associations d’accompagnement des publics ou de médiation numérique",
-    )
-    SMS = (10, "Structure médico-sociale (CSAPA, CHU, CMS)")
-    INDEP = (11, "Indépendant")
     OTHER = (12, "Autre")
 
 
 class RequestStatusConstants(TextChoicesEnum):
     NEW = "Brouillon"
-    AC_VALIDATION_PROCESSING = "En attente de validation par Aidants Connect"
-    VALIDATED = "Validée"
-    REFUSED = "Refusée"
+    AC_VALIDATION_PROCESSING = mark_safe(
+        "En attente de validation d’éligibilité avant inscription en "
+        "formation des aidants"
+    )
+    VALIDATED = "Éligibilité validée"
+    REFUSED = "Éligibilité Refusée"
     CLOSED = "Clôturée"
-    CHANGES_REQUIRED = "Modifications demandées"
+    CHANGES_REQUIRED = "Demande de modifications par l’équipe Aidants Connect"
     CHANGES_PROPOSED = "Modifications proposées par Aidants Connect"
+
+    @enum_property
+    def description(self):
+        match self:
+            case self.AC_VALIDATION_PROCESSING:
+                return mark_safe(
+                    "<p>Votre demande d’habilitation est en cours d’instruction "
+                    "par nos équipes. Vous serez prochainement notifié de la "
+                    "décision de nos équipes concernant votre dossier."
+                )
+            case self.VALIDATED:
+                return mark_safe(
+                    "<p>Félicitations, votre demande d’habilitation a été acceptée par "
+                    "Aidants Connect !</p>"
+                    "<p>Vous pouvez désormais inscrire le référent sur un webinaire "
+                    "d’information dédié aux référents et inscrire les aidants en "
+                    "formation.</p>"
+                )
+            case self.CHANGES_REQUIRED:
+                return mark_safe(
+                    "<p>L'équipe Aidants Connect a étudié votre demande d’habilitation "
+                    "et souhaite que vous y apportiez des modifications. N’oubliez pas "
+                    "de valider à nouveau votre demande d’habilitation en cliquant sur "
+                    "le bouton « Soumettre la demande » pour que l'équipe Aidants "
+                    "Connect prenne en compte vos modifications et valide votre "
+                    "demande</p>"
+                )
+            case _:
+                return ""
+
+    @classproperty
+    def aidant_registrable(cls):
+        """Statuses that allow to add new aidants to an habilitation request"""
+        return (
+            cls.NEW,
+            cls.AC_VALIDATION_PROCESSING,
+            cls.VALIDATED,
+            cls.CHANGES_REQUIRED,
+            cls.CHANGES_PROPOSED,
+        )
+
+    @classproperty
+    def validatable(cls):
+        """Statuses that allow to validate an habilitation request"""
+        return cls.NEW, cls.CHANGES_REQUIRED, cls.CHANGES_PROPOSED
 
 
 class MessageStakeholders(TextChoicesEnum):

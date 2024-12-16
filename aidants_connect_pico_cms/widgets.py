@@ -7,8 +7,7 @@ from aidants_connect_common.widgets import JSModulePath
 
 class MarkdownTextarea(Textarea):
     markdown_editor_js_files = [
-        JSModulePath("js/widgets/markdown-editor.js"),
-        JSModulePath("js/widgets/markdown-editor-init.js"),
+        JSModulePath("js/widgets/markdown-editor-init.mjs"),
     ]
 
     def build_attrs(self, base_attrs, extra_attrs=None):
@@ -23,11 +22,7 @@ class MarkdownTextarea(Textarea):
     @property
     def media(self):
         return Media(
-            js=(
-                settings.STIMULUS_JS_URL,
-                settings.MD_EDITOR_JS_URL,
-                *self.markdown_editor_js_files,
-            ),
+            js=self.markdown_editor_js_files,
             css={
                 "screen": (
                     settings.MD_EDITOR_CSS_URL,
@@ -40,5 +35,5 @@ class MarkdownTextarea(Textarea):
 
 class TranslationMarkdownTextarea(MarkdownTextarea):
     markdown_editor_js_files = [
-        JSModulePath("js/widgets/translations-markdown-editor.js"),
+        JSModulePath("js/widgets/translations-markdown-editor.mjs"),
     ]

@@ -56,7 +56,16 @@ def user_is_responsable_structure(view=None, redirect_field_name="next"):
     """
 
     def test(user):
-        return user.is_responsable_structure()
+        from aidants_connect_web.models import Organisation
+
+        organisation = getattr(user, "organisation", None)
+        if not isinstance(organisation, Organisation):
+            return False
+
+        return (
+            Organisation.objects.filter(pk=organisation.pk, responsables=user).count()
+            > 0
+        )
 
     decorator = user_passes_test(
         test,

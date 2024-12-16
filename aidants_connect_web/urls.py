@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import include, path, re_path
 
 from magicauth import settings as magicauth_settings
@@ -10,6 +11,7 @@ from aidants_connect_web.views import (
     datapass,
     espace_aidant,
     espace_responsable,
+    formations,
     id_provider,
     login,
     mandat,
@@ -29,11 +31,6 @@ urlpatterns = [
     path("activity_check/", service.activity_check, name="activity_check"),
     # espace aidant : home, organisation
     path("espace-aidant/", espace_aidant.Home.as_view(), name="espace_aidant_home"),
-    path(
-        "espace-aidant/organisation/",
-        espace_aidant.OrganisationView.as_view(),
-        name="espace_aidant_organisation",
-    ),
     path(
         "espace-aidant/valider-cgu",
         espace_aidant.ValidateCGU.as_view(),
@@ -164,9 +161,29 @@ urlpatterns = [
     ),
     # Espace référent structure
     path(
+        "espace-responsable/",
+        espace_responsable.HomeView.as_view(),
+        name="espace_responsable",
+    ),
+    path(
         "espace-responsable/organisation/",
         espace_responsable.OrganisationView.as_view(),
         name="espace_responsable_organisation",
+    ),
+    path(
+        "espace-responsable/aidants/",
+        espace_responsable.AidantsView.as_view(),
+        name="espace_responsable_aidants",
+    ),
+    path(
+        "espace-responsable/referents/",
+        espace_responsable.ReferentsView.as_view(),
+        name="espace_responsable_referents",
+    ),
+    path(
+        "espace-responsable/demandes/",
+        espace_responsable.DemandesView.as_view(),
+        name="espace_responsable_demandes",
     ),
     path(
         "espace-responsable/organisation/<int:organisation_id>/responsables/",
@@ -238,7 +255,7 @@ urlpatterns = [
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
     # public_website
     path("", service.home_page, name="home_page"),
-    path("stats/", service.statistiques, name="statistiques"),
+    path("stats/", service.StatistiquesView.as_view(), name="statistiques"),
     path("cgu/", service.cgu, name="cgu"),
     path(
         "politique_confidentialite/",
@@ -250,7 +267,7 @@ urlpatterns = [
     path("formation/", service.formation, name="habilitation_faq_formation"),
     path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
     path("ressources/", service.ressources, name="ressources"),
-    path("accessibilite/", service.accessibilite, name="accessibilite"),
+    path("accessibilite/", service.AccessibiliteView.as_view(), name="accessibilite"),
     # # Datapass
     path(
         "datapass_receiver/",
@@ -287,6 +304,11 @@ urlpatterns = [
         name="sandbox_presentation",
     ),
     path("api/", include(api_router.urls)),
+    path(
+        f"formations/{settings.URL_FORMATION}/listing",
+        formations.FormationsListing.as_view(),
+        name="listing_formations",
+    ),
 ]
 
 urlpatterns.extend(magicauth_urls)

@@ -1,41 +1,117 @@
-{% load ac_extras %}
+{% load ac_extras i18n %}
 
-<tr data-search-target="item" data-search-terms='{{ usager.search_terms|json_attribute }}'>
-  <td>
-    <a class="fr-link" href="{% url 'usager_details' usager_id=usager.id %}">
-      {% if usager.preferred_username %}
-        {{ usager.preferred_username }}<br />
-        Né(e)
+{% with auth_badge_classes="auth-badge fr-badge fr-badge--no-icon fr-text--xs" %}
+  <tr data-search-target="item" data-search-terms="{{ usager.search_terms|json_attribute }}">
+    <td>
+      <a class="fr-link" href="{% url 'usager_details' usager_id=usager.id %}">
+        {% if usager.preferred_username %}
+          {{ usager.preferred_username }}<br />
+          Né(e)
+        {% endif %}
+        {{ usager.given_name }}
+        {{ usager.family_name }}
+      </a>
+    </td>
+    <td>{{ usager.birthdate|date:"d F" }}</td>
+    {% if mandats|length > 1 %}
+      <td></td>
+      <td></td>
+      <td></td>
+    {% else %}
+      {% for mandat in mandats %}
+        <td>
+          <div class="auth-badges">
+            {% for autorisation in mandat.1 %}
+              {% if mandat.3 == true %}
+                <p class="{{ auth_badge_classes }} fr-badge--error">{{ autorisation }} </p>
+              {% elif with_valid_mandate == False %}
+                <p class="{{ auth_badge_classes }}">{{ autorisation }} </p>
+              {% else %}
+                <p class="{{ auth_badge_classes }} fr-badge--info">{{ autorisation }} </p>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </td>
+        {% if with_valid_mandate %}
+          <td {% if mandat.3 == True %}class="fr-icon-warning-fill"{% endif %}>
+            <span>{{ mandat.2 }} jours</span>
+          </td>
+        {% else %}
+          <td></td>
+        {% endif %}
+      {% endfor %}
+      {% if has_no_autorisations %}
+        <td></td>
+      {% else %}
+        <td>
+          <details name="mandat-action">
+            <summary>
+              <span>…</span>
+            </summary>
+            <div class="details-content fr-p-2w">
+              <div>
+                <a class="" href="{{ usager.renew_mandate_url }}">Renouveler</a>
+              </div>
+              {% if with_valid_mandate %}
+                <div>
+                  <a class="" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
+                </div>
+              {% endif %}
+            </div>
+          </details>
+        </td>
       {% endif %}
-      {{ usager.family_name }}
-    </a>
-  </td>
-  <td>{{ usager.given_name }}</td>
-  <td>{{ usager.birthdate |date:"d F" }}</td>
-  {% if with_valid_mandate %}
-    <td>
-      <ul>
-        {% for autorisation, expired_soon in autorisations %}
-          <li>
-            {{ autorisation }}
-            {% if expired_soon %}
-              <span title="expire le {{ expired_soon|date:"d F" }}">⏳</span>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    </td>
+    {% endif %}
+  </tr>
+  {% if mandats|length > 1 %}
+    {% for mandat in mandats %}
+      <tr data-search-target="item" data-search-terms="{{ usager.search_terms|json_attribute }}">
+        <td>
+          Mandat du {{ mandat.0.creation_date|date:"d F Y" }}
+        </td>
+        <td></td>
+        <td>
+          <div class="auth-badges">
+            {% for autorisation in mandat.1 %}
+              {% if mandat.3 == True %}
+                <p class="{{ auth_badge_classes }} fr-badge--warning">{{ autorisation }} </p>
+              {% elif with_valid_mandate == False %}
+                <p class="{{ auth_badge_classes }} fr-text-mention--grey">{{ autorisation }} </p>
+              {% else %}
+                <p class="{{ auth_badge_classes }} fr-badge--info">{{ autorisation }} </p>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </td>
+        {% if with_valid_mandate %}
+          <td {% if mandat.3 == True %}class="fr-icon-warning-fill fr-text-default--warning"{% endif %}>
+            <span>{{ mandat.2 }} jours</span>
+          </td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if has_no_autorisations %}
+          <td></td>
+        {% else %}
+          <td>
+            <details name="mandat-action">
+              <summary>
+                <span>…</span>
+              </summary>
+              <div class="details-content fr-p-2w">
+                <div>
+                  <a class="" href="{{ usager.renew_mandate_url }}">Renouveler</a>
+                </div>
+                {% if with_valid_mandate %}
+                  <div>
+                    <a class="" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
+                  </div>
+                {% endif %}
+              </div>
+            </details>
+          </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
   {% endif %}
-  {% if has_no_autorisations %}
-    <td></td>
-  {% else %}
-    <td>
-      <div>
-        <a class="fr-link" href="{{ usager.renew_mandate_url }}">Renouveler le mandat</a>
-      </div>
-      <div>
-        <a class="fr-link" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer le mandat</a>
-      </div>
-    </td>
-  {% endif %}
-</tr>
+{% endwith %}

@@ -1,11 +1,16 @@
 Bonjour,
 
-Nous venons de valider l'éligibilité de lʼajout de l'aidant(e) {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}} à former ajouté(e) depuis votre espace.
+Nous venons de valider l'éligibilité de l'aidant(e) {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. Vous pouvez dès à présent l’inscrire à une session de formation depuis l'onglet “Demandes en cours” de votre espace référent {{ espace_referent_url }}.
 
-Attention, selon votre profil et votre structure, les modalités de formation et de prise en charge diffèrent. Retrouvez toutes les informations sur la formation Aidants Connect et ses modalités de financement : {{ formation_url }}.
+La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant financée selon différentes modalités.
 
-Rendez-vous sur votre espace référent : {{ espace_referent_url }}. Dans la section Aidants > Demandes d’habilitation en cours, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date de formation pour chaque aidant de votre structure. Vous serez ensuite contactés par l’organisme de formation pour valider l’inscription.
+Nous vous invitons à vous rendre sur le simulateur de financement suivant https://tally.so/r/mO0Xkg pour découvrir comment la financer.
 
+Attention : il peut arriver que dans certains cas (structures non adhérentes à l'OPCO Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être financée par la structure.
+
+Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.
+
+Retrouvez toutes les informations sur la formation Aidants Connect et ses modalités de financement : {{ formation_url }}.
 
 À bientôt sur Aidants Connect !
 L’équipe Aidants Connect

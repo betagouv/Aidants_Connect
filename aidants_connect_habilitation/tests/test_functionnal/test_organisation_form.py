@@ -1,39 +1,25 @@
-from random import randint
-from typing import List, Optional
-from unittest.mock import Mock, patch
+from typing import Optional
 
 from django.conf import settings
-from django.test import modify_settings, override_settings, tag
+from django.test import tag
 from django.urls import reverse
 
 from faker import Faker
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
-from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_common.utils.gouv_address_api import Address
 from aidants_connect_habilitation.models import Issuer, OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
     DraftOrganisationRequestFactory,
     IssuerFactory,
     OrganisationRequestFactory,
 )
-from aidants_connect_habilitation.tests.utils import load_json_fixture
-
-FIXED_PORT = randint(8081, 8179)
-
-
-def _django_server_url(path):
-    return f"http://localhost:{FIXED_PORT}{path}"
 
 
 @tag("functional")
 class OrganisationRequestFormViewTests(FunctionalTestCase):
-    port = FIXED_PORT
-
     def test_form_normal_organisation_with_fs_label(self):
         issuer: Issuer = IssuerFactory()
         request: OrganisationRequest = OrganisationRequestFactory.build(
@@ -45,7 +31,9 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
         )
-        self.selenium.find_element(By.ID, "id_france_services_label").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_france_services_label ~ label"
+        ).click()
 
         for field in [
             "name",
@@ -67,15 +55,15 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_new_aidants",
-            kwargs={
-                "issuer_id": str(issuer.issuer_id),
-                "uuid": str(issuer.organisation_requests.first().uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_new_referent",
+                kwargs={
+                    "issuer_id": str(issuer.issuer_id),
+                    "uuid": str(issuer.organisation_requests.first().uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
     def test_form_other_type_and_private_organisation(self):
         issuer: Issuer = IssuerFactory()
@@ -90,7 +78,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(By.ID, "id_is_private_org").click()
 
         for field in [
             "name",
@@ -98,7 +85,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             "address",
             "zipcode",
             "city",
-            "partner_administration",  # needed only if is_private_org=True
             "web_site",
             "mission_description",
             "avg_nb_demarches",
@@ -112,15 +98,15 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_new_aidants",
-            kwargs={
-                "issuer_id": str(issuer.issuer_id),
-                "uuid": str(issuer.organisation_requests.first().uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_new_referent",
+                kwargs={
+                    "issuer_id": str(issuer.issuer_id),
+                    "uuid": str(issuer.organisation_requests.first().uuid),
+                },
+            )
         )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
     def test_hide_type_other_input_when_org_type_is_other(self):
         issuer: Issuer = IssuerFactory()
@@ -210,269 +196,168 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        path = reverse(
-            "habilitation_new_aidants",
-            kwargs={
-                "issuer_id": str(issuer.issuer_id),
-                "uuid": str(issuer.organisation_requests.first().uuid),
-            },
+        self.wait.until(
+            self.path_matches(
+                "habilitation_new_referent",
+                kwargs={
+                    "issuer_id": str(issuer.issuer_id),
+                    "uuid": str(issuer.organisation_requests.first().uuid),
+                },
+            )
         )
 
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
         self.assertEqual(issuer.organisation_requests.first().type, request.type)
         self.assertEqual(issuer.organisation_requests.first().type_other, "")
 
-    @override_settings(
-        GOUV_ADDRESS_SEARCH_API_DISABLED=False,
-        GOUV_ADDRESS_SEARCH_API_BASE_URL=_django_server_url(
-            reverse("test_address_api_segur")
-        ),
-    )
-    @modify_settings(
-        CSP_CONNECT_SRC={
-            "append": _django_server_url(reverse("test_address_api_segur"))
-        },
-        CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
-    )
     def test_js_I_must_select_a_correct_address(self):
-        issuer: Issuer = IssuerFactory()
-        request: OrganisationRequest = OrganisationRequestFactory.build(
-            type_id=RequestOriginConstants.OTHER.value,
-            partner_administration="Beta.Gouv",
-        )
-        self._open_form_url(issuer)
-
-        Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
-            str(request.type.id)
-        )
-
-        self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(By.ID, "id_is_private_org").click()
-
-        for field in [
-            "name",
-            "siret",
-            "partner_administration",  # needed only if is_private_org=True
-            "web_site",
-            "mission_description",
-            "avg_nb_demarches",
-        ]:
-            try:
-                self.selenium.find_element(By.ID, f"id_{field}").send_keys(
-                    getattr(request, field)
+        with self.settings(
+            GOUV_ADDRESS_SEARCH_API_DISABLED=False,
+            GOUV_ADDRESS_SEARCH_API_BASE_URL=(
+                f"{self.live_server_url}{reverse('test_address_api_segur')}"
+            ),
+        ):
+            with self.modify_settings(
+                CSP_CONNECT_SRC={
+                    "append": (
+                        f"{self.live_server_url}{reverse('test_address_api_segur')}"
+                    )
+                },
+                CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
+            ):
+                issuer: Issuer = IssuerFactory()
+                request: OrganisationRequest = OrganisationRequestFactory.build(
+                    type_id=RequestOriginConstants.OTHER.value,
+                    partner_administration="Beta.Gouv",
                 )
-            except Exception as e:
-                raise ValueError(f"Error when setting input 'id_{field}'") from e
+                self._open_form_url(issuer)
 
-        # Open dropdown
-        selected_address = "Avenue de Ségur 75007 Paris"
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_address").send_keys(
-            selected_address
-        )
+                Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
+                    str(request.type.id)
+                )
 
-        # Select result
-        self.selenium.find_element(
-            By.XPATH, f"//*[normalize-space(text())='{selected_address}']"
-        ).click()
+                self.selenium.find_element(By.ID, "id_type_other").send_keys(
+                    request.type_other
+                )
 
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+                for field in [
+                    "name",
+                    "siret",
+                    "web_site",
+                    "mission_description",
+                    "avg_nb_demarches",
+                ]:
+                    try:
+                        self.selenium.find_element(By.ID, f"id_{field}").send_keys(
+                            getattr(request, field)
+                        )
+                    except Exception as e:
+                        raise ValueError(
+                            f"Error when setting input 'id_{field}'"
+                        ) from e
 
-        path = reverse(
-            "habilitation_new_aidants",
-            kwargs={
-                "issuer_id": str(issuer.issuer_id),
-                "uuid": str(issuer.organisation_requests.first().uuid),
-            },
-        )
+                # Open dropdown
+                selected_address = "Avenue de Ségur 75007 Paris"
+                self.selenium.find_element(By.CSS_SELECTOR, "#id_address").send_keys(
+                    selected_address
+                )
 
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
+                # Select result
+                self.selenium.find_element(
+                    By.XPATH, f"//*[contains(text(),'{selected_address}')]"
+                ).click()
 
-        organisation: OrganisationRequest = issuer.organisation_requests.first()
+                self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        self.assertEqual(organisation.address, "Avenue de Ségur")
-        self.assertEqual(organisation.zipcode, "75007")
-        self.assertEqual(organisation.city, "Paris")
-        self.assertEqual(organisation.city_insee_code, "75107")
+                self.wait.until(
+                    self.path_matches(
+                        "habilitation_new_referent",
+                        kwargs={
+                            "issuer_id": str(issuer.issuer_id),
+                            "uuid": str(issuer.organisation_requests.first().uuid),
+                        },
+                    )
+                )
 
-    @override_settings(
-        GOUV_ADDRESS_SEARCH_API_DISABLED=False,
-        GOUV_ADDRESS_SEARCH_API_BASE_URL=_django_server_url(
-            reverse("test_address_api_no_result")
-        ),
-    )
-    @modify_settings(
-        CSP_CONNECT_SRC={
-            "append": _django_server_url(reverse("test_address_api_no_result"))
-        },
-        CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
-    )
+                organisation: OrganisationRequest = issuer.organisation_requests.first()
+
+                self.assertEqual(organisation.address, "Avenue de Ségur")
+                self.assertEqual(organisation.zipcode, "75007")
+                self.assertEqual(organisation.city, "Paris")
+                self.assertEqual(organisation.city_insee_code, "75107")
+
     def test_js_I_can_submit_an_address_that_is_not_found(self):
-        issuer: Issuer = IssuerFactory()
-        request: OrganisationRequest = OrganisationRequestFactory.build(
-            type_id=RequestOriginConstants.OTHER.value,
-            partner_administration="Beta.Gouv",
-        )
-        self._open_form_url(issuer)
-
-        Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
-            str(request.type.id)
-        )
-
-        self.selenium.find_element(By.ID, "id_type_other").send_keys(request.type_other)
-        self.selenium.find_element(By.ID, "id_is_private_org").click()
-
-        for field in [
-            "name",
-            "siret",
-            "address",
-            "zipcode",
-            "city",
-            "web_site",
-            "partner_administration",  # needed only if is_private_org=True
-            "mission_description",
-            "avg_nb_demarches",
-        ]:
-            try:
-                self.selenium.find_element(By.ID, f"id_{field}").send_keys(
-                    getattr(request, field)
+        with self.settings(
+            GOUV_ADDRESS_SEARCH_API_DISABLED=False,
+            GOUV_ADDRESS_SEARCH_API_BASE_URL=(
+                f"{self.live_server_url}{reverse('test_address_api_no_result')}"
+            ),
+        ):
+            with self.modify_settings(
+                CSP_CONNECT_SRC={
+                    "append": (
+                        f"{self.live_server_url}{reverse('test_address_api_no_result')}"
+                    )
+                },
+                CSP_SCRIPT_SRC={"append": settings.AUTOCOMPLETE_SCRIPT_SRC},
+            ):
+                issuer: Issuer = IssuerFactory()
+                request: OrganisationRequest = OrganisationRequestFactory.build(
+                    type_id=RequestOriginConstants.OTHER.value,
+                    partner_administration="Beta.Gouv",
                 )
-            except Exception as e:
-                raise ValueError(f"Error when setting input 'id_{field}'") from e
+                self._open_form_url(issuer)
 
-        # Open dropdown
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_address").click()
-
-        self.assertEqual(
-            f"Aucun résultat trouvé pour la requête « {request.address} »",
-            self.selenium.find_element(By.CSS_SELECTOR, ".no-result").text,
-        )
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-
-        path = reverse(
-            "habilitation_new_aidants",
-            kwargs={
-                "issuer_id": str(issuer.issuer_id),
-                "uuid": str(issuer.organisation_requests.first().uuid),
-            },
-        )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
-
-        organisation: OrganisationRequest = issuer.organisation_requests.first()
-        self.assertEqual(organisation.address, request.address)
-        self.assertEqual(organisation.zipcode, request.zipcode)
-        self.assertEqual(organisation.city, request.city)
-
-    def _open_form_url(
-        self,
-        issuer: Issuer,
-        organisation_request: Optional[OrganisationRequest] = None,
-    ):
-        pattern = (
-            "habilitation_modify_organisation"
-            if organisation_request
-            else "habilitation_new_organisation"
-        )
-        kwargs = {"issuer_id": issuer.issuer_id}
-        if organisation_request:
-            kwargs.update(uuid=organisation_request.uuid)
-        self.open_live_url(reverse(pattern, kwargs=kwargs))
-
-
-@tag("functional")
-class PersonnelRequestFormViewNoJSTests(FunctionalTestCase):
-    js = False
-
-    @override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=False)
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_I_must_select_a_correct_address(self, search_adresses_mock: Mock):
-        expected_address = "Rue de Paris 45000 Orléans"
-        selected_address = "Rue du Parc 45000 Orléans"
-
-        def search_adresses(query_string: str) -> List[Address]:
-            if query_string == expected_address:
-                result = [
-                    Address(**item["properties"])
-                    for item in load_json_fixture("address_results.json")["features"]
-                ]
-                return result
-
-            self.fail(f"Expected organisation with address '{expected_address}'")
-
-        search_adresses_mock.side_effect = search_adresses
-
-        issuer: Issuer = IssuerFactory()
-        request: OrganisationRequest = OrganisationRequestFactory.build(
-            type_id=RequestOriginConstants.MEDIATHEQUE.value,
-            address="Rue de Paris",
-            zipcode="45000",
-            city="Orléans",
-        )
-        self._open_form_url(issuer)
-
-        # Fill the `type_other` field
-        Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
-            str(RequestOriginConstants.OTHER.value)
-        )
-
-        self.selenium.find_element(By.ID, "id_type_other").send_keys(Faker().company())
-
-        self.assertNotEqual(
-            self.selenium.find_element(By.ID, "id_type_other").get_attribute("value"),
-            "",
-        )
-
-        Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
-            str(request.type.id)
-        )
-
-        for field in [
-            "name",
-            "siret",
-            "address",
-            "zipcode",
-            "city",
-            "web_site",
-            "mission_description",
-            "avg_nb_demarches",
-        ]:
-            try:
-                self.selenium.find_element(By.ID, f"id_{field}").send_keys(
-                    getattr(request, field)
+                Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
+                    str(request.type.id)
                 )
-            except Exception as e:
-                raise ValueError(f"Error when setting input 'id_{field}'") from e
 
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+                self.selenium.find_element(By.ID, "id_type_other").send_keys(
+                    request.type_other
+                )
 
-        self.selenium.find_element(
-            By.XPATH,
-            "//*[@id='id_alternative_address']"
-            f"//*[normalize-space(text())='{selected_address}']",
-        ).click()
+                for field in [
+                    "name",
+                    "siret",
+                    "address",
+                    "zipcode",
+                    "city",
+                    "web_site",
+                    "mission_description",
+                    "avg_nb_demarches",
+                ]:
+                    try:
+                        self.selenium.find_element(By.ID, f"id_{field}").send_keys(
+                            getattr(request, field)
+                        )
+                    except Exception as e:
+                        raise ValueError(
+                            f"Error when setting input 'id_{field}'"
+                        ) from e
 
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+                # Open dropdown
+                self.selenium.find_element(By.CSS_SELECTOR, "#id_address").click()
 
-        organisation: OrganisationRequest = issuer.organisation_requests.first()
-        path = reverse(
-            "habilitation_new_aidants",
-            kwargs={
-                "issuer_id": str(issuer.issuer_id),
-                "uuid": str(organisation.uuid),
-            },
-        )
+                self.assertEqual(
+                    f"Aucun résultat trouvé pour la requête « {request.address} »",
+                    self.selenium.find_element(By.CSS_SELECTOR, ".no-result").text,
+                )
 
-        WebDriverWait(self.selenium, 10000).until(url_matches(f"^.+{path}$"))
+                self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        organisation.refresh_from_db()
-        self.assertEqual(
-            selected_address,
-            f"{organisation.address} {organisation.zipcode} {organisation.city}",
-        )
+                self.wait.until(
+                    self.path_matches(
+                        "habilitation_new_referent",
+                        kwargs={
+                            "issuer_id": str(issuer.issuer_id),
+                            "uuid": str(issuer.organisation_requests.first().uuid),
+                        },
+                    )
+                )
 
-        # assert code INSEE
-        self.assertEqual("45234", organisation.city_insee_code)
+                organisation: OrganisationRequest = issuer.organisation_requests.first()
+                self.assertEqual(organisation.address, request.address)
+                self.assertEqual(organisation.zipcode, request.zipcode)
+                self.assertEqual(organisation.city, request.city)
 
     def _open_form_url(
         self,

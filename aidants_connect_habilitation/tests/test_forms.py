@@ -1,26 +1,23 @@
 from unittest.mock import Mock, patch
 from urllib.parse import quote, unquote
 
+from django.conf import settings
 from django.test import TestCase, override_settings
 
 from aidants_connect_common.constants import (
-    MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
 )
 from aidants_connect_common.utils.gouv_address_api import Address
-from aidants_connect_habilitation.constants import CONSEILLER_NUMERIQUE_EMAIL
 from aidants_connect_habilitation.forms import (
     AddressValidatableMixin,
-    AidantRequestForm,
+    AidantRequestFormLegacy,
     AidantRequestFormSet,
     IssuerForm,
     ManagerForm,
     OrganisationRequestForm,
-    PersonnelForm,
     ValidationForm,
 )
-from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
     DraftOrganisationRequestFactory,
@@ -132,34 +129,6 @@ class TestOrganisationRequestForm(TestCase):
             form.errors["zipcode"], ["Veuillez entrer un code postal valide"]
         )
 
-    def test_private_org_requires_partner_administration(self):
-        form = get_form(
-            OrganisationRequestForm,
-            ignore_errors=True,
-            is_private_org=True,
-            partner_administration="",
-        )
-        self.assertFalse(form.is_valid())
-        self.assertIn("merci de renseigner", form.errors["partner_administration"][0])
-
-    def test_private_org_keeps_partner_administration(self):
-        form = get_form(
-            OrganisationRequestForm,
-            is_private_org=True,
-            partner_administration="Beta.Gouv",
-        )
-        self.assertTrue(form.is_valid())
-        self.assertEqual("Beta.Gouv", form.cleaned_data["partner_administration"])
-
-    def test_non_private_org_clears_partner_administration(self):
-        form = get_form(
-            OrganisationRequestForm,
-            is_private_org=False,
-            partner_administration="Beta.Gouv",
-        )
-        self.assertTrue(form.is_valid())
-        self.assertEqual("", form.cleaned_data["partner_administration"])
-
     def test_france_services_label_requires_fs_number(self):
         form = get_form(
             OrganisationRequestForm,
@@ -191,220 +160,8 @@ class TestOrganisationRequestForm(TestCase):
         self.assertEqual("", form.cleaned_data["france_services_number"])
 
 
-# Run test with address searching disabled
-@override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=True)
-class TestPersonnelForm(TestCase):
-    @patch("aidants_connect_habilitation.forms.ManagerForm.is_valid")
-    @patch("aidants_connect_habilitation.forms.AidantRequestFormSet.is_valid")
-    def test_is_valid_only_if_all_subforms_are_valid(
-        self,
-        mock_manager_form_is_valid: Mock,
-        mock_aidants_form_is_valid: Mock,
-    ):
-        organisation = DraftOrganisationRequestFactory()
-        form = PersonnelForm(organisation=organisation)
-
-        mock_manager_form_is_valid.return_value = True
-        mock_aidants_form_is_valid.return_value = True
-
-        self.assertTrue(form.is_valid())
-
-        mock_manager_form_is_valid.return_value = False
-        mock_aidants_form_is_valid.return_value = True
-
-        self.assertFalse(form.is_valid())
-
-        mock_manager_form_is_valid.return_value = True
-        mock_aidants_form_is_valid.return_value = False
-
-        self.assertFalse(form.is_valid())
-
-    def test_is_not_valid_if_no_aidant_was_declared(self):
-        organisation = DraftOrganisationRequestFactory()
-        manager_data = get_form(ManagerForm, is_aidant=False).clean()
-        aidants_form = get_form(
-            AidantRequestFormSet,
-            form_init_kwargs={"initial": 0, "organisation": organisation},
-        )
-        aidants_data = aidants_form.data
-
-        cleaned_data = {
-            **{
-                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
-                for k, v in manager_data.items()
-            },
-            **{
-                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
-                for k, v in aidants_data.items()
-            },
-        }
-
-        form = PersonnelForm(data=cleaned_data, organisation=organisation)
-
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors,
-            [
-                "Vous devez déclarer au moins 1 aidant si le ou la référente de "
-                "l'organisation n'est pas elle-même déclarée comme aidante"
-            ],
-        )
-
-        manager_data = get_form(ManagerForm, is_aidant=True).clean()
-        aidants_form = get_form(
-            AidantRequestFormSet,
-            form_init_kwargs={"initial": 0, "organisation": organisation},
-        )
-        aidants_data = aidants_form.data
-
-        cleaned_data = {
-            **{
-                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
-                for k, v in manager_data.items()
-            },
-            **{
-                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
-                for k, v in aidants_data.items()
-            },
-        }
-
-        form = PersonnelForm(data=cleaned_data, organisation=organisation)
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.errors, [])
-
-        manager_data = get_form(ManagerForm, is_aidant=True).clean()
-        aidants_form = get_form(
-            AidantRequestFormSet, form_init_kwargs={"organisation": organisation}
-        )
-        aidants_data = aidants_form.data
-
-        cleaned_data = {
-            **{
-                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
-                for k, v in manager_data.items()
-            },
-            **{
-                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
-                for k, v in aidants_data.items()
-            },
-        }
-
-        form = PersonnelForm(data=cleaned_data, organisation=organisation)
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.errors, [])
-
-    def test_is_valid_aidant_and_manager_same_email_manager_not_aidant(self):
-        email = "karl_marx@internationale.de"
-        organisation = DraftOrganisationRequestFactory()
-        manager_data = get_form(ManagerForm, is_aidant=False, email=email).clean()
-        aidants_form = get_form(
-            AidantRequestFormSet,
-            form_init_kwargs={"initial": 1, "organisation": organisation},
-            email=email,
-        )
-
-        aidants_data = aidants_form.data
-
-        cleaned_data = {
-            **{
-                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
-                for k, v in manager_data.items()
-            },
-            **{
-                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
-                for k, v in aidants_data.items()
-            },
-        }
-
-        form = PersonnelForm(data=cleaned_data, organisation=organisation)
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual([], form.errors)
-
-    def test_is_not_valid_aidant_and_manager_same_email_manager_is_aidant(self):
-        email = "karl_marx@internationale.de"
-        organisation = DraftOrganisationRequestFactory()
-        manager_data = get_form(ManagerForm, is_aidant=True, email=email).clean()
-        aidants_form = get_form(
-            AidantRequestFormSet,
-            form_init_kwargs={"initial": 1, "organisation": organisation},
-            email=email,
-        )
-
-        aidants_data = aidants_form.data
-
-        cleaned_data = {
-            **{
-                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
-                for k, v in manager_data.items()
-            },
-            **{
-                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
-                for k, v in aidants_data.items()
-            },
-        }
-
-        form = PersonnelForm(data=cleaned_data, organisation=organisation)
-
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            ["Vous avez déclaré plusieurs aidants avec la même addresse email"],
-            form.errors,
-        )
-        self.assertEqual(
-            [
-                "Vous avez déclaré cette personne comme aidante et déclaré un "
-                "autre aidant avec la même adresse email. Chaque aidant doit avoir "
-                "une adresse email unique."
-            ],
-            form.manager_form.errors["email"],
-        )
-        self.assertEqual(
-            [
-                "Cette personne a le même email que la personne que vous avez "
-                "déclarée comme référente. Chaque aidant doit avoir "
-                "une adresse email unique."
-            ],
-            form.aidants_formset.forms[0].errors["email"],
-        )
-
-    def test_save(self):
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory()
-
-        manager_data = get_form(ManagerForm).clean()
-        aidants_form = get_form(
-            AidantRequestFormSet, form_init_kwargs={"organisation": organisation}
-        )
-        aidants_data = aidants_form.data
-
-        cleaned_data = {
-            **{
-                f"{PersonnelForm.MANAGER_FORM_PREFIX}-{k}": v
-                for k, v in manager_data.items()
-            },
-            **{
-                k.replace("form-", f"{PersonnelForm.AIDANTS_FORMSET_PREFIX}-"): v
-                for k, v in aidants_data.items()
-            },
-        }
-
-        form = PersonnelForm(data=cleaned_data, organisation=organisation)
-        self.assertTrue(form.is_valid())
-
-        self.assertIs(organisation.manager, None)
-        self.assertEqual(organisation.aidant_requests.count(), 0)
-
-        form.save(organisation)
-
-        self.assertEqual(organisation.manager.email, manager_data["email"])
-        self.assertEqual(organisation.aidant_requests.count(), len(aidants_form.forms))
-        self.assertNotEqual(organisation.aidant_requests.count(), 0)
-
-
 class TestValidationFormForm(TestCase):
-    names_attr = ["cgu", "dpo", "professionals_only", "without_elected"]
+    names_attr = ["cgu", "not_free", "dpo", "professionals_only", "without_elected"]
 
     def test_form_valid_only_with_four_enabled_choices(self):
         form = ValidationForm()
@@ -421,6 +178,7 @@ class TestValidationFormForm(TestCase):
     def test_form_valid_works(self):
         orga_request = DraftOrganisationRequestFactory(
             cgu=False,
+            not_free=False,
             dpo=False,
             professionals_only=False,
             without_elected=False,
@@ -430,27 +188,29 @@ class TestValidationFormForm(TestCase):
         form = ValidationForm(
             data={name: True for name in TestValidationFormForm.names_attr}
         )
-        form.data["message_content"] = "Bonjour"
         form.is_valid()
 
         orga = form.save(organisation=orga_request)
         self.assertEqual(
             orga.status, RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
-        [
-            self.assertTrue(getattr(orga, name))
-            for name in TestValidationFormForm.names_attr
-        ]
-        self.assertEqual(orga.messages.all()[0].content, "Bonjour")
-        self.assertEqual(orga.messages.all()[0].sender, MessageStakeholders.ISSUER.name)
+        for name in TestValidationFormForm.names_attr:
+            with self.subTest(f"{name} field validated"):
+                self.assertTrue(getattr(orga, name))
 
 
 class TestManagerForm(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationRequestFactory()
+
     def test_clean_type_zipcode_number_passes(self):
         form = get_form(
             ManagerForm,
             ignore_errors=True,
             zipcode="01700",
+            form_init_kwargs={"organisation": self.organisation},
         )
 
         self.assertTrue(form.is_valid())
@@ -461,6 +221,7 @@ class TestManagerForm(TestCase):
             ManagerForm,
             ignore_errors=True,
             zipcode="La Commune",
+            form_init_kwargs={"organisation": self.organisation},
         )
 
         self.assertFalse(form.is_valid())
@@ -469,7 +230,11 @@ class TestManagerForm(TestCase):
         )
 
     def test_email_lower(self):
-        form = get_form(ManagerForm, email="TEST@TEST.TEST")
+        form = get_form(
+            ManagerForm,
+            email="TEST@TEST.TEST",
+            form_init_kwargs={"organisation": self.organisation},
+        )
 
         self.assertTrue(form.is_valid())
         self.assertEqual("test@test.test", form.cleaned_data["email"])
@@ -480,14 +245,10 @@ class TestManagerForm(TestCase):
             ignore_errors=True,
             conseiller_numerique=True,
             email="test@test.test",
+            form_init_kwargs={"organisation": self.organisation},
         )
 
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors["email"][0],
-            "Si la personne fait partie du dispositif conseiller numérique, "
-            f"elle doit s'inscrire avec son email {CONSEILLER_NUMERIQUE_EMAIL}",
-        )
+        self.assertTrue(form.is_valid())
 
 
 class TestAidantRequestForm(TestCase):
@@ -496,7 +257,7 @@ class TestAidantRequestForm(TestCase):
         manager = ManagerFactory(is_aidant=True)
         organisation = OrganisationRequestFactory(manager=manager)
         form = get_form(
-            AidantRequestForm,
+            AidantRequestFormLegacy,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             email=organisation.manager.email,
@@ -516,7 +277,7 @@ class TestAidantRequestForm(TestCase):
         manager = ManagerFactory(is_aidant=False)
         organisation = OrganisationRequestFactory(manager=manager)
         form = get_form(
-            AidantRequestForm,
+            AidantRequestFormLegacy,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             email=organisation.manager.email,
@@ -528,7 +289,7 @@ class TestAidantRequestForm(TestCase):
         organisation = OrganisationRequestFactory()
         aidant = AidantRequestFactory(organisation=organisation)
         form = get_form(
-            AidantRequestForm,
+            AidantRequestFormLegacy,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             email=aidant.email,
@@ -548,7 +309,7 @@ class TestAidantRequestForm(TestCase):
         organisation = OrganisationRequestFactory()
         aidant = AidantRequestFactory(organisation=organisation)
         form = get_form(
-            AidantRequestForm,
+            AidantRequestFormLegacy,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation, "instance": aidant},
             email="test@test.test",
@@ -563,7 +324,7 @@ class TestAidantRequestForm(TestCase):
         aidant1 = AidantRequestFactory(organisation=organisation)
         aidant2 = AidantRequestFactory(organisation=organisation)
         form = get_form(
-            AidantRequestForm,
+            AidantRequestFormLegacy,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation, "instance": aidant1},
             email=aidant2.email,
@@ -582,18 +343,38 @@ class TestAidantRequestForm(TestCase):
     def test_email_conseiller_numerique(self):
         organisation = OrganisationRequestFactory()
         form = get_form(
-            AidantRequestForm,
+            AidantRequestFormLegacy,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             conseiller_numerique=True,
             email="test@test.test",
         )
 
+        self.assertTrue(form.is_valid())
+        # self.assertEqual(
+        #     form.errors["email"][0],
+        #     "Si la personne fait partie du dispositif conseiller numérique, "
+        #     "elle doit s'inscrire avec son email "
+        #     f"{settings.CONSEILLER_NUMERIQUE_EMAIL}",
+        # )
+
+    def test_email_conseiller_numerique_with_deprecated_email(self):
+        organisation = OrganisationRequestFactory()
+        form = get_form(
+            AidantRequestFormLegacy,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation},
+            conseiller_numerique=True,
+            email="test@conseiller-numerique.fr",
+        )
+
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["email"][0],
-            "Si la personne fait partie du dispositif conseiller numérique, "
-            f"elle doit s'inscrire avec son email {CONSEILLER_NUMERIQUE_EMAIL}",
+            "Suite à l'annonce de l'arrêt des adresses emails "
+            f"{settings.CONSEILLER_NUMERIQUE_EMAIL}"
+            " le 15 novembre 2024, nous vous invitons à renseigner"
+            " une autre adresse email nominative et professionnelle.",
         )
 
 
@@ -603,11 +384,14 @@ class TestBaseAidantRequestFormSet(TestCase):
         form: AidantRequestFormSet = get_form(
             AidantRequestFormSet,
             form_init_kwargs={"initial": 0, "organisation": organisation},
+            ignore_errors=True,
         )
         self.assertEqual(form.is_empty(), True)
 
         form: AidantRequestFormSet = get_form(
-            AidantRequestFormSet, form_init_kwargs={"organisation": organisation}
+            AidantRequestFormSet,
+            form_init_kwargs={"organisation": organisation},
+            ignore_errors=True,
         )
         self.assertEqual(form.is_empty(), False)
 

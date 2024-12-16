@@ -9,6 +9,7 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from magicauth import settings as magicauth_settings
 
 from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.views.login import tld_need_another_stmp
 
 
 @tag("usagers")
@@ -21,6 +22,18 @@ class LoginTests(TestCase):
             post__with_carte_totp=True,
         )
         cls.aidant_with_totp_card = AidantFactory(post__with_carte_totp=True)
+
+    @override_settings(TDL_NEED_BACKUP_SMTP="laposte.net")
+    def test_tld_need_another_stmp_with_one_tld(self):
+        self.assertTrue(tld_need_another_stmp("sophie@laposte.net"))
+        self.assertTrue(tld_need_another_stmp("sophie@dupont@laposte.net"))
+        self.assertFalse(tld_need_another_stmp("mario@nintendo.net"))
+
+    @override_settings(TDL_NEED_BACKUP_SMTP="laposte.net,tdlbis.com")
+    def test_tld_need_another_stmp_with_two_tld(self):
+        self.assertTrue(tld_need_another_stmp("sophie@laposte.net"))
+        self.assertTrue(tld_need_another_stmp("peach@tdlbis.com"))
+        self.assertFalse(tld_need_another_stmp("mario@nintendo.net"))
 
     def test_inactive_aidant_with_valid_totp_cannot_login(self):
         response = self.client.post(

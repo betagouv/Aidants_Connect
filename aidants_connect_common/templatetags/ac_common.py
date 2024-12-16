@@ -6,8 +6,9 @@ from django.conf import settings
 from django.template import TemplateSyntaxError
 from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
 from django.template.defaultfilters import stringfilter
-from django.templatetags.static import static
 from django.utils.safestring import mark_safe
+
+from aidants_connect import utils
 
 register = template.Library()
 
@@ -58,14 +59,7 @@ def mailto(
 
 @register.simple_tag
 def stimulusjs():
-    return mark_safe(
-        "\n".join(
-            [
-                f'<script src="{settings.STIMULUS_JS_URL}"></script>',
-                f'<script type="module" src="{static("js/base-controller.js")}"></script>',  # noqa: E501
-            ]
-        )
-    )
+    return mark_safe(f'<script src="{settings.STIMULUS_JS_URL}"></script>')
 
 
 @register.tag
@@ -182,6 +176,12 @@ def list_term(context, **kwargs):
 
 @register.filter
 @stringfilter
+def strtobool(val: str):
+    return utils.strtobool(f"{val}", None)
+
+
+@register.filter
+@stringfilter
 def camel(value: str):
     splitted = value.split("_")
     if len(splitted) > 1:
@@ -209,9 +209,9 @@ def withdict(parser, token):
 
     For example::
 
-        {% with name=person.name key=person.key as dict %}
-            {% some_tag_expecting_a_dict doct %}
-        {% endwith %}
+        {% withdict name=person.name key=person.key as dict %}
+            {% some_tag_expecting_a_dict dict %}
+        {% endwithdict %}
 
     """
     bits = token.split_contents()
@@ -244,3 +244,8 @@ class WithDictNode(Node):
         values = {key: val.resolve(context) for key, val in self.extra_context.items()}
         with context.push(**{self.variable_name: values}):
             return self.nodelist.render(context)
+
+
+@register.simple_tag
+def hidden():
+    return mark_safe('hidden aria-hidden="true"')

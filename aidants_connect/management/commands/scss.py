@@ -1,13 +1,39 @@
 import os
+import subprocess
 from pathlib import Path
 from shutil import which
 
 from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.functional import cached_property
 
 
 class Command(BaseCommand):
     help = "Generate CSS files from SCSS sources"
+
+    @cached_property
+    def sass_command(self):
+        # Try command included in node_modules first. The file may not necessarily be
+        # executable so we need to test it with `subprocess.run`. `shutils.which`
+        # won't detect it.
+        import aidants_connect
+
+        node_modules_exe = (
+            Path(aidants_connect.__path__[0]).parent / "node_modules" / ".bin" / "sass"
+        )
+
+        if not node_modules_exe.exists():
+            return self.__default_sass_command()
+
+        node_modules_exe = f"{node_modules_exe}"
+        result = subprocess.run(
+            [node_modules_exe, "--version"], capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            return self.__default_sass_command()
+
+        self.stdout.write(f"Using {node_modules_exe}")
+        return node_modules_exe
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -24,12 +50,11 @@ class Command(BaseCommand):
         self.compile_stylesheets(action)
 
     def check_sass_version(self):
-        if which("sass") is None:
-            raise CommandError(
-                "You need to install sass before using this command.\n"
-                "Check https://sass-lang.com/install"
-            )
-        sass_version = os.popen("sass --version").read().strip()
+        result = subprocess.run(
+            [self.sass_command, "--version"], capture_output=True, text=True
+        )
+        result.check_returncode()
+        sass_version = result.stdout.strip()
         self.stdout.write(f"You are using Sass version {sass_version}.")
         if "Ruby" in sass_version:
             self.stdout.write("Warning! This is an old version of Sass.")
@@ -47,7 +72,7 @@ class Command(BaseCommand):
             ]
         )
         command = (
-            f"sass {action} --style compressed {folders} "
+            f"{self.sass_command} {action} --style compressed {folders} "
             "--load-path aidants_connect_common/static/scss/"
         )
         self.stdout.write(f"Running {command}")
@@ -56,3 +81,14 @@ class Command(BaseCommand):
 
     def write_horizontal_line(self):
         self.stdout.write("-" * 15)
+
+    def __default_sass_command(self):
+        found = which("sass")
+        if found is None:
+            raise CommandError(
+                "You need to install sass before using this command.\n"
+                "Use either NPM or check https://sass-lang.com/install"
+            )
+
+        self.stdout.write(f"Using {found}")
+        return found

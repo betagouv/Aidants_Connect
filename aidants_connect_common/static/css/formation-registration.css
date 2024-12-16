@@ -6,10 +6,16 @@
   position: unset !important;
 }
 
-table {
-  border-collapse: collapse;
+.formation-public-contacts {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
-table tbody tr {
-  border-bottom: 2px solid var(--border-default-grey);
+.formation-public-contacts > * {
+  flex-grow: 1;
+}
+
+.border-bottom:not(:last-child) {
+  border-bottom: 1px solid var(--border-default-grey);
 }

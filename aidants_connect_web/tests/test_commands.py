@@ -168,8 +168,11 @@ class CreateSuperUserTests(TestCase):
         def input_mock(*_):
             return "Proletaires_de_tous_les_pays"
 
-        with patch("getpass.getpass", input_mock), patch.dict(
-            os.environ, {ORGANISATION_NAME_ENV: "L'Internationale des travailleurs"}
+        with (
+            patch("getpass.getpass", input_mock),
+            patch.dict(
+                os.environ, {ORGANISATION_NAME_ENV: "L'Internationale des travailleurs"}
+            ),
         ):
             call_command(
                 "createsuperuser",

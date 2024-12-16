@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.test import tag
+from django.urls import reverse
 from django.utils import timezone
 
 from selenium.webdriver.common.by import By
@@ -67,18 +68,14 @@ class ViewAutorisationsTests(FunctionalTestCase):
         )
 
     def test_grouped_autorisations(self):
-        self.open_live_url("/espace-aidant/")
+        self.open_live_url(reverse("espace_aidant_home"))
 
         # Login
         self.login_aidant(self.aidant)
 
         # Espace Aidant home
-        self.selenium.find_element(By.ID, "view_mandats").click()
-
-        results = []
-        for el in self.selenium.find_elements(By.TAG_NAME, "table"):
-            for tr in el.find_elements(By.CSS_SELECTOR, "tbody tr"):
-                results.append(tr)
-
+        self.selenium.find_element(By.ID, "view-mandats").click()
         # autorisation List
-        self.assertEqual(len(results), 3)
+        self.assertEqual(
+            3, len(self.selenium.find_elements(By.CLASS_NAME, "auth-badge"))
+        )

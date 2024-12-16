@@ -8,23 +8,36 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
-from django.forms import EmailField
+from django.forms import BaseModelFormSet, EmailField, RadioSelect, modelformset_factory
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from django_otp import match_token
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from dsfr.forms import DsfrBaseForm
+from dsfr.forms import DsfrBaseForm, DsfrDjangoTemplates
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import validator
+from pydantic import field_validator
 
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
-from aidants_connect_common.forms import AcPhoneNumberField, PatchedForm
+from aidants_connect_common.forms import (
+    AcPhoneNumberField,
+    AsHiddenMixin,
+    BaseModelMultiForm,
+    CleanEmailMixin,
+    ConseillerNumerique,
+    CustomBoundFieldForm,
+    ErrorCodesManipulationMixin,
+    PatchedForm,
+)
 from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
-from aidants_connect_web.constants import RemoteConsentMethodChoices
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    RemoteConsentMethodChoices,
+)
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
@@ -73,10 +86,9 @@ class AidantCreationForm(forms.ModelForm):
         self.fields["organisation"].required = True
 
     def clean(self):
-        super().clean()
-        cleaned_data = self.cleaned_data
+        cleaned_data = super().clean()
         aidant_email = cleaned_data.get("email")
-        if aidant_email in Aidant.objects.all().values_list("username", flat=True):
+        if Aidant.objects.filter(email__iexact=aidant_email).exists():
             self.add_error(
                 "email", forms.ValidationError("This email is already taken")
             )
@@ -190,6 +202,7 @@ def get_choices_for_remote_method():
 
 class MandatForm(PatchedForm):
     demarche = forms.MultipleChoiceField(
+        label="Sélectionnez la ou les démarches",
         choices=[],
         required=True,
         widget=MandatDemarcheSelect,
@@ -201,24 +214,24 @@ class MandatForm(PatchedForm):
     DUREES = [
         (
             ADKW.SHORT,
-            {"label": "Mandat court", "description": "(expire demain)"},
+            {"label": "Mandat court", "description": "expire demain"},
         ),
         (
             ADKW.MONTH,
             {
                 "label": "Mandat d'un mois",
-                "description": f"({ADKW.DAYS[ADKW.MONTH]} jours)",
+                "description": f"{ADKW.DAYS[ADKW.MONTH]} jours",
             },
         ),
         (
             ADKW.LONG,
-            {"label": "Mandat long", "description": "(12 mois)"},
+            {"label": "Mandat long", "description": "12 mois"},
         ),
         (
             ADKW.SEMESTER,
             {
                 "label": "Mandat de 6 mois",
-                "description": f"({ADKW.DAYS[ADKW.SEMESTER]} jours)",
+                "description": f"{ADKW.DAYS[ADKW.SEMESTER]} jours",
             },
         ),
     ]
@@ -232,7 +245,7 @@ class MandatForm(PatchedForm):
     )
 
     is_remote = forms.BooleanField(
-        label="Signature à distance du mandat",
+        label="Je souhaite signer le mandat à distance",
         label_suffix="",
         required=False,
     )
@@ -335,6 +348,10 @@ class OTPForm(DsfrBaseForm):
             "Entrez le code à 6 chiffres généré par votre téléphone "
             "ou votre carte Aidants Connect"
         ),
+        help_text=(
+            "Un nouveau code à 6 chiffres est généré toutes les minutes "
+            "par votre carte physique ou numérique."
+        ),
         widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )
 
@@ -352,8 +369,19 @@ class OTPForm(DsfrBaseForm):
             raise ValidationError("Ce code n'est pas valide.")
 
 
-class RecapMandatForm(OTPForm, forms.Form):
+class RecapMandatForm(OTPForm):
     personal_data = forms.BooleanField()
+
+    def __init__(self, usager: Usager, aidant: Aidant, *args, **kwargs):
+        super().__init__(aidant, *args, **kwargs)
+        self["personal_data"].label = mark_safe(
+            f"Avoir communiqué à <strong>{usager.get_full_name()}</strong> les "
+            "informations concernant l’objet de l’intervention, la raison pour "
+            "laquelle ses informations sont collectées et leur utilité ; les droits "
+            "sur ses données ET avoir conservé son consentement écrit "
+            "(capture d'écran email, SMS…) pour conclure le mandat et utiliser ses "
+            "données à caractère personnel."
+        )
 
 
 class CarteOTPSerialNumberForm(forms.Form):
@@ -470,10 +498,18 @@ class ChangeAidantOrganisationsForm(forms.Form):
         self.initial["organisations"] = self.aidant.organisations.all()
 
 
-class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
+class HabilitationRequestCreationForm(
+    ConseillerNumerique,
+    CleanEmailMixin,
+    forms.ModelForm,
+    DsfrBaseForm,
+    CustomBoundFieldForm,
+    AsHiddenMixin,
+):
+    template_name = "aidants_connect_web/forms/habilitation-request-creation-form.html"  # noqa: E501
     organisation = forms.ModelChoiceField(
         queryset=Organisation.objects.none(),
-        empty_label="Choisir...",
+        empty_label="Choisir…",
     )
 
     def __init__(self, referent, *args, **kwargs):
@@ -483,12 +519,41 @@ class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
             responsables=self.referent
         ).order_by("name")
 
+    def clean_email(self):
+        email = super().clean_email()
+
+        if Aidant.objects.filter(
+            email__iexact=email,
+            organisation__in=self.referent.responsable_de.all(),
+        ).exists():
+            raise ValidationError(
+                "Il existe déjà un compte aidant pour cette adresse e-mail. "
+                "Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci."
+            )
+
+        if HabilitationRequest.objects.filter(
+            email=email,
+            organisation__in=self.referent.responsable_de.all(),
+        ).exists():
+            raise ValidationError(
+                "Une demande d’habilitation est déjà en cours pour l’adresse e-mail. "
+                "Vous n’avez pas besoin de déposer une "
+                "nouvelle demande pour cette adresse-ci.",
+            )
+
+        return email
+
+    def save(self, commit=True):
+        self.instance.origin = HabilitationRequest.ORIGIN_RESPONSABLE
+        return super().save(commit)
+
     class Meta:
         model = HabilitationRequest
         fields = (
             "email",
-            "last_name",
             "first_name",
+            "last_name",
             "profession",
             "organisation",
         )
@@ -501,8 +566,57 @@ class HabilitationRequestCreationForm(forms.ModelForm, DsfrBaseForm):
             }
         }
 
-    def clean_email(self):
-        return self.cleaned_data.get("email").lower()
+
+class HabilitationRequestCreationFormSet(BaseModelFormSet):
+    def __init__(
+        self,
+        data=None,
+        files=None,
+        auto_id="id_%s",
+        prefix=None,
+        **kwargs,
+    ):
+        kwargs["queryset"] = self.model._default_manager.none()
+        super().__init__(data, files, auto_id, prefix, **kwargs)
+        self.extra = 0
+        self.min_num = 1
+
+
+class HabilitationRequestCreationFormationTypeForm(DsfrBaseForm, AsHiddenMixin):
+    Type = HabilitationRequestCourseType
+
+    type = forms.ChoiceField(
+        label=(
+            "Renseignez le type de formation souhaité "
+            "pour la liste des aidants à habiliter."
+        ),
+        label_suffix=None,
+        choices=Type.choices,
+        widget=RadioSelect,
+    )
+
+
+class NewHabilitationRequestForm(BaseModelMultiForm):
+    habilitation_requests = modelformset_factory(
+        HabilitationRequestCreationForm.Meta.model,
+        HabilitationRequestCreationForm,
+        extra=0,
+        min_num=1,
+        formset=HabilitationRequestCreationFormSet,
+    )
+
+    course_type = HabilitationRequestCreationFormationTypeForm
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("renderer", DsfrDjangoTemplates())  # Patched in Django 5)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        super().save(commit=False)
+        for form in self["habilitation_requests"].forms:
+            form.instance.course_type = self["course_type"].cleaned_data["type"]
+
+        return super().save(commit)
 
 
 class DatapassForm(forms.Form):
@@ -573,7 +687,7 @@ class MassEmailActionForm(forms.Form):
         )
 
 
-class AuthorizeSelectUsagerForm(PatchedForm):
+class AuthorizeSelectUsagerForm(DsfrBaseForm, ErrorCodesManipulationMixin):
     chosen_usager = forms.IntegerField(
         required=True,
         error_messages={
@@ -605,7 +719,7 @@ class AuthorizeSelectUsagerForm(PatchedForm):
             )
 
 
-class OAuthParametersForm(PatchedForm):
+class OAuthParametersForm(DsfrBaseForm, ErrorCodesManipulationMixin):
     state = forms.CharField()
     nonce = forms.CharField()
     response_type = forms.CharField()
@@ -613,7 +727,7 @@ class OAuthParametersForm(PatchedForm):
     redirect_uri = forms.CharField()
     scope = forms.CharField()
     acr_values = forms.CharField()
-    claim = forms.JSONField(required=False)
+    claims = forms.JSONField(required=False)
 
     def __init__(self, organisation: Organisation, *args, relaxed=False, **kwargs):
         self.relaxed = relaxed
@@ -665,8 +779,8 @@ class OAuthParametersForm(PatchedForm):
             raise ValidationError("", "invalid")
         return result
 
-    def clean_claim(self):
-        result = self.cleaned_data.get("claim")
+    def clean_claims(self):
+        result = self.cleaned_data.get("claims")
         if not result:
             return None
 
@@ -676,12 +790,14 @@ class OAuthParametersForm(PatchedForm):
                     essential: bool
                     values: Optional[set[str]] = set()
 
-                    @validator("essential", allow_reuse=True)
+                    @field_validator("essential")
+                    @classmethod
                     def check_true(cls, v):
                         assert v is True
                         return v
 
-                    @validator("values", allow_reuse=True)
+                    @field_validator("values")
+                    @classmethod
                     def check_demarche(cls, v):
                         assert all(value in settings.DEMARCHES.keys() for value in v)
                         return v
@@ -702,7 +818,7 @@ class OAuthParametersForm(PatchedForm):
                 )
         except (TypeError, PydanticValidationError):
             raise ValidationError(
-                self.fields["claim"].error_messages["invalid"],
+                self.fields["claims"].error_messages["invalid"],
                 code="invalid",
                 params={"value": result},
             )

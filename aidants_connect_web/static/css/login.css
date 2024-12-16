@@ -1,4 +1,4 @@
-.main-content-full [class*="fr-col"] {
+.main-content-fluid [class*="fr-col"] {
   padding-top: 0;
   padding-bottom: 0;
 }

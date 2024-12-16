@@ -11,6 +11,7 @@ from import_export.results import RowResult
 
 from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
+from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 
 from .utils import SpecificDeleteActionsMixin
@@ -113,9 +114,6 @@ class OrganisationResource(resources.ModelResource):
         self,
         row,
         instance_loader,
-        using_transactions=True,
-        dry_run=False,
-        raise_errors=False,
         **kwargs,
     ):
         name_row = "Statut de la demande (send = à valider; pending = brouillon)"
@@ -131,9 +129,6 @@ class OrganisationResource(resources.ModelResource):
                 return super().import_row(
                     row,
                     instance_loader,
-                    using_transactions,
-                    dry_run,
-                    raise_errors,
                     **kwargs,
                 )
 
@@ -153,6 +148,14 @@ class OrganisationResource(resources.ModelResource):
         return False
 
     class Meta:
+        fields = (
+            "name",
+            "siret",
+            "city",
+            "datapass_id",
+            "status_not_field",
+            "zipcode",
+        )
         import_id_fields = (
             "name",
             "siret",
@@ -176,6 +179,21 @@ class WithoutDatapassIdFilter(SimpleListFilter):
 
         if datapass_id == "without":
             return queryset.filter(data_pass_id=None)
+
+
+class OrganisationTypeFilter(SimpleListFilter):
+    title = "Type réduit de l'organisation"
+
+    parameter_name = "orga_type_id"
+
+    def lookups(self, request, model_admin):
+        return RequestOriginConstants.choices
+
+    def queryset(self, request, queryset):
+        orga_type_id = self.value()
+        if not orga_type_id:
+            return
+        return queryset.filter(type=orga_type_id)
 
 
 class OrganisationAdmin(
@@ -208,6 +226,7 @@ class OrganisationAdmin(
         DepartmentFilter,
         "is_active",
         "france_services_label",
+        OrganisationTypeFilter,
         "type",
         WithoutDatapassIdFilter,
         "is_experiment",
@@ -229,7 +248,7 @@ class OrganisationAdmin(
         "specific_delete_action",
     )
 
-    def get_export_resource_classes(self):
+    def get_export_resource_classes(self, request):
         return [ExportHabilitationRequestAndAidantAndOrganisationResource]
 
     @classmethod
@@ -241,12 +260,12 @@ class OrganisationAdmin(
         export_list = aidants + habilitations
         return export_list
 
-    def get_data_for_export(self, request, queryset, *args, **kwargs):
+    def get_data_for_export(self, request, queryset, **kwargs):
         export_list = self.get_list_for_export_sandbox(queryset)
         export_form = kwargs.pop("export_form", None)
-        return self.choose_export_resource_class(export_form)(
-            **self.get_export_resource_kwargs(request, *args, **kwargs)
-        ).export(*args, queryset=export_list, **kwargs)
+        return self.choose_export_resource_class(export_form, request)(
+            **self.get_export_resource_kwargs(request, **kwargs)
+        ).export(queryset=export_list, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = list(self.readonly_fields)

@@ -1,4 +1,5 @@
-{% load static dsfr_tags ac_common %}
+{% load ac_common dsfr_tags importmap static %}
+
 <!doctype html>
 <html lang="fr" data-fr-scheme="light">
 <head>
@@ -7,10 +8,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>{% block title %}Aidants Connect{% endblock %}</title>
+
+  {# Importmap; see https://github.com/christophehenry/dj-importmap for documentation #}
+  {% importmap nonce=request.csp_nonce %}
+
   {% dsfr_css %}
-  <link rel="stylesheet" href="{% static 'dsfr/dist/utility/utility.min.css' %}">
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
-  <link href="{{ COOKIE_BANNER_CSS_URL }}" rel="stylesheet">
+  <link href="{% static 'css/dsfr-theme-tac.css' %}" rel="stylesheet">
+  {% for css in form.media.render_css|default:"" %}
+    {{ css }}
+  {% endfor %}
   {# Extra styles #}
   {% block extracss %}{% endblock %}
 
@@ -66,10 +73,9 @@
 {% endblock nav %}
 
 <main id="main" tabindex="-1">
-  {% dsfr_django_messages %}
-
   {% block content %}
-  {% endblock %}
+  {% endblock content %}
+  <section id="modal-dest"></section>
 </main>
 
 {% block footer %}
@@ -81,6 +87,9 @@
 <script defer src="{{ COOKIE_BANNER_LANG_URL }}"></script>
 <script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>
 <script defer src="{% static 'js/cookie-banner.js' %}"></script>
+{% for js in form.media.render_js|default:"" %}
+  {{ js }}
+{% endfor %}
 {% block extrajs %}{% endblock %}
 </body>
 </html>

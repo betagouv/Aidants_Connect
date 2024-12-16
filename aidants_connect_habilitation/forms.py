@@ -1,7 +1,8 @@
 from re import sub as re_sub
-from typing import List, Tuple, Union
+from typing import Union
 from urllib.parse import quote, unquote
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.forms import (
@@ -11,6 +12,8 @@ from django.forms import (
     ChoiceField,
     Form,
     HiddenInput,
+    Media,
+    ModelForm,
     RadioSelect,
     Textarea,
     TextInput,
@@ -18,33 +21,38 @@ from django.forms import (
     modelformset_factory,
 )
 from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
+from dsfr.forms import DsfrBaseForm
+
 from aidants_connect.utils import strtobool
-from aidants_connect_common.constants import MessageStakeholders, RequestOriginConstants
+from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
+    AsHiddenMixin,
+    CleanEmailMixin,
+    ConseillerNumerique,
     PatchedErrorList,
     PatchedForm,
     PatchedModelForm,
+    WidgetAttrMixin,
 )
 from aidants_connect_common.utils.gouv_address_api import Address, search_adresses
+from aidants_connect_common.widgets import JSModulePath
 from aidants_connect_habilitation import models
-from aidants_connect_habilitation.constants import CONSEILLER_NUMERIQUE_EMAIL
 from aidants_connect_habilitation.models import (
     AidantRequest,
     Manager,
     OrganisationRequest,
     PersonWithResponsibilities,
-    RequestMessage,
 )
 from aidants_connect_web.models import OrganisationType
 
 
-class AddressValidatableMixin(Form):
+class AddressValidatableMixin(Form, WidgetAttrMixin):
     DEFAULT_CHOICE = "DEFAULT"
 
     # Necessary so dynamically setting properties
@@ -149,38 +157,6 @@ class AddressValidatableMixin(Form):
         raise NotImplementedError()
 
 
-class CleanEmailMixin:
-    def clean_email(self):
-        return self.cleaned_data["email"].lower().strip()
-
-
-class ConseillerNumerique(Form):
-    conseiller_numerique = TypedChoiceField(
-        label=mark_safe(
-            'Fait partie du <a class="fr-link" href="https://www.conseiller-numerique.gouv.fr/"> dispositif conseiller numérique</a>'  # noqa: E501
-        ),
-        label_suffix=" :",
-        choices=(("", ""), (True, "Oui"), (False, "Non")),
-        coerce=lambda value: bool(strtobool(value)),
-    )
-
-    def clean(self):
-        result = super().clean()
-        if result.get("conseiller_numerique", None) is True and not result.get(
-            "email", ""
-        ).endswith(CONSEILLER_NUMERIQUE_EMAIL):
-            self.add_error(
-                "email",
-                (
-                    "Si la personne fait partie du dispositif conseiller numérique, "
-                    "elle doit s'inscrire avec son email "
-                    f"{CONSEILLER_NUMERIQUE_EMAIL}"
-                ),
-            )
-
-        return result
-
-
 class CleanZipCodeMixin:
     def clean_zipcode(self):
         data: str = re_sub(r"\s+", "", self.cleaned_data["zipcode"]).strip()
@@ -190,7 +166,9 @@ class CleanZipCodeMixin:
         return data
 
 
-class IssuerForm(PatchedModelForm, CleanEmailMixin):
+class IssuerForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
+    template_name = "aidants_connect_habilitation/forms/issuer.html"
+
     phone = AcPhoneNumberField(
         initial="",
         label="Téléphone",
@@ -198,8 +176,8 @@ class IssuerForm(PatchedModelForm, CleanEmailMixin):
     )
 
     def __init__(self, *args, render_non_editable=False, **kwargs):
-        super().__init__(*args, **kwargs)
         self.render_non_editable = render_non_editable
+        super().__init__(*args, **kwargs)
         if self.render_non_editable:
             self.auto_id = False
             for name, field in self.fields.items():
@@ -226,15 +204,25 @@ class IssuerForm(PatchedModelForm, CleanEmailMixin):
 
 
 class OrganisationRequestForm(
-    PatchedModelForm, AddressValidatableMixin, CleanZipCodeMixin
+    ModelForm, DsfrBaseForm, AddressValidatableMixin, CleanZipCodeMixin
 ):
-    type = ChoiceField(required=True, choices=RequestOriginConstants.choices)
+    template_name = "aidants_connect_habilitation/forms/organisation.html"
+    type = ChoiceField(
+        required=True, choices=RequestOriginConstants.choices, label="Type de structure"
+    )
     type_other = CharField(
         label="Veuillez préciser le type d’organisation", required=False
     )
 
+    france_services_label = BooleanField(
+        label="Structure labellisée France Services", required=False
+    )
+    france_services_number = CharField(
+        label="Numéro d’immatriculation France Services", required=False
+    )
+
     name = CharField(
-        label="Nom de la structure",
+        label="Nom",
     )
 
     zipcode = CharField(
@@ -256,41 +244,14 @@ class OrganisationRequestForm(
     city_insee_code = CharField(widget=HiddenInput(), required=False)
     department_insee_code = CharField(widget=HiddenInput(), required=False)
 
-    is_private_org = BooleanField(
-        label=(
-            "Cochez cette case si vous faites cette demande pour une structure privée "
-            "(hors associations)"
-        ),
-        required=False,
-    )
-
-    partner_administration = CharField(
-        label="Renseignez l’administration avec laquelle vous travaillez",
-        required=False,
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.widget_attrs(
-            "type",
-            {
-                "data-action": "change->dynamic-form#onTypeChange",
-                "data-dynamic-form-target": "typeInput",
-            },
-        )
-        self.widget_attrs(
-            "is_private_org",
-            {
-                "data-action": "change->dynamic-form#onIsPrivateOrgChange",
-                "data-dynamic-form-target": "privateOrgInput",
-            },
-        )
-        self.widget_attrs(
-            "france_services_label",
-            {
-                "data-action": "change->dynamic-form#onFranceServicesChange",
-                "data-dynamic-form-target": "franceServicesInput",
-            },
+    @property
+    def media(self):
+        return Media(
+            css={"all": (static("css/autocomplete.css"),)},
+            js=(
+                JSModulePath("js/organisation-form.mjs"),
+                JSModulePath("js/address-autocomplete.mjs"),
+            ),
         )
 
     def clean_type(self):
@@ -307,18 +268,6 @@ class OrganisationRequestForm(
             )
 
         return self.data["type_other"]
-
-    def clean_partner_administration(self):
-        if not self.data.get("is_private_org", False):
-            return ""
-
-        if not self.data["partner_administration"]:
-            raise ValidationError(
-                "Vous avez indiqué que la structure est privée : merci de renseigner "
-                "votre administration partenaire."
-            )
-
-        return self.data["partner_administration"]
 
     def clean_france_services_number(self):
         if not self.data.get("france_services_label", False):
@@ -353,6 +302,17 @@ class OrganisationRequestForm(
         self.cleaned_data["city_insee_code"] = address.citycode
         self.cleaned_data["department_insee_code"] = address.context.department_number
 
+    def get_context(self):
+        return {
+            **super().get_context(),
+            "GOUV_ADDRESS_SEARCH_API_DISABLED": (
+                settings.GOUV_ADDRESS_SEARCH_API_DISABLED
+            ),
+            "GOUV_ADDRESS_SEARCH_API_BASE_URL": (
+                settings.GOUV_ADDRESS_SEARCH_API_BASE_URL
+            ),
+        }
+
     class Meta:
         model = models.OrganisationRequest
         fields = [
@@ -365,8 +325,6 @@ class OrganisationRequestForm(
             "city",
             "city_insee_code",
             "department_insee_code",
-            "is_private_org",
-            "partner_administration",
             "france_services_label",
             "france_services_number",
             "web_site",
@@ -393,6 +351,11 @@ class ManagerForm(
     AddressValidatableMixin,
     CleanZipCodeMixin,
 ):
+    phone = AcPhoneNumberField(
+        initial="",
+        required=True,
+    )
+
     zipcode = CharField(
         label="Code Postal",
         max_length=10,
@@ -419,6 +382,10 @@ class ManagerForm(
         coerce=lambda value: bool(strtobool(value)),
     )
 
+    def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.organisation = organisation
+
     def get_address_for_search(self) -> str:
         return " ".join(
             [
@@ -438,6 +405,12 @@ class ManagerForm(
     def clean(self):
         result = super().clean()
         super().post_clean()
+        return result
+
+    def save(self, commit=True):
+        result = super().save(commit)
+        self.organisation.manager = result
+        self.organisation.save(update_fields=("manager",))
         return result
 
     class Meta(PersonWithResponsibilitiesForm.Meta):
@@ -474,7 +447,45 @@ class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
         )
 
 
-class AidantRequestForm(ConseillerNumerique, PatchedModelForm, CleanEmailMixin):
+# TODO: Remove and replace by AidantRequestForm when PersonnelRequestFormView is ported to DSFR  # noqa: E501
+class AidantRequestFormLegacy(ConseillerNumerique, PatchedModelForm, CleanEmailMixin):
+    def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
+        self.organisation = organisation
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = super().clean_email()
+
+        query = Q(organisation=self.organisation) & Q(email__iexact=email)
+        if getattr(self.instance, "pk"):
+            # This user already exists, and we need to verify that
+            # we are not trying to modify its email with the email
+            # of antoher aidant in the organisation
+            query = query & ~Q(pk=self.instance.pk)
+        if AidantRequest.objects.filter(query).exists():
+            raise EmailOrganisationValidationError(email)
+
+        if (
+            self.organisation.manager
+            and self.organisation.manager.is_aidant
+            and self.organisation.manager.email == email
+        ):
+            raise ManagerEmailOrganisationValidationError(email)
+
+        return email
+
+    def save(self, commit=True):
+        self.instance.organisation = self.organisation
+        return super().save(commit)
+
+    class Meta:
+        model = AidantRequest
+        exclude = ["organisation", "habilitation_request"]
+
+
+class AidantRequestForm(ModelForm, ConseillerNumerique, CleanEmailMixin, DsfrBaseForm):
+    template_name = "aidants_connect_habilitation/forms/aidant.html"
+
     def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
         self.organisation = organisation
         super().__init__(*args, **kwargs)
@@ -510,10 +521,19 @@ class AidantRequestForm(ConseillerNumerique, PatchedModelForm, CleanEmailMixin):
 
 
 class BaseAidantRequestFormSet(BaseModelFormSet):
+    default_error_messages = {
+        "too_few_forms": (
+            "Vous devez déclarer au moins 1 aidant si le ou la référente de "
+            "l'organisation n'est pas elle-même déclarée comme aidante"
+        )
+    }
+
     def __init__(self, organisation: OrganisationRequest, **kwargs):
         self.organisation = organisation
         kwargs.setdefault("error_class", PatchedErrorList)
-        kwargs.setdefault("queryset", AidantRequest.objects.none())
+        kwargs.setdefault(
+            "queryset", AidantRequest.objects.filter(organisation=organisation)
+        )
 
         super().__init__(**kwargs)
 
@@ -525,7 +545,26 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
         )
 
     def clean(self):
+        self.validate_min_num()
+        super().clean()
+
+    def validate_min_num(self):
+        if (
+            not getattr(self.organisation.manager, "is_aidant", False)
+            and self.is_empty()
+        ):
+            raise ValidationError(
+                self.error_messages["too_few_forms"] % {"num": self.min_num},
+                code="too_few_forms",
+            )
+
+    def validate_unique(self):
         emails = {}
+        manager_email = (
+            {self.organisation.manager.email}
+            if getattr(self.organisation.manager, "is_aidant", False)
+            else set()
+        )
         for form in self.forms:
             if self.can_delete and self._should_delete_form(form):
                 continue
@@ -533,9 +572,19 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
             email = form.cleaned_data.get("email")
 
             # Do not test if email is empty: may be a legitimate empty form
-            if email:
-                emails.setdefault(email, [])
-                emails[email].append(form)
+            if not email:
+                continue
+
+            emails.setdefault(email, [])
+            emails[email].append(form)
+
+            if email in manager_email:
+                form.add_error(
+                    "email",
+                    "Cette personne a le même email que la personne que vous avez "
+                    "déclarée comme référente. Chaque aidant doit avoir "
+                    "une adresse email unique.",
+                )
 
         for email, grouped_forms in emails.items():
             if len(grouped_forms) > 1:
@@ -544,8 +593,6 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
                         "email",
                         EmailOrganisationValidationError(email),
                     )
-
-        super().clean()
 
     def get_form_kwargs(self, index):
         kwargs = super().get_form_kwargs(index)
@@ -572,168 +619,23 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
 
 
 AidantRequestFormSet = modelformset_factory(
-    AidantRequestForm.Meta.model, AidantRequestForm, formset=BaseAidantRequestFormSet
+    AidantRequestFormLegacy.Meta.model,
+    AidantRequestFormLegacy,
+    formset=BaseAidantRequestFormSet,
 )
 
 
-class PersonnelForm:
-    MANAGER_FORM_PREFIX = "manager"
-    AIDANTS_FORMSET_PREFIX = "aidants"
-
-    @property
-    def errors(self):
-        if self._errors is None:
-            self._clean()
-        return self._errors
-
-    def __init__(self, organisation: OrganisationRequest, **kwargs):
-        self.organisation = organisation
-
-        def merge_kwargs(prefix):
-            previous_prefix = kwargs.get("prefix")
-            local_kwargs = {}
-
-            form_kwargs_prefixes = {
-                self.MANAGER_FORM_PREFIX,
-                self.AIDANTS_FORMSET_PREFIX,
-            }
-
-            for k, v in kwargs.items():
-                """
-                Let us dispatch form kwargs to specific forms by using their prefixes.
-
-                For instance, PersonnelForm(manager_instance=some_instance) will
-                disptach to ManagerForm(instance=some_instance).
-                """
-                kwarg_prefix = k.split("_")
-                if len(kwarg_prefix) > 1 and kwarg_prefix[0] in form_kwargs_prefixes:
-                    if kwarg_prefix[0] == prefix:
-                        k_prefix_removed = k[len(f"{prefix}_") :]
-                        local_kwargs[k_prefix_removed] = v
-                else:
-                    local_kwargs[k] = v
-
-            return {
-                **local_kwargs,
-                "prefix": (
-                    prefix if not previous_prefix else f"{prefix}_{previous_prefix}"
-                ),
-            }
-
-        self._errors = None
-
-        self.manager_form = ManagerForm(**merge_kwargs(self.MANAGER_FORM_PREFIX))
-
-        self.aidants_formset = AidantRequestFormSet(
-            organisation=self.organisation, **merge_kwargs(self.AIDANTS_FORMSET_PREFIX)
-        )
-
-    def _clean(self):
-        self._errors = PatchedErrorList()
-
-        if not self.manager_form.is_bound or not self.aidants_formset.is_bound:
-            # Stop processing if form does not have data
-            return
-
-        self.clean_must_have_one_aidant()
-        self.clean_must_have_unique_emails()
-
-    def clean_must_have_unique_emails(self):
-        if not self.manager_form.cleaned_data.get("is_aidant"):
-            return
-        if not (manager_email := self.manager_form.cleaned_data.get("email")):
-            # if manager's email is None, we don't need to perform
-            # that check since manager's email needs to be set
-            return
-        bogus_aidants_forms = [
-            form
-            for form in self.aidants_formset.forms
-            if form.cleaned_data.get("email", "") == manager_email
-        ]
-
-        if not bogus_aidants_forms:
-            return
-
-        self.add_error(
-            "Vous avez déclaré plusieurs aidants avec la même addresse email"
-        )
-
-        self.manager_form.add_error(
-            "email",
-            "Vous avez déclaré cette personne comme aidante et déclaré un "
-            "autre aidant avec la même adresse email. Chaque aidant doit avoir "
-            "une adresse email unique.",
-        )
-
-        for aidant_form in bogus_aidants_forms:
-            aidant_form.add_error(
-                "email",
-                "Cette personne a le même email que la personne que vous avez "
-                "déclarée comme référente. Chaque aidant doit avoir "
-                "une adresse email unique.",
-            )
-
-    def clean_must_have_one_aidant(self):
-        manager_is_aidant = self.manager_form.cleaned_data.get("is_aidant")
-        # If is_aidant is None, there was a ValidationError on this field
-        # so we don't bother validating
-        if not self.aidants_formset.is_empty() or manager_is_aidant is True:
-            return
-
-        self.add_error(
-            "Vous devez déclarer au moins 1 aidant si le ou la référente de "
-            "l'organisation n'est pas elle-même déclarée comme aidante"
-        )
-        self.manager_form.add_error(
-            "is_aidant",
-            "Veuillez cocher cette case ou déclarer au moins un aidant ci-dessous",
-        )
-        self.aidants_formset.add_non_form_error(
-            "Vous devez déclarer au moins 1 aidant si le ou la référente de "
-            "l'organisation n'est pas elle-même déclarée comme aidante"
-        )
-
-    def add_error(self, error: Union[ValidationError, str]):
-        if not isinstance(error, ValidationError):
-            error = ValidationError(error)
-        self._errors.append(error)
-
-    def is_valid(self) -> bool:
-        # Eagerly compute the result of `is_valid` calls
-        # to prevent early return of the boolean computation.
-
-        # 'self.errors' must be last called so that subforms are
-        # validated before performing a global validation
-        is_valid = [
-            self.manager_form.is_valid(),
-            self.aidants_formset.is_valid(),
-            not self.errors,
-        ]
-
-        return all(is_valid)
-
-    def save(self, commit=True) -> Tuple[Manager, List[AidantRequest]]:
-        for form in self.aidants_formset:
-            form.instance.organisation = self.organisation
-
-        manager_instance, aidants_instances = (
-            self.manager_form.save(commit),
-            self.aidants_formset.save(commit),
-        )
-
-        self.organisation.manager = manager_instance
-        self.organisation.save()
-
-        return manager_instance, aidants_instances
-
-    save.alters_data = True
-
-
-class ValidationForm(PatchedForm):
+class ValidationForm(DsfrBaseForm, AsHiddenMixin):
+    template_name = "aidants_connect_habilitation/forms/validation.html"  # noqa: E501
     cgu = BooleanField(
         required=True,
-        label='J’ai pris connaissance des <a href="{url}">'
+        label='J’ai pris connaissance des <a href="{url}" class="fr-link">'
         "conditions générales d’utilisation</a> et je les valide.",
+    )
+    not_free = BooleanField(
+        required=True,
+        label="Je confirme avoir compris que la formation est payante "
+        "et je me suis renseigné(e) sur les modalités de financements disponibles.",
     )
     dpo = BooleanField(
         required=True,
@@ -752,9 +654,6 @@ class ValidationForm(PatchedForm):
         "Aidants Connect. Le ou la référente Aidants Connect ainsi que les aidants "
         "à habiliter ne sont pas des élus.",
     )
-    message_content = CharField(
-        label="Votre message", required=False, widget=Textarea(attrs={"rows": 4})
-    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -765,12 +664,19 @@ class ValidationForm(PatchedForm):
         self, organisation: OrganisationRequest, commit=True
     ) -> OrganisationRequest:
         organisation.prepare_request_for_ac_validation(self.cleaned_data)
-        if self.cleaned_data["message_content"] != "":
-            RequestMessage.objects.create(
-                organisation=organisation,
-                sender=MessageStakeholders.ISSUER.name,
-                content=self.cleaned_data["message_content"],
-            )
+        return organisation
+
+    save.alters_data = True
+
+
+class RequestViewForm(PatchedForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(
+        self, organisation: OrganisationRequest, commit=True
+    ) -> OrganisationRequest:
+        organisation.prepare_request_for_ac_validation(self.cleaned_data)
         return organisation
 
     save.alters_data = True

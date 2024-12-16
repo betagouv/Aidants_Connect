@@ -71,6 +71,31 @@ def notify_issuer_draft_request_saved(
     )
 
 
+def get_email_messages_for_inscription_validation(
+    person, formation, str_contact_emails
+):
+    if person.conseiller_numerique:
+        text_message, html_message = render_email(
+            "email/formation-aidant-conum.mjml",
+            {
+                "person": person,
+                "formation": formation,
+                "formation_contacts": str_contact_emails,
+            },
+        )
+
+    else:
+        text_message, html_message = render_email(
+            "email/formation-aidant.mjml",
+            {
+                "person": person,
+                "formation": formation,
+                "formation_contacts": str_contact_emails,
+            },
+        )
+    return text_message, html_message
+
+
 @receiver(post_save, sender=FormationAttendant)
 def formation_aidant(instance: FormationAttendant, created: bool, **_):
     if not created:
@@ -93,11 +118,13 @@ def formation_aidant(instance: FormationAttendant, created: bool, **_):
     if not emails:
         return
 
-    text_message, html_message = render_email(
-        "email/formation-aidant.mjml",
-        {"person": person, "formation": instance.formation},
-    )
+    organisation = instance.formation.organisation
 
+    str_contact_emails = ", ".join(organisation.private_contacts)
+
+    text_message, html_message = get_email_messages_for_inscription_validation(
+        person, instance.formation, str_contact_emails
+    )
     send_mail(
         from_email=settings.SUPPORT_EMAIL,
         recipient_list=[*emails],

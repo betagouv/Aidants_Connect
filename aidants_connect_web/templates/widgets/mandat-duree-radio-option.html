@@ -1,4 +1,9 @@
 {% extends "widgets/detailed_radio_option.html" %}
+
+{% block class_tile %}
+  fr-radio-group
+{% endblock class_tile %}
+
 {% block widget_label %}
   {{ widget.label }}
   <span
@@ -6,4 +11,4 @@
     hidden
     aria-hidden="true"
   > à distance</span>
-{% endblock %}
+{% endblock widget_label %}

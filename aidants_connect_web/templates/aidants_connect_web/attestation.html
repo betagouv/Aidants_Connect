@@ -1,4 +1,4 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
 {% load static %}
 
@@ -9,25 +9,15 @@
 {% endblock extracss %}
 
 {# Display navigation only on final mandate #}
-{% block nav %}{% if final %}<div class="no-print">{{ block.super }}</div>{% endif %}{% endblock nav %}
+{% block nav %}{% if final %}<div class="no-print">{{ block.super }}</div>{% endif %}{% endblock %}
 
 {% block content %}
-  <div class="fr-container clearfix">
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
     {% if final %}
-      <div class="fr-grid-row no-print margin-bottom-4rem">
-        <h1 class="full-width">Mandat final</h1>
-        <section class="fr-col-12 fr-col-md-7">
-          <p class="subtitle">
-            Le mandat a été créé avec succès.<br/>
-            Veuillez l’imprimer afin de le faire signer par le mandant.
-          </p>
-        </section>
-        <section class="fr-col-12 fr-col-md-5">
-          {% include 'aidants_connect_web/_attestation-print.html' %}
-        </section>
-      </div>
+      <div class="fr-col-md-8 fr-col-12">
+        <h1 class="no-print">Mandat final</h1>
     {% endif %}
-
     <div class="attestation-content">
       <header class="navbar fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-8">
@@ -41,13 +31,27 @@
       </header>
 
       {% if not final %}
-        <section class="notification warning" role="alert">
-          Attention ! Ceci est un projet de mandat. Il n'a aucune valeur juridique.
+        <section class="fr-alert fr-alert--warning" role="alert">
+          <p>Attention ! Ceci est un projet de mandat. Il n'a aucune valeur juridique.</p>
         </section>
       {% endif %}
       {% include current_mandat_template %}
     </div>
+    {% if final %}
+      </div>
+      <div class="fr-col-md-4 fr-col-12 no-print">
+        <div class="fr-callout">
+          <p class="fr-text">
+            Le mandat a été créé avec succès.<br/>
+            Veuillez l’imprimer afin de le faire signer par le mandant.
+          </p>
+          {% include 'aidants_connect_web/_attestation-print.html' %}
+        </div>
+      </div>
+    {% endif %}
+
   </div>
+</div>
 {% endblock content %}
 
 {% block footer %}

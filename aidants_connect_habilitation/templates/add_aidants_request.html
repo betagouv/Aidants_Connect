@@ -1,9 +1,9 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static form_extras ac_common %}
+{% load ac_common form_extras static %}
 
 {% block title %}
   Aidants Connect — Demande d'habilitation pour {{ organisation.name }}
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container" data-controller="personnel-form">
@@ -46,7 +46,7 @@
       <div class="button-box standalone">
         <a
           class="fr-btn fr-btn--secondary"
-           href="{% url 'habilitation_organisation_view' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+          href="{% url 'habilitation_organisation_view' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
         >
           Revenir à l’étape précédente
         </a>
@@ -60,9 +60,9 @@
       {% include "_aidant_form.html" with form=form.empty_form %}
     </template>
   </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extrajs %}
   {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/personnel-form.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/personnel-form.mjs' %}"></script>
+{% endblock extrajs %}

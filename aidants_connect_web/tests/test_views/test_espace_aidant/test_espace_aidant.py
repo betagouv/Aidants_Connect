@@ -267,13 +267,13 @@ class UsagersDetailsPageTests(TestCase):
     def test_usager_details_isnt_visible_for_another_aidant(self):
         self.client.force_login(self.other_aidant)
         response = self.client.get(f"/usagers/{self.usager.id}/")
-        self.assertTemplateNotUsed(response, "aidants_connect_web/usager_details.html")
+        self.assertTemplateNotUsed(response, "aidants_connect_web/usager-details.html")
         self.assertRedirects(response, reverse("espace_aidant_home"))
 
     def test_usager_details_url_triggers_the_usager_details_template(self):
         self.client.force_login(self.aidant)
         response = self.client.get(f"/usagers/{self.usager.id}/")
-        self.assertTemplateUsed(response, "aidants_connect_web/usager_details.html")
+        self.assertTemplateUsed(response, "aidants_connect_web/usager-details.html")
 
     def test_usager_details_template_dynamic_title(self):
         self.client.force_login(self.aidant)
@@ -287,7 +287,7 @@ class UsagersDetailsPageTests(TestCase):
         self.client.force_login(self.aidant)
         response = self.client.get(f"/usagers/{self.usager.id}/")
         response_content = response.content.decode("utf-8")
-        self.assertIn("Renouveler le mandat", response_content)
+        self.assertIn("Renouveler", response_content)
         self.assertIn(
             reverse("renew_mandat", kwargs={"usager_id": self.usager.id}),
             response_content,

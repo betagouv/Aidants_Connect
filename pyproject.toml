@@ -1,3 +1,6 @@
+[project]
+requires-python = ">=3.11"
+
 [tool.black]
 force-exclude = '''
 /(
@@ -41,3 +44,18 @@ skip_glob = [
     "dist",
     "**/migrations",
 ]
+
+[tool.coverage.run]
+source = ["."]
+branch = true
+omit = [
+    "*/venv/*",
+    "*/aidants_connect/*",
+    "*/aidants_connect_web/migrations/*",
+    "*/aidants_connect_web/tests/*"
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true

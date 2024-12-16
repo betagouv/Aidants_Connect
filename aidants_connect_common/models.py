@@ -5,13 +5,10 @@ from enum import auto
 from typing import TYPE_CHECKING, Any, Self
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import CASCADE, Count
 from django.template.defaultfilters import date
-from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 
@@ -22,7 +19,6 @@ from aidants_connect_common.utils import PGTriggerExtendedFunc, render_markdown
 from aidants_connect_pico_cms.fields import MarkdownField
 
 if TYPE_CHECKING:
-    from aidants_connect_habilitation.models import AidantRequest
     from aidants_connect_web.models import HabilitationRequest
 
 
@@ -124,7 +120,26 @@ class FormationOrganizationQuerySet(models.QuerySet):
 
 class FormationOrganization(models.Model):
     name = models.CharField("Nom")
-    contacts = ArrayField(models.EmailField(), default=list)
+    contacts = ArrayField(
+        models.EmailField(),
+        default=list,
+        verbose_name="Contacts publics",
+        null=True,
+        blank=True,
+    )
+    private_contacts = ArrayField(
+        models.EmailField(),
+        default=list,
+        verbose_name="Contacts privés",
+        null=True,
+        blank=True,
+    )
+    type = models.ForeignKey(
+        FormationType, default=None, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    region = models.ForeignKey(
+        Region, default=None, null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     objects = FormationOrganizationQuerySet.as_manager()
 
@@ -142,23 +157,39 @@ class FormationOrganization(models.Model):
 
 
 class FormationQuerySet(models.QuerySet):
-    def for_attendant_q(self, attendant: HabilitationRequest | AidantRequest):
-        return models.Q(
-            attendants__attendant_id=attendant.pk,
-            attendants__attendant_content_type=ContentType.objects.get_for_model(
-                attendant._meta.model
-            ),
-        )
+    def for_attendant_q(self, attendant: HabilitationRequest):
+        return models.Q(attendants__attendant_id=attendant.pk)
 
-    def available_for_attendant(
-        self, after: timedelta, attendant: HabilitationRequest | AidantRequest
-    ) -> Self:
+    def get_q_available_now(self):
+        att_count = settings.SHORT_TIMEDELTA_ATTENDANTS_COUNT_FOR_INSCRIPTION
+        short_td = timedelta(days=settings.SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION)
+        long_td = timedelta(days=settings.TIMEDELTA_IN_DAYS_FOR_INSCRIPTION)
+
         q = models.Q(
             attendants_count__lt=models.F("max_attendants"),
-            start_datetime__gte=now() + after,
             state=Formation.State.ACTIVE,
+        ) & (
+            models.Q(
+                attendants_count__gt=att_count, start_datetime__gte=now() + short_td
+            )
+            | models.Q(
+                attendants_count__lte=att_count,
+                start_datetime__gte=now() + long_td,
+            )
+        )
+        return q
+
+    def available_now(self):
+        q = self.get_q_available_now()
+        return (
+            self.annotate(attendants_count=Count("attendants"))
+            .filter(q)
+            .order_by("start_datetime")
+            .distinct()
         )
 
+    def available_for_attendant(self, attendant: HabilitationRequest) -> Self:
+        q = self.get_q_available_now()
         q = (
             (
                 (q & models.Q(type_id=settings.PK_MEDNUM_FORMATION_TYPE))
@@ -175,30 +206,18 @@ class FormationQuerySet(models.QuerySet):
             .distinct()
         )
 
-    def for_attendant(self, attendant: HabilitationRequest | AidantRequest) -> Self:
+    def for_attendant(self, attendant: HabilitationRequest) -> Self:
         return self.filter(self.for_attendant_q(attendant))
 
-    def register_attendant(
-        self, attendant: HabilitationRequest | AidantRequest
-    ) -> None:
+    def register_attendant(self, attendant: HabilitationRequest) -> None:
         for formation in self.values_list("pk", flat=True):
             FormationAttendant.objects.get_or_create(
-                formation_id=formation,
-                attendant_id=attendant.pk,
-                attendant_content_type=ContentType.objects.get_for_model(
-                    attendant._meta.model
-                ),
+                formation_id=formation, attendant_id=attendant.pk
             )
 
-    def unregister_attendant(
-        self, attendant: HabilitationRequest | AidantRequest
-    ) -> None:
+    def unregister_attendant(self, attendant: HabilitationRequest) -> None:
         FormationAttendant.objects.filter(
-            formation_id__in=self.values("pk"),
-            attendant_id=attendant.pk,
-            attendant_content_type=ContentType.objects.get_for_model(
-                attendant._meta.model
-            ),
+            formation_id__in=self.values("pk"), attendant_id=attendant.pk
         ).delete()
 
 
@@ -250,17 +269,17 @@ class Formation(models.Model):
                 f"au {date(self.end_datetime, 'd F Y à H:i')}"
             )
         else:
-            if self.start_datetime.hour == 0:
+            if self.start_datetime.hour in (0, 1, 2):
                 return f"Début le {date(self.start_datetime, 'd F Y')} "
             return f"Début le {date(self.start_datetime, 'd F Y à H:i')} "
 
     def __str__(self):
         return f"{self.type.label} {self.date_range_str.casefold()}"
 
-    def register_attendant(self, attendant: HabilitationRequest | AidantRequest):
+    def register_attendant(self, attendant: HabilitationRequest):
         Formation.objects.filter(pk=self.pk).register_attendant(attendant)
 
-    def unregister_attendant(self, attendant: HabilitationRequest | AidantRequest):
+    def unregister_attendant(self, attendant: HabilitationRequest):
         Formation.objects.filter(pk=self.pk).unregister_attendant(attendant)
 
     class Meta:
@@ -286,14 +305,12 @@ class FormationAttendant(models.Model):
     created_at = models.DateTimeField("Date création", auto_now_add=True, null=True)
     updated_at = models.DateTimeField("Date modification", auto_now=True, null=True)
 
-    attendant_content_type = models.ForeignKey(
-        ContentType,
-        editable=False,
-        related_name="%(app_label)s_%(class)s_formations_attendants",
+    attendant = models.ForeignKey(
+        "aidants_connect_web.HabilitationRequest",
         on_delete=models.CASCADE,
+        related_name="formations",
     )
-    attendant_id = models.PositiveIntegerField()
-    attendant = GenericForeignKey("attendant_content_type", "attendant_id")
+
     formation = models.ForeignKey(
         Formation, on_delete=models.PROTECT, related_name="attendants"
     )
@@ -311,20 +328,11 @@ class FormationAttendant(models.Model):
         "État de la demande", choices=State.choices, default=State.DEFAULT
     )
 
-    @cached_property
-    def target(self):
-        return self.attendant_content_type.get_object_for_this_type(
-            pk=self.attendant_id
-        )
-
-    def __str__(self):
-        return f"{self.target}"
-
     class Meta:
         verbose_name = "Formation : inscrit"
         verbose_name_plural = "Formation : inscrits"
         # One attendant a type can only be registered only once to a specific formation
-        unique_together = ("attendant_content_type", "attendant_id", "formation")
+        unique_together = ("attendant", "formation")
         triggers = [
             pgtrigger.Trigger(
                 name="check_attendants_count",
@@ -339,13 +347,13 @@ class FormationAttendant(models.Model):
                     -- prevent concurrent inserts from multiple transactions
                     LOCK TABLE {{meta.db_table}} IN EXCLUSIVE MODE;
 
-                    SELECT INTO attendants_count COUNT(*) 
+                    SELECT INTO attendants_count COUNT(*)
                     FROM {{meta.db_table}}
                     WHERE {{columns.formation}} = NEW.{{columns.formation}}
                     AND {{columns.state}} != {FormationAttendantState.CANCELLED};
 
                     SELECT {{Formation_columns.max_attendants}} INTO max_attendants_count
-                    FROM {{Formation_meta.db_table}} 
+                    FROM {{Formation_meta.db_table}}
                     WHERE {{Formation_meta.pk.name}} = NEW.{{columns.formation}};
 
                     IF attendants_count >= max_attendants_count THEN

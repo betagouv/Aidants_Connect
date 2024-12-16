@@ -23,4 +23,4 @@
       </mj-text>
     </mj-column>
   </mj-section>
-{% endblock %}
+{% endblock email_body %}

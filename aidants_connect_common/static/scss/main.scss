@@ -11,9 +11,11 @@ body {
 }
 
 ul, ol {
-  margin: 0;
-  padding: 0;
-  list-style-position: outside;
+  margin: var(--text-spacing);
+
+  p:has(+&) {
+    margin-bottom: var(--xl-block);
+  }
 }
 
 $main-padding: 3rem;
@@ -23,9 +25,18 @@ $main-padding: 3rem;
   padding: $main-padding 0;
 }
 
-.main-content-full { // cancels #main padding
-  margin-bottom: -$main-padding;
-  margin-top: -$main-padding;
+.main-content-fluid { // cancels #main padding
+  &:first-child {
+    margin-top: -$main-padding;
+  }
+
+  &:last-child {
+    margin-bottom: -$main-padding;
+  }
+
+  &.main-content-fluid--padding {
+    padding: $main-padding 0;
+  }
 
   .main-content-item {
     margin-bottom: $main-padding;
@@ -45,12 +56,6 @@ h3, .fr-h3, h4, .fr-h4 {
     margin-top: 0;
   }
 }
-.fr-text-default {
-  color: var(--text-default-grey);
-}
-.fr-text--center {
-  text-align: center;
-}
 
 .page-main-title {
   color: var(--grey-425-625);
@@ -64,6 +69,13 @@ h3, .fr-h3, h4, .fr-h4 {
   margin: 0 0 3rem 0;
 }
 
+.errorlist {
+  list-style: none;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-active-red-marianne);
+}
+
 p:last-child {
   margin-bottom: 0;
 }
@@ -72,8 +84,26 @@ p:last-child {
   display: none !important;
 }
 
-// From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034
+.fr-title-icon-left[class*="fr-icon-"]::before {
+  color: var(--blue-france-sun-113-625);
+  margin-left: -.125rem;
+  margin-right: .5rem;
+}
 
+.fr-icon-loader:after,
+.fr-icon-loader:before {
+  -webkit-mask-image: url(../images/icons/AC-loader.svg);
+  mask-image: url(../images/icons/AC-loader.svg)
+}
+
+// Cancel DSFR modal transition as it's messing with functionnal tests
+.fr-modal {
+  &, & * {
+    transition: none !important;
+  }
+}
+
+// From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034
 .sr-only {
   border: 0 !important;
   clip: rect(1px, 1px, 1px, 1px) !important;
@@ -94,12 +124,66 @@ p:last-child {
   display: flex;
 }
 
+.flex-right {
+  justify-content: right;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-between {
+  justify-content: space-between;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
 .width-100 {
-  width: 100%;
+  width: 100% !important;
 }
 
 .spacer {
   flex-grow: 10;
+}
+
+.fr-text--overflow-hidden {
+  overflow: hidden;
+}
+
+.fr-text--center {
+  text-align: center;
+}
+
+.fr-bordered {
+  border: solid 1px var(--border-default-grey);
+}
+
+.fr-bordered-blue {
+  border-color: var(--border-default-blue-france)
+}
+
+.fr-height-100 {
+  height: 100%;
+}
+
+.fr-btn.fr-btn--warning:not(:disabled) {
+  --hover-tint: var(--hover);
+  --idle: transparent;
+  --hover: var(--background-action-high-warning-hover);
+  --active: var(--background-action-high-warning-active);
+  align-items: center;
+  background-color: var(--background-action-high-warning);
+  color: var(--text-inverted-warning);
+
+  &.fr-btn--secondary {
+    --hover: inherit;
+    --active: inherit;
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px var(--border-action-high-warning);
+    color: var(--text-default-warning);
+  }
 }
 
 @for $i from 0 through 32 {
@@ -107,5 +191,23 @@ p:last-child {
     .fr-grid-row.fr-grid-row--#{$gap-type}-#{$i}v {
       #{$gap-type}: #{$i * 0.25}rem !important;
     }
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none;
+  }
+}
+
+@media print {
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  // Don't display cookie related element on print
+  [id^="tarteaucitron"] {
+    display: none !important;
   }
 }

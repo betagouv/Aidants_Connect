@@ -1,19 +1,19 @@
 import logging
-from datetime import timedelta
-from operator import itemgetter
+from typing import Tuple
 
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect, render
-from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.generic import TemplateView
 
 from aidants_connect_pico_cms.models import Testimony
 from aidants_connect_web.forms import OTPForm
-from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation, Usager
+from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -41,10 +41,7 @@ def home_page(request):
     return render(
         request,
         "public_website/home_page.html",
-        context={
-            "testimonies": testimonies_qs[:3],
-            "has_more_testimonies": testimonies_qs.count() > 3,
-        },
+        context={"testimonies": testimonies_qs[:3]},
     )
 
 
@@ -67,108 +64,100 @@ def habilitation(request):
     return render(request, "public_website/habilitation.html")
 
 
-def statistiques(request):
-    last_30_days = timezone.now() - timedelta(days=30)
-    stafforg = settings.STAFF_ORGANISATION_NAME
+class StatistiquesView(TemplateView):
+    template_name = "public_website/statistiques.html"
 
-    def get_usager_ids(query_set) -> list:
-        return [query_set_item.usager_id for query_set_item in query_set]
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.autorisation_use_qs = Journal.objects.excluding_staff().filter(
+            action="use_autorisation"
+        )
 
-    organisations_accredited_count = (
-        Organisation.objects.accredited().exclude(name=stafforg).count()
-    )
-    organisations_not_accredited_count = (
-        Organisation.objects.not_yet_accredited().exclude(name=stafforg).count()
-    )
+        self.active_aidants_qs = (
+            Aidant.objects.exclude(organisation__name=settings.STAFF_ORGANISATION_NAME)
+            .filter(is_active=True)
+            .filter(can_create_mandats=True)
+        )
 
-    aidants_count = (
-        Aidant.objects.exclude(organisation__name=stafforg)
-        .filter(carte_totp__isnull=False)
-        .filter(is_active=True)
-        .filter(can_create_mandats=True)
-        .count()
-    )
-    aidants_not_accredited_count = (
-        Aidant.objects.exclude(organisation__name=stafforg)
-        .filter(carte_totp__isnull=True)
-        .filter(is_active=True)
-        .filter(can_create_mandats=True)
-        .count()
-    )
+    def get_demarches_stats(self) -> Tuple[dict[str, list], int]:
+        data = {"icons": [], "titles": [], "values": []}
 
-    # mandats
-    # # mandats prep
-    mandats = Mandat.objects.exclude(organisation__name=stafforg)
-    active_mandats = mandats.active()
+        qs = (
+            self.autorisation_use_qs.values("demarche")
+            .annotate(total=Count("demarche"))
+            .order_by("total")
+            .all()
+        )
 
-    # # mandat results
-    mandat_count = mandats.count()
-    active_mandat_count = active_mandats.count()
+        data_total = 0
+        demarches_met = []
+        for entry in qs.all():
+            demarche = settings.DEMARCHES[entry["demarche"]]
+            count = entry["total"]
+            demarches_met.append(entry["demarche"])
+            data["icons"].append(demarche["icon"])
+            data["titles"].append(demarche["titre_court"])
+            data["values"].append(count)
+            data_total += count
 
-    # Usagers
-    usagers_with_mandat_count = Usager.objects.filter(
-        pk__in=get_usager_ids(mandats)
-    ).count()
-    usagers_with_active_mandat_count = Usager.objects.filter(
-        pk__in=get_usager_ids(active_mandats)
-    ).count()
+        # Fill rest of data with demarches not met
+        for k, v in settings.DEMARCHES.items():
+            if k in demarches_met:
+                continue
+            data["icons"].append(v["icon"])
+            data["titles"].append(v["titre_court"])
+            data["values"].append(0)
 
-    # Autorisations
-    # # Autorisation prep
-    autorisation_use = Journal.objects.excluding_staff().filter(
-        action="use_autorisation"
-    )
-    autorisation_use_recent = autorisation_use.filter(creation_date__gte=last_30_days)
+        return data, data_total
 
-    # # Autorisation results
-    autorisation_use_count = autorisation_use.count()
-    autorisation_use_recent_count = autorisation_use_recent.count()
+    def get_context_data(self, **kwargs):
+        usagers_helped_count = (
+            self.autorisation_use_qs.values("usager").distinct().count()
+        )
 
-    usagers_helped_count = Usager.objects.filter(
-        pk__in=get_usager_ids(autorisation_use)
-    ).count()
-    usagers_helped_recent_count = Usager.objects.filter(
-        pk__in=get_usager_ids(autorisation_use_recent)
-    ).count()
+        mandat_count = Mandat.objects.exclude(
+            organisation__name=settings.STAFF_ORGANISATION_NAME
+        ).count()
 
-    # # Démarches
-    demarches_count = [
-        {
-            "title": settings.DEMARCHES[demarche]["titre_court"],
-            "icon": settings.DEMARCHES[demarche]["icon"],
-            "value": autorisation_use.filter(demarche=demarche).count(),
-        }
-        for demarche in settings.DEMARCHES.keys()
-    ]
+        organisations_accredited_count = (
+            Organisation.objects.accredited()
+            .exclude(name=settings.STAFF_ORGANISATION_NAME)
+            .count()
+        )
+        organisations_not_accredited_count = (
+            Organisation.objects.not_yet_accredited()
+            .exclude(name=settings.STAFF_ORGANISATION_NAME)
+            .count()
+        )
 
-    demarches_count.sort(key=itemgetter("value"), reverse=True)
+        aidants_count = self.active_aidants_qs.filter(carte_totp__isnull=False).count()
+        aidants_not_accredited_count = self.active_aidants_qs.filter(
+            carte_totp__isnull=True
+        ).count()
 
-    chart_labels = [demarche["title"] for demarche in demarches_count]
-    chart_values = [demarche["value"] for demarche in demarches_count]
-    chart_icons = [demarche["icon"] for demarche in demarches_count]
+        data, data_total = self.get_demarches_stats()
 
-    chart_data = {"labels": chart_labels, "data": chart_values, "icons": chart_icons}
-
-    return render(
-        request,
-        "public_website/statistiques.html",
-        {
-            "data": chart_data,
-            "organisations_accredited_count": organisations_accredited_count,
-            "organisations_not_accredited_count": organisations_not_accredited_count,
-            "aidants_count": aidants_count,
-            "aidants_accrediting_count": aidants_not_accredited_count,
-            "mandats_count": mandat_count,
-            "active_mandats_count": active_mandat_count,
-            "usagers_with_mandat_count": usagers_with_mandat_count,
-            "usagers_with_active_mandat_count": usagers_with_active_mandat_count,
-            "autorisation_use_count": autorisation_use_count,
-            "autorisation_use_recent_count": autorisation_use_recent_count,
-            "usagers_helped_count": usagers_helped_count,
-            "usagers_helped_recent_count": usagers_helped_recent_count,
-            "demarches_count": demarches_count,
-        },
-    )
+        return super().get_context_data(
+            **kwargs,
+            usage_section={
+                "Démarches administratives réalisées": data_total,
+                "Personnes accompagnées": usagers_helped_count,
+                "Mandats créés": mandat_count,
+            },
+            data=data,
+            deployment_section=(
+                {
+                    "Aidants habilités": aidants_count,
+                    "Aidants en cours d’habilitation": aidants_not_accredited_count,
+                },
+                {
+                    "Structures habilitées": organisations_accredited_count,
+                    "Structures en cours d’habilitation": (
+                        organisations_not_accredited_count
+                    ),
+                },
+            ),
+        )
 
 
 @login_required()
@@ -210,8 +199,8 @@ def mentions_legales(request):
     return render(request, "public_website/mentions_legales.html")
 
 
-def accessibilite(request):
-    return render(request, "public_website/accessibilite.html")
+class AccessibiliteView(TemplateView):
+    template_name = "public_website/accessibilite.html"
 
 
 def ressources(request):

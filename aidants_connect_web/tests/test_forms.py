@@ -24,7 +24,11 @@ from aidants_connect_web.forms import (
     get_choices_for_remote_method,
 )
 from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    OrganisationFactory,
+    UsagerFactory,
+)
 
 
 @tag("forms")
@@ -452,6 +456,7 @@ class RecapMandatFormTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.aidant_thierry = AidantFactory()
+        cls.usager = UsagerFactory()
         device = cls.aidant_thierry.staticdevice_set.create(id=1)
         device.token_set.create(token="123456")
 
@@ -459,6 +464,7 @@ class RecapMandatFormTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         form_1 = RecapMandatForm(
             aidant=self.aidant_thierry,
+            usager=self.usager,
             data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
         )
         self.assertTrue(form_1.is_valid())
@@ -467,11 +473,13 @@ class RecapMandatFormTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         form_1 = RecapMandatForm(
             aidant=self.aidant_thierry,
+            usager=self.usager,
             data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
         )
         form_1.is_valid()
         form_2 = RecapMandatForm(
             aidant=self.aidant_thierry,
+            usager=self.usager,
             data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
         )
         self.assertFalse(form_2.is_valid())

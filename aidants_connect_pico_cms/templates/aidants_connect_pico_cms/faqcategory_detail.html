@@ -1,9 +1,13 @@
 {% extends 'layouts/main.html' %}
-{% load static ac_common dsfr_tags %}
+{% load ac_common dsfr_tags static %}
 
 {% block title %}
   Aidants Connect - FAQ {{ object.name }}
-{% endblock %}
+{% endblock title %}
+
+{% block nav %}
+    {% include 'public_website/layout/_header.html' %}
+{% endblock nav %}
 
 {% block content %}
   <div class="fr-container">
@@ -32,7 +36,7 @@
                 {% for category in categories %}
                   <li class="fr-sidemenu__item">
                     <a
-                      href="{% if category.slug == object.slug %}#{% else %}{% url "faq-category-detail" slug=category.slug %}{% endif %}"
+                      href="{% if category.slug == object.slug %}#{% else %}{% url "faq_category_detail" slug=category.slug %}{% endif %}"
                       class="fr-sidemenu__link"
                       target="_self"
                       {% if category.slug == object.slug %}aria-current="page"{% endif %}
@@ -77,4 +81,4 @@
       {# /Questions #}
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

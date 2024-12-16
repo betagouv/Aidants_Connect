@@ -1,0 +1,29 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+  <mj-section>
+    <mj-column>
+      <mj-text>Madame, Monsieur,</mj-text>
+      <mj-text>
+        <p>
+          Nous vous confirmons que {{ person.get_full_name }} a été inscrit(e) à la formation : {{ formation.organisation.name }} / {{ formation.type.label }},
+          {{ formation.date_range_str|lower }}. L’organisme en charge de cette formation prendra prochainement contact avec vous.
+        </p>
+        <p>
+         Pour toute demande complémentaire, merci de vous rapprocher de l’organisme de formation à cette adresse :  {{ formation_contacts }}
+        </p>
+        <p>Financée dans le cadre du Plan France Relance jusqu’en 2023, la formation à Aidants Connect est dorénavant
+        financée selon différentes modalités. Pour les conseillers numériques, la formation est financée dans
+        le cadre du dispositif Conseiller numérique, si elle fait partie des 2 modules thématiques choisis par le conseiller
+         lors de la formation initiale ou qu’elle correspond au module annuel choisi dans le cadre de la formation continue.
+         </p>
+      </mj-text>
+    <mj-text>
+    <em>L'organisme de formation se réserve le droit d’annuler une session si le nombre de participants est insuffisant.</em>
+    </mj-text>
+      <mj-text>
+        Nous nous tenons à votre disposition et vous remercions de votre intérêt pour Aidants Connect.
+      </mj-text>
+    </mj-column>
+  </mj-section>
+{% endblock email_body %}
