@@ -1,4 +1,4 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 {% load form_extras static %}
 
 {% block title %}
@@ -8,94 +8,119 @@
 {% block content %}
   <div class="fr-container">
     <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col">
-        <h1>Mon espace habilitation</h1>
-        <p class="subtitle">
-          Retrouvez ici vos demandes d'habilitation en cours,<br>
+      <div class="fr-col-12">
+        <h1 class="fr-mb-2w">Mon espace habilitation</h1>
+        <p class="fr-mb-6w">
+          Retrouvez ici vos demandes d'habilitation en cours,
           et modifiez vos informations personnelles.
         </p>
       </div>
     </div>
 
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-8">
-        <h2>
-          Le demandeur
-        </h2>
-        <p class="subtitle">Vos informations personnelles, dont l'équipe Aidants Connect a besoin pour prendre contact
-          avec vous.</p>
-        <div class="shadowed padding-2rem">
-          <p>
-            <strong>{{ issuer.first_name }} {{ issuer.last_name }}</strong><br>
-            {{ issuer.profession }}
-          </p>
-          <p>
-            {{ issuer.email }}<br>
-            {{ issuer.phone }}
-          </p>
-          <div class="button-box">
-            <a href="{% url "habilitation_modify_issuer" issuer_id=issuer.issuer_id %}"
-               class="fr-btn">Modifier</a>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w">
+      <div class="fr-col-12">
+        <h2 class="fr-h6 fr-mb-2w">Le demandeur</h2>
+      </div>
+      <div class="fr-col-12 fr-col-md-6 fr-bordered fr-p-4w">
+        <div class="fr-grid-row fr-grid-row--middle fr-mb-3w">
+          <div class="fr-col-2 fr-col-md-1 fr-grid-row fr-grid-row--middle fr-mr-1w">
+            <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/digital/avatar.svg' %}" alt="" />
           </div>
+          <div><strong>{{ issuer.first_name }} {{ issuer.last_name }}</strong></div>
+        </div>
+        <div class="fr-mb-2w fr-col-12">
+          <p class="fr-text--xs fr-mb-0 fr-text-mention--grey">Email</p>
+          <p>{{ issuer.email }}</p>
+        </div>
+        <div class="fr-mb-2w fr-col-12">
+          <p class="fr-text--xs fr-mb-0 fr-text-mention--grey">Profession</p>
+          <p>{{ issuer.profession }}</p>
+        </div>
+        <div class="fr-col-12 fr-grid-row fr-grid-row--right">
+          <a href="{% url 'habilitation_modify_issuer' issuer_id=issuer.issuer_id %}" class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-pencil-fill">Modifier le demandeur</a>
         </div>
       </div>
     </div>
-    <h2>Vos demandes d'habilitation</h2>
-    <p class="subtitle">Pour rappel, vous devez déposer une demande d'habilitation par lieu d'accueil.</p>
-    <div class="form-in-3-cols">
-      <div class="fr-grid-row fr-grid-row--gutters">
-        {% for organisation in issuer.organisation_requests.all %}
-          <div class="fr-col-12 fr-col-md-4">
-            <div class="shadowed with-button-box">
-              <h3 class="h2">{{ organisation.name }} - <i>{{ organisation.get_status_display }}</i></h3>
-              <p>
-                {{ organisation.address|linebreaksbr }}<br>{{ organisation.zipcode }} {{ organisation.city }}
-                {% if organisation.status == "NEW" %}
-                  <br>
-                  <a href="{% url "habilitation_modify_organisation" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-                    Voir / modifier les informations structure</a>
-                {% endif %}
-              </p>
-              <p>
-                {% with aidants_count=organisation.aidant_requests.all|length %}
-                  {% if aidants_count > 0 %}
-                    {{ aidants_count }} aidant{{ aidants_count|pluralize }}
-                  {% else %}
-                    Aucun aidant
-                  {% endif %}
-                {% endwith %}
-                {% if organisation.status == "NEW" %}
-                  <br>
-                  <a href="{% url "habilitation_new_aidants" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-                    Ajouter / modifier des aidants</a>
-                {% endif %}
-              </p>
-              <div class="button-box">
-                {% if organisation.status == "NEW" %}
-                  <a href="{% url "habilitation_validation" issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
-                     class="button primary">Soumettre la demande</a>
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle flex-between fr-mb-3w">
+      <div class="">
+        <h2 class="fr-h6 fr-mb-0">Vos demandes d'habilitation</h2>
+        <p>Pour rappel, vous devez déposer une demande d'habilitation par lieu d'accueil.</p>
+      </div>
+      <div class="">
+        <a href="{% url 'habilitation_new_organisation' issuer_id=issuer.issuer_id %}" class="fr-btn fr-btn--icon-left fr-icon-add-line">
+          Déposer une nouvelle demande
+        </a>
+      </div>
+    </div>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w">
+      <div class="fr-table--lg fr-table fr-table width-100" id="table-sm-component">
+        <div class="fr-table__wrapper">
+          <div class="fr-table__container">
+            <div class="fr-table__content">
+              <table class="with-valid-mandate">
+                <caption class="sr-only">Table des demandes d'habilitation</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Statut de la demande</th>
+                    <th scope="col">Lieu d'accueil</th>
+                    <th scope="col">Adresse</th>
+                    <th scope="col">Nb d'aidants</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% if issuer.organisation_requests.all|length > 0 %}
+                  {% for organisation in issuer.organisation_requests.all %}
+                    <tr>
+                      <td>{{ organisation.created_at|date:"d/m/Y" }}</td>
+                      <td>
+                        {% if organisation.status == "NEW" %}
+                          <p class="fr-badge fr-badge--new">Brouillon</p>
+                        {% elif organisation.status == "AC_VALIDATION_PROCESSING" %}
+                          <p class="fr-badge fr-badge--info">En attente</p>
+                        {% elif organisation.status == "VALIDATED" %}
+                          <p class="fr-badge fr-badge--success">Éligibilité validée</p>
+                        {% elif organisation.status == "REFUSED" %}
+                          <p class="fr-badge fr-badge--error">Éligibilité refusée</p>
+                        {% elif organisation.status == "CLOSED" %}
+                          <p class="fr-badge disabled">Cloturée</p>
+                        {% elif organisation.status == "CHANGES_REQUIRED" %}
+                          <p class="fr-badge fr-badge--warning">modifications demandées</p>
+                        {% elif organisation.status == "CHANGES_PROPOSED" %}
+                          <p class="fr-badge fr-badge--new">modifications proposées</p>
+                        {% endif %}
+                      </td>
+                      <td><strong>{{ organisation.name }}</strong></td>
+                      <td>{{ organisation.address|linebreaksbr }}<br>{{ organisation.zipcode }} {{ organisation.city }}</td>
+                      <td>
+                        {{ organisation.aidant_requests.all|length }}
+                      </td>
+                      <td>
+                        {% if organisation.status == "NEW" %}
+                          <a href="{% url 'habilitation_validation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+                            class="fr-btn fr-btn--secondary">Consulter</a>
+                        {% else %}
+                          <a class="fr-btn fr-btn--secondary"
+                            href="{% url 'habilitation_organisation_view' issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
+                            Consulter
+                          </a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
                 {% else %}
-                  <a class="button primary"
-                     href="{% url "habilitation_organisation_view" issuer_id=issuer.issuer_id uuid=organisation.uuid %}">
-                    Voir
-                  </a>
+                  <tr>
+                    <td colspan="6" class="fr-text-center">Vous n'avez pas de demandes en cours</td>
+                  </tr>
                 {% endif %}
-              </div>
+                </tbody>
+              </table>
             </div>
           </div>
-          {% if forloop.counter|divisibleby:3 %}{# new line #}
-            </div>
-            <div class="fr-grid-row fr-grid-row--gutters">
-          {% endif %}
-        {% endfor %}
-        <div class="fr-col-12 fr-col-md-4">
-          <a href="{% url "habilitation_new_organisation" issuer_id=issuer.issuer_id %}" class="button shadowed grey">
-            Déposer une nouvelle demande
-          </a>
         </div>
-        </div>
-    </div>
-    {% include "_more-info.html" %}
+      </div>
   </div>
+</div>
 
 {% endblock content %}
