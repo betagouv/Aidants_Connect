@@ -8,6 +8,7 @@ class AidantConnectStaticDevice(StaticDevice):
         proxy = True
 
     def verify_token(self, token):
+        print("YOUYOUYOUY")
         if not settings.ACTIVATE_INFINITY_TOKEN:
             return False
         verify_allowed, _ = self.verify_is_allowed()
@@ -21,3 +22,19 @@ class AidantConnectStaticDevice(StaticDevice):
             match = None
 
         return match is not None
+
+
+def extends_verify_token(self, token):
+    if not settings.ACTIVATE_INFINITY_TOKEN:
+        return False
+    verify_allowed, _ = self.verify_is_allowed()
+    if verify_allowed:
+        match = self.token_set.filter(token=token).first()
+        if match is not None:
+            self.throttle_reset()
+        else:
+            self.throttle_increment()
+    else:
+        match = None
+
+    return match is not None

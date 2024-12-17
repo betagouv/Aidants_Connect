@@ -19,6 +19,7 @@ class InfiniteTokenAuthFormTest(TestCase):
             "password": "motdepassedethierry",
             "otp_token": "123456",
         }
+        self.assertEqual(1, StaticToken.objects.all().count())
         form = OTPAuthenticationForm(None, data)
         self.assertTrue(form.is_valid())
         thierry = form.get_user()
