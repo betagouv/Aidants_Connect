@@ -40,50 +40,5 @@
   <div class="fr-fieldset__element">{% dsfr_form_field form.web_site %}</div>
   <div class="fr-fieldset__element">{% dsfr_form_field form.mission_description %}</div>
   <div class="fr-fieldset__element">{% dsfr_form_field form.avg_nb_demarches %}</div>
-
 </fieldset>
-<fieldset
-  class="fr-fieldset"
-  {% if not GOUV_ADDRESS_SEARCH_API_DISABLED %}
-  data-controller="address-autocomplete"
-  data-address-autocomplete-api-base-url-value="{{ GOUV_ADDRESS_SEARCH_API_BASE_URL }}"
-  {% endif %}
->
-  <legend class="fr-fieldset__legend">Informations administratives</legend>
-  <div class="fr-fieldset__element">
-    <p>L’adresse saisie ci-dessous sera celle utilisée sur les mandats édités par Aidants Connect.</p>
-  </div>
-  {% if form.should_display_addresses_select %}
-    <div class="fr-fieldset__element">
-      {% dsfr_form_field form.alternative_address %}
-    </div>
-  {% endif %}
-  <div class="fr-fieldset__element">{% dsfr_form_field form.address %}</div>
-  <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
-    {% dsfr_form_field form.zipcode %}
-  </div>
-  <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
-    {% dsfr_form_field form.city %}
-  </div>
-  {% with errors=form.zipcode.errors|add:form.city.errors %}
-    <div class="fr-grid-row fr-grid-row--gutters zipcode-container">
-      <div class="fr-col-8 fr-col-md-5">
-        {{ form.city_insee_code }}
-        {{ form.department_insee_code }}
-      </div>
-    </div>
-    {% if errors %}
-      <div class="fr-grid-row fr-grid-row--gutters">
-        <div class="errors fr-col-12 fr-col-md-7 fr-col-offset-md-5">{{ errors }}</div>
-      </div>
-    {% endif %}
-  {% endwith %}
-  <div role="alert" class="fr-alert fr-alert--info fr-alert--sm fr-mt-3w">
-    <p>
-      Si votre adresse n’est pas reconnue,
-      <a class="fr-link" href="{% mailto_href 'contact@aidantsconnect.beta.gouv.fr' %}">
-        contactez l’équipe Aidants Connect.
-      </a>
-    </p>
-  </div>
-</fieldset>
+{{ form.address_fieldset }}
