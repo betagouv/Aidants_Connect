@@ -5,15 +5,13 @@ Presenters are classes that present data to HTML templates from different data s
 from abc import ABC, abstractmethod
 from typing import Any
 
-from django.db.models import Model
-
 
 class GenericHabilitationRequestPresenter(ABC):
     """Presenter to use with habilitation/generic-habilitation-request-profile-card.html"""  # noqa: E501
 
     @property
     @abstractmethod
-    def pk(self) -> Model:
+    def pk(self) -> Any:
         """Return the underlying object containing data"""
         ...
 

@@ -1,11 +1,9 @@
 from re import sub as re_sub
-from typing import Union
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.forms import (
-    BaseModelFormSet,
     BooleanField,
     CharField,
     ChoiceField,
@@ -19,7 +17,6 @@ from django.forms import (
     model_to_dict,
     modelformset_factory,
 )
-from django.forms.formsets import MAX_NUM_FORM_COUNT, TOTAL_FORM_COUNT
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import format_html
@@ -32,9 +29,9 @@ from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
     AsHiddenMixin,
+    BaseHabilitationRequestFormSet,
     CleanEmailMixin,
     ConseillerNumerique,
-    PatchedErrorList,
     PatchedForm,
     PatchedModelForm,
 )
@@ -45,6 +42,7 @@ from aidants_connect_habilitation.models import (
     Manager,
     OrganisationRequest,
 )
+from aidants_connect_habilitation.presenters import ProfileCardAidantRequestPresenter2
 from aidants_connect_web.models import OrganisationType
 
 
@@ -344,43 +342,9 @@ class ManagerEmailOrganisationValidationError(EmailOrganisationValidationError):
         )
 
 
-# TODO: Remove and replace by AidantRequestForm when PersonnelRequestFormView is ported to DSFR  # noqa: E501
-class AidantRequestFormLegacy(ConseillerNumerique, PatchedModelForm, CleanEmailMixin):
-    def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
-        self.organisation = organisation
-        super().__init__(*args, **kwargs)
-
-    def clean_email(self):
-        email = super().clean_email()
-
-        query = Q(organisation=self.organisation) & Q(email__iexact=email)
-        if getattr(self.instance, "pk"):
-            # This user already exists, and we need to verify that
-            # we are not trying to modify its email with the email
-            # of antoher aidant in the organisation
-            query = query & ~Q(pk=self.instance.pk)
-        if AidantRequest.objects.filter(query).exists():
-            raise EmailOrganisationValidationError(email)
-
-        if (
-            self.organisation.manager
-            and self.organisation.manager.is_aidant
-            and self.organisation.manager.email == email
-        ):
-            raise ManagerEmailOrganisationValidationError(email)
-
-        return email
-
-    def save(self, commit=True):
-        self.instance.organisation = self.organisation
-        return super().save(commit)
-
-    class Meta:
-        model = AidantRequest
-        exclude = ["organisation", "habilitation_request"]
-
-
-class AidantRequestForm(ModelForm, ConseillerNumerique, CleanEmailMixin, DsfrBaseForm):
+class AidantRequestForm(
+    ConseillerNumerique, CleanEmailMixin, ModelForm, DsfrBaseForm, AsHiddenMixin
+):
     template_name = "aidants_connect_habilitation/forms/aidant.html"
 
     def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
@@ -417,7 +381,8 @@ class AidantRequestForm(ModelForm, ConseillerNumerique, CleanEmailMixin, DsfrBas
         exclude = ["organisation", "habilitation_request"]
 
 
-class BaseAidantRequestFormSet(BaseModelFormSet):
+class BaseAidantRequestFormSet(BaseHabilitationRequestFormSet):
+    presenter_class = ProfileCardAidantRequestPresenter2
     default_error_messages = {
         "too_few_forms": (
             "Vous devez déclarer au moins 1 aidant si le ou la référente de "
@@ -425,38 +390,40 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
         )
     }
 
-    def __init__(self, organisation: OrganisationRequest, **kwargs):
-        self.organisation = organisation
-        kwargs.setdefault("error_class", PatchedErrorList)
-        kwargs.setdefault(
-            "queryset", AidantRequest.objects.filter(organisation=organisation)
+    @property
+    def action_url(self):
+        return reverse(
+            "api_habilitation_new_aidants",
+            kwargs={
+                "issuer_id": f"{self.organisation.issuer.issuer_id}",
+                "uuid": f"{self.organisation.uuid}",
+            },
         )
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._validate_min = cls.validate_min
+        cls.validate_min = property(cls.validate_min_get)
+
+    def __init__(
+        self, organisation: OrganisationRequest, empty_permitted=None, **kwargs
+    ):
+        self.organisation = organisation
+        self.empty_permitted = empty_permitted
+        kwargs["queryset"] = self.organisation.aidant_requests.order_by("pk").all()
         super().__init__(**kwargs)
 
-        self.__management_form_widget_attrs(
-            TOTAL_FORM_COUNT, {"data-personnel-form-target": "managmentFormCount"}
-        )
-        self.__management_form_widget_attrs(
-            MAX_NUM_FORM_COUNT, {"data-personnel-form-target": "managmentFormMaxCount"}
-        )
-
-    def clean(self):
-        self.validate_min_num()
-        super().clean()
-
-    def validate_min_num(self):
-        if (
+    def validate_min_get(self):
+        return (
             not getattr(self.organisation.manager, "is_aidant", False)
-            and self.is_empty()
-        ):
-            raise ValidationError(
-                self.error_messages["too_few_forms"] % {"num": self.min_num},
-                code="too_few_forms",
-            )
+            or self._validate_min
+        )
 
     def validate_unique(self):
-        emails = {}
+        emails = {
+            existing_email: []
+            for existing_email in self.get_queryset().values_list("email", flat=True)
+        }
         manager_email = (
             {self.organisation.manager.email}
             if getattr(self.organisation.manager, "is_aidant", False)
@@ -494,30 +461,17 @@ class BaseAidantRequestFormSet(BaseModelFormSet):
     def get_form_kwargs(self, index):
         kwargs = super().get_form_kwargs(index)
         kwargs["organisation"] = self.organisation
+        if self.empty_permitted is not None:
+            kwargs["empty_permitted"] = self.empty_permitted
         return kwargs
 
-    def add_non_form_error(self, error: Union[ValidationError, str]):
-        if not isinstance(error, ValidationError):
-            error = ValidationError(error)
-        self._non_form_errors.append(error)
-
-    def is_empty(self):
-        for form in self.forms:
-            # If the form is not valid, it has data to correct so it is not empty
-            if not form.is_valid() or form.is_valid() and len(form.cleaned_data) != 0:
-                return False
-
-        return True
-
-    def __management_form_widget_attrs(self, widget_name: str, attrs: dict):
-        widget = self.management_form.fields[widget_name].widget
-        for attr_name, attr_value in attrs.items():
-            widget.attrs[attr_name] = attr_value
+    def get_presenter_kwargs(self, idx, form) -> dict:
+        return {"organisation": self.organisation, "form": form, "idx": idx}
 
 
 AidantRequestFormSet = modelformset_factory(
-    AidantRequestFormLegacy.Meta.model,
-    AidantRequestFormLegacy,
+    AidantRequestForm.Meta.model,
+    AidantRequestForm,
     formset=BaseAidantRequestFormSet,
 )
 

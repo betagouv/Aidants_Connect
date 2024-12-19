@@ -20,7 +20,9 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
@@ -45,14 +47,16 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         firefox_options.headless = settings.HEADLESS_FUNCTIONAL_TESTS
         if settings.HEADLESS_FUNCTIONAL_TESTS:
             firefox_options.add_argument("--headless")
-        firefox_options.log.level = "trace"
 
         # Allow pasting in console
         firefox_options.set_preference("devtools.selfxss.count", 1_000_000)
         firefox_options.set_preference("javascript.enabled", cls.js)
 
-        cls.selenium = WebDriver(options=firefox_options)
-        cls.selenium.implicitly_wait(10)
+        service = Service(
+            log_output="./geckodriver.log", service_args=["--log", "debug"]
+        )
+        cls.selenium = WebDriver(options=firefox_options, service=service)
+        cls.selenium.implicitly_wait(0.5)
         cls.wait = WebDriverWait(cls.selenium, 10)
 
         # In some rare cases, the first connection to the Django LiveServer
@@ -120,6 +124,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         data: models.Model | Mapping,
         fields: forms.Form | Iterable[forms.BoundField],
         custom_getter: CustomGetter | None = None,
+        selector: WebElement = None,
     ):
         """
         Generic method to fill a form in a page using Selenium with provided data
@@ -154,9 +159,10 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         ... the_fields = HabilitationRequestCreationForm().visible_fields()
         ... self.fill_form(the_data, the_fields, my_getter)
         """
+        selector = selector or self.selenium
 
         actual_fields = list(
-            fields.visible_fields if isinstance(data, forms.Form) else fields
+            fields.visible_fields() if isinstance(fields, forms.Form) else fields
         )
         default_getter: DefaultGetter = (
             operator.getitem if isinstance(data, Mapping) else getattr
@@ -187,7 +193,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
                         f"Couldn't translate {bf.name} from data into a "
                         f"value; if it's a Model, it's most likely not in DB"
                     )
-                Select(self.selenium.find_element(By.ID, bf.auto_id)).select_by_value(
+                Select(selector.find_element(By.ID, bf.auto_id)).select_by_value(
                     f"{value}"
                 )
             elif isinstance(bf.field.widget, forms.RadioSelect):
@@ -203,9 +209,9 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             # elif
             else:
                 try:
-                    self.selenium.find_element(By.ID, bf.auto_id).send_keys(
-                        val_getter(data, bf.name)
-                    )
+                    elt: WebElement = selector.find_element(By.ID, bf.auto_id)
+                    elt.clear()
+                    elt.send_keys(val_getter(data, bf.name))
                 except Exception:
                     self.fail(
                         f"Couldn't fill form field {bf.name} of type "
@@ -248,18 +254,29 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             driver.implicitly_wait(implicit_wait)
 
     def path_matches(
-        self, route_name: str, *, kwargs: dict = None, query_params: dict = None
+        self, viewname: str, *, kwargs: dict = None, query_params: dict = None
     ):
         kwargs = kwargs or {}
         query_part = urlencode(query_params or {}, quote_via=lambda s, _1, _2, _3: s)
         query_part = rf"\?{query_part}" if query_part else ""
         return url_matches(
-            rf"http://localhost:\d+{reverse(route_name, kwargs=kwargs)}{query_part}"
+            rf"http://localhost:\d+{reverse(viewname, kwargs=kwargs)}{query_part}"
         )
 
     def document_loaded(self) -> Callable[[WebDriver], bool]:
         def _predicate(driver: WebDriver) -> bool:
             return driver.execute_script("return document.readyState") == "complete"
+
+        return _predicate
+
+    def dsfr_ready(self):
+        def _predicate(driver: WebDriver):
+            return (
+                driver.execute_script(
+                    "return document.documentElement.dataset.appReady"
+                )
+                == "true"
+            )
 
         return _predicate
 

@@ -92,5 +92,5 @@
   {{ data|json_script:"usagers_list" }}
   <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
   <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-  <script src="{% static 'js/hidden_users_search.js' %}"></script>
+  <script type="module" src="{% static 'js/hidden-users-search.mjs' %}"></script>
 {% endblock extrajs %}

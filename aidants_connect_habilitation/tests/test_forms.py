@@ -7,7 +7,7 @@ from aidants_connect_common.constants import (
 )
 from aidants_connect_habilitation.forms import (
     AddressValidatableForm,
-    AidantRequestFormLegacy,
+    AidantRequestForm,
     AidantRequestFormSet,
     IssuerForm,
     OrganisationRequestForm,
@@ -277,7 +277,7 @@ class TestAidantRequestForm(TestCase):
         manager = ManagerFactory(is_aidant=True)
         organisation = OrganisationRequestFactory(manager=manager)
         form = get_form(
-            AidantRequestFormLegacy,
+            AidantRequestForm,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             email=organisation.manager.email,
@@ -297,7 +297,7 @@ class TestAidantRequestForm(TestCase):
         manager = ManagerFactory(is_aidant=False)
         organisation = OrganisationRequestFactory(manager=manager)
         form = get_form(
-            AidantRequestFormLegacy,
+            AidantRequestForm,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             email=organisation.manager.email,
@@ -309,7 +309,7 @@ class TestAidantRequestForm(TestCase):
         organisation = OrganisationRequestFactory()
         aidant = AidantRequestFactory(organisation=organisation)
         form = get_form(
-            AidantRequestFormLegacy,
+            AidantRequestForm,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             email=aidant.email,
@@ -329,7 +329,7 @@ class TestAidantRequestForm(TestCase):
         organisation = OrganisationRequestFactory()
         aidant = AidantRequestFactory(organisation=organisation)
         form = get_form(
-            AidantRequestFormLegacy,
+            AidantRequestForm,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation, "instance": aidant},
             email="test@test.test",
@@ -344,7 +344,7 @@ class TestAidantRequestForm(TestCase):
         aidant1 = AidantRequestFactory(organisation=organisation)
         aidant2 = AidantRequestFactory(organisation=organisation)
         form = get_form(
-            AidantRequestFormLegacy,
+            AidantRequestForm,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation, "instance": aidant1},
             email=aidant2.email,
@@ -363,7 +363,7 @@ class TestAidantRequestForm(TestCase):
     def test_email_conseiller_numerique(self):
         organisation = OrganisationRequestFactory()
         form = get_form(
-            AidantRequestFormLegacy,
+            AidantRequestForm,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             conseiller_numerique=True,
@@ -381,7 +381,7 @@ class TestAidantRequestForm(TestCase):
     def test_email_conseiller_numerique_with_deprecated_email(self):
         organisation = OrganisationRequestFactory()
         form = get_form(
-            AidantRequestFormLegacy,
+            AidantRequestForm,
             ignore_errors=True,
             form_init_kwargs={"organisation": organisation},
             conseiller_numerique=True,
@@ -398,33 +398,7 @@ class TestAidantRequestForm(TestCase):
         )
 
 
-class TestBaseAidantRequestFormSet(TestCase):
-    def test_is_empty(self):
-        organisation = DraftOrganisationRequestFactory()
-        form: AidantRequestFormSet = get_form(
-            AidantRequestFormSet,
-            form_init_kwargs={"initial": 0, "organisation": organisation},
-            ignore_errors=True,
-        )
-        self.assertEqual(form.is_empty(), True)
-
-        form: AidantRequestFormSet = get_form(
-            AidantRequestFormSet,
-            form_init_kwargs={"organisation": organisation},
-            ignore_errors=True,
-        )
-        self.assertEqual(form.is_empty(), False)
-
-        # Correctly handle erroneous subform case
-        data = get_form(
-            AidantRequestFormSet,
-            form_init_kwargs={"initial": 1, "organisation": organisation},
-        ).data
-        data["form-0-email"] = "   "
-        form = AidantRequestFormSet(data=data, organisation=organisation)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.is_empty(), False)
-
+class TestAidantRequestFormSet(TestCase):
     def test_clean_multiple_aidants_with_same_email(self):
         organisation = DraftOrganisationRequestFactory()
         form = get_form(

@@ -8,7 +8,8 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
-from django.forms import BaseModelFormSet, EmailField, RadioSelect, modelformset_factory
+from django.forms import EmailField, RadioSelect, modelformset_factory
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
@@ -26,6 +27,7 @@ from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
     AsHiddenMixin,
+    BaseHabilitationRequestFormSet,
     BaseModelMultiForm,
     CleanEmailMixin,
     ConseillerNumerique,
@@ -47,6 +49,7 @@ from aidants_connect_web.models import (
     UsagerQuerySet,
 )
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
+from aidants_connect_web.presenters import HabilitationRequestItemPresenter
 from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
@@ -569,19 +572,15 @@ class HabilitationRequestCreationForm(
         }
 
 
-class HabilitationRequestCreationFormSet(BaseModelFormSet):
-    def __init__(
-        self,
-        data=None,
-        files=None,
-        auto_id="id_%s",
-        prefix=None,
-        **kwargs,
-    ):
-        kwargs["queryset"] = self.model._default_manager.none()
-        super().__init__(data, files, auto_id, prefix, **kwargs)
-        self.extra = 0
-        self.min_num = 1
+class HabilitationRequestCreationFormSet(BaseHabilitationRequestFormSet):
+    presenter_class = HabilitationRequestItemPresenter
+
+    @property
+    def action_url(self):
+        return reverse("api_espace_responsable_aidant_new")
+
+    def get_presenter_kwargs(self, idx, form) -> dict:
+        return {"form": form, "idx": idx}
 
 
 class HabilitationRequestCreationFormationTypeForm(DsfrBaseForm, AsHiddenMixin):
@@ -602,8 +601,6 @@ class NewHabilitationRequestForm(BaseModelMultiForm):
     habilitation_requests = modelformset_factory(
         HabilitationRequestCreationForm.Meta.model,
         HabilitationRequestCreationForm,
-        extra=0,
-        min_num=1,
         formset=HabilitationRequestCreationFormSet,
     )
 

@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions
 
 from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_habilitation.forms import AidantRequestFormLegacy
+from aidants_connect_habilitation.forms import AidantRequestForm, AidantRequestFormSet
 from aidants_connect_habilitation.models import AidantRequest, OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
@@ -23,6 +23,7 @@ from aidants_connect_web.tests.factories import HabilitationRequestFactory
 class AddAidantsRequestViewTests(FunctionalTestCase):
     def setUp(self):
         self.add_aidant_css = "#add-aidants-btn"
+        self.submit_css = "[data-test='submit']"
 
     def test_add_aidant_button_shown_in_readonly_view_under_correct_conditions(self):
         unauthorized_statuses = set(RequestStatusConstants) - set(
@@ -37,59 +38,56 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             self.assertElementNotFound(By.CSS_SELECTOR, self.add_aidant_css)
 
         for status in RequestStatusConstants.aidant_registrable:
-            organisation: OrganisationRequest = OrganisationRequestFactory(
-                status=status
-            )
-            self.__open_readonly_view_url(organisation)
-
-            self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
-
-            self.wait.until(
-                self.path_matches(
-                    "habilitation_organisation_add_aidants",
-                    kwargs={
-                        "issuer_id": str(organisation.issuer.issuer_id),
-                        "uuid": str(organisation.uuid),
-                    },
+            with self.subTest(status):
+                organisation: OrganisationRequest = OrganisationRequestFactory(
+                    status=status
                 )
-            )
+                self.__open_readonly_view_url(organisation)
+
+                self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
+
+                self.wait.until(
+                    self.path_matches(
+                        "habilitation_new_aidants",
+                        kwargs={
+                            "issuer_id": str(organisation.issuer.issuer_id),
+                            "uuid": str(organisation.uuid),
+                        },
+                    )
+                )
 
     def test_can_correctly_add_new_aidants(self):
         organisation: OrganisationRequest = OrganisationRequestFactory(
             status=RequestStatusConstants.NEW, post__aidants_count=2
         )
-
-        self.assertEqual(organisation.aidant_requests.count(), 2)
+        nb_aidant_requests = organisation.aidant_requests.count()
+        self.assertEqual(nb_aidant_requests, 2)
 
         self.__open_form_url(organisation)
 
-        for i in range(2):
-            aidant_form: AidantRequestFormLegacy = get_form(
-                AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
+        formset = AidantRequestFormSet(organisation=organisation)
+        for i in range(nb_aidant_requests, nb_aidant_requests + 2):
+            aidant_form = get_form(
+                AidantRequestForm,
+                form_init_kwargs={
+                    "organisation": organisation,
+                    "auto_id": formset.auto_id,
+                    "prefix": formset.add_prefix(i),
+                },
             )
-            aidant_data = aidant_form.cleaned_data
-            for field_name in aidant_form.fields:
-                element = self.selenium.find_element(
-                    By.CSS_SELECTOR,
-                    f"#id_form-{i}-{field_name}",
+            self.fill_form(aidant_form.cleaned_data, aidant_form)
+            self.selenium.find_element(By.CSS_SELECTOR, "#partial-submit").click()
+            self.wait.until(
+                expected_conditions.visibility_of_element_located(
+                    (By.ID, f"profile-edit-card-{i}")
                 )
+            )
 
-                if field_name == "conseiller_numerique":
-                    element.find_element(
-                        By.CSS_SELECTOR,
-                        f'[value="{aidant_data["conseiller_numerique"]}"]',
-                    ).click()
-                else:
-                    element.clear()
-                    element.send_keys(aidant_data[field_name])
-
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
-                "habilitation_organisation_view",
+                "habilitation_validation",
                 kwargs={
                     "issuer_id": str(organisation.issuer.issuer_id),
                     "uuid": str(organisation.uuid),
@@ -126,11 +124,11 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
 
         self.wait.until(self._modal_closed())
 
-        self.selenium.find_element(By.CSS_SELECTOR, '[data-test="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
-                "habilitation_organisation_view",
+                "habilitation_validation",
                 kwargs={
                     "issuer_id": organisation.issuer.issuer_id,
                     "uuid": organisation.uuid,
@@ -157,11 +155,12 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 },
             )
         )
+        self.wait.until(self.dsfr_ready())
 
     def __open_form_url(self, organisation_request: OrganisationRequest):
         self.open_live_url(
             reverse(
-                "habilitation_organisation_add_aidants",
+                "habilitation_new_aidants",
                 kwargs={
                     "issuer_id": organisation_request.issuer.issuer_id,
                     "uuid": organisation_request.uuid,
@@ -174,7 +173,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             try:
                 with self.implicitely_wait(0.1, driver):
                     element_attribute = driver.find_element(
-                        By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"
+                        By.CSS_SELECTOR, "#main-modal"
                     ).get_attribute("open")
                 return element_attribute is None
             except:  # noqa: E722
@@ -182,7 +181,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
 
         return expected_conditions.all_of(
             expected_conditions.invisibility_of_element_located(
-                (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+                (By.CSS_SELECTOR, "#main-modal")
             ),
             modal_has_no_open_attr,
         )
@@ -193,7 +192,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
         with self.implicitely_wait(0.1):
             self.wait.until(
                 expected_conditions.text_to_be_present_in_element_attribute(
-                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"),
+                    (By.CSS_SELECTOR, "#main-modal"),
                     "open",
                     "true",
                 ),
@@ -204,26 +203,14 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 expected_conditions.presence_of_element_located(
                     (
                         By.CSS_SELECTOR,
-                        '#modal-dest #profile-edit-modal input[id$="email"]',
+                        '#main-modal input[id$="email"]',
                     )
                 ),
                 "Modal seems opened but form seems not visible",
             )
 
     def _try_close_modal(self):
-        def dsfr_ready(driver):
-            result = driver.execute_script("return document.dsfrReady")
-            return result
-
         self.wait.until(self.document_loaded())
-        self.wait.until(dsfr_ready)
-        with self.implicitely_wait(0.1):
-            self.wait.until(
-                expected_conditions.presence_of_element_located(
-                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
-                ),
-                "Modal didn't seem to have been initialized",
-            )
-
-            self.js_click(By.TAG_NAME, "body")
-            self.wait.until(self._modal_closed(), "Modal seems to be still visible")
+        self.wait.until(self.dsfr_ready())
+        self.js_click(By.TAG_NAME, "body")
+        self.wait.until(self._modal_closed(), "Modal seems to be still visible")
