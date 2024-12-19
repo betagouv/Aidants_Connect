@@ -13,6 +13,7 @@ from phonenumbers import parse as parse_number
 from requests import post as requests_post
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.expected_conditions import url_matches
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
@@ -436,6 +437,10 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
+
+        self.wait.until(
+            expected_conditions.invisibility_of_element_located((By.ID, "bdf-warn-msg"))
+        )
 
         self.assertFalse(
             self.selenium.find_element(By.ID, "bdf-warn-msg").is_displayed()

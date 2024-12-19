@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.expected_conditions import (
     invisibility_of_element_located,
 )
@@ -62,6 +63,10 @@ class UsagersTest(FunctionalTestCase):
 
         self.assertEqual(len(user_with_valid_mandate), 2)
         self.assertEqual(len(user_without_valid_mandate), 1)
+
+        self.wait.until(
+            expected_conditions.visibility_of_element_located((By.ID, "filter-input"))
+        )
 
         self.selenium.find_element(By.ID, "filter-input").send_keys("Anne")
 

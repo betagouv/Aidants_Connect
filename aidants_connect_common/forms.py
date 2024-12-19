@@ -1,7 +1,9 @@
+import abc
 import functools
+import operator
 from copy import deepcopy
+from functools import reduce
 from inspect import signature
-from itertools import accumulate
 from typing import Iterable, Tuple, Union
 
 from django import forms
@@ -35,6 +37,8 @@ from phonenumbers.phonenumber import PhoneNumber
 
 from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Formation
+from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
+from aidants_connect_common.widgets import JSModulePath
 
 
 class AsHiddenMixin:
@@ -415,7 +419,7 @@ class BaseMultiForm(metaclass=DeclarativeFormMetaclass):
 
     @property
     def media(self):
-        return accumulate((form.media for form in self), initial=Media())
+        return reduce(operator.add, (form.media for form in self))
 
 
 class BaseModelMultiForm(BaseMultiForm, AltersData):
@@ -558,3 +562,48 @@ class CustomBoundFieldForm(forms.Form):
                 field.get_bound_field,
             )
         self.__fields = value
+
+
+class BaseHabilitationRequestFormSet(BaseModelFormSet, abc.ABC):
+    template_name = "forms/base-habilitation-request-formset.html"
+
+    @property
+    def media(self):
+        return super().media + Media(
+            css={"all": ("css/new-habilitation-request.css",)},
+            js=(JSModulePath("js/new-habilitation-request.mjs"),),
+        )
+
+    @property
+    @abc.abstractmethod
+    def action_url(self):
+        pass
+
+    def __init__(
+        self,
+        data=None,
+        files=None,
+        auto_id="id_%s",
+        prefix=None,
+        **kwargs,
+    ):
+        kwargs.setdefault("queryset", self.model._default_manager.none())
+        super().__init__(data, files, auto_id, prefix, **kwargs)
+        self.extra = 0
+        self.min_num = 1
+
+        for field in self.management_form.fields:
+            self.management_form.fields[field].widget.attrs.update(
+                {"autocomplete": "off", "data-new-habilitation-request-target": field}
+            )
+
+    @abc.abstractmethod
+    def get_objects(self) -> Iterable[GenericHabilitationRequestPresenter]:
+        pass
+
+    def get_context(self):
+        return {
+            **super().get_context(),
+            "action_url": self.action_url,
+            "objects": self.get_objects(),
+        }

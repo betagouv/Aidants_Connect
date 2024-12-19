@@ -73,12 +73,14 @@ class CancelAutorisationTests(FunctionalTestCase):
         submit_button.click()
 
         # Display attestation
-        attestation_link = self.selenium.find_element(
-            By.XPATH,
-            f'.//a[@href="/usagers/{self.usager_josephine.id}'
-            f'/autorisations/{self.money_authorization.id}/cancel_attestation"]',
+        path = reverse(
+            "autorisation_cancelation_attestation",
+            kwargs={
+                "usager_id": self.usager_josephine.id,
+                "autorisation_id": self.money_authorization.id,
+            },
         )
-        attestation_link.click()
+        self.selenium.find_element(By.XPATH, f'.//a[@href="{path}"]').click()
 
         self.wait.until(lambda driver: len(driver.window_handles) == 2)
         self.selenium.switch_to.window(self.selenium.window_handles[1])

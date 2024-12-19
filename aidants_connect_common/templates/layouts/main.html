@@ -75,7 +75,50 @@
 <main id="main" tabindex="-1">
   {% block content %}
   {% endblock content %}
-  <section id="modal-dest"></section>
+  <section data-controller="main-modal">
+    <button class="fr-btn" data-fr-opened="false" aria-controls="main-modal" {% hidden %}>
+      {# Regression: https://github.com/GouvernementFR/dsfr/issues/728 #}
+    </button>
+    <dialog
+      id="main-modal"
+      class="fr-modal"
+      aria-labelledby="fr-modal-title"
+      role="dialog"
+      data-main-modal-target="dialog"
+      data-action="dsfr.conceal->main-modal#onConceal"
+    >
+      <div class="fr-container fr-container--fluid fr-container-md">
+        <div class="fr-grid-row fr-grid-row--center">
+          <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+            <div class="fr-modal__body">
+              <div class="fr-modal__header">
+                <button class="fr-btn--close fr-btn" title="Fermer la fenêtre modale" aria-controls="main-modal">
+                  Fermer
+                </button>
+              </div>
+              <div class="fr-modal__content">
+                <h1 id="fr-modal-title" class="fr-modal__title" data-main-modal-target="title"></h1>
+                <div data-main-modal-target="content"></div>
+              </div>
+              <div class="fr-modal__footer" data-main-modal-target="footer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+    <template data-main-modal-target="loaderTpl">
+      <img
+        src="{% static 'images/icons/AC-loader.svg' %}"
+        alt="Chargement, veuillez patienter…"
+        class="loader"
+        data-profile-edit-modal-target="loader"
+      />
+    </template>
+    <template data-main-modal-target="errorTpl">
+      {% mailto SUPPORT_EMAIL as contact_email %}
+      {% dsfr_alert title="Une erreur sʼest produite" content=contact_email|strfmt:"Quelque-chose sʼest mal passé de notre côté. Ce n'est pas de votre faute. Veuillez fermer la fenêtre et réessayer. Si le problème persiste, veuillez nous contacter à {}" type="error" %}
+    </template>
+  </section>
 </main>
 
 {% block footer %}
@@ -83,6 +126,23 @@
 {% endblock footer %}
 
 {% dsfr_js %}
+<script nonce="{{ request.csp_nonce }}">
+    (() => {
+        let resolve;
+        const promise = new Promise(res => { resolve = res })
+        const poll = () => {
+            try {
+                if (typeof dsfr(document.querySelector("#main-modal")).modal.conceal == "function") {
+                    clearInterval(id)
+                    resolve()
+                }
+            } catch {/* Do continue polling */}
+        }
+        const id = setInterval(poll, 50)
+        window.dsfrReady = promise
+    })()
+</script>
+
 <script id="cookie-banner" defer src="{{ COOKIE_BANNER_JS_URL }}"></script>
 <script defer src="{{ COOKIE_BANNER_LANG_URL }}"></script>
 <script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>

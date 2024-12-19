@@ -5,10 +5,12 @@ from django.urls import reverse
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.forms import (
-    AidantRequestFormLegacy,
+    AidantRequestForm,
+    AidantRequestFormSet,
     IssuerForm,
     ReferentForm,
 )
@@ -369,6 +371,8 @@ class ReferentRequestFormViewTests(FunctionalTestCase):
 
 @tag("functional")
 class PersonnelRequestFormViewTests(FunctionalTestCase):
+    submit_css = '[data-test="submit"]'
+
     def test_js_managment_form_aidant_count_is_modified(self):
         issuer: Issuer = IssuerFactory()
         organisation: OrganisationRequest = DraftOrganisationRequestFactory(
@@ -384,49 +388,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             self.assertEqual(str(i), input_el.get_attribute("value"))
             self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
             self.assertEqual(str(i + 1), input_el.get_attribute("value"))
-
-    def test_js_aidant_form_is_added_to_formset(self):
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer
-        )
-        self._open_form_url(issuer, organisation)
-
-        for i in range(1, 5):
-            input_el = self.selenium.find_elements(
-                By.CSS_SELECTOR, ".aidant-form-container"
-            )
-            self.assertEqual(i, len(input_el))
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-            input_el = self.selenium.find_elements(
-                By.CSS_SELECTOR, ".aidant-form-container"
-            )
-            self.assertEqual(i + 1, len(input_el))
-
-    def test_js_hide_add_aidant_form_button_on_max(self):
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer
-        )
-        self._open_form_url(issuer, organisation)
-
-        add_aidant_button = self.selenium.find_element(
-            By.CSS_SELECTOR, "#add-aidant-btn"
-        )
-
-        max_value = self.selenium.find_element(
-            By.CSS_SELECTOR, "input[name$='MAX_NUM_FORMS']"
-        ).get_attribute("value")
-
-        # Manually set the number of forms to the max - 1 for the Stimulus controller
-        self.selenium.execute_script(
-            """document.querySelector("[data-controller='personnel-form']")"""
-            f""".dataset.personnelFormFormCountValue = {int(max_value) - 1}"""
-        )
-
-        self.assertTrue(add_aidant_button.is_displayed())
-        add_aidant_button.click()
-        self.assertFalse(add_aidant_button.is_displayed())
 
     def test_js_added_aidant_form_has_correct_id(self):
         """
@@ -451,7 +412,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         self.assertEqual(len(form_elts), 4)
 
         for i, _ in enumerate(form_elts):
-            form = AidantRequestFormLegacy(
+            form = AidantRequestForm(
                 organisation=organisation,
                 prefix=f"form-{i}",
             )
@@ -510,29 +471,21 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self._open_form_url(issuer, organisation)
 
-        for i in range(2, 6):
-            aidant_form: AidantRequestFormLegacy = get_form(
-                AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
-            )
-            aidant_data = aidant_form.cleaned_data
-            for field_name in aidant_form.fields:
-                element: WebElement = self.selenium.find_element(
-                    By.CSS_SELECTOR,
-                    f"#id_form-{i}-{field_name}",
+        aidants_forms = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"initial": 4, "organisation": organisation},
+        )
+
+        for i, aidant_form in enumerate(aidants_forms.forms):
+            self.fill_form(aidant_form.cleaned_data, aidant_form)
+            self.selenium.find_element(By.CSS_SELECTOR, "#partial-submit").click()
+            self.wait.until(
+                expected_conditions.visibility_of_element_located(
+                    (By.ID, f"profile-edit-card-{i}")
                 )
+            )
 
-                if field_name == "conseiller_numerique":
-                    element.find_element(
-                        By.CSS_SELECTOR,
-                        f'[value="{aidant_data["conseiller_numerique"]}"]',
-                    ).click()
-                else:
-                    element.clear()
-                    element.send_keys(aidant_data[field_name])
-
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
@@ -564,8 +517,8 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             By.CSS_SELECTOR, f"#id_form-{modified_aidant_idx}-email"
         ).get_attribute("value")
 
-        new_aidant_form: AidantRequestFormLegacy = get_form(
-            AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
+        new_aidant_form: AidantRequestForm = get_form(
+            AidantRequestForm, form_init_kwargs={"organisation": organisation}
         )
         aidant_data = new_aidant_form.cleaned_data
         for field_name in new_aidant_form.fields:
@@ -584,7 +537,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 element.send_keys(aidant_data[field_name])
 
         self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
@@ -622,14 +575,10 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             )
         )
 
-        self.selenium.find_element(By.CSS_SELECTOR, '[data-test="validate"]').click()
-
-        error_element = self.selenium.find_element(
-            By.CSS_SELECTOR, ".aidant-forms p.errorlist"
-        )
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.assertEqual(
-            error_element.text,
+            self.selenium.find_element(By.CSS_SELECTOR, ".errorlist.nonform").text,
             "Vous devez déclarer au moins 1 aidant si le ou la référente de "
             "l'organisation n'est pas elle-même déclarée comme aidante",
         )

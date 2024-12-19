@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions
 
 from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_habilitation.forms import AidantRequestFormLegacy
+from aidants_connect_habilitation.forms import AidantRequestFormSet
 from aidants_connect_habilitation.models import AidantRequest, OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
@@ -23,6 +23,7 @@ from aidants_connect_web.tests.factories import HabilitationRequestFactory
 class AddAidantsRequestViewTests(FunctionalTestCase):
     def setUp(self):
         self.add_aidant_css = "#add-aidants-btn"
+        self.submit_css = "[data-test='submit']"
 
     def test_add_aidant_button_shown_in_readonly_view_under_correct_conditions(self):
         unauthorized_statuses = set(RequestStatusConstants) - set(
@@ -37,22 +38,23 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             self.assertElementNotFound(By.CSS_SELECTOR, self.add_aidant_css)
 
         for status in RequestStatusConstants.aidant_registrable:
-            organisation: OrganisationRequest = OrganisationRequestFactory(
-                status=status
-            )
-            self.__open_readonly_view_url(organisation)
-
-            self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
-
-            self.wait.until(
-                self.path_matches(
-                    "habilitation_organisation_add_aidants",
-                    kwargs={
-                        "issuer_id": str(organisation.issuer.issuer_id),
-                        "uuid": str(organisation.uuid),
-                    },
+            with self.subTest(status):
+                organisation: OrganisationRequest = OrganisationRequestFactory(
+                    status=status
                 )
-            )
+                self.__open_readonly_view_url(organisation)
+
+                self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
+
+                self.wait.until(
+                    self.path_matches(
+                        "habilitation_new_aidants",
+                        kwargs={
+                            "issuer_id": str(organisation.issuer.issuer_id),
+                            "uuid": str(organisation.uuid),
+                        },
+                    )
+                )
 
     def test_can_correctly_add_new_aidants(self):
         organisation: OrganisationRequest = OrganisationRequestFactory(
@@ -62,34 +64,25 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
         self.assertEqual(organisation.aidant_requests.count(), 2)
 
         self.__open_form_url(organisation)
+        aidants_forms = get_form(
+            AidantRequestFormSet,
+            form_init_kwargs={"initial": 2, "organisation": organisation},
+        )
 
-        for i in range(2):
-            aidant_form: AidantRequestFormLegacy = get_form(
-                AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
-            )
-            aidant_data = aidant_form.cleaned_data
-            for field_name in aidant_form.fields:
-                element = self.selenium.find_element(
-                    By.CSS_SELECTOR,
-                    f"#id_form-{i}-{field_name}",
+        for i, aidant_form in enumerate(aidants_forms.forms):
+            self.fill_form(aidant_form.cleaned_data, aidant_form)
+            self.selenium.find_element(By.CSS_SELECTOR, "#partial-submit").click()
+            self.wait.until(
+                expected_conditions.visibility_of_element_located(
+                    (By.ID, f"profile-edit-card-{i}")
                 )
+            )
 
-                if field_name == "conseiller_numerique":
-                    element.find_element(
-                        By.CSS_SELECTOR,
-                        f'[value="{aidant_data["conseiller_numerique"]}"]',
-                    ).click()
-                else:
-                    element.clear()
-                    element.send_keys(aidant_data[field_name])
-
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
-                "habilitation_organisation_view",
+                "habilitation_validation",
                 kwargs={
                     "issuer_id": str(organisation.issuer.issuer_id),
                     "uuid": str(organisation.uuid),
@@ -126,11 +119,11 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
 
         self.wait.until(self._modal_closed())
 
-        self.selenium.find_element(By.CSS_SELECTOR, '[data-test="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
-                "habilitation_organisation_view",
+                "habilitation_validation",
                 kwargs={
                     "issuer_id": organisation.issuer.issuer_id,
                     "uuid": organisation.uuid,
@@ -157,11 +150,12 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 },
             )
         )
+        self.wait.until(self.dsfr_ready())
 
     def __open_form_url(self, organisation_request: OrganisationRequest):
         self.open_live_url(
             reverse(
-                "habilitation_organisation_add_aidants",
+                "habilitation_new_aidants",
                 kwargs={
                     "issuer_id": organisation_request.issuer.issuer_id,
                     "uuid": organisation_request.uuid,

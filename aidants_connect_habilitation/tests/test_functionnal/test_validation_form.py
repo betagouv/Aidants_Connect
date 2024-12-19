@@ -49,13 +49,13 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
         new_email = self.request.aidant_requests.last().email
         self._try_open_modal(By.ID, f"edit-button-{aidant.pk}")
         email_input = self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #id_email"
+            By.CSS_SELECTOR, "#main-modal #id_email"
         )
         email_input.clear()
         email_input.send_keys(new_email)
 
         self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
         ).click()
 
         self.wait.until(
@@ -86,7 +86,7 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
         self._try_open_modal(By.ID, f"edit-button-{aidant.pk}")
 
         self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-suppress"
+            By.CSS_SELECTOR, "#main-modal #profile-edit-suppress"
         ).click()
 
         self.wait.until(self._modal_closed())
@@ -144,12 +144,12 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
             self._try_open_modal(By.ID, f"edit-button-{request.pk}")
 
         email_input = self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #id_email"
+            By.CSS_SELECTOR, "#main-modal #id_email"
         )
         email_input.clear()
         email_input.send_keys(new_email)
         self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
         ).click()
         self.wait.until(self._modal_closed())
 
@@ -161,7 +161,7 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
             try:
                 with self.implicitely_wait(0.1, driver):
                     element_attribute = driver.find_element(
-                        By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"
+                        By.CSS_SELECTOR, "#main-modal"
                     ).get_attribute("open")
                 return element_attribute is None
             except:  # noqa: E722
@@ -169,7 +169,7 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
 
         return expected_conditions.all_of(
             expected_conditions.invisibility_of_element_located(
-                (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+                (By.CSS_SELECTOR, "#main-modal")
             ),
             modal_has_no_open_attr,
         )
@@ -180,7 +180,7 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
         with self.implicitely_wait(0.1):
             self.wait.until(
                 expected_conditions.text_to_be_present_in_element_attribute(
-                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"),
+                    (By.CSS_SELECTOR, "#main-modal"),
                     "open",
                     "true",
                 ),
@@ -191,29 +191,17 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
                 expected_conditions.presence_of_element_located(
                     (
                         By.CSS_SELECTOR,
-                        '#modal-dest #profile-edit-modal input[id$="email"]',
+                        '#main-modal input[id$="email"]',
                     )
                 ),
                 "Modal seems opened but form seems not visible",
             )
 
     def _try_close_modal(self):
-        def dsfr_ready(driver):
-            result = driver.execute_script("return document.dsfrReady")
-            return result
-
         self.wait.until(self.document_loaded())
-        self.wait.until(dsfr_ready)
-        with self.implicitely_wait(0.1):
-            self.wait.until(
-                expected_conditions.presence_of_element_located(
-                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
-                ),
-                "Modal didn't seem to have been initialized",
-            )
-
-            self.js_click(By.TAG_NAME, "body")
-            self.wait.until(self._modal_closed(), "Modal seems to be still visible")
+        self.wait.until(self.dsfr_ready())
+        self.js_click(By.TAG_NAME, "body")
+        self.wait.until(self._modal_closed(), "Modal seems to be still visible")
 
     def _get_new_valid_email(self, request: AidantRequest):
         emails = request.organisation.aidant_requests.values_list("email", flat=True)

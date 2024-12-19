@@ -6,6 +6,6 @@
     "Stimulus": "npm:stimulus@3.2.2"
   },
   "imports": {
-    "Stimulus": "@hotwired/stimulus",
+    "Stimulus": "@hotwired/stimulus"
   }
 }

@@ -7,9 +7,7 @@ from aidants_connect_web.api.serializers import OrganisationSerializer
 from aidants_connect_web.decorators import responsable_logged_required
 from aidants_connect_web.forms import NewHabilitationRequestForm
 from aidants_connect_web.models import Aidant, Organisation
-from aidants_connect_web.views.espace_responsable import (
-    HabilitationRequestItemPresenter,
-)
+from aidants_connect_web.presenters import HabilitationRequestItemPresenter
 
 
 class OrganisationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -22,7 +20,7 @@ class OrganisationViewSet(viewsets.ReadOnlyModelViewSet):
 @responsable_logged_required
 class NewHabilitationRequestSubmitNew(FormView):
     form_class = NewHabilitationRequestForm
-    form_valid_template_name = "aidants_connect_web/espace_responsable/new-habilitation-request.html#habilitation-profile-card"  # noqa: E501
+    form_valid_template_name = "forms/base-habilitation-request-formset.html#habilitation-profile-card"  # noqa: E501
     form_invalid_template_name = "forms/form.html#form"
     allow_empty = False
 

@@ -1,7 +1,7 @@
 {% load ac_common ac_extras dsfr_tags partials static %}
 
 {% comment %}
-  DOCUMENTATIION:
+  DOCUMENTATION:
 	Use this template with aidants_connect_common.presenters.GenericHabilitationRequestPresenter.
 	Implement it, then provide a `objects` variable in context thats an iterable of GenericHabilitationRequestPresenter.
 	Use `habilitation-profile-card` partial to render one presenter.
@@ -25,10 +25,7 @@
     data-controller="profile-edit-card"
     data-profile-edit-card-id-value="{{ object.pk }}"
     data-profile-edit-card-enpoint-value="{{ object.edit_endpoint }}"
-    data-profile-edit-card-profile-edit-modal-outlet="#profile-edit-modal"
-      {% if additionnal_form_target %}
-    data-profile-edit-card-additional-form-value="{{ additionnal_form_target }}"
-      {% endif %}
+    data-profile-edit-card-profile-edit-modal-outlet="*"
     {% endif %}
   >
     <details
@@ -68,7 +65,7 @@
                 <button
                   id="edit-button-{{ object.pk }}"
                   class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
-                  data-action="profile-edit-card#onEdit"
+                  data-action="profile-edit-card#onEdit:stop:prevent"
                 >
                   Éditer
                 </button>
@@ -88,74 +85,5 @@
     {% partial habilitation-profile-card %}
   {% endfor %}
 
-  <template id="profile-edit-modal-tpl">
-    <button
-      data-fr-opened="false"
-      aria-controls="profile-edit-modal"
-      {% hidden %}
-    >{# Regression: https://github.com/GouvernementFR/dsfr/issues/728 #}</button>
-    <dialog
-      id="profile-edit-modal"
-      class="fr-modal"
-      aria-labelledby="profile-edit-modal-title"
-      role="alertdialog"
-      data-controller="profile-edit-modal"
-      data-action="dsfr.conceal->profile-edit-modal#onConceal"
-      data-profile-edit-modal-profile-edit-card-outlet=".request-card"
-    >
-      <div class="fr-container fr-container--fluid fr-container-md">
-        <div class="fr-grid-row fr-grid-row--center">
-          <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
-            <div class="fr-modal__body">
-              <div class="fr-modal__header">
-                <button class="fr-btn--close fr-btn" aria-controls="profile-edit-modal">Fermer</button>
-              </div>
-              <div class="fr-modal__content">
-                <h1
-                  id="profile-edit-modal-title"
-                  class="fr-modal__title sr-only"
-                  data-profile-edit-modal-target="title"
-                ></h1>
-                <section data-profile-edit-modal-target="content">
-
-                </section>
-                <img
-                  src="{% static 'images/icons/AC-loader.svg' %}"
-                  alt="Chargement, veuillez patienter…"
-                  class="loader"
-                  {% hidden %}
-                  data-profile-edit-modal-target="loader"
-                />
-                <section data-profile-edit-modal-target="error" {% hidden %}>
-                  {% mailto SUPPORT_EMAIL as contact_email %}
-                  {% dsfr_alert title="Une erreur sʼest produite" content=contact_email|strfmt:"Quelque-chose sʼest mal passé de notre côté. Ce n'est pas de votre faute. Veuillez fermer la fenêtre et réessayer. Si le problème persiste, veuillez nous contacter à {}" type="error" %}
-                </section>
-              </div>
-              <div class="fr-modal__footer" data-profile-edit-modal-target="footer" {% hidden %}>
-                <div class="fr-btns-group fr-btns-group--right fr-btns-group--inline-lg fr-btns-group--icon-left">
-                  <button
-                    id="profile-edit-suppress"
-                    class="fr-btn fr-btn--secondary fr-btn--warning fr-btn--icon-left fr-icon-delete-bin-fill"
-                    data-action="profile-edit-modal#onDelete:stop:prevent"
-                    data-profile-edit-modal-target="footerButton"
-                  >
-                    Supprimer cet aidant
-                  </button>
-                  <button
-                    id="profile-edit-submit"
-                    class="fr-btn fr-btn--icon-left fr-icon-pencil-fill"
-                    data-action="profile-edit-modal#onValidate:stop:prevent"
-                    data-profile-edit-modal-target="footerButton"
-                  >
-                    Valider les modifications
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </dialog>
-  </template>
   <script type="module" src="{% static 'js/generic-habilitation-request-profile-card.mjs' %}"></script>
 </section>

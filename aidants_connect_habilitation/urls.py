@@ -1,7 +1,6 @@
 from django.urls import path
 
 from aidants_connect_habilitation.views import (
-    AddAidantsRequestView,
     AidantFormationRegistrationView,
     HabilitationRequestCancelationView,
     IssuerEmailConfirmationView,
@@ -86,11 +85,6 @@ urlpatterns = [
         "demandeur/<str:issuer_id>/organisation/<str:uuid>/voir/",
         ReadonlyRequestView.as_view(),
         name="habilitation_organisation_view",
-    ),
-    path(
-        "demandeur/<str:issuer_id>/organisation/<str:uuid>/ajouter-aidants/",
-        AddAidantsRequestView.as_view(),
-        name="habilitation_organisation_add_aidants",
     ),
     path(
         "demandeur/<str:issuer_id>/organisation/<str:uuid>/modifier-demandeur/",
