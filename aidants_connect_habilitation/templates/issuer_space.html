@@ -75,20 +75,22 @@
                     <tr>
                       <td>{{ organisation.created_at|date:"d/m/Y" }}</td>
                       <td>
-                        {% if organisation.status == "NEW" %}
+                        {% if organisation.status == organisation.Status.NEW %}
                           <p class="fr-badge fr-badge--new">Brouillon</p>
-                        {% elif organisation.status == "AC_VALIDATION_PROCESSING" %}
+                        {% elif organisation.status == organisation.Status.AC_VALIDATION_PROCESSING %}
                           <p class="fr-badge fr-badge--info">En attente</p>
-                        {% elif organisation.status == "VALIDATED" %}
+                        {% elif organisation.status == organisation.Status.VALIDATED %}
                           <p class="fr-badge fr-badge--success">Éligibilité validée</p>
-                        {% elif organisation.status == "REFUSED" %}
+                        {% elif organisation.status == organisation.Status.REFUSED %}
                           <p class="fr-badge fr-badge--error">Éligibilité refusée</p>
-                        {% elif organisation.status == "CLOSED" %}
+                        {% elif organisation.status == organisation.Status.CLOSED %}
                           <p class="fr-badge disabled">Cloturée</p>
-                        {% elif organisation.status == "CHANGES_REQUIRED" %}
+                        {% elif organisation.status == organisation.Status.CHANGES_REQUIRED %}
                           <p class="fr-badge fr-badge--warning">modifications demandées</p>
-                        {% elif organisation.status == "CHANGES_PROPOSED" %}
+                        {% elif organisation.status == organisation.Status.CHANGES_PROPOSED %}
                           <p class="fr-badge fr-badge--new">modifications proposées</p>
+                          {% else %}
+                          <p class="fr-badge fr-badge--new">{{ organisation.get_status_display }}</p>
                         {% endif %}
                       </td>
                       <td><strong>{{ organisation.name }}</strong></td>
