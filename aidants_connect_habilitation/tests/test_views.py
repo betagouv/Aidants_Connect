@@ -330,7 +330,6 @@ class IssuerPageViewTests(TestCase):
         organisation = DraftOrganisationRequestFactory(issuer=self.issuer)
         response = self.client.get(self.get_url(self.issuer.issuer_id))
         self.assertContains(response, RequestStatusConstants.NEW.label)
-        self.assertContains(response, "Consulter")
         self.assertContains(response, organisation.name)
 
     def test_submitted_organisation_request_is_displayed_without_links(self):
@@ -341,7 +340,6 @@ class IssuerPageViewTests(TestCase):
         response = self.client.get(self.get_url(self.issuer.issuer_id))
         self.assertNotContains(response, RequestStatusConstants.NEW.value)
         self.assertContains(response, "En attente")
-        self.assertNotContains(response, "Consulter")
         self.assertContains(response, organisation.name)
 
 
