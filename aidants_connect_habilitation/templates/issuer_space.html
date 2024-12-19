@@ -99,7 +99,7 @@
                         {{ organisation.aidant_requests.all|length }}
                       </td>
                       <td>
-                        {% if organisation.status == "NEW" %}
+                        {% if organisation.status == "organisation.Status.NEW %}
                           <a href="{% url 'habilitation_validation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
                             class="fr-btn fr-btn--secondary">Consulter</a>
                         {% else %}
