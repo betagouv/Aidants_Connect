@@ -12,9 +12,12 @@ fieldset {
   border: none;
 }
 .fr-checkbox-group input[type="checkbox"] + label.detailed-radio-select-label {
+  margin: 0;
+  justify-content: center;
+  height: 100%;
   &::before {
     left: unset;
-    right: 2rem;
+    right: 0;
   }
   img {
     display: block;
