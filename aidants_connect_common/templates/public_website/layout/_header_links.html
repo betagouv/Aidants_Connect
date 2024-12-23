@@ -29,16 +29,18 @@
     Formation
   </a>
 </li>
-<li class="fr-nav__item">
-  <a
-    class="fr-nav__link"
-    target="_self"
-    href="{% url 'statistiques' %}"
-    {% if view_name == 'statistiques' %}aria-current="true"{% endif %}
-  >
-    Statistiques
-  </a>
-</li>
+{% if testimonies_count > 0 %}
+  <li class="fr-nav__item">
+    <a
+      class="fr-nav__link"
+      target="_self"
+      href="{% url 'temoignages' %}"
+      {% if view_name|startswith:'temoignages' %}aria-current="true"{% endif %}
+    >
+      Témoignages
+    </a>
+  </li>
+{% endif %}
 <li class="fr-nav__item">
   <a
     class="fr-nav__link"
@@ -53,21 +55,19 @@
   <a
     class="fr-nav__link"
     target="_self"
+    href="{% url 'statistiques' %}"
+    {% if view_name == 'statistiques' %}aria-current="true"{% endif %}
+  >
+    Statistiques
+  </a>
+</li>
+<li class="fr-nav__item">
+  <a
+    class="fr-nav__link"
+    target="_self"
     href="{% url 'faq_generale' %}"
     {% if view_name == 'faq_generale' %}aria-current="true"{% endif %}
   >
     Aide
   </a>
 </li>
-{% if testimonies_count > 0 %}
-  <li class="fr-nav__item">
-    <a
-      class="fr-nav__link"
-      target="_self"
-      href="{% url 'temoignages' %}"
-      {% if view_name|startswith:'temoignages' %}aria-current="true"{% endif %}
-    >
-      Témoignages
-    </a>
-  </li>
-{% endif %}

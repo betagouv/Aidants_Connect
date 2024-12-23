@@ -1,4 +1,4 @@
-{% extends 'public_website/layout/main-legacy.html' %}
+{% extends 'public_website/layout/main.html' %}
 
 {% load static %}
 
@@ -10,9 +10,6 @@
 {% block content %}
   <div class="fr-container">
     <div class="fr-alert fr-alert--info fr-my-4v">
-      <h3 class="fr-alert__title">
-        🎉 Nouveauté : Les inscriptions aux formations Aidants Connect sont de retour !
-      </h3>
       <p>
         Plusieurs webinaires d'information présenteront les nouvelles modalités de formation et de financement.
       </p>
@@ -28,241 +25,255 @@
 
     {% include "layouts/_messages.html" %}
   </div>
-  <div class="fr-container--fluid hero-container">
-    <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle hero-row">
-      <div class="fr-col">
-        <div class="fr-grid-row fr-grid-row--center">
-          <img class="hero-logo" alt="Logo Aidants Connect" src="{% static 'images/logo-aidants.svg' %}" />
-        </div>
-        <div class="fr-grid-row fr-grid-row--center">
-          <h1 class="hero-subtitle">Accompagnez vos usagers en toute sécurité</h1>
-        </div>
-        <div class="fr-grid-row fr-grid-row--center">
-          <button class="lightbox-video margin-top-5rem fr-btn fr-btn--lg fr-btn--icon-left fr-icon-play-circle-line">
-            Aidants Connect, c’est quoi ?
-          </button>
+  <div class="fr-container--fluid bullet-container">
+    <div class="fr-container">
+      <div class="fr-grid-row">
+        <div class="fr-col-md-7 fr-col-12">
+          <img class="home-logo fr-mt-10w fr-mb-4w" alt="Logo Aidants Connect" src="{% static 'images/aidants-connect_logo.png' %}" />
+          <p>Vous accompagnez régulièrement et gratuitement des personnes en difficulté avec le numérique dans la réalisation de leurs démarches en ligne ?<br/>
+            <strong>Aidants Connect est fait pour vous !</strong>
+          </p>
+          <a class="fr-btn fr-mt-4w" href="{% url 'habilitation_faq_habilitation' %}">Déposer une demande d'habilitation</a>
         </div>
       </div>
     </div>
   </div>
-  <div class="fr-container--fluid aidants-container">
-    <div class="fr-container fr-grid-row fr-grid-row--center aidants-row">
-      <div class="fr-col-md-4 aidants-col">
-        <div class="fr-grid-row fr-grid-row--right aidants-img-container">
-          <img class="aidants-img" alt="Deux personnes se saluent" src="{% static 'images/aidants.svg' %}" />
+  <div class="fr-container--fluid fr-background-action-high--blue-france fr-text-inverted--grey fr-py-12w">
+    <div class="fr-container">
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-md-4 fr-col-12">
+          <div class="fr-icon-lock-fill fr-icon--lg fr-mb-3w"></div>
+          <h2 class="fr-h3 fr-text-inverted--grey">Sécurisez vos accompagnements</h2>
+          <p class="fr-text-lg">En utilisant Aidants Connect, vous êtes protégé dans toutes vos démarches et vous rassurez vos usagers</p>
         </div>
-      </div>
-      <div class="fr-col-md-8 aidants-col">
-        <div class="fr-grid-row fr-grid-row--gutters aidants-text">
-          <div class="fr-grid-row aidants-question">
-            Vous accompagnez régulièrement des personnes en difficulté avec le numérique dans la réalisation de
-            démarches en ligne ?
-          </div>
-          <div class="fr-grid-row aidants-title">
-            Aidants Connect est fait pour vous.
-          </div>
-          <div class="fr-grid-row">
-            <p>Aidants Connect s’adresse à une diversité d’aidants professionnels<br>Travailleurs sociaux, agents
-              publics d’accueil, médiateurs numériques...</p>
-          </div>
-        </div>
-        <div class="fr-grid-row fr-grid-row--right aidants-btn-container">
-          <div class="fr-grid-col aidants-btn-col">
-            <a class="fr-btn" href="{% url 'habilitation_faq_habilitation' %}">Être habilité Aidants Connect</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="fr-container--fluid info-section">
-    <div class="fr-container info-container">
-      <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center">
-        <div class="fr-col-md-4 info-col">
-          <img alt="cadenas" src="{% static 'images/securisation.svg' %}" />
-          <p class="info-title">Sécurisation juridique</p>
-          <p class="info-text">Le mandat Aidants Connect instaure un cadre légal pour les démarches réalisées pour
-            autrui
+        <div class="fr-col-md-4 fr-col-12">
+          <div class="fr-icon-group-fill fr-icon--lg"></div>
+          <h2 class="fr-h3 fr-text-inverted--grey">Familiarisez vos usagers
+            aux sites administratifs</h2>
+          <p class="fr-text-lg">Identifiez ceux qui souhaitent monter en compétences et redirigez-les vers des formations au numérique adaptées.
           </p>
         </div>
-        <div class="fr-col-md-4 info-col">
-          <img alt="femme" src="{% static 'images/accompagnement.svg' %}" />
-          <p class="info-title">Accompagnement Humain</p>
-          <p class="info-text">Premier pas vers l'autonomie numérique, Aidants Connect garantit un suivi professionnel
-            et humain</p>
-        </div>
-        <div class="fr-col-md-4 info-col">
-          <img alt="ordinateur" src="{% static 'images/outil.svg' %}" />
-          <p class="info-title">Un outil intuitif</p>
-          <p class="info-text">Plus besoin de garder les identifiants et mots de passe de vos bénéficiaires, Aidants
-            Connect le fait pour vous !</p>
+        <div class="fr-col-md-4 fr-col-12">
+          <div class="fr-icon-time-fill fr-icon--lg"></div>
+          <h2 class="fr-h3 fr-text-inverted--grey">Gagnez du temps</h2>
+          <p class="fr-text-lg">Dès le second mandat, connectez-vous aux comptes de l’usager via FranceConnect sans avoir à ressaisir ses identifiants et ses mots de passe.</p>
         </div>
       </div>
     </div>
   </div>
+  <div class="fr-container--fluid fr-background-alt--blue-france fr-py-8w">
+    <div class="fr-container">
+      <div class="fr-grid-row">
+        <div class="fr-col-12 fr-text--center">
+          <h2 class="fr-h3">Comment être habilité à Aidants Connect ? </h2>
+        </div>
+        <div class="fr-col-12">
+          <ul class="steps-progress-bar">
+            <li id="first-step">
+              <p class="fr-text--lg fr-px-3w fr-pt-2w fr-pb-4w">Je vérifie mon éligibilité</p>
+            </li>
+            <li id="second-step">
+              <p class="fr-text--lg fr-px-3w fr-pt-2w fr-pb-4w">Je m’informe sur les modalités de financement de la formation</p>
+            </li>
+            <li id="third-step">
+              <p class="fr-text--lg fr-px-3w fr-pt-2w fr-pb-4w">Je dépose une demande d’habilitation</p>
+            </li>
+            <li id="fourth-step">
+              <p class="fr-text--lg fr-px-3w fr-pt-2w fr-pb-4w">Je me forme à l’outil</p>
+            </li>
+            <li id="fifth-step">
+              <p class="fr-text--lg fr-px-3w fr-pt-2w fr-pb-4w">J’active mon compte et je créé mon premier mandat</p>
+            </li>
+          </ul>
+        </div>
+        <div class="fr-col-12 fr-text--center fr-mt-4w">
+          <a class="fr-btn" href="{% url 'habilitation_faq_habilitation' %}">Déposer une demande d'habilitation</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fr-container fr-py-8w">
+    <h2 class="fr-h3 fr-mb-4w">
+      Quand utiliser Aidants Connect ?
+    </h2>
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+      <div class="fr-col-md-6 fr-col-sm-8 fr-col-12">
+       <div class="flex fr-mb-3w fr-pr-md-15w">
+        <div class="icon-26">
+          <img src="{% static 'images/icons/arrow-right-circle.svg' %}" alt="">
+        </div>
+        <div class="fr-ml-3w">Lorsque j’effectue <strong>des démarches administratives régulières</strong> avec des personnes <strong>peu à l’aise avec le numérique</strong></div>
+       </div>
+       <div class="flex fr-mb-3w fr-pr-md-15w">
+        <div class="icon-26"><img src="{% static 'images/icons/arrow-right-circle.svg' %}" alt=""></div>
+        <div class="fr-ml-3w">Si mes usagers viennent me voir <strong>sans leur identifiant et leur mot de passe</strong></div>
+       </div>
+       <div class="flex fr-mb-3w fr-pr-md-15w">
+        <div class="icon-26"><img src="{% static 'images/icons/arrow-right-circle.svg' %}" alt=""></div>
+        <div class="fr-ml-3w">Si j’accompagne l’usager <strong>sur plusieurs démarches à la fois</strong></div>
+       </div>
+       <div class="flex fr-mb-3w fr-pr-md-15w">
+        <div class="icon-26"><img src="{% static 'images/icons/arrow-right-circle.svg' %}" alt=""></div>
+        <div class="fr-ml-3w">Lorsque l’usager a <strong>du mal à se déplacer</strong> régulièrement en agence</div>
+       </div>
 
-
-  {# Video #}
-  <div class="fr-container hyperliens-container">
-    <div class="fr-grid-row">
-      <section class="hyperliens-video shadowed margin-top-1rem">
-        <div class="padding-1rem video-presentation">
-          <h4 class="h4-prime">Hyperliens</h4>
-          <p class="testimony-quote">
-            « On associe souvent le numérique à l’innovation technologique et aux startups des grandes villes.
-            Pourtant,ailleurs en France, le numérique est aussi synonyme de lien social, de mise en commun et
-            d’inclusion. »
-          </p>
-          <p>
-            L’équipe d’HYPERLIENS est allée à la rencontre de Yoann Herrero, responsable Espace Numérique au Centre
-            Socio-Culturel Andréa Malraux à Nîmes.
-          </p>
-        </div>
-        <div
-          class="youtube_player"
-          videoID="AJGo6bydQss"
-          theme="dark"
-          rel="1"
-          controls="1"
-          showinfo="1"
-          autoplay="0"
-          mute="0"
-          loop="0"
-          loading="0"
-          width="100%"
-          height="100%"
-        ></div>
-      </section>
+      </div>
+      <div class="fr-col-md-6 fr-col-sm-4 fr-col-12 fr-text--center">
+        <img src="{% static 'images/home_street.svg' %}" alt="">
+      </div>
     </div>
+  </div>
+  <div class="fr-container--fluid fr-background-alt--yellow-moutarde">
+    <div class="fr-container fr-py-8w">
+      <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle fr-grid-row--center">
+        <div class="fr-col-md-4 fr-col-12">
+          <img src="{% static 'images/icons/icon_faq.svg' %}">
+        </div>
+        <div class="fr-col-md-8 fr-col-12">
+          <h2 class="fr-h3">Les questions les plus fréquentes</h2>
+          <div class="fr-accordions-group">
+            <section class="fr-accordion">
+              <h3 class="fr-accordion__title">
+                <button class="fr-accordion__btn" aria-expanded="false" aria-controls="accordion-114">Qui peut être habilité à Aidants Connect ?</button>
+              </h3>
+              <div class="fr-collapse" id="accordion-114">
+                <p>
+                  Tous les aidants professionnels qui accompagnent des usagers dans la réalisation de démarches administratives en ligne et qui sont salariés d'une structure éligible à Aidants Connect peuvent être habilités.<br/>
+                  Par exemple : Travailleurs sociaux, agents publics d’accueil, médiateurs numériques, conseillers numériques...<br/>
+                  Les aidants familiaux, les bénévoles, les services civiques et les élus ne sont pas éligibles.
+                </p>
+                <p>Les usagers sous tutelle ou sous curatelle ne peuvent pas être accompagnés via Aidants Connect. Pour cette raison, les mandataires judiciaires ne sont pas éligibles au dispositif.</p>
+              </div>
+            </section>
+            <section class="fr-accordion">
+              <h3 class="fr-accordion__title">
+                <button class="fr-accordion__btn" aria-expanded="false" aria-controls="accordion-115">Comment une structure peut-elle être habilitée Aidants Connect ?</button>
+              </h3>
+              <div class="fr-collapse" id="accordion-115">
+                <p>
+                  Vous devez remplir le formulaire d'habilitation via le lien ci-dessous :<br/>
+                  <a href="{% url 'habilitation_new_issuer' %}"  class="fr-link">https://aidantsconnect.beta.gouv.fr/habilitation/demandeur/</a>,
+                </p>
+                <p>
+                  Une seule demande par structure avec la liste des aidants à habiliter est requise.
+                </p>
+                <p>
+                  Suite à la vérification de votre éligibilité, vous recevrez un email de validation de votre demande. Ensuite, les aidants concernés devront suivre une formation à Aidants Connect et réaliser un test Pix. Puis, nous pourrons activer les comptes des aidants habilités.
+                </p>
+                <p>
+                  A noter : Si votre structure est déjà habilitée à Aidants Connect, les professionnels qui souhaitent rejoindre le dispositif ont la possibilité d’être formés par leurs collègues, habilités et utilisateurs de la plateforme. Pour être éligible en tant que formateur, l’aidant habilité doit avoir créé au moins 5 mandats.
+                </p>
+              </div>
+            </section>
+            <section class="fr-accordion">
+              <h3 class="fr-accordion__title">
+                <button class="fr-accordion__btn" aria-expanded="false" aria-controls="accordion-116">Pourquoi se former à Aidants Connect ?</button>
+              </h3>
+              <div class="fr-collapse" id="accordion-116">
+                <p>Le service Aidants Connect, développé par l'ANCT, répond au besoin de sécurisation exprimé par les aidants professionnels qui manipulent régulièrement les données personnelles d'usagers éloignés du numérique. La formation Aidants Connect apporte l'habilitation et les bases de connaissance nécessaires à l'utilisation de ce service.</p>
+              </div>
+            </section>
+            <section class="fr-accordion">
+              <h3 class="fr-accordion__title">
+                <button class="fr-accordion__btn" aria-expanded="false" aria-controls="accordion-117">Comment la formation à Aidants Connect peut-elle être financée ?</button>
+              </h3>
+              <div class="fr-collapse" id="accordion-117">
+                <p>Selon le profil des aidants et la typologie de la structure, les modalités de prise en charge diffèrent :</p>
+                <p>Pour les conseillers numériques, la formation peut être financée dans le cadre de la formation initiale ou continue ;</p>
+                <p>Pour les structures adhérentes à l’OPCO Uniformation, la formation est financée dans le cadre d’un partenariat entre l’ANCT et Uniformation ;</p>
+                <p>Pour les structures publiques, la formation à Aidants Connect peut être financée via l'enveloppe formation de France Numérique Ensemble (Attention : c'est le récipiendaire des fonds, en accord avec la préfecture, qui cible les professionnels pouvant bénéficier de ce financement et le délai de traitement de votre demande peut être de plusieurs semaines) ;</p>
+                <p>Pour tous les autres cas, la formation doit être financée par la structure.</p>
+                <p>Vous pouvez également vous rendre sur <a class="fr-link" href="https://tally.so/r/mO0Xkg">ce simulateur de financement</a> pour plus de précisions.</p>
+              </div>
+            </section>
+          </div>
+          <div class="fr-mt-3w">
+            <a class="fr-btn fr-btn--secondary fr-background-default--grey" href="{% url 'faq_generale' %}">Voir toutes les questions fréquentes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   {% if testimonies|length > 0 %}
-    <div class="fr-container testimonies-container margin-top-2rem">
-      {% for testimony in testimonies %}
-        <section class="testimony-container">
-          <div class="shadowed">
-            <img
-              class="testimony-profile-picture"
-              src="{{ testimony.profile_picture }}"
-              alt="Portrait de {{ testimony.name }}"
-              width="150"
-              height="150"
-            />
-            <div class="infos">
-              <div class="person-name">{{ testimony.name }}</div>
-              <div class="person-job">{{ testimony.job }}</div>
-              <div class="person-quote">« {{ testimony.quote }} »</div>
-              <a class="fr-btn" href="{{ testimony.get_absolute_url }}">Lire la suite du témoignage</a>
+    <div class="fr-container fr-mt-8w">
+      <h2 class="fr-h3 fr-text--center">Ils utilisent Aidants Connect</h2>
+      <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w">
+        {% for testimony in testimonies %}
+          <div class="fr-col-md-4 fr-col-sm-6 fr-col-12">
+            <div class="fr-card fr-enlarge-link">
+              <div class="fr-card__body fr-pb-4w">
+                <div class="fr-card__content fr-pb-6w">
+                  <div class="fr-icon-quote-fill fr-text-title--blue-france fr-icon--lg fr-mb-0"></div>
+                  <h3 class="fr-card__title fr-mt-3v">
+                    <a href="{{ testimony.get_absolute_url }}" class="fr-text-title--grey">« {{ testimony.quote }} »</a>
+                  </h3>
+                  <div class="fr-card__end">
+                    <div class="fr-card__desc">
+                      <p class="fr-text--sm fr-mb-3v">{{ testimony.job }} </p>
+                      <p class="fr-link">Lire ce témoignage</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </section>
-      {% endfor %}
+        {% endfor %}
+      </div>
       {% if testimonies_count > 3 %}
-        <section class="testimony-container">
-          <div class="shadowed">
-            <img
-              class="testimony-profile-picture"
-              src="{% static 'images/more-testimonies.png' %}"
-              alt=""
-              width="150"
-              height="150"
-            />
-            <div class="infos">
-              <div class="person-name">Plus de témoignages…</div>
-              <div>Aidants Connect a aidé vos homologues dans leur démarche d’accompagnement</div>
-              <a class="fr-btn" href="{% url 'temoignages' %}">Voir tous les témoignages</a>
-            </div>
-          </div>
-        </section>
+        <div class="fr-grid-row fr-grid-row--center fr-mb-8w">
+          <a class="fr-btn fr-btn--secondary" href="{% url 'temoignages' %}">Voir tous les témoignages</a>
+        </div>
       {% endif %}
     </div>
   {% endif %}
 
-  <div class="fr-container contact-container">
-    <div class="fr-grid-row">
-      <div class="fr-col-md-4 contact-col">
-        <div class="fr-grid-row question-div">
-          <div class="fr-col">
-            <div class="fr-grid-row">
-              <p class="question-title">Toujours des questions ?</p>
-              <p>Consultez notre procédure d’habilitation ou encore notre aide si vous avez besoin de plus
-                d’informations.</p>
+  <div class="fr-follow">
+    <div class="fr-container">
+      <div class="fr-grid-row">
+        <div class="fr-col-12">
+          <div class="fr-follow__newsletter">
+            <div>
+              <h2 class="fr-h5">Abonnez-vous à notre lettre d’information</h2>
+              <p class="fr-text--sm">Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :</p>
             </div>
-            <div class="fr-grid-row fr-grid-row--right fr-grid-row--bottom">
-              <ul class="fr-btns-group fr-btns-group--inline">
-                <li>
-                  <a class="fr-btn" href="{% url 'habilitation_faq_habilitation' %}">Habilitation</a>
-                </li>
-                <li>
-                  <a class="fr-btn" href="{% url 'faq_generale' %}">FAQ</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-      </div>
-      <div class="fr-col-md-8 contact-col">
-        <div class="fr-grid-row contact-div">
-          <div class="fr-col">
-            <p class="contact-title">Restons en contact !</p>
-            <div class="newsletter-form-container">
+            <div>
               <form
                 id="sb_form"
                 method="post"
                 data-connect-url="{{ SARBACANE_CONNECT_URL }}"
               >
-                <label class="contact-text" for="input-email">
-                  Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :
-                </label>
-                <div class="form__group">
-                  <div class="input__group">
+                <div class="fr-input-group">
+                  <label class="fr-label" for="newsletter-email">
+                    Votre adresse électronique (ex. : nom@domaine.fr)
+                  </label>
+                  <div class="fr-input-wrap fr-input-wrap--addon">
                     <input
+                      class="fr-input"
+                      title="Votre adresse électronique (ex. : nom@domaine.fr)"
+                      aria-describedby="newsletter-email-hint-text newsletter-email-messages"
+                      placeholder="Votre adresse électronique (ex. : nom@domaine.fr)"
                       id="input-email"
                       type="text"
                       name="email"
-                      placeholder="votre@email.fr"
                       required
                       sb-form-input
                     >
-                    <button id="submitInput" class="fr-btn" type="submit" value="Je m&#x27;abonne">
-                      Je m'abonne
+                    <button class="fr-btn" id="submitInput" title="S‘abonner à notre lettre d’information"
+                      type="submit">
+                      S'abonner
                     </button>
                   </div>
-                  <div class="loader"></div>
+                  <div class="fr-messages-group" id="newsletter-email-messages" aria-live="assertive">
+                  </div>
                 </div>
+                <p id="newsletter-email-hint-text" class="fr-hint-text">En renseignant votre adresse électronique, vous
+                  acceptez de recevoir nos actualités par courriel. Vous pouvez vous désinscrire à tout moment à l’aide
+                  des liens de désinscription ou en nous contactant.</p>
               </form>
             </div>
-            <p class="contact-text">Besoin d’informations précises ou d’assistance ? Contactez-nous à l’adresse
-              suivante :
-              <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a>
-            </p>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="fr-container--fluid partenaires-container">
-    <div class="fr-container">
-      <div class="fr-grid-row partenaires-row">
-        <div class="fr-col-md-6 partenaires-col">
-          <p class="partenaires-title">Partenaires</p>
-          <p class="partenaires-text">Aidants Connect repose également sur des partenariats avec les institutions
-            suivantes. </p>
-        </div>
-        <div class="fr-col-md-3 partenaires-logo-col">
-          <a href="https://franceconnect.gouv.fr/"><img
-            class="partenaire-logo"
-            src="{% static 'images/logo-fc-v2.png' %}"
-            alt="FranceConnect"
-          /></a>
-        </div>
-        <div class="fr-col-md-3 partenaires-logo-col">
-          <a href="http://www.anlci.gouv.fr/"><img
-            class="partenaire-logo"
-            src="{% static 'images/logo-ANLCI.png' %}"
-            alt="Agence Nationale de Lutte contre l’Illettrisme"
-          /></a>
         </div>
       </div>
     </div>

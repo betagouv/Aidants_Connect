@@ -1,4 +1,4 @@
-{% load static %}
+{% load ac_common static %}
 <footer class="fr-footer" role="contentinfo" id="footer">
   <div class="fr-container">
     <div class="fr-footer__body">
@@ -91,6 +91,9 @@
         </ul>
       </div>
     </div>
+    {% if request.resolver_match.view_name|startswith:"home" %}
+      {% include 'layouts/_partenaires.html' %}
+    {% endif %}
     <div class="fr-footer__bottom">
       <ul class="fr-footer__bottom-list">
         <li class="fr-footer__bottom-item">
