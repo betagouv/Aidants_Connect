@@ -85,7 +85,7 @@ class IdProviderTest(FunctionalTestCase):
         # Open the dropdown
         self.selenium.execute_script(
             "arguments[0].setAttribute(arguments[1],arguments[2])",
-            self.selenium.find_element(By.CSS_SELECTOR, "details.user-detail"),
+            self.selenium.find_element(By.CSS_SELECTOR, ".fr-accordion.user-detail"),
             "open",
             "",
         )
