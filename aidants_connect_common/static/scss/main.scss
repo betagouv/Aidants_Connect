@@ -188,6 +188,12 @@ p:last-child {
     color: var(--text-default-warning);
   }
 }
+summary::marker {
+  content: "";
+}
+.box-shadow-none {
+  box-shadow: none!important;
+}
 
 @for $i from 0 through 32 {
   @each $gap-type in gap, row-gap, column-gap {

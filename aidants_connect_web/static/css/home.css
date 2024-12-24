@@ -1,318 +1,69 @@
 /*-- general --*/
 
-/*-- hero --*/
-
-.hero-container {
+#main {
+  padding: 0;
+}
+.bullet-container {
   min-height: 37.5rem;
-  background-image: url(../images/hero-background.svg);
+  background-image: url(../images/AC_Visuel_Home.svg);
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: center bottom;
 }
 
-.hero-row {
-  min-height: 37.5rem;
+.home-logo {
+  max-width: 100%;
+  width: 374px;
+  height: auto;
 }
 
-.hero-logo {
-  height: 9.25rem;
-  width: 23.375rem;
+.steps-progress-bar{
+  margin-bottom: 30px;
+  overflow: hidden;
+  counter-reset: step;
+  width:100%;
+  padding:0px;
+  margin:0px;
 }
-
-.hero-subtitle {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 1.5rem;
-  line-height: 2rem;
-  color: #EF4056;
-  text-align: center;
-  margin-top: 1.75rem;
-  text-transform: none;
-}
-
-/*-- aidants --*/
-
-.aidants-container {
-  min-height: 31rem;
-  background-image: url(../images/background.svg);
-  background-repeat: no-repeat;
-  background-position: top;
-}
-
-.aidants-img {
-  height: 15.688rem;
-}
-
-.aidants-question {
-  font-family: 'Marianne';
-  font-style: italic;
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.375rem;
-  display: flex;
-  align-items: center;
-  color: #5770BE;
-}
-
-.aidants-title {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 1.5rem;
-  line-height: 2rem;
-  display: flex;
-  align-items: center;
-  color: #EF4056;
-  margin-top: 1.75rem;
-}
-
-.aidants-btn-container {
-  max-width: 41.5rem;
-  padding-right: 2rem;
-}
-
-.aidants-btn-col {
-  margin-top: 0rem;
-}
-
-.aidants-col {
-  margin-top: 6rem;
-}
-
-.aidants-row {
-  margin-bottom: 7.5rem;
-}
-
-.aidants-text {
-  max-width: 41.5rem;
-  background-color: white;
-  padding: 2rem;
-}
-
-/*-- info --*/
-
-.info-section {
-  background-color: #1B4991;
-  min-height: 28.75rem;
-}
-
-.info-container {
-  width: 80%;
-}
-
-.info-col {
-  text-align: center;
-  margin-top: 3.688rem;
-}
-
-.info-title {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 1.5rem;
-  line-height: 2rem;
-  text-align: center;
-  color: #FFFFFF;
-}
-
-.info-text {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.375rem;
-  text-align: center;
-  color: #FFFFFF;
-}
-
-/*-- Hyperliens vid --*/
-.hyperliens-video {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-}
-
-.hyperliens-video .video-presentation {
-  display: block;
-  max-width: 350px;
-}
-
-.hyperliens-video .youtube_player {
-  flex-grow: 1;
-}
-
-@media (max-width: 36em) {
-  .hyperliens-video {
-    flex-direction: column;
-  }
-
-  .hyperliens-video div {
-    max-width: 100%;
-  }
-}
-
-/*-- testimonies --*/
-.testimony-quote {
-  font-style: italic;
-  color: #5770BE;
-}
-
-/*-- contact --*/
-.contact-container {
-  min-height: 31.438rem;
-}
-
-.contact-row {
-  margin-bottom: 6.25rem;
-}
-
-.contact-col {
-  margin-top: 6rem;
-}
-
-.question-div {
-  max-width: 24rem;
-  min-height: 17.75rem;
-  border: 0.063rem solid #1B4991;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
-.question-title {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 1.5rem;
-  line-height: 2rem;
-  display: flex;
-  align-items: center;
-  color: #EF4056;
-}
-
-.contact-div {
-  background-color: #1B4991;
-  max-width: 36.75rem;
-  min-height: 17.75rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
-.contact-title {
-  font-size: 1.5rem;
-  line-height: 2rem;
-  display: flex;
-  align-items: center;
-  color: #FFFFFF;
-}
-
-.message-div {
-  color: #FFFFFF;
-}
-
-.contact-text {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.375rem;
-  color: #FFFFFF;
-}
-
-/*-- partenaires --*/
-
-.partenaires-container {
-  min-height: 11.75rem;
-  background: #E6E6E6;
-}
-
-.partenaires-row {
-  width: 60%;
-}
-
-.partenaires-col {
-  padding: 1.5rem;
-}
-
-.partenaires-logo-col {
-  padding: 4.125rem;
-}
-
-.partenaires-title {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 1.5rem;
-  line-height: 1.75rem;
-  color: #EF4056;
-}
-
-.partenaires-text {
-  font-family: 'Marianne';
-  font-style: normal;
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.25rem;
-  color: #333333
-}
-
-.partenaire-logo {
-  height: 3.875rem;
-}
-
-footer {
-  margin-top: 0;
-}
-
-.testimonies-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(36rem, 1fr));
-  grid-gap: 1.5rem;
-  justify-items: center;
-  justify-content: space-evenly;
-  margin-bottom: 2rem;
-}
-
-.testimony-container {
-  width: 100%;
-}
-
-.testimony-container .shadowed {
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 2rem;
-  margin-left: 75px;
-  padding: 2rem;
+.steps-progress-bar li {
+  list-style-type: none;
   position: relative;
+  text-align:center;
 }
 
-.testimony-container .shadowed .testimony-profile-picture {
-  margin-left: calc(-2rem - 75px);
-  margin-right: 2rem;
+.steps-progress-bar li:before {
+  content: counter(step);
+  counter-increment: step;
+  width: 32px;
+  line-height: 32px;
+  display: block;
+  background: var(--blue-france-main-525);
+  border-radius: 3px;
+  margin: 0 auto 5px auto;
+  border-radius:16px;
+  color:#fff;
+  position: relative;
+  z-index: 1;
 }
 
-.testimony-container .shadowed .infos {
-  align-self: stretch;
-  flex-grow: 1;
+.steps-progress-bar li:first-child:after {
+  content: none;
 }
-
-.testimony-container .shadowed .person-name {
-  color: #5770BE;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+@media (min-width: 48em) {
+  .steps-progress-bar li {
+    width: 20%;
+    float: left;
+  }
+  .steps-progress-bar li:after {
+    content: '';
+    width: 100%;
+    height: 2px;
+    background: var(--text-disabled-grey);
+    position: absolute;
+    left: -50%;
+    top: 16px;
+    z-index:0;
+  }
 }
-
-.testimony-container .shadowed .person-job {
-  font-style: oblique;
-  color: #EF4056;
-  margin-bottom: 1rem;
-}
-
-.testimony-container .shadowed .person-quote {
-  font-style: oblique;
-}
-
-.testimony-container a.fr-btn {
-  position: absolute;
-  bottom: -1.5rem;
-  right: 2rem;
+.icon-26 img {
+  width: 26px;
 }
