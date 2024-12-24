@@ -35,6 +35,10 @@
       </div>
       <div class="fr-mt-4w">
         <h2 class="fr-h6">Veuillez sélectionner la thématique administrative liée à la démarche à effectuer ci-dessous :</h2>
+        <p class="instructions fr-sr-only">
+          En sélectionnant une démarche, vous allez FranceConnecter
+          <em>{{ usager.given_name }} {{ usager.family_name }}</em>
+        </p>
       </div>
       {% if warn_scope %}
         {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
