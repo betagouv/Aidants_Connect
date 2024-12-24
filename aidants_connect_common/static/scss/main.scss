@@ -167,6 +167,9 @@ p:last-child {
 .fr-height-100 {
   height: 100%;
 }
+.text-thin {
+  font-weight: 400;
+}
 
 .fr-btn.fr-btn--warning:not(:disabled) {
   --hover-tint: var(--hover);
