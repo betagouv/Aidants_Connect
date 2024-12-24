@@ -1,21 +1,17 @@
-from unittest.mock import Mock, patch
-from urllib.parse import quote, unquote
-
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
 from aidants_connect_common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.utils.gouv_address_api import Address
 from aidants_connect_habilitation.forms import (
-    AddressValidatableMixin,
+    AddressValidatableForm,
     AidantRequestFormLegacy,
     AidantRequestFormSet,
     IssuerForm,
-    ManagerForm,
     OrganisationRequestForm,
+    ReferentForm,
     ValidationForm,
 )
 from aidants_connect_habilitation.tests.factories import (
@@ -23,7 +19,6 @@ from aidants_connect_habilitation.tests.factories import (
     DraftOrganisationRequestFactory,
     ManagerFactory,
     OrganisationRequestFactory,
-    address_factory,
 )
 from aidants_connect_habilitation.tests.utils import get_form
 from aidants_connect_web.models import OrganisationType
@@ -207,7 +202,7 @@ class TestManagerForm(TestCase):
 
     def test_clean_type_zipcode_number_passes(self):
         form = get_form(
-            ManagerForm,
+            ReferentForm,
             ignore_errors=True,
             zipcode="01700",
             form_init_kwargs={"organisation": self.organisation},
@@ -218,7 +213,7 @@ class TestManagerForm(TestCase):
 
     def test_clean_type_zipcode_not_number_raises_error(self):
         form = get_form(
-            ManagerForm,
+            ReferentForm,
             ignore_errors=True,
             zipcode="La Commune",
             form_init_kwargs={"organisation": self.organisation},
@@ -231,7 +226,7 @@ class TestManagerForm(TestCase):
 
     def test_email_lower(self):
         form = get_form(
-            ManagerForm,
+            ReferentForm,
             email="TEST@TEST.TEST",
             form_init_kwargs={"organisation": self.organisation},
         )
@@ -241,7 +236,7 @@ class TestManagerForm(TestCase):
 
     def test_email_conseiller_numerique(self):
         form = get_form(
-            ManagerForm,
+            ReferentForm,
             ignore_errors=True,
             conseiller_numerique=True,
             email="test@test.test",
@@ -249,6 +244,31 @@ class TestManagerForm(TestCase):
         )
 
         self.assertTrue(form.is_valid())
+
+    def test_address_same_as_org(self):
+        form = ReferentForm(
+            organisation=self.organisation,
+            data={
+                **get_form(
+                    ReferentForm,
+                    conseiller_numerique=True,
+                    email="test@test.test",
+                    form_init_kwargs={"organisation": self.organisation},
+                ).cleaned_data,
+                "address_same_as_org": True,
+            },
+        )
+
+        self.assertTrue(form.is_valid())
+        for name, field in AddressValidatableForm.declared_fields.items():
+            with self.subTest(f"address field {name}"):
+                expected = getattr(self.organisation, name)
+                actual = form.cleaned_data[name]
+                if expected in field.empty_values:
+                    expected = field.empty_value
+                if actual in field.empty_values:
+                    actual = field.empty_value
+                self.assertEqual(expected, actual)
 
 
 class TestAidantRequestForm(TestCase):
@@ -424,161 +444,3 @@ class TestBaseAidantRequestFormSet(TestCase):
             [[error_message], [error_message]],
             [subform.errors["email"] for subform in form.forms],
         )
-
-
-@override_settings(GOUV_ADDRESS_SEARCH_API_DISABLED=False)
-class TestAddressValidatableMixin(TestCase):
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_alternative_address_becomes_required_after_submission_with_multiple_results(  # noqa
-        self, search_adresses_mock: Mock
-    ):
-        class TestForm(AddressValidatableMixin):
-            def get_address_for_search(self) -> str:
-                return ""
-
-            def autocomplete(self, address: Address):
-                pass
-
-        # First submission: address API returns empty result
-        search_adresses_mock.return_value = []
-        form = TestForm(data={})
-
-        self.assertFalse(form.fields["alternative_address"].required)
-        self.assertFalse(form.fields["alternative_address"].widget.is_required)
-
-        form.is_valid()
-
-        self.assertFalse(form.fields["alternative_address"].required)
-        self.assertFalse(form.fields["alternative_address"].widget.is_required)
-
-        # Second submission: address API returns 1 result
-        search_adresses_mock.reset_mock()
-        search_adresses_mock.return_value = [address_factory()]
-        form = TestForm(data={})
-
-        self.assertFalse(form.fields["alternative_address"].required)
-        self.assertFalse(form.fields["alternative_address"].widget.is_required)
-
-        form.is_valid()
-
-        self.assertTrue(form.fields["alternative_address"].required)
-        self.assertTrue(form.fields["alternative_address"].widget.is_required)
-
-    @patch("aidants_connect_habilitation.forms.AddressValidatableMixin.autocomplete")
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_I_can_autocomplete_with_one_of_the_propositions(
-        self, _, autocomplete_mock: Mock
-    ):
-        cached_api_result = quote(address_factory().json())
-
-        form = AddressValidatableMixin(data={"alternative_address": cached_api_result})
-
-        address = Address.parse_raw(unquote(cached_api_result))
-
-        # Simulate POSTing data
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data["alternative_address"], address)
-
-        # Simulate autocompleting: AddressValidatableMixin.post_clean
-        # must be called in derived form's clean function
-        form.post_clean()
-        self.assertNotIn("alternative_address", form.cleaned_data)
-        autocomplete_mock.assert_called_with(address)
-
-        autocomplete_mock.reset_mock()
-
-    @patch(
-        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
-    )
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_form_leaves_me_alone_if_API_id_down(
-        self, search_adresses_mock: Mock, get_address_for_search: Mock
-    ):
-        address = address_factory()
-        search_address = f"{address.name} {address.postcode} {address.city}"
-        get_address_for_search.return_value = search_address
-        search_adresses_mock.return_value = []
-
-        form = AddressValidatableMixin(data={})
-
-        # Simulate POST
-        self.assertTrue(form.is_valid())
-        search_adresses_mock.assert_called_with(search_address)
-        self.assertEqual(
-            form.cleaned_data["alternative_address"],
-            AddressValidatableMixin.DEFAULT_CHOICE,
-        )
-
-        # Simulate autocompleting: AddressValidatableMixin.post_clean
-        # must be called in derived form's clean function
-        form.post_clean()
-        self.assertNotIn("alternative_address", form.cleaned_data)
-
-    @patch("aidants_connect_habilitation.forms.AddressValidatableMixin.autocomplete")
-    @patch(
-        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
-    )
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_form_leaves_me_alone_if_I_entered_a_correct_address(
-        self,
-        search_adresses_mock: Mock,
-        get_address_for_search: Mock,
-        autocomplete_mock: Mock,
-    ):
-        address = address_factory(score=0.95)
-        search_address = f"{address.name} {address.postcode} {address.city}"
-        get_address_for_search.return_value = search_address
-        search_adresses_mock.return_value = [address]
-
-        form = AddressValidatableMixin(data={})
-
-        # Simulate POST
-        self.assertTrue(form.is_valid())
-        search_adresses_mock.assert_called_with(search_address)
-        self.assertEqual(form.cleaned_data["alternative_address"], address)
-
-        # Simulate autocompleting: AddressValidatableMixin.post_clean
-        # must be called in derived form's clean function
-        form.post_clean()
-        self.assertNotIn("alternative_address", form.cleaned_data)
-        autocomplete_mock.assert_called_with(address)
-
-    @patch(
-        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
-    )
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_form_raises_validation_error_on_multiple_results(
-        self, search_adresses_mock: Mock, get_address_for_search: Mock
-    ):
-        addresses = [address_factory(score=0.95) for _ in range(3)]
-        get_address_for_search.return_value = "3, rue de la Marne 95000 Rennes"
-        search_adresses_mock.return_value = addresses
-
-        form = AddressValidatableMixin(data={})
-
-        # Simulate POST
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors,
-            {"alternative_address": ["Plusieurs choix d'adresse sont possibles"]},
-        )
-
-    @patch("aidants_connect_habilitation.forms.AddressValidatableMixin.autocomplete")
-    @patch(
-        "aidants_connect_habilitation.forms.AddressValidatableMixin.get_address_for_search"  # noqa
-    )
-    @patch("aidants_connect_habilitation.forms.search_adresses")
-    def test_disable_backend_validation(
-        self,
-        search_adresses_mock: Mock,
-        get_address_for_search: Mock,
-        autocomplete_mock: Mock,
-    ):
-        form = AddressValidatableMixin(data={"skip_backend_validation": True})
-
-        # Simulate POST
-        self.assertTrue(form.is_valid())
-
-        search_adresses_mock.assert_not_called()
-        get_address_for_search.assert_not_called()
-        autocomplete_mock.assert_not_called()
