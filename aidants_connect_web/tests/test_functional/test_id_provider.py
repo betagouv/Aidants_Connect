@@ -83,12 +83,8 @@ class IdProviderTest(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         # Open the dropdown
-        self.selenium.execute_script(
-            "arguments[0].setAttribute(arguments[1],arguments[2])",
-            self.selenium.find_element(By.CSS_SELECTOR, "details.user-detail"),
-            "open",
-            "",
-        )
+        self.selenium.find_element(By.CSS_SELECTOR, ".fr-accordion.user-detail").click()
+
         self.wait.until(
             visibility_of_any_elements_located([By.CSS_SELECTOR, ".user-detail-item"])
         )
