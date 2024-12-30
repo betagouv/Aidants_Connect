@@ -1,107 +1,78 @@
-{% extends 'layouts/main-habilitation.html' %}
-{% load static %}
+{% extends 'layouts/main.html' %}
 
 {% block title %}
-  Aidants Connect - Présentation du site bac à sable
-{% endblock %}
-
-{% block extracss %}
-  <link href="{% static 'css/sandbox-presentation.css' %}" rel="stylesheet">
-{% endblock %}
+  Présentation du site bac à sable - Aidants Connect
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container">
-    <h1>Espace aidant</h1>
-    <h2>Site bac à sable</h2>
-
-    <p class="subtitle">
-      Le site bac à sable Aidants Connect est une copie du site principal.
-      Celui-ci vous permettra de vous familiarisier avec la création de mandat.
+    <h1 class="fr-mb-2w">Utilisation du site Bac à Sable</h1>
+    <p class="fr-text--xl">
+      Le site bac à sable Aidants Connect est une copie du site principal, retrouvez toutes les informations ci-dessous pour l’utiliser.
     </p>
-
-    <h3 class="h3-prime">Procédure pour se connecter sur le site bac à sable</h3>
-
-    <ol class="procedure">
-      <li>
-        <p class="shadowed">
-          <em>Se rendre sur ce lien : </em><a href="{{ sandbox_url }}">Bac à sable
-          Aidants Connect </a>
-        </p>
-      </li>
-      <li>
-        <div class="shadowed">
-          <p>
-            <strong>Renseigner son adresse mail </strong><em>(celle utilisée pour vous connecter à votre compte)</em>
-            <strong>et le token suivant : </strong>
-            <mark>123456</mark>
-          </p>
-          <p>
-            <em>
-              Attention, ce token (ou code à 6 chiffres) est fixe, ne change jamais et est utilisable à l’infini.
-              Sur le site réel, le token que vous utilisez n’est valable que 60 secondes.
-            </em>
-          </p>
+    <div class="fr-grid-row">
+      <div class="fr-col-md-6 fr-col-12">
+        <h2 class="fr-h3">Étape 1</h2>
+        <p>Se rendre sur le site bac à sable en cliquant sur le bouton ci-dessous :</p>
+        <div class="fr-background-contrast--grey fr-p-4w fr-text--center fr-mb-6w">
+          <a href="{{ sandbox_url }}" class="fr-btn">Lien vers le site Bac à Sable</a>
         </div>
-      </li>
-      <li>
-        <div class="shadowed">
-          <p><strong>Vous pouvez dès aujourd’hui tester la création de mandats avec des personnes fictives.</strong></p>
-          <p>
-            <em>
-              Lors de la connexion France Connect, vous pouvez utiliser le fournisseur d’identité « Démonstration » avec
-              l’un des identifiants fictifs suivants :
-            </em>
-          </p>
-          <table>
-            <tr>
-              <th>Identifiant</th>
-              <th>Mot de passe</th>
-            </tr>
-            <tr>
-              <td>test</td>
-              <td>123</td>
-            </tr>
-            <tr>
-              <td>sans_nom_dusage</td>
-              <td>123</td>
-            </tr>
-            <tr>
-              <td>avec_nom_dusage</td>
-              <td>123</td>
-            </tr>
-          </table>
+        <h2 class="fr-h3">Étape 2</h2>
+        <p><strong>Renseigner son adresse mail</strong> (celle utilisée pour vous connecter à votre compte) <strong>et le token suivant :</strong></p>
+        <div class="fr-background-contrast--grey fr-p-4w fr-text--center fr-mb-2w">123456</div>
+        <p class="fr-mb-6w"><em>Attention, ce token (ou code à 6 chiffres) est fixe, ne change jamais et est utilisable à l’infini. Sur le site réel, le token que vous utilisez n’est valable que 60 secondes.</em></p>
+        <h2 class="fr-h3">Étape 3</h2>
+        <p><strong>Vous pouvez dèsormais tester la création de mandats avec des personnes fictives.</strong></p>
+        <p><em>Lors de la connexion France Connect, vous pouvez utiliser le fournisseur d’identité « Démonstration » avec l’un des identifiants fictifs suivants :</em></p>
+        <div class="fr-background-contrast--grey fr-p-4w fr-text--center fr-mb-6w">
+          <div class="fr-table--sm fr-table fr-table">
+            <div class="fr-table__wrapper">
+              <div class="fr-table__container">
+                <div class="fr-table__content">
+                  <table id="table-sm">
+                    <caption class="sr-only">
+                      Table des identifiants
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Identifiant</th>
+                        <th scope="col">Mot de passe</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr data-row-key="1">
+                        <td>test</td>
+                        <td>123</td>
+                      </tr>
+                      <tr data-row-key="2">
+                        <td>avec_nom_dusage</td>
+                        <td>123</td>
+                      </tr>
+                      <tr data-row-key="3">
+                        <td>sans_nom_dusage</td>
+                        <td>123</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </li>
-      <li>
-        <p class="shadowed">
-          <strong>Créer et valider le mandat en utilisant de nouveau le code : </strong>
-          <mark>123456</mark>
-        </p>
-      </li>
-    </ol>
-
-    <section class="additionnal-comments shadowed">
-      <p>Quelques remarques complémentaires :</p>
-      <ul>
-        <li>
-          <strong>Ce site bac à sable est une copie conforme du réel site Aidants Connect.</strong>
-          Toutes les futures modifications et fonctionnalités apportées sur le réel site Aidants Connect seront mises en
-          place sur le site bac à sable.
-        </li>
-        <li>
-          <strong>Il permet uniquement de simuler la création d’un mandat avec un usager.</strong>
-          Un trop grand nombre de contraintes techniques ne nous permet pas de simuler le « faire pour le compte de ».
-        </li>
-        <li>
-          <strong>Sur le site Bac à sable, l’espace Aidant ainsi que l’espace référent</strong>
-          (administrateur d’organisation) sont accessibles. Il vous est donc possible de tester la création de mandat,
-          mais aussi l’ajout d’aidant.
-        </li>
-      </ul>
-    </section>
-
-    <section class="sandbox-buttons">
-      <a class="margin-auto fr-btn" href="{{ sandbox_url }}">Accéder au site bac-à-sable</a>
-    </section>
+        <h2 class="fr-h3">Étape 4</h2>
+        <p>Créer et valider le mandat en <strong>utilisant de nouveau le token : </strong></p>
+        <div class="fr-background-contrast--grey fr-p-4w fr-text--center fr-mb-2w">123456</div>
+        <p class="fr-mb-6w"><em>Attention, ce token (ou code à 6 chiffres) est fixe, ne change jamais et est utilisable à l’infini. Sur le site réel, le token que vous utilisez n’est valable que 60 secondes.</em></p>
+        <div class="fr-background-contrast--grey fr-p-4w fr-mb-6w">
+          <h3 class="fr-h6">Quelques remarques complémentaires :</h3>
+          <ul>
+            <li class="fr-mb-2w"><strong>Ce site bac à sable est une copie conforme du réel site Aidants Connect.</strong> Toutes les futures modifications et fonctionnalités apportées sur le réel site Aidants Connect seront mises en place sur le site bac à sable.</li>
+            <li class="fr-mb-2w"><strong>Il permet uniquement de simuler la création d’un mandat avec un usager.</strong> Un trop grand nombre de contraintes techniques ne nous permet pas de simuler le « faire pour le compte de ».</li>
+            <li><strong>Sur le site Bac à sable, l’espace Aidant ainsi que l’espace Responsable</strong> (administrateur d’organisation) sont accessibles. Il vous est donc possible de tester la création de mandat, mais aussi l’ajout d’aidant.</li>
+          </ul>
+        </div>
+        <a class="fr-btn" href="{{ sandbox_url }}">Accéder au site bac-à-sable</a>
+      </div>
+    </div>
   </div>
-{% endblock %}
+{% endblock content %}
