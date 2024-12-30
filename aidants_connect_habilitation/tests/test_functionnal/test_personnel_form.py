@@ -2,22 +2,18 @@ from django.conf import settings
 from django.test import tag
 from django.urls import reverse
 
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_habilitation.forms import (
-    AidantRequestFormLegacy,
+    AidantRequestForm,
+    AidantRequestFormSet,
     IssuerForm,
     ReferentForm,
 )
-from aidants_connect_habilitation.models import (
-    AidantRequest,
-    Issuer,
-    Manager,
-    OrganisationRequest,
-)
+from aidants_connect_habilitation.models import Issuer, Manager, OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
     AidantRequestFactory,
     DraftOrganisationRequestFactory,
@@ -184,6 +180,7 @@ class ReferentRequestFormViewTests(FunctionalTestCase):
         form = IssuerForm()
 
         self._open_form_url(issuer, organisation)
+        self.wait.until(self.dsfr_ready())
 
         for field_name in form.fields:
             element: WebElement = self.selenium.find_element(
@@ -192,6 +189,17 @@ class ReferentRequestFormViewTests(FunctionalTestCase):
             self.assertEqual(element.get_attribute("value"), "")
 
         self.selenium.find_element(By.CSS_SELECTOR, "#its-me-manager").click()
+
+        # Wait for the JS code to execute
+        first_field = list(form.fields)[0]
+        self.wait.until(
+            expected_conditions.text_to_be_present_in_element_attribute(
+                (By.CSS_SELECTOR, f"[name$='{first_field}']"),
+                "value",
+                getattr(issuer, first_field),
+            ),
+            "Form does not seem to have been filled",
+        )
 
         for field_name in form.fields:
             element: WebElement = self.selenium.find_element(
@@ -369,109 +377,7 @@ class ReferentRequestFormViewTests(FunctionalTestCase):
 
 @tag("functional")
 class PersonnelRequestFormViewTests(FunctionalTestCase):
-    def test_js_managment_form_aidant_count_is_modified(self):
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer
-        )
-        self._open_form_url(issuer, organisation)
-
-        input_el = self.selenium.find_element(
-            By.CSS_SELECTOR, "input[name$='TOTAL_FORMS']"
-        )
-
-        for i in range(1, 5):
-            self.assertEqual(str(i), input_el.get_attribute("value"))
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-            self.assertEqual(str(i + 1), input_el.get_attribute("value"))
-
-    def test_js_aidant_form_is_added_to_formset(self):
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer
-        )
-        self._open_form_url(issuer, organisation)
-
-        for i in range(1, 5):
-            input_el = self.selenium.find_elements(
-                By.CSS_SELECTOR, ".aidant-form-container"
-            )
-            self.assertEqual(i, len(input_el))
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-            input_el = self.selenium.find_elements(
-                By.CSS_SELECTOR, ".aidant-form-container"
-            )
-            self.assertEqual(i + 1, len(input_el))
-
-    def test_js_hide_add_aidant_form_button_on_max(self):
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer
-        )
-        self._open_form_url(issuer, organisation)
-
-        add_aidant_button = self.selenium.find_element(
-            By.CSS_SELECTOR, "#add-aidant-btn"
-        )
-
-        max_value = self.selenium.find_element(
-            By.CSS_SELECTOR, "input[name$='MAX_NUM_FORMS']"
-        ).get_attribute("value")
-
-        # Manually set the number of forms to the max - 1 for the Stimulus controller
-        self.selenium.execute_script(
-            """document.querySelector("[data-controller='personnel-form']")"""
-            f""".dataset.personnelFormFormCountValue = {int(max_value) - 1}"""
-        )
-
-        self.assertTrue(add_aidant_button.is_displayed())
-        add_aidant_button.click()
-        self.assertFalse(add_aidant_button.is_displayed())
-
-    def test_js_added_aidant_form_has_correct_id(self):
-        """
-        This test verifies that the JS code generates forms exactly like
-        AidantRequestFormSet would.
-        """
-        issuer: Issuer = IssuerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer
-        )
-
-        self._open_form_url(issuer, organisation)
-
-        self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-        self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-        self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-
-        form_elts = self.selenium.find_elements(
-            By.CSS_SELECTOR, ".aidant-form-container"
-        )
-
-        self.assertEqual(len(form_elts), 4)
-
-        for i, _ in enumerate(form_elts):
-            form = AidantRequestFormLegacy(
-                organisation=organisation,
-                prefix=f"form-{i}",
-            )
-
-            for bf in form:
-                for widget in bf.subwidgets:
-                    try:
-                        field_label = self.selenium.find_element(
-                            By.CSS_SELECTOR, f'[for="{widget.id_for_label}"]'
-                        )
-                    except NoSuchElementException:
-                        self.fail(
-                            f"Label for form element {widget.id_for_label} not found. "
-                            "Was form 'prefix' or 'auto_id' modified?"
-                        )
-
-                    self.assertIn(
-                        widget.data.get("label", bf.label),
-                        field_label.get_attribute("innerHTML"),
-                    )
+    submit_css = '[data-test="submit"]'
 
     def test_form_submit_no_aidants(self):
         issuer: Issuer = IssuerFactory()
@@ -482,7 +388,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self._open_form_url(issuer, organisation)
 
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
@@ -510,29 +416,25 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self._open_form_url(issuer, organisation)
 
+        formset = AidantRequestFormSet(organisation=organisation)
         for i in range(2, 6):
-            aidant_form: AidantRequestFormLegacy = get_form(
-                AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
+            aidant_form = get_form(
+                AidantRequestForm,
+                form_init_kwargs={
+                    "organisation": organisation,
+                    "auto_id": formset.auto_id,
+                    "prefix": formset.add_prefix(i),
+                },
             )
-            aidant_data = aidant_form.cleaned_data
-            for field_name in aidant_form.fields:
-                element: WebElement = self.selenium.find_element(
-                    By.CSS_SELECTOR,
-                    f"#id_form-{i}-{field_name}",
+            self.fill_form(aidant_form.cleaned_data, aidant_form)
+            self.selenium.find_element(By.CSS_SELECTOR, "#partial-submit").click()
+            self.wait.until(
+                expected_conditions.visibility_of_element_located(
+                    (By.ID, f"profile-edit-card-{i}")
                 )
+            )
 
-                if field_name == "conseiller_numerique":
-                    element.find_element(
-                        By.CSS_SELECTOR,
-                        f'[value="{aidant_data["conseiller_numerique"]}"]',
-                    ).click()
-                else:
-                    element.clear()
-                    element.send_keys(aidant_data[field_name])
-
-            self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
@@ -558,33 +460,36 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             AidantRequestFactory(organisation=organisation)
 
         self._open_form_url(issuer, organisation)
+        self.wait.until(self.dsfr_ready())
 
         modified_aidant_idx = 2
-        modified_aidant_email = self.selenium.find_element(
-            By.CSS_SELECTOR, f"#id_form-{modified_aidant_idx}-email"
-        ).get_attribute("value")
-
-        new_aidant_form: AidantRequestFormLegacy = get_form(
-            AidantRequestFormLegacy, form_init_kwargs={"organisation": organisation}
+        formset = AidantRequestFormSet(organisation=organisation)
+        aidant = formset.forms[modified_aidant_idx].instance
+        aidant_form = get_form(
+            AidantRequestForm,
+            form_init_kwargs={
+                "organisation": organisation,
+                "auto_id": formset.auto_id,
+                "prefix": formset.add_prefix(modified_aidant_idx),
+            },
         )
-        aidant_data = new_aidant_form.cleaned_data
-        for field_name in new_aidant_form.fields:
-            element: WebElement = self.selenium.find_element(
-                By.CSS_SELECTOR,
-                f"#id_form-{modified_aidant_idx}-{field_name}",
+
+        for field_name in ("first_name", "last_name", "email"):
+            self.assertNotEqual(
+                getattr(aidant, field_name),
+                aidant_form.cleaned_data[field_name],
             )
 
-            if field_name == "conseiller_numerique":
-                element.find_element(
-                    By.CSS_SELECTOR,
-                    f'[value="{aidant_data["conseiller_numerique"]}"]',
-                ).click()
-            else:
-                element.clear()
-                element.send_keys(aidant_data[field_name])
+        self._try_open_modal(By.CSS_SELECTOR, f"#edit-button-{modified_aidant_idx}")
+        self.fill_form(
+            aidant_form.cleaned_data,
+            aidant_form,
+            selector=self.selenium.find_element(By.CSS_SELECTOR, "#main-modal"),
+        )
 
-        self.selenium.find_element(By.CSS_SELECTOR, "#add-aidant-btn").click()
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, "#profile-edit-submit").click()
+        self.wait.until(self._modal_closed())
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.wait.until(
             self.path_matches(
@@ -599,12 +504,11 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 4)
 
-        with self.assertRaises(AidantRequest.DoesNotExist):
-            AidantRequest.objects.get(email=modified_aidant_email)
-
-        saved_aidant = organisation.aidant_requests.get(email=aidant_data["email"])
-        for field_name in new_aidant_form.fields:
-            self.assertEqual(getattr(saved_aidant, field_name), aidant_data[field_name])
+        aidant.refresh_from_db()
+        for field_name in aidant_form.fields:
+            self.assertEqual(
+                getattr(aidant, field_name), aidant_form.cleaned_data[field_name]
+            )
 
     def test_cannot_submit_form_without_aidants_displays_errors(self):
         issuer: Issuer = IssuerFactory()
@@ -622,14 +526,10 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             )
         )
 
-        self.selenium.find_element(By.CSS_SELECTOR, '[data-test="validate"]').click()
-
-        error_element = self.selenium.find_element(
-            By.CSS_SELECTOR, ".aidant-forms p.errorlist"
-        )
+        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.assertEqual(
-            error_element.text,
+            self.selenium.find_element(By.CSS_SELECTOR, ".errorlist.nonform").text,
             "Vous devez déclarer au moins 1 aidant si le ou la référente de "
             "l'organisation n'est pas elle-même déclarée comme aidante",
         )
@@ -648,3 +548,50 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 },
             )
         )
+
+    def _modal_closed(self):
+        def modal_has_no_open_attr(driver):
+            try:
+                with self.implicitely_wait(0.1, driver):
+                    element_attribute = driver.find_element(
+                        By.CSS_SELECTOR, "#main-modal"
+                    ).get_attribute("open")
+                return element_attribute is None
+            except:  # noqa: E722
+                return False
+
+        return expected_conditions.all_of(
+            expected_conditions.invisibility_of_element_located(
+                (By.CSS_SELECTOR, "#main-modal")
+            ),
+            modal_has_no_open_attr,
+        )
+
+    def _try_open_modal(self, by, value: str):
+        self._try_close_modal()
+        self.js_click(by, value)
+        with self.implicitely_wait(0.1):
+            self.wait.until(
+                expected_conditions.text_to_be_present_in_element_attribute(
+                    (By.CSS_SELECTOR, "#main-modal"),
+                    "open",
+                    "true",
+                ),
+                "Modal was not opened",
+            )
+
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (
+                        By.CSS_SELECTOR,
+                        '#main-modal input[id$="email"]',
+                    )
+                ),
+                "Modal seems opened but form seems not visible",
+            )
+
+    def _try_close_modal(self):
+        self.wait.until(self.document_loaded())
+        self.wait.until(self.dsfr_ready())
+        self.js_click(By.TAG_NAME, "body")
+        self.wait.until(self._modal_closed(), "Modal seems to be still visible")

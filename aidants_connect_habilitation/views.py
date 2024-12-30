@@ -1,13 +1,10 @@
 from abc import ABC
-from typing import Any
 from uuid import UUID
 
 from django.conf import settings
-from django.contrib import messages
 from django.forms import Form
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.defaultfilters import yesno
 from django.urls import reverse
 from django.views.generic import FormView, RedirectView, TemplateView, View
 from django.views.generic.base import ContextMixin
@@ -17,7 +14,6 @@ from aidants_connect_common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 from aidants_connect_common.utils import issuer_exists_send_reminder_email
 from aidants_connect_common.views import (
     FormationRegistrationView as CommonFormationRegistrationView,
@@ -50,13 +46,14 @@ __all__ = [
     "PersonnelRequestFormView",
     "ValidationRequestFormView",
     "ReadonlyRequestView",
-    "AddAidantsRequestView",
     "AidantFormationRegistrationView",
     "HabilitationRequestCancelationView",
+    "ReferentRequestFormView",
     "ManagerFormationRegistrationView",
 ]
 
-from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
+from aidants_connect_habilitation.presenters import ProfileCardAidantRequestPresenter
+from aidants_connect_web.models import Aidant, HabilitationRequest
 
 """Mixins"""
 
@@ -280,7 +277,7 @@ class ModifyIssuerFormView(VerifiedEmailIssuerView, NewIssuerFormView):
 class NewOrganisationRequestFormView(
     HabilitationStepMixin, VerifiedEmailIssuerView, FormView
 ):
-    template_name = "organisation_form.html"
+    template_name = "aidants_connect_habilitation/organisation-form-view.html"
     form_class = OrganisationRequestForm
 
     @property
@@ -305,6 +302,7 @@ class NewOrganisationRequestFormView(
         return {
             **super().get_context_data(**kwargs),
             "type_other_value": RequestOriginConstants.OTHER.value,
+            "issuer_id": f"{self.issuer.issuer_id}",
         }
 
 
@@ -352,8 +350,8 @@ class ReferentRequestFormView(OnlyNewRequestsView, UpdateView):
         )
 
 
-class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
-    template_name = "personnel_form.html"
+class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, FormView):
+    template_name = "aidants_connect_habilitation/personnel-form-view.html"
     form_class = AidantRequestFormSet
 
     @property
@@ -372,6 +370,7 @@ class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
         return {
             **super().get_form_kwargs(),
             "organisation": self.organisation,
+            "empty_permitted": True,
         }
 
     def get_success_url(self):
@@ -384,60 +383,11 @@ class PersonnelRequestFormView(OnlyNewRequestsView, FormView):
         )
 
 
-class ProfileCardAidantRequestPresenter(GenericHabilitationRequestPresenter):
-    def __init__(self, org: OrganisationRequest, req: AidantRequest):
-        self.org: OrganisationRequest = org
-        self.req: AidantRequest = req
-
-    @property
-    def pk(self):
-        return self.req.pk
-
-    @property
-    def edit_endpoint(self):
-        if self.org.status not in self.org.Status.aidant_registrable:
-            return None
-
-        return reverse(
-            "api_habilitation_aidant_edit",
-            kwargs={
-                "issuer_id": self.req.organisation.issuer.issuer_id,
-                "uuid": self.req.organisation.uuid,
-                "aidant_id": self.req.pk,
-            },
-        )
-
-    @property
-    def edit_href(self) -> str | None:
-        return None
-
-    @property
-    def full_name(self) -> str:
-        return self.req.get_full_name()
-
-    @property
-    def email(self) -> str:
-        return self.req.email
-
-    @property
-    def details_fields(self) -> list[dict[str, Any]]:
-        return [
-            # email profession conseiller_numerique organisation
-            {"label": "Email", "value": self.req.email},
-            {"label": "Profession", "value": self.req.profession},
-            {
-                "label": "Conseiller numérique",
-                "value": yesno(self.req.conseiller_numerique, "Oui,Non"),
-            },
-            {"label": "Organisation", "value": self.req.organisation},
-        ]
-
-
 class BaseValidationRequestFormView(
     HabilitationStepMixin, LateStageRequestView, FormView
 ):
     # fmt: off
-    template_name = "aidants_connect_habilitation/validation_request_form_view.html"  # noqa: E501
+    template_name = "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
     # fmt: on
     form_class = ValidationForm
     presenter_class = ProfileCardAidantRequestPresenter
@@ -504,7 +454,7 @@ class ValidationRequestFormView(OnlyNewRequestsView, BaseValidationRequestFormVi
 class ReadOnlyProfileCardAidantRequestPresenter(ProfileCardAidantRequestPresenter):
     @property
     def summary_second_line_tpl(self):
-        return "aidants_connect_habilitation/validation_request_form_view.html#summary-second-line"  # noqa: E501
+        return "aidants_connect_habilitation/validation-request-form-view.html#summary-second-line"  # noqa: E501
 
     @property
     def organisation(self):
@@ -517,58 +467,6 @@ class ReadOnlyProfileCardAidantRequestPresenter(ProfileCardAidantRequestPresente
 
 class ReadonlyRequestView(BaseValidationRequestFormView):
     presenter_class = ReadOnlyProfileCardAidantRequestPresenter
-
-
-class AddAidantsRequestView(LateStageRequestView, FormView):
-    template_name = "add_aidants_request.html"
-    form_class = AidantRequestFormSet
-
-    def dispatch(self, request, *args, **kwargs):
-        if self.organisation.status not in self.organisation.Status.aidant_registrable:
-            messages.error(
-                request,
-                "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
-            )
-            return HttpResponseRedirect(
-                reverse(
-                    "habilitation_organisation_view",
-                    kwargs={
-                        "issuer_id": self.organisation.issuer.issuer_id,
-                        "uuid": self.organisation.uuid,
-                    },
-                )
-            )
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        return {
-            **super().get_form_kwargs(),
-            "organisation": self.organisation,
-            "queryset": AidantRequest.objects.none(),
-        }
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "organisation": self.organisation,
-        }
-
-    def get_success_url(self):
-        return reverse(
-            "habilitation_organisation_view",
-            kwargs={
-                "issuer_id": self.organisation.issuer.issuer_id,
-                "uuid": self.organisation.uuid,
-            },
-        )
-
-    def form_valid(self, formset: AidantRequestFormSet):
-        formset.save()
-        if self.organisation.status == RequestStatusConstants.VALIDATED.name:
-            self.organisation.create_aidants(
-                Organisation.objects.get(data_pass_id=self.organisation.data_pass_id)
-            )
-        return super().form_valid(formset)
 
 
 class AidantFormationRegistrationView(

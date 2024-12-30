@@ -1,7 +1,6 @@
 import {BaseController, aidantsConnectApplicationReady} from "AidantsConnectApplication"
 
 const STATES = Object.freeze({
-    NOT_READY: "NOT_READY",
     IDLE: "IDLE",
     LOADING: "LOADING",
 })
@@ -16,10 +15,10 @@ const STATES = Object.freeze({
  * @property {HTMLElement} formTplTarget
  *
  * @property {String} stateValue
+ * @property {String} actionUrlValue
  */
 class NewHabilitationRequest extends BaseController {
     static targets = [
-        "form",
         "TOTAL_FORMS",
         "leftFormReplace",
         "submitBtn",
@@ -31,15 +30,29 @@ class NewHabilitationRequest extends BaseController {
         "dialogCancelButton",
     ]
     static values = {
-        state: {type: String, default: STATES.NOT_READY},
+        state: {type: String, default: STATES.IDLE},
         nbFormCount: {type: Number, default: -1},
         modalOpened: {type: Boolean, default: false},
+        actionUrl: {type: String},
     }
     static classes = ["loading", "submitBtnEdit", "submitBtnValidate"]
+    static outlets = ["profile-edit-card"]
 
     initialize () {
         this.nbFormCountValue = Number.parseInt(this.TOTAL_FORMSTarget.value)
-        this.stateValue = STATES.IDLE
+        if (this.leftFormReplaceTarget.children.length === 0) {
+            // If formset is not valid, it should already be displaying the last invalid form
+            this.validateAndResetLeftForm()
+        }
+        this.formTarget = this.element.closest("form")
+    }
+
+    profileEditCardOutletConnected (outlet) {
+        outlet.additionnalData = this.additionnalData.bind(this)
+    }
+
+    additionnalData () {
+        return `${new URLSearchParams(new FormData(this.formTarget))}`
     }
 
     nbFormCountValueChanged (value) {
@@ -49,33 +62,28 @@ class NewHabilitationRequest extends BaseController {
     }
 
     stateValueChanged (value, previousValue) {
-        if (previousValue === STATES.NOT_READY) {
-            this.showElement(this.formTarget)
-        }
         this.submitBtnState(value)
     }
 
     submitBtnState (state) {
         this.submitBtnTargets.forEach(it => {
-            if (state === STATES.IDLE) {
-                it.classList.remove(this.loadingClass);
-                it.removeAttribute("disabled");
-            } else if (state === STATES.LOADING) {
+            if (state === STATES.LOADING) {
                 it.classList.add(this.loadingClass);
                 it.setAttribute("disabled", "disabled");
+            } else {
+                it.classList.remove(this.loadingClass);
+                it.removeAttribute("disabled");
             }
         })
     }
 
     modalOpenedValueChanged (value) {
         this.confirmationDialogTargets.forEach(it => {
-            try {
-                if (value) {
-                    dsfr(it).modal.disclose();
-                } else {
-                    dsfr(it).modal.conceal();
-                }
-            } catch {/* Do nothing */}
+            if (value) {
+                dsfr(it).modal.disclose();
+            } else {
+                dsfr(it).modal.conceal();
+            }
         });
     }
 
@@ -87,7 +95,7 @@ class NewHabilitationRequest extends BaseController {
         this.stateValue = STATES.LOADING;
         try {
             const response = await fetch(
-                Urls.apiEspaceResponsableAidantNew(),
+                this.actionUrlValue,
                 {method: "POST", body: new FormData(this.formTarget)}
             )
             if (response.status === 422) {  // Form has an error
@@ -143,4 +151,4 @@ class NewHabilitationRequest extends BaseController {
     }
 }
 
-aidantsConnectApplicationReady.then(application => application.register("new-habilitation-request", NewHabilitationRequest));
+aidantsConnectApplicationReady.then(app => app.register("new-habilitation-request", NewHabilitationRequest))

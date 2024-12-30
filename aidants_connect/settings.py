@@ -206,6 +206,8 @@ TEMPLATES = [
     }
 ]
 
+FORM_RENDERER = "aidants_connect.utils.ACDjangoTemplates"
+
 WSGI_APPLICATION = "aidants_connect.wsgi.application"
 
 DATABASES = {
