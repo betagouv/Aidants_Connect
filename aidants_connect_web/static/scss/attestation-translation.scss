@@ -33,10 +33,6 @@ select {
     size: auto; /* auto is the initial value */
     margin: 1em; /* this affects the margin in the printer settings */
   }
-  .no-print,
-  .no-print * {
-    display: none !important;
-  }
   .fr-container {
     border: 0;
     padding: 0;
