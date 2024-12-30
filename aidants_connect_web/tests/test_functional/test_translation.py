@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.select import Select
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
@@ -34,12 +35,11 @@ class DisplayTranslationTests(FunctionalTestCase):
         ).click()
 
         self.wait.until(self.path_matches("mandate_translation"))
-
-        self.assertInHTML(
-            "D’autres langues sont disponibles",
-            self.selenium.find_element(
-                By.CSS_SELECTOR, ".mandate-translation-other"
-            ).get_attribute("innerHTML"),
+        self.wait.until(
+            expected_conditions.text_to_be_present_in_element(
+                (By.CSS_SELECTOR, ".mandate-translation-other"),
+                "D’autres langues sont disponibles",
+            )
         )
 
         select = Select(

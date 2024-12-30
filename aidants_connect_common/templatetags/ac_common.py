@@ -2,7 +2,6 @@ import re
 from urllib.parse import quote, urlencode
 
 from django import template
-from django.conf import settings
 from django.template import TemplateSyntaxError
 from django.template.base import Node, NodeList, Parser, TextNode, Token, token_kwargs
 from django.template.defaultfilters import stringfilter
@@ -55,11 +54,6 @@ def mailto(
     href = mailto_href(recipient, subject, body)
     link_class = link_class or "fr-link"
     return mark_safe(f'<a class="{link_class}" href="{href}">{link_text}</a>')
-
-
-@register.simple_tag
-def stimulusjs():
-    return mark_safe(f'<script src="{settings.STIMULUS_JS_URL}"></script>')
 
 
 @register.tag

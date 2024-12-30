@@ -421,7 +421,7 @@ X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
 # Scripts and other resources
-STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.2/dist/stimulus.umd.js"
+STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.2/dist/stimulus.js"
 MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
@@ -466,7 +466,6 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
-    STIMULUS_JS_URL.replace("umd.js", "js"),
     CHARTS_JS_URL,
     CHARTS_JS_DATALABEL_URL,
     MD_EDITOR_JS_URL,

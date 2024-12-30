@@ -1,0 +1,7 @@
+{% extends "admin/base_site.html" %}
+{% load importmap %}
+
+{% block dark-mode-vars %}
+  {% importmap nonce=request.csp_nonce %}
+  {{ block.super }}
+{% endblock dark-mode-vars %}

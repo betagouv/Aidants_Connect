@@ -1,11 +1,11 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load static ac_common %}
+{% load ac_common static %}
 
 {% block title %}Aidants Connect - En attente de consentement{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/remote_consent_waiting_room.css' %}" rel="stylesheet">
-{% endblock %}
+{% endblock extracss %}
 
 {% block content %}
   <div class="fr-container">
@@ -38,6 +38,5 @@
 {% endblock content %}
 
 {% block extrajs %}
-  {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/remote-pending.js' %}"></script>
-{% endblock %}
+  <script defer type="module" src="{% static 'js/remote-pending.mjs' %}"></script>
+{% endblock extrajs %}
