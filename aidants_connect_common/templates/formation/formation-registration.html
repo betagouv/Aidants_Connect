@@ -140,7 +140,6 @@
 {% endblock content %}
 
 {% block extrajs %}
-  {% stimulusjs %}
   <script defer src="{% url 'js_reverse' %}"></script>
-  <script defer type="module" src="{% static 'js/formation-informations.mjs' %}"></script>
+  <script type="module" src="{% static 'js/formation-informations.mjs' %}"></script>
 {% endblock extrajs %}
