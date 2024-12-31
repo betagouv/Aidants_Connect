@@ -273,6 +273,19 @@ pre-commit install
 
 ## Travailler sur le côté client (CSS et JavaScript)
 
+### JS
+
+Le projet utilise massivement [Stimulus](https://stimulus.hotwired.dev/). Avec la réécriture DSFR, le projet adopté
+les [modules ES6](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/Modules) et les
+[importmaps](https://developer.mozilla.org/fr/docs/Web/HTML/Element/script/type/importmap) à l'aide de
+[`dj-importmap`](https://github.com/christophehenry/dj-importmap). Les modules Js du projet sont nommés au format
+`.mjs`. Autant que possible, le vieux JS du projet est réécrit au fur et à mesure pour utiliser ces bonnes pratiques.
+
+Le projet a aussi profité de la réécriture DSFR pour utiliser [l'API de rendu des formulaires Django](https://docs.djangoproject.com/en/dev/ref/forms/renderers/).
+Les bonnes pratiques actuelles du projet sont de rendre les formulaires autonomes grâce à cette API et l'utilisation
+des [form assets](https://docs.djangoproject.com/en/5.1/topics/forms/media/).
+
+
 ### CSP et JavaScript inline
 
 La CSP (content security policy) de Aidants Connect fonctionne en liste blanche : elle nécessite de lister tous les scripts inline (dans des balises `<script>`).
@@ -286,6 +299,11 @@ Si vous devez modifier ou ajouter un bout de JavaScript inline, vous pouvez [uti
 ```
 
 ### CSS et SCSS
+
+Le projet utilise un peu SCSS. Autant que possible, nous tentons d'utiliser du CSS pur et de réduire l'utilisation de
+SASS. La réécriture du front avec le DSFR a permis d'en réduire considérablement l'utilisation. La tendance actuelle
+est de remplacer les fichiers SCSS précédemment écris par du CSS pur à l'exception de
+[`aidants_connect_common/static/scss/main.scss`](./aidants_connect_common/static/scss/main.scss).
 
 Pour compiler les fichiers SCSS en CSS, vous devez avoir installé sass sur votre poste, la commande `sass` doit être disponible dans votre `$PATH`.
 
