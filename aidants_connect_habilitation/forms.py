@@ -242,6 +242,46 @@ class ReferentForm(
         ),
     )
 
+    address = CharField(
+        label="Adresse",
+        widget=Textarea(
+            attrs={
+                "rows": 2,
+                "data-manager-form-target": "autcompleteInput",
+                "data-address-autocomplete-target": "autcompleteInput",
+                "data-action": "focus->address-autocomplete#onAutocompleteFocus",
+            }
+        ),
+    )
+
+    zipcode = CharField(
+        label="Code Postal",
+        max_length=10,
+        error_messages={
+            "required": "Le champ « code postal » est obligatoire.",
+        },
+        widget=CharField.widget(
+            attrs={
+                "data-address-autocomplete-target": "zipcodeInput",
+                "data-manager-form-target": "zipcodeInput",
+            }
+        ),
+    )
+
+    city = CharField(
+        label="Ville",
+        max_length=255,
+        error_messages={
+            "required": "Le champ « ville » est obligatoire.",
+        },
+        widget=CharField.widget(
+            attrs={
+                "data-address-autocomplete-target": "cityInput",
+                "data-manager-form-target": "cityInput",
+            }
+        ),
+    )
+
     @property
     def media(self):
         return super().media + Media(js=(JSModulePath("js/manager-form.mjs"),))
