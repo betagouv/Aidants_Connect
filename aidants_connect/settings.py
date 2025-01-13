@@ -475,6 +475,7 @@ CSP_SCRIPT_SRC = (
     COOKIE_BANNER_SERVICES_URL,
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
+    AUTOCOMPLETE_SCRIPT_SRC,
 )
 
 CSP_STYLE_SRC = (
