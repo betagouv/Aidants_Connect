@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from faker import Faker
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.select import Select
 
 from aidants_connect_common.constants import RequestOriginConstants
@@ -112,12 +113,18 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         issuer: Issuer = IssuerFactory()
         self._open_form_url(issuer)
 
-        id_type_other_el = self.selenium.find_element(By.ID, "id_type_other")
-        self.assertFalse(id_type_other_el.is_displayed())
+        self.wait.until(
+            expected_conditions.invisibility_of_element_located(
+                (By.ID, "id_type_other")
+            ),
+            "Input #id_type_other should't be visible by default",
+        )
 
         select = Select(self.selenium.find_element(By.ID, "id_type"))
         select.select_by_visible_text(RequestOriginConstants.OTHER.label)
-        self.assertTrue(id_type_other_el.is_displayed())
+        self.assertTrue(
+            self.selenium.find_element(By.ID, "id_type_other").is_displayed()
+        )
         self.assertEqual(
             self.selenium.find_element(
                 By.CSS_SELECTOR, 'label[for="id_type_other"]'
@@ -126,7 +133,9 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         )
 
         select.select_by_visible_text(RequestOriginConstants.MEDIATHEQUE.label)
-        self.assertFalse(id_type_other_el.is_displayed())
+        self.assertFalse(
+            self.selenium.find_element(By.ID, "id_type_other").is_displayed()
+        )
 
     def test_modify_organisation_type_other_input_is_displayed(self):
         issuer: Issuer = IssuerFactory()

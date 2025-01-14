@@ -1,0 +1,105 @@
+{% load ac_common partials %}
+
+
+{% partialdef habilitation-profile-card %}
+  {% include "habilitation/generic-habilitation-request-profile-card.html#habilitation-profile-card" with profile_cards_wrapper_attrs='data-new-habilitation-request-target="rightFormsInsert"' %}
+{% endpartialdef %}
+
+<div
+  class="habilitation-requests"
+  data-controller="new-habilitation-request"
+  data-new-habilitation-request-action-url-value="{{ action_url }}"
+  data-new-habilitation-request-loading-class="fr-icon-loader"
+  data-new-habilitation-request-edit-idle-class="fr-icon-edit-fill"
+  data-new-habilitation-request-submit-btn-edit-class="fr-icon-check-line"
+  data-new-habilitation-request-submit-btn-validate-class="fr-icon-user-add-line"
+  data-new-habilitation-request-profile-edit-card-outlet="*"
+>
+  {{ formset.management_form }}
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <h2 class="fr-col-12">Renseignez les détails du ou des aidants à habiliter</h2>
+
+    <div class="fr-col-12 fr-col-md-6">
+      {{ formset.non_form_errors }}
+      <section id="empty-form">
+        <div data-new-habilitation-request-target="leftFormReplace">
+          {% if formset.left_form %}{{ formset.left_form }}{% endif %}
+        </div>
+
+        <button
+          id="partial-submit"
+          class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-user-add-line"
+          type="submit"
+          data-action="new-habilitation-request#onPartialSubmit:prevent:stop"
+          data-new-habilitation-request-target="submitBtn"
+        >
+          Ajouter un autre aidant
+        </button>
+      </section>
+    </div>
+
+    <div
+      class="fr-col-12 fr-col-md-6"
+      data-new-habilitation-request-target="rightFormsInsertContainer"
+      {% if formset.initial_forms|length == 0 %}{% hidden %}{% endif %}>
+      <section id="added-forms" class="fr-background-contrast--grey fr-p-6v fr-height-100">
+        <h3>Aidants ajoutés à la demande</h3>
+
+        <div class="fr-p-2v">
+          {% include "habilitation/generic-habilitation-request-profile-card.html" with profile_cards_wrapper_attrs='data-new-habilitation-request-target="rightFormsInsert"' %}
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <template data-new-habilitation-request-target="formTpl">
+    {{ formset.empty_form }}
+  </template>
+
+  <dialog
+    aria-labelledby="confirmation-modal-title"
+    id="confirmation-modal"
+    class="fr-modal"
+    role="alertdialog"
+    data-new-habilitation-request-target="confirmationDialog"
+  >
+    <div class="fr-container fr-container--fluid fr-container-md">
+      <div class="fr-grid-row fr-grid-row--center">
+        <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+          <div class="fr-modal__body">
+            <div class="fr-modal__content">
+              <h1
+                id="confirmation-modal-title"
+                class="fr-modal__title fr-title-icon-left fr-icon-warning-fill fr-icon--lg"
+              >
+                Attention : vous êtes sur le point d'effacer des données entrées dans le formulaire
+              </h1>
+              <p>
+                Vous avez entré des informations dans le formulaire d'aidant à habiliter. L'action que vous êtes sur
+                le
+                point d'effectuer vous foura perdre les informations entrées. Voulez-vous continuer ?
+              </p>
+            </div>
+            <div class="fr-modal__footer">
+              <div class="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-btns-group--icon-left">
+                <button
+                  class="fr-btn fr-icon-checkbox-circle-line fr-btn--icon-left"
+                  data-new-habilitation-request-target="dialogConfirmButton"
+                >
+                  Confirmer
+                </button>
+                <button
+                  class="fr-btn fr-icon-checkbox-circle-line fr-btn--icon-left fr-btn--secondary"
+                  autofocus
+                  data-new-habilitation-request-target="dialogCancelButton"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</div>

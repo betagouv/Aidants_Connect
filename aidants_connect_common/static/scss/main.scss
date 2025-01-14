@@ -103,6 +103,11 @@ p:last-child {
   }
 }
 
+#main-modal .loader {
+  display: block;
+  margin: auto;
+}
+
 // From https://gist.github.com/ffoodd/000b59f431e3e64e4ce1a24d5bb36034
 .sr-only {
   border: 0 !important;
@@ -167,6 +172,9 @@ p:last-child {
 .fr-height-100 {
   height: 100%;
 }
+.text-thin {
+  font-weight: 400;
+}
 
 .fr-btn.fr-btn--warning:not(:disabled) {
   --hover-tint: var(--hover);
@@ -184,6 +192,12 @@ p:last-child {
     box-shadow: inset 0 0 0 1px var(--border-action-high-warning);
     color: var(--text-default-warning);
   }
+}
+summary::marker {
+  content: "";
+}
+.box-shadow-none {
+  box-shadow: none!important;
 }
 
 @for $i from 0 through 32 {

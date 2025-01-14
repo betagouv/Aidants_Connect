@@ -18,6 +18,9 @@ class Address extends Object {
     }
 }
 
+/**
+ * @property {HTMLTextAreaElement} autcompleteInputTarget
+ */
 class AddressAutoComplete extends BaseController {
     static API_RESPONSE_LIMIT = 5;
     static VALUE_LENGH_TRIGGER = 7;
@@ -72,11 +75,6 @@ class AddressAutoComplete extends BaseController {
 
         this.addresses = {};
         this.labels = [];
-
-        // Insert <input> to disable backend validation for address
-        this.autcompleteInputTarget.insertAdjacentHTML(
-            "afterend", '<input name="skip_backend_validation" value="true" hidden>'
-        );
 
         super.initialize();
     }

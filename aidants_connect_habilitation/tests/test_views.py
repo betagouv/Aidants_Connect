@@ -2,7 +2,6 @@ from datetime import timedelta
 from unittest.mock import patch
 from uuid import UUID, uuid4
 
-from django.contrib import messages as django_messages
 from django.core import mail
 from django.db import transaction
 from django.forms import model_to_dict
@@ -46,13 +45,11 @@ from aidants_connect_habilitation.tests.factories import (
     ManagerFactory,
     OrganisationRequestFactory,
 )
-from aidants_connect_habilitation.tests.utils import get_form
 from aidants_connect_habilitation.views import (
     AidantFormationRegistrationView,
     HabilitationRequestCancelationView,
 )
 from aidants_connect_web.constants import ReferentRequestStatuses
-from aidants_connect_web.models import HabilitationRequest, Organisation
 from aidants_connect_web.tests.factories import HabilitationRequestFactory
 
 
@@ -330,7 +327,6 @@ class IssuerPageViewTests(TestCase):
         organisation = DraftOrganisationRequestFactory(issuer=self.issuer)
         response = self.client.get(self.get_url(self.issuer.issuer_id))
         self.assertContains(response, RequestStatusConstants.NEW.label)
-        self.assertContains(response, "Soumettre la demande")
         self.assertContains(response, organisation.name)
 
     def test_submitted_organisation_request_is_displayed_without_links(self):
@@ -340,10 +336,7 @@ class IssuerPageViewTests(TestCase):
         )
         response = self.client.get(self.get_url(self.issuer.issuer_id))
         self.assertNotContains(response, RequestStatusConstants.NEW.value)
-        self.assertContains(
-            response, RequestStatusConstants.AC_VALIDATION_PROCESSING.label
-        )
-        self.assertNotContains(response, "Soumettre la demande")
+        self.assertContains(response, "En attente")
         self.assertContains(response, organisation.name)
 
 
@@ -423,9 +416,8 @@ class ModifyIssuerFormViewTests(TestCase):
 class NewOrganisationRequestFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.client = Client()
         cls.pattern_name = "habilitation_new_organisation"
-        cls.template_name = "organisation_form.html"
+        cls.template_name = "aidants_connect_habilitation/organisation-form-view.html"
         cls.issuer: Issuer = IssuerFactory()
 
     def test_404_on_bad_issuer_id(self):
@@ -499,7 +491,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.pattern_name = "habilitation_modify_organisation"
-        cls.template_name = "organisation_form.html"
+        cls.template_name = "aidants_connect_habilitation/organisation-form-view.html"
         cls.issuer: Issuer = IssuerFactory()
         cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=cls.issuer
@@ -624,7 +616,7 @@ class PersonnelRequestFormViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.template_name = "personnel_form.html"
+        cls.template_name = "aidants_connect_habilitation/personnel-form-view.html"
         cls.issuer: Issuer = IssuerFactory()
         cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=cls.issuer
@@ -704,7 +696,7 @@ class AidantsRequestFormViewTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.pattern_name = "habilitation_new_aidants"
-        cls.template_name = "personnel_form.html"
+        cls.template_name = "aidants_connect_habilitation/personnel-form-view.html"
         cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory()
 
     def get_url(self, issuer_id, uuid):
@@ -806,24 +798,6 @@ class AidantsRequestFormViewTests(TestCase):
             ),
         )
 
-    def test_redirect_on_confirmed_organisation_request(self):
-        organisation = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name
-        )
-        response = self.client.get(
-            self.get_url(organisation.issuer.issuer_id, organisation.uuid)
-        )
-        self.assertRedirects(
-            response,
-            reverse(
-                "habilitation_organisation_view",
-                kwargs={
-                    "issuer_id": organisation.issuer.issuer_id,
-                    "uuid": organisation.uuid,
-                },
-            ),
-        )
-
 
 @tag("habilitation")
 class ValidationRequestFormViewTests(TestCase):
@@ -831,7 +805,7 @@ class ValidationRequestFormViewTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.pattern_name = "habilitation_validation"
-        cls.template_name = "aidants_connect_habilitation/validation_request_form_view.html"  # noqa: E501
+        cls.template_name = "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
         cls.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             manager=ManagerFactory()
         )
@@ -1143,7 +1117,7 @@ class RequestReadOnlyViewTests(TestCase):
             self.get_url(self.organisation.issuer.issuer_id, self.organisation.uuid)
         )
         self.assertTemplateUsed(
-            response, "aidants_connect_habilitation/validation_request_form_view.html"
+            response, "aidants_connect_habilitation/validation-request-form-view.html"
         )
 
     def test_no_redirect_on_confirmed_organisation_request(self):
@@ -1366,103 +1340,6 @@ class RequestReadOnlyViewTests(TestCase):
                     },
                 ),
             )
-
-
-class AddAidantsRequestViewTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.client = Client()
-        cls.pattern_name = "habilitation_organisation_add_aidants"
-
-    def test_redirects_on_unauthorized_request_status(self):
-        unauthorized_statuses = set(RequestStatusConstants.values) - set(
-            RequestStatusConstants.aidant_registrable
-        )
-
-        self.assertNotEqual(
-            0,
-            len(unauthorized_statuses),
-            "RequestStatusConstants.aidant_registrable() should not be equal "
-            "to RequestStatusConstants.values",
-        )
-
-        for i, status in enumerate(unauthorized_statuses):
-            organisation: OrganisationRequest = OrganisationRequestFactory(
-                status=status
-            )
-
-            response = self.client.get(
-                self.__get_url(organisation.issuer.issuer_id, organisation.uuid)
-            )
-
-            self.assertRedirects(
-                response,
-                self.__get_redirect_url(
-                    organisation.issuer.issuer_id, organisation.uuid
-                ),
-            )
-            messages = list(django_messages.get_messages(response.wsgi_request))
-            self.assertEqual(len(messages), i + 1)
-            self.assertEqual(
-                messages[i].message,
-                "Il n'est pas possible d'ajouter de nouveaux aidants à cette demande.",
-            )
-
-    def test_creates_aidants_when_request_is_validated(self):
-        org_req: OrganisationRequest = OrganisationRequestFactory(
-            status=RequestStatusConstants.AC_VALIDATION_PROCESSING.name,
-            manager=ManagerFactory(is_aidant=False),
-        )
-        [AidantRequestFactory(organisation=org_req) for _ in range(3)]
-
-        # Create aidants_connect_web.models.Organisation &
-        # aidants_connect_web.models.HabilitationRequest objects
-        org_req.accept_request_and_create_organisation()
-        org_req.refresh_from_db()
-
-        organisation: Organisation = Organisation.objects.get(
-            data_pass_id=org_req.data_pass_id
-        )
-
-        self.assertEqual(RequestStatusConstants.VALIDATED.name, org_req.status)
-        self.assertEqual(
-            3,
-            HabilitationRequest.objects.filter(
-                organisation=organisation,
-                origin=HabilitationRequest.ORIGIN_HABILITATION,
-            ).count(),
-        )
-
-        furthermore = get_form(
-            AidantRequestFormSet,
-            form_init_kwargs={"organisation": org_req, "initial": 3},
-        ).data
-
-        self.client.post(
-            self.__get_url(org_req.issuer.issuer_id, org_req.uuid), furthermore
-        )
-
-        self.assertEqual(
-            6, HabilitationRequest.objects.filter(organisation=organisation).count()
-        )
-
-    def __get_url(self, issuer_id, uuid):
-        return reverse(
-            self.pattern_name,
-            kwargs={
-                "issuer_id": issuer_id,
-                "uuid": uuid,
-            },
-        )
-
-    def __get_redirect_url(self, issuer_id, uuid):
-        return reverse(
-            "habilitation_organisation_view",
-            kwargs={
-                "issuer_id": issuer_id,
-                "uuid": uuid,
-            },
-        )
 
 
 class TestFormationRegistrationView(TestCase):

@@ -1,4 +1,5 @@
 from django.test import tag
+from django.urls import reverse
 
 from selenium.webdriver.common.by import By
 
@@ -42,12 +43,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         ]
         self.assertEqual(
             remaining_autorisations,
-            [
-                "ARGENT - IMPÔTS - CONSOMMATION: Crédit immobilier, Impôts, "
-                "Consommation, Livret A, Assurance, Surendettement…",
-                "FAMILLE - SCOLARITÉ: Allocations familiales, Naissance, Mariage, "
-                "Pacs, Scolarité…",
-            ],
+            ["Argent - Impôts - Consommation", "Famille - Scolarité"],
         )
 
         # Confirm cancellation
@@ -55,18 +51,17 @@ class CancelAutorisationTests(FunctionalTestCase):
         submit_button.click()
 
         # Display attestation
-        attestation_link = self.selenium.find_element(
-            By.XPATH,
-            f'.//a[@href="/mandats/{self.mandat.id}/attestation_de_revocation"]',
+        path = reverse(
+            "mandat_cancellation_attestation", kwargs={"mandat_id": self.mandat.id}
         )
-        attestation_link.click()
+        self.selenium.find_element(By.XPATH, f'.//a[@href="{path}"]').click()
 
         self.wait.until(lambda driver: len(driver.window_handles) == 2)
         self.selenium.switch_to.window(self.selenium.window_handles[1])
 
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual(
-            "révocation d'un mandat via le service « aidants connect »",
+            "révocation d'un mandat via le service aidants connect",
             recap_title.casefold(),
         )
 
@@ -75,10 +70,9 @@ class CancelAutorisationTests(FunctionalTestCase):
 
         # See again all mandats of usager page
 
-        user_link = self.selenium.find_element(
-            By.XPATH, f'.//a[@href="/usagers/{self.mandat.usager.id}/"]'
+        self.open_live_url(
+            reverse("usager_details", kwargs={"usager_id": self.mandat.usager.id})
         )
-        user_link.click()
 
         inactive_mandats = self.selenium.find_elements(By.ID, "mandats-revoques")
         self.assertEqual(len(inactive_mandats), 1)

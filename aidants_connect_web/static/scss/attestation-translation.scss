@@ -1,8 +1,6 @@
-@use "colors";
 
 /* Copy from attestation.css */
 .container {
-  font-size: .75em;
   line-height: 1.4em;
   border: 1px solid grey;
   padding: 30px;
@@ -12,17 +10,11 @@
   height: 10em;
 }
 
-p:not(.subtitle), ul {
-  margin: 0;
-}
 
 p + p, ul + p {
   margin-top: .7em;
 }
 
-.demarches {
-  font-size: .95em;
-}
 
 .demarches + p {
   margin-top: .1em;
@@ -32,22 +24,28 @@ p + p, ul + p {
   min-width: 15em;
   display: inline-block;
 }
+select {
+  height: 40px;
+}
 
 @media print {
   @page {
     size: auto; /* auto is the initial value */
     margin: 1em; /* this affects the margin in the printer settings */
   }
-  .no-print,
-  .no-print * {
-    display: none !important;
-  }
-  .container {
+  .fr-container {
     border: 0;
     padding: 0;
     margin: 1em;
     width: auto;
   }
+  .demarches {
+    font-size: .95em;
+  }
+  .container {
+    font-size: .75em;
+  }
+
 }
 
 
@@ -83,36 +81,4 @@ header.mandate-translation-row .mandate-translation-column:last-child {
 .print-button-container .shadowed {
   max-width: 23rem;
   float: right;
-}
-
-ul, ol {
-  /* Cancel padding setting from main-habilitation.scss */
-  padding: revert;
-}
-
-.mandate-translation-other {
-  border-left: 1px solid colors.$blue-aidants;
-}
-
-.empty-translation-container {
-  color: colors.$red-aidants;
-
-  & > * {
-    display: block;
-    margin: auto;
-    text-align: center;
-    font-size: initial;
-  }
-
-  img {
-    margin-bottom: 2rem;
-  }
-
-  h4 {
-    font-size: large;
-    font-weight: bold;
-    line-height: 1.25;
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-  }
 }

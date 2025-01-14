@@ -150,7 +150,7 @@
           {% endif %}
         </section>
       {% empty %}
-        {% dsfr_alert content=group|lower|strfmt:"Vous n’avez pas de mandat {} avec cet usager." type="info" %}
+        {% dsfr_alert content=group|lower|strfmt:"Vous n’avez pas de {} avec cet usager." type="info" %}
       {% endfor %}
     {% endfor %}
   </div>

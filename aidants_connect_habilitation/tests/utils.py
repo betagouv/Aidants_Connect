@@ -151,7 +151,9 @@ def _(
     form = formset_cls(**form_init_kwargs, data=data)
 
     if not ignore_errors and not form.is_valid():
-        raise ValueError(str(form.errors))
+        raise ValueError(
+            f"Errors: {form.errors}, non_form_errors: {form.non_form_errors()}"
+        )
 
     return form
 

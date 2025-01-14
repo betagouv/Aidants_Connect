@@ -43,6 +43,8 @@ from aidants_connect_web.statistics import (
     compute_all_statistics,
     compute_reboarding_statistics_and_synchro_grist,
 )
+from aidants_connect_web.synchro_grist.sync_formation import get_formations_from_grist
+from aidants_connect_web.synchro_grist.synchro_attendant import push_attendees_in_grist
 
 
 @shared_task
@@ -831,3 +833,13 @@ def notifiy_organisation_having_formation_unregistered_habilitation_requests():
             message=text_message,
             html_message=html_message,
         )
+
+
+@shared_task
+def get_new_formations_from_grist():
+    get_formations_from_grist()
+
+
+@shared_task
+def push_attendants_into_grist():
+    push_attendees_in_grist()

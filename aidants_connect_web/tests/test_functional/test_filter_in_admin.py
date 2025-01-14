@@ -81,6 +81,7 @@ class OrganisationFilterTests(RegionFilterTestCase):
 
     def test_region_and_other_filter(self):
         self.open_live_url(self.organisation_url)
+        self.wait.until(self.dsfr_ready())
         self.assertTrue("Orga des Yvelines" in self.selenium.page_source)
         self.assertTrue("Orga du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("Sans Code Postal" in self.selenium.page_source)
@@ -155,6 +156,7 @@ class AidantFilterTestCase(RegionFilterTestCase):
 
     def test_region_and_other_filter(self):
         self.open_live_url(self.aidant_url)
+        self.wait.until(self.dsfr_ready())
         self.assertTrue("Du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
 
@@ -196,6 +198,7 @@ class HabilitationRequestTestCase(RegionFilterTestCase):
 
     def test_region_and_other_filter(self):
         self.open_live_url(self.hab_request_url)
+        self.wait.until(self.dsfr_ready())
         self.assertTrue("Du Bas-Rhin" in self.selenium.page_source)
         self.assertTrue("D'on ne sait où" in self.selenium.page_source)
         # cannot simply click on "Autre" because there is another "Autre" option

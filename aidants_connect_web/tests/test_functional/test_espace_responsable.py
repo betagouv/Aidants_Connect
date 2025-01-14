@@ -501,6 +501,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.login_aidant(self.aidant_responsable)
 
         # First form is empty
+        self.wait.until(self.dsfr_ready())
 
         # unrequire fields to be able to submit
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
@@ -508,12 +509,11 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         self.selenium.find_element(By.ID, "partial-submit").click()
 
-        with self.implicitely_wait(0.1):
-            self.wait.until(
-                expected_conditions.presence_of_element_located(
-                    (By.CLASS_NAME, "errorlist")
-                )
+        self.wait.until(
+            expected_conditions.presence_of_element_located(
+                (By.CSS_SELECTOR, ".errorlist .fr-error-text")
             )
+        )
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
         expected = (
@@ -529,6 +529,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         # First form is not empty but not filled either
         self.open_live_url(self.path)
+        self.wait.until(self.dsfr_ready())
 
         # unrequire fields to be able to submit
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
@@ -539,7 +540,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         )
         self.selenium.find_element(By.ID, "partial-submit").click()
 
-        with self.implicitely_wait(0.1):
+        with self.implicitely_wait(0):
             self.wait.until(
                 expected_conditions.presence_of_element_located(
                     (By.CLASS_NAME, "errorlist")
@@ -565,13 +566,13 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         # First form is not empty but not filled either
         self.open_live_url(self.path)
+        self.wait.until(self.dsfr_ready())
 
         # unrequire fields to be able to submit
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
             self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
 
         self.selenium.find_element(By.ID, "form-submit").click()
-        self.wait.until(self.document_loaded())
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
         self.assertEqual(len(self._all_visible_fields()), len(errors))
@@ -606,6 +607,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
     def test_submitting_request(self):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.dsfr_ready())
         req: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
@@ -632,12 +634,12 @@ class NewHabilitationRequestTests(FunctionalTestCase):
     def test_adding_profile_then_submitting_empty(self):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.dsfr_ready())
         req: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
         self.fill_form(req, self._all_visible_fields(), self._custom_getter)
         self.selenium.find_element(By.ID, "partial-submit").click()
-        self.wait.until(self.document_loaded())
 
         self.assertNormalizedStringEqual(
             f"{req.get_full_name()} {req.email}",
@@ -685,12 +687,13 @@ class NewHabilitationRequestTests(FunctionalTestCase):
     def test_adding_profile_then_submitting_filled_form(self):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.dsfr_ready())
         req1: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
         self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
+
         self.selenium.find_element(By.ID, "partial-submit").click()
-        self.wait.until(self.document_loaded())
 
         self.assertNormalizedStringEqual(
             f"{req1.get_full_name()} {req1.email}",
@@ -759,7 +762,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(self.document_loaded())
+        self.wait.until(self.dsfr_ready())
 
         existing_req = HabilitationRequestFactory(organisation=self.organisation)
 
@@ -770,7 +773,6 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         for i, req in enumerate(reqs):
             self.fill_form(req, self._all_visible_fields(i), self._custom_getter)
             self.selenium.find_element(By.ID, "partial-submit").click()
-            self.wait.until(self.document_loaded())
             self.assertEqual(
                 "Ajouter un autre aidant",
                 self.selenium.find_element(By.ID, "partial-submit").text,
@@ -784,7 +786,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         ).clear()
 
         self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
         ).click()
 
         self.assertNormalizedStringEqual(
@@ -802,7 +804,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         elt.clear()
         elt.send_keys(reqs[idx_to_modify + 1].email)
         self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
         ).click()
         self.assertNormalizedStringEqual(
             "Corrigez les données en double dans email et "
@@ -817,7 +819,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         elt.clear()
         elt.send_keys(existing_req.email)
         self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
         ).click()
         self.assertNormalizedStringEqual(
             "Une demande d’habilitation est déjà en cours pour "
@@ -844,7 +846,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         elt.send_keys(new_email)
 
         self.selenium.find_element(
-            By.CSS_SELECTOR, "#profile-edit-modal #profile-edit-submit"
+            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
         ).click()
         self.wait.until(self._modal_closed())
         self.selenium.find_element(By.ID, "form-submit").click()
@@ -881,6 +883,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
     def test_prevents_form_erase_when_editing(self):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.dsfr_ready())
         req1: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
@@ -934,9 +937,9 @@ class NewHabilitationRequestTests(FunctionalTestCase):
     def _modal_closed(self):
         def modal_has_no_open_attr(driver):
             try:
-                with self.implicitely_wait(0.1, driver):
+                with self.implicitely_wait(0, driver):
                     element_attribute = driver.find_element(
-                        By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"
+                        By.CSS_SELECTOR, "#main-modal"
                     ).get_attribute("open")
                 return element_attribute is None
             except:  # noqa: E722
@@ -944,22 +947,18 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         return expected_conditions.all_of(
             expected_conditions.invisibility_of_element_located(
-                (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+                (By.CSS_SELECTOR, "#main-modal")
             ),
             modal_has_no_open_attr,
         )
 
     def _try_close_modal(self):
-        def dsfr_ready(driver):
-            result = driver.execute_script("return document.dsfrReady")
-            return result
-
         self.wait.until(self.document_loaded())
-        self.wait.until(dsfr_ready)
+        self.wait.until(self.dsfr_ready())
         with self.implicitely_wait(0.1):
             self.wait.until(
                 expected_conditions.presence_of_element_located(
-                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal")
+                    (By.CSS_SELECTOR, "#main-modal")
                 ),
                 "Modal didn't seem to have been initialized",
             )
@@ -974,7 +973,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         with self.implicitely_wait(0.1):
             self.wait.until(
                 expected_conditions.text_to_be_present_in_element_attribute(
-                    (By.CSS_SELECTOR, "#modal-dest #profile-edit-modal"), "open", "true"
+                    (By.CSS_SELECTOR, "#main-modal"), "open", "true"
                 ),
                 "Modal was not opened",
             )
@@ -983,7 +982,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
                 expected_conditions.presence_of_element_located(
                     (
                         By.CSS_SELECTOR,
-                        '#modal-dest #profile-edit-modal input[id$="-email"]',
+                        '#main-modal input[id$="-email"]',
                     )
                 ),
                 "Modal seems opened but form seems not visible",

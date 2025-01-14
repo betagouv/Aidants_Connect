@@ -40,8 +40,3 @@ details.request-card-details .details-content {
   position: absolute;
   width: 100%;
 }
-
-#profile-edit-modal .loader {
-  display: block;
-  margin: auto;
-}

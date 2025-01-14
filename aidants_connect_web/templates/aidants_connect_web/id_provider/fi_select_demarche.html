@@ -1,62 +1,81 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
 {% load static %}
 
-{% block title %}Aidants Connect - Sélectionnez la démarche{% endblock %}
+{% block title %}Sélection de la démarche - Aidants Connect{% endblock %}
 
 {% block extracss %}
 <link href="{% static 'css/id-provider.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-
 {% block content %}
-<div class="fr-container">
-  <div class="fr-grid-row fr-grid-row--gutters">
-    <div class="fr-col-12 fr-col-md-8">
-    <form method="post">
-      <h2 id="welcome_aidant">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h2>
-      <div class="select-demarche-info container shadowed clearfix padding-1rem">
-        <h4 class="h4-prime">Sélectionnez le type de démarche que vous allez effectuer</h4>
-        <p class="instructions">
+  <div class="fr-container">
+    <h1 id="welcome_aidant" class="fr-mb-2w">Bienvenue {{ aidant.first_name }} !</h1>
+    <p>Vous êtes bien connecté à votre espace Aidants Connect. Veuillez suivre les étapes ci-dessous afin de réaliser la démarche pour la personne accompagnée</p>
+    <div class="fr-grid-row">
+    <div class="fr-col-12 fr-col-md-6">
+      <div class="fr-col-12">
+        <div class="fr-stepper">
+          <h2 class="fr-stepper__title">
+            Thématique administrative
+            <span class="fr-stepper__state">Étape 2 sur 2</span>
+          </h2>
+          <div class="fr-stepper__steps" data-fr-current-step="2" data-fr-steps="2"></div>
+        </div>
+      </div>
+      <form method="post">
+      <div class="fr-background-alt--grey fr-p-4w">
+        <h2 class="fr-h6">Personne accompagnée</h2>
+        <p>{{ usager.given_name }} {{ usager.family_name }}</p>
+        {% if change_user_url %}
+          <div class="fr-grid-row fr-grid-row--right">
+            <a class="fr-btn fr-btn--secondary change-user" href="{{ change_user_url }}">Changer de personne accompagnée</a>
+          </div>
+        {% endif %}
+      </div>
+      <div class="fr-mt-4w">
+        <h2 class="fr-h6">Veuillez sélectionner la thématique administrative liée à la démarche à effectuer ci-dessous :</h2>
+        <p class="instructions fr-sr-only">
           En sélectionnant une démarche, vous allez FranceConnecter
           <em>{{ usager.given_name }} {{ usager.family_name }}</em>
         </p>
-        {% if change_user_url %}
-        <a class="fr-btn float-right change-user" href="{{ change_user_url }}">Changer d'usager</a>
-        {% endif %}
       </div>
-
-      <h3>Type de démarche</h3>
-
       {% if warn_scope %}
         {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
       {% endif %}
+      <div class="fr-grid-row fr-grid-row--gutters fr-mt-3w">
+        {% for demarche, demarche_info in demarches.items %}
+          <div class="fr-col-md-6 fr-col-12">
+            <div class="fr-tile fr-tile--sm" >
+              <div class="fr-tile__body">
+                <div class="fr-tile__content">
+                  <h3 class="fr-tile__title">
+                    {{ demarche_info.titre }}
+                  </h3>
+                  <p class="fr-tile__desc">{{ demarche_info.description }}
+                  </p>
+                  <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="fr-tile__detail fr-btn fr-btn--sm" type="submit">
 
-      {% for demarche, demarche_info in demarches.items %}
-        <div class="container shadowed" id="{{ demarche }}">
-          <div class="fr-grid-row fr-grid-row--middle padding-1rem">
-            <div class="fr-col-3">
-              <img src="{{ demarche_info.icon }}" alt="Icon {{ demarche_info.titre }}" />
-            </div>
-            <div class="fr-col-5 demarche-infos">
-              <strong class="demarche-title">{{ demarche_info.titre }}</strong>
-              <p>{{ demarche_info.description }}</p>
-            </div>
-            <div class="fr-col-4">
-              <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="fr-btn" type="submit">
-                Sélectionner cette démarche
-              </button>
+                    Sélectionner cette démarche
+                  </button>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <img src="{{ demarche_info.icon }}" alt="Icon {{ demarche_info.titre }}" />
+                  </div>
+                </div>
             </div>
           </div>
-        </div>
-        <br>
-      {% endfor %}
+        {% endfor %}
+      </div>
       {% csrf_token %}
       <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
-      <br>
-      <div class="notification" role="alert">
-        Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat ait expiré.<br>
-        Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}">Espace Aidant</a>.
+      <div class="fr-alert fr-alert--info fr-alert--sm fr-mt-3w">
+        <p>
+          Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat ait expiré.<br>
+          Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}" class="fr-link">Espace Aidant</a>.
+        </p>
       </div>
     </form>
     </div>

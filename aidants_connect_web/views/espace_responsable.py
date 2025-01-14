@@ -3,14 +3,12 @@ import logging
 from gettext import ngettext as _
 from io import BytesIO
 from itertools import chain
-from typing import Any
 
 from django.contrib import messages as django_messages
 from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
-from django.template.defaultfilters import yesno
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.translation import ngettext
@@ -19,9 +17,7 @@ from django.views.generic import DeleteView, DetailView, FormView, TemplateView
 import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
-from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import RequestStatusConstants
-from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 from aidants_connect_common.views import (
     FormationRegistrationView as CommonFormationRegistrationView,
 )
@@ -891,61 +887,6 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
         return super().get_context_data(**kwargs)
 
 
-class HabilitationRequestItemPresenter(GenericHabilitationRequestPresenter):
-    def __init__(self, form, idx):
-        super().__init__()
-        self._form = form
-        self.idx = idx
-
-    @property
-    def pk(self):
-        return self.idx
-
-    @property
-    def edit_endpoint(self):
-        return reverse(
-            "api_espace_responsable_aidant_new_edit", kwargs={"idx": self.idx}
-        )
-
-    @property
-    def full_name(self) -> str:
-        return f'{self._form["first_name"].value()} {self._form["last_name"].value()}'
-
-    @property
-    def email(self) -> str:
-        return str(self._form["email"].value())
-
-    @property
-    def details_fields(self) -> list[dict[str, Any]]:
-        return [
-            # email profession conseiller_numerique organisation
-            {"label": "Email", "value": self.email},
-            {"label": "Profession", "value": self._form["profession"].value()},
-            {
-                "label": "Conseiller numérique",
-                "value": yesno(
-                    strtobool(self._form["conseiller_numerique"].value()), "Oui,Non"
-                ),
-            },
-            {
-                "label": "Organisation",
-                "value": getattr(
-                    getattr(self._form, "cleaned_data", {}).get("organisation"),
-                    "name",
-                    "",
-                ),
-            },
-        ]
-
-    @property
-    def form(self) -> str:
-        return self._form.as_hidden()
-
-    @property
-    def details_id(self):
-        return f"added-form-{self.idx}"
-
-
 @method_decorator(activity_required, name="get")
 @responsable_logged_required
 class NewHabilitationRequest(FormView):
@@ -970,23 +911,6 @@ class NewHabilitationRequest(FormView):
         )
 
         return kwargs
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "objects": (
-                    # Using a generator for efficiecy
-                    HabilitationRequestItemPresenter(form, idx)
-                    for idx, form in enumerate(
-                        context["form"]["habilitation_requests"].forms
-                    )
-                    if form.is_bound and form.is_valid()
-                ),
-            }
-        )
-
-        return context
 
     def form_valid(self, form):
         result: list[HabilitationRequest] = form.save()["habilitation_requests"]

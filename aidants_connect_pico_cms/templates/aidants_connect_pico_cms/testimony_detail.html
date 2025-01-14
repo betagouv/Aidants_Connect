@@ -1,71 +1,68 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 {% load form_extras static %}
-
-{% block body_class %}
-remove-footer-margin
-{% endblock body_class %}
+$
 
 {% block title %}
-  Aidants Connect - {{ object.name }}, {{ object.job }}
+  témoignage {{ object.name }} - Aidants Connect
 {% endblock title %}
 
 {% block content %}
   <div class="fr-container">
-    <h1>Témoignages</h1>
-    <h2>Retours d'expérience</h2>
-    <p class="subtitle">Retrouvez ici tous les témoignages et interviews d'utilisateurs d'Aidants Connect.</p>
+    <h1 class="fr-mb-3w">Témoignages</h1>
+    <p class="fr-text--xl fr-mb-6w">Retrouvez ici tous les témoignages et interviews d'utilisateurs d'Aidants Connect.</p>
   </div>
-  <div class="yellow-splash testimonies">
-    <div class="fr-container">
-      <div class="fr-grid-row fr-grid-row--gutters">
-        <div class="fr-col-12 fr-col-md-3">
-          <nav aria-label="Témoignages">
-            <p class="intro">
-              Sélectionnez un témoignage ci-dessous&nbsp;:
-            </p>
-            <ul>
-              {% for testimony in all_testimonies %}
-                <li>
-                  <a href="{{ testimony.get_absolute_url }}"
-                      {% if testimony.slug == object.slug %}
-                     class="active"
-                     aria-label="Section active : {{ testimony.name }}, {{ testimony.job }}"
-                      {% endif %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-3">
+        <nav class="fr-sidemenu fr-sidemenu--sticky" aria-labelledby="fr-sidemenu-title">
+          <div class="fr-sidemenu__inner">
+            <button
+              class="fr-sidemenu__btn"
+              aria-controls="fr-sidemenu-wrapper"
+              aria-expanded="false"
+            >Menu
+            </button>
+            <div class="fr-collapse" id="fr-sidemenu-wrapper">
+              <div class="fr-sidemenu__title" id="fr-sidemenu-title">Menu</div>
+              <ul class="fr-sidemenu__list">
+                {% for testimony in all_testimonies %}
+                  <li
+                    class="fr-sidemenu__item {% if testimony.slug == object.slug %} fr-sidemenu__item--active{% endif %}"
                   >
-                    <div class="portrait">
-                      <img width="80" height="80" src="{{ testimony.profile_picture }}" alt="">
-                    </div>
-                    <div class="t-info">
-                      <span class="name">{{ testimony.name }}</span>
-                      <span class="job">{{ testimony.job }}</span>
-                    </div>
-                  </a>
-                </li>
-              {% endfor %}
-            </ul>
-          </nav>
-        </div>
-
-        <div class="fr-col-12 fr-col-md-7">
-          <section class="blue shadowed padding-2rem">
-            <div class="testimony-header">
-              <div class="portrait">
-                <img src="{{ testimony.profile_picture }}" alt="" width="150" height="150">
-              </div>
-              <h1 class="testimony-title">
-                <span class="compo">Témoignage d’aidant</span>
-                <span class="compo">{{ object.name }}</span>
-                <span class="compo">{{ object.job }}</span>
-              </h1>
+                    <a
+                      class="fr-sidemenu__link"
+                      target="_self"
+                      href="{{ testimony.get_absolute_url }}"
+                      {% if testimony.slug == object.slug %}aria-current="true"{% endif %}
+                    >
+                      <p><span class="fr-text--lg fr-mb-0">{{ testimony.name }}</span><br/><span class="text-thin">{{ testimony.job }}</span></p>
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
             </div>
-            <div class="testimony-content">
-              {{ object.to_html }}
-            </div>
-          </section>
-
-        </div>
+          </div>
+        </nav>
       </div>
 
+      <div class="fr-col-12 fr-col-md-9 fr-px-13w fr-py-4w">
+        <div class="fr-background-alt--grey fr-grid-row fr-grid-row--gutters fr-mb-3w">
+          <div class="fr-col-2 fr-p-3w">
+            <img
+              class="fr-responsive-img"
+              src="{% static 'dsfr/dist/artwork/pictograms/digital/avatar.svg' %}"
+              alt=""
+            />
+          </div>
+          <div class="fr-col-10 fr-p-3w">
+            <h2 class="fr-h4 fr-mb-1w">{{ object.name }}</h2>
+            <p>{{ object.job }}</p>
+          </div>
+        </div>
+        <div class="testimony-content">
+          {{ object.to_html }}
+        </div>
+      </div>
     </div>
   </div>
 {% endblock content %}

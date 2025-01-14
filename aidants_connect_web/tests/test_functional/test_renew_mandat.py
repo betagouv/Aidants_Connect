@@ -328,10 +328,10 @@ class RenewMandatTests(FunctionalTestCase):
 
         return _predicate
 
-    def path_matches(self, route_name: str, query_params: dict = None):
+    def path_matches(self, viewname: str, query_params: dict = None):
         query_part = urlencode(query_params or {}, quote_via=lambda s, _1, _2, _3: s)
         query_part = rf"\?{query_part}" if query_part else ""
-        return url_matches(rf"http://localhost:\d+{reverse(route_name)}{query_part}")
+        return url_matches(rf"http://localhost:\d+{reverse(viewname)}{query_part}")
 
     def _user_responds(self, phone_number: str, text: str):
         number = parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION)

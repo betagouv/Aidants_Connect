@@ -208,6 +208,8 @@ TEMPLATES = [
     }
 ]
 
+FORM_RENDERER = "aidants_connect.utils.ACDjangoTemplates"
+
 WSGI_APPLICATION = "aidants_connect.wsgi.application"
 
 DATABASES = {
@@ -421,7 +423,7 @@ X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
 # Scripts and other resources
-STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.2/dist/stimulus.umd.js"
+STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.2/dist/stimulus.js"
 MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
@@ -466,7 +468,6 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
-    STIMULUS_JS_URL.replace("umd.js", "js"),
     CHARTS_JS_URL,
     CHARTS_JS_DATALABEL_URL,
     MD_EDITOR_JS_URL,
@@ -476,6 +477,7 @@ CSP_SCRIPT_SRC = (
     COOKIE_BANNER_SERVICES_URL,
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
+    AUTOCOMPLETE_SCRIPT_SRC,
 )
 
 CSP_STYLE_SRC = (

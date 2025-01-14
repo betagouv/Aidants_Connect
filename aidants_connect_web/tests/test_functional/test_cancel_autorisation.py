@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.template.defaultfilters import date
 from django.test import tag
+from django.urls import reverse
 from django.utils import timezone
 
 from selenium.webdriver.common.by import By
@@ -72,12 +73,14 @@ class CancelAutorisationTests(FunctionalTestCase):
         submit_button.click()
 
         # Display attestation
-        attestation_link = self.selenium.find_element(
-            By.XPATH,
-            f'.//a[@href="/usagers/{self.usager_josephine.id}'
-            f'/autorisations/{self.money_authorization.id}/cancel_attestation"]',
+        path = reverse(
+            "autorisation_cancelation_attestation",
+            kwargs={
+                "usager_id": self.usager_josephine.id,
+                "autorisation_id": self.money_authorization.id,
+            },
         )
-        attestation_link.click()
+        self.selenium.find_element(By.XPATH, f'.//a[@href="{path}"]').click()
 
         self.wait.until(lambda driver: len(driver.window_handles) == 2)
         self.selenium.switch_to.window(self.selenium.window_handles[1])
@@ -92,10 +95,9 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.selenium.switch_to.window(self.selenium.window_handles[0])
 
         # See again all mandats of usager page
-        user_link = self.selenium.find_element(
-            By.XPATH, f'.//a[@href="/usagers/{self.usager_josephine.id}/"]'
+        self.open_live_url(
+            reverse("usager_details", kwargs={"usager_id": self.usager_josephine.id})
         )
-        user_link.click()
 
         active_autorisations_after = self.selenium.find_elements(
             By.CLASS_NAME, "mandats-actifs"
@@ -136,15 +138,33 @@ class CancelAutorisationTests(FunctionalTestCase):
         )
         cancel_mandat_autorisation_button.click()
 
+        self.wait.until(
+            self.path_matches(
+                "confirm_autorisation_cancelation",
+                kwargs={
+                    "usager_id": self.mandat_thierry_josephine.pk,
+                    "autorisation_id": self.family_authorization.pk,
+                },
+            )
+        )
+
         # Confirm cancellation
         submit_button = self.selenium.find_element(By.CSS_SELECTOR, "[type='submit']")
         submit_button.click()
 
-        # See again all mandats of usager page
-        user_link = self.selenium.find_element(
-            By.XPATH, f'.//a[@href="/usagers/{self.usager_josephine.id}/"]'
+        self.wait.until(
+            self.path_matches(
+                "autorisation_cancelation_success",
+                kwargs={
+                    "usager_id": self.mandat_thierry_josephine.pk,
+                    "autorisation_id": self.family_authorization.pk,
+                },
+            )
         )
-        user_link.click()
+
+        self.open_live_url(
+            reverse("usager_details", kwargs={"usager_id": self.usager_josephine.id})
+        )
 
         active_autorisations_after = self.selenium.find_elements(
             By.CSS_SELECTOR, ".mandats-actifs"

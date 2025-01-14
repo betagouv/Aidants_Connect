@@ -7,9 +7,8 @@
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-mb-6w">
-      <h1 class="fr-mb-2v">Formulaire d’habilitation</h1>
-    </div>
+    {% include "layouts/_js-unavailable-alert.html" %}
+    <h1 class="fr-mb-0">Formulaire d’habilitation</h1>
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-6">
         {% include "layouts/_breadcrumbs.html" %}
@@ -23,8 +22,10 @@
           {{ form }}
           <ul class="fr-btns-group fr-btns-group--inline-md fr-my-6w">
             <li>
-              <a class="fr-btn fr-btn--secondary"
-                href="">
+              <a
+                class="fr-btn fr-btn--secondary"
+                href="{% url 'habilitation_issuer_page' issuer_id=issuer_id %}"
+              >
                 Revenir à l’étape précédente
               </a>
             </li>
@@ -41,6 +42,5 @@
 {% endblock content %}
 
 {% block extrajs %}
-  {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/organisation-form.mjs' %}"></script>
+  <script type="module" src="{% static 'js/organisation-form.mjs' %}"></script>
 {% endblock extrajs %}

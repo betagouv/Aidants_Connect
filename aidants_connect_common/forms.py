@@ -1,13 +1,19 @@
+import abc
 import functools
+import operator
 from copy import deepcopy
+from functools import reduce
 from inspect import signature
-from itertools import accumulate
 from typing import Iterable, Tuple, Union
 
 from django import forms
 from django.conf import settings
 from django.core import validators
-from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.core.exceptions import (
+    NON_FIELD_ERRORS,
+    ImproperlyConfigured,
+    ValidationError,
+)
 from django.db.models import Model, QuerySet
 from django.db.models.utils import AltersData
 from django.forms import (
@@ -35,6 +41,8 @@ from phonenumbers.phonenumber import PhoneNumber
 
 from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Formation
+from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
+from aidants_connect_common.widgets import JSModulePath
 
 
 class AsHiddenMixin:
@@ -415,7 +423,7 @@ class BaseMultiForm(metaclass=DeclarativeFormMetaclass):
 
     @property
     def media(self):
-        return accumulate((form.media for form in self), initial=Media())
+        return reduce(operator.add, (form.media for form in self))
 
 
 class BaseModelMultiForm(BaseMultiForm, AltersData):
@@ -558,3 +566,81 @@ class CustomBoundFieldForm(forms.Form):
                 field.get_bound_field,
             )
         self.__fields = value
+
+
+class BaseHabilitationRequestFormSet(BaseModelFormSet, abc.ABC):
+    template_name = "forms/base-habilitation-request-formset.html"
+    validate_min = True
+    presenter_class = None
+
+    @property
+    def media(self):
+        return super().media + Media(
+            css={"all": ("css/new-habilitation-request.css",)},
+            js=(JSModulePath("js/new-habilitation-request.mjs"),),
+        )
+
+    @property
+    @abc.abstractmethod
+    def action_url(self):
+        pass
+
+    def __init__(
+        self,
+        data=None,
+        files=None,
+        auto_id="id_%s",
+        prefix=None,
+        **kwargs,
+    ):
+        kwargs.setdefault("queryset", self.model._default_manager.none())
+        super().__init__(data, files, auto_id, prefix, **kwargs)
+        self.extra = 0
+        self.min_num = 1
+
+        for field in self.management_form.fields:
+            self.management_form.fields[field].widget.attrs.update(
+                {"autocomplete": "off", "data-new-habilitation-request-target": field}
+            )
+
+    def total_form_count(self):
+        """
+        Don't add blank forms when self.min_num and and self.extra are positive
+        integers; this will be initialized by JS.
+        """
+        return (
+            super().total_form_count()
+            if self.is_bound
+            else max(0, min(self.initial_form_count(), self.max_num))
+        )
+
+    @abc.abstractmethod
+    def get_presenter_kwargs(self, idx, form) -> dict:
+        pass
+
+    def left_form(self):
+        if len(self.extra_forms) <= 0 or self._errors is not None and self.is_valid():
+            return None
+
+        return self.extra_forms[-1]
+
+    def get_objects(self) -> Iterable[GenericHabilitationRequestPresenter]:
+        if self.presenter_class is None:
+            raise ImproperlyConfigured(
+                "Class member 'presenter_class' must be set to a "
+                "'GenericHabilitationRequestPresenter' subclass"
+            )
+
+        for idx, form in enumerate(self.initial_forms):
+            yield self.presenter_class(**self.get_presenter_kwargs(idx, form))
+
+        for idx, form in enumerate(self.extra_forms, start=len(self.initial_forms)):
+            if form.is_bound and form.has_changed() and form.is_valid():
+                yield self.presenter_class(**self.get_presenter_kwargs(idx, form))
+
+    def get_context(self):
+        return {
+            **super().get_context(),
+            "action_url": self.action_url,
+            "objects": self.get_objects(),
+        }

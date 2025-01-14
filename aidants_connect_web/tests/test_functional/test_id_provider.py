@@ -4,6 +4,7 @@ from django.conf import settings
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import (
+    visibility_of_all_elements_located,
     visibility_of_any_elements_located,
 )
 
@@ -75,22 +76,20 @@ class IdProviderTest(FunctionalTestCase):
         self._select_user("Jose", self.usager_josephine)
 
         self.selenium.find_element(By.CSS_SELECTOR, ".change-user").click()
+        self.wait.until(self.path_matches("authorize", query_params={".*": ".*"}))
 
         self._select_user("Coren", self.usager_corentin)
 
     def test_user_list(self):
         self.open_live_url(f"/authorize/?{self.url_parameters}")
         self.login_aidant(self.aidant)
+        self.wait.until(self.dsfr_ready())
 
         # Open the dropdown
-        self.selenium.execute_script(
-            "arguments[0].setAttribute(arguments[1],arguments[2])",
-            self.selenium.find_element(By.CSS_SELECTOR, "details.user-detail"),
-            "open",
-            "",
-        )
+        self.selenium.find_element(By.CSS_SELECTOR, ".fr-accordion.user-detail").click()
+
         self.wait.until(
-            visibility_of_any_elements_located([By.CSS_SELECTOR, ".user-detail-item"])
+            visibility_of_all_elements_located((By.CSS_SELECTOR, ".user-detail-item"))
         )
 
         items = self.selenium.find_elements(By.CSS_SELECTOR, ".user-detail-item")
@@ -112,8 +111,12 @@ class IdProviderTest(FunctionalTestCase):
         )
 
     def _select_user(self, search_text: str, selected_user: Usager):
+        self.wait.until(self.dsfr_ready())
         autocomplete = self.selenium.find_element(By.ID, "anonymous-filter-input")
         autocomplete.send_keys(search_text)
+        self.wait.until(
+            visibility_of_any_elements_located((By.XPATH, "//li[@data-value]"))
+        )
         usager = self.selenium.find_element(
             By.XPATH, f"//li[@data-value='{selected_user.id}']"
         )

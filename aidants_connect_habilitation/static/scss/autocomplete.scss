@@ -1,13 +1,17 @@
 @use "colors";
 
+.fr-fieldset__element:last-child, .fr-fieldset__element--inline {
+  margin-bottom: 0;
+}
+
 .autocomplete-input_wrapper {
   display: inline-block;
   position: relative;
   width: 100%;
 
   ul {
-    background-color: colors.$light-aidants;
-    border: 1px solid colors.$off-yellow-aidants;
+    background-color: white;
+    border: 1px solid var(--blue-france-main-525);
     border-top: 0;
     border-radius: 0;
     box-sizing: border-box;
@@ -33,7 +37,7 @@
 
       &:hover {
         cursor: pointer;
-        background-color: colors.$red-aidants;
+        background-color: var(--blue-france-sun-113-625);
         color: white;
       }
 
