@@ -10,6 +10,9 @@ def settings_variables(request):
         "user_is_responsable_structure": (
             isinstance(request.user, Aidant) and request.user.is_responsable_structure
         ),
+        "user_can_create_mandats": (
+            isinstance(request.user, Aidant) and request.user.can_create_mandats
+        ),
         "testimonies_count": Testimony.objects.for_display().count(),
         "SUPPORT_EMAIL": settings.SUPPORT_EMAIL,
         "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,
