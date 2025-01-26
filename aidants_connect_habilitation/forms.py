@@ -520,8 +520,8 @@ class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     template_name = "aidants_connect_habilitation/forms/validation.html"  # noqa: E501
     cgu = BooleanField(
         required=True,
-        label='J’ai pris connaissance des <a href="{url}" class="fr-link">'
-        "conditions générales d’utilisation</a> et je les valide.",
+        label='J’ai pris connaissance des&nbsp;<a href="{url}" class="fr-link">'
+        "conditions générales d’utilisation</a>&nbsp;et je les valide.",
     )
     not_free = BooleanField(
         required=True,
