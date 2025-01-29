@@ -20,7 +20,18 @@ class AidantSandboxResource(resources.ModelResource):
     class Meta:
         model = Aidant
         import_id_fields = ("username",)
-        fields = ("username", "last_name", "first_name")
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "profession",
+            "organisation__data_pass_id",
+            "organisation__name",
+            "organisation__siret",
+            "organisation__address",
+            "datapass_id_managers",
+            "token",
+        )
 
     def before_save_instance(self, instance: Aidant, using_transactions, dry_run):
         instance.email = instance.username

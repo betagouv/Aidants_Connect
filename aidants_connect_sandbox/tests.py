@@ -71,97 +71,32 @@ class AutomaticAddUserTestCase(TestCase):
             1, StaticToken.objects.filter(device=device, token="123456").count()
         )
 
-
-@tag("admin")
-class OrganisationResourceTestCase(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.import_data = tablib.Dataset(
-            headers=[
-                "id",
-                "first_name",
-                "last_name",
-                "email",
-                "organisation__data_pass_id",
-                "organisation__name",
-                "organisation__siret",
-                "organisation__address",
-                "organisation__city",
-                "organisation__zipcode",
-                "organisation__type__id",
-                "organisation__type__name",
-                "datapass_id_managers",
-            ]
-        )
-
-    def test_simple_creation_is_ok(self):
-        self.assertEqual(0, Organisation.objects.all().count())
-        self.assertEqual(0, Aidant.objects.all().count())
-        self.import_data._data = list()
-
-        import_ressource = AidantSandboxResource()
-        self.import_data.append(
-            [
-                1,
-                "Marge",
-                "Simpson",
-                "msimpson@simpson.com",
-                12121,
-                "L'internationale",
-                "121212123",
-                "Rue du petit puit",
-                "Marseille",
-                13001,
-                "",
-                "",
-                "",
-            ]
-        )
-
-        import_ressource.import_data(self.import_data, dry_run=False)
-        self.assertEqual(1, Organisation.objects.all().count())
-        orga = Organisation.objects.all()[0]
-        self.assertEqual(12121, orga.data_pass_id)
-        self.assertEqual("L'internationale", orga.name)
-
-        self.assertEqual(1, Aidant.objects.all().count())
-        aidant = Aidant.objects.all()[0]
-        self.assertEqual("msimpson@simpson.com", aidant.username)
-        self.assertEqual("msimpson@simpson.com", aidant.email)
-        self.assertEqual(orga, aidant.organisation)
-
     def test_dont_create_twice_organisation_or_aidant(self):
         self.assertEqual(0, Organisation.objects.all().count())
         self.assertEqual(0, Aidant.objects.all().count())
-        self.import_data._data = list()
-
-        import_ressource = AidantSandboxResource()
-        self.import_data.append(
-            [
-                1,
-                "Marge",
-                "Simpson",
-                "msimpson@simpson.com",
-                12121,
-                "L'internationale",
-                "121212123",
-                "Rue du petit puit",
-                "Marseille",
-                13001,
-                "",
-                "",
-                "",
-            ]
-        )
-
-        import_ressource.import_data(self.import_data, dry_run=False)
+        data = {
+            "first_name": "Marge",
+            "last_name": "Simpson",
+            "profession": "aidante",
+            "email": "msimpson@simpson.com",
+            "username": "msimpson@simpson.com",
+            "organisation__data_pass_id": 12121,
+            "organisation__name": "L'internationale",
+            "organisation__siret": "121212123",
+            "organisation__address": "Rue du petit puit",
+            "organisation__city": "Marseille",
+            "organisation__zipcode": "13001",
+            "datapass_id_managers": "",
+            "token": "TOKENSANDBOX",
+        }
+        response = self.client.post(reverse("sandbox_automatic_creation"), data)
+        self.assertEqual(201, response.status_code)
         self.assertEqual(1, Organisation.objects.all().count())
         self.assertEqual(1, Aidant.objects.all().count())
-
-        import_ressource.import_data(self.import_data, dry_run=False)
+        response = self.client.post(reverse("sandbox_automatic_creation"), data)
+        self.assertEqual(201, response.status_code)
         self.assertEqual(1, Organisation.objects.all().count())
         self.assertEqual(1, Aidant.objects.all().count())
-
         orga = Organisation.objects.all()[0]
         self.assertEqual(12121, orga.data_pass_id)
         self.assertEqual("L'internationale", orga.name)
@@ -172,29 +107,22 @@ class OrganisationResourceTestCase(TestCase):
     def test_import_with_one_managed_orga_is_ok(self):
         self.assertEqual(0, Organisation.objects.all().count())
         self.assertEqual(0, Aidant.objects.all().count())
-        self.import_data._data = list()
-
-        import_ressource = AidantSandboxResource()
-        self.import_data.append(
-            [
-                1,
-                "Marge",
-                "Simpson",
-                "msimpson@simpson.com",
-                12121,
-                "L'internationale",
-                "121212123",
-                "Rue du petit puit",
-                "Marseille",
-                13001,
-                "",
-                "",
-                "12121|",
-            ]
-        )
-        self.assertEqual(1, len(self.import_data._data))
-
-        import_ressource.import_data(self.import_data, dry_run=False)
+        data = {
+            "first_name": "Marge",
+            "last_name": "Simpson",
+            "profession": "Réferente",
+            "email": "msimpson@simpson.com",
+            "username": "msimpson@simpson.com",
+            "organisation__data_pass_id": 12121,
+            "organisation__name": "L'internationale",
+            "organisation__siret": "121212123",
+            "organisation__address": "Rue du petit puit",
+            "organisation__city": "Marseille",
+            "organisation__zipcode": "13001",
+            "datapass_id_managers": "12121|",
+            "token": "TOKENSANDBOX",
+        }
+        response = self.client.post(reverse("sandbox_automatic_creation"), data)
         self.assertEqual(1, Organisation.objects.all().count())
         orga = Organisation.objects.all()[0]
         self.assertEqual(12121, orga.data_pass_id)
@@ -212,29 +140,22 @@ class OrganisationResourceTestCase(TestCase):
         OrganisationFactory.create(name="Orga2", data_pass_id=22222)
         self.assertEqual(1, Organisation.objects.all().count())
         self.assertEqual(0, Aidant.objects.all().count())
-        self.import_data._data = list()
-
-        import_ressource = AidantSandboxResource()
-        self.import_data.append(
-            [
-                1,
-                "Marge",
-                "Simpson",
-                "msimpson@simpson.com",
-                12121,
-                "L'internationale",
-                "121212123",
-                "Rue du petit puit",
-                "Marseille",
-                13001,
-                "",
-                "",
-                "12121|22222|",
-            ]
-        )
-        self.assertEqual(1, len(self.import_data._data))
-
-        import_ressource.import_data(self.import_data, dry_run=False)
+        data = {
+            "first_name": "Marge",
+            "last_name": "Simpson",
+            "profession": "Réferente",
+            "email": "msimpson@simpson.com",
+            "username": "msimpson@simpson.com",
+            "organisation__data_pass_id": 12121,
+            "organisation__name": "L'internationale",
+            "organisation__siret": "121212123",
+            "organisation__address": "Rue du petit puit",
+            "organisation__city": "Marseille",
+            "organisation__zipcode": "13001",
+            "datapass_id_managers": "12121|22222|",
+            "token": "TOKENSANDBOX",
+        }
+        response = self.client.post(reverse("sandbox_automatic_creation"), data)
         self.assertEqual(2, Organisation.objects.all().count())
         orga = Organisation.objects.filter(data_pass_id=12121)[0]
         self.assertEqual("L'internationale", orga.name)
