@@ -1,7 +1,8 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.test import TestCase, tag
+from django.db import transaction
+from django.test import TestCase, override_settings, tag
 from django.utils.timezone import now
 
 from aidants_connect_common.models import (
@@ -22,6 +23,11 @@ from aidants_connect_web.tests.factories import (
 
 
 @tag("models")
+@override_settings(
+    TIMEDELTA_IN_DAYS_FOR_INSCRIPTION=12,
+    SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION=4,
+    SHORT_TIMEDELTA_ATTENDANTS_COUNT_FOR_INSCRIPTION=1,
+)
 class FormationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -68,9 +74,7 @@ class FormationTests(TestCase):
 
     def test_conum_can_only_subscribe_conum_formations(self):
         self.assertEqual(
-            Formation.objects.available_for_attendant(
-                timedelta(days=12), self.hab_conum
-            ).count(),
+            Formation.objects.available_for_attendant(self.hab_conum).count(),
             1,
         )
 
@@ -86,18 +90,71 @@ class FormationTests(TestCase):
 
     def test_aidant_can_subscribe_all_formations(self):
         # Total formations count
-        self.assertEqual(
-            Formation.objects.count(),
-            3,
-        )
+        self.assertEqual(Formation.objects.count(), 3)
 
         # Formation available for attendant
-        self.assertEqual(
-            Formation.objects.available_for_attendant(
-                timedelta(days=12), self.hab
-            ).count(),
-            2,
-        )
+        self.assertEqual(Formation.objects.available_for_attendant(self.hab).count(), 2)
+
+    def test_display_formations_with_lot_of_registered(self):
+        # Total formations count
+        self.assertEqual(Formation.objects.count(), 3)
+        self.assertEqual(Formation.objects.available_for_attendant(self.hab).count(), 2)
+
+        with self.subTest(
+            f"Not showing formations starting in less than "
+            f"{settings.SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION} days"
+        ):
+            with transaction.atomic():
+                FormationFactory(
+                    type_label="Formation in one day",
+                    start_datetime=now()
+                    + timedelta(
+                        days=settings.SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION - 1
+                    ),
+                    type=self.other_type,
+                )
+                self.assertEqual(
+                    Formation.objects.available_for_attendant(self.hab).count(), 2
+                )
+
+        with self.subTest(
+            f"Not showing formations starting in less than "
+            f"{settings.TIMEDELTA_IN_DAYS_FOR_INSCRIPTION} days with few registered"
+        ):
+            with transaction.atomic():
+                FormationFactory(
+                    type_label="Formation in one day",
+                    start_datetime=now()
+                    + timedelta(
+                        days=settings.SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION + 1
+                    ),
+                    type=self.other_type,
+                )
+                self.assertEqual(
+                    Formation.objects.available_for_attendant(self.hab).count(), 2
+                )
+
+        with self.subTest(
+            f"Showing formations starting in less than "
+            f"{settings.TIMEDELTA_IN_DAYS_FOR_INSCRIPTION} "
+            f"days with a lot registered"
+        ):
+            with transaction.atomic():
+                form: Formation = FormationFactory(
+                    type_label="Formation in one day",
+                    start_datetime=now()
+                    + timedelta(
+                        days=settings.SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION + 1
+                    ),
+                    type=self.other_type,
+                )
+                for _ in range(
+                    settings.SHORT_TIMEDELTA_ATTENDANTS_COUNT_FOR_INSCRIPTION + 2
+                ):
+                    form.register_attendant(HabilitationRequestFactory())
+                self.assertEqual(
+                    Formation.objects.available_for_attendant(self.hab).count(), 3
+                )
 
 
 class TestFormationOrganization(TestCase):

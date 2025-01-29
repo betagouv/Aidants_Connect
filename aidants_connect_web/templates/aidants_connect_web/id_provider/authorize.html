@@ -1,8 +1,8 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/main.html' %}
 
-{% load static ac_extras ac_common %}
+{% load ac_common ac_extras static %}
 
-{% block title %}Aidants Connect - Sélectionnez l'usager{% endblock %}
+{% block title %}Sélection de l'usager - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/id-provider.css' %}" rel="stylesheet"/>
@@ -11,28 +11,69 @@
 
 {% block content %}
   <div class="fr-container">
+    <h1 id="welcome_aidant" class="fr-mb-2w">Bienvenue {{ aidant.first_name }} !</h1>
+    <p>Vous êtes bien connecté à votre espace Aidants Connect. Veuillez suivre les étapes ci-dessous afin de réaliser la démarche pour la personne accompagnée</p>
     <div class="fr-grid-row">
-      <div class="fr-col-12 fr-col-md-8">
-        <h1 id="welcome_aidant" class="h2 fr-mt-8v">Bienvenue sur votre Espace Aidants Connect, {{ aidant.first_name }}</h1>
-        <div class="container shadowed padding-1rem margin-bottom-2rem">
-          <p class="h4-prime">Sélectionnez l'usager que vous souhaitez FranceConnecter</p>
-          <p class="light-blue-text">Seuls les usagers avec un mandat en cours sont affichés ici.</p>
+      <div class="fr-col-12 fr-col-md-6">
+        <div class="fr-col-12">
+          <div class="fr-stepper">
+            <h2 class="fr-stepper__title">
+              Personne accompagnée
+              <span class="fr-stepper__state">Étape 1 sur 2</span>
+            </h2>
+            <div class="fr-stepper__steps" data-fr-current-step="1" data-fr-steps="2"></div>
+            <p class="fr-stepper__details">
+              <span class="fr-text--bold">Étape suivante :</span> Thématique administrative
+            </p>
+          </div>
+        </div>
+        <div class="fr-col-12">
           {% if usagers %}
-            <form class="clearfix" method="post">
-              <div class="form-grid-row fr-grid-row fr-grid-row--gutters">
-                {% if errors %}<div class="fr-col-12">{{ errors }}</div>{% endif %}
+            <form class="clearfix fr-mt-4w" method="post">
+              {% if errors %}<div class="fr-col-12">{{ errors }}</div>{% endif %}
+              <div class="fr-grid-row fr-grid-row--gutters">
                 <div class="fr-col-12">
-                  <label id="filter-input-label" for="anonymous-filter-input">Rechercher un usager :</label>
-                  <input type="text" id="anonymous-filter-input" required/>
+                  <label id="filter-input-label" for="anonymous-filter-input">
+                    Rechercher la personne accompagnée<br/>
+                    <span class="fr-text--xs fr-text-mention--grey">Seuls les personnes ayant un mandat actif sont affichés</span>
+                  </label>
+                </div>
+                <div class="fr-col-md-8 col-12">
+                  <input type="text" id="anonymous-filter-input" required class="fr-input"/>
                   <input id="anonymous-filter-input-id" name="chosen_usager" type="hidden"/>
                   <div id="autocomplete" class="autocomplete-input_wrapper input-spinner-wrapper"></div>
+                  {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
+                  <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
+                  {% csrf_token %}
                 </div>
-                {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
-                <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
-                {% csrf_token %}
+                <div class="fr-col-md-4 fr-col-12">
+                  <button id="submit-button" class="fr-btn" type="submit">Sélectionner</button>
+                </div>
               </div>
-              <button id="submit-button" class="fr-btn float-right" type="submit">Séléctionner</button>
             </form>
+            <p class="fr-mt-4w">Sélectionner la personne accompagnée dans la liste de tous les usagers </p>
+            <section class="fr-accordion user-detail">
+              <h3 class="fr-accordion__title">
+                  <button class="fr-accordion__btn" aria-expanded="false" aria-controls="accordion-usagers-select">Afficher tous les usagers</button>
+              </h3>
+              <div class="fr-collapse" id="accordion-usagers-select">
+                {% for usager in usagers %}
+                  <form class="user-detail-item fr-grid-row flex-between fr-mt-1w" method="post">
+                    {% csrf_token %}
+                    {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
+                    <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
+                    <label>{{ usager.get_full_name }}</label>
+                    <input
+                      id="filter-input-id"
+                      name="chosen_usager"
+                      value="{{ usager.id }}"
+                      type="hidden"
+                    />
+                    <button class="fr-btn" type="submit" data-user-id="{{ usager.id }}">Sélectionner</button>
+                  </form>
+                {% endfor %}
+              </div>
+            </section>
           {% else %}
             <div class="notification" role="alert">
               Vous n’avez pas d'usagers avec au moins un mandat en cours.<br>
@@ -41,31 +82,6 @@
             </div>
           {% endif %}
         </div>
-
-        {% if usagers %}
-          <details class="container shadowed padding-1rem user-detail">
-            <summary>
-              <p class="h4-prime fr-m-0">Tous les usagers</p>
-            </summary>
-
-            {% for usager in usagers %}
-              <form class="user-detail-item fr-mt-4v" method="post">
-                {% csrf_token %}
-                {% for field in oauth_parameters_form %}{{ field.as_hidden }}{% endfor %}
-                  <input name="connection_id" value="{{ connection_id }}" type="hidden"/>
-                <p class="fr-m-0">{{ usager.get_full_name }}</p>
-                <input
-                  id="filter-input-id"
-                  name="chosen_usager"
-                  value="{{ usager.id }}"
-                  type="hidden"
-                />
-                <button class="fr-btn" type="submit" data-user-id="{{ usager.id }}">Sélectionner</button>
-              </form>
-            {% endfor %}
-          </details>
-        {% endif %}
-
       </div>
     </div>
   </div>
@@ -76,5 +92,5 @@
   {{ data|json_script:"usagers_list" }}
   <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
   <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-  <script src="{% static 'js/hidden_users_search.js' %}"></script>
-{% endblock %}
+  <script type="module" src="{% static 'js/hidden-users-search.mjs' %}"></script>
+{% endblock extrajs %}

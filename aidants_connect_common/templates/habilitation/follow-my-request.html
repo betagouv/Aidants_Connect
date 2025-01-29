@@ -1,6 +1,9 @@
 {% load ac_common static %}
 
-<div data-controller="follow-request-modale">
+<div
+  data-controller="follow-request-modale"
+  data-follow-request-modale-loading-class="fr-btn--icon-left fr-icon-loader"
+>
   <dialog
     aria-labelledby="fr-modal-follow-hab-request-title"
     id="fr-modal-follow-hab-request"
@@ -46,7 +49,6 @@
       Suivre ma demande
     </button>
   </template>
-  {% stimulusjs %}
   <script defer src="{% url 'js_reverse' %}"></script>
-  <script defer type="module" src="{% static 'js/follow-request-modale.js' %}"></script>
+  <script defer type="module" src="{% static 'js/follow-request-modale.mjs' %}"></script>
 </div>

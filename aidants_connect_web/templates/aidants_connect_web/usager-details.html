@@ -1,0 +1,157 @@
+{% extends 'layouts/main.html' %}
+
+{% load ac_common dsfr_tags static %}
+
+{% block title %}Aidants Connect - {{ usager.get_full_name }}{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/usager-details.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <div class="fr-container">
+    <div class="flex fr-mb-8v">
+      <h1 class="fr-m-0">{{ usager.get_full_name }}</h1>
+
+      {% if aidant.can_create_mandats %}
+        <div class="spacer"></div>
+        <a
+          id="add-mandat"
+          class="fr-btn fr-btn--icon-left fr-icon-edit-fill"
+          href="{% url 'new_mandat' %}"
+        >
+          Créer un mandat
+        </a>
+      {% endif %}
+    </div>
+
+    {% if usager.birthdate %}
+      <div class="fr-mb-8v">
+        {% dsfr_tag label=usager.birthdate|date:"d F Y"|strfmt:"Date de naissance : {}" %}
+      </div>
+    {% endif %}
+
+    {% for group, mandats in mandats_grouped.items %}
+      <h2 id="{{ group|slugify }}" class="fr-mt-12v">{{ group }}</h2>
+
+      {% for mandat in mandats %}
+        <section class="fr-p-6v fr-mb-4v fr-bordered {{ group|slugify }}">
+          <div class="flex fr-mb-4v">
+            <h3 class="fr-m-0">Mandat du {{ mandat.creation_date|date:"d F Y" }}</h3>
+            <div class="spacer"></div>
+            <ul class="fr-btns-group fr-btns-group--inline fr-mb-n4v fr-btns-group--icon-left">
+              <li>
+                <a
+                  id="view-mandat-attestation-{{ mandat.pk }}"
+                  class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-printer-line"
+                  href="{% url 'mandat_visualisation' mandat_id=mandat.id %}"
+                >
+                  Voir l’attestation
+                </a>
+              </li>
+              {% if mandat.is_active %}
+                <li>
+                  <a
+                    id="renew-mandat-{{ mandat.pk }}"
+                    class="fr-btn fr-btn--icon-left fr-icon-refresh-line"
+                    href="{{ usager.renew_mandate_url }}"
+                  >
+                    Renouveler
+                  </a>
+                </li>
+                <li>
+                  <a
+                    id="cancel-mandat-{{ mandat.pk }}"
+                    class="fr-btn fr-btn--warning fr-btn--icon-left fr-icon-delete-bin-line"
+                    href="{% url 'confirm_mandat_cancelation' mandat_id=mandat.pk %}"
+                  >
+                    Révoquer
+                  </a>
+                </li>
+              {% elif mandat.was_explicitly_revoked %}
+                <a
+                  class="fr-btn fr-btn--icon-left fr-icon-printer-fill fr-btn--sm auth-revocation-attestation"
+                  href="{% url 'mandat_cancellation_attestation' mandat_id=mandat.pk %}"
+                >
+                  Voir la révocation
+                </a>
+              {% endif %}
+            </ul>
+          </div>
+          <div class="fr-mb-4v">
+            {% dsfr_tag label=mandat.get_duree_keyword_display|capfirst %}
+            {% withdict remaining=mandat.remaining_timedelta end_date=mandat.expiration_date|date:"d F Y" as format_data %}
+              {% dsfr_tag label=format_data|strfmt:"<strong>Validité restante : </strong>{remaining} ({end_date})" %}
+            {% endwithdict %}
+            {% if mandat.is_remote %}
+              {% dsfr_tag label="Signé à distance" %}
+            {% else %}
+              {% dsfr_tag label="Signé en présence" %}
+            {% endif %}
+          </div>
+
+          {% if mandat.autorisations.all %}
+            <div class="fr-table">
+              <div class="fr-table__wrapper">
+                <div class="fr-table__container">
+                  <div class="fr-table__content">
+                    <table>
+                      <thead>
+                      <tr>
+                        <th scope="col">Thématique administrative</th>
+                        <th scope="col">Révocation</th>
+                        <th scope="col" class="usager-action">Actions</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {% for autorisation in mandat.autorisations.all %}
+                        <tr
+                          id="mandat-{{ mandat.pk }}-autorisation-{{ autorisation.demarche }}"
+                          class="mandat-autorisation-row{% if autorisation.was_separately_revoked %} mandat-revoked-autorisation{% endif %}"
+                          data-row-key="{{ forloop.counter }}"
+                        >
+                          <td>{{ autorisation.get_demarche_display }}</td>
+                          <td>
+                            {% if autorisation.revocation_date %}
+                              {{ autorisation.revocation_date|date:"d F Y" }}
+                            {% else %}
+                              <span class="sr-only">Cette autorisation nʼa pas été révoquée.</span>
+                            {% endif %}
+                          </td>
+                          <td class="usager-action">
+                            {% if aidant.can_create_mandats and not autorisation.revocation_date %}
+                              <a
+                                id="mandat-{{ mandat.pk }}-auth-revocation-{{ autorisation.demarche }}"
+                                href="{% url 'confirm_autorisation_cancelation' usager_id=usager.id autorisation_id=autorisation.id %}"
+                                class="fr-btn fr-btn--warning fr-btn--secondary fr-btn--icon-left fr-btn--sm fr-icon-delete-bin-fill"
+                              >
+                                Révoquer la thématique
+                              </a>
+                            {% elif autorisation.was_separately_revoked %}
+                              <a
+                                id="mandat-{{ mandat.pk }}-auth-revocation-attestation-{{ autorisation.demarche }}"
+                                class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-printer-fill fr-btn--sm"
+                                href="{% url 'autorisation_cancelation_attestation' autorisation_id=autorisation.id usager_id=mandat.usager.id %}"
+                              >
+                                Voir la révocation
+                              </a>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            {% dsfr_alert content="Ce mandat nʼa pas d'autorisation connue." type="info" %}
+          {% endif %}
+        </section>
+      {% empty %}
+        {% dsfr_alert content=group|lower|strfmt:"Vous n’avez pas de {} avec cet usager." type="info" %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+{% endblock content %}

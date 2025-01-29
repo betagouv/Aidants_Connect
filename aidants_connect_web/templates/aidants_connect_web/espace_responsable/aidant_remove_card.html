@@ -1,32 +1,26 @@
-{% extends 'layouts/main-legacy.html' %}
-{% load static ac_extras dsfr_tags %}
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+{% load ac_extras dsfr_tags static %}
 
 {% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
-      {% include "layouts/_messages.html" %}
-      <h1>
-        Dissocier la carte {{ aidant.carte_totp.serial_number }} du compte
-        de lʼaidant {{ aidant.get_full_name }}, {{ aidant.profession }}
-      </h1>
-
-      <p>
-        Pour supprimer l'association entre la carte {{ aidant.carte_totp.serial_number }}
-        et le compte de l'aidant {{ aidant.get_full_name }},
-        cliquez sur le bouton «&nbsp;Dissocier&nbsp;».
-      </p>
-      <form
-        method="post"
-        class="fr-col-12 fr-col-lg-6 fr-col-md-8"
-        action="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
-      >
-        {% csrf_token %}
-        {% dsfr_form %}
-        <button class="fr-btn" type="submit">Dissocier</button>
-      </form>
-
+  <div class="fr-container">
+    {% include "layouts/_messages.html" %}
+    <h1>Dissocier une carte aidant</h1>
+    <p>Pour supprimer l’association entre la carte et le compte rappelés ci-dessous, cliquez sur le bouton « Dissocier »</p>
+    <div class="fr-background-contrast--grey fr-p-4w fr-col-12 fr-col-lg-6 fr-col-md-8 fr-mb-3w">
+      <h2 class="fr-h6">Rappel des informations</h3>
+      <p>Identifiant de la carte : <strong>{{ aidant.carte_totp.serial_number }}</strong></p>
+      <p>Aidant lié à cette carte : <strong>{{ aidant.get_full_name }}</strong></p>
     </div>
-  </section>
+    <form
+      method="post"
+      class="fr-col-12 fr-col-lg-6 fr-col-md-8"
+      action="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
+    >
+      {% csrf_token %}
+      {{ form }}
+      <button class="fr-btn" type="submit">Dissocier</button>
+    </form>
+  </div>
 {% endblock content %}

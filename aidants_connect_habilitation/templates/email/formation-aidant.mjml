@@ -6,20 +6,22 @@
       <mj-text>Madame, Monsieur,</mj-text>
       <mj-text>
         <p>
-          Nous vous confirmons que {{person.get_full_name}} a été inscrit(e) à la formation : {{formation.type.label}},
-          {{formation.date_range_str|lower}}.
+          Nous vous confirmons que {{ person.get_full_name }} a été pré-inscrit(e)  à la formation : {{ formation.organisation.name }} / {{ formation.type.label }},
+          {{ formation.date_range_str|lower }}.
         </p>
-        <p>L’organisme en charge de cette formation prendra prochainement contact avec vous.</p>
         <p>
-          Si vous souhaitez modifier ou annuler votre demande, merci de vous rapprocher de l’organisme de formation.
+        L’organisme de formation vous adressera un devis à lui retourner signé pour valider l’inscription définitive. Pour toute demande complémentaire, merci de vous rapprocher de l’organisme de formation à cette adresse :  {{ formation_contacts }}
         </p>
+        <p>Financée dans le cadre du Plan France Relance jusqu’en 2023, la formation à Aidants Connect est dorénavant financée selon différentes modalités.
+        Nous vous invitons à vous rendre sur <a href="https://tally.so/r/mO0Xkg">ce simulateur</a> pour connaître les modalités de financement
+        propres à votre structure et au profil des aidants à habiliter. Il peut arriver que dans certains cas la formation doive être financée par la structure.</p>
       </mj-text>
     <mj-text>
-    <em>L'organisme de formation se réserve le droit d’annuler une session si le nombre de participants est insuffisant.</em>
+    <em>L’organisme de formation se réserve le droit d’annuler ou de reporter une session si le nombre de participants est insuffisant.</em>
     </mj-text>
       <mj-text>
         Nous nous tenons à votre disposition et vous remercions de votre intérêt pour Aidants Connect.
       </mj-text>
     </mj-column>
   </mj-section>
-{% endblock %}
+{% endblock email_body %}

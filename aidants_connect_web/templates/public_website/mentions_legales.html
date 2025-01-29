@@ -1,30 +1,32 @@
-{% extends 'public_website/layout/main-legacy.html' %}
+{% extends 'public_website/layout/layout_legal.html' %}
 
-{% load static %}
+{% load ac_common static %}
 
-{% block title %}Aidants Connect - Mentions légales{% endblock %}
+{% block title %}Mentions légales - Aidants Connect{% endblock %}
 
 {% block extracss %}
 <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
-{% block content %}
+{% block body %}
 <section class="section">
   <div class="fr-container">
-
-      <div class="fr-grid-row fr-grid-row--center">
-        <h1 class="fr-mt-16v">Mentions légales</h1>
-      </div>
+    <h1 class="fr-mb-4w">Mentions légales</h1>
         <h2>Éditeur</h2>
 
-        <p><a href="https://incubateur.anct.gouv.fr/">Incubateur des Territoires</a> de l'Agence Nationale de la Cohésion des Territoires (<a href="https://agence-cohesion-territoires.gouv.fr/">ANCT</a>). 20, avenue de Ségur - 75007 Paris.
-
+        <p><a href="https://incubateur.anct.gouv.fr/" class="fr-link">Incubateur des Territoires</a> de l'Agence Nationale de la Cohésion des Territoires (<a class="fr-link" href="https://agence-cohesion-territoires.gouv.fr/">ANCT</a>). <br/>
+          20, avenue de Ségur<br/>
+          75007 Paris.
+        </p>
         <p>Directeur de la publication : le directeur général de l'Agence Nationale de la Cohésion des Territoires, Stanislas Bourron </p>
 
         <h2>Hébergeur</h2>
 
-        <p>Scalingo. 15 avenue du Rhin, 67100 Strasbourg, France.</p>
+        <address>Scalingo. <br/>
+          15 avenue du Rhin <br/>
+          67100 Strasbourg
+        </address>
 
   </div>
 </section>
-{% endblock content %}
+{% endblock body %}

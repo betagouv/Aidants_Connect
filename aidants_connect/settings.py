@@ -20,14 +20,15 @@ from pathlib import Path
 from typing import Optional, Union
 
 from django.conf import global_settings
+from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_noop
 
+import dj_database_url
 import sentry_sdk
 from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
-from aidants_connect.postgres_url import turn_psql_url_into_param
 from aidants_connect.utils import strtobool
 
 load_dotenv(verbose=True)
@@ -131,6 +132,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
     "rest_framework",
     "django_otp",
     "aidants_connect_sandbox.otp_infinite",
@@ -138,6 +140,8 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "django_celery_beat",
     "django_extensions",
+    "template_partials",
+    "importmap",
     "pgtrigger",
     "import_export",
     "phonenumber_field",
@@ -193,6 +197,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "dsfr.context_processors.site_config",
+                "importmap.context_processors.importmap",
                 "aidants_connect_common.context_processors.settings_variables",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
@@ -203,43 +208,16 @@ TEMPLATES = [
     }
 ]
 
+FORM_RENDERER = "aidants_connect.utils.ACDjangoTemplates"
+
 WSGI_APPLICATION = "aidants_connect.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-postgres_url = os.getenv("POSTGRESQL_URL")
-if postgres_url:
-    environment_info = turn_psql_url_into_param(postgres_url)
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": environment_info.get("db_name"),
-            "USER": environment_info.get("db_user"),
-            "PASSWORD": environment_info.get("db_password"),
-            "HOST": environment_info.get("db_host"),
-            "PORT": environment_info.get("db_port"),
-        }
-    }
-
-    ssl_option = environment_info.get("sslmode")
-
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DATABASE_NAME"),
-            "USER": os.getenv("DATABASE_USER"),
-            "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-            "HOST": os.getenv("DATABASE_HOST"),
-            "PORT": os.getenv("DATABASE_PORT"),
-        }
-    }
-
-    ssl_option = os.getenv("DATABASE_SSL")
-
-if ssl_option:
-    DATABASES["default"]["OPTIONS"] = {"sslmode": ssl_option}
+DATABASES = {
+    "default": dj_database_url.config(
+        default="postgres://localhost:5432/aidants_connect",
+        ssl_require=True if not DEBUG else None,
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -294,6 +272,9 @@ ACTIVITY_CHECK_THRESHOLD = int(os.getenv("ACTIVITY_CHECK_THRESHOLD"))
 ACTIVITY_CHECK_DURATION = timedelta(minutes=ACTIVITY_CHECK_THRESHOLD)
 
 AUTH_USER_MODEL = "aidants_connect_web.Aidant"
+
+JS_REVERSE_EXCLUDE_NAMESPACES = ["admin", "djdt", "otpadmin"]
+JS_MINIFY = False
 
 DEMARCHES = {
     "papiers": {
@@ -377,7 +358,7 @@ DEMARCHES = {
 CGU_CURRENT_VERSION = "0.3"
 
 MANDAT_TEMPLATE_DIR = "aidants_connect_web/mandat_templates"
-MANDAT_TEMPLATE_CURRENT_FILE = "20230530_mandat.html"
+MANDAT_TEMPLATE_CURRENT_FILE = "20240618_mandat.html"
 MANDAT_TEMPLATE_PATH = os.path.join(MANDAT_TEMPLATE_DIR, MANDAT_TEMPLATE_CURRENT_FILE)
 ATTESTATION_SALT = os.getenv("ATTESTATION_SALT", "")
 
@@ -416,6 +397,16 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", None)
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", None)
 
+
+BACKUP_EMAIL_HOST = os.getenv("BACKUP_EMAIL_HOST", EMAIL_HOST)
+BACKUP_EMAIL_PORT = os.getenv("BACKUP_EMAIL_PORT", EMAIL_PORT)
+BACKUP_EMAIL_HOST_USER = os.getenv("BACKUP_EMAIL_HOST_USER", EMAIL_HOST_USER)
+BACKUP_EMAIL_HOST_PASSWORD = os.getenv("BACKUP_MAIL_HOST_PASSWORD", EMAIL_HOST_PASSWORD)
+BACKUP_EMAIL_USE_TLS = os.getenv("BACKUP_EMAIL_USE_TLS", EMAIL_USE_TLS)
+BACKUP_EMAIL_USE_SSL = os.getenv("BACKUP_EMAIL_USE_SSL", EMAIL_USE_SSL)
+
+TDL_NEED_BACKUP_SMTP = os.getenv("TDL_NEED_BACKUP_SMTP", "laposte.net")
+
 # # if email backend is aidants_connect_web.mail.ForceSpecificSenderBackend
 EMAIL_EXTRA_HEADERS = os.getenv("EMAIL_EXTRA_HEADERS", None)
 EMAIL_SENDER = os.getenv("EMAIL_SENDER", os.getenv("ADMIN_EMAIL"))
@@ -432,22 +423,23 @@ X_FRAME_OPTIONS = "DENY"
 REFERRER_POLICY = "strict-origin"
 
 # Scripts and other resources
-STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.1/dist/stimulus.umd.js"
+STIMULUS_JS_URL = "https://unpkg.com/stimulus@3.2.2/dist/stimulus.js"
 MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
-SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert?listID=09a44be1-412f-4190-a3fe-6eaac71c9f00&formID=gJOzUSbKRDWeSVyadSRTTw&timezone=Europe/Paris&timezoneOffset=+2"  # noqa: E501
+SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert"
 COOKIE_BANNER_JS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.js"
-COOKIE_BANNER_CSS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/css/tarteaucitron.css"
 COOKIE_BANNER_LANG_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/lang/tarteaucitron.fr.js"
 )
 COOKIE_BANNER_SERVICES_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.services.js"
 )
-AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"  # noqa: E501
+AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"  # noqa
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.beta.gouv.fr")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
+CHARTS_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js@3.0.0/dist/chart.min.js"
+CHARTS_JS_DATALABEL_URL = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"
 
 if "test" in sys.argv:
     GOUV_ADDRESS_SEARCH_API_DISABLED = True
@@ -476,28 +468,27 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
+    CHARTS_JS_URL,
+    CHARTS_JS_DATALABEL_URL,
     MD_EDITOR_JS_URL,
     SARBACANE_SCRIPT_URL,
     COOKIE_BANNER_JS_URL,
     COOKIE_BANNER_LANG_URL,
     COOKIE_BANNER_SERVICES_URL,
-    "'sha256-+iP5od5k5h6dnQJ5XGJGipIf2K6VdSrIwATxnixVR8s='",  # main-legacy.html
-    "'sha256-ARvyo8AJ91wUvPfVqP2FfHuIHZJN3xaLI7Vgj2tQx18='",  # wait.html
-    "'sha256-mXH/smf1qtriC8hr62Qt2dvp/StB/Ixr4xmBRvkCz0U='",  # main-habilitation.html
-    "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js",
-    "'sha256-oOHki3o/lOkQD0J+jC75068TFqQoV40dYK6wrkIXI1c='",  # statistiques.html
-    "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js",  # NOQA
-    "'sha256-CO4GFu3p1QNoCvjdyc+zNsVh77XOc5H2OcZYFb8YUPA='",  # home_page.html
     "https://code.jquery.com/jquery-3.6.1.js",
     "https://code.jquery.com/ui/1.13.1/jquery-ui.js",
-    "'sha256-NR0PzgaeuNCaj2DbnvXN6W2GoemNJ9jQE4tqs/H7O0c='",  # ie-deprecation.html
-    "'sha256-TzFaIqy7u6q6ovMbU59mz7pAL/g930THGxhG6dg/cHQ='",  # _attestation-print.html
+    AUTOCOMPLETE_SCRIPT_SRC,
 )
 
 CSP_STYLE_SRC = (
     "'self'",
     MD_EDITOR_CSS_URL,
-    COOKIE_BANNER_CSS_URL,
+)
+
+CSP_STYLE_SRC_ATTR = (
+    "'unsafe-hashes'",
+    "'sha256-I/4Jcdrg5KNFrU0X4p2nNmjeGh9aI+9ac0cUllI5SwY='",
+    "'sha256-vYd+FsML43MBXhP+pXOhW9h0Cdq43hkCe4Im/yyvhss='",
 )
 
 CSP_OBJECT_SRC = ("'none'",)
@@ -521,6 +512,8 @@ CSP_FRAME_SRC = (
         )
     ),
 )
+
+CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
 
 if not GOUV_ADDRESS_SEARCH_API_DISABLED:
     CSP_CONNECT_SRC = (*CSP_CONNECT_SRC, GOUV_ADDRESS_SEARCH_API_BASE_URL)
@@ -720,6 +713,10 @@ EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES = os.getenv(
     "EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES",
     "https://www.etsijaccompagnais.fr/ressources-des-aidants",
 )
+EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF = os.getenv(
+    "EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF",
+    "https://www.etsijaccompagnais.fr/tutoriel-aidants-connect",
+)
 EMAIL_WELCOME_AIDANT_CONTACT_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_CONTACT_URL", "contact@aidantsconnect.beta.gouv.fr"
 )
@@ -768,6 +765,25 @@ EMAIL_CO_RERERENT_CREATION_FROM = os.getenv(
 EMAIL_ORGANISATION_FORMATION_NEW_ATTENDANT_GRIST_LINK = os.getenv(
     "EMAIL_ORGANISATION_FORMATION_NEW_ATTENDANT_GRIST_LINK",
     "https://grist.incubateur.anct.gouv.fr/o/anct/t7BQn7enpHrR/Formations/p/82",
+)
+
+CONSEILLER_NUMERIQUE_EMAIL = os.getenv(
+    "CONSEILLER_NUMERIQUE_EMAIL", "@conseiller-numerique.fr"
+)
+CONSEILLER_NUMERIQUE_PAGE = os.getenv(
+    "CONSEILLER_NUMERIQUE_PAGE", "https://www.conseiller-numerique.gouv.fr/"
+)
+
+TIMEDELTA_IN_DAYS_FOR_INSCRIPTION = int(
+    os.getenv("TIMEDELTA_IN_DAYS_FOR_INSCRIPTION", 28)
+)
+
+SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION = int(
+    os.getenv("SHORT_TIMEDELTA_IN_DAYS_FOR_INSCRIPTION", 14)
+)
+
+SHORT_TIMEDELTA_ATTENDANTS_COUNT_FOR_INSCRIPTION = int(
+    os.getenv("SHORT_TIMEDELTA_ATTENDANTS_COUNT_FOR_INSCRIPTION", 4)
 )
 
 PIX_METABASE_USER = os.getenv("PIX_METABASE_USER")
@@ -823,6 +839,16 @@ GRIST_URL_SERVER = os.getenv("GRIST_URL_SERVER", "")
 GRIST_DOCUMENT_ID = os.getenv("GRIST_DOCUMENT_ID", "")
 GRIST_REBORDING_TABLE_ID = os.getenv("GRIST_REBORDING_TABLE_ID", "")
 GRIST_API_KEY = os.getenv("GRIST_API_KEY", "")
+GRIST_FORMATION_REPORTING_TABLE_ID = os.getenv("GRIST_FORMATION_REPORTING_TABLE_ID", "")
+GRIST_FORMATION_ORGANIZATION_TABLE_ID = os.getenv(
+    "GRIST_FORMATION_ORGANIZATION_TABLE_ID", ""
+)
+GRIST_ATTENDEES_TABLE_ID = os.getenv("GRIST_ATTENDEES_TABLE_ID", "")
+
+FORMATION_MAX_ATTENDANTS = int(os.getenv("FORMATION_MAX_ATTENDANTS", 18))
+GRIST_ID_MEDNUM = int(os.getenv("GRIST_ID_MEDNUM", 3))
+GRIST_ID_FAMILLE_RURALES = int(os.getenv("GRIST_ID_FAMILLE_RURALES", 1))
+
 
 LIVESTORM_API_KEY = os.getenv("LIVESTORM_API_KEY")
 
@@ -830,6 +856,8 @@ LIVESTORM_API_KEY = os.getenv("LIVESTORM_API_KEY")
 FF_WELCOME_AIDANT = getenv_bool("FF_WELCOME_AIDANT", False)
 FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
 FF_EMAIL_CO_RERERENT_CREATION = getenv_bool("FF_EMAIL_CO_RERERENT_CREATION", False)
+
+URL_FORMATION = os.getenv("URL_FORMATION", get_random_string(12))
 
 
 # ######################## SANDBOX SETTING ############################

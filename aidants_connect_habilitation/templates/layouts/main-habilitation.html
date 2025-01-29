@@ -1,4 +1,4 @@
-{% load static dsfr_tags ac_common %}
+{% load ac_common dsfr_tags importmap static %}
 <!doctype html>
 <html lang="fr" data-fr-scheme="light">
 <head>
@@ -7,9 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>{% block title %}Aidants Connect{% endblock %}</title>
+
+  {# Importmap; see https://github.com/christophehenry/dj-importmap for documentation #}
+  {% importmap nonce=request.csp_nonce %}
+
   {% dsfr_css %}
   <link href="{% static 'css/main-habilitation.css' %}" rel="stylesheet">
-  <link href="{{ COOKIE_BANNER_CSS_URL }}" rel="stylesheet">
+  <link href="{% static 'css/dsfr-theme-tac.css' %}" rel="stylesheet">
   {# Extra styles #}
   {% block extracss %}{% endblock %}
 
@@ -83,7 +87,7 @@
 
 
   {% block content %}
-  {% endblock %}
+  {% endblock content %}
 </main>
 
 {% block footer %}
@@ -96,6 +100,6 @@
 <script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>
 <script defer src="{% static 'js/cookie-banner.js' %}"></script>
 {% block extrajs %}
-{% endblock %}
+{% endblock extrajs %}
 </body>
 </html>

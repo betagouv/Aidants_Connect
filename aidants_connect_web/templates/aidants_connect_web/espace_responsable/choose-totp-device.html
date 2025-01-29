@@ -1,7 +1,7 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
-{% load static ac_common ac_extras %}
+{% load ac_common ac_extras static %}
 
-{% block title %}Aidants Connect - Choisir un type de cart TOTP{% endblock %}
+{% block title %}Choisir un type de carte TOTP- Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
@@ -13,123 +13,120 @@
 
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8">
-        <h1>Espace référent</h1>
-        <h2>Lier une carte</h2>
-        <p class="subtitle margin-bottom-4rem">
+        <p class="fr-text-mention--grey fr-text--xl fr-mb-0">RÉFÉRENTS</p>
+        <h1>Lier une carte</h1>
+        <p class="fr-text--xl">
           Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.
         </p>
-
-        <div class="title-with-item margin-bottom-2rem">
-          <h3 class="margin-0 h5">Sélectionnez le type de carte que vous souhaitez lier à {{ aidant.get_full_name }} :</h3>
-          <div class="tooltip aidants-guide-links">
-            Guides
-            <div class="tooltiptext">
+        <div class="fr-grid-row flex-between fr-grid-row--middle fr-mb-3w">
+          <div><strong>Sélectionnez le type de carte que vous souhaitez lier à {{ aidant.get_full_name }} :</strong></div>
+          <details>
+            <summary>
+              <div class="fr-btn fr-btn--secondary">Guides</div>
+            </summary>
+            <div class="details-content fr-p-2w">
               <a
-                href="{% static "guides_aidants_connect/AC_Guide_LierUneCarte.pdf" %}"
+                href="{% static 'guides_aidants_connect/AC_Guide_LierUneCarte.pdf' %}"
                 target="_blank"
                 rel="noreferrer noopener"
               >
                 Comment lier une carte ?
+                <span class="fr-text-mention--grey"> - pdf</span>
               </a>
-              <span> — pdf</span>
               <br />
               <a
-                href="{% static "guides_aidants_connect/AC_Guide_Sauthentifier.pdf" %}"
-                target="_blank"
-                rel="noreferrer noopener"
+              href="{% static 'guides_aidants_connect/AC_Guide_Sauthentifier.pdf' %}"
+              target="_blank"
+              rel="noreferrer noopener"
               >
                 Sʼauthentifier avec Aidants Connect
+                <span class="fr-text-mention--grey"> - pdf</span>
               </a>
-              <span> — pdf</span>
             </div>
-          </div>
+          </details>
         </div>
-
         <div class="fr-grid-row fr-grid-row--gutters">
-          <div class="fr-col-12">
-            <div class="fr-grid-row fr-grid-row--gutters margin-bottom-1rem">
-              <div
-                class="fr-col-12 fr-col-md-6 totp-card-section{% if not physical_option_available %} disabled{% endif %}"
-                {% if not physical_option_available %}title="{{ physical_option_unavailable_text }}"{% endif %}
-              >
-                <section class="shadowed">
-                  <p>Une carte physique génératrice de code de connexion à la pression d’un bouton.</p>
-                  <div class="icon-container">
-                    <img src="{% static 'images/carte-totp.png' %}" alt="" />
-                  </div>
-                  <ul class="fr-btns-group">
-                    {% if aidant.has_a_carte_totp %}
-                      {# We always want to be able to unlink a card #}
-                      <li>
-                        <a
-                          id="remove-totp-card-from-aidant-{{ aidant.id }}"
-                          href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
-                          class="fr-btn"
-                        >
-                          Délier la carte physique
-                        </a>
-                      </li>
-                      {% if aidant.is_active and not aidant.carte_totp.totp_device.confirmed %}
-                        <li>
-                          <a
-                            id="validate-totp-card-for-aidant-{{ aidant.id }}"
-                            href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}"
-                            class="fr-btn"
-                          >
-                            Valider la carte physique
-                          </a>
-                        </li>
-                      {% endif %}
-                    {% else %}
-                      {# By default, we display that button, just disabled if the user is inactive #}
-                      <li>
-                        <a
-                          id="add-totp-card-to-aidant-{{ aidant.id }}"
-                          {% if physical_option_available %}href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"{% endif %}
-                          class="fr-btn"
-                        >
-                          Utiliser une carte physique
-                        </a>
-                      </li>
-                    {% endif %}
-                  </ul>
-                </section>
+          <div
+            class="fr-col-12 fr-col-md-6{% if not physical_option_available %} disabled{% endif %}"
+            {% if not physical_option_available %}title="{{ physical_option_unavailable_text }}"{% endif %}
+          >
+            <div class="fr-card fr-pt-4w">
+              <div class="fr-card__body">
+                <p>Une carte physique génératrice de code de connexion à la pression d’un bouton.</p>
+                <div class="fr-grid-row fr-grid-row--center">
+                  <img src="{% static 'images/carte-totp.png' %}" alt="" />
+                </div>
               </div>
-              <div
-                class="fr-col-12 fr-col-md-6 totp-card-section{% if not digital_option_available %} disabled{% endif %}"
-                {% if not digital_option_available %}title="{{ digital_option_unavailable_text }}"{% endif %}
-              >
-                <section class="shadowed">
-                  <p>
-                    Une carte numérique, sous la forme d’une application OTP qui génère un code à intervalles réguliers.
-                    Vous avez besoin du téléphone utilisé par l’aidant pour configurer cette option.
-                  </p>
-                  <div class="icon-container">
-                    <img src="{% static 'images/application-totp.png' %}" alt="" />
-                  </div>
+              <div class="fr-card__footer fr-grid-row fr-grid-row--center">
+                {% if aidant.has_a_carte_totp %}
+                  {# We always want to be able to unlink a card #}
                   <ul class="fr-btns-group">
-                    {% if aidant.has_otp_app %}
-                      <li><a
-                        id="add-otp-app-to-aidant-{{ aidant.id }}"
-                        href="{% url 'espace_responsable_aidant_remove_app_otp' aidant_id=aidant.id %}"
+                    <li>
+                      <a
+                        id="remove-totp-card-from-aidant-{{ aidant.id }}"
+                        href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
                         class="fr-btn"
                       >
-                        Délier une carte numérique
-                      </a></li>
-                    {% else %}
+                        Délier la carte physique
+                      </a>
+                    </li>
+                    {% if aidant.is_active and not aidant.carte_totp.totp_device.confirmed %}
                       <li>
                         <a
-                          id="add-otp-app-to-aidant-{{ aidant.id }}"
-                          {% if digital_option_available %}href="{% url 'espace_responsable_aidant_add_app_otp' aidant_id=aidant.id %}"{% endif %}
+                          id="validate-totp-card-for-aidant-{{ aidant.id }}"
+                          href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}"
                           class="fr-btn"
                         >
-                          Utiliser une carte numérique
+                          Valider la carte physique
                         </a>
                       </li>
                     {% endif %}
                   </ul>
-
-                </section>
+                {% else %}
+                  {# By default, we display that button, just disabled if the user is inactive #}
+                  <a
+                    id="add-totp-card-to-aidant-{{ aidant.id }}"
+                    {% if physical_option_available %}href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"{% endif %}
+                    class="fr-btn"
+                  >
+                    Utiliser une carte physique
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div
+            class="fr-col-12 fr-col-md-6{% if not digital_option_available %} disabled{% endif %}"
+            {% if not digital_option_available %}title="{{ digital_option_unavailable_text }}"{% endif %}
+          >
+            <div class="fr-card fr-pt-4w">
+              <div class="fr-card__body">
+                <p>
+                  Une carte numérique, sous la forme d’une application OTP qui génère un code à intervalles réguliers.
+                  Vous avez besoin du téléphone utilisé par l’aidant pour configurer cette option.
+                </p>
+                <div class="fr-grid-row fr-grid-row--center">
+                  <img src="{% static 'images/application-totp.png' %}" alt="" />
+                </div>
+              </div>
+                <div class="fr-card__footer fr-grid-row fr-grid-row--center">
+                {% if aidant.has_otp_app %}
+                  <a
+                    id="add-otp-app-to-aidant-{{ aidant.id }}"
+                    href="{% url 'espace_responsable_aidant_remove_app_otp' aidant_id=aidant.id %}"
+                    class="fr-btn"
+                  >
+                    Délier une carte numérique
+                  </a>
+                {% else %}
+                  <a
+                    id="add-otp-app-to-aidant-{{ aidant.id }}"
+                    {% if digital_option_available %}href="{% url 'espace_responsable_aidant_add_app_otp' aidant_id=aidant.id %}"{% endif %}
+                    class="fr-btn"
+                  >
+                    Utiliser une carte numérique
+                  </a>
+                {% endif %}
               </div>
             </div>
           </div>

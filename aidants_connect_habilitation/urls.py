@@ -1,7 +1,6 @@
 from django.urls import path
 
 from aidants_connect_habilitation.views import (
-    AddAidantsRequestView,
     AidantFormationRegistrationView,
     HabilitationRequestCancelationView,
     IssuerEmailConfirmationView,
@@ -15,6 +14,7 @@ from aidants_connect_habilitation.views import (
     NewOrganisationRequestFormView,
     PersonnelRequestFormView,
     ReadonlyRequestView,
+    ReferentRequestFormView,
     ValidationRequestFormView,
 )
 
@@ -52,6 +52,11 @@ urlpatterns = [
         name="habilitation_modify_organisation",
     ),
     path(
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/referent/",
+        ReferentRequestFormView.as_view(),
+        name="habilitation_new_referent",
+    ),
+    path(
         "demandeur/<str:issuer_id>/organisation/<str:uuid>/aidants/",
         PersonnelRequestFormView.as_view(),
         name="habilitation_new_aidants",
@@ -82,8 +87,8 @@ urlpatterns = [
         name="habilitation_organisation_view",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/<str:uuid>/ajouter-aidants/",
-        AddAidantsRequestView.as_view(),
-        name="habilitation_organisation_add_aidants",
+        "demandeur/<str:issuer_id>/organisation/<str:uuid>/modifier-demandeur/",
+        ModifyIssuerFormView.as_view(),
+        name="habilitation_modify_issuer_on_organisation",
     ),
 ]

@@ -1,0 +1,12 @@
+<form method="post" action="{% url 'api_habilitation_new_aidants_idx' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid idx=idx %}">
+  {% csrf_token %}
+  {{ form.management_form }}
+  {{ form.non_form_errors }}
+  {% for form in form %}
+    {% if forloop.counter0 == idx %}
+      <section data-test="edited-form">{{ form }}</section>
+    {% else %}
+      {{ form.as_hidden }}
+    {% endif %}
+  {% endfor %}
+</form>

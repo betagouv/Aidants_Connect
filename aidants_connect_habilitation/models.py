@@ -1,9 +1,9 @@
 from datetime import timedelta
+from functools import cached_property
 from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericRelation
 from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import SET_NULL, Q
@@ -21,7 +21,6 @@ from aidants_connect_common.constants import (
     RequestOriginConstants,
     RequestStatusConstants,
 )
-from aidants_connect_common.models import FormationAttendant
 from aidants_connect_common.utils import (
     build_url,
     generate_new_datapass_id,
@@ -203,6 +202,15 @@ class Manager(PersonWithResponsibilities):
         on_delete=models.CASCADE,
     )
 
+    @cached_property
+    def aidant(self):
+        from aidants_connect_web.models import Aidant
+
+        try:
+            return Aidant.objects.get(email=self.email)
+        except Aidant.DoesNotExist:
+            return None
+
     class Meta:
         verbose_name = "Référent structure"
         verbose_name_plural = "Référents structure"
@@ -216,6 +224,8 @@ class Manager(PersonWithResponsibilities):
 
 
 class OrganisationRequest(models.Model):
+    Status = RequestStatusConstants
+
     created_at = models.DateTimeField("Date création", auto_now_add=True)
 
     updated_at = models.DateTimeField("Date modification", auto_now=True)
@@ -259,8 +269,8 @@ class OrganisationRequest(models.Model):
     status = models.CharField(
         "État",
         max_length=150,
-        default=RequestStatusConstants.NEW.name,
-        choices=RequestStatusConstants.choices,
+        default=Status.NEW,
+        choices=Status.choices,
     )
 
     type = models.ForeignKey(
@@ -277,6 +287,9 @@ class OrganisationRequest(models.Model):
     # Organisation
     name = models.TextField("Nom de la structure")
     siret = models.BigIntegerField("N° SIRET")
+    legal_category = models.CharField(
+        "categorieJuridiqueUniteLegale", max_length=30, default="0"
+    )
     address = models.TextField("Adresse")
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
@@ -322,6 +335,7 @@ class OrganisationRequest(models.Model):
 
     # Checkboxes
     cgu = models.BooleanField("J'accepte les CGU", default=False)
+    not_free = models.BooleanField("La formation est payante", default=False)
     dpo = models.BooleanField("Le DPO est informé", default=False)
     professionals_only = models.BooleanField(
         "La structure ne contient que des aidants professionnels", default=False
@@ -335,8 +349,8 @@ class OrganisationRequest(models.Model):
         return RequestStatusConstants[self.status] == RequestStatusConstants.NEW
 
     @property
-    def status_label(self):
-        return RequestStatusConstants[self.status].label
+    def status_enum(self):
+        return RequestStatusConstants[self.status]
 
     def __str__(self):
         return self.name
@@ -383,6 +397,7 @@ class OrganisationRequest(models.Model):
 
     def prepare_request_for_ac_validation(self, form_data: dict):
         self.cgu = form_data["cgu"]
+        self.not_free = form_data["not_free"]
         self.dpo = form_data["dpo"]
         self.professionals_only = form_data["professionals_only"]
         self.without_elected = form_data["without_elected"]
@@ -466,19 +481,20 @@ class OrganisationRequest(models.Model):
         self.create_aidants(organisation)
 
         if self.manager.is_aidant:
-            self.manager.habilitation_request, _ = (
-                HabilitationRequest.objects.get_or_create(
-                    email=self.manager.email,
-                    organisation=organisation,
-                    defaults=dict(
-                        origin=HabilitationRequest.ORIGIN_HABILITATION,
-                        first_name=self.manager.first_name,
-                        last_name=self.manager.last_name,
-                        profession=self.manager.profession,
-                        conseiller_numerique=self.manager.conseiller_numerique,
-                        status=ReferentRequestStatuses.STATUS_PROCESSING,
-                    ),
-                )
+            (
+                self.manager.habilitation_request,
+                _,
+            ) = HabilitationRequest.objects.get_or_create(
+                email=self.manager.email,
+                organisation=organisation,
+                defaults=dict(
+                    origin=HabilitationRequest.ORIGIN_HABILITATION,
+                    first_name=self.manager.first_name,
+                    last_name=self.manager.last_name,
+                    profession=self.manager.profession,
+                    conseiller_numerique=self.manager.conseiller_numerique,
+                    status=ReferentRequestStatuses.STATUS_PROCESSING,
+                ),
             )
             self.manager.save(update_fields=("habilitation_request",))
 
@@ -567,6 +583,11 @@ class OrganisationRequest(models.Model):
             ),
             models.CheckConstraint(
                 check=Q(status=RequestStatusConstants.NEW.name)
+                | (~Q(status=RequestStatusConstants.NEW.name) & Q(not_free=True)),
+                name="not_free_checked",
+            ),
+            models.CheckConstraint(
+                check=Q(status=RequestStatusConstants.NEW.name)
                 | (~Q(status=RequestStatusConstants.NEW.name) & Q(dpo=True)),
                 name="dpo_checked",
             ),
@@ -616,13 +637,6 @@ class AidantRequest(Person):
         default=None,
         blank=True,
         on_delete=models.CASCADE,
-    )
-
-    formations = GenericRelation(
-        FormationAttendant,
-        related_name="aidant_requests",
-        object_id_field="attendant_id",
-        content_type_field="attendant_content_type",
     )
 
     @property

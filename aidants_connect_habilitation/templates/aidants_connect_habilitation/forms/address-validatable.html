@@ -1,0 +1,18 @@
+{% load dsfr_tags %}
+
+<fieldset class="fr-fieldset"
+  {% if not GOUV_ADDRESS_SEARCH_API_DISABLED %}
+  data-controller="address-autocomplete"
+  data-address-autocomplete-api-base-url-value="{{ GOUV_ADDRESS_SEARCH_API_BASE_URL }}"
+  {% endif %}
+>
+  {% for field in form.address_fieldset_fields %}
+    {% if field.is_hidden %}
+      {{ field }}
+    {% else %}
+      <div class="fr-fieldset__element">
+        {% dsfr_form_field field %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</fieldset>

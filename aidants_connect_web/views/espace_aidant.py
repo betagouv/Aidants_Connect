@@ -3,18 +3,20 @@ from logging import getLogger
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.template.defaultfilters import filesizeformat
+from django.templatetags.static import static
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import DetailView, FormView, TemplateView
+from django.views.generic import FormView, TemplateView
 from django.views.generic.edit import BaseFormView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
-from aidants_connect_web.constants import NotificationType
 from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, ValidateCGUForm
-from aidants_connect_web.models import Aidant, Journal, Notification, Organisation
+from aidants_connect_web.models import Aidant, Journal, Notification
 
 logger = getLogger()
 
@@ -23,59 +25,123 @@ logger = getLogger()
 class Home(TemplateView):
     template_name = "aidants_connect_web/espace_aidant/home.html"
 
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.user: Aidant = self.request.user
+        self.tiles_heading_tag = "h4"
+
     def get_context_data(self, **kwargs):
-        user: Aidant = self.request.user
-        return {
-            **super().get_context_data(**kwargs),
-            "aidant": user,
-            "notifications": Notification.objects.get_displayable_for_user(user),
-            "notification_type": NotificationType,
-            "sos_href": mailto_href(
-                recipient="contact@aidantsconnect.beta.gouv.fr",
-                subject="sos",
-                body=(
-                    f"Bonjour, je suis {user.get_full_name()}, de la structure"
-                    f"{user.organisation}, j’aimerais que vous me rappeliez afin "
-                    f"de résoudre mon problème (description du problème), "
-                    f"voici mon numéro (numéro de téléphone)"
+        kwargs.update(
+            {
+                "aidant": self.user,
+                "notifications": Notification.objects.get_displayable_for_user(
+                    self.user
                 ),
-            ),
-            "sandbox_url": settings.SANDBOX_URL,
-        }
-
-
-@method_decorator(login_required, name="dispatch")
-class OrganisationView(DetailView):
-    template_name = "aidants_connect_web/espace_aidant/organisation.html"
-    context_object_name = "organisation"
-    model = Organisation
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-
-        context = self.get_context_data(
-            object=self.object, **self.get_organisation_context_data()
+                "main_tiles": self.get_main_tiles(),
+                "resources_tiles": self.get_resources_tiles(),
+                "sandbox_url": settings.SANDBOX_URL,
+            }
         )
-        return self.render_to_response(context)
+        return super().get_context_data(**kwargs)
 
-    def get_object(self, queryset=None):
-        self.aidant: Aidant = self.request.user
-        self.organisation: Organisation = self.aidant.organisation
+    def get_main_tiles(self):
+        email_body = (
+            f"Bonjour, je suis {self.user.get_full_name()}, de la structure "
+            f"{self.user.organisation}, j’aimerais que vous me rappeliez afin de "
+            "résoudre mon problème (description du problème), voici mon numéro "
+            "(numéro de téléphone)"
+        )
 
-        if not self.organisation:
-            django_messages.error(
-                self.request, "Vous n'êtes pas rattaché à une organisation."
-            )
-            return redirect("espace_aidant_home")
-        return self.organisation
-
-    def get_organisation_context_data(self, **kwargs):
-        return {
-            "aidant": self.aidant,
-            "organisation_active_aidants": (
-                self.organisation.aidants.active().order_by("last_name")
-            ),
+        common_infos = {
+            "extra_classes": "fr-tile--horizontal fr-tile--sm",
+            "heading_tag": self.tiles_heading_tag,
         }
+
+        return [
+            {
+                **common_infos,
+                "title": "Créer un mandat",
+                "url": reverse("new_mandat"),
+                "svg_path": static(
+                    "dsfr/dist/artwork/pictograms/document/document-add.svg"
+                ),
+            },
+            {
+                **common_infos,
+                "id": "view-mandats",
+                "title": "Accéder aux mandats",
+                "url": reverse("usagers"),
+                "svg_path": static("dsfr/dist/artwork/pictograms/digital/search.svg"),
+            },
+            {
+                **common_infos,
+                "title": "Contacter lʼéquipe",
+                "url": mailto_href(
+                    recipient="contact@aidantsconnect.beta.gouv.fr",
+                    subject="sos",
+                    body=email_body,
+                ),
+                "svg_path": static(
+                    "dsfr/dist/artwork/pictograms/digital/mail-send.svg"
+                ),
+            },
+        ]
+
+    def get_resources_tiles(self):
+        def tile_attr_from_file(filepath: str) -> dict:
+            size = filesizeformat(staticfiles_storage.size(filepath))
+            return {
+                "description": f"PDF - {size}",
+                "link": static(filepath),
+                "heading_tag": self.tiles_heading_tag,
+            }
+
+        tiles = {
+            "Bien démarrer": [
+                {
+                    "title": "S’authentifier sur la plateforme Aidants Connect",
+                    **tile_attr_from_file(
+                        "guides_aidants_connect/AC_Guide_Sauthentifier.pdf"
+                    ),
+                },
+                {
+                    "title": "Créer un mandat avec un usager",
+                    **tile_attr_from_file(
+                        "guides_aidants_connect/AC_Guide_CreerUnMandat.pdf"
+                    ),
+                },
+                {
+                    "title": "Réaliser la démarche avec un usager",
+                    **tile_attr_from_file(
+                        "guides_aidants_connect/AC_Guide_RealiserLaDemarche.pdf"
+                    ),
+                },
+            ],
+            "M’entraîner": [
+                {
+                    "title": "Tutoriel interactif",
+                    "link": "https://www.etsijaccompagnais.fr/tutoriel-aidants-connect",
+                    "description": "etsijaccompagnais.fr",
+                    "new_tab": True,
+                    "heading_tag": self.tiles_heading_tag,
+                },
+                *(
+                    []
+                    if settings.SANDBOX_URL
+                    else [
+                        {
+                            "title": "Site bac à sable",
+                            "link": settings.SANDBOX_URL,
+                            "description": "aidantsconnect.beta.gouv.fr",
+                            "new_tab": True,
+                            "heading_tag": self.tiles_heading_tag,
+                        }
+                    ]
+                ),
+            ],
+        }
+
+        return tiles
 
 
 @method_decorator(login_required, name="dispatch")

@@ -1,33 +1,25 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
-{% load static ac_common ac_extras %}
 
-{% block title %}Aidants Connect - Mon organisation{% endblock %}
+{% load ac_common ac_extras dsfr_tags static %}
+
+{% block title %}Mon organisation - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
-  <div class="fr-container">
+  <div class="fr-container espace-referent">
     {% include "layouts/_messages.html" %}
 
-    <h1>Mon organisation</h1>
-    <h2>{{ organisation.name }}</h2>
-    <p class="subtitle">
-      Retrouvez dans cette section, des ressources à votre disposition, susceptibles de vous aider dans vos
-      démarches d’accompagnement.
-    </p>
+    <h1 class="fr-mb-7v">Mon organisation {{ organisation.name }}</h1>
+    {% if organisation.data_pass_id %}
+    <p class="fr-tag">Numéro d'habilitation : {{ organisation.data_pass_id }} </p>
+    {% endif %}
 
-    <div class="fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
+    <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12">
         {% include "aidants_connect_web/espace_aidant/notifications.html" with user=referent %}
-      </div>
-      <div class="fr-col-12">
-        <div class="fr-alert fr-alert--warning fr-mb-4v">
-          En tant que référent Aidants Connect, pour garantir la sécurité de l’outil, vous devez impérativement
-          désactiver les aidants qui ont quitté votre structure en cliquant sur « désactiver l'aidant ».
-          La carte appartient à la structure et pourra être réassigner à un nouvel aidant.
-        </div>
       </div>
     </div>
 
@@ -56,175 +48,107 @@
         </div>
       {% endfor %}
     </div>
-
-    {% include "aidants_connect_web/espace_aidant/statistics.html" %}
-
-    <h2>Configuration</h2>
-     <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">
-       
-      <div class="fr-col-12">
-        <h3>Périmètres disponibles</h3>
-        <form method="post">
-          {% csrf_token %}
-          {% if perimetres_form.demarches.errors %}
-            <div class="notification error" role="alert">{{ perimetres_form.demarches.errors }}</div>
-          {% endif %}
-          {{ perimetres_form.demarches }}
-          <button class="fr-btn float-right" type="submit">Enregistrer les modifications</button>
-        </form>
-      </div>
-    </div>
-
-    <div class="title-with-item margin-top-2rem">
-      <h2 class="clearfix">Aidants</h2>
-      <div>
-        {% if organisation_active_aidants|length >= 1 %}
-          <a
-            href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}"
-            class="fr-btn fr-btn--icon-left fr-icon-settings-5-fill"
-          >
-            Désigner un ou une référente
-          </a>
-        {% endif %}
-        <a href="{% url "espace_responsable_aidant_new" %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
-          Ajouter un aidant
-        </a>
-      </div>
-    </div>
-
-    {% if organisation_active_referents %}
-      <div class="title-with-item margin-bottom-2rem">
-        <h3 id="active-referents" class="fr-m-0">Référents actifs</h3>
-        <div class="tooltip aidants-guide-links">
-          Guides
-          <div class="tooltiptext">
-            <a
-              href="{% static "guides_aidants_connect/AC_Guide_LierUneCarte.pdf" %}"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Comment lier une carte ?
-            </a>
-            <span> — pdf</span>
-            <br />
-            <a
-              href="{% static "guides_aidants_connect/AC_Guide_Sauthentifier.pdf" %}"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Sʼauthentifier avec Aidants Connect
-            </a>
-            <span> — pdf</span>
+    <h2 class="fr-h3 fr-mt-6w fr-mb-3w" hidden><span class="fr-icon-bank-card-fill fr-text-title--blue-france fr-mr-1w" aria-hidden="true"></span>Gestion des cartes Aidants</h2>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v" hidden>
+      <div class="fr-col-md-4 fr-col-sm-6 fr-col-12">
+        <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <a href="#">Faire une demande d'envois de cartes</a>
+              </h3>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/document/national-identity-card.svg' %}" alt=""/>
+            </div>
           </div>
         </div>
       </div>
-      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_referents table_class="shadowed blue-green" %}
-    {% endif %}
-
-    {% if organisation_active_aidants %}
-      <h3 id="active-aidants">Aidants actifs</h3>
-      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants table_class="shadowed" %}
-    {% endif %}
-
-    {% if organisation_habilitation_requests %}
-      <h3 id="habilitation-requests">Demandes d’habilitation en cours</h3>
-      <table class="table habilitation-list">
-          <thead>
-          <tr>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Profession</th>
-            <th>État de la demande</th>
-            <th><span class="sr-only">Actions sur la demande d’habilitation</span></th>
-          </tr>
-          </thead>
-          <tbody class="shadowed blue">
-          {% for request in organisation_habilitation_requests %}
-            <tr>
-              <td>{{ request.aidant_full_name }}</td>
-              <td>{% mailto recipient=request.email %}</td>
-              <td>{{ request.profession }}</td>
-              <td>
-                <div class="tooltip request-status-{{ request.status|lower }}">
-                  {{ request.get_status_display }}
-                  <div class="tooltiptext request-status-{{ request.status|lower }}">
-                    {% if request.status|lower == "habilitation_waitling_list" %}
-                      Les prochaines sessions de formation sur votre territoire sont complètes.
-                      Nous contacterons cet aidant dès que possible.
-                    {% elif request.status|lower == "new" %}
-                      Cet aidant vient d’être ajouté sur l’espace du référent Aidants Connect
-                    {% elif request.status|lower == "processing" %}
-                      L’équipe Aidants Connect a validé l’ajout de cet aidant, il est en cours de formation.
-                    {% elif request.status|lower == "refused" %}
-                      La demande d’ajout de cet aidant est refusée pour l’une des raisons suivantes :
-                      <ul>
-                        <li>l’aidant n’est pas éligible au dispositif (ex: infirmier),</li>
-                        <li>
-                          l’adresse email ne respecte pas les critères d’éligibilité (nominative et professionnelle),
-                        </li>
-                        <li>l’aidant est déjà identifié dans la base de données.</li>
-                      </ul>
-                    {% elif request.status|lower == "cancelled" %}
-                      À la demande de l’aidant, l’habilitation est annulée
-                    {% elif request.status|lower == "status_cancelled_by_responsable" %}
-                      À votre demande, l’habilitation est annulée
-                    {% endif %}
-                  </div>
-                </div>
-              </td>
-              <td>
-                <ul class="fr-btns-group">
-                  {% if request.status_cancellable_by_responsable %}
-                    <li>
-                      <a
-                        id="cancel-habilitation-request-{{ request.id }}"
-                        href="{% url "espace_responsable_cancel_habilitation" request_id=request.id %}"
-                        class="fr-btn fr-btn--secondary "
-                      >
-                        Annuler la demande
-                      </a>
-                    </li>
-                  {% endif %}
-                  {% if request.status in request.ReferentRequestStatuses.formation_registerable %}
-                    {% if request.formations.exists %}
-                      <li>
-                        <button class="fr-btn" disabled>
-                          Cette personne est inscrite à une formation
-                        </button>
-                      </li>
-                    {% else %}
-                      <li>
-                        <a
-                          id="register-habilitation-request-{{ request.id }}"
-                          href="{% url "espace_responsable_register_formation" request_id=request.id %}"
-                          class="fr-btn fr-btn--secondary"
-                        >
-                          Inscrire à une formation
-                        </a>
-                      </li>
-                    {% endif %}
-                  {% endif %}
-                </ul>
-              </td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-    {% endif %}
-
-    {% if organisation_inactive_referents %}
-      <h3 id="inactive-referents">Référents désactivés</h3>
-      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_referents table_class="shadowed grey" %}
-    {% endif %}
-
-    {% if organisation_inactive_aidants %}
-      <h3 id="inactive-aidants">Aidants désactivés</h3>
-      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_aidants table_class="shadowed grey" %}
-    {% endif %}
+      <div class="fr-col-md-4 fr-col-sm-6 fr-col-12">
+        <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <a href="#">Déclarer l’envoi d’un colis de retour</a>
+              </h3>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/document/tax-stamp.svg' %}" alt=""/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fr-col-md-4 fr-col-sm-6 fr-col-12">
+        <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <a href="#">Carte perdue, défectueuse ?</a>
+              </h3>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/system/error.svg' %}" alt=""/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w" hidden>
+      <div class="fr-col-md-4 fr-col-12">
+        <div class="fr-bordered fr-p-4w">
+          <h3 class="fr-h5">Stock de cartes théorique</h3>
+          <p class="fr-text--xl">nb</p>
+          <div class="fr-grid-row fr-grid-row--right">
+            <a href="" class="fr-btn fr-btn--secondary fr-btn--sm fr-text-sm">Déclarer le nombre de cartes réel</a>
+          </div>
+        </div>
+      </div>
+      <div class="fr-col-md-8 fr-col-12">
+        <div class="fr-bordered fr-p-4w">
+          <h3 class="fr-h5">Événements en cours</h3>
+          <div class="fr-grid-row fr-grid-row--right">
+            <a href="" class="fr-btn fr-btn--secondary fr-btn--sm fr-text-sm">Voir les évènements terminés</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h2 class="fr-h3 fr-mt-6w fr-mb-3w"><span class="fr-icon-settings-5-fill fr-text-title--blue-france fr-mr-1w" aria-hidden="true"></span>Paramètre de l'organisation</h2>
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">
+      <div class="fr-col-12 fr-col-md-4">
+        <div class="fr-bordered fr-p-4w">
+          <h3 class="fr-h5">Adresse</h3>
+          <div>
+            {{ organisation.address }}<br>
+            {{ organisation.zipcode }} {{ organisation.city|default_if_none:"" }}
+          </div>
+        </div>
+      </div>
+      <div class="fr-col-12 organisation-thematique">
+        <div class="fr-bordered fr-p-4w">
+          <h3 class="fr-h5">Thématiques administratives disponibles</h3>
+            <form method="post">
+              {% csrf_token %}
+              {% if perimetres_form.demarches.errors %}
+                <div class="notification error" role="alert">{{ perimetres_form.demarches.errors }}</div>
+              {% endif %}
+              {% dsfr_form_field perimetres_form.demarches %}
+              <div class="fr-grid-row fr-grid-row--right">
+                <button class="fr-btn fr-btn--secondary" type="submit">Enregistrer les modifications</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 {% endblock content %}
 
 {% block extrajs %}
-  {% stimulusjs %}
-  <script defer type="module" src="{% static 'js/notifications.js' %}"></script>
-{% endblock %}
+  <script type="module" src="{% static 'js/new-mandat.mjs' %}"></script>
+{% endblock extrajs %}

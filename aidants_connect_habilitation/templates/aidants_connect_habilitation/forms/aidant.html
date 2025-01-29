@@ -1,0 +1,14 @@
+{% load dsfr_tags %}
+{% if errors %}
+  <section class="fr-my-4v fr-input-group fr-input-group--error">
+    {{ errors }}
+  </section>
+{% endif %}
+{% for field in hidden_fields %}
+	{{ field }}
+{% endfor %}
+{% dsfr_form_field form.email %}
+{% dsfr_form_field form.first_name %}
+{% dsfr_form_field form.last_name %}
+{% dsfr_form_field form.profession %}
+{% dsfr_form_field form.conseiller_numerique|dsfr_inline %}

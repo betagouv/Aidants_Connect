@@ -1,25 +1,109 @@
-{% extends 'layouts/main-habilitation.html' %}
-
-{% load static dsfr_tags %}
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+{% load ac_common ac_extras dsfr_tags partials static widget_tweaks %}
 
 {% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
 
 {% block content %}
   <div class="fr-container">
-    {% include "layouts/_messages.html" %}
+    {% include "layouts/_js-unavailable-alert.html" %}
+    {% dsfr_django_messages %}
 
-    <div class="fr-grid-row fr-grid-row--center">
-      <h2 class="fr-mt-8v">Ajouter un aidant à une de vos organisations</h2>
-      <p>
-        Pour ajouter un aidant, vous devez formuler une demande d'habilitation à l'aide du
-        formulaire ci-dessous. Tous les champs sont obligatoires.
-      </p>
-      <form method="post" class="fr-col-12 fr-col-lg-6 fr-col-md-8">
-        <section class="fr-my-4v">{{ form.non_field_errors }}</section>
-        {% csrf_token %}
-        {% dsfr_form %}
-        <button class="fr-btn" type="submit">Demander l'habilitation</button>
-      </form>
-    </div>
+    <h1>Habiliter de nouveaux aidants</h1>
+    <p>
+      Pour ajouter un aidant à votre organisation, vous devez formuler une nouvelle demande d’habilitation à l’aide du
+      formulaire ci-dessous. Tous les champs sont obligatoires.
+    </p>
+    <p>
+      La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en
+      2023. Cette formation est dorénavant financée selon différentes modalités.
+    </p>
+    <p>
+      Nous vous invitons à vous rendre sur ce <a href="https://tally.so/r/mO0Xkg">simulateur de financement</a>
+      pour découvrir comment la financer.
+    </p>
+    <p>
+      <strong>Attention :</strong> il peut arriver que dans certains cas (structures non adhérentes à l'OPCO
+      Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être
+      financée par la structure.
+    </p>
+    <p>
+      Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.
+    </p>
+
+    <form
+      id="new-habilitation-request-form"
+      method="post"
+      action="{% url 'espace_responsable_aidant_new' %}"
+    >
+      {% csrf_token %}
+
+      {{ form.habilitation_requests }}
+
+      <section class="course-type fr-mt-8v">
+        <h2>Choisissez le type de formation</h2>
+        {# Inline checkboxes not yet supported by django-dsfr #}
+        <fieldset
+          class="fr-fieldset{% if form.course_type.type.errors %} fr-fieldset--error{% endif %}"
+          id="radio-inline"
+          aria-labelledby="radio-inline-legend radio-inline-messages"
+        >
+          <legend class="fr-fieldset__legend--regular fr-fieldset__legend" id="radio-inline-legend">
+            {{ form.course_type.type.label }}
+          </legend>
+          {% for widget in form.course_type.type %}
+            <div class="fr-col-6">
+              <div class="fr-radio-group">
+                {{ widget }}
+                {% if widget.data.value == form.course_type.Type.CLASSIC %}
+                  <div class="additionnal-informations">
+                    <p>
+                      Les nouveaux aidants seront formés par un organisme de formation habilité. Cette formation est
+                      payante et financée seulement dans les 2 cas suivants :
+                    </p>
+                    <ul>
+                      <li>
+                        Pour les conseillers numériques, si elle fait partie des modules thématiques choisis lors de la
+                        formation initiale ou continue ;
+                      </li>
+                      <li>Pour les aidants des structures adhérentes à l’OPCO Uniformation.</li>
+                    </ul>
+                    <p>Pour tous les autres cas, la formation doit être financée par la structure.</p>
+                  </div>
+                {% elif widget.data.value == form.course_type.Type.P2P %}
+                  <div class="additionnal-informations">
+                    <p>
+                      Les nouveaux aidants seront formés par l’un de leur collègue habilité et utilisateur d’Aidants
+                      Connect.
+                    </p>
+                    <div class="fr-alert fr-alert--info">
+                      <p>
+                        La formation entre pairs permet aux nouveaux aidants d’être formés par l’un de leur collègue
+                        habilité et utilisateur d’Aidants Connect. Pour être éligible à la formation entre pairs, au
+                        moins un aidant de votre structure doit avoir créé au moins 5 mandats. Cet aidant pourra alors
+                        être désigné comme formateur.
+                      </p>
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+
+          {% if form.course_type.type.errors %}
+            <div class="fr-messages-group" id="{{ form.course_type.type.auto_id }}-messages">
+              {{ form.course_type.type.errors }}
+            </div>
+          {% endif %}
+        </fieldset>
+      </section>
+      <button
+        id="form-submit"
+        class="fr-btn fr-btn--icon-left fr-icon-check-line"
+        type="submit"
+        data-new-habilitation-request-target="submitBtn"
+      >
+        Valider la demande d’habilitation
+      </button>
+    </form>
   </div>
 {% endblock content %}

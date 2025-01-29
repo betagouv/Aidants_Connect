@@ -1,10 +1,11 @@
 from datetime import timedelta
 
+from django.template.defaultfilters import date
 from django.test import tag
+from django.urls import reverse
 from django.utils import timezone
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.models import Journal
@@ -54,12 +55,10 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.login_aidant(self.aidant_thierry)
 
         # See all mandats of usager page
-        active_mandats_before = self.selenium.find_elements(
-            By.ID, "active-mandat-panel"
-        )
+        active_mandats_before = self.selenium.find_elements(By.ID, "mandats-actifs")
         self.assertEqual(len(active_mandats_before), 1)
         active_mandats_autorisations_before = self.selenium.find_elements(
-            By.CLASS_NAME, "active-mandat-autorisation-row"
+            By.CSS_SELECTOR, ".mandats-actifs .mandat-autorisation-row"
         )
         self.assertEqual(len(active_mandats_autorisations_before), 2)
 
@@ -74,15 +73,16 @@ class CancelAutorisationTests(FunctionalTestCase):
         submit_button.click()
 
         # Display attestation
-        attestation_link = self.selenium.find_element(
-            By.XPATH,
-            f'.//a[@href="/usagers/{self.usager_josephine.id}'
-            f'/autorisations/{self.money_authorization.id}/cancel_attestation"]',
+        path = reverse(
+            "autorisation_cancelation_attestation",
+            kwargs={
+                "usager_id": self.usager_josephine.id,
+                "autorisation_id": self.money_authorization.id,
+            },
         )
-        attestation_link.click()
+        self.selenium.find_element(By.XPATH, f'.//a[@href="{path}"]').click()
 
-        wait = WebDriverWait(self.selenium, 10)
-        wait.until(lambda driver: len(driver.window_handles) == 2)
+        self.wait.until(lambda driver: len(driver.window_handles) == 2)
         self.selenium.switch_to.window(self.selenium.window_handles[1])
 
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -95,28 +95,33 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.selenium.switch_to.window(self.selenium.window_handles[0])
 
         # See again all mandats of usager page
-        user_link = self.selenium.find_element(
-            By.XPATH, f'.//a[@href="/usagers/{self.usager_josephine.id}/"]'
+        self.open_live_url(
+            reverse("usager_details", kwargs={"usager_id": self.usager_josephine.id})
         )
-        user_link.click()
 
         active_autorisations_after = self.selenium.find_elements(
-            By.ID, "active-mandat-panel"
+            By.CLASS_NAME, "mandats-actifs"
         )
         self.assertEqual(len(active_autorisations_after), 1)
 
         active_mandats_autorisations_after = self.selenium.find_elements(
-            By.CLASS_NAME, "active-mandat-autorisation-row"
+            By.CSS_SELECTOR, ".mandats-actifs .mandat-autorisation-row"
         )
         revoked_mandat_autorisation_after = self.selenium.find_element(
-            By.ID, f"active-mandat-autorisation-{self.money_authorization.demarche}"
+            By.ID,
+            f"mandat-{self.mandat_thierry_josephine.pk}-"
+            f"autorisation-{self.money_authorization.demarche}",
         )
 
         self.assertEqual(len(active_mandats_autorisations_after), 2)
-        self.assertIn("Révoqué", revoked_mandat_autorisation_after.text)
+        self.assertIn(
+            date(timezone.now(), "d F Y"), revoked_mandat_autorisation_after.text
+        )
 
         auth_revocation_attestation_button = self.selenium.find_elements(
-            By.CSS_SELECTOR, ".auth-revocation-attestation"
+            By.ID,
+            f"mandat-{self.mandat_thierry_josephine.pk}-"
+            f"auth-revocation-attestation-{self.money_authorization.demarche}",
         )
         self.assertEqual(len(auth_revocation_attestation_button), 1)
         self.assertIn("Voir la révocation", auth_revocation_attestation_button[0].text)
@@ -127,31 +132,55 @@ class CancelAutorisationTests(FunctionalTestCase):
 
         # Cancel second autorisation
         cancel_mandat_autorisation_button = self.selenium.find_element(
-            By.ID, f"active-mandat-autorisation-{self.family_authorization.demarche}"
-        ).find_element(By.TAG_NAME, "a")
+            By.ID,
+            f"mandat-{self.mandat_thierry_josephine.pk}-"
+            f"auth-revocation-{self.family_authorization.demarche}",
+        )
         cancel_mandat_autorisation_button.click()
+
+        self.wait.until(
+            self.path_matches(
+                "confirm_autorisation_cancelation",
+                kwargs={
+                    "usager_id": self.mandat_thierry_josephine.pk,
+                    "autorisation_id": self.family_authorization.pk,
+                },
+            )
+        )
 
         # Confirm cancellation
         submit_button = self.selenium.find_element(By.CSS_SELECTOR, "[type='submit']")
         submit_button.click()
 
-        # See again all mandats of usager page
-        user_link = self.selenium.find_element(
-            By.XPATH, f'.//a[@href="/usagers/{self.usager_josephine.id}/"]'
+        self.wait.until(
+            self.path_matches(
+                "autorisation_cancelation_success",
+                kwargs={
+                    "usager_id": self.mandat_thierry_josephine.pk,
+                    "autorisation_id": self.family_authorization.pk,
+                },
+            )
         )
-        user_link.click()
+
+        self.open_live_url(
+            reverse("usager_details", kwargs={"usager_id": self.usager_josephine.id})
+        )
 
         active_autorisations_after = self.selenium.find_elements(
-            By.ID, "active-mandat-panel"
+            By.CSS_SELECTOR, ".mandats-actifs"
         )
         self.assertEqual(len(active_autorisations_after), 0)
         inactive_autorisations_after = self.selenium.find_elements(
-            By.ID, "inactive-mandat-panel"
+            By.CSS_SELECTOR, ".mandats-revoques"
         )
         self.assertEqual(len(inactive_autorisations_after), 1)
         inactive_mandats_autorisations_after = self.selenium.find_elements(
-            By.CLASS_NAME, "inactive-mandat-autorisation-row"
+            By.CSS_SELECTOR, ".mandats-revoques .mandat-autorisation-row"
         )
         self.assertEqual(len(inactive_mandats_autorisations_after), 2)
-        self.assertIn("Révoqué", inactive_mandats_autorisations_after[0].text)
-        self.assertIn("Révoqué", inactive_mandats_autorisations_after[1].text)
+        self.assertIn(
+            date(timezone.now(), "d F Y"), inactive_mandats_autorisations_after[0].text
+        )
+        self.assertIn(
+            date(timezone.now(), "d F Y"), inactive_mandats_autorisations_after[1].text
+        )

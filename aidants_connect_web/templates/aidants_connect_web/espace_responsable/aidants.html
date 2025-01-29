@@ -1,0 +1,73 @@
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+{% load ac_common ac_extras dsfr_tags static %}
+
+{% block title %}Aidants - Aidants Connect{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <div class="fr-container">
+    <h1>Aidants</h1>
+
+    {% dsfr_django_messages %}
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12">
+        {% include "aidants_connect_web/espace_aidant/notifications.html" with user=referent %}
+      </div>
+    </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
+      {% for notification in referent_notifications %}
+        <div
+          class="fr-col-12"
+          {% if notification.must_ack %}
+          data-controller="notification"
+          data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
+          {% endif %}
+        >
+          <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}">
+            <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
+            <p>{{ notification.to_html }}</p>
+            {% if notification.must_ack %}
+              <button
+                class="fr-btn--close fr-btn"
+                title="Masquer le message"
+                data-action="notification#markRead"
+              >
+                Masquer le message
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="fr-grid-row flex-between">
+      <h2 class="fr-h3" id="active-aidants">Aidants actifs</h2>
+      <div class="">
+        <div>
+          <a href="{% url "espace_responsable_aidant_new" %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
+            Ajouter un aidant
+          </a>
+        </div>
+      </div>
+    </div>
+
+
+    {% if organisation_active_aidants %}
+      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants %}
+    {% endif %}
+  </div>
+  {% if organisation_inactive_aidants %}
+    <div class="fr-container inactives-aidants fr-mt-4w">
+      <h2 class="fr-h3" id="inactive-aidants">Aidants désactivés</h2>
+        {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_aidants %}
+    </div>
+  {% endif %}
+{% endblock content %}
+
+{% block extrajs %}
+  <script defer type="module" src="{% static 'js/new-mandat.mjs' %}"></script>
+{% endblock extrajs %}

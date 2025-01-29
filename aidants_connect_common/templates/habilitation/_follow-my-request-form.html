@@ -13,10 +13,10 @@
   >
     {% csrf_token %}
     {% dsfr_form %}
-    <input
+    <button
       class="fr-btn"
       type="submit"
-      value="Recevoir le line de ma demande"
-    />
+      data-follow-request-modale-target="submitBtn"
+    >Recevoir le lien de ma demande</button>
   </form>
-{% endif %} 
+{% endif %}

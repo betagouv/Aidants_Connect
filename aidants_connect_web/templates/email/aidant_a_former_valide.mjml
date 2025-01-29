@@ -7,7 +7,7 @@
   <mj-column>
     <mj-text>Bonjour,</mj-text>
     <mj-text>
-      Nous venons de valider lʼéligibilité de lʼaidante ou lʼaidant {{aidant.first_name}} {{aidant.last_name}}
+      Nous venons de valider lʼéligibilité de lʼaidante ou lʼaidant {{ aidant.first_name }} {{ aidant.last_name }}
       {% mailto aidant.email %} à former ajoutée depuis votre espace.
     </mj-text>
     <mj-text>
@@ -29,4 +29,4 @@
     </mj-text>
   </mj-column>
 </mj-section>
-{% endblock %}
+{% endblock email_body %}

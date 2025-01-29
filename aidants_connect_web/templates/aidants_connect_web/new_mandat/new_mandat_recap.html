@@ -1,68 +1,42 @@
-{% extends 'layouts/main-habilitation.html' %}
+
+{% extends 'layouts/main.html' %}
+
+
+{% load dsfr_tags %}
 {% load static form_extras %}
 
 {% block title %}Aidants Connect - Récapitulatif du nouveau mandat{% endblock %}
-
-{% block extracss %}
-  <link href="{% static 'css/mandate-elements.css' %}" rel="stylesheet">
-  <link href="{% static 'css/mandate-recap.css' %}" rel="stylesheet">
-{% endblock extracss %}
 
 {% block content %}
   <div class="fr-container">
     {% include "layouts/_messages.html" %}
 
-    <form class="fr-col-12 fr-col-lg-8" method="post">
+    <form class="fr-col-12" method="post">
       {% csrf_token %}
 
       <h1>Récapitulatif du mandat{% if is_remote %} à distance{% endif %}</h1>
 
-      <p class="subtitle">Retrouvez ici toutes les informations relatives au mandat avant de procéder à sa
-        validation.</p>
-
-      <h3 class="upper clearfix">
-        <span class="align-middle">Éléments du mandat</span>
-        <span class="float-right">
-          <a class="fr-btn" href="{% url 'new_attestation_projet' %}" target="_blank" rel="noopener noreferrer">
-            Voir le projet de mandat
-          </a>
-        </span>
-      </h3>
+      <h2 >Éléments du mandat</h2>
 
       {% include "aidants_connect_web/new_mandat/_mandate-elements.html" %}
 
-      <h3 class="upper">Validation de l’usager</h3>
+      <h2 class="fr-mt-8w">Validation de l’usager</h2>
 
-      <section class="shadowed red padding-1-5rem margin-bottom-2rem mandate-summary-block">
-        <p class="reminder-title">Rappels</p>
-        <ul>
-          <li class="i-handshake">Le mandat est révocable à tout moment par les deux parties</li>
-          <li class="i-eyes">L’usager a des droits d’accès, de rectification et de suppression sur ses données</li>
-          <li class="i-warning">L’usager n’est pas sous tutelle ou curatelle</li>
-        </ul>
-      </section>
-
-      <section class="shadowed padding-1-5rem margin-bottom-2rem mandate-summary-block">
+      <section>
         <p class="margin-bottom-1rem">
           En cochant ces cases, <strong>{{ aidant.get_full_name }}</strong> confirme :
         </p>
-        <div class="errors">{{ form.personal_data.errors }}</div>
-        {{ form.personal_data }}
-        <label for="{{ form.personal_data.id_for_label }}">
-          Avoir communiqué à <strong>{{ usager.get_full_name }}</strong> les informations concernant l’objet de
-          l’intervention, la raison pour laquelle ses informations sont collectées et leur utilité ; les droits
-          sur ses données ET avoir conservé son consentement écrit (capture d'écran email, SMS…) pour conclure le
-          mandat et utiliser ses données à caractère personnel.
-        </label>
+        <div class="fr-mb-4w">
+          {% dsfr_form_field form.personal_data %} 
+        </div>
       </section>
 
-      <h3 class="upper">Validation de l’aidant</h3>
+      <h2 class="fr-mt-8w">Validation de l’aidant</h2>
 
-      <section class="shadowed padding-2rem margin-bottom-2rem">
-        {% field_as_fr_grid_row form.otp_token label_size="large" %}
+      <section class="fr-col-md-5 fr-col-12 fr-background-alt--grey fr-p-4w">
+        {% dsfr_form_field form.otp_token %}
+        <input type="submit" class=" fr-btn" value="Enregistrer le mandat"/>
       </section>
-
-      <input type="submit" class="float-right fr-btn" value="Enregistrer le mandat"/>
     </form>
   </div>
 {% endblock %}

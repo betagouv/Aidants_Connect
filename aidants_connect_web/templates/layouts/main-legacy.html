@@ -1,4 +1,4 @@
-{% load static dsfr_tags ac_common %}
+{% load ac_common dsfr_tags static %}
 <!doctype html>
 <html itemscope itemtype="http://schema.org/WebPage" lang="fr">
 
@@ -11,12 +11,12 @@
 
   <link href="{% static 'css/template.min.css' %}" rel="stylesheet">
   <link href="{% static 'css/main-legacy.css' %}" rel="stylesheet">
+  <link href="{% static 'css/dsfr-theme-tac.css' %}" rel="stylesheet">
   {% dsfr_css %}
-  <link href="{{ COOKIE_BANNER_CSS_URL }}" rel="stylesheet">
 
   <!-- Extra styles -->
   {% block extracss %}
-  {% endblock %}
+  {% endblock extracss %}
 
   <!-- Search Engine -->
   <meta name="title" content="Aidants Connect - aidantsconnect.beta.gouv.fr">
@@ -109,7 +109,7 @@
       </div>
 
   {% block content %}
-  {% endblock %}
+  {% endblock content %}
   </main>
 
   {% block footer %}
@@ -123,7 +123,7 @@
   <script defer src="{{ COOKIE_BANNER_SERVICES_URL }}"></script>
   <script defer src="{% static 'js/cookie-banner.js' %}"></script>
   {% block extrajs %}
-  {% endblock %}
+  {% endblock extrajs %}
 </body>
 
 </html>

@@ -1,0 +1,89 @@
+{% load ac_common ac_extras dsfr_tags partials static %}
+
+{% comment %}
+  DOCUMENTATION:
+	Use this template with aidants_connect_common.presenters.GenericHabilitationRequestPresenter.
+	Implement it, then provide a `objects` variable in context thats an iterable of GenericHabilitationRequestPresenter.
+	Use `habilitation-profile-card` partial to render one presenter.
+
+	See https://github.com/carltongibson/django-template-partials
+{% endcomment %}
+
+{% partialdef summary-second-line %}
+  {% if object.email %}
+    <span class="hide-header fr-m-0 fr-text--overflow-hidden">{{ object.email }}</span>
+  {% endif %}
+{% endpartialdef %}
+
+{% partialdef habilitation-profile-card %}
+  {# Prevent messing with the absolute positionning of the design #}
+  {# See https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent #}
+  <div
+    id="profile-edit-card-{{ object.pk }}"
+    class="fr-col-12 fr-col-md-6 request-card"
+    {% if object.edit_endpoint %}
+    data-controller="profile-edit-card"
+    data-profile-edit-card-id-value="{{ object.pk }}"
+    data-profile-edit-card-enpoint-value="{{ object.edit_endpoint }}"
+    data-profile-edit-card-profile-edit-modal-outlet="*"
+    {% endif %}
+  >
+    <details
+      {% if object.details_id %}id="{{ object.details_id }}"{% endif %}
+      class="request-card-details"
+      name="generic-hab-request"
+    >
+      <summary
+        class="fr-grid-row fr-grid-row--middle fr-grid-row--gap-2v fr-tile--shadow fr-py-2v fr-px-4v"
+        title="{{ object.full_name }} {{ object.email }}"
+      >
+        {{ object.form|safe }}
+        <img src="{% static "images/avatar.svg" %}" width="36" height="36" alt="" />
+        <span class="header-infos spacer">
+          <span class="fr-m-0 fr-text--bold">{{ object.full_name }}</span>
+          {% include object.summary_second_line_tpl %}
+        </span>
+        <span
+          type="button"
+          class="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-arrow-up-s-line"
+          aria-hidden="true"
+        ></span>
+      </summary>
+      <div class="details-content fr-p-4v fr-tile--shadow">
+        <section class="user-informations">
+          {% for field in object.details_fields %}
+            <section class="fr-my-4v">
+              <p class="fr-text--sm fr-text-mention--grey">{{ field.label }}</p>
+              {{ field.value }}
+            </section>
+          {% endfor %}
+        </section>
+        {% if object.edit_href or object.edit_endpoint %}
+          <ul class="fr-btns-group fr-btns-group--sm fr-btns-group--right fr-btns-group--inline fr-mb-n4v">
+            <li>
+              {% if object.edit_endpoint %}
+                <button
+                  id="edit-button-{{ object.pk }}"
+                  class="fr-btn fr-btn--tertiary fr-btn--icon fr-icon-edit-fill"
+                  data-action="profile-edit-card#onEdit:stop:prevent"
+                >
+                  Éditer
+                </button>
+              {% endif %}
+            </li>
+          </ul>
+        {% endif %}
+      </div>
+    </details>
+  </div>
+{% endpartialdef %}
+
+<section class="fr-grid-row fr-grid-row--gutters" {{ profile_cards_wrapper_attrs|default:""|safe }}>
+  <link href="{% static 'css/generic-habilitation-request-profile-card.css' %}" rel="stylesheet">
+
+  {% for object in objects %}
+    {% partial habilitation-profile-card %}
+  {% endfor %}
+
+  <script type="module" src="{% static 'js/generic-habilitation-request-profile-card.mjs' %}"></script>
+</section>

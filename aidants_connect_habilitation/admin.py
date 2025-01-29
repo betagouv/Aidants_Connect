@@ -1,18 +1,29 @@
+from zoneinfo import ZoneInfo
+
 from django.conf import settings
 from django.contrib import admin, messages
-from django.contrib.admin import ModelAdmin, StackedInline, TabularInline
+from django.contrib.admin import (
+    ModelAdmin,
+    SimpleListFilter,
+    StackedInline,
+    TabularInline,
+)
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.core.mail import send_mail
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
 from django.urls import path, reverse
+from django.utils import timezone
 from django.utils.html import linebreaks, urlize
 from django.utils.safestring import mark_safe
 
 from django_reverse_admin import ReverseInlineModelAdmin, ReverseModelAdmin
+from import_export import resources
+from import_export.admin import ImportExportMixin
+from import_export.fields import Field
 
 from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin, admin_site
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
@@ -129,11 +140,96 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
     list_filter = ("is_aidant",)
 
 
+class OrganisationPublicPrivateFilter(SimpleListFilter):
+    title = "Structures Publiques / Privées INSEE"
+    parameter_name = "public_private_insee"
+
+    def value(self):
+        return super().value()
+
+    def lookups(self, request, model_admin):
+        return [
+            (1, "Structures publiques"),
+            (2, "Structures privées"),
+        ]
+
+    def queryset(self, request, queryset):
+        match self.value():
+            case "1":
+                return queryset.filter(
+                    Q(legal_category__startswith="4")
+                    | Q(legal_category__startswith="7")
+                )
+            case "2":
+                return queryset.exclude(
+                    Q(legal_category__startswith="4")
+                    | Q(legal_category__startswith="7")
+                )
+            case _:
+                return queryset
+
+
+class OrganisationRequestResource(resources.ModelResource):
+    request_created_at = Field()
+    request_updated_at = Field()
+
+    def dehydrate_request_created_at(self, orga_request):
+        return timezone.make_naive(orga_request.created_at, ZoneInfo("Europe/Paris"))
+
+    def dehydrate_request_updated_at(self, orga_request):
+        return timezone.make_naive(orga_request.updated_at, ZoneInfo("Europe/Paris"))
+
+    class Meta:
+        model = OrganisationRequest
+        fields = (
+            "request_created_at",
+            "request_updated_at",
+            "status",
+            "name",
+            "siret",
+            "legal_category",
+            "type__name",
+            "type_other",
+            "address",
+            "zipcode",
+            "city",
+            "is_private_org",
+            "france_services_label",
+            "france_services_number",
+            "issuer__last_name",
+            "issuer__first_name",
+            "issuer__profession",
+            "issuer__phone",
+            "manager__email",
+            "manager__last_name",
+            "manager__first_name",
+            "manager__profession",
+            "manager__email",
+            "manager__phone",
+        )
+
+
 @admin.register(OrganisationRequest, site=admin_site)
-class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
-    list_filter = (RegionFilter, DepartmentFilter, "status")
-    list_display = ("name", "issuer", "status", "data_pass_id", "created_at")
-    search_fields = ("data_pass_id", "name", "uuid")
+class OrganisationRequestAdmin(
+    ImportExportMixin, VisibleToAdminMetier, ReverseModelAdmin
+):
+    resource_classes = [OrganisationRequestResource]
+    list_filter = (
+        RegionFilter,
+        DepartmentFilter,
+        "status",
+        "is_private_org",
+        OrganisationPublicPrivateFilter,
+    )
+    list_display = (
+        "name",
+        "issuer",
+        "status",
+        "data_pass_id",
+        "created_at",
+        "legal_category",
+    )
+    search_fields = ("data_pass_id", "name", "uuid", "siret")
     raw_id_fields = ("issuer", "organisation")
     fields = (
         "issuer",
@@ -147,6 +243,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "type_other",
         "name",
         "siret",
+        "legal_category",
         "address",
         "zipcode",
         "city",
@@ -160,6 +257,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "mission_description",
         "avg_nb_demarches",
         "cgu",
+        "not_free",
         "dpo",
         "without_elected",
         "professionals_only",
@@ -175,6 +273,7 @@ class OrganisationRequestAdmin(VisibleToAdminMetier, ReverseModelAdmin):
         "mission_description",
         "avg_nb_demarches",
         "cgu",
+        "not_free",
         "dpo",
         "without_elected",
         "professionals_only",

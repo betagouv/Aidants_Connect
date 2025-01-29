@@ -16,4 +16,4 @@
       <mj-text>Vous pourrez ensuite reprendre le cours de votre demande.</mj-text>
     </mj-column>
   </mj-section>
-{% endblock %}
+{% endblock email_body %}

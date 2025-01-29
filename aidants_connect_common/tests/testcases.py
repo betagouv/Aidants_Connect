@@ -1,26 +1,42 @@
+import contextlib
+import operator
 import re
-from typing import Optional
+from typing import Any, Callable, Iterable, Mapping, Optional
 from urllib.parse import urlencode
 
+from django import forms
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core import mail
-from django.test import override_settings
+from django.db import models
+from django.test import tag
 from django.urls import reverse
 
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from faker.proxy import Faker
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    StaleElementReferenceException,
+    WebDriverException,
+)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.expected_conditions import url_matches
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
 from aidants_connect_web.models import Aidant
 
+DefaultGetter = Callable[[models.Model | Mapping, str], Any]
+CustomGetter = Callable[[models.Model | Mapping, str, DefaultGetter], Any]
 
-@override_settings(DEBUG=True)
+
+@tag("functional")
 class FunctionalTestCase(StaticLiveServerTestCase):
     js = True
+    faker = Faker()
 
     @classmethod
     def setUpClass(cls):
@@ -32,10 +48,15 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         if settings.HEADLESS_FUNCTIONAL_TESTS:
             firefox_options.add_argument("--headless")
 
+        # Allow pasting in console
+        firefox_options.set_preference("devtools.selfxss.count", 1_000_000)
         firefox_options.set_preference("javascript.enabled", cls.js)
 
-        cls.selenium = WebDriver(options=firefox_options)
-        cls.selenium.implicitly_wait(10)
+        service = Service(
+            log_output="./geckodriver.log", service_args=["--log", "debug"]
+        )
+        cls.selenium = WebDriver(options=firefox_options, service=service)
+        cls.selenium.implicitly_wait(0.5)
         cls.wait = WebDriverWait(cls.selenium, 10)
 
         # In some rare cases, the first connection to the Django LiveServer
@@ -55,16 +76,11 @@ class FunctionalTestCase(StaticLiveServerTestCase):
 
     def open_live_url(self, url):
         """Helper method to trigger a GET request on the Django live server."""
-
         self.selenium.get(f"{self.live_server_url}{url}")
+        self.wait.until(self.document_loaded())
 
     def admin_login(self, user: str, password: str, otp: str):
-        selenium_wait = WebDriverWait(self.selenium, 10)
-
-        path = reverse("otpadmin:login")
-        self.open_live_url(path)
-        selenium_wait.until(url_matches(f"^.+{path}$"))
-
+        self.open_live_url(reverse("otpadmin:login"))
         self.selenium.find_element(By.CSS_SELECTOR, 'input[name="username"]').send_keys(
             user
         )
@@ -77,7 +93,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
-        selenium_wait.until(url_matches(f"^.+{reverse('otpadmin:index')}$"))
+        self.wait.until(self.document_loaded())
 
     def login_aidant(self, aidant: Aidant, otp_code: str | None = None):
         """
@@ -103,23 +119,181 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         )
         self.selenium.get(url)
 
+    def fill_form(
+        self,
+        data: models.Model | Mapping,
+        fields: forms.Form | Iterable[forms.BoundField],
+        custom_getter: CustomGetter | None = None,
+        selector: WebElement = None,
+    ):
+        """
+        Generic method to fill a form in a page using Selenium with provided data
+
+        fields: form fields to fill in the page. Can be passed a Form, in which case
+                every field in :attr:`django.forms.forms.Form.visible_fields()` will be
+                filled. Pass a list of :class:`django.forms.forms.BoundField` to
+                customize which fields to fill.
+
+        data: the data to fill the form with. Can be an instance of
+              :class:`django.db.models.Model` or a simple dict.
+
+        custom_getter: a callable that takes
+                       (:param:`data`, :param:`fields`, :param:`default_getter`)
+                       as parameters where ``data`` and ``fields`` are the same ones
+                       passed to ``fill_form`` and ``default_getter`` is the default
+                       callable used to retieve data from objects.
+
+        example:
+
+        >>> from aidants_connect_web.tests.factories import HabilitationRequestFactory
+        ... from aidants_connect_web.forms import HabilitationRequestCreationForm
+        ...
+        ... def my_getter(obj, name, provided_getter):
+        ...     return (
+        ...         default_getter(obj, "course_type" )
+        ...         if name === "type"
+        ...         else provided_getter(obj, name)
+        ...     )
+
+        >>> the_data = HabilitationRequestFactory.build()
+        ... the_fields = HabilitationRequestCreationForm().visible_fields()
+        ... self.fill_form(the_data, the_fields, my_getter)
+        """
+        selector = selector or self.selenium
+
+        actual_fields = list(
+            fields.visible_fields() if isinstance(fields, forms.Form) else fields
+        )
+        default_getter: DefaultGetter = (
+            operator.getitem if isinstance(data, Mapping) else getattr
+        )
+
+        val_getter: DefaultGetter = default_getter
+        if custom_getter:
+
+            def wrapped_getter(_data, _name):
+                return custom_getter(_data, _name, default_getter)
+
+            val_getter = wrapped_getter
+
+        if len(actual_fields) == 0:
+            self.fail("No fillable fields were provided")
+
+        if not isinstance(actual_fields[0], forms.BoundField):
+            self.fail(
+                "Provided fields are not BoundField instances; use `form[field_name]` "
+                "of `form.visible_fields()` instead of `form.fields[field_name]`."
+            )
+
+        for bf in actual_fields:
+            if isinstance(bf.field.widget, forms.Select):
+                value = bf.field.prepare_value(val_getter(data, bf.name))
+                if value is None:
+                    self.fail(
+                        f"Couldn't translate {bf.name} from data into a "
+                        f"value; if it's a Model, it's most likely not in DB"
+                    )
+                Select(selector.find_element(By.ID, bf.auto_id)).select_by_value(
+                    f"{value}"
+                )
+            elif isinstance(bf.field.widget, forms.RadioSelect):
+                value = bf.field.prepare_value(val_getter(data, bf.name))
+                bw = next(
+                    subwidget
+                    for subwidget in bf.subwidgets
+                    if subwidget.data["value"] == value
+                )
+
+                self.js_click(By.ID, bw.data["attrs"]["id"])
+            # Provide other implementations here…
+            # elif
+            else:
+                try:
+                    elt: WebElement = selector.find_element(By.ID, bf.auto_id)
+                    elt.clear()
+                    elt.send_keys(val_getter(data, bf.name))
+                except Exception:
+                    self.fail(
+                        f"Couldn't fill form field {bf.name} of type "
+                        f"{type(bf.field.widget)} please provide an implementation"
+                    )
+
+    def js_click(self, by=By.ID, value: Optional[str] = None):
+        """
+        Clicking through Js instead of selenium to prevent
+        'element is not clickable because another element obscures it' errors
+        """
+        for el in self.selenium.find_elements(by, value):
+            self.selenium.execute_script("arguments[0].click();", el)
+
+    @contextlib.contextmanager
+    def details_opened(self, by=By.ID, value: Optional[str] = None):
+        elt = self.selenium.find_element(by, value)
+        try:
+            self.selenium.execute_script(
+                "arguments[0].setAttribute('open', 'open')", elt
+            )
+            yield
+        finally:
+            # If we moved away from the page (for instance when POSTing a form)
+            # the element is stale so we ignore this exception
+            with contextlib.suppress(StaleElementReferenceException):
+                self.selenium.execute_script(
+                    "arguments[0].removeAttribute('open')", elt
+                )
+
+    @contextlib.contextmanager
+    def implicitely_wait(self, time_to_wait: float, driver=None):
+        """time_to_wait: time to wait in seconds"""
+        driver = driver or self.selenium
+        implicit_wait = driver.timeouts.implicit_wait
+        driver.implicitly_wait(0.1)
+        try:
+            yield
+        finally:
+            driver.implicitly_wait(implicit_wait)
+
     def path_matches(
-        self, route_name: str, *, kwargs: dict = None, query_params: dict = None
+        self, viewname: str, *, kwargs: dict = None, query_params: dict = None
     ):
         kwargs = kwargs or {}
         query_part = urlencode(query_params or {}, quote_via=lambda s, _1, _2, _3: s)
         query_part = rf"\?{query_part}" if query_part else ""
         return url_matches(
-            rf"http://localhost:\d+{reverse(route_name, kwargs=kwargs)}{query_part}"
+            rf"http://localhost:\d+{reverse(viewname, kwargs=kwargs)}{query_part}"
         )
 
+    def document_loaded(self) -> Callable[[WebDriver], bool]:
+        def _predicate(driver: WebDriver) -> bool:
+            return driver.execute_script("return document.readyState") == "complete"
+
+        return _predicate
+
+    def dsfr_ready(self):
+        def _predicate(driver: WebDriver):
+            return (
+                driver.execute_script(
+                    "return document.documentElement.dataset.appReady"
+                )
+                == "true"
+            )
+
+        return _predicate
+
     def assertElementNotFound(self, by=By.ID, value: Optional[str] = None):
-        implicit_wait = self.selenium.timeouts.implicit_wait
-        self.selenium.implicitly_wait(0.1)
-        try:
+        self.wait.until(self.document_loaded())
+        with self.implicitely_wait(0.1):
             with self.assertRaises(
                 NoSuchElementException, msg="Found element expected to be absent"
             ):
                 self.selenium.find_element(by=by, value=value)
-        finally:
-            self.selenium.implicitly_wait(implicit_wait)
+
+    def assertNormalizedStringEqual(self, first, second):
+        """
+        Compares to strings where all the newlines
+        and multiple spaces are replaced with single space
+        """
+        return self.assertEqual(
+            re.sub(r"\s+", " ", f"{first}", flags=re.M).strip(),
+            re.sub(r"\s+", " ", f"{second}", flags=re.M).strip(),
+        )

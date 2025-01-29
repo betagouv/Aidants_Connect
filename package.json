@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "AidantsConnectApplication": "file:./aidants_connect_common/static/js/ac-app.mjs",
+    "MarkdownEditor": "file:./aidants_connect_pico_cms/static/js/widgets/markdown-editor.js",
+    "sass": "^1.80.4",
+    "Stimulus": "npm:stimulus@3.2.2"
+  },
+  "imports": {
+    "Stimulus": "@hotwired/stimulus"
+  }
+}

@@ -1,0 +1,51 @@
+{% load ac_common %}
+<nav class="fr-sidemenu" aria-labelledby="fr-sidemenu-title">
+  <div class="fr-sidemenu__inner">
+    <button
+      class="fr-sidemenu__btn"
+      aria-controls="fr-sidemenu-wrapper"
+      aria-expanded="false"
+    >Menu
+    </button>
+    <div class="fr-collapse" id="fr-sidemenu-wrapper">
+      <ul class="fr-sidemenu__list">
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'cgu' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'cgu' %}"
+            {% if request.resolver_match.url_name == 'cgu' %}aria-current="page"{% endif %}
+            >Conditions générales d'utilisation</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'politique_confidentialite' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'politique_confidentialite' %}"
+            {% if request.resolver_match.url_name == 'politique_confidentialite' %}aria-current="page"{% endif %}
+            >Politique de Confidentialité</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'accessibilite' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'accessibilite' %}"
+            {% if request.resolver_match.url_name == 'accessibilite' %}aria-current="page"{% endif %}
+            >Déclaration d'accessibilité</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'mentions_legales' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'mentions_legales' %}"
+            {% if request.resolver_match.url_name == 'mentions_legales' %}aria-current="page"{% endif %}
+            >Mentions Légales</a
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -17,6 +17,15 @@ urlpatterns = [
     path("", include("aidants_connect_web.urls")),
     path("habilitation/", include("aidants_connect_habilitation.urls")),
     path("", include("aidants_connect_pico_cms.urls")),
+    # APIs
+    path(
+        "api/habilitation/",
+        include("aidants_connect_habilitation.api.urls"),
+    ),
+    path(
+        "api/web/",
+        include("aidants_connect_web.api.urls"),
+    ),
 ]
 
 if "test" in sys.argv:

@@ -1,4 +1,8 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.expected_conditions import (
+    invisibility_of_element_located,
+)
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.tests.factories import (
@@ -50,28 +54,39 @@ class UsagersTest(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         user_with_valid_mandate = self.selenium.find_elements(
-            By.CSS_SELECTOR, ".table.with-valid-mandate tbody tr"
+            By.CSS_SELECTOR, "table.with-valid-mandate tbody tr"
         )
 
         user_without_valid_mandate = self.selenium.find_elements(
-            By.CSS_SELECTOR, ".table.without-valid-mandate tbody tr"
+            By.CSS_SELECTOR, "table.without-valid-mandate tbody tr"
         )
 
         self.assertEqual(len(user_with_valid_mandate), 2)
         self.assertEqual(len(user_without_valid_mandate), 1)
 
+        self.wait.until(
+            expected_conditions.visibility_of_element_located((By.ID, "filter-input"))
+        )
+
         self.selenium.find_element(By.ID, "filter-input").send_keys("Anne")
 
-        anne_result = self.selenium.find_element(
-            By.XPATH, "//*[normalize-space()='Anne Cécile Gertrude']"
+        self.wait.until(
+            invisibility_of_element_located(
+                (By.XPATH, "//tr[contains(., 'Joséphine')]")
+            )
         )
-        josephine_result = self.selenium.find_element(
-            By.XPATH, "//*[normalize-space()='Joséphine']"
+        self.assertTrue(
+            self.selenium.find_element(
+                By.XPATH, "//tr[contains(., 'Anne Cécile Gertrude')]"
+            ).is_displayed()
         )
-        corentin_result = self.selenium.find_element(
-            By.XPATH, "//*[normalize-space()='Corentin']"
+        self.assertFalse(
+            self.selenium.find_element(
+                By.XPATH, "//tr[contains(., 'Joséphine')]"
+            ).is_displayed()
         )
-
-        self.assertTrue(anne_result.is_displayed())
-        self.assertFalse(josephine_result.is_displayed())
-        self.assertTrue(corentin_result.is_displayed())
+        self.assertTrue(
+            self.selenium.find_element(
+                By.XPATH, "//tr[contains(., 'Corentin')]"
+            ).is_displayed()
+        )

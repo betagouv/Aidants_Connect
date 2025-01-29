@@ -1,17 +1,17 @@
 {% extends "admin/base_site.html" %}
-{% load static ac_common ac_extras i18n %}
+{% load ac_common ac_extras i18n static %}
 
 {% block extrastyle %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
   {{ media.css }}
-{% endblock %}
+{% endblock extrastyle %}
 
 {% block extrahead %}
   {{ block.super }}
   {{ media.js }}
-{% endblock %}
+{% endblock extrahead %}
 
 {% block content %}
   <h1>Vers organisation transférer&nbsp;?</h1>
@@ -51,4 +51,4 @@
       {% endfor %}
     </ul>
   {% endif %}
-{% endblock %}
+{% endblock content %}

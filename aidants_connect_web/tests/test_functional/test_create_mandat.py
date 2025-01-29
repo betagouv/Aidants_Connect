@@ -13,6 +13,7 @@ from phonenumbers import parse as parse_number
 from requests import post as requests_post
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.expected_conditions import url_matches
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
@@ -40,15 +41,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(welcome_aidant, "Vos usagères et usagers")
-
-        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
-        self.assertEqual(1, len(usagers_before))
         self.assertEqual(
-            "Il n'y a encore personne avec qui vous avez un mandat.",
-            usagers_before[0].text.strip(),
+            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
+
+        tables = self.selenium.find_elements(By.TAG_NAME, "table")
+        self.assertEqual(3, len(tables))
+        for table in tables:
+            self.assertIn("Vous n'avez pas de mandats", table.text)
 
         # Create new mandat
         self.selenium.find_element(By.ID, "add_usager").click()
@@ -77,13 +77,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)
 
-        # Nouvelle mire dialog
-        if len(self.selenium.find_elements(By.ID, "message-on-login")) > 0:
-            temp_test_nouvelle_mire_masquer = self.selenium.find_element(
-                By.ID, "message-on-login-close"
-            )
-            temp_test_nouvelle_mire_masquer.click()
-
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element(
             By.ID, "fi-identity-provider-example"
@@ -108,14 +101,12 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("RÉCAPITULATIF DU MANDAT", recap_title)
+        self.assertEqual("Récapitulatif du mandat", recap_title)
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        id_personal_data = checkboxes[1]
-        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
-        id_personal_data.click()
-        id_otp_token = checkboxes[2]
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
+        id_otp_token = checkboxes[-2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
@@ -140,15 +131,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(welcome_aidant, "Vos usagères et usagers")
-
-        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
-        self.assertEqual(1, len(usagers_before))
         self.assertEqual(
-            "Il n'y a encore personne avec qui vous avez un mandat.",
-            usagers_before[0].text.strip(),
+            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
+
+        tables = self.selenium.find_elements(By.TAG_NAME, "table")
+        self.assertEqual(3, len(tables))
+        for table in tables:
+            self.assertIn("Vous n'avez pas de mandats", table.text)
 
         # Create new mandat
         self.selenium.find_element(By.ID, "add_usager").click()
@@ -171,14 +161,14 @@ class CreateNewMandatTests(FunctionalTestCase):
             By.CSS_SELECTOR, "#id_duree_short ~ label"
         )
         self.assertEqual(
-            "MANDAT COURT (expire demain)", short_duree_label.text.replace("\n", " ")
+            "Mandat court expire demain", short_duree_label.text.replace("\n", " ")
         )
         short_duree_label.click()
 
         # Select remote method
-        self.selenium.find_element(By.ID, "id_is_remote").click()
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_is_remote ~ label").click()
         self.assertEqual(
-            "MANDAT COURT À DISTANCE (expire demain)",
+            "Mandat court à distance expire demain",
             self.selenium.find_element(
                 By.CSS_SELECTOR, "#id_duree_short ~ label"
             ).text.replace("\n", " "),
@@ -204,13 +194,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         fc_button.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
-        # Nouvelle mire dialog
-        if len(self.selenium.find_elements(By.ID, "message-on-login")) > 0:
-            temp_test_nouvelle_mire_masquer = self.selenium.find_element(
-                By.ID, "message-on-login-close"
-            )
-            temp_test_nouvelle_mire_masquer.click()
-
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element(
             By.ID, "fi-identity-provider-example"
@@ -235,14 +218,12 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("RÉCAPITULATIF DU MANDAT À DISTANCE", recap_title)
+        self.assertEqual("Récapitulatif du mandat à distance", recap_title)
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        id_personal_data = checkboxes[1]
-        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
-        id_personal_data.click()
-        id_otp_token = checkboxes[2]
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
+        id_otp_token = checkboxes[-2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
@@ -278,15 +259,14 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
-        welcome_aidant = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual(welcome_aidant, "Vos usagères et usagers")
-
-        usagers_before = self.selenium.find_elements(By.CSS_SELECTOR, ".tiles *")
-        self.assertEqual(1, len(usagers_before))
         self.assertEqual(
-            "Il n'y a encore personne avec qui vous avez un mandat.",
-            usagers_before[0].text.strip(),
+            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
+
+        tables = self.selenium.find_elements(By.TAG_NAME, "table")
+        self.assertEqual(3, len(tables))
+        for table in tables:
+            self.assertIn("Vous n'avez pas de mandats", table.text)
 
         # Create new mandat
         self.selenium.find_element(By.ID, "add_usager").click()
@@ -310,13 +290,13 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
         short_duree_label.click()
         self.assertEqual(
-            "MANDAT COURT (expire demain)", short_duree_label.text.replace("\n", " ")
+            "Mandat court expire demain", short_duree_label.text.replace("\n", " ")
         )
 
         # Select remote method
-        self.selenium.find_element(By.ID, "id_is_remote").click()
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_is_remote ~ label").click()
         self.assertEqual(
-            "MANDAT COURT À DISTANCE (expire demain)",
+            "Mandat court à distance expire demain",
             self.selenium.find_element(
                 By.CSS_SELECTOR, "#id_duree_short ~ label"
             ).text.replace("\n", " "),
@@ -341,7 +321,9 @@ class CreateNewMandatTests(FunctionalTestCase):
             self._element_is_required(By.ID, "id_user_remote_contact_verified")
         )
         self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
-        self.selenium.find_element(By.ID, "id_user_remote_contact_verified").click()
+        self.selenium.find_element(
+            By.CSS_SELECTOR, "#id_user_remote_contact_verified ~ label"
+        ).click()
 
         # # Send recap mandate and go to second step
         self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect").click()
@@ -391,13 +373,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
-        # Nouvelle mire dialog
-        if len(self.selenium.find_elements(By.ID, "message-on-login")) > 0:
-            temp_test_nouvelle_mire_masquer = self.selenium.find_element(
-                By.ID, "message-on-login-close"
-            )
-            temp_test_nouvelle_mire_masquer.click()
-
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element(
             By.ID, "fi-identity-provider-example"
@@ -422,14 +397,12 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("RÉCAPITULATIF DU MANDAT À DISTANCE", recap_title)
+        self.assertEqual("Récapitulatif du mandat à distance", recap_title)
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        id_personal_data = checkboxes[1]
-        self.assertEqual(id_personal_data.get_attribute("id"), "id_personal_data")
-        id_personal_data.click()
-        id_otp_token = checkboxes[2]
+        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
+        id_otp_token = checkboxes[-2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
         id_otp_token.send_keys(self.otp)
         submit_button = checkboxes[-1]
@@ -464,6 +437,10 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         demarches = demarches_section.find_elements(By.TAG_NAME, "input")
         self.assertEqual(len(demarches), 10)
+
+        self.wait.until(
+            expected_conditions.invisibility_of_element_located((By.ID, "bdf-warn-msg"))
+        )
 
         self.assertFalse(
             self.selenium.find_element(By.ID, "bdf-warn-msg").is_displayed()
