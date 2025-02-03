@@ -324,20 +324,64 @@ class FormationAdmin(VisibleToAdminMetier, ModelAdmin):
         )
 
 
+class FormationAttendantSyncInGrist(SimpleListFilter):
+    title = "Synchro dans Grist"
+
+    parameter_name = "attendant_in_grist"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("in_grist", "Synchro dans Grist"),
+            ("not_in_grist", "Pas Synchro dans Grist"),
+        )
+
+    def queryset(self, request, queryset: QuerySet[FormationAttendant]):
+        match self.value():
+            case "in_grist":
+                return queryset.exclude(id_grist="")
+            case "not_in_grist":
+                return queryset.filter(id_grist="")
+            case _:
+                return queryset
+
+
 @register(FormationAttendant, site=admin_site)
 class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
     fields = (
+        "created_at",
+        "attendant",
         "registered",
         "formation",
+        "state",
+        "id_grist",
         "get_formation_id_grist",
     )
-    readonly_fields = fields
+    raw_id_fields = ("attendant", "formation")
+    readonly_fields = [
+        "created_at",
+        "get_formation_id_grist",
+        "id_grist",
+        "state",
+        "registered",
+    ]
+    readonly_fields_for_edit = [
+        "created_at",
+        "get_formation_id_grist",
+        "registered",
+        "formation",
+        "attendant",
+        "state",
+        "id_grist",
+    ]
     list_display = (
         "formation",
-        "get_formation_id_grist",
+        "id_grist",
         "get_formation_type_label",
         "attendant",
         "state",
+        "created_at",
+        "updated_at",
+        "get_formation_id_grist",
     )
     search_fields = (
         "formation__type__label",
@@ -345,7 +389,13 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ModelAdmin):
         "formation__id_grist",
         "attendant__email",
     )
-    list_filter = ["state", "formation__type"]
+    list_filter = ["state", "formation__type", FormationAttendantSyncInGrist]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields_for_edit
+        else:
+            return self.readonly_fields
 
     @admin.display(description="Formation Type", ordering="formation__type__label")
     def get_formation_type_label(self, obj):
