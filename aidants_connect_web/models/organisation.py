@@ -174,6 +174,10 @@ class Organisation(models.Model):
         return self.aidants.exclude(responsable_de=self)
 
     @cached_property
+    def responsables_is_active(self) -> QuerySet:
+        return self.responsables.exclude(is_active=False)
+
+    @cached_property
     def num_usagers(self):
         return self.mandats.distinct("usager").count()
 
