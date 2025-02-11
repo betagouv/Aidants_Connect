@@ -985,6 +985,18 @@ class OrganisationModelTests(TestCase):
         )
         self.assertEqual({has_unregistered_hab}, set(actual))
 
+    def test_responsables_is_active(self):
+        orga = OrganisationFactory()
+        aid1 = AidantFactory()
+        aid2 = AidantFactory()
+        aid1.responsable_de.add(orga)
+        aid2.responsable_de.add(orga)
+        self.assertEqual(2, orga.responsables_is_active.count())
+        aid2.is_active = False
+        aid2.save()
+        self.assertEqual(1, orga.responsables_is_active.count())
+        self.assertFalse(aid2 in orga.responsables_is_active)
+
 
 @tag("models", "aidant")
 class AidantModelTests(TestCase):
