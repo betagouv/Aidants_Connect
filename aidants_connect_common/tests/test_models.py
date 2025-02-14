@@ -11,6 +11,10 @@ from aidants_connect_common.models import (
     FormationOrganization,
     FormationType,
 )
+from aidants_connect_common.tasks import (
+    get_attendants_for_organization,
+    get_body_email_formation_organization_new_attendants,
+)
 from aidants_connect_common.tests.factories import (
     FormationFactory,
     FormationOrganizationFactory,
@@ -199,9 +203,22 @@ class TestFormationOrganization(TestCase):
             formation=form,
             organization_warned_at=None,
         )
+        FormationFactory(organisation=cls.org_without_attendants)
 
     def test_warnable_about_new_attendants(self):
         self.assertEqual(
             {self.org_with_not_warned_attendants},
             set(FormationOrganization.objects.warnable_about_new_attendants()),
         )
+
+    def test_get_body_email_formation_organization_new_attendants(self):
+        attendants = get_attendants_for_organization(
+            self.org_with_not_warned_attendants
+        )
+
+        text_message, html_message = (
+            get_body_email_formation_organization_new_attendants(attendants)
+        )
+        last_name = attendants.first().attendant.last_name
+        self.assertTrue(last_name in text_message)
+        self.assertTrue(last_name in html_message)
