@@ -209,16 +209,91 @@ class OrganisationAdmin(
         "siret",
         "zipcode",
         "admin_num_active_aidants",
+        "admin_num_received_cards",
         "admin_num_mandats",
         "is_active",
         "id",
         "data_pass_id",
         "france_services_label",
     )
+
+    fieldsets = (
+        (
+            "Informations générales",
+            {
+                "fields": (
+                    "name",
+                    "data_pass_id",
+                    "uuid",
+                    "type",
+                    "is_active",
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+        (
+            "Information catégorie INSEE",
+            {
+                "fields": (
+                    ("siret", "siren"),
+                    "legal_category",
+                    (
+                        "legal_cat_level_one",
+                        "legal_cat_level_two",
+                        "legal_cat_level_three",
+                    ),
+                )
+            },
+        ),
+        (
+            "Information stocks de cartes",
+            {"fields": ("num_received_cards", "num_cards_used")},
+        ),
+        (
+            "Adresse de l'organisation",
+            {
+                "fields": (
+                    "address",
+                    "zipcode",
+                    "city",
+                    "city_insee_code",
+                    "department_insee_code",
+                )
+            },
+        ),
+        (
+            "Autre Informations",
+            {
+                "fields": (
+                    "is_experiment",
+                    "france_services_label",
+                    "france_services_number",
+                    "allowed_demarches",
+                )
+            },
+        ),
+        (
+            "Personnel de la structure",
+            {
+                "fields": (
+                    "display_responsables",
+                    "display_aidants",
+                    "display_habilitation_requests",
+                )
+            },
+        ),
+    )
     readonly_fields = (
         "display_responsables",
         "display_aidants",
         "display_habilitation_requests",
+        "is_active",
+        "created_at",
+        "updated_at",
+        "num_active_aidants",
+        "num_cards_used",
+        "num_received_cards"
     )
     search_fields = ("=id", "name", "siret", "data_pass_id")
     list_filter = (

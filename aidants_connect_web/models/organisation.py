@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 
 from aidants_connect_common.models import Department
+from aidants_connect_erp.models import CardSending
 
 from .journal import Journal
 from .utils import delete_mandats_and_clean_journal
@@ -144,10 +145,18 @@ class Organisation(models.Model):
     def num_active_aidants(self):
         return self.aidants.active().count()
 
+    num_active_aidants.short_description = "Nombre d'aidants actifs"
+
     def admin_num_active_aidants(self):
         return self.num_active_aidants
 
-    admin_num_active_aidants.short_description = "Nombre d'aidants actifs"
+    @cached_property
+    def num_cards_used(self):
+        from .mandat import CarteTOTP
+
+        return CarteTOTP.objects.filter(aidant__in=self.aidants.all()).count()
+
+    num_cards_used.short_description = "Nombre de cartes utilisées par un aidant"
 
     @cached_property
     def num_mandats(self):
@@ -184,6 +193,15 @@ class Organisation(models.Model):
     @cached_property
     def num_demarches(self):
         return Journal.objects.find_demarches_for_organisation(self).count()
+
+    @cached_property
+    def num_received_cards(self):
+        return CardSending.get_cards_stock_for_one_organisation(self)
+
+    def admin_num_received_cards(self):
+        return self.num_received_cards
+
+    admin_num_received_cards.short_description = "Nombre de cartes reçues"
 
     @cached_property
     def referents_eligible_aidants(self):
