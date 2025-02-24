@@ -38,7 +38,7 @@ class CardSendingModelTests(TestCase):
         CardSendingFactory(quantity=5, organisation=orga)
         self.assertEqual(17, CardSending.get_cards_stock_for_one_organisation(orga))
 
-    def test_get_cards_stock_for_one_organisation(self):
+    def test_get_cards_stock_for_one_organisation_two(self):
         orga = OrganisationFactory()
 
         CardSendingFactory(quantity=12, organisation=orga)

@@ -293,7 +293,7 @@ class OrganisationAdmin(
         "updated_at",
         "num_active_aidants",
         "num_cards_used",
-        "num_received_cards"
+        "num_received_cards",
     )
     search_fields = ("=id", "name", "siret", "data_pass_id")
     list_filter = (
