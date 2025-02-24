@@ -25,6 +25,8 @@ from aidants_connect_common.constants import (
 )
 from aidants_connect_common.models import Formation, FormationAttendant
 from aidants_connect_common.tests.factories import FormationFactory
+from aidants_connect_erp.constants import SendingStatusChoices
+from aidants_connect_erp.tests.factories import CardSendingFactory
 from aidants_connect_web.constants import (
     ReferentRequestStatuses,
     RemoteConsentMethodChoices,
@@ -996,6 +998,15 @@ class OrganisationModelTests(TestCase):
         aid2.save()
         self.assertEqual(1, orga.responsables_is_active.count())
         self.assertFalse(aid2 in orga.responsables_is_active)
+
+    def test_num_received_cards(self):
+        orga = OrganisationFactory()
+        CardSendingFactory(quantity=12, organisation=orga)
+        CardSendingFactory(
+            quantity=5, organisation=orga, status=SendingStatusChoices.PREPARING
+        )
+        self.assertEqual(12, orga.num_received_cards)
+        self.assertEqual(0, orga.num_cards_used)
 
 
 @tag("models", "aidant")
