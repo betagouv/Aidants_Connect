@@ -199,7 +199,7 @@
                 {% for formation_attendant in organisation.manager.habilitation_request.formations.all %}
                   <p class="fr-text-default--success fr-icon fr-text--sm fr-m-0">
                     <span class="fr-icon-check-line fr-icon--sm fr-mr-1v" aria-hidden="true"></span>
-                    Inscrit au wébinaire référent du {{ formation_attendant.formation.start_datetime|date:"d/m/y" }}
+                    Inscrit à la formation aidant du {{ formation_attendant.formation.start_datetime|date:"d/m/y" }}
                   </p>
                 {% endfor %}
                 {% if organisation.manager.aidant.last_login %}
