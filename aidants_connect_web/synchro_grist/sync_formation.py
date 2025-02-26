@@ -32,16 +32,22 @@ def get_formations_from_grist():
     api_key = settings.GRIST_API_KEY
     GRIST_ID_MEDNUM = settings.GRIST_ID_MEDNUM
     GRIST_ID_FAMILLE_RURALES = settings.GRIST_ID_FAMILLE_RURALES
+    GRIST_ID_PIMMS = settings.GRIST_ID_PIMMMS
 
     api_grist = GristDocAPI(doc_id, api_key, server=server)
     formation_table = api_grist.fetch_table(table_id)
     mednum, _ = FormationType.objects.get_or_create(label="Mednum")
     frurales, _ = FormationType.objects.get_or_create(label="Familles Rurales")
+    pimms, _ = FormationType.objects.get_or_create(label="PIMMS")
 
     for one_row in formation_table:
         if one_row.Statut != "Programmée":
             continue
-        if one_row.Reseau not in [GRIST_ID_MEDNUM, GRIST_ID_FAMILLE_RURALES]:
+        if one_row.Reseau not in [
+            GRIST_ID_MEDNUM,
+            GRIST_ID_FAMILLE_RURALES,
+            GRIST_ID_PIMMS,
+        ]:
             continue
         if one_row.Session_a_publier != "Oui":
             continue
@@ -62,6 +68,11 @@ def get_formations_from_grist():
             formation.type = mednum
         if one_row.Reseau == GRIST_ID_FAMILLE_RURALES:
             formation.type = frurales
+        if one_row.Reseau == GRIST_ID_PIMMS:
+            formation.type = pimms
+
+        if one_row.Session_intra:
+            formation.intra = True
 
         formation.max_attendants = settings.FORMATION_MAX_ATTENDANTS
 

@@ -51,6 +51,13 @@ class FormationTests(TestCase):
             type=other_type,
         )
 
+        cls.intra_formation = FormationFactory(
+            type_label="une Formation intra",
+            start_datetime=now() + timedelta(days=50),
+            type=other_type,
+            intra=True,
+        )
+
         FormationFactory(
             type_label="Des formations et des Hommes",
             start_datetime=now() + timedelta(days=50),
@@ -82,26 +89,31 @@ class FormationTests(TestCase):
             1,
         )
 
+    def test_intra_formation_not_available(self):
+        self.assertTrue(
+            self.intra_formation not in Formation.objects.get_q_available_now()
+        )
+
     def test_can_create_one_day_formation(self):
-        self.assertEqual(3, Formation.objects.all().count())
+        self.assertEqual(4, Formation.objects.all().count())
         FormationFactory(
             type_label="Formation in one day",
             start_datetime=now() + timedelta(days=50),
             end_datetime=now() + timedelta(days=50),
             type=self.other_type,
         )
-        self.assertEqual(4, Formation.objects.all().count())
+        self.assertEqual(5, Formation.objects.all().count())
 
     def test_aidant_can_subscribe_all_formations(self):
         # Total formations count
-        self.assertEqual(Formation.objects.count(), 3)
+        self.assertEqual(Formation.objects.count(), 4)
 
         # Formation available for attendant
         self.assertEqual(Formation.objects.available_for_attendant(self.hab).count(), 2)
 
     def test_display_formations_with_lot_of_registered(self):
         # Total formations count
-        self.assertEqual(Formation.objects.count(), 3)
+        self.assertEqual(Formation.objects.count(), 4)
         self.assertEqual(Formation.objects.available_for_attendant(self.hab).count(), 2)
 
         with self.subTest(
