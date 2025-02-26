@@ -293,10 +293,11 @@ class FormationAdmin(VisibleToAdminMetier, ModelAdmin):
         "id_grist",
         "type",
         "organisation",
+        "intra",
     )
     raw_id_fields = ("type",)
     search_fields = ("id", "place", "id_grist")
-    list_filter = (FormationFillingFilter, "status", "type", "organisation")
+    list_filter = (FormationFillingFilter, "status", "type", "intra", "organisation")
     readonly_fields = ("registered",)
 
     @admin.display(description="Nombre d'inscrits")
