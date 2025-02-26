@@ -1239,7 +1239,7 @@ class RequestReadOnlyViewTests(TestCase):
                 self.get_url(organisation.issuer.issuer_id, organisation.uuid)
             )
             self.assertNotContains(response, "Inscrire en formation")
-            self.assertNotContains(response, "Inscrit au wébinaire référent")
+            self.assertNotContains(response, "Inscrit à la formation aidant")
             self.assertNotContains(response, reverse("espace_responsable_organisation"))
             self.assertNotContains(
                 response,
@@ -1273,7 +1273,7 @@ class RequestReadOnlyViewTests(TestCase):
                 self.get_url(organisation.issuer.issuer_id, organisation.uuid)
             )
             self.assertContains(response, "Inscrire en formation")
-            self.assertNotContains(response, "Inscrit au wébinaire référent")
+            self.assertNotContains(response, "Inscrit à la formation aidant")
             self.assertContains(response, reverse("espace_responsable_organisation"))
             self.assertNotContains(
                 response,
@@ -1300,7 +1300,7 @@ class RequestReadOnlyViewTests(TestCase):
                 self.get_url(organisation.issuer.issuer_id, organisation.uuid)
             )
             self.assertContains(response, "Inscrire en formation")
-            self.assertNotContains(response, "Inscrit au wébinaire référent")
+            self.assertNotContains(response, "Inscrit à la formation aidant")
             self.assertNotContains(response, reverse("espace_responsable_organisation"))
             self.assertContains(
                 response,
@@ -1328,7 +1328,7 @@ class RequestReadOnlyViewTests(TestCase):
                 self.get_url(organisation.issuer.issuer_id, organisation.uuid)
             )
             self.assertContains(response, "Inscrire en formation")
-            self.assertContains(response, "Inscrit au wébinaire référent")
+            self.assertContains(response, "Inscrit à la formation aidant")
             self.assertNotContains(response, reverse("espace_responsable_organisation"))
             self.assertContains(
                 response,
