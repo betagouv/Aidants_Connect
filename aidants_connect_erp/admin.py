@@ -39,6 +39,7 @@ class CardSendingAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "code_referent",
         "kit_quantity",
         "quantity",
+        "estimated_quantity",
         "bizdev",
         "status",
         "raison_envoi",
@@ -55,6 +56,7 @@ class CardSendingAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "referent__last_name",
         "referent__email",
     )
+    raw_id_fields = ("aidants",)
 
 
 admin_site.register(CardSending, CardSendingAdmin)
