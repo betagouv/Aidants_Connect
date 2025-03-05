@@ -40,6 +40,7 @@
                       Espace référent
                     </a>
                   {% endif %}
+                  {% if user_can_create_mandats %}
                   <li>
                     <a
                       class="fr-btn fr-icon-arrow-right-line"
@@ -49,6 +50,7 @@
                       Espace aidant
                     </a>
                   </li>
+                  {% endif %}
                 {% endif %}
                 <li>
                   {% if user_is_authenticated %}

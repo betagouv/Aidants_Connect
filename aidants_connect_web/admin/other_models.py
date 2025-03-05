@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 
 from celery.result import AsyncResult
 from celery.states import FAILURE, SUCCESS
+from rest_framework.authtoken.admin import TokenAdmin
 
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_web.constants import ReferentRequestStatuses
@@ -19,6 +20,9 @@ from aidants_connect_web.models import CoReferentNonAidantRequest, ExportRequest
 from ..tasks import email_co_rerefent_creation
 
 logger = logging.getLogger()
+
+
+TokenAdmin.raw_id_fields = ["user"]
 
 
 class ConnectionAdmin(ModelAdmin):

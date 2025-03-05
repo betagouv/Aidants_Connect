@@ -1,8 +1,11 @@
+from django.conf import settings
 from django.urls import path
 
 from rest_framework import routers
 
 from aidants_connect_web.api.views import (
+    FNEAidantViewSet,
+    FNEOrganisationViewSet,
     NewHabilitationRequestSubmitNew,
     NewHabilitationRequestSubmitNewEdit,
     OrganisationViewSet,
@@ -10,7 +13,14 @@ from aidants_connect_web.api.views import (
 
 router = routers.DefaultRouter()
 router.register(r"organisations", OrganisationViewSet)
-
+router.register(
+    f"{settings.URL_FNEAPI}/fne_aidants", FNEAidantViewSet, basename="fne_aidants"
+)
+router.register(
+    f"{settings.URL_FNEAPI}/fne_organisations",
+    FNEOrganisationViewSet,
+    basename="fne_organisations",
+)
 urlpatterns = [
     path(
         "espace-responsable/aidant/habiliter/",

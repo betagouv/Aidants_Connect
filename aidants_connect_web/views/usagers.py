@@ -256,6 +256,7 @@ class UsagerView(DetailView):
         )
         revoked_mandats = (
             Mandat.objects.prefetch_related("autorisations")
+            .filter(organisation=self.aidant.organisation, usager=self.usager)
             .exclude_outdated()
             .seperatly_revoked()
         )

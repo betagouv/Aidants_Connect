@@ -1,13 +1,10 @@
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 
-import tablib
 from django_otp.plugins.otp_static.lib import add_static_token
 from rest_framework import serializers
 
 from aidants_connect_web.models import Aidant, Organisation
-
-from .admin import AidantSandboxResource
 
 
 class AutomaticCreationSerializer(serializers.Serializer):

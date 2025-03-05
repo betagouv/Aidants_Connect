@@ -168,6 +168,7 @@ class FormationQuerySet(models.QuerySet):
         q = models.Q(
             attendants_count__lt=models.F("max_attendants"),
             state=Formation.State.ACTIVE,
+            intra=False,
         ) & (
             models.Q(
                 attendants_count__gt=att_count, start_datetime__gte=now() + short_td
@@ -242,6 +243,7 @@ class Formation(models.Model):
     )
     place = models.CharField("Lieu", max_length=500)
     type = models.ForeignKey(FormationType, on_delete=models.PROTECT)
+    intra = models.BooleanField("Session intra", default=False)
 
     description = models.TextField("Description", blank=True, default="")
     id_grist = models.CharField(

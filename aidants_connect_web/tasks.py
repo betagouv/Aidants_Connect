@@ -829,7 +829,7 @@ def notifiy_organisation_having_formation_unregistered_habilitation_requests():
         send_mail(
             from_email=settings.SUPPORT_EMAIL,
             subject="Sessions de formation à Aidants Connect",
-            recipient_list=org.responsables.values_list("email", flat=True),
+            recipient_list=org.responsables_is_active.values_list("email", flat=True),
             message=text_message,
             html_message=html_message,
         )

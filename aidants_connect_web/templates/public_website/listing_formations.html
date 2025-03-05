@@ -17,7 +17,7 @@
         <div class="fr-col-md-8 fr-col-12">
           <ul>
           {% for formation in list_formations %}
-          <li>{{ formation.type.label }} - Début : {{ formation.start_datetime|date:"d F Y" }} - Durée en heures : {{ formation.duration }} - Lieu : {{ formation.place }}  - Nb Inscrits : {{ formation.number_of_attendants }} Nb Max: {{ formation.max_attendants }} </li>
+          <li> {{ formation.organisation.name }} ({{ formation.type.label }}) - Début : {{ formation.start_datetime|date:"d F Y" }} - Durée en heures : {{ formation.duration }} - Lieu : {{ formation.place }}  - Nb Inscrits : {{ formation.number_of_attendants }} Nb Max: {{ formation.max_attendants }} </li>
           {% endfor %}
           </ul>
         </div>

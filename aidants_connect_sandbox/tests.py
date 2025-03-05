@@ -1,13 +1,12 @@
-from django.test import TestCase, override_settings, tag
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
-import tablib
 from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 
 from aidants_connect_web.models import Aidant, Organisation
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 
-from .admin import AidantSandboxResource, add_static_token_for_aidants
+from .admin import add_static_token_for_aidants
 
 
 @override_settings(ACTIVATE_INFINITY_TOKEN=True)
@@ -122,7 +121,7 @@ class AutomaticAddUserTestCase(TestCase):
             "datapass_id_managers": "12121|",
             "token": "TOKENSANDBOX",
         }
-        response = self.client.post(reverse("sandbox_automatic_creation"), data)
+        self.client.post(reverse("sandbox_automatic_creation"), data)
         self.assertEqual(1, Organisation.objects.all().count())
         orga = Organisation.objects.all()[0]
         self.assertEqual(12121, orga.data_pass_id)
@@ -155,7 +154,7 @@ class AutomaticAddUserTestCase(TestCase):
             "datapass_id_managers": "12121|22222|",
             "token": "TOKENSANDBOX",
         }
-        response = self.client.post(reverse("sandbox_automatic_creation"), data)
+        self.client.post(reverse("sandbox_automatic_creation"), data)
         self.assertEqual(2, Organisation.objects.all().count())
         orga = Organisation.objects.filter(data_pass_id=12121)[0]
         self.assertEqual("L'internationale", orga.name)

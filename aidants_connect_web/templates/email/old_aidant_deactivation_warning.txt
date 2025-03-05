@@ -2,11 +2,13 @@
 
 Bonjour, {{ user.get_full_name }}
 
-Vous avez participé au programme de formation Aidants Connect, néanmoins cela fait plus de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité. 
+Vous avez participé au programme de formation Aidants Connect, néanmoins cela fait plus de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité.
 
 Vous souhaitez garder votre compte actif et ne rencontrez pas de difficultés particulière à l'utilisation ? Il vous suffit de vous connecter à votre espace personnel dans un délai de 30 jours pour conserver vos accès.
 
-Vous avez besoin de reprendre en main l'outil, échanger avec d'autres professionnels ou vous rencontrez des difficultés techniques ? Nous vous proposons un temps d’échange sous la forme d’un webinaire : {{ webinaire_sub_form }}
+Vous avez besoin de reprendre en main l'outil ? Vous trouverez sur votre espace personnel un accès au site bac à sable pour vous entraîner à la prise en main de l’outil, qui correspond à une copie du site officiel, ainsi qu'à un tutoriel interactif.
+
+Nous vous proposons également de visionner un replay de notre webinaire "La parole aux aidants" afin de bien comprendre l'usage qui est fait d'Aidants Connect par d'autres aidants. Il est disponible à ce lien : {{ webinaire_sub_form }}.
 
 La plateforme ne vous est finalement pas utile et vous ne souhaitez pas garder votre compte actif ? Merci de nous renvoyer votre carte Aidants Connect à l’adresse suivante :
 

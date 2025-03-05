@@ -262,6 +262,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "display_datapass_id",
         "profession",
         "status",
+        "connexion_mode",
         "created_at",
     )
     readonly_fields = ("created_at", "updated_at")
@@ -274,6 +275,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "status",
         "origin",
         "test_pix_passed",
+        "connexion_mode",
     )
     search_fields = (
         "first_name",

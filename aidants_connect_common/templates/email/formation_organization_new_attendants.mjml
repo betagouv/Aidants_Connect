@@ -12,7 +12,7 @@
           {% else %}
             <p>Les personnes suivantes ont été inscrites à une session de formation :</p>
             <ul>{% for attendant in attendants %}
-              <li>{{ attendant.target.get_full_name }}, à la session du {{ attendant.formation.start_datetime|date:"d F Y à H:i" }}</li>
+              <li>{{ attendant.attendant.get_full_name }}, à la session du {{ attendant.formation.start_datetime|date:"d F Y à H:i" }}</li>
             {% endfor %}</ul>
           {% endif %}{% endwith %}
       </mj-text>

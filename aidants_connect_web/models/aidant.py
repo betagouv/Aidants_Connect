@@ -279,6 +279,21 @@ class Aidant(AbstractUser):
             "demarche", flat=True
         )
 
+    def get_supports_number(self):
+        return (
+            self.journal_entries.filter(
+                action__in=[
+                    JournalActionKeywords.FRANCECONNECT_USAGER,
+                    JournalActionKeywords.CREATE_ATTESTATION,
+                    JournalActionKeywords.CREATE_AUTORISATION,
+                    JournalActionKeywords.USE_AUTORISATION,
+                    JournalActionKeywords.INIT_RENEW_MANDAT,
+                ]
+            )
+            .distinct()
+            .count()
+        )
+
     def get_last_action_timestamp(self):
         """
         :return: the timestamp of this aidant's last logged action or `None`.
