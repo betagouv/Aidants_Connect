@@ -39,6 +39,14 @@ class HabilitationRequest(models.Model):
         ORIGIN_HABILITATION: "Formulaire Habilitation",
     }
 
+    CONNEXION_MODE_CARD = "card"
+    CONNEXION_MODE_PHONE = "phone"
+
+    CONNEXION_MODE_LABELS = {
+        CONNEXION_MODE_CARD: "Carte physique",
+        CONNEXION_MODE_PHONE: "Application mobile",
+    }
+
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
     email = models.EmailField(
@@ -67,6 +75,17 @@ class HabilitationRequest(models.Model):
         max_length=150,
         choices=((origin, label) for origin, label in ORIGIN_LABELS.items()),
         default=ORIGIN_OTHER,
+    )
+
+    connexion_mode = models.CharField(
+        "Moyen de connexion",
+        max_length=150,
+        blank=True,
+        null=True,
+        default="",
+        choices=(
+            (con_mode, label) for con_mode, label in CONNEXION_MODE_LABELS.items()
+        ),
     )
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
@@ -127,6 +146,9 @@ class HabilitationRequest(models.Model):
                 aidant.save()
                 self.status = ReferentRequestStatuses.STATUS_VALIDATED
                 self.save()
+                from aidants_connect_web.signals import aidant_activated
+
+                aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
                 return True
 
             aidant = Aidant.objects.create(
@@ -143,7 +165,7 @@ class HabilitationRequest(models.Model):
 
         from aidants_connect_web.signals import aidant_activated
 
-        aidant_activated.send(self.__class__, aidant=aidant)
+        aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
 
         return True
 

@@ -26,6 +26,10 @@ class CardSending(models.Model):
     sending_date = models.DateField("Date d'envoi", null=True, blank=True)
     receipt_date = models.DateField("Date de livraison prévue", null=True, blank=True)
     quantity = models.PositiveIntegerField("Nombre de cartes", default=1)
+    estimated_quantity = models.PositiveIntegerField(
+        "Nombre de cartes estimé", default=0
+    )
+
     kit_quantity = models.PositiveIntegerField("Nombres de kits", default=0)
     status = models.CharField(
         "statut d'envoi", choices=SendingStatusChoices.choices, max_length=200
@@ -37,6 +41,12 @@ class CardSending(models.Model):
         verbose_name="Organisation",
         related_name="card_sendings",
     )
+
+    aidants = models.ManyToManyField(
+        "aidants_connect_web.Aidant",
+        verbose_name="Aidants concernés par l'envoi",
+    )
+
     raison_envoi = models.TextField("Raison de l'envoi", null=True, blank=True)
 
     referent = models.ForeignKey(
