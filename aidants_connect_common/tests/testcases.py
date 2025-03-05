@@ -56,7 +56,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             log_output="./geckodriver.log", service_args=["--log", "debug"]
         )
         cls.selenium = WebDriver(options=firefox_options, service=service)
-        cls.selenium.implicitly_wait(0.5)
+        cls.selenium.implicitly_wait(3)
         cls.wait = WebDriverWait(cls.selenium, 10)
 
         # In some rare cases, the first connection to the Django LiveServer

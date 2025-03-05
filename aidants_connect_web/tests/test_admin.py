@@ -89,6 +89,34 @@ class TestAidantInPreDesactivationZoneFilter(TestCase):
 
 
 @tag("admin")
+class TestAidantAdmin(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation1 = OrganisationFactory()
+        cls.aidant_marge = AidantFactory(
+            first_name="Marge",
+            organisation=cls.organisation1,
+            can_create_mandats=False,
+            email="marge@simpson.com",
+        )
+        cls.aidant_marge.responsable_de.add(cls.organisation1)
+        cls.aidant_homer = AidantFactory(
+            first_name="Homer",
+            organisation=cls.organisation1,
+            can_create_mandats=True,
+            email="homer@simpson.com",
+        )
+
+    def test_add_habilitationrequest_to_manager(self):
+        self.assertEqual(0, HabilitationRequest.objects.count())
+        AidantAdmin._add_habilitationrequest_to_manager(Aidant.objects.all())
+        self.assertEqual(1, HabilitationRequest.objects.count())
+        self.assertEqual(
+            1, HabilitationRequest.objects.filter(email="marge@simpson.com").count()
+        )
+
+
+@tag("admin")
 class TestAidantWithMandatsFilter(TestCase):
     @classmethod
     def setUpTestData(cls):

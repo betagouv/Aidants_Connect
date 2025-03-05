@@ -1,4 +1,4 @@
-{% load i18n ac_common %}
+{% load ac_common i18n %}
 Bonjour,
 
 {% linebreakless %}
@@ -8,7 +8,7 @@ La personne {{ attendants.0.target.get_full_name }} a été inscrite à la sessi
 Les personnes suivantes on été inscrites à une session de formation :{% keeplinebreak %}
 {% keeplinebreak %}
 {% for attendant in attendants %}
-  - {{ attendant.target.get_full_name }}, à la session du {{ attendant.formation.start_datetime|date:"d F Y à H:i" }}{% keeplinebreak %}
+  - {{ attendant.attendant.get_full_name }}, à la session du {{ attendant.formation.start_datetime|date:"d F Y à H:i" }}{% keeplinebreak %}
 {% endfor %}
 {% endif %}
 {% endwith %}

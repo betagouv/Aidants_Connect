@@ -37,7 +37,15 @@
       <h1>Récapitulatif de la demande</h1>
     {% else %}
       <h1>Demande n° {{ organisation.data_pass_id }}</h1>
+      {% if organisation.status == organisation.Status.CHANGES_REQUIRED or organisation.status == organisation.Status.REFUSED or organisation.status == organisation.Status.CLOSED %}
       <div class="fr-alert fr-alert--warning fr-mb-6w">
+      {% else %}
+          {% if organisation.status == organisation.Status.VALIDATED %}
+            <div class="fr-alert fr-alert--success fr-mb-6w">
+          {% else %}
+            <div class="fr-alert fr-alert--info fr-mb-6w">
+          {% endif %}
+      {% endif %}
         <h3 class="fr-alert__title fr-mb-0">Statut : {{ organisation.status_enum.label }}</h3>
         {% if organisation.status_enum.description %}
           <section>{{ organisation.status_enum.description }}</section>
@@ -191,7 +199,7 @@
                 {% for formation_attendant in organisation.manager.habilitation_request.formations.all %}
                   <p class="fr-text-default--success fr-icon fr-text--sm fr-m-0">
                     <span class="fr-icon-check-line fr-icon--sm fr-mr-1v" aria-hidden="true"></span>
-                    Inscrit au wébinaire référent du {{ formation_attendant.formation.start_datetime|date:"d/m/y" }}
+                    Inscrit à la formation aidant du {{ formation_attendant.formation.start_datetime|date:"d/m/y" }}
                   </p>
                 {% endfor %}
                 {% if organisation.manager.aidant.last_login %}

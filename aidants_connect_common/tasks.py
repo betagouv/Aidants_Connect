@@ -83,27 +83,40 @@ def clean_blocklist():
     call_command("clean_blocklist")
 
 
+def get_body_email_formation_organization_new_attendants(attendants):
+    text_message, html_message = render_email(
+        "email/formation_organization_new_attendants.mjml",
+        {
+            "attendants": attendants,
+            "detail_attendants": (
+                settings.EMAIL_ORGANISATION_FORMATION_NEW_ATTENDANT_GRIST_LINK
+            ),
+        },
+    )
+    return text_message, html_message
+
+
+def get_attendants_for_organization(organization):
+    attendants = (
+        FormationAttendant.objects.filter(
+            formation__organisation=organization, organization_warned_at__isnull=True
+        )
+        .prefetch_related("formation")
+        .order_by("formation")
+    )
+    return attendants
+
+
 @shared_task
 def email_formation_organization_new_attendants():
     orgs = FormationOrganization.objects.warnable_about_new_attendants()
 
     for org in orgs:
-        attendants = (
-            FormationAttendant.objects.filter(
-                formation__organisation=org, organization_warned_at__isnull=True
-            )
-            .prefetch_related("formation")
-            .order_by("formation")
-        )
 
-        text_message, html_message = render_email(
-            "email/formation_organization_new_attendants.mjml",
-            {
-                "attendants": attendants,
-                "detail_attendants": (
-                    settings.EMAIL_ORGANISATION_FORMATION_NEW_ATTENDANT_GRIST_LINK
-                ),
-            },
+        attendants = get_attendants_for_organization(org)
+
+        text_message, html_message = (
+            get_body_email_formation_organization_new_attendants(attendants)
         )
 
         send_mail(

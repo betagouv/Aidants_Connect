@@ -34,6 +34,7 @@ from aidants_connect_web.models import (
     Aidant,
     AidantManager,
     CarteTOTP,
+    HabilitationRequest,
     Journal,
     Organisation,
 )
@@ -321,7 +322,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
-    actions = ["mass_deactivate"]
+    actions = ["mass_deactivate", "add_habilitationrequest_to_manager"]
     raw_id_fields = ("responsable_de", "organisation", "organisations")
     readonly_fields = (
         "validated_cgu_version",
@@ -505,3 +506,32 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         self.message_user(request, f"{queryset.count()} profils ont été désactivés")
 
     mass_deactivate.short_description = "Désactiver les profils sélectionnés"
+
+    @staticmethod
+    def _add_habilitationrequest_to_manager(queryset: QuerySet):
+        for one_manager in queryset.all():
+            if (
+                not one_manager.can_create_mandats
+                and not HabilitationRequest.objects.filter(
+                    email=one_manager.email
+                ).exists()
+            ):
+                HabilitationRequest.objects.create(
+                    organisation=one_manager.organisation,
+                    first_name=one_manager.first_name,
+                    last_name=one_manager.last_name,
+                    email=one_manager.email,
+                    profession=one_manager.profession,
+                )
+
+    def add_habilitationrequest_to_manager(
+        self, request: HttpRequest, queryset: QuerySet
+    ):
+        self._add_habilitationrequest_to_manager(queryset)
+        self.message_user(
+            request, f"{queryset.count()} référent(s) peuvent s'inscrire en formation"
+        )
+
+    add_habilitationrequest_to_manager.short_description = (
+        "Permettre à un/des référents de s'inscrire en formation"
+    )

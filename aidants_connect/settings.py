@@ -134,6 +134,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "rest_framework",
+    "rest_framework.authtoken",
     "django_otp",
     "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
@@ -819,6 +820,11 @@ SANDBOX_API_TOKEN = os.getenv("SANDBOX_API_TOKEN", "TOKEN")
 WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
 }
@@ -848,6 +854,10 @@ GRIST_ATTENDEES_TABLE_ID = os.getenv("GRIST_ATTENDEES_TABLE_ID", "")
 FORMATION_MAX_ATTENDANTS = int(os.getenv("FORMATION_MAX_ATTENDANTS", 18))
 GRIST_ID_MEDNUM = int(os.getenv("GRIST_ID_MEDNUM", 3))
 GRIST_ID_FAMILLE_RURALES = int(os.getenv("GRIST_ID_FAMILLE_RURALES", 1))
+GRIST_ID_PIMMMS = int(os.getenv("GRIST_ID_PIMMS", 2))
+GRIST_SENDING_TABLE_ID = os.getenv("GRIST_SENDING_TABLE_ID", "")
+GRIST_USERS_TABLE_ID = os.getenv("GRIST_USERS_TABLE_ID", "")
+GRIST_CONNEXION_MODE_ID = os.getenv("GRIST_CONNEXION_MODE_ID", "")
 
 
 LIVESTORM_API_KEY = os.getenv("LIVESTORM_API_KEY")
@@ -858,6 +868,7 @@ FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
 FF_EMAIL_CO_RERERENT_CREATION = getenv_bool("FF_EMAIL_CO_RERERENT_CREATION", False)
 
 URL_FORMATION = os.getenv("URL_FORMATION", get_random_string(12))
+URL_FNEAPI = os.getenv("URL_FNEAPI", get_random_string(12))
 
 
 # ######################## SANDBOX SETTING ############################
@@ -866,3 +877,4 @@ ACTIVATE_INFINITY_TOKEN = getenv_bool("ACTIVATE_INFINITY_TOKEN", False)
 AUTO_CREATE_SANDBOX_TOKEN = os.getenv("AUTO_CREATE_SANDBOX_TOKEN", None)
 
 # ######################## END SANDBOX SETTING ############################
+

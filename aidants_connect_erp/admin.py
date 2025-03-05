@@ -29,32 +29,34 @@ class CardSendingAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "sending_date",
         "get_organisation_data_pass_id",
         "organisation",
-        "responsable",
-        "get_responsable_email",
-        "get_responsable_phone",
+        "referent",
+        "get_referent_email",
+        "get_referent_phone",
         "get_organisation_address",
         "get_organisation_zipcode",
         "get_organisation_city",
         "get_organisation_region_name",
-        "code_responsable",
+        "code_referent",
         "kit_quantity",
         "quantity",
-        "referent",
+        "estimated_quantity",
+        "bizdev",
         "status",
         "raison_envoi",
         "get_sending_year",
         "command_number",
     )
-    raw_id_fields = ("organisation", "responsable")
+    raw_id_fields = ("organisation", "referent")
     list_filter = ("status",)
 
     search_fields = (
         "organisation__name",
         "organisation__city",
-        "responsable__first_name",
-        "responsable__last_name",
-        "responsable__email",
+        "referent__first_name",
+        "referent__last_name",
+        "referent__email",
     )
+    raw_id_fields = ("aidants",)
 
 
 admin_site.register(CardSending, CardSendingAdmin)

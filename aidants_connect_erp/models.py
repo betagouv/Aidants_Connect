@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Sum
 
 from .constants import SendingStatusChoices
 
@@ -8,9 +9,7 @@ def get_bizdev_users():
     from aidants_connect_web.models import Aidant
 
     stafforg = settings.STAFF_ORGANISATION_NAME
-    bizdevs = Aidant.objects.filter(
-        organisation__name=stafforg, is_active=True, is_staff=True
-    )
+    bizdevs = Aidant.objects.filter(organisation__name=stafforg, is_staff=True)
     return bizdevs
 
 
@@ -27,6 +26,10 @@ class CardSending(models.Model):
     sending_date = models.DateField("Date d'envoi", null=True, blank=True)
     receipt_date = models.DateField("Date de livraison prévue", null=True, blank=True)
     quantity = models.PositiveIntegerField("Nombre de cartes", default=1)
+    estimated_quantity = models.PositiveIntegerField(
+        "Nombre de cartes estimé", default=0
+    )
+
     kit_quantity = models.PositiveIntegerField("Nombres de kits", default=0)
     status = models.CharField(
         "statut d'envoi", choices=SendingStatusChoices.choices, max_length=200
@@ -38,6 +41,12 @@ class CardSending(models.Model):
         verbose_name="Organisation",
         related_name="card_sendings",
     )
+
+    aidants = models.ManyToManyField(
+        "aidants_connect_web.Aidant",
+        verbose_name="Aidants concernés par l'envoi",
+    )
+
     raison_envoi = models.TextField("Raison de l'envoi", null=True, blank=True)
 
     referent = models.ForeignKey(
@@ -48,16 +57,38 @@ class CardSending(models.Model):
         related_name="referent_for_sendings",
     )
 
-    responsable = models.ForeignKey(
+    phone_referent = models.CharField(
+        "Telephone referent (GRIST)", null=True, blank=True, max_length=125
+    )
+    name_referent = models.CharField(
+        "Nom referent (GRIST)", null=True, blank=True, max_length=125
+    )
+    email_referent = models.CharField(
+        "Email referent (GRIST)", null=True, blank=True, max_length=125
+    )
+    code_referent = models.CharField(
+        "Code premier envoi", null=True, blank=True, max_length=25
+    )
+
+    bizdev = models.ForeignKey(
         "aidants_connect_web.Aidant",
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
         related_name="card_sendings",
     )
-    code_responsable = models.CharField(
-        "Code premier envoi", null=True, blank=True, max_length=25
+
+    id_grist = models.CharField(
+        "Id Grist", editable=False, max_length=50, blank=True, default="", null=True
     )
+
+    @classmethod
+    def get_cards_stock_for_one_organisation(cls, organisation):
+        dict_stock = cls.objects.filter(
+            organisation=organisation,
+            status__in=[SendingStatusChoices.SENDING, SendingStatusChoices.RECEIVED],
+        ).aggregate(stock=Sum("quantity"))
+        return dict_stock["stock"]
 
     def __str__(self):
         sending_date = (
@@ -77,19 +108,19 @@ class CardSending(models.Model):
 
     get_sending_year.short_description = "Année d'envoi"
 
-    def get_responsable_email(self):
-        if self.responsable:
-            return self.responsable.email
-        return "NC"
+    def get_referent_email(self):
+        if self.referent:
+            return self.referent.email
+        return self.email_referent
 
-    get_responsable_email.short_description = "Email référent"
+    get_referent_email.short_description = "Email référent"
 
-    def get_responsable_phone(self):
-        if self.responsable:
-            return self.responsable.phone
-        return "NC"
+    def get_referent_phone(self):
+        if self.referent:
+            return self.referent.phone
+        return self.phone_referent
 
-    get_responsable_phone.short_description = "Téléphone référent"
+    get_referent_phone.short_description = "Téléphone référent"
 
     def get_organisation_address(self):
         return self.organisation.address

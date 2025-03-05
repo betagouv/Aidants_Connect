@@ -220,6 +220,7 @@ class ReferentForm(
 
     phone = AcPhoneNumberField(
         initial="",
+        label="Téléphone",
         required=True,
     )
 
@@ -520,13 +521,13 @@ class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     template_name = "aidants_connect_habilitation/forms/validation.html"  # noqa: E501
     cgu = BooleanField(
         required=True,
-        label='J’ai pris connaissance des <a href="{url}" class="fr-link">'
-        "conditions générales d’utilisation</a> et je les valide.",
+        label='J’ai pris connaissance des&nbsp;<a href="{url}" class="fr-link">'
+        "conditions générales d’utilisation</a>&nbsp;et je les valide.",
     )
     not_free = BooleanField(
         required=True,
         label="Je confirme avoir compris que la formation est payante "
-        "et je me suis renseigné(e) sur les modalités de financements disponibles.",
+        'et je me suis renseigné(e) sur les&nbsp;<a href="{simulator_url}" class="fr-link">modalités de financements</a>&nbsp;disponibles.',  # noqa: E501
     )
     dpo = BooleanField(
         required=True,
@@ -549,7 +550,11 @@ class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         cgu = self["cgu"]
+        not_free = self["not_free"]
         cgu.label = format_html(cgu.label, url=reverse("cgu"))
+        not_free.label = format_html(
+            not_free.label, simulator_url="https://tally.so/r/mO0Xkg"
+        )
 
     def save(
         self, organisation: OrganisationRequest, commit=True
