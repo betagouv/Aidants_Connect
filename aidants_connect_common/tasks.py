@@ -114,21 +114,21 @@ def email_formation_organization_new_attendants():
     for org in orgs:
 
         attendants = get_attendants_for_organization(org)
+        if attendants.count() > 0:
+            text_message, html_message = (
+                get_body_email_formation_organization_new_attendants(attendants)
+            )
 
-        text_message, html_message = (
-            get_body_email_formation_organization_new_attendants(attendants)
-        )
+            send_mail(
+                from_email=settings.AC_CONTACT_EMAIL,
+                subject=ngettext(
+                    "Nouvelle inscription à une formation Aidants Connect",
+                    "Nouvelles inscriptions à des formations Aidants Connect",
+                    len(attendants),
+                ),
+                recipient_list=org.contacts,
+                message=text_message,
+                html_message=html_message,
+            )
 
-        send_mail(
-            from_email=settings.AC_CONTACT_EMAIL,
-            subject=ngettext(
-                "Nouvelle inscription à une formation Aidants Connect",
-                "Nouvelles inscriptions à des formations Aidants Connect",
-                len(attendants),
-            ),
-            recipient_list=org.contacts,
-            message=text_message,
-            html_message=html_message,
-        )
-
-        attendants.update(organization_warned_at=now())
+            attendants.update(organization_warned_at=now())
