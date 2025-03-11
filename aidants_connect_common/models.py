@@ -241,7 +241,7 @@ class Formation(models.Model):
     state = models.IntegerField(
         "État de la formation", choices=State.choices, default=State.ACTIVE
     )
-    place = models.CharField("Lieu", max_length=500)
+    place = models.CharField("Lieu", max_length=500, blank=True, default="Distanciel")
     type = models.ForeignKey(FormationType, on_delete=models.PROTECT)
     intra = models.BooleanField("Session intra", default=False)
 
