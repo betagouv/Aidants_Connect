@@ -684,13 +684,19 @@ class OrganisationRequestAdmin(
 
 
 @admin.register(AidantRequest, site=admin_site)
-class AidantRequestAdmin(VisibleToTechAdmin, ModelAdmin):
+class AidantRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     list_display = (
         "__str__",
         "email",
         "profession",
         "organisation",
         "conseiller_numerique",
+        "organisation_status",
     )
-    raw_id_fields = ("organisation",)
+    search_fields = ("organisation__name", "email", "last_name")
+    list_filter = ("conseiller_numerique",)
     readonly_fields = ("habilitation_request",)
+
+    @admin.display(description="Statut de la demande de la structure")
+    def organisation_status(self, obj: AidantRequest):
+        return str(obj.organisation.status)
