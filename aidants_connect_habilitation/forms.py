@@ -43,7 +43,8 @@ from aidants_connect_habilitation.models import (
     OrganisationRequest,
 )
 from aidants_connect_habilitation.presenters import ProfileCardAidantRequestPresenter2
-from aidants_connect_web.models import OrganisationType
+from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.models import HabilitationRequest, OrganisationType
 
 
 class AddressValidatableForm(DsfrBaseForm):
@@ -415,6 +416,20 @@ class AidantRequestForm(
 
     def save(self, commit=True):
         self.instance.organisation = self.organisation
+        if self.organisation.organisation:
+            hr, _ = HabilitationRequest.objects.get_or_create(
+                email=self.instance.email,
+                organisation=self.instance.organisation.organisation,
+                defaults=dict(
+                    origin=HabilitationRequest.ORIGIN_HABILITATION,
+                    first_name=self.instance.first_name,
+                    last_name=self.instance.last_name,
+                    profession=self.instance.profession,
+                    conseiller_numerique=self.instance.conseiller_numerique,
+                    status=ReferentRequestStatuses.STATUS_PROCESSING,
+                ),
+            )
+            self.instance.habilitation_request = hr
         return super().save(commit)
 
     class Meta:
