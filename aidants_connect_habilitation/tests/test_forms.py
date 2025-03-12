@@ -21,7 +21,8 @@ from aidants_connect_habilitation.tests.factories import (
     OrganisationRequestFactory,
 )
 from aidants_connect_habilitation.tests.utils import get_form
-from aidants_connect_web.models import OrganisationType
+from aidants_connect_web.models import HabilitationRequest, OrganisationType
+from aidants_connect_web.tests.factories import OrganisationFactory
 
 
 class TestIssuerForm(TestCase):
@@ -395,6 +396,28 @@ class TestAidantRequestForm(TestCase):
             f"{settings.CONSEILLER_NUMERIQUE_EMAIL}"
             " le 15 novembre 2024, nous vous invitons à renseigner"
             " une autre adresse email nominative et professionnelle.",
+        )
+
+    def test_aidant_request_with_validated_organisation_create_habiliation_request(
+        self,
+    ):
+        real_organisation = OrganisationFactory(name="real Organisation")
+        organisation = OrganisationRequestFactory()
+        organisation.organisation = real_organisation
+        organisation.save()
+        form = get_form(
+            AidantRequestForm,
+            ignore_errors=True,
+            form_init_kwargs={"organisation": organisation},
+            conseiller_numerique=False,
+            email="aidant_with_hr@test.fr",
+        )
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertTrue(
+            HabilitationRequest.objects.filter(
+                organisation=real_organisation, email="aidant_with_hr@test.fr"
+            ).exists()
         )
 
 
