@@ -414,6 +414,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 "fields": (
                     "is_active",
                     "can_create_mandats",
+                    "referent_non_aidant",
                     "conseiller_numerique",
                     "is_staff",
                     "is_superuser",
