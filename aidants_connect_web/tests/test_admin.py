@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_common.models import Region
+from aidants_connect_habilitation.models import Manager
 from aidants_connect_web.admin import (
     AidantAdmin,
     HabilitationRequestAdmin,
@@ -114,6 +115,31 @@ class TestAidantAdmin(TestCase):
         self.assertEqual(
             1, HabilitationRequest.objects.filter(email="marge@simpson.com").count()
         )
+
+    def test_add_habilitationrequest_to_manager2(self):
+        self.assertEqual(0, HabilitationRequest.objects.count())
+        for one_aidant in Aidant.objects.all():
+            Manager.objects.create(
+                address="adr",
+                zipcode="ZIP",
+                city="City",
+                is_aidant=True,
+                phone="0112121212",
+                email=one_aidant.email,
+                first_name=one_aidant.first_name,
+                last_name=one_aidant.last_name,
+            )
+
+        AidantAdmin._add_habilitationrequest_to_manager(Aidant.objects.all())
+        self.assertEqual(1, HabilitationRequest.objects.count())
+        self.assertEqual(
+            1, HabilitationRequest.objects.filter(email="marge@simpson.com").count()
+        )
+        hr = HabilitationRequest.objects.filter(email="marge@simpson.com").first()
+        self.assertEqual(
+            1, Manager.objects.filter(habilitation_request__isnull=False).count()
+        )
+        self.assertTrue(Manager.objects.filter(habilitation_request=hr))
 
 
 @tag("admin")

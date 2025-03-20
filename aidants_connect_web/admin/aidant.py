@@ -24,6 +24,7 @@ from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect.utils import strtobool
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.constants import JournalActionKeywords
+from aidants_connect_habilitation.models import Manager
 from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.forms import (
     AidantChangeForm,
@@ -517,13 +518,17 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     email=one_manager.email
                 ).exists()
             ):
-                HabilitationRequest.objects.create(
+                hr = HabilitationRequest.objects.create(
                     organisation=one_manager.organisation,
                     first_name=one_manager.first_name,
                     last_name=one_manager.last_name,
                     email=one_manager.email,
                     profession=one_manager.profession,
                 )
+                hab_manager = Manager.objects.filter(email=one_manager.email).first()
+                if hab_manager:
+                    hab_manager.habilitation_request = hr
+                    hab_manager.save()
 
     def add_habilitationrequest_to_manager(
         self, request: HttpRequest, queryset: QuerySet
