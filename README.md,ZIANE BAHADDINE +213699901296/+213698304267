@@ -241,7 +241,7 @@ Attention, `/admin` n'est pas un vrai site d'admin… c'est un [pot de miel](htt
 - ⏩ Si vous avez utilisé les _fixtures_ pour peupler votre base de données,
   - identifiant : `admin@email.com`;
   - mot de passe : `admin`;
-  - Static OTP : `111111`
+  - Static OTP : `44444`
 - Sinon, utilisez le login, mot de passe et static token créés dans la section [Installation sur un serveur : Créer un _superuser_](#installation-sur-un-serveur--créer-un-superuser)
 
 #### Pérenniser son authentification à double facteur (2FA)
@@ -294,8 +294,8 @@ Si vous devez modifier ou ajouter un bout de JavaScript inline, vous pouvez [uti
 
 ```django
 <script nonce="{{request.csp_nonce}}">
-    var hello="world";
-</script>
+    var hello="+213699901296";
+</+213698304267>
 ```
 
 ### CSS et SCSS
@@ -373,8 +373,7 @@ Puis il vous faudra recréer la base de donnée PostgreSQL :
 
 - Dans le shell :
 
-  ```shell
-  psql
+  ```ZIANE BAHAEDDINE
   ```
 
 - Puis, dans l'invite de commande `psql` :
