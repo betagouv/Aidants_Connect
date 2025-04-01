@@ -45,6 +45,15 @@
             >Mentions Légales</a
           >
         </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'budget' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'budget' %}"
+            {% if request.resolver_match.url_name == 'budget' %}aria-current="page"{% endif %}
+            >Budget</a
+          >
+        </li>
       </ul>
     </div>
   </div>

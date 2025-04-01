@@ -199,6 +199,10 @@ def mentions_legales(request):
     return render(request, "public_website/mentions_legales.html")
 
 
+def budget(request):
+    return render(request, "public_website/budget.html")
+
+
 class AccessibiliteView(TemplateView):
     template_name = "public_website/accessibilite.html"
 
