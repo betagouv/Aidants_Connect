@@ -1,0 +1,133 @@
+{% extends 'public_website/layout/layout_legal.html' %}
+
+{% load ac_common static %}
+
+{% block title %}Budget - Aidants Connect{% endblock %}
+
+{% block extracss %}
+<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block body %}
+<section class="section">
+  <div class="fr-container">
+    <h1 class="fr-mb-4w">Budget</h1>
+    <p>Aidants Connect est un service public numérique, c’est pourquoi nous sommes transparents sur les ressources allouées et la manière dont elles sont employées.</p>
+        <h2>Principes</h2>
+        <p>Nous suivons <a href="https://beta.gouv.fr/manifeste">le manifeste beta.gouv</a> dont nous rappelons les principes ici :
+        <ul>
+        <li>Les besoins des utilisateurs sont prioritaires sur les besoins de l’administration</li>
+        <li>Le mode de gestion de l’équipe repose sur la confiance</li>
+        <li>L’équipe adopte une approche itérative et d’amélioration en continu</li>
+      </ul>
+        </p>
+
+        <h2>Financements</h2>
+          <div class="fr-table fr-table--bordered fr-table--layout-fixed">
+         <div class="fr-table__wrapper">
+            <div class="fr-table__container">
+               <div class="fr-table__content">
+
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Source</th>
+                      <th scope="col">2021</th>
+                                    <th scope="col">2022</th>
+                                    <th scope="col">2023</th>
+                                    <th scope="col">2024</th>
+                </thead>
+                  <tbody>
+                    <tr>
+                      <td>Programme Société Numérique</td>
+                      <td>1 650 167 €</td>
+                      <td>2 421 667 €</td>
+                      <td>2 521 667 €</td>
+                      <td>852 300 €</td>
+                    </tr>
+                    <tr>
+                      <td>DINUM - Fond Accessibilité</td>
+                      <td> </td>
+                      <td> </td>
+                      <td> </td>
+                      <td>189 400 €</td>
+                    </tr>
+                    <tr>
+                      <td>TOTAL</td>
+                      <td>1 650 167 €</td>
+                      <td>2 421 667 €</td>
+                      <td>2 521 667 €</td>
+                      <td>1 041 700 €</td>
+                    </tr>
+                  </tbody>
+                </table>
+                            </div>
+        </div>
+    </div>
+      </div>
+
+    <h2>Dépenses</h2>
+      <div class="fr-table fr-table--bordered fr-table--layout-fixed">
+         <div class="fr-table__wrapper">
+            <div class="fr-table__container">
+               <div class="fr-table__content">
+
+                  <table  id="table-bordered">
+                    <thead>
+                      <tr>
+                        <th scope="col">Poste</th>
+                        <th scope="col">2021</th>
+                                      <th scope="col">2022</th>
+                                      <th scope="col">2023</th>
+                                      <th scope="col">2024</th>
+                  </thead>
+                    <tbody>
+                                <tr>
+                        <td>Équipe produit</td>
+                        <td>883 500 €</td>
+                        <td>1 400 000 €</td>
+                        <td>1 400 000 €</td>
+                        <td>909 200 €</td>
+                      </tr>
+                                <tr>
+                        <td>Formations Aidants Connect</td>
+                        <td>766 667 €</td>
+                        <td>766 667 €</td>
+                        <td>806 667 €</td>
+                        <td>111 600 €</td>
+                      </tr>
+                                <tr>
+                        <td>Cartes OTP et logistique</td>
+                        <td> </td>
+                        <td> 255 000 €</td>
+                        <td>298 500 €</td>
+                        <td> </td>
+                      </tr>
+                                <tr>
+                        <td>Homologation sécurité</td>
+                        <td> </td>
+                        <td> </td>
+                        <td>16 500 €</td>
+                        <td>20 900 €</td>
+                      </tr>
+                                  <td>TOTAL</td>
+                        <td>1 650 167 €</td>
+                        <td>2 421 667 €</td>
+                        <td>2 521 667 €</td>
+                        <td>1 041 700 €</td>
+                      </tr>
+                    </tbody>
+                  </table>
+           </div>
+        </div>
+    </div>
+      </div>
+
+    <div class="fr-col-12--active fr-background-alt--grey fr-grid-row fr-grid-row--gutters fr-mb-3w">
+      <div class="fr-col-12 fr-p-3w">
+      <strong>À propos de la TVA :</strong> Contrairement aux entreprises du secteur privé, les administrations ne peuvent pas récupérer la TVA supportée sur leurs achats dans le cadre de leur activité. Le montant TTC inclut la TVA au taux de 20%. La TVA est collectée et reversée à l’État et diminue donc le montant du budget utilisable sur le projet.
+      </div>
+    </div>
+</div>
+</section>
+{% endblock body %}

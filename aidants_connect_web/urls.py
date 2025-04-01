@@ -262,6 +262,7 @@ urlpatterns = [
         name="politique_confidentialite",
     ),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
+    path("budget/", service.budget, name="budget"),
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("formation/", service.formation, name="habilitation_faq_formation"),
     path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
