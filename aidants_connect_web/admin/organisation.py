@@ -356,7 +356,9 @@ class OrganisationAdmin(
     def display_aidants(self, obj):
         return self.format_list_of_aidants(obj.aidants.order_by("last_name").all())
 
-    display_aidants.short_description = "Aidants"
+    display_aidants.short_description = (
+        "Utilisateurs pouvant se connecter (aidants et autre)"
+    )
 
     def format_list_of_aidants(self, aidants_list):
         return mark_safe(
