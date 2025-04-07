@@ -1,3 +1,20 @@
 Bonjour,
 
 Veuillez procéder aux modifications demandées par l'équipe Aidants Connect pour la demande d'habilitation n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}.
+
+Demande de changement d'email :
+
+Nous n'acceptons pas les adresse e-mails génériques. Seules les adresses e-mails nominatives sont acceptées : prénom.nom@xxx.fr ou p.nom@xxx.fr.
+
+Aidants Connect étant un outil homologué par l’Agence Nationale de la Cohésion des Territoires, l'adresse mail nominative est un prérequis pour garantir la sécurité de l’outil et la fiabilité des traces de connexion.
+
+En cas de litige par exemple, Aidants Connect permet de retracer les données objectives (traces de connexion sur un site administratif) et de garantir la protection de l’aidant concerné si besoin - ce qui sera impossible avec une adresse mail générique. A défaut, il est quand même mieux de proposer une adresse mail nominative gratuite, comme celles proposées par la poste ou protonmail par exemple.
+
+
+Demande de clarifications :
+
+Aidants Connect est un service public numérique qui permet aux aidants numériques professionnels salariés d'une structure, d'accompagner les usagers dans la réalisation de leurs démarches en ligne de manière légale et sécurisée (impôts, retraite, papiers d'identité, Ameli, etc.) sur tous les sites administratifs disposant du bouton FranceConnect. L'outil ne peut pas être utilisé pour des personnes mineures, ni pour des démarches judiciaires. Également, les usagers sous tutelle ou sous curatelle ne peuvent pas être accompagnés dans leurs démarches en ligne via le service Aidants Connect.
+
+Êtes-vous bien salarié de votre structure ? Quels types de démarches administratives réalisez-vous en lien avec vos usagers ? Pour quels types de publics ? Vos accompagnements sont-ils gratuits ou payants ?
+
+Vous pouvez modifier ces informations dans l'onglet "Description des missions de la structure".
