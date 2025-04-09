@@ -2,9 +2,9 @@ Bonjour {{ user.get_full_name }},
 
 Suite à notre précédente relance, comme annoncé, votre compte a été désactivé pour des raisons de sécurité, conformément aux CGU d’Aidants Connect ({{ cgu_url }}).
 
-Nous vous invitons à nous retourner les cartes Aidants Connect à l'adresse suivante : 
+Nous vous invitons à nous retourner les cartes Aidants Connect à l'adresse suivante :
 ANCT-Incubateur des Territoires
-A l'attention de Marine Jouan,
+A l'attention de Estelle Patat,
 20 avenue de Ségur 75007 Paris
 
 Si vous souhaitez réactiver votre compte, merci de nous contacter à l’adresse suivante : contact@aidantsconnect.beta.gouv.fr
