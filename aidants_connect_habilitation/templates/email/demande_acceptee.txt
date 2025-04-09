@@ -2,7 +2,7 @@ Bienvenue sur Aidants Connect !
 
 Nous avons validé la demande d’habilitation n° {{ organisation.data_pass_id }} concernant la structure {{ organisation.name }}. La prochaine étape est la formation des aidants : des financements sont possibles via Uniformation, le marché des conseillers numérique ou France Numérique Ensemble.
 
-🧑‍🎓 Des sessions de formation sont organisées régulièrement. Pour inscrire un aidant à une session, retournez sur votre demande : {{ organisation_request_url }} 
+🧑‍🎓 Des sessions de formation sont organisées régulièrement. Pour inscrire un aidant à une session, retournez sur votre demande : {{ organisation_request_url }}
 
 Cliquez sur « Inscrire à une formation » au niveau de son nom puis sélectionnez une date de session. L’organisme de formation concerné vous contactera par la suite pour confirmer l’inscription.
 
