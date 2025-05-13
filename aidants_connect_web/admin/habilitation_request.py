@@ -358,7 +358,8 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         )
 
         recipients = [
-            manager.email for manager in aidant.organisation.responsables.all()
+            manager.email
+            for manager in aidant.organisation.responsables.filter(is_active=True)
         ]
 
         send_mail(
@@ -413,7 +414,8 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         )
 
         recipients = [
-            manager.email for manager in aidant.organisation.responsables.all()
+            manager.email
+            for manager in aidant.organisation.responsables.filter(is_active=True)
         ]
 
         send_mail(

@@ -336,6 +336,12 @@ class HabilitationRequestAdminTests(TestCase):
             organisation=cls.organisation, post__is_organisation_manager=True
         )
 
+        cls.inactive_manager = AidantFactory(
+            is_active=False,
+            organisation=cls.organisation,
+            post__is_organisation_manager=True,
+        )
+
     def test_send_validation_email(self):
         self.assertEqual(len(mail.outbox), 0)
 
@@ -353,7 +359,9 @@ class HabilitationRequestAdminTests(TestCase):
         self.assertTrue(
             all(
                 manager.email in validation_message.recipients()
-                for manager in self.habilitation_request.organisation.responsables.all()
+                for manager in self.habilitation_request.organisation.responsables.filter(  # noqa
+                    is_active=True
+                )
             )
         )
 
@@ -374,6 +382,8 @@ class HabilitationRequestAdminTests(TestCase):
         self.assertTrue(
             all(
                 manager.email in refusal_message.recipients()
-                for manager in self.habilitation_request.organisation.responsables.all()
+                for manager in self.habilitation_request.organisation.responsables.filter(  # noqa
+                    is_active=True
+                )
             )
         )

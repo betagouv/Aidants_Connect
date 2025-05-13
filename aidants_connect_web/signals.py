@@ -73,7 +73,7 @@ def send_email_on_new_notification(sender, instance: Notification, created: bool
 
 @receiver(aidant_activated)
 def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
-    for referent in aidant.organisation.responsables.all():
+    for referent in aidant.organisation.responsables.filter(is_active=True):
         text_message, html_message = render_email(
             "email/aidant_activated.mjml",
             {
