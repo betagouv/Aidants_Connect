@@ -17,6 +17,10 @@ from aidants_connect_web.admin.aidant import (
     AidantInPreDesactivationZoneFilter,
     AidantWithMandatsFilter,
 )
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
+)
 from aidants_connect_web.models import (
     Aidant,
     HabilitationRequest,
@@ -328,12 +332,47 @@ class HabilitationRequestAdminTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        cls.rf = RequestFactory()
         cls.organisation = OrganisationFactory()
         cls.habilitation_request = HabilitationRequestFactory(
             organisation=cls.organisation
         )
+        cls.habilitation_request_p2p = HabilitationRequestFactory(
+            organisation=cls.organisation,
+            course_type=HabilitationRequestCourseType.P2P,
+        )
         cls.manager = AidantFactory(
             organisation=cls.organisation, post__is_organisation_manager=True
+        )
+
+    def test_validation_hrequests(self):
+        hr_queryset = HabilitationRequest.objects.all()
+
+        self.habilitation_request_admin.mark_processing(
+            self.rf.get("/"), hr_queryset, False
+        )
+
+        self.habilitation_request.refresh_from_db()
+        self.habilitation_request_p2p.refresh_from_db()
+        self.assertEqual(
+            self.habilitation_request.status, ReferentRequestStatuses.STATUS_PROCESSING
+        )
+        self.assertEqual(
+            self.habilitation_request_p2p.status,
+            ReferentRequestStatuses.STATUS_PROCESSING_P2P,
+        )
+
+    def test_dont_send_validation_email_for_p2p_habilitation_request(self):
+        self.assertEqual(len(mail.outbox), 0)
+        hr_queryset = HabilitationRequest.objects.all()
+        self.habilitation_request_admin.mark_processing(
+            self.rf.get("/"), hr_queryset, False
+        )
+        validation_message = mail.outbox[0]
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(
+            str(self.habilitation_request.first_name), validation_message.subject
         )
 
     def test_send_validation_email(self):

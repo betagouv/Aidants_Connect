@@ -20,7 +20,10 @@ from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils import build_url, render_email
-from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
+)
 from aidants_connect_web.forms import MassEmailActionForm
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 
@@ -371,7 +374,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
 
     mark_refused.short_description = "Refuser les demandes sélectionnées"
 
-    def mark_processing(self, request, queryset):
+    def mark_processing(self, request, queryset, send_messages=True):
         habilitation_requests = queryset.filter(
             status__in=[
                 ReferentRequestStatuses.STATUS_NEW,
@@ -380,15 +383,23 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         )
 
         for habilitation_request in habilitation_requests:
-            habilitation_request.status = ReferentRequestStatuses.STATUS_PROCESSING
+            if habilitation_request.course_type == HabilitationRequestCourseType.P2P:
+                habilitation_request.status = (
+                    ReferentRequestStatuses.STATUS_PROCESSING_P2P
+                )
+            else:
+                habilitation_request.status = ReferentRequestStatuses.STATUS_PROCESSING
             habilitation_request.save()
-        for habilitation_request in habilitation_requests:
+        for habilitation_request in queryset.filter(
+            status=ReferentRequestStatuses.STATUS_PROCESSING
+        ):
             self.send_validation_email(habilitation_request)
 
-        self.message_user(
-            request,
-            f"{habilitation_requests.count()} demandes sont maintenant en cours.",
-        )
+        if send_messages:
+            self.message_user(
+                request,
+                f"{habilitation_requests.count()} demandes sont maintenant en cours.",
+            )
 
     mark_processing.short_description = (
         "Passer les demandes sélectionnées au statut "
