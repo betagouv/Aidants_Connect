@@ -1,6 +1,13 @@
 {% load ac_common dsfr_tags widget_tweaks %}
 
 <div data-controller="manager-form">
+      <section class="fr-mb-5v">
+
+      <p>Le ou la référente Aidants Connect est en
+        charge de la mise en place du dispositif et de son suivi (activation des comptes, gestion
+        des départs et des arrivées).</p>
+    </section>
+
   <section class="fr-mb-5v">
     <button id="its-me-manager" class="fr-btn fr-btn--secondary" data-action="manager-form#onManagerItsMeBtnClicked:stop:prevent">
       Remplir avec mes informations
@@ -27,7 +34,9 @@
       <p class="fr-info-text fr-mb-4v fr-mt-n2v">L’email doit être nominatif</p>
     </div>
 
-    <div class="fr-fieldset__element ">{% dsfr_form_field form.phone %}</div>
+    <div class="fr-fieldset__element ">{% dsfr_form_field form.phone %}
+      <p class="fr-info-text fr-mb-4v fr-mt-n2v"><a href="/faq/utiliser-aidants-connect/">Pourquoi un numéro de téléphone mobile ?</a></p>
+    </div>
   </fieldset>
 
   <fieldset class="fr-fieldset">

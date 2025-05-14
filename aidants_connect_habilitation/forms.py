@@ -221,7 +221,7 @@ class ReferentForm(
 
     phone = AcPhoneNumberField(
         initial="",
-        label="Téléphone",
+        label="Numéro de téléphone mobile",
         required=True,
     )
 
