@@ -1,6 +1,5 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
-
-{% load static form_extras %}
+{% load dsfr_tags form_extras static %}
 
 {% block title %}Aidants Connect - Ajout d’une carte OTP numérique pour {{ aidant.get_full_name }}{% endblock %}
 
@@ -59,7 +58,9 @@
                   src="{{ otp_device_qr_code_href }}"
                   alt="QR code à flasher dans votre application"
                 />
-                {% field_as_p form.otp_token %}
+                <p>
+                {% dsfr_form_field form.otp_token %}
+                </p>
               </div>
 
               <input type="submit" class="fr-btn" value="Valider cette carte">
