@@ -390,8 +390,9 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             else:
                 habilitation_request.status = ReferentRequestStatuses.STATUS_PROCESSING
             habilitation_request.save()
+
         for habilitation_request in queryset.filter(
-            status=ReferentRequestStatuses.STATUS_PROCESSING
+            status=ReferentRequestStatuses.STATUS_PROCESSING, created_by_fne=False
         ):
             self.send_validation_email(habilitation_request)
 
