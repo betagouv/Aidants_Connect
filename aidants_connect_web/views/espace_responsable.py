@@ -316,20 +316,23 @@ class DemandesView(DetailView, FormView):
             status__in=[
                 ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
                 ReferentRequestStatuses.STATUS_NEW.value,
-            ]
+            ],
+            created_by_fne=False,
         ).order_by("status", "last_name")
         organisation_habilitation_validated = self.object.habilitation_requests.filter(
             status__in=[
                 ReferentRequestStatuses.STATUS_PROCESSING.value,
                 ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
-            ]
+            ],
+            created_by_fne=False,
         ).order_by("status", "last_name")
         organisation_habilitation_refused = self.object.habilitation_requests.filter(
             status__in=[
                 ReferentRequestStatuses.STATUS_REFUSED.value,
                 ReferentRequestStatuses.STATUS_CANCELLED.value,
                 ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE.value,
-            ]
+            ],
+            created_by_fne=False,
         ).order_by("status", "last_name")
 
         return {
