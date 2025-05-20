@@ -58,10 +58,6 @@ def get_card_sending_from_grist():
             if one_sending.Referent in dict_users:
                 db_sending.bizdev == dict_users[one_sending.Referent]
 
-        if one_sending.Qte_kit is not None:
-            db_sending.kit_quantity = int(one_sending.Qte_kit)
-        else:
-            db_sending.kit_quantity = 0
         db_sending.quantity = int(one_sending.Qte_cartes)
         db_sending.raison_envoi = one_sending.Cause_de_l_envoi
         if one_sending.Date_d_envoi:

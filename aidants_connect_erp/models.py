@@ -30,7 +30,6 @@ class CardSending(models.Model):
         "Nombre de cartes estimé", default=0
     )
 
-    kit_quantity = models.PositiveIntegerField("Nombres de kits", default=0)
     status = models.CharField(
         "statut d'envoi", choices=SendingStatusChoices.choices, max_length=200
     )

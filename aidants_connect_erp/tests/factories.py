@@ -15,7 +15,6 @@ class CardSendingFactory(DjangoModelFactory):
     referent = SubFactory(AidantFactory)
     bizdev = SubFactory(AidantFactory)
     quantity = 1
-    kit_quantity = 1
     status = SendingStatusChoices.SENDING
 
     class Meta:
