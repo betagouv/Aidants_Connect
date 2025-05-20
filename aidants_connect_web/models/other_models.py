@@ -52,6 +52,12 @@ class HabilitationRequest(models.Model):
     email = models.EmailField(
         max_length=150,
     )
+
+    created_by_fne = models.BooleanField("Création FNE", default=False)
+    id_fne = models.CharField(
+        "ID FNE", max_length=255, null=True, blank=True, editable=False
+    )
+
     organisation = models.ForeignKey(
         Organisation,
         null=True,
