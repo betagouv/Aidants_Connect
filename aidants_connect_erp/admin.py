@@ -37,7 +37,6 @@ class CardSendingAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "get_organisation_city",
         "get_organisation_region_name",
         "code_referent",
-        "kit_quantity",
         "quantity",
         "estimated_quantity",
         "bizdev",
