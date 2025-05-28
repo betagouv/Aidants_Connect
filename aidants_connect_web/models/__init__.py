@@ -43,6 +43,7 @@ __all__ = [
     Organisation,
     OrganisationType,
     Mandat,
+    MobileAskingUser,
     ReboardingAidantStatistiques,
     Usager,
     UsagerQuerySet,
