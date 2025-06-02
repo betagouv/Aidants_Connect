@@ -551,8 +551,8 @@ class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     )
     professionals_only = BooleanField(
         required=True,
-        label="Je confirme que la liste des aidants à habiliter contient "
-        "exclusivement des aidants professionnels. Elle ne contient "
+        label="Je confirme que le référent et la liste des aidants à habiliter ne contient "
+        "exclusivement que des aidants professionnels. Elle ne contient "
         "donc ni service civique, ni bénévole, ni apprenti, ni stagiaire.",
     )
     without_elected = BooleanField(
