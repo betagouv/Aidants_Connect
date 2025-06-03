@@ -1033,3 +1033,31 @@ class OrganisationRestrictDemarchesForm(PatchedForm):
             "required": _("Vous devez sélectionner au moins une démarche.")
         },
     )
+
+
+class ConnexionChoiceForm(DsfrBaseForm):
+    email = forms.CharField(
+        label="E-mail professionnel",
+        required=True,
+        help_text="⚠️ Il s'agit de l'e-mail renseigné lors de la demande d'habilitation (e-mail nominatif de type prenom-nom@structure.fr)",  # noqa
+    )
+    connexion_mode = forms.ChoiceField(
+        label="Moyen de connexion choisi",
+        required=True,
+        choices=[
+            (HabilitationRequest.CONNEXION_MODE_PHONE, "Application Mobile"),
+            (HabilitationRequest.CONNEXION_MODE_CARD, "Carte Physique"),
+        ],
+    )
+
+
+class AskingMobileForm(DsfrBaseForm):
+    user_email = forms.CharField(
+        label="E-mail professionnel",
+        required=True,
+        help_text="⚠️ Il s'agit de l'e-mail renseigné lors de la demande d'habilitation (e-mail nominatif de type prenom-nom@structure.fr)",  # noqa
+    )
+
+    user_mobile = forms.CharField(
+        label="Téléphone mobile", required=True, min_length=10, max_length=20
+    )

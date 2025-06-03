@@ -424,7 +424,5 @@ class UserFingerprint(models.Model):
 
 class MobileAskingUser(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    user_padding = models.CharField(
-        max_length=16, editable=False, null=True, blank=True
-    )
-    user_mobile = models.CharField(max_length=20)
+    user_padding = models.CharField(max_length=16, editable=True, null=True, blank=True)
+    user_mobile = models.CharField(max_length=20, null=True, blank=True)
