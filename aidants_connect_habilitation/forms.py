@@ -551,7 +551,7 @@ class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     )
     professionals_only = BooleanField(
         required=True,
-        label="Je confirme que la liste des aidants à habiliter contient "
+        label="Je confirme que le référent ainsi que la liste des aidants à habiliter contient "  # noqa: E501
         "exclusivement des aidants professionnels. Elle ne contient "
         "donc ni service civique, ni bénévole, ni apprenti, ni stagiaire.",
     )
