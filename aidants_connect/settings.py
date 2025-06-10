@@ -427,6 +427,8 @@ MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
 SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert"
+BREVO_IFRAME_URL = "https://0115c97a.sibforms.com/serve/MUIFAOEUqPVTtu5LAcp2Jb6IwxykPCfAQXbKZDkoZsUf4A8T1zH3hzFGvidEm_nbheED_dM3HtKQWnfla_ET40DKbBEN8dXi55l9bF36E7IXtemPGq9dcifiZiYjVho5UcESRhao0Nypf0e4TErVcvJdKh33b788Nu_KPW9okNiaT3wxJQ1Dja5FUbZ7_l9-NBFeCJ_EMWfhg4zq"
+
 COOKIE_BANNER_JS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.js"
 COOKIE_BANNER_LANG_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/lang/tarteaucitron.fr.js"
@@ -491,26 +493,26 @@ CSP_STYLE_SRC_ATTR = (
 )
 
 CSP_OBJECT_SRC = ("'none'",)
-CSP_FRAME_SRC = (
-    *list(
-        chain.from_iterable(
+CSP_FRAME_SRC = list(
+    chain.from_iterable(
+        [
             [
-                [
-                    f"https://www.youtube.com/embed/{video_id}",
-                    f"https://www.youtube-nocookie.com/embed/{video_id}",
-                    f"http://www.youtube.com/embed/{video_id}",
-                    f"http://www.youtube-nocookie.com/embed/{video_id}",
-                ]
-                for video_id in [
-                    "hATrqHG4zYQ",
-                    "WTHj_kQXnzs",
-                    "ihsm-36I-fE",
-                    "AJGo6bydQss",
-                ]
+                f"https://www.youtube.com/embed/{video_id}",
+                f"https://www.youtube-nocookie.com/embed/{video_id}",
+                f"http://www.youtube.com/embed/{video_id}",
+                f"http://www.youtube-nocookie.com/embed/{video_id}",
             ]
-        )
-    ),
+            for video_id in [
+                "hATrqHG4zYQ",
+                "WTHj_kQXnzs",
+                "ihsm-36I-fE",
+                "AJGo6bydQss",
+            ]
+        ]
+    )
 )
+
+CSP_FRAME_SRC.append(BREVO_IFRAME_URL)
 
 CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
 
