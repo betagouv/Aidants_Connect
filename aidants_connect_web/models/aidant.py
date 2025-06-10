@@ -165,6 +165,11 @@ class Aidant(AbstractUser):
         default=None,
     )
 
+    created_by_fne = models.BooleanField("Création FNE", default=False)
+    id_fne = models.CharField(
+        "ID FNE", max_length=255, null=True, blank=True, editable=False
+    )
+
     objects = AidantManager()
 
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]

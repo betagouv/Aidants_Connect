@@ -208,12 +208,12 @@ class OrganisationAdmin(
         "address",
         "siret",
         "zipcode",
-        "admin_num_active_aidants",
-        "admin_num_received_cards",
-        "admin_num_mandats",
         "is_active",
         "id",
         "data_pass_id",
+        "admin_num_active_aidants",
+        "admin_num_received_cards",
+        "admin_num_mandats",
         "france_services_label",
     )
 
@@ -229,6 +229,8 @@ class OrganisationAdmin(
                     "is_active",
                     "created_at",
                     "updated_at",
+                    "created_by_fne",
+                    "id_fne",
                 )
             },
         ),
@@ -294,12 +296,15 @@ class OrganisationAdmin(
         "num_active_aidants",
         "num_cards_used",
         "num_received_cards",
+        "created_by_fne",
+        "id_fne",
     )
     search_fields = ("=id", "name", "siret", "data_pass_id")
     list_filter = (
         RegionFilter,
         DepartmentFilter,
         "is_active",
+        "created_by_fne",
         "france_services_label",
         OrganisationTypeFilter,
         "type",
