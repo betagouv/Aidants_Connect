@@ -539,6 +539,7 @@ if MATOMO_INSTANCE_URL:
 
 # Admin Page settings
 ADMIN_URL = os.getenv("ADMIN_URL")
+ADMIN_OF_URL = os.getenv("ADMIN_OF_URL", get_random_string(12))
 ADMINS = [(os.getenv("ADMIN_NAME"), os.getenv("ADMIN_EMAIL"))]
 
 # Sessions

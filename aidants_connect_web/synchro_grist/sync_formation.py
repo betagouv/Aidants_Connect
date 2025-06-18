@@ -56,7 +56,7 @@ def get_formations_from_grist():
             Formation.objects.get(id_grist=grist_id)
             continue
         except Formation.DoesNotExist:
-            formation = Formation(id_grist=grist_id)
+            formation = Formation(id_grist=grist_id, publish_or_not=True)
 
         formation.description = one_row.Date_et_horaires
         formation.place = one_row.Lieu if one_row.Lieu else ""

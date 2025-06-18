@@ -12,7 +12,9 @@ msgid "superuser status"
 msgstr "statut Admin Technique (super-utilisateur)"
 
 msgid "staff status"
-msgstr "statut Admin Métier (is_staff)"
+msgstr "Peut accéder à l'admin Django (is_staff)"
+#: msgstr "statut Admin Métier (is_staff)"
+
 
 #: magicauth/otp_forms.py
 msgid ""

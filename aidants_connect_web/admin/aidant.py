@@ -360,6 +360,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "deactivation_warning_at",
         "created_at",
         "is_staff",
+        "is_of_user",
+        "is_admin_metier",
         "is_superuser",
         "totp_card_drift",
     )
@@ -377,6 +379,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantNoActionTooLong,
         AidantWithOTPAppFilter,
         "is_staff",
+        "is_of_user",
+        "is_admin_metier",
         "is_superuser",
         "created_by_fne",
     )
@@ -442,6 +446,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             {
                 "fields": (
                     "is_active",
+                    "is_of_user",
+                    "is_admin_metier",
                     "can_create_mandats",
                     "referent_non_aidant",
                     "is_staff",

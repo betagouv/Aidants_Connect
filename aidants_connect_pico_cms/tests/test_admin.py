@@ -37,7 +37,7 @@ class VisibilityAdminPageTests(TestCase):
 
     def test_views_visible_by_amac_were_visible_by_amac_users(self):
         for model in self.amac_models:
-            url_root = f"admin:{model._meta.app_label}_{model.__name__.lower()}"
+            url_root = f"otpadmin:{model._meta.app_label}_{model.__name__.lower()}"
             list_url = reverse(url_root + "_changelist")
             response = self.amac_client.get(list_url)
             self.assertEqual(response.status_code, 200)

@@ -18,6 +18,9 @@ from aidants_connect_common.constants import FormationAttendantState
 from aidants_connect_common.utils import PGTriggerExtendedFunc, render_markdown
 from aidants_connect_pico_cms.fields import MarkdownField
 
+# from aidants_connect_web.models import Aidant
+
+
 if TYPE_CHECKING:
     from aidants_connect_web.models import HabilitationRequest
 
@@ -100,8 +103,8 @@ class FormationType(models.Model):
         return self.label
 
     class Meta:
-        verbose_name = "Formation : types"
-        verbose_name_plural = "Formation : types"
+        verbose_name = "Type de formation"
+        verbose_name_plural = "Types de formation"
         constraints = [
             models.CheckConstraint(
                 check=models.Q(label__isnull_or_blank=False), name="not_blank_label"
@@ -141,19 +144,47 @@ class FormationOrganization(models.Model):
         Region, default=None, null=True, blank=True, on_delete=models.SET_NULL
     )
 
+    users_of = models.ManyToManyField(
+        "aidants_connect_web.Aidant",
+        verbose_name="Utilisateurs OF de",
+        related_name="organizations_formations",
+        blank=True,
+        limit_choices_to={"is_of_user": True},
+    )
+
     objects = FormationOrganizationQuerySet.as_manager()
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = "Formation : organisation"
-        verbose_name_plural = "Formation : organisation"
+        verbose_name = "Organisme de formation"
+        verbose_name_plural = "Organismes de formation"
         constraints = [
             models.CheckConstraint(
                 check=models.Q(name__isnull_or_blank=False), name="not_blank_name"
             )
         ]
+
+
+class FormationContact(models.Model):
+    first_name = models.CharField("Prénom", max_length=150, blank=True, null=True)
+    last_name = models.CharField("Nom", max_length=150, blank=True, null=True)
+    email = models.EmailField("E-mail", blank=True, null=True)
+    organisation = models.ForeignKey(
+        FormationOrganization, on_delete=models.CASCADE, null=False, blank=False
+    )
+
+    class Meta:
+        abstract = True
+
+
+class FormationContactPublic(FormationContact):
+    pass
+
+
+class FormationContactPrivate(FormationContact):
+    pass
 
 
 class FormationQuerySet(models.QuerySet):
@@ -231,11 +262,17 @@ class Formation(models.Model):
         ACTIVE = (auto(), "Active")
         CANCELLED = (auto(), "Annulé")
 
+    publish_or_not = models.BooleanField(
+        "Publie sur le site, disponible à l'inscription",
+        default=False,
+    )
     start_datetime = models.DateTimeField("Date et heure de début de la formation")
     end_datetime = models.DateTimeField(
         "Date et heure de fin de la formation", null=True, blank=True
     )
-    duration = models.IntegerField("Durée en heures")
+    duration = models.IntegerField(
+        "Durée en heures", choices=[(7, "7 heures"), (14, "14 heures")]
+    )
     max_attendants = models.IntegerField("Nombre maximum d'inscrits possibles")
     status = models.IntegerField("En présentiel/à distance", choices=Status.choices)
     state = models.IntegerField(
@@ -285,8 +322,8 @@ class Formation(models.Model):
         Formation.objects.filter(pk=self.pk).unregister_attendant(attendant)
 
     class Meta:
-        verbose_name = "Formation aidant"
-        verbose_name_plural = "Formations aidant"
+        verbose_name = "Session"
+        verbose_name_plural = "Sessions"
         constraints = [
             models.CheckConstraint(
                 check=models.Q(start_datetime__lte=models.F("end_datetime")),
@@ -301,6 +338,20 @@ class Formation(models.Model):
         ]
 
 
+class HalfDayClass(models.Model):
+    start_datetime = models.DateTimeField("Date et heure de début de la demi-journée")
+    end_time = models.TimeField(
+        "Heure de fin de la demi-journée", null=True, blank=True
+    )
+    formation = models.ForeignKey(
+        Formation, on_delete=models.PROTECT, related_name="half_day_classes"
+    )
+
+    class Meta:
+        verbose_name = "Demi-journée de formation"
+        verbose_name_plural = "Demi-journées de formation"
+
+
 class FormationAttendant(models.Model):
     State = FormationAttendantState
 
@@ -310,12 +361,17 @@ class FormationAttendant(models.Model):
     attendant = models.ForeignKey(
         "aidants_connect_web.HabilitationRequest",
         on_delete=models.CASCADE,
+        verbose_name="Aidant inscrit",
         related_name="formations",
     )
 
     formation = models.ForeignKey(
-        Formation, on_delete=models.PROTECT, related_name="attendants"
+        Formation,
+        on_delete=models.PROTECT,
+        related_name="attendants",
+        verbose_name="Session",
     )
+
     organization_warned_at = models.DateTimeField(
         "Lʼorganisation de la formation a été informée "
         "de lʼinscription de cette personne à…",
@@ -330,9 +386,17 @@ class FormationAttendant(models.Model):
         "État de la demande", choices=State.choices, default=State.DEFAULT
     )
 
+    def get_pix_result(self):
+        if not self.attendant.test_pix_passed:
+            return "Non"
+        return "Oui"
+
+    def __str__(self):
+        return f"Inscription de {self.attendant.first_name} {self.attendant.last_name} Structure {self.attendant.organisation} ({self.attendant.email})"  # NOQA
+
     class Meta:
-        verbose_name = "Formation : inscrit"
-        verbose_name_plural = "Formation : inscrits"
+        verbose_name = "inscrit"
+        verbose_name_plural = "Inscrits"
         # One attendant a type can only be registered only once to a specific formation
         unique_together = ("attendant", "formation")
         triggers = [
