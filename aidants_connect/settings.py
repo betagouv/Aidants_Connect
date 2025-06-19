@@ -872,3 +872,23 @@ URL_FNEAPI = os.getenv("URL_FNEAPI", get_random_string(12))
 URL_CONNEXIONCHOICE = os.getenv("URL_CONNEXIONCHOICE", get_random_string(12))
 URL_TEST_PIX = os.getenv("URL_TEST_PIX", "")
 URL_ASK_MOBILE = os.getenv("URL_ASK_MOBILE", get_random_string(12))
+
+
+URL_FIRST_LOGIN_REFERENT = os.getenv("URL_FIRST_LOGIN_REFERENT", get_random_string(12))
+FIRST_LOGIN_REFERENT_EMAIL_HTML_TEMPLATE = (
+    "login/first_login_referent_email_template.mjml"
+)
+FIRST_LOGIN_REFERENT_EMAIL_TEXT_TEMPLATE = (
+    "login/first_login_referent_email_template.txt"
+)
+FIRST_LOGIN_REFERENT_EMAIL_SUBJECT = os.getenv(
+    "FIRST_LOGIN_REFERENT_EMAIL_SUBJECT", "Lien pour le code de première connexion"
+)
+
+
+FIRT_LOGIN_ACCOUNT = os.getenv("FIRT_LOGIN_ACCOUNT", "")
+FIRT_LOGIN_PASS = os.getenv("FIRT_LOGIN_PASS", "")
+FIRST_LOGIN_USER = os.getenv("FIRST_LOGIN_USER", "")
+FIRT_LOGIN_URL = os.getenv("FIRT_LOGIN_URL", "")
+FIRST_LOGIN_SENDER = os.getenv("FIRST_LOGIN_SENDER", "")
+FISRT_LOGIN_MESSAGE = os.getenv("FISRT_LOGIN_MESSAGE", "")

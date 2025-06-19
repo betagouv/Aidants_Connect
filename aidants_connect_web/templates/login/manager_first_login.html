@@ -10,24 +10,32 @@
 {% endblock title %}
 
 {% block content %}
-  <div class="fr-container main-content-fluid fr-background-alt--blue-france">
+  <div class="fr-container main-content-fluid">
     <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center">
       <div class="fr-col-12 fr-col-md-6 main-content-item">
 
 
-        <div class="fr-container fr-background-default--grey fr-px-md-0 fr-py-10v fr-py-md-14v">
+        <div class="fr-container fr-background-alt--grey fr-px-md-0 fr-py-10v fr-py-md-14v">
           <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
             <div class="fr-col-12 fr-col-md-9 fr-col-lg-8">
               <form id="login-1760" method="post">
                 {% csrf_token %}
+
                 <fieldset
                   class="fr-fieldset fr-py-0 fr-my-0"
                   id="login-1760-fieldset"
                   aria-labelledby="login-1760-fieldset-legend"
                 >
-                  <div class="flex width-100">
-                    <h1 class="fr-m-0 fr-p-0">Connectez-vous</h1>
+                <div class="flex width-100">
+                    <h3 class="fr-m-0 fr-p-0">Première connexion référent</h3>
                     <div class="spacer"></div>
+                </div>
+                  <div class="fr-fieldset__element fr-my-6v">
+                    <p class="fr-text--sm">
+                      Renseignez votre adresse e-mail
+                      et votre numéro de téléphone mobile. Un code vous
+                      sera envoyé par SMS pour accéder à votre espace référent.
+                    </p>
                   </div>
 
                   <div class="fr-fieldset__element fr-my-6v">
@@ -36,53 +44,32 @@
                         {% dsfr_form_field form.email %}
                       </div>
                       <div class="fr-fieldset__element">
-                        {% dsfr_form_field OTP_form.otp_token %}
+                        {% dsfr_form_field form.mobile %}
                       </div>
+
                     </fieldset>
+                    {{ form.non_field_errors }}
                   </div>
-                  <div class="fr-fieldset__element fr-my-0 fr-mb-3w">
+                  <div class="fr-fieldset__element fr-my-0">
                     <ul class="fr-btns-group">
                       <li>
                         <button type="submit" class="fr-btn">Se connecter</button>
                       </li>
                     </ul>
                   </div>
-                  <div class="fr-fieldset__element fr-my-0">
-                        <p class="fr-m-0 fr-text--sm fr-mb-6w">
-                          <a href="{% url 'faq_category_detail' slug='utiliser-aidants-connect' %}" class="fr-link"> Je n’arrive pas à me connecter → </a>
-                        </p>
-                    <hr>
-                    </div>
-
                   <div class="fr-messages-group" id="login-1760-fieldset-messages" aria-live="assertive">
                   </div>
                 </fieldset>
-
               </form>
 
-                <div class="flex width-100">
-
-                    <h4 class="fr-m-0 fr-p-0 fr-mt-3w">Première connexion référent</h4  >
-                    <div class="spacer"></div>
-                </div>
-
-                    <div class="fr-fieldset__element fr-my-6v">
-                    <p class="fr-text--sm">
-                      Si vous êtes référent Aidants Connect et qu’il s’agit de votre première connexion, un code dédié doit vous être envoyé par SMS.
-                    </p>
-                  </div>
-
-                                  <div>
-                      <a class="fr-btn fr-btn--secondary"  href="{% url 'manager_first_login' %}">
-                        Obtenir un code de première connexion
-                      </a>
-                    </div>
 
 
             </div>
           </div>
         </div>
 
+
+      </div>
     </div>
   </div>
 {% endblock content %}

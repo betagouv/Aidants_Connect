@@ -545,5 +545,10 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
 
 
 class MobileAskingUserAdmin(admin.ModelAdmin):
-    list_display = ("user", "user_mobile", "user_padding")
+    list_display = ("user", "user_mobile", "user_padding", "created_at")
+    raw_id_fields = ("user",)
+
+
+class FirstConnexionManagerInfoAdmin(admin.ModelAdmin):
+    list_display = ("user", "user_secret", "created_at")
     raw_id_fields = ("user",)

@@ -428,6 +428,16 @@ class UserFingerprint(models.Model):
 
 
 class MobileAskingUser(models.Model):
+    created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True, null=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     user_padding = models.CharField(max_length=16, editable=True, null=True, blank=True)
     user_mobile = models.CharField(max_length=20, null=True, blank=True)
+
+
+class FirstConnexionManagerInfo(models.Model):
+    created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True, null=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user_secret = models.CharField(max_length=16, editable=True, null=True, blank=True)
+    already_used = models.BooleanField(default=False)

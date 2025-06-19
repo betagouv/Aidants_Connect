@@ -1,0 +1,20 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>
+      <p>Bonjour {{ user.get_full_name }},</p>
+      <p>Pour obtenir votre code de première connexion à Aidants Connect, cliquez sur :</p>
+    </mj-text>
+    <mj-button href="{{ href }}">Connexion</mj-button>
+    <mj-text>
+      <p>
+        Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
+        <a href="{{ href }}">{{ href }}</a>
+      </p>
+      <p>Ce lien n'est valable que {{ TOKEN_DURATION_MINUTES }} minutes. Il est à usage unique.</p>
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock email_body %}

@@ -43,6 +43,21 @@ urlpatterns = [
     ),
     # service
     path("accounts/login/", login.LoginView.as_view(), name="login"),
+    path(
+        "accounts/manager_first_login/",
+        login.ManagerFirstLoginView.as_view(),
+        name="manager_first_login",
+    ),
+    path(
+        "accounts/manager_first_connexion_email_sent/",
+        login.ManagerFirstLoginEmailSentView.as_view(),
+        name="manager_first_connexion_email_sent",
+    ),
+    path(
+        f"accounts/manager_first_login_with_code/{settings.URL_FIRST_LOGIN_REFERENT}/<str:manager_id>/",  # noqa
+        login.ManagerFirstLoginWithCodeView.as_view(),
+        name="manager_first_login_with_code",
+    ),
     path(magicauth_settings.LOGIN_URL, login.LoginRedirect.as_view()),
     path("logout-session/", service.logout_page, name="logout"),
     path("activity_check/", service.activity_check, name="activity_check"),
