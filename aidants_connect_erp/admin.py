@@ -22,7 +22,7 @@ class CardSendingAdminForm(models.ModelForm):
         self.fields["referent"].queryset = get_bizdev_users()
 
 
-class AidantInCardSendingInlineAdmin(TabularInline):
+class AidantInCardSendingInlineAdmin(VisibleToAdminMetier, TabularInline):
     model = CardSending.aidants.through
     show_change_link = True
     can_delete = False
