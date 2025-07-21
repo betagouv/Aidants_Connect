@@ -1,4 +1,4 @@
-{% load ac_common form_extras ac_extras %}
+{% load ac_common ac_extras form_extras %}
 <div class="fr-table fr-table--no-caption d-table fr-table--bordered fr-table--layout-fixed">
   <table>
     <caption>Table des aidants</caption>
@@ -70,40 +70,45 @@
           <div class="flex flex-right">
             {% if not aidant.status %}
               {% if aidant.has_a_carte_totp or aidant.is_active %}
-                <details id="aidant-{{ aidant.id }}-contextual-actions" class="menu-table">
-                  <summary>
-                    <span>…</span>
-                  </summary>
-                  <div class="details-content fr-p-2w">
-                    <div class="referent-attribution">
-                      {% if aidant.is_active %}
-                        <form method="post">
+                <div class="custom-dropdown">
+                  <button class="fr-btn fr-btn--tertiary fr-icon-more-line"
+                          aria-expanded="false"
+                          aria-haspopup="true"
+                          tabindex="0">
+                  </button>
+
+                  <div class="custom-dropdown__menu">
+                    {% if aidant.is_active %}
+                      <div class="fr-toggle fr-toggle--border-bottom">
+                        <form method="post" style="display: contents;">
                           {% csrf_token %}
-                          <input type="hidden" name="candidate" value="{{ aidant.pk }}" />
-                          <button type="submit">Désigner comme référent</button>
+                          <input type="hidden" name="candidate" value="{{ aidant.pk }}">
+                          <button type="submit" class="fr-btn fr-btn--tertiary-no-outline">
+                            Désigner comme référent
+                          </button>
                         </form>
-                      {% endif %}
-                    </div>
+                      </div>
+                    {% endif %}
+
                     {% if aidant.pk != referent.pk and aidant.is_active %}
-                      <a
-                        id="remove-aidant-{{ aidant.id }}-from-organisation"
-                        href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}" class="fr-px-1v"
-                      >
+                      <a href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+                          class="fr-btn fr-btn--tertiary-no-outline"
+                          id="remove-aidant-{{ aidant.id }}-from-organisation">
                         {% if aidant.organisations.count > 1 %}
-                          Retirer l’aidant de l’organisation
+                          Retirer l'aidant de l'organisation
                         {% else %}
-                          Désactiver l’aidant
+                          Désactiver l'aidant
                         {% endif %}
                       </a>
                     {% endif %}
-                    <a
-                      id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-                      href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-px-1v"
-                      >
-                      Gérer les cartes OTP
-                    </a>
+
+                  <a href="{% url 'espace_responsable_choose_totp' aidant_id=aidant.id %}"
+                      class="fr-btn fr-btn--tertiary-no-outline"
+                      id="manage-totp-cards-for-aidant-{{ aidant.id }}">
+                    Gérer les cartes OTP
+                  </a>
                   </div>
-                </details>
+                </div>
               {% endif %}
             {% endif %}
           </div>
