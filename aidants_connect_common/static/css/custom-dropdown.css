@@ -17,7 +17,6 @@
   z-index: 1000;
   min-width: 200px;
   background: var(--background-default-grey);
-  border: 1px solid var(--border-default-grey);
   border-radius: 0.25rem;
   box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.15);
   padding: 0.5rem 0;
@@ -30,6 +29,10 @@
   display: block;
 }
 
+.custom-dropdown:focus-within > button.fr-icon-more-line {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
 .custom-dropdown__menu > * {
   display: block;
   margin: 0;
@@ -37,6 +40,6 @@
 
 /* Alignement à gauche pour tous les boutons */
 .custom-dropdown__menu .fr-btn {
-  text-align: left !important;
-  justify-content: flex-start !important;
+  text-align: left;
+  justify-content: flex-start;
 }
