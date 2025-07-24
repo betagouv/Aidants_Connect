@@ -107,12 +107,12 @@
                       </button>
 
                       <div class="custom-dropdown__menu">
-                        <div class="fr-toggle fr-toggle--border-bottom">
-                          <a href="{% url 'espace_responsable_cancel_habilitation' request_id=validation.id %}"
-                             class="fr-btn fr-btn--tertiary-no-outline"
-                             id="cancel-habilitation-request-{{ validation.id }}">
-                            Annuler la demande
-                          </a>
+                        <div class="fr-toggle">
+                        <a href="{% url 'espace_responsable_cancel_habilitation' request_id=validation.id %}"
+                            class="fr-btn fr-btn--tertiary-no-outline"
+                            id="cancel-habilitation-request-{{ validation.id }}">
+                          Annuler la demande
+                        </a>
                         </div>
                       </div>
                     </div>
@@ -165,7 +165,7 @@
                         </button>
 
                         <div class="custom-dropdown__menu">
-                          <div class="fr-toggle fr-toggle--border-bottom">
+                          <div class="fr-toggle">
                             <a href="{% url 'espace_responsable_cancel_habilitation' request_id=request.id %}"
                                class="fr-btn fr-btn--tertiary-no-outline"
                                id="cancel-habilitation-request-{{ request.id }}">
@@ -221,7 +221,7 @@
             </tr>
             {% endfor %}
           {% else %}
-          tr><td colspan="3" class="alt-grey-background">
+          <td colspan="3" class="alt-grey-background">
             <div class="fr-text--center">Vous n'avez pas de demandes refusées ou annulées</div>
             </td></tr>
           {% endif %}
