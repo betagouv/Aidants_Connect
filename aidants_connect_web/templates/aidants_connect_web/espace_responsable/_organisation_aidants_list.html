@@ -70,7 +70,7 @@
           <div class="flex flex-right">
             {% if not aidant.status %}
               {% if aidant.has_a_carte_totp or aidant.is_active %}
-                <div class="custom-dropdown">
+                <div class="custom-dropdown" id="aidant-{{ aidant.id }}-contextual-actions">
                   <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-more-line"
                           aria-expanded="false"
                           aria-haspopup="true"

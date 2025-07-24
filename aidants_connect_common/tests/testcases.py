@@ -243,6 +243,16 @@ class FunctionalTestCase(StaticLiveServerTestCase):
                 )
 
     @contextlib.contextmanager
+    def dropdown_opened(self, by=By.ID, value: Optional[str] = None):
+        dropdown = self.selenium.find_element(by, value)
+        button = dropdown.find_element(By.TAG_NAME, "button")
+        button.click()
+        try:
+            yield dropdown
+        finally:
+            self.selenium.find_element(By.TAG_NAME, "body").click()
+
+    @contextlib.contextmanager
     def implicitely_wait(self, time_to_wait: float, driver=None):
         """time_to_wait: time to wait in seconds"""
         driver = driver or self.selenium
