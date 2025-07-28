@@ -1,0 +1,39 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 1,
+      "url": [
+        "http://localhost:3000",
+        "http://localhost:3000/accounts/login/",
+        "http://localhost:3000/stats/",
+        "http://localhost:3000/cgu/",
+        "http://localhost:3000/politique_confidentialite/",
+        "http://localhost:3000/mentions-legales/",
+        "http://localhost:3000/budget/",
+        "http://localhost:3000/guide_utilisation/",
+        "http://localhost:3000/formation/",
+        "http://localhost:3000/habilitation/",
+        "http://localhost:3000/ressources/",
+        "http://localhost:3000/accessibilite/",
+        "http://localhost:3000/bac-a-sable/presentation",
+        "http://localhost:3000/habilitation/nouvelle/",
+        "http://localhost:3000/temoignages/",
+        "http://localhost:3000/faq/"
+      ],
+      "startServerCommand": "python manage.py runserver 3000",
+      "startServerReadyPattern": "Starting development server",
+      "startServerReadyTimeout": 15000,
+      "maxAutodiscoverUrls": 10,
+      "settings": {
+        "onlyCategories": ["accessibility"],
+        "skipAudits": ["uses-https"],
+        "chromeFlags": ["--no-sandbox"]
+      },
+      "assert": {
+        "assertions": {
+          "categories:accessibility": ["error", { "minScore": 1 }]
+        }
+      }
+    }
+  }
+}
