@@ -16,10 +16,6 @@
       "assertions": {
         "categories:accessibility": ["error", { "minScore": 1 }]
       }
-    },
-    "upload": {
-      "target": "lhci",
-      "serverBaseUrl": "http://localhost:9001"
     }
   }
 }

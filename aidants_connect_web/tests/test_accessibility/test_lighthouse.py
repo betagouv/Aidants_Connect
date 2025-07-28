@@ -75,59 +75,8 @@ class LighthouseAccessibilityTestCase(StaticLiveServerTestCase):
             timeout=300,
         )
 
-        # Analyser les résultats par URL
-        self._analyze_lighthouse_results(result)
-
-    def _analyze_lighthouse_results(self, result):
-        """
-        Analyse les résultats Lighthouse et affiche un rapport détaillé
-        """
-        print("\n" + "=" * 80)
-        print("📊 RAPPORT LIGHTHOUSE DÉTAILLÉ")
-        print("=" * 80)
-
-        urls = self.lighthouse_config["ci"]["collect"]["url"]
-        output = result.stdout + result.stderr
-
-        # Analyser chaque URL
-        success_count = 0
-        error_count = 0
-
-        for url in urls:
-            url_path = url.replace(self.live_server_url, "")
-
-            if f"Running Lighthouse 1 time(s) on {url}" in output:
-                if f"{url}\nRun #1...done." in output:
-                    print(f"✅ {url_path:<40} - SUCCÈS")
-                    success_count += 1
-                elif f"{url}\nRun #1...failed!" in output:
-                    print(f"❌ {url_path:<40} - ÉCHEC")
-                    error_count += 1
-                else:
-                    print(f"⚠️  {url_path:<40} - STATUT INCONNU")
-                    error_count += 1
-
-        print(
-            f"""
-            📈 RÉSUMÉ : {success_count} succès
-            {error_count} erreurs sur {len(urls)} pages
-            """
-        )
-
-        # Indiquer où trouver les rapports détaillés
-        if os.path.exists(".lighthouseci"):
-            print("📁 Rapports détaillés : .lighthouseci/")
-            # Lister les fichiers HTML générés
-            try:
-                html_files = [
-                    f for f in os.listdir(".lighthouseci") if f.endswith(".html")
-                ]
-                if html_files:
-                    print("📄 Fichiers de rapport HTML :")
-                    for html_file in sorted(html_files):
-                        print(f"   - .lighthouseci/{html_file}")
-
-            except OSError:
-                pass
-
-        print("=" * 80)
+        # Faire échouer le test si les assertions Lighthouse échouent
+        if result.returncode != 0:
+            self.fail(result.stderr)
+        else:
+            print("✅ Tests d'accessibilité Lighthouse réussis")
