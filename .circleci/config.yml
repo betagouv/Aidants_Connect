@@ -39,6 +39,9 @@ workflows:
       - test:
           requires:
             - build
+      - accessibility-tests:
+          requires:
+            - build
       - coverage:
           requires:
             - test
@@ -119,6 +122,33 @@ jobs:
       - persist_to_workspace:
           root: .
           paths: [".coverage*"]
+  accessibility-tests:
+    executor: testbed
+    working_directory: << pipeline.parameters.workingdir >>
+    steps:
+      - checkout
+      - browser-tools/install-chrome
+
+      - restore_cache:
+          keys:
+            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
+
+      # Installer Lighthouse CI
+      - run:
+          name: Install Lighthouse CI
+          command: sudo npm install -g @lhci/cli@0.15.x
+
+      # Lancer Lighthouse (utilise .lighthouserc.json existant)
+      - run:
+          name: Run Lighthouse accessibility tests
+          command: |
+            . /tmp/venv/bin/activate
+            lhci autorun
+
+      # Sauvegarder les rapports
+      - store_artifacts:
+          path: .lighthouseci
+          destination: lighthouse-accessibility-reports
   coverage:
     docker:
       - image: cimg/python:<< pipeline.parameters.python-img-tag >>
