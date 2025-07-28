@@ -138,12 +138,20 @@ jobs:
           name: Install Lighthouse CI
           command: sudo npm install -g @lhci/cli@0.15.x
 
-      # Lancer Lighthouse (utilise .lighthouserc.json existant)
+      # Préparer l'environnement Django
       - run:
-          name: Run Lighthouse accessibility tests
+          name: Prepare Django environment
+          command: |
+            mkdir -p staticfiles
+            . /tmp/venv/bin/activate
+            python manage.py collectstatic --noinput
+
+      # Lancer les tests d'accessibilité Django
+      - run:
+          name: Run Django accessibility tests
           command: |
             . /tmp/venv/bin/activate
-            lhci autorun
+            python manage.py test --tag=accessibility --verbosity=2
 
       # Sauvegarder les rapports
       - store_artifacts:
