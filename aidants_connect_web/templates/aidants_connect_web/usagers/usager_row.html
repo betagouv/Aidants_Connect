@@ -44,21 +44,19 @@
         <td></td>
       {% else %}
         <td>
-          <details name="mandat-action">
-            <summary class="fr-background-alt--grey">
-              <span>…</span>
-            </summary>
-            <div class="details-content fr-p-2w">
-              <div>
-                <a class="" href="{{ usager.renew_mandate_url }}">Renouveler</a>
-              </div>
+          <div class="custom-dropdown">
+            <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-more-line"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    tabindex="0">
+            </button>
+            <div class="custom-dropdown__menu">
+              <a class="fr-btn fr-btn--tertiary-no-outline" href="{{ usager.renew_mandate_url }}">Renouveler</a>
               {% if with_valid_mandate %}
-                <div>
-                  <a class="" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
-                </div>
+                <a class="fr-btn fr-btn--tertiary-no-outline" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
               {% endif %}
             </div>
-          </details>
+          </div>
         </td>
       {% endif %}
     {% endif %}
@@ -94,21 +92,19 @@
           <td></td>
         {% else %}
           <td>
-            <details name="mandat-action">
-              <summary class="fr-background-alt--grey">
-                <span>…</span>
-              </summary>
-              <div class="details-content fr-p-2w">
-                <div>
-                  <a class="" href="{{ usager.renew_mandate_url }}">Renouveler</a>
-                </div>
+            <div class="custom-dropdown">
+              <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-more-line"
+                      aria-expanded="false"
+                      aria-haspopup="true"
+                      tabindex="0">
+              </button>
+              <div class="custom-dropdown__menu">
+                  <a class="fr-btn fr-btn--tertiary-no-outline" href="{{ usager.renew_mandate_url }}">Renouveler</a>
                 {% if with_valid_mandate %}
-                  <div>
-                    <a class="" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
-                  </div>
+                  <a class="fr-btn fr-btn--tertiary-no-outline" href="{% url 'usager_details' usager_id=usager.id %}">Révoquer</a>
                 {% endif %}
               </div>
-            </details>
+            </div>
           </td>
         {% endif %}
       </tr>

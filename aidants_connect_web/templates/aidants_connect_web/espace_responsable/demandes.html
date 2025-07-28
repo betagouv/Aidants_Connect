@@ -5,6 +5,8 @@
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/custom-dropdown.css' %}" rel="stylesheet">
+
 {% endblock extracss %}
 
 {% block content %}
@@ -97,19 +99,23 @@
                     </a>
                   {% endif %}
                   {% if validation.status_cancellable_by_responsable %}
-                    <details>
-                      <summary>
-                        <span>...</span>
-                      </summary>
-                      <div class="details-content fr-p-2w">
-                        <a
-                          id="cancel-habilitation-request-{{ validation.id }}"
-                          href="{% url 'espace_responsable_cancel_habilitation' request_id=validation.id %}"
-                        >
+                    <div class="custom-dropdown">
+                      <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-more-line"
+                              aria-expanded="false"
+                              aria-haspopup="true"
+                              tabindex="0">
+                      </button>
+
+                      <div class="custom-dropdown__menu">
+                        <div class="fr-toggle">
+                        <a href="{% url 'espace_responsable_cancel_habilitation' request_id=validation.id %}"
+                            class="fr-btn fr-btn--tertiary-no-outline"
+                            id="cancel-habilitation-request-{{ validation.id }}">
                           Annuler la demande
                         </a>
+                        </div>
                       </div>
-                    </details>
+                    </div>
                   {% endif %}
                 </div>
               </td>
@@ -151,19 +157,23 @@
                 <td>
                   <div class="flex flex-right">
                     {% if request.status_cancellable_by_responsable %}
-                    <details>
-                      <summary>
-                        <span>...</span>
-                      </summary>
-                      <div class="details-content fr-p-2w">
-                        <a
-                          id="cancel-habilitation-request-{{ request.id }}"
-                          href="{% url "espace_responsable_cancel_habilitation" request_id=request.id %}"
-                          >
-                          Annuler la demande
-                        </a>
+                      <div class="custom-dropdown">
+                        <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-more-line"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                                tabindex="0">
+                        </button>
+
+                        <div class="custom-dropdown__menu">
+                          <div class="fr-toggle">
+                            <a href="{% url 'espace_responsable_cancel_habilitation' request_id=request.id %}"
+                               class="fr-btn fr-btn--tertiary-no-outline"
+                               id="cancel-habilitation-request-{{ request.id }}">
+                              Annuler la demande
+                            </a>
+                          </div>
+                        </div>
                       </div>
-                    </details>
                     {% endif %}
                   </div>
                 </td>
@@ -211,7 +221,7 @@
             </tr>
             {% endfor %}
           {% else %}
-          tr><td colspan="3" class="alt-grey-background">
+          <td colspan="3" class="alt-grey-background">
             <div class="fr-text--center">Vous n'avez pas de demandes refusées ou annulées</div>
             </td></tr>
           {% endif %}

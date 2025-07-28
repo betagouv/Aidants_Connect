@@ -206,7 +206,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         self.wait.until(self.path_matches("espace_responsable_aidants"))
 
         # Check button text
-        with self.details_opened(
+        with self.dropdown_opened(
             By.ID, f"aidant-{self.aidant_with_multiple_orgs.pk}-contextual-actions"
         ):
             button = self.selenium.find_element(
@@ -215,24 +215,24 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             )
 
             self.assertEqual(
-                "Retirer l’aidant de l’organisation",
+                "Retirer l'aidant de l'organisation",
                 button.text,
             )
 
-        with self.details_opened(
+        with self.dropdown_opened(
             By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
         ):
             button = self.selenium.find_element(
                 By.ID,
                 f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation",
             )
-            self.assertEqual("Désactiver l’aidant", button.text)
+            self.assertEqual("Désactiver l'aidant", button.text)
 
         self.assertElementNotFound(
             By.ID, f"remove-aidant-{self.aidant_responsable.pk}-from-organisation"
         )
 
-        with self.details_opened(
+        with self.dropdown_opened(
             By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
         ):
             # Let's try those btns shall we?
@@ -261,7 +261,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
             By.ID, f"remove-aidant-{self.aidant_active_with_card.pk}-from-organisation"
         )
 
-        with self.details_opened(
+        with self.dropdown_opened(
             By.ID, f"aidant-{self.aidant_with_multiple_orgs.pk}-contextual-actions"
         ):
             self.selenium.find_element(
@@ -300,7 +300,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         # First aidant: disabled
         self.assertIsNotNone(self.aidant_inactive_with_card.carte_totp)
 
-        with self.details_opened(
+        with self.dropdown_opened(
             By.ID, f"aidant-{self.aidant_inactive_with_card.pk}-contextual-actions"
         ):
             self.selenium.find_element(
@@ -358,7 +358,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
 
         self.open_live_url(reverse("espace_responsable_aidants"))
 
-        with self.details_opened(
+        with self.dropdown_opened(
             By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
         ):
             self.selenium.find_element(
@@ -375,7 +375,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
 
         self.open_live_url(reverse("espace_responsable_aidants"))
 
-        with self.details_opened(
+        with self.dropdown_opened(
             By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
         ):
             button2 = self.selenium.find_element(
@@ -408,7 +408,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
 
         self.wait.until(self.path_matches("espace_responsable_aidants"))
 
-        with self.details_opened(
+        with self.dropdown_opened(
             By.ID, f"aidant-{self.aidant_active_with_card.pk}-contextual-actions"
         ):
             self.selenium.find_element(
