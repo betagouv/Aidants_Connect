@@ -2,6 +2,10 @@
   "ci": {
     "collect": {
       "numberOfRuns": 1,
+      "startServerCommand": "python manage.py runserver 8000",
+      "startServerReadyPattern": "Starting development server",
+      "startServerReadyTimeout": 15000,
+      "url": ["http://localhost:8000/"],
       "settings": {
         "onlyCategories": ["accessibility"],
         "skipAudits": ["uses-https"],

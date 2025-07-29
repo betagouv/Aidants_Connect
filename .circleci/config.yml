@@ -165,20 +165,6 @@ jobs:
           command: npm install
 
       - run:
-          name: Prepare Django environment
-          command: |
-            mkdir -p staticfiles
-            . /tmp/venv/bin/activate
-            python manage.py collectstatic --noinput
-
-      - run:
-          name: Start Django server in background
-          command: |
-            . /tmp/venv/bin/activate
-            python manage.py runserver 0.0.0.0:8000 &
-            sleep 10
-
-      - run:
           name: Split paths and run Lighthouse accessibility tests
           command: |
             . /tmp/venv/bin/activate
