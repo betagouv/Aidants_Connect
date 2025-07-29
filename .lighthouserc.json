@@ -13,6 +13,9 @@
       "assertions": {
         "categories:accessibility": ["error", { "minScore": 1 }]
       }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
     }
   }
 }
