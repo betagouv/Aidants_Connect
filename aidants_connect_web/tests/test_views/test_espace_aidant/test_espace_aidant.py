@@ -39,6 +39,24 @@ class EspaceAidantHomePageTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
 
 
+@tag("aidants")
+class BannerNotificationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_without_totp: Aidant = AidantFactory(
+            username="aidant_without_totp",
+            validated_cgu_version=settings.CGU_CURRENT_VERSION,
+            post__is_organisation_manager=True,
+        )
+
+    def test_ask_to_activate_totp_device(self):
+        self.assertFalse(self.aidant_without_totp.has_a_totp_device)
+        self.client.force_login(self.aidant_without_totp)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertIn("/type-carte", response_content)
+
+
 @tag("usagers")
 class ValidateCGU(TestCase):
     @classmethod
