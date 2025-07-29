@@ -181,7 +181,8 @@ jobs:
       - run:
           name: Split paths and run Lighthouse accessibility tests
           command: |
-            echo $LIGHTHOUSE_PUBLIC_URLS | tr ',' '\n' > all_paths.txt
+            . /tmp/venv/bin/activate
+            python scripts/extract_public_paths.py | tr ',' '\n' > all_paths.txt
 
             WORKER_PATHS=$(circleci tests split all_paths.txt)
 
