@@ -2,9 +2,9 @@
   "ci": {
     "collect": {
       "numberOfRuns": 1,
-      "startServerCommand": "python manage.py runserver 8000",
+      "startServerCommand": "python manage.py runserver 0.0.0.0:8000 --noreload",
       "startServerReadyPattern": "Starting development server",
-      "startServerReadyTimeout": 15000,
+      "startServerReadyTimeout": 60000,
       "url": ["http://localhost:8000/"],
       "settings": {
         "onlyCategories": ["accessibility"],
