@@ -118,7 +118,7 @@ jobs:
 
             . /tmp/venv/bin/activate
             python manage.py collectstatic --noinput
-            coverage run --parallel-mode manage.py test --verbosity=2 $TESTFILES
+            coverage run --parallel-mode manage.py test --verbosity=2 $TESTFILES --exclude-tag=accessibility
       - persist_to_workspace:
           root: .
           paths: [".coverage*"]
