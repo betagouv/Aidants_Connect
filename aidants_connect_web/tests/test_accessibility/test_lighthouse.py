@@ -40,11 +40,6 @@ class LighthouseAccessibilityTestCase(StaticLiveServerTestCase):
                     for url in collect_config["url"]
                 ]
 
-            # Supprimer les commandes de serveur car Django est déjà démarré
-            collect_config.pop("startServerCommand", None)
-            collect_config.pop("startServerReadyPattern", None)
-            collect_config.pop("startServerReadyTimeout", None)
-
         # Créer des données de test pour la FAQ
         self.faq_category = FaqCategory.objects.create(
             name="FAQ Test",
@@ -78,15 +73,20 @@ class LighthouseAccessibilityTestCase(StaticLiveServerTestCase):
         print(f"📋 URLs à tester : {urls_count} pages")
 
         # Lancer Lighthouse CI avec la configuration modifiée
+        # Utiliser le chemin relatif qui fonctionne en local et en CI
         result = subprocess.run(
-            ["lhci", "autorun", f"--config={self.temp_config_path}"],
+            [
+                "./node_modules/.bin/lhci",
+                "autorun",
+                f"--config={self.temp_config_path}",
+            ],
             capture_output=True,
             text=True,
             timeout=300,
         )
 
-        # Faire échouer le test si les assertions Lighthouse échouent
         if result.returncode != 0:
-            self.fail(result.stderr)
+            self.fail(f"❌ Accessibility tests\n{result.stderr}")
+            self._display_html_reports_for_failed_urls(result.stderr)
         else:
-            print("✅ Tests d'accessibilité Lighthouse réussis")
+            print("✅ Accessibility tests")

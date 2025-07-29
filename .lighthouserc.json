@@ -2,10 +2,7 @@
   "ci": {
     "collect": {
       "numberOfRuns": 1,
-      "url": ["http://localhost:8000/faq/"],
-      "startServerCommand": "python manage.py runserver localhost:8000",
-      "startServerReadyPattern": "Starting development server",
-      "startServerReadyTimeout": 30000,
+      "url": ["http://localhost:8000", "http://localhost:8000/faq/"],
       "settings": {
         "onlyCategories": ["accessibility"],
         "skipAudits": ["uses-https"],

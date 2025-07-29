@@ -134,10 +134,10 @@ jobs:
           keys:
             - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
 
-      # Installer Lighthouse CI
+      # Installer les dépendances npm (incluant Lighthouse CI)
       - run:
-          name: Install Lighthouse CI
-          command: sudo npm install -g @lhci/cli@0.15.x
+          name: Install npm dependencies
+          command: npm install
 
       # Préparer l'environnement Django
       - run:
