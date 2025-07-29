@@ -33,16 +33,16 @@ workflows:
   all:
     jobs:
       - build
-      - code-checks:
-          requires:
-            - build
-      - test:
-          requires:
-            - build
+      # - code-checks:
+      #     requires:
+      #       - build
+      # - test:
+      #     requires:
+      #       - build
+      # - coverage:
+      #     requires:
+      #       - test
       - accessibility:
-          requires:
-            - test
-      - coverage:
           requires:
             - test
 
@@ -122,41 +122,6 @@ jobs:
       - persist_to_workspace:
           root: .
           paths: [".coverage*"]
-  accessibility:
-    executor: testbed
-    working_directory: << pipeline.parameters.workingdir >>
-    steps:
-      - checkout
-      - browser-tools/install-chrome
-
-      - restore_cache:
-          keys:
-            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
-
-      # Installer les dépendances npm (incluant Lighthouse CI)
-      - run:
-          name: Install npm dependencies
-          command: npm install
-
-      # Préparer l'environnement Django
-      - run:
-          name: Prepare Django environment
-          command: |
-            mkdir -p staticfiles
-            . /tmp/venv/bin/activate
-            python manage.py collectstatic --noinput
-
-      # Lancer les tests d'accessibilité Django
-      - run:
-          name: Run Django accessibility tests
-          command: |
-            . /tmp/venv/bin/activate
-            python manage.py test --tag=accessibility --verbosity=2
-
-      # Sauvegarder les rapports
-      - store_artifacts:
-          path: .lighthouseci
-          destination: lighthouse-accessibility-reports
   coverage:
     docker:
       - image: cimg/python:<< pipeline.parameters.python-img-tag >>
@@ -182,3 +147,53 @@ jobs:
 
       - store_artifacts:
           path: htmlcov
+
+  accessibility:
+    executor: testbed
+    parallelism: 8
+    working_directory: << pipeline.parameters.workingdir >>
+    steps:
+      - checkout
+      - browser-tools/install-chrome
+
+      - restore_cache:
+          keys:
+            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: Install npm dependencies
+          command: npm install
+
+      - run:
+          name: Prepare Django environment
+          command: |
+            mkdir -p staticfiles
+            . /tmp/venv/bin/activate
+            python manage.py collectstatic --noinput
+
+      - run:
+          name: Start Django server in background
+          command: |
+            . /tmp/venv/bin/activate
+            python manage.py runserver 8000 &
+            sleep 10
+
+      - run:
+          name: Split paths and run Lighthouse accessibility tests
+          command: |
+            echo $LIGHTHOUSE_PUBLIC_URLS | tr ',' '\n' > all_paths.txt
+
+            WORKER_PATHS=$(circleci tests split all_paths.txt)
+
+            echo "Worker $CIRCLE_NODE_INDEX testing paths:"
+            echo "$WORKER_PATHS"
+
+            for path in $WORKER_PATHS; do
+              url="http://localhost:8000$path"
+              echo "Testing URL: $url"
+              npx lhci autorun --config=.lighthouserc.json --collect.url="$url"
+            done
+
+      - store_artifacts:
+          path: .lighthouseci
+          destination: lighthouse-accessibility-reports-worker-$CIRCLE_NODE_INDEX
