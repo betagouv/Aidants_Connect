@@ -99,9 +99,9 @@ jobs:
       - browser-tools/install-firefox
       - browser-tools/install-geckodriver
 
-      # - restore_cache:
-      #     keys:
-      #       - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
+      - restore_cache:
+          keys:
+            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run unit tests
