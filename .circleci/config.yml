@@ -33,15 +33,15 @@ workflows:
   all:
     jobs:
       - build
-      # - code-checks:
-      #     requires:
-      #       - build
-      # - test:
-      #     requires:
-      #       - build
-      # - coverage:
-      #     requires:
-      #       - test
+      - code-checks:
+          requires:
+            - build
+      - test:
+          requires:
+            - build
+      - coverage:
+          requires:
+            - test
       - accessibility:
           requires:
             - test
