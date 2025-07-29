@@ -1,7 +1,7 @@
 {% if user.is_responsable_structure and not user.has_a_totp_device %}
   <div class="fr-alert fr-alert--info fr-my-4v">
     Bienvenue&nbsp;! Avant toute chose, nous vous invitons à
-    <a class="fr-link" href="{% url "espace_responsable_associate_totp" aidant_id=user.id %}">
+    <a class="fr-link" href="{% url "espace_responsable_choose_totp" aidant_id=user.id %}">
       activer votre carte Aidants Connect
     </a>
     afin de pouvoir vous connecter à nouveau à l’avenir.
