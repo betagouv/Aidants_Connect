@@ -39,9 +39,9 @@ workflows:
       - test:
           requires:
             - build
-      - accessibility-tests:
+      - accessibility:
           requires:
-            - build
+            - test
       - coverage:
           requires:
             - test
@@ -122,7 +122,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths: [".coverage*"]
-  accessibility-tests:
+  accessibility:
     executor: testbed
     working_directory: << pipeline.parameters.workingdir >>
     steps:
