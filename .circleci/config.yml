@@ -155,7 +155,7 @@ jobs:
 
       # Sauvegarder les rapports
       - store_artifacts:
-          path: .lighthouseci/*.html
+          path: .lighthouseci
           destination: lighthouse-accessibility-reports
   coverage:
     docker:

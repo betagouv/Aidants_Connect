@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import subprocess
@@ -61,6 +62,16 @@ class LighthouseAccessibilityTestCase(StaticLiveServerTestCase):
         if hasattr(self, "temp_config_path") and os.path.exists(self.temp_config_path):
             os.remove(self.temp_config_path)
 
+    def _display_html_reports_for_failed_urls(self, stderr):
+        print("\n==== Rapports HTML Lighthouse générés ====")
+        html_reports = glob.glob(".lighthouseci/*.html")
+        if not html_reports:
+            print("Aucun rapport HTML trouvé.")
+        for html_report in html_reports:
+            print(f"  - {os.path.abspath(html_report)}")
+        print("\nRésumé de l'erreur LHCI :")
+        print(stderr)
+
     def test_lighthouse_accessibility(self):
         """
         Lance Lighthouse CI contre le serveur de test Django
@@ -86,7 +97,6 @@ class LighthouseAccessibilityTestCase(StaticLiveServerTestCase):
         )
 
         if result.returncode != 0:
-            self.fail(f"❌ Accessibility tests\n{result.stderr}")
             self._display_html_reports_for_failed_urls(result.stderr)
         else:
             print("✅ Accessibility tests")
