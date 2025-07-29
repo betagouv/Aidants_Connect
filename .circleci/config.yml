@@ -42,6 +42,7 @@ workflows:
       - accessibility-tests:
           requires:
             - build
+            - test
       - coverage:
           requires:
             - test
