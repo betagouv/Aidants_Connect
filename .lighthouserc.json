@@ -3,14 +3,10 @@
     "collect": {
       "numberOfRuns": 1,
       "url": [
-        "http://localhost:8000/guide_utilisation/",
-        "http://localhost:8000/habilitation/",
-        "http://localhost:8000/habilitation/demandeur/",
-        "http://localhost:8000/mentions-legales/",
-        "http://localhost:8000/politique_confidentialite/",
-        "http://localhost:8000/ressources/",
-        "http://localhost:8000/stats/",
-        "http://localhost:8000/temoignages/"
+        "http://localhost:8000/",
+        "http://localhost:8000/faq/",
+        "http://localhost:8000/accessibilite/",
+        "http://localhost:8000/accounts/login/"
       ],
       "settings": {
         "onlyCategories": ["accessibility"],
