@@ -52,7 +52,8 @@ class PublicUrlsAccessibilityTestCase(StaticLiveServerTestCase):
         )
 
         if result.returncode != 0:
-            print("Accessibility tests ====================== ❌ ", result.stderr)
-            print("=============================================", result.stdout)
+            print("Accessibility tests ====================== ❌ ")
+            self.fail("Accessibility tests ====================== ❌ ", result.stderr)
         else:
-            print("Accessibility tests ====================== ✅ ", result.stdout)
+            print("Accessibility tests ====================== ✅ ")
+        print("=============================================", result.stdout)
