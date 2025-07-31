@@ -91,7 +91,7 @@ jobs:
             pre-commit run --from-ref=main --to-ref=HEAD
   test:
     executor: testbed
-    parallelism: 1
+    parallelism: 8
     working_directory: << pipeline.parameters.workingdir >>
 
     steps:
