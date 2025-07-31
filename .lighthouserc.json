@@ -2,7 +2,16 @@
   "ci": {
     "collect": {
       "numberOfRuns": 1,
-      "url": ["http://localhost:8000/", "http://localhost:8000/faq/"],
+      "url": [
+        "http://localhost:8000/",
+        "http://localhost:8000/faq/",
+        "http://localhost:8000/accessibilite/",
+        "http://localhost:8000/accounts/login/",
+        "http://localhost:8000/budget/",
+        "http://localhost:8000/bac-a-sable/presentation/",
+        "http://localhost:8000/cgu/",
+        "http://localhost:8000/formation/"
+      ],
       "settings": {
         "onlyCategories": ["accessibility"],
         "skipAudits": ["uses-https"],
