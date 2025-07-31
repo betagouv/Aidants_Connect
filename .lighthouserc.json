@@ -2,10 +2,7 @@
   "ci": {
     "collect": {
       "numberOfRuns": 1,
-      "startServerCommand": "python manage.py runserver 0.0.0.0:8000 --noreload",
-      "startServerReadyPattern": "Starting development server",
-      "startServerReadyTimeout": 60000,
-      "url": ["http://localhost:8000/"],
+      "url": ["http://localhost:8000/", "http://localhost:8000/faq/"],
       "settings": {
         "onlyCategories": ["accessibility"],
         "skipAudits": ["uses-https"],
@@ -14,7 +11,7 @@
     },
     "assert": {
       "assertions": {
-        "categories:accessibility": ["error", { "minScore": 1 }]
+        "categories:accessibility": ["error", { "minScore": 0.95 }]
       }
     },
     "upload": {

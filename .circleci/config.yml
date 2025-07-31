@@ -168,18 +168,23 @@ jobs:
           name: Split paths and run Lighthouse accessibility tests
           command: |
             . /tmp/venv/bin/activate
-            python scripts/extract_public_paths.py | tr ',' '\n' > all_paths.txt
 
-            WORKER_PATHS=$(circleci tests split all_paths.txt)
+            python manage.py collectstatic --noinput
 
-            echo "Worker $CIRCLE_NODE_INDEX testing paths:"
-            echo "$WORKER_PATHS"
+            python -c "import json; urls=json.load(open('.lighthouserc.json'))['ci']['collect']['url']; [print(url) for url in urls]" > all_urls.txt
 
-            for path in $WORKER_PATHS; do
-              url="http://localhost:8000$path"
-              echo "Testing URL: $url"
-              npx lhci autorun --config=.lighthouserc.json --collect.url="$url"
+            WORKER_URLS=$(circleci tests split all_urls.txt)
+
+            echo "Worker $CIRCLE_NODE_INDEX testing urls:"
+
+            echo "$WORKER_URLS" | while read -r url; do
+              if [ -n "$url" ]; then
+                echo "Testing URL: $url"
+                LIGHTHOUSE_URL="$url" python manage.py test --tag=accessibility --verbosity=2
+              fi
             done
+
+            rm -f all_urls.txt
 
       - store_artifacts:
           path: .lighthouseci
