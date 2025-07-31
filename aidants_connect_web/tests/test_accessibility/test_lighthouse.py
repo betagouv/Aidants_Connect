@@ -7,8 +7,6 @@ import time
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
 
-from aidants_connect_pico_cms.models import FaqCategory
-
 
 @tag("accessibility")
 class LighthouseAccessibilityTestCase(StaticLiveServerTestCase):
@@ -26,14 +24,6 @@ class LighthouseAccessibilityTestCase(StaticLiveServerTestCase):
         # Charger la configuration Lighthouse existante
         with open(".lighthouserc.json", "r") as f:
             self.lighthouse_config = json.load(f)
-
-        # Créer des données de test pour la FAQ
-        self.faq_category = FaqCategory.objects.create(
-            name="FAQ Test",
-            body="FAQ de test pour les tests d'accessibilité",
-            published=True,
-            sort_order=1,
-        )
 
         # Créer un fichier de configuration temporaire
         self.temp_config_fd, self.temp_config_path = tempfile.mkstemp(suffix=".json")
