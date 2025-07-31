@@ -110,7 +110,7 @@ jobs:
           # https://support.circleci.com/hc/en-us/articles/360048786831-Use-test-splitting-with-Python-Django-tests
           command: |
             TESTFILES=$(circleci tests glob '**/test*.py' | grep test_functional | sort | uniq)
-            TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep -v test_functional | grep -v test_accessibility | sort | uniq)
+            TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep -v test_functional | grep -v test_lighthouse | sort | uniq)
             echo $TESTFILES | tr "$IFS" '\n' > test_filenames.txt
             TESTFILES=$(circleci tests split --split-by=timings test_filenames.txt | tr '/' '.' | sed 's/.py//g')
 
@@ -118,7 +118,7 @@ jobs:
 
             . /tmp/venv/bin/activate
             python manage.py collectstatic --noinput
-            coverage run --parallel-mode manage.py test --verbosity=2 $TESTFILES --exclude-tag=accessibility
+            coverage run --parallel-mode manage.py test --verbosity=2 $TESTFILES
       - persist_to_workspace:
           root: .
           paths: [".coverage*"]
