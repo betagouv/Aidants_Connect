@@ -7,8 +7,6 @@ import time
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
 
-from aidants_connect_pico_cms.models import FaqCategory
-
 
 @tag("accessibility")
 class PublicUrlsAccessibilityTestCase(StaticLiveServerTestCase):
@@ -23,19 +21,9 @@ class PublicUrlsAccessibilityTestCase(StaticLiveServerTestCase):
         """
         super().setUp()
 
-        # Charger la configuration Lighthouse existante
         with open(".lighthouserc.json", "r") as f:
             self.lighthouse_config = json.load(f)
 
-        # Créer des données de test pour la FAQ
-        self.faq_category = FaqCategory.objects.create(
-            name="FAQ Test",
-            body="FAQ de test pour les tests d'accessibilité",
-            published=True,
-            sort_order=1,
-        )
-
-        # Créer un fichier de configuration temporaire
         self.temp_config_fd, self.temp_config_path = tempfile.mkstemp(suffix=".json")
         with os.fdopen(self.temp_config_fd, "w") as f:
             json.dump(self.lighthouse_config, f, indent=2)
@@ -46,13 +34,11 @@ class PublicUrlsAccessibilityTestCase(StaticLiveServerTestCase):
             os.remove(self.temp_config_path)
 
     def test_lighthouse_accessibility(self):
-        # Attendre que le serveur soit prêt
         time.sleep(2)
 
         url = os.environ.get("LIGHTHOUSE_URL")
         url = url.replace("http://localhost:8000", self.live_server_url)
-        # Lancer Lighthouse CI avec la configuration modifiée
-        # Utiliser le chemin relatif qui fonctionne en local et en CI
+
         result = subprocess.run(
             [
                 "./node_modules/.bin/lhci",
