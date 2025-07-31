@@ -102,6 +102,7 @@ Dans votre répertoire de travail, créez et activez un environnement virtuel :
 virtualenv venv
 source venv/bin/activate
 ```
+
 Installez pipenv :
 
 ```shell
@@ -284,7 +285,6 @@ les [modules ES6](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/Mod
 Le projet a aussi profité de la réécriture DSFR pour utiliser [l'API de rendu des formulaires Django](https://docs.djangoproject.com/en/dev/ref/forms/renderers/).
 Les bonnes pratiques actuelles du projet sont de rendre les formulaires autonomes grâce à cette API et l'utilisation
 des [form assets](https://docs.djangoproject.com/en/5.1/topics/forms/media/).
-
 
 ### CSP et JavaScript inline
 
