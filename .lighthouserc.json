@@ -2,7 +2,7 @@
   "ci": {
     "collect": {
       "numberOfRuns": 1,
-      "url": ["http://localhost:8000/", "http://localhost:8000/faq"],
+      "url": ["http://localhost:8000/", "http://localhost:8000/faq/"],
       "settings": {
         "onlyCategories": ["accessibility"],
         "skipAudits": ["uses-https"],
