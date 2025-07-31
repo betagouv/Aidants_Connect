@@ -113,8 +113,6 @@ jobs:
             TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep -v test_functional | grep -v test_lighthouse | sort | uniq)
             echo $TESTFILES | tr "$IFS" '\n' > test_filenames.txt
             TESTFILES=$(circleci tests split --split-by=timings test_filenames.txt | tr '/' '.' | sed 's/.py//g')
-            echo "TESTFILES sélectionnés :"
-            cat test_filenames.txt
 
             mkdir -p staticfiles
 
