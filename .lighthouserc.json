@@ -1,0 +1,36 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 1,
+      "url": [
+        "http://localhost:8000/",
+        "http://localhost:8000/accessibilite/",
+        "http://localhost:8000/accounts/login/",
+        "http://localhost:8000/budget/",
+        "http://localhost:8000/cgu/",
+        "http://localhost:8000/formation/",
+        "http://localhost:8000/guide_utilisation/",
+        "http://localhost:8000/habilitation/",
+        "http://localhost:8000/habilitation/demandeur/",
+        "http://localhost:8000/mentions-legales/",
+        "http://localhost:8000/politique_confidentialite/",
+        "http://localhost:8000/ressources/",
+        "http://localhost:8000/stats/",
+        "http://localhost:8000/temoignages/"
+      ],
+      "settings": {
+        "onlyCategories": ["accessibility"],
+        "skipAudits": ["uses-https"],
+        "chromeFlags": ["--headless", "--no-sandbox", "--disable-web-security"]
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:accessibility": ["error", { "minScore": 1 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}
