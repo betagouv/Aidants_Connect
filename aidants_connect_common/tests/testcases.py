@@ -1,6 +1,8 @@
 import contextlib
 import operator
+import os
 import re
+import time
 from typing import Any, Callable, Iterable, Mapping, Optional
 from urllib.parse import urlencode
 
@@ -73,6 +75,21 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         # Initialize accessibility testing tools
         cls.axe = None
         cls._axe_injected = False
+
+        # Monkey-patch WebDriver to slow down functional test execution in browser
+        # useful to debug if HEADLESS_FUNCTIONAL_TESTS is True
+        if os.getenv("HEADLESS_FUNCTIONAL_TESTS") == "False":
+            delay = 0.5
+
+            def slow_command_executor(self, *args, **kwargs):
+                result = self._original_execute(*args, **kwargs)
+                time.sleep(delay)
+                return result
+
+            cls.selenium._original_execute = cls.selenium.execute
+            cls.selenium.execute = slow_command_executor.__get__(
+                cls.selenium, type(cls.selenium)
+            )
 
     @classmethod
     def tearDownClass(cls):
