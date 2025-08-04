@@ -54,6 +54,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "add_usager").click()
         self.wait.until(self.path_matches("new_mandat"))
 
+        # Check accessibility of the form page
+        self.check_accessibility("create_mandat_form", strict=False)
+
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
         )
@@ -100,6 +103,8 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
 
         # Recap all the information for the Mandat
+        # Check accessibility of the recap page
+        self.check_accessibility("create_mandat_recap", strict=False)
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual("Récapitulatif du mandat", recap_title)
         recap_text = self.selenium.find_element(By.ID, "recap-text").text

@@ -12,6 +12,7 @@ from django.db import models
 from django.test import tag
 from django.urls import reverse
 
+from axe_selenium_python import Axe
 from faker.proxy import Faker
 from selenium.common.exceptions import (
     NoSuchElementException,
@@ -68,6 +69,10 @@ class FunctionalTestCase(StaticLiveServerTestCase):
                 cls.selenium.get(f"{cls.live_server_url}/")
             except WebDriverException:
                 pass
+
+        # Initialize accessibility testing tools
+        cls.axe = None
+        cls._axe_injected = False
 
     @classmethod
     def tearDownClass(cls):
@@ -307,3 +312,54 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             re.sub(r"\s+", " ", f"{first}", flags=re.M).strip(),
             re.sub(r"\s+", " ", f"{second}", flags=re.M).strip(),
         )
+
+    def check_accessibility(self, page_name="page", strict=False, options=None):
+        """
+        Check accessibility of the current page using axe-core
+
+        Args:
+            page_name: Name for the results file
+            strict: If True, fail the test on violations
+            options: Custom options for axe-core
+
+        Returns:
+            dict: axe-core results
+        """
+        if self.axe is None:
+            self.axe = Axe(self.selenium)
+
+        if not self._axe_injected:
+            self.axe.inject()
+            self._axe_injected = True
+
+        try:
+            results = self.axe.run(options=options)
+        except Exception:
+            # Re-inject if necessary (page/domain change)
+            self.axe.inject()
+            results = self.axe.run(options=options)
+
+        # persist results
+        # self.axe.write_results(results, f'{page_name}_a11y.json')
+
+        # Handle violations
+        violations_count = len(results["violations"])
+        if violations_count > 0:
+            violation_message = self.axe.report(results["violations"])
+
+            if strict:
+                self.assertEqual(violations_count, 0, violation_message)
+            else:
+                print(
+                    f"\n{'=' * 100}\n",
+                    f"\n⚠️  ACCESSIBILITY WARNING [{page_name}]:",
+                    f"{violations_count} violation(s) detected",
+                )
+                print(f"{'=' * 100}\n")
+                print(violation_message)
+
+        return results
+
+    def reset_axe_injection(self):
+        """Reset injection flag (useful after navigating to a new domain)"""
+        self._axe_injected = False
