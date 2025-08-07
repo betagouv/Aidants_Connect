@@ -43,6 +43,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                     status=status
                 )
                 self.__open_readonly_view_url(organisation)
+                self.check_accessibility("habilitation_organisation_view", strict=False)
 
                 self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
 

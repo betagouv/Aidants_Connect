@@ -65,6 +65,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
                 },
             )
         )
+        self.check_accessibility("habilitation_new_referent", strict=False)
 
     def test_form_other_type_and_private_organisation(self):
         issuer: Issuer = IssuerFactory()
@@ -145,6 +146,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             issuer=issuer,
         )
         self._open_form_url(issuer, organisation)
+        self.check_accessibility("habilitation_modify_organisation", strict=False)
 
         id_type_other_el = self.selenium.find_element(By.ID, "id_type_other")
         self.assertTrue(id_type_other_el.is_displayed())
