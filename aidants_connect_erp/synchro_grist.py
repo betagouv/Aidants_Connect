@@ -54,7 +54,7 @@ def get_card_sending_from_grist():
                 db_sending.email_referent = one_sending.Numero_de_telephone
             else:
                 db_sending.referent = referent
-            db_sending.code_referent = one_sending.Code_de_1ere_connexion
+            db_sending.code_referent = one_sending.Code_de_1ere_connexion[:22]
             if one_sending.Referent in dict_users:
                 db_sending.bizdev == dict_users[one_sending.Referent]
 

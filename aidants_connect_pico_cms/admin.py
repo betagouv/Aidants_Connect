@@ -98,7 +98,24 @@ class FaqSectionAdmin(CmsAdmin):
 
 @register(FaqCategory, site=admin_site)
 class FaqCategoryAdmin(FaqSectionAdmin):
-    list_display = (*FaqSectionAdmin.list_display, "see_draft")
+    list_display = (*FaqSectionAdmin.list_display, "theme", "see_draft")
+    list_filter = ("published", "theme")
+    fieldsets = (
+        ("Contenu", {"fields": ("name", "body")}),
+        (
+            "Publication",
+            {
+                "fields": (
+                    "published",
+                    "theme",
+                    "sort_order",
+                    "slug",
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+    )
 
     def see_draft(self, obj):
         return mark_safe(
@@ -110,7 +127,7 @@ class FaqCategoryAdmin(FaqSectionAdmin):
 
 @register(FaqQuestion, site=admin_site)
 class FaqQuestionAdmin(CmsAdmin):
-    list_filter = ("published", "category")
+    list_filter = ("published", "category", "category__theme")
     list_display = (
         "__str__",
         "slug",
