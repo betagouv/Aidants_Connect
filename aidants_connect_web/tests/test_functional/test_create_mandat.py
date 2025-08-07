@@ -134,6 +134,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertEqual(2, mandat_qs[0].autorisations.count())
         self.check_accessibility("new_attestation_final", strict=False)
 
+        self.open_live_url("/usagers/")
+        self.check_accessibility("usagers", strict=False)
+
     def test_create_new_remote_mandat_with_legacy_consent(self):
         self.open_live_url("/usagers/")
 
