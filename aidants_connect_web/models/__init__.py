@@ -1,6 +1,6 @@
 from aidants_connect_common.models import IdGenerator
 
-from .aidant import Aidant, AidantManager, AidantType
+from .aidant import Aidant, AidantManager, AidantType, MobileAskingUser
 from .journal import Journal
 from .mandat import (
     Autorisation,
@@ -43,6 +43,7 @@ __all__ = [
     Organisation,
     OrganisationType,
     Mandat,
+    MobileAskingUser,
     ReboardingAidantStatistiques,
     Usager,
     UsagerQuerySet,
