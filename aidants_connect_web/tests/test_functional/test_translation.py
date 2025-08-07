@@ -1,3 +1,4 @@
+import time
 from datetime import timedelta
 
 from django.test import tag
@@ -33,6 +34,7 @@ class DisplayTranslationTests(FunctionalTestCase):
         self.selenium.find_element(
             By.CSS_SELECTOR, ".mandate-translation-section a"
         ).click()
+        time.sleep(2)
 
         self.wait.until(self.path_matches("mandate_translation"))
         self.wait.until(
