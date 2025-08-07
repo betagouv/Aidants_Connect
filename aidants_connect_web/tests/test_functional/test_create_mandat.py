@@ -80,6 +80,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)
+        self.check_accessibility("fc_authorize", strict=False)
 
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element(
@@ -87,6 +88,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
         demonstration_hex.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
+        self.check_accessibility("fc_callback", strict=False)
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
