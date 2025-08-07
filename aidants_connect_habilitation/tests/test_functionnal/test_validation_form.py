@@ -10,7 +10,7 @@ from aidants_connect_habilitation.models import AidantRequest, OrganisationReque
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
 
 
-@tag("functional")
+@tag("functional", "habilitation")
 class ValidationRequestFormViewTests(FunctionalTestCase):
     def setUp(self):
         self.request: OrganisationRequest = OrganisationRequestFactory(

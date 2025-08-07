@@ -19,7 +19,7 @@ from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.tests.factories import HabilitationRequestFactory
 
 
-@tag("functional")
+@tag("functional", "habilitation")
 class AddAidantsRequestViewTests(FunctionalTestCase):
     def setUp(self):
         self.add_aidant_css = "#add-aidants-btn"

@@ -23,7 +23,7 @@ from aidants_connect_habilitation.tests.factories import (
 from aidants_connect_habilitation.tests.utils import get_form
 
 
-@tag("functional")
+@tag("functional", "habilitation")
 class ReferentRequestFormViewTests(FunctionalTestCase):
 
     def setUp(self):

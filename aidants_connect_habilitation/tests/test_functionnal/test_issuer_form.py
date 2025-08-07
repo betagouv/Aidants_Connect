@@ -14,7 +14,7 @@ from aidants_connect_habilitation.models import Issuer
 from aidants_connect_habilitation.tests.factories import IssuerFactory
 
 
-@tag("functional")
+@tag("functional", "habilitation")
 class IssuerFormViewTests(FunctionalTestCase):
     def test_submit_form_without_phone_passes(self):
         email = Faker().email()
