@@ -52,6 +52,8 @@ class RenewMandatTests(FunctionalTestCase):
 
         self.login_aidant(self.aidant)
 
+        self.check_accessibility("renew_mandat", strict=False)
+
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
         )
@@ -266,9 +268,13 @@ class RenewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "submit_renew_button").click()
         self.wait.until(self.path_matches("renew_remote_second_step"))
 
+        self.check_accessibility("renew_remote_second_step", strict=False)
+
         # # Send user consent request
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
         self.wait.until(self.path_matches("renew_mandat_waiting_room"))
+
+        self.check_accessibility("renew_mandat_waiting_room", strict=False)
 
         # # Test the message is correctly logged
         consent_request_log: Journal = Journal.objects.find_sms_consent_requests(

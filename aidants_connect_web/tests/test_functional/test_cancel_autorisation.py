@@ -81,6 +81,8 @@ class CancelAutorisationTests(FunctionalTestCase):
                 "autorisation_id": self.money_authorization.id,
             },
         )
+        self.check_accessibility("autorisation_cancelation_success", strict=False)
+
         self.selenium.find_element(By.XPATH, f'.//a[@href="{path}"]').click()
 
         self.wait.until(lambda driver: len(driver.window_handles) == 2)
@@ -99,6 +101,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.open_live_url(
             reverse("usager_details", kwargs={"usager_id": self.usager_josephine.id})
         )
+        self.check_accessibility("usager_details", strict=False)
 
         active_autorisations_after = self.selenium.find_elements(
             By.CLASS_NAME, "mandats-actifs"

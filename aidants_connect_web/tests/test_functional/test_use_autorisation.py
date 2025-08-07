@@ -111,6 +111,7 @@ class UseAutorisationTests(FunctionalTestCase):
         wait = WebDriverWait(self.selenium, 10)
 
         wait.until(url_contains("/select_demarche/"))
+        self.check_accessibility("fi_select_demarche", strict=False)
 
         # Select Démarche
         step2_title = self.selenium.find_element(By.CSS_SELECTOR, ".instructions").text
@@ -118,6 +119,7 @@ class UseAutorisationTests(FunctionalTestCase):
         demarches = self.selenium.find_elements(By.ID, "button-demarche")
         self.assertEqual(len(demarches), 2)
         last_demarche = demarches[-1]
+
         last_demarche.click()
         time.sleep(2)
         self.assertIn("fcp.integ01.dev-franceconnect.fr", self.selenium.current_url)
