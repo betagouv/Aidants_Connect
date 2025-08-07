@@ -19,7 +19,7 @@ from aidants_connect_habilitation.tests.factories import (
 )
 
 
-@tag("functional")
+@tag("functional", "habilitation")
 class OrganisationRequestFormViewTests(FunctionalTestCase):
     def test_form_normal_organisation_with_fs_label(self):
         issuer: Issuer = IssuerFactory()
