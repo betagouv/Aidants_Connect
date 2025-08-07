@@ -111,7 +111,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        # Check accessibility of the recap page
+
         self.check_accessibility("logout_callback", strict=False)
 
         self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
