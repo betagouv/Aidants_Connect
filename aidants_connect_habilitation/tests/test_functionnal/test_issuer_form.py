@@ -21,6 +21,7 @@ class IssuerFormViewTests(FunctionalTestCase):
         issuer = IssuerFactory.build(email=email)
 
         self.__open_form_url()
+        self.check_accessibility("habilitation_new_issuer", strict=False)
 
         self.__fill_form_and_submit(
             issuer, ["first_name", "last_name", "email", "profession"]
@@ -29,6 +30,9 @@ class IssuerFormViewTests(FunctionalTestCase):
         path = reverse(
             "habilitation_issuer_email_confirmation_waiting",
             kwargs={"issuer_id": Issuer.objects.get(email=email).issuer_id},
+        )
+        self.check_accessibility(
+            "habilitation_issuer_email_confirmation_waiting", strict=False
         )
 
         WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
@@ -100,6 +104,9 @@ class IssuerFormViewTests(FunctionalTestCase):
                 kwargs={"issuer_id": issuer.issuer_id, "key": email_confirmation.key},
             )
         )
+        self.check_accessibility(
+            "habilitation_issuer_email_confirmation_confirm", strict=False
+        )
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
 
@@ -109,6 +116,7 @@ class IssuerFormViewTests(FunctionalTestCase):
         )
 
         WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
+        self.check_accessibility("habilitation_new_organisation", strict=False)
 
     def __fill_form_and_submit(self, issuer: Issuer, fields: List[str]):
         for field in fields:

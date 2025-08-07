@@ -110,6 +110,9 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
                 },
             )
         )
+        self.check_accessibility(
+            "habilitation_modify_issuer_on_organisation", strict=False
+        )
 
         for _ in range(10):
             if (new_email := self.faker.email()) != self.request.issuer.email:
