@@ -68,7 +68,7 @@ class LoginTests(TestCase):
 
         self.assertEqual(200, response.status_code)
         totp_device.refresh_from_db()
-        self.assertEqual(1, totp_device.tolerance)
+        self.assertEqual(10, totp_device.tolerance)
 
         # Simulate too many failed connection attempts
         totp_device.throttling_failure_count = 3
