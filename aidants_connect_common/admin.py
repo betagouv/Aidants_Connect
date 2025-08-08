@@ -141,7 +141,7 @@ class ZRRResource(ModelResource):
 
 
 @register(Commune, site=admin_site)
-class OrganisationAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
+class CommuneAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
     list_display = ("insee_code", "name", "department", "zrr")
     readonly_fields = ("insee_code", "name", "zrr")
     raw_id_fields = ("department",)

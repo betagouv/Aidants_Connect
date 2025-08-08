@@ -126,7 +126,7 @@ class Organisation(models.Model):
     created_at = models.DateTimeField("Date création", auto_now_add=True)
     updated_at = models.DateTimeField("Date modification", auto_now=True)
 
-    created_by_fne = models.BooleanField("Création FNE", default=False)
+    created_by_fne = models.BooleanField("Création FNE", default=False, editable=False)
     id_fne = models.CharField(
         "ID FNE", max_length=255, null=True, blank=True, editable=False
     )

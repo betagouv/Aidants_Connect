@@ -372,6 +372,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantWithOTPAppFilter,
         "is_staff",
         "is_superuser",
+        "created_by_fne",
     )
     search_fields = ("id", *DjangoUserAdmin.search_fields, "organisation__name")
     ordering = ("email",)
