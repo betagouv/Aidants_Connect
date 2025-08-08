@@ -239,41 +239,7 @@
               <h2 class="fr-h5">Abonnez-vous à notre lettre d’information</h2>
               <p class="fr-text--sm">Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :</p>
             </div>
-            <div>
-              <form
-                id="sb_form"
-                method="post"
-                data-connect-url="{{ SARBACANE_CONNECT_URL }}"
-              >
-                <div class="fr-input-group">
-                  <label class="fr-label" for="newsletter-email">
-                    Votre adresse électronique (ex. : nom@domaine.fr)
-                  </label>
-                  <div class="fr-input-wrap fr-input-wrap--addon">
-                    <input
-                      class="fr-input"
-                      title="Votre adresse électronique (ex. : nom@domaine.fr)"
-                      aria-describedby="newsletter-email-hint-text newsletter-email-messages"
-                      placeholder="Votre adresse électronique (ex. : nom@domaine.fr)"
-                      id="input-email"
-                      type="text"
-                      name="email"
-                      required
-                      sb-form-input
-                    >
-                    <button class="fr-btn" id="submitInput" title="S‘abonner à notre lettre d’information"
-                      type="submit">
-                      S'abonner
-                    </button>
-                  </div>
-                  <div class="fr-messages-group" id="newsletter-email-messages" aria-live="assertive">
-                  </div>
-                </div>
-                <p id="newsletter-email-hint-text" class="fr-hint-text">En renseignant votre adresse électronique, vous
-                  acceptez de recevoir nos actualités par courriel. Vous pouvez vous désinscrire à tout moment à l’aide
-                  des liens de désinscription ou en nous contactant.</p>
-              </form>
-            </div>
+<iframe width="540" height="310" src="{{ BREVO_IFRAME_URL }}" ></iframe>
           </div>
         </div>
       </div>
@@ -290,6 +256,6 @@
     data-video-url="{% static 'videos/AidantsConnect.mp4' %}"
   ></script>
   <script defer type="text/javascript" src="{{ SARBACANE_SCRIPT_URL }}"></script>
-  <script defer type="text/javascript" src="{% static 'js/newsletter-form.js' %}"></script>
+{# <script defer type="text/javascript" src="{% static 'js/newsletter-form.js' %}"></script> #}
   <script defer type="text/javascript" src="{% static 'js/youtube-cookie.js' %}"></script>
 {% endblock extrajs %}
