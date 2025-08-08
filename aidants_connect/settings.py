@@ -866,3 +866,7 @@ FF_EMAIL_CO_RERERENT_CREATION = getenv_bool("FF_EMAIL_CO_RERERENT_CREATION", Fal
 
 URL_FORMATION = os.getenv("URL_FORMATION", get_random_string(12))
 URL_FNEAPI = os.getenv("URL_FNEAPI", get_random_string(12))
+
+URL_CONNEXIONCHOICE = os.getenv("URL_CONNEXIONCHOICE", get_random_string(12))
+URL_TEST_PIX = os.getenv("URL_TEST_PIX", "")
+URL_ASK_MOBILE = os.getenv("URL_ASK_MOBILE", get_random_string(12))

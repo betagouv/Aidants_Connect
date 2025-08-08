@@ -1,0 +1,44 @@
+é{% extends 'public_website/layout/main.html' %}
+{% load ac_common dsfr_tags form_extras static %}
+
+{% block title %}Référent - Information, Numéro de Mobile{% endblock %}
+
+{% block extracss %}
+
+{% endblock extracss %}
+
+{% block content %}
+<div class="fr-container">
+  <h1 class="fr-mb-4w">Renseigner votre numéro de téléphone portable pour pouvoir recevoir votre code de première connexion</h1>
+
+{% block body %}
+  <div class="fr-container">
+    <div id="asking_mobile" class="fr-mb-8w">
+
+
+      <h2>Renseigner son numéro de téléphone mobile</h2>
+
+      <p class="fr-info-text fr-mb-4v fr-mt-n2v"><a href="/faq/utiliser-aidants-connect/">Pourquoi un numéro de téléphone mobile ?</a></p>
+
+
+      <h2>Vos informations</h2>
+
+      <form method="post" class="fr-col-12">
+        {% csrf_token %}
+        {% dsfr_form %}
+        <button
+      class="fr-btn"
+      type="submit"
+      data-follow-request-modale-target="submitBtn"
+    >Valider</button>
+
+
+      </form>
+
+    </div>
+  </div>
+{% endblock body %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

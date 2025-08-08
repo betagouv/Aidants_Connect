@@ -541,3 +541,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     add_habilitationrequest_to_manager.short_description = (
         "Permettre à un/des référents de s'inscrire en formation"
     )
+
+
+class MobileAskingUserAdmin(admin.ModelAdmin):
+    list_display = ("user", "user_mobile", "user_padding")
+    raw_id_fields = ("user",)

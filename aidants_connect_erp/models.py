@@ -25,7 +25,7 @@ class CardSending(models.Model):
     )
     sending_date = models.DateField("Date d'envoi", null=True, blank=True)
     receipt_date = models.DateField("Date de livraison prévue", null=True, blank=True)
-    quantity = models.PositiveIntegerField("Nombre de cartes", default=1)
+    quantity = models.PositiveIntegerField("Nombre de cartes", default=0)
     estimated_quantity = models.PositiveIntegerField(
         "Nombre de cartes estimé", default=0
     )

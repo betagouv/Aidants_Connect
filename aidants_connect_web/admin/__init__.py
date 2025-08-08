@@ -14,12 +14,13 @@ from aidants_connect_web.models import (
     HabilitationRequest,
     Journal,
     Mandat,
+    MobileAskingUser,
     Organisation,
     ReboardingAidantStatistiques,
     Usager,
 )
 
-from .aidant import AidantAdmin
+from .aidant import AidantAdmin, MobileAskingUserAdmin
 from .habilitation_request import HabilitationRequestAdmin
 from .journal import JournalAdmin
 from .mandat import MandatAdmin
@@ -55,3 +56,5 @@ admin_site.register(TOTPDevice, TOTPDeviceStaffAdmin)
 admin_site.register(CarteTOTP, CarteTOTPAdmin)
 
 admin_site.register(Token, TokenAdmin)
+
+admin_site.register(MobileAskingUser, MobileAskingUserAdmin)

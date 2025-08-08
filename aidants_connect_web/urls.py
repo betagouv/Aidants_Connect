@@ -15,6 +15,7 @@ from aidants_connect_web.views import (
     login,
     mandat,
     notifications,
+    others,
     renew_mandat,
     sandbox,
     service,
@@ -23,6 +24,23 @@ from aidants_connect_web.views import (
 )
 
 urlpatterns = [
+    # connexion choice
+    path(
+        f"{settings.URL_CONNEXIONCHOICE}/ad_connexion_choice",
+        others.ConnexionChoiceView.as_view(),
+        name="connexion_choice",
+    ),
+    # mobile asking
+    path(
+        f"{settings.URL_ASK_MOBILE}/<str:referent_id>/mobile_asking_referent/",
+        others.AskingMobileView.as_view(),
+        name="asking_mobile",
+    ),
+    path(
+        "thanks_asking_mobile/",
+        others.ThanksAskingMobileView.as_view(),
+        name="thanks_asking_mobile",
+    ),
     # service
     path("accounts/login/", login.LoginView.as_view(), name="login"),
     path(magicauth_settings.LOGIN_URL, login.LoginRedirect.as_view()),
