@@ -147,15 +147,15 @@ class HabilitationRequest(models.Model):
             if Aidant.objects.filter(username__iexact=self.email).count() > 0:
                 aidant: Aidant = Aidant.objects.get(username__iexact=self.email)
                 aidant.organisations.add(self.organisation)
-                aidant.is_active = True
+                # aidant.is_active = True
                 aidant.referent_non_aidant = False
                 aidant.can_create_mandats = True
                 aidant.save()
                 self.status = ReferentRequestStatuses.STATUS_VALIDATED
                 self.save()
-                from aidants_connect_web.signals import aidant_activated
-
-                aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
+                # from aidants_connect_web.signals import aidant_activated
+                #
+                # aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
                 return True
 
             aidant = Aidant.objects.create(

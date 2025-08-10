@@ -2140,7 +2140,7 @@ class HabilitationRequestTests(TestCase):
         aidant.refresh_from_db()
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
 
-    def test_validate_if_inactive_aidant_already_exists(self):
+    def test_do_not_validate_if_inactive_aidant_already_exists(self):
         aidant = AidantFactory(is_active=False)
         self.assertFalse(aidant.is_active)
         habilitation_request = HabilitationRequestFactory(
@@ -2157,7 +2157,7 @@ class HabilitationRequestTests(TestCase):
             ReferentRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
-        self.assertTrue(aidant.is_active)
+        self.assertFalse(aidant.is_active)
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
 
     def test_do_not_validate_if_invalid_status(self):
