@@ -274,15 +274,16 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused", "mark_processing")
     list_filter = (
-        HabilitationRequestRegionFilter,
-        HabilitationDepartmentFilter,
-        HabilitationRequestOrgaTypeFilter,
         "status",
         "origin",
+        "formation_done",
         "test_pix_passed",
         "connexion_mode",
         "course_type",
         "created_by_fne",
+        HabilitationRequestRegionFilter,
+        HabilitationDepartmentFilter,
+        HabilitationRequestOrgaTypeFilter,
     )
     search_fields = (
         "first_name",
