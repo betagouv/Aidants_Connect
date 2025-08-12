@@ -10,7 +10,7 @@ from aidants_connect_habilitation.models import AidantRequest, OrganisationReque
 from aidants_connect_habilitation.tests.factories import OrganisationRequestFactory
 
 
-@tag("functional")
+@tag("functional", "habilitation")
 class ValidationRequestFormViewTests(FunctionalTestCase):
     def setUp(self):
         self.request: OrganisationRequest = OrganisationRequestFactory(
@@ -109,6 +109,9 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
                     "uuid": f"{self.request.uuid}",
                 },
             )
+        )
+        self.check_accessibility(
+            "habilitation_modify_issuer_on_organisation", strict=False
         )
 
         for _ in range(10):

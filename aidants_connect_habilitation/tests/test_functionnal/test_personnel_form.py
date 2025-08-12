@@ -23,7 +23,7 @@ from aidants_connect_habilitation.tests.factories import (
 from aidants_connect_habilitation.tests.utils import get_form
 
 
-@tag("functional")
+@tag("functional", "habilitation")
 class ReferentRequestFormViewTests(FunctionalTestCase):
 
     def setUp(self):
@@ -461,6 +461,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         self._open_form_url(issuer, organisation)
         self.wait.until(self.dsfr_ready())
+        self.check_accessibility("habilitation_new_aidants", strict=False)
 
         modified_aidant_idx = 2
         formset = AidantRequestFormSet(organisation=organisation)
@@ -481,6 +482,8 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             )
 
         self._try_open_modal(By.CSS_SELECTOR, f"#edit-button-{modified_aidant_idx}")
+        self.check_accessibility("habilitation_new_aidants_modale", strict=False)
+
         self.fill_form(
             aidant_form.cleaned_data,
             aidant_form,
@@ -500,6 +503,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 },
             )
         )
+        self.check_accessibility("habilitation_validation", strict=False)
 
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 4)
@@ -525,7 +529,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 },
             )
         )
-
         self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
 
         self.assertEqual(

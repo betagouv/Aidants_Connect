@@ -37,6 +37,8 @@ class DisplayTranslationTests(FunctionalTestCase):
         time.sleep(2)
 
         self.wait.until(self.path_matches("mandate_translation"))
+        self.check_accessibility("mandate_translation", strict=False)
+
         self.wait.until(
             expected_conditions.text_to_be_present_in_element(
                 (By.CSS_SELECTOR, ".mandate-translation-other"),

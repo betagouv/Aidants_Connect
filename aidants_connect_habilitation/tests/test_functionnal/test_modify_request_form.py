@@ -19,7 +19,7 @@ from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.tests.factories import HabilitationRequestFactory
 
 
-@tag("functional")
+@tag("functional", "habilitation")
 class AddAidantsRequestViewTests(FunctionalTestCase):
     def setUp(self):
         self.add_aidant_css = "#add-aidants-btn"
@@ -43,6 +43,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                     status=status
                 )
                 self.__open_readonly_view_url(organisation)
+                self.check_accessibility("habilitation_organisation_view", strict=False)
 
                 self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
 

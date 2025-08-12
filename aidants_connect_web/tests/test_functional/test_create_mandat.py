@@ -54,6 +54,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "add_usager").click()
         self.wait.until(self.path_matches("new_mandat"))
 
+        self.check_accessibility("new_mandat", strict=False)
+
+        # Check accessibility of the form page
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
         )
@@ -69,6 +72,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         ).click()
 
         self.selenium.find_element(By.CSS_SELECTOR, "#id_duree_short ~ label").click()
+        # test accessibility on the form page
 
         # FranceConnect
         fc_button = self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect")
@@ -76,6 +80,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
         fc_title = self.selenium.title
         self.assertEqual("Connexion - choix du compte", fc_title)
+        self.check_accessibility("fc_authorize", strict=False)
 
         # Click on the 'Démonstration' identity provider
         demonstration_hex = self.selenium.find_element(
@@ -83,6 +88,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
         demonstration_hex.click()
         self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
+        self.check_accessibility("fc_callback", strict=False)
 
         # FC - Use the Mélaine_trois credentials
         demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
@@ -105,6 +111,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
+
+        self.check_accessibility("logout_callback", strict=False)
+
         self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
         id_otp_token = checkboxes[-2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
@@ -125,6 +134,10 @@ class CreateNewMandatTests(FunctionalTestCase):
         mandat_qs = Mandat.objects.filter(organisation=self.aidant.organisation)
         self.assertEqual(1, mandat_qs.count())
         self.assertEqual(2, mandat_qs[0].autorisations.count())
+        self.check_accessibility("new_attestation_final", strict=False)
+
+        self.open_live_url("/usagers/")
+        self.check_accessibility("usagers", strict=False)
 
     def test_create_new_remote_mandat_with_legacy_consent(self):
         self.open_live_url("/usagers/")
@@ -328,6 +341,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         # # Send recap mandate and go to second step
         self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect").click()
         self.wait.until(self.path_matches("new_mandat_remote_second_step"))
+        self.check_accessibility("new_mandat_remote_second_step", strict=False)
 
         # # Send user consent request
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
@@ -349,7 +363,9 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # Try to force creation of mandate; should be redirected to waiting room
         self.open_live_url(reverse("new_mandat_recap"))
+
         self.wait.until(self.path_matches("new_mandat_waiting_room"))
+        self.check_accessibility("new_mandat_waiting_room", strict=False)
 
         # Simulate user content
         self._user_consents("0 800 840 800")
@@ -394,6 +410,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.wait.until(
             self.path_matches("logout_callback", query_params={"state": ".+"})
         )
+        self.check_accessibility("logout_callback", strict=False)
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -426,7 +443,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.open_live_url("/usagers/")
 
         self.login_aidant(self.aidant)
-
         # Create new mandat
         self.selenium.find_element(By.ID, "add_usager").click()
         self.wait.until(self.path_matches("new_mandat"))
