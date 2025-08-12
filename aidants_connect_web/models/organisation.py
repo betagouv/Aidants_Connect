@@ -15,6 +15,7 @@ from django.utils.functional import cached_property
 from aidants_connect_common.models import Department
 from aidants_connect_erp.models import CardSending
 
+from ..constants import ReferentRequestStatuses
 from .journal import Journal
 from .utils import delete_mandats_and_clean_journal
 
@@ -53,11 +54,18 @@ class OrganisationManager(models.Manager):
         ).distinct()
 
     def having_formation_unregistered_habilitation_requests(self):
-        return self.filter(
-            is_active=True,
-            habilitation_requests__isnull=False,
-            habilitation_requests__formations=None,
-        ).distinct()
+        from aidants_connect_web.models import HabilitationRequest  # noqa
+
+        orga_id = list(
+            set(
+                HabilitationRequest.objects.filter(
+                    organisation__is_active=True,
+                    status=ReferentRequestStatuses.STATUS_PROCESSING,
+                    formations__isnull=True,
+                ).values_list("organisation_id", flat=True),
+            )
+        )
+        return self.filter(id__in=orga_id).distinct()
 
 
 def organisation_allowed_demarches():

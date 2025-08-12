@@ -967,15 +967,30 @@ class OrganisationModelTests(TestCase):
             aidant_c.organisations.set((orga_a, orga_b))
         self.assertEqual(orga_a.num_active_aidants, 5)
 
-    def test_organisation_allowed_demarches(self):
+    def test_organisation_having_formation_unregistered_habilitation_requests(self):
         formation: Formation = FormationFactory()
 
         OrganisationFactory()
 
         has_unregistered_hab = OrganisationFactory()
-        HabilitationRequestFactory(organisation=has_unregistered_hab)
+        HabilitationRequestFactory(
+            organisation=has_unregistered_hab,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
         formation.register_attendant(
             HabilitationRequestFactory(organisation=has_unregistered_hab)
+        )
+
+        has_unregistered_hab_but_not_processing = OrganisationFactory()
+        HabilitationRequestFactory(
+            organisation=has_unregistered_hab_but_not_processing,
+            status=ReferentRequestStatuses.STATUS_VALIDATED,
+        )
+
+        inactive_orga = OrganisationFactory(is_active=False)
+        HabilitationRequestFactory(
+            organisation=inactive_orga,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
         )
 
         other = OrganisationFactory()
