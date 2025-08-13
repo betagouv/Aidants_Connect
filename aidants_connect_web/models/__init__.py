@@ -1,6 +1,12 @@
 from aidants_connect_common.models import IdGenerator
 
-from .aidant import Aidant, AidantManager, AidantType, MobileAskingUser
+from .aidant import (
+    Aidant,
+    AidantManager,
+    AidantType,
+    FirstConnexionManagerInfo,
+    MobileAskingUser,
+)
 from .journal import Journal
 from .mandat import (
     Autorisation,
@@ -36,8 +42,10 @@ __all__ = [
     CoReferentNonAidantRequest,
     ExportRequest,
     HabilitationRequest,
+    FirstConnexionManagerInfo,
     IdGenerator,
     Journal,
+    MobileAskingUser,
     Notification,
     NotificationType,
     Organisation,

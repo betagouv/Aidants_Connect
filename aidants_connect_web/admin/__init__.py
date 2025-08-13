@@ -11,6 +11,7 @@ from aidants_connect_web.models import (
     AidantType,
     CarteTOTP,
     Connection,
+    FirstConnexionManagerInfo,
     HabilitationRequest,
     Journal,
     Mandat,
@@ -20,7 +21,7 @@ from aidants_connect_web.models import (
     Usager,
 )
 
-from .aidant import AidantAdmin, MobileAskingUserAdmin
+from .aidant import AidantAdmin, FirstConnexionManagerInfoAdmin, MobileAskingUserAdmin
 from .habilitation_request import HabilitationRequestAdmin
 from .journal import JournalAdmin
 from .mandat import MandatAdmin
@@ -58,3 +59,4 @@ admin_site.register(CarteTOTP, CarteTOTPAdmin)
 admin_site.register(Token, TokenAdmin)
 
 admin_site.register(MobileAskingUser, MobileAskingUserAdmin)
+admin_site.register(FirstConnexionManagerInfo, FirstConnexionManagerInfoAdmin)

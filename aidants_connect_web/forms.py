@@ -185,6 +185,60 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
         return user_email
 
 
+class ManagerFirstLoginForm(DsfrBaseForm):
+    email = forms.EmailField(label="Adresse email")
+
+    mobile = AcPhoneNumberField(
+        label="Numéro de téléphone mobile",
+        label_suffix=" :",
+        initial="",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["mobile"].widget.attrs.update({"placeholder": "Ex : 0601010101"})
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if "email" not in cleaned_data:
+            return cleaned_data
+        if "mobile" not in cleaned_data:
+            return cleaned_data
+
+        user_email = cleaned_data["email"]
+        user_mobile = cleaned_data["mobile"]
+        user_email = user_email.lower()
+
+        aidant = Aidant.objects.filter(email__iexact=user_email, is_active=True).first()
+        if aidant and aidant.has_a_totp_device:
+            raise ValidationError(
+                "Vous avez déjà un moyen de configuration configuré. "
+                "Vous devez utiliser le formulaire de connexion classique "
+                "et non pas le formulaire de première connexion référent."
+            )
+
+        if aidant is None:
+            raise ValidationError(
+                "Votre compte n'existe pas ou existe mais il n’est pas encore actif. "
+                "Si vous pensez que c’est une erreur, prenez contact avec "
+                "Aidants Connect."
+            )
+
+        if not user_mobile == aidant.phone:
+            raise ValidationError(
+                "Votre compte n'existe pas ou nous ne trouvons pas la correspondance "
+                "entre celui-ci et les informations que vous avez saisi."
+                "Si vous pensez que c’est une erreur, prenez contact avec "
+                "Aidants Connect."
+            )
+
+        return cleaned_data
+
+
+class ManagerFirstLoginWithCodeForm(DsfrBaseForm):
+    code_otp = forms.CharField(label="Code de première connexion")
+
+
 class DsfrOtpForm(OTPForm, DsfrBaseForm):
 
     def __init__(self, user, *args, **kwargs):
