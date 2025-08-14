@@ -74,7 +74,9 @@
       {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
 
       <div class="fr-col-12 fr-col-lg-8">
-        {% dsfr_form_field form.duree %}
+         <div role="group" aria-label="Choisissez la durée du mandat (obligatoire)">
+          {% dsfr_form_field form.duree %}
+         </div>
 
         <h4 class="fr-h6 fr-mt-2w">Signature à distance</h4>
 
