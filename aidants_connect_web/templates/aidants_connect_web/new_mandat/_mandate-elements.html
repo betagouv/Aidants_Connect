@@ -10,12 +10,12 @@
         suivante{{ nb_demarches|pluralize }} :
       {% endwith %}
     </p>
-  {% endblock %}
+  {% endblock summary %}
   <div class="fr-mb-4w fr-background-contrast--grey fr-p-4w">
     {% for title, description in demarches.items %}
     <div class="fr-grid-row">
       <div class="fr-checkbox-group fr-mb-4w">
-        <input checked disabled name="checkboxes-disabled" id="checkboxes-disabled-{{ title }}" type="checkbox" aria-describedby="checkboxes-disabled-messages">
+        <input checked disabled name="checkboxes-disabled" id="checkboxes-disabled-{{ title }}" type="checkbox">
         <label class="fr-label" for="checkboxes-disabled-{{ title }}"></label>
       </div>
       <div class="fr-text--lead fr-mb-1w"><strong>{{ title }}</strong></div>
