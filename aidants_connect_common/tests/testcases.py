@@ -330,7 +330,14 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             re.sub(r"\s+", " ", f"{second}", flags=re.M).strip(),
         )
 
-    def check_accessibility(self, page_name="page", strict=False, options=None):
+    # on exclue le warning aria-allowed-role sur les balises nav des skips-links car
+    # role="navigation" explicitement demandé dans le composant skip link DSFR
+    def check_accessibility(
+        self,
+        page_name="page",
+        strict=False,
+        options={"exclude": [["nav[aria-label='Accès rapide']"]]},
+    ):
         """
         Check accessibility of the current page using axe-core
 

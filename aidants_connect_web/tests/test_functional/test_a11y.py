@@ -11,7 +11,9 @@ class Accessibility(FunctionalTestCase):
     def test_skiplinks_are_valid(self):
         self.open_live_url("/")
 
-        skip_links = self.selenium.find_elements(By.CSS_SELECTOR, ".skip-links a[href]")
+        skip_links = self.selenium.find_elements(
+            By.CSS_SELECTOR, ".fr-skiplinks a[href]"
+        )
 
         self.assertGreaterEqual(len(skip_links), 1, "No skip links were found")
 
