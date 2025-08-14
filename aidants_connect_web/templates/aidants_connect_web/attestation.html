@@ -9,7 +9,14 @@
 {% endblock extracss %}
 
 {# Display navigation only on final mandate #}
-{% block nav %}{% if final %}<div class="no-print">{{ block.super }}</div>{% endif %}{% endblock %}
+
+{% block nav %}
+  {% if final %}
+    <nav class="skip-links sr-only" aria-label="Accès rapide">
+      <a href="#main">Contenu principal</a>
+    </nav>
+  {% endif %}
+{% endblock nav %}
 
 {% block content %}
   <div class="fr-container">

@@ -8,6 +8,12 @@
   <link href="{% static 'css/attestation-translation.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
+{% block nav %}
+  <nav class="skip-links sr-only" aria-label="Accès rapide">
+    <a href="#main">Contenu principal</a>
+  </nav>
+{% endblock nav %}
+
 {% block content %}
   <div
     class="fr-container"

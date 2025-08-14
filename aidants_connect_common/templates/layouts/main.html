@@ -58,6 +58,10 @@
 
 <body class="{% block body_class %}{% endblock %}">
 {% block nav %}
+  {% include 'layouts/_skip-links.html' %}
+{% endblock nav %}
+
+{% block header %}
   {% if request.resolver_match.view_name|startswith:"habilitation" %}
     {% comment %}
       This block is a bit weird. Habilitation is part of the public webstite so it should display the nav
@@ -70,7 +74,7 @@
   {% else %}
     {% include 'layouts/_header.html' %}
   {% endif %}
-{% endblock nav %}
+{% endblock header %}
 
 <main id="main" tabindex="-1">
   {% block content %}
