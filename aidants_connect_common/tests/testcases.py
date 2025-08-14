@@ -330,7 +330,21 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             re.sub(r"\s+", " ", f"{second}", flags=re.M).strip(),
         )
 
-    def check_accessibility(self, page_name="page", strict=False, options=None):
+    # Selon la doc dsfr, les composants fr-skiplinks, header, nav et footer doivent
+    # déclarer les roles. axe-core considère que c'est redondant: on privilégie le dsfr
+    def check_accessibility(
+        self,
+        page_name="page",
+        strict=False,
+        options={
+            "exclude": [
+                ["nav[aria-label='Accès rapide']"],
+                ["header[role='banner']"],
+                ["nav[role='navigation']"],
+                ["footer[role='contentinfo']"],
+            ]
+        },
+    ):
         """
         Check accessibility of the current page using axe-core
 
