@@ -1,4 +1,3 @@
-import time
 from distutils.util import strtobool
 from random import randint
 from unittest import mock
@@ -343,7 +342,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect").click()
         self.wait.until(self.path_matches("new_mandat_remote_second_step"))
         self.check_accessibility("new_mandat_remote_second_step", strict=False)
-        time.sleep(1000)
 
         # # Send user consent request
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
