@@ -330,6 +330,8 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             re.sub(r"\s+", " ", f"{second}", flags=re.M).strip(),
         )
 
+    # on exclue le warning aria-allowed-role sur les balises nav des skips-links car
+    # role="navigation" explicitement demandé dans le composant skip link DSFR
     # Selon la doc dsfr, les composants fr-skiplinks, header, nav et footer doivent
     # déclarer les roles. axe-core considère que c'est redondant: on privilégie le dsfr
     def check_accessibility(
