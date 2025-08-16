@@ -1,5 +1,9 @@
 {% load ac_common static %}
 
+{% block skip_links %}
+  {% include 'layouts/_skip-links.html' %}
+{% endblock skip_links %}
+
 <header role="banner" class="fr-header">
   {% with view_name=request.resolver_match.view_name %}
     <div class="fr-header__body">

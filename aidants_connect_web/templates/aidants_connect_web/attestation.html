@@ -10,11 +10,19 @@
 
 {# Display navigation only on final mandate #}
 
-{% block nav %}
+{% block skip_links %}
   {% if final %}
     <nav class="skip-links sr-only" aria-label="Accès rapide">
       <a href="#main">Contenu principal</a>
     </nav>
+  {% endif %}
+{% endblock skip_links %}
+
+{% block nav %}
+  {% if final %}
+    <div class="no-print">
+      {{ block.super }}
+    </div>
   {% endif %}
 {% endblock nav %}
 
