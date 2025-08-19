@@ -2137,6 +2137,20 @@ class HabilitationRequestTests(TestCase):
                 ReferentRequestStatuses.STATUS_VALIDATED.value,
             )
 
+    def test_validate_when_aidant_is_pap(self):
+        habilitation_request = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING_P2P.value
+        )
+        self.assertTrue(habilitation_request.validate_and_create_aidant())
+        self.assertEqual(
+            1, Aidant.objects.filter(email=habilitation_request.email).count()
+        )
+        db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
+        self.assertEqual(
+            db_hab_request.status,
+            ReferentRequestStatuses.STATUS_VALIDATED.value,
+        )
+
     def test_validate_if_active_aidant_already_exists(self):
         aidant = AidantFactory()
         habilitation_request = HabilitationRequestFactory(
