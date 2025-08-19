@@ -136,6 +136,7 @@ class HabilitationRequest(models.Model):
     def validate_and_create_aidant(self):
         if self.status not in (
             ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_PROCESSING_P2P,
             ReferentRequestStatuses.STATUS_NEW,
             ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
             ReferentRequestStatuses.STATUS_VALIDATED,
