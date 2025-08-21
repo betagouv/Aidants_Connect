@@ -2,6 +2,7 @@ import asyncio
 import re
 from urllib.parse import urlencode
 
+from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core import mail
 from django.test import tag
@@ -38,7 +39,9 @@ class AccessibilityTestCase(StaticLiveServerTestCase):
     @classmethod
     async def _async_setup(cls):
         cls.playwright = await async_playwright().start()
-        cls.browser = await cls.playwright.chromium.launch(headless=False, slow_mo=1500)
+        cls.browser = await cls.playwright.chromium.launch(
+            channel="chrome", headless=settings.HEADLESS_FUNCTIONAL_TESTS
+        )
 
     @classmethod
     def tearDownClass(cls):
