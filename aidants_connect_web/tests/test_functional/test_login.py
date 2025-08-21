@@ -29,7 +29,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual("Confirmation de connexion", email_sent_title)
         self.assertEqual(len(mail.outbox), 1)
-        self.check_accessibility("confirmation_connexion", strict=False)
+        self.check_accessibility("confirmation_connexion", strict=True)
         url = re.findall(r"https?://\S+", mail.outbox[0].body, flags=re.M)[0].replace(
             "https", "http", 1
         )
