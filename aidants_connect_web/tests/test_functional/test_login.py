@@ -20,6 +20,7 @@ class CancelAutorisationTests(FunctionalTestCase):
 
     def test_aidant_can_login(self):
         self.open_live_url("/accounts/login/")
+        self.check_accessibility("login", strict=True)
         login_field = self.selenium.find_element(By.ID, "id_email")
         login_field.send_keys(self.aidant_thierry.email)
         otp_field = self.selenium.find_element(By.ID, "id_otp_token")
