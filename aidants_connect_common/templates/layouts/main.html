@@ -57,6 +57,11 @@
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
+
+{% block skiplinks %}
+  {% include 'layouts/_skip-links.html' %}
+{% endblock skiplinks %}
+
 {% block nav %}
   {% if request.resolver_match.view_name|startswith:"habilitation" %}
     {% comment %}

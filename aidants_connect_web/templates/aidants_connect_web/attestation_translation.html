@@ -8,6 +8,10 @@
   <link href="{% static 'css/attestation-translation.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
+{% block skiplinks %}
+  {% include 'layouts/_skip-links-no-footer.html' %}
+{% endblock skiplinks %}
+
 {% block content %}
   <div
     class="fr-container"
