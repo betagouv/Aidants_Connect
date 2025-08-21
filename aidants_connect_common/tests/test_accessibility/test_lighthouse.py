@@ -8,7 +8,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
 
 
-@tag("accessibility")
+@tag("lighthouse")
 class PublicUrlsAccessibilityTestCase(StaticLiveServerTestCase):
     """
     Test d'accessibilité avec Lighthouse CI

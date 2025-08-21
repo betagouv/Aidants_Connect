@@ -110,7 +110,7 @@ jobs:
           # https://support.circleci.com/hc/en-us/articles/360048786831-Use-test-splitting-with-Python-Django-tests
           command: |
             TESTFILES=$(circleci tests glob '**/test*.py' | grep test_functional | sort | uniq)
-            TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep -v test_functional | grep -v test_lighthouse | sort | uniq)
+            TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep -v test_functional | grep -v test_accessibility | sort | uniq)
             echo $TESTFILES | tr "$IFS" '\n' > test_filenames.txt
             TESTFILES=$(circleci tests split --split-by=timings test_filenames.txt | tr '/' '.' | sed 's/.py//g')
 
@@ -165,12 +165,18 @@ jobs:
           command: npm install
 
       - run:
-          name: Split paths and run Lighthouse accessibility tests
+          name: Run accessibility tests
           command: |
             . /tmp/venv/bin/activate
 
             python manage.py collectstatic --noinput
 
+            # First, run accessibility tests (Playwright) - split by timing
+            echo "=== Running accessibility tests (Playwright) ==="
+            python manage.py test --tag=accessibility --verbosity=2
+
+            # Then, run lighthouse tests - split by URLs (original logic)
+            echo "=== Running lighthouse tests ==="
             python -c "import json; urls=json.load(open('.lighthouserc.json'))['ci']['collect']['url']; [print(url) for url in urls]" > all_urls.txt
 
             WORKER_URLS=$(circleci tests split all_urls.txt)
