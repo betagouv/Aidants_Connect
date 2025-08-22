@@ -1,7 +1,5 @@
 {% load ac_common static %}
 
-{% include 'layouts/_skip-links.html' %}
-
 <header role="banner" class="fr-header">
   {% with view_name=request.resolver_match.view_name %}
     <div class="fr-header__body">
@@ -32,6 +30,7 @@
               <ul class="fr-btns-group">
                 {% if user_is_authenticated %}
                   {% if user_is_responsable_structure %}
+                  <li>
                     <a
                       class="fr-btn fr-icon-arrow-right-line"
                       href="{% url 'espace_responsable' %}"
@@ -39,6 +38,7 @@
                     >
                       Espace référent
                     </a>
+                  </li>
                   {% endif %}
                   {% if user_can_create_mandats %}
                   <li>
