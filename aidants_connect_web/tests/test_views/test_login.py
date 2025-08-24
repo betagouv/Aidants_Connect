@@ -41,9 +41,7 @@ class LoginTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         # Check explicit message is displayed
-        self.assertContains(
-            response, "Votre compte existe mais il n’est pas encore actif."
-        )
+        self.assertContains(response, "Votre compte existe mais il n’est pas actif.")
         # Check no email was sent
         self.assertEqual(len(mail.outbox), 0)
 
