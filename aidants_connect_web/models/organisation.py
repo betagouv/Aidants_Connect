@@ -59,6 +59,7 @@ class OrganisationManager(models.Manager):
         orga_id = list(
             set(
                 HabilitationRequest.objects.filter(
+                    created_by_fne=False,
                     organisation__is_active=True,
                     status=ReferentRequestStatuses.STATUS_PROCESSING,
                     formations__isnull=True,
