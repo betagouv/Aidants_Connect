@@ -43,25 +43,33 @@ class ACSendEMailForTokenMixin:
         text_message, html_message = self.render_email(
             self.get_email_context(user, token, extra_context)
         )
-        connection = None
         if tld_need_another_stmp(user_email):
             connection = get_connection(
                 host=settings.BACKUP_EMAIL_HOST,
                 port=settings.BACKUP_EMAIL_PORT,
-                username=settings.BACKUP_EMAIL_HOST_USER,
+                username=settings.BACKUP_EMAIL_HOST_USERNAME,
                 password=settings.BACKUP_EMAIL_HOST_PASSWORD,
                 use_tls=settings.BACKUP_EMAIL_USE_TLS,
                 use_ssl=settings.BACKUP_EMAIL_USE_SSL,
             )
-        send_mail(
-            subject=self.email_subject,
-            message=text_message,
-            from_email=self.from_email,
-            html_message=html_message,
-            recipient_list=[user_email],
-            fail_silently=False,
-            connection=connection,
-        )
+            send_mail(
+                subject=self.email_subject,
+                message=text_message,
+                from_email=self.from_email,
+                html_message=html_message,
+                recipient_list=[user_email],
+                fail_silently=False,
+                connection=connection,
+            )
+        else:
+            send_mail(
+                subject=self.email_subject,
+                message=text_message,
+                from_email=self.from_email,
+                html_message=html_message,
+                recipient_list=[user_email],
+                fail_silently=False,
+            )
 
 
 class LoginView(ACSendEMailForTokenMixin, magicauth_views.LoginView):
