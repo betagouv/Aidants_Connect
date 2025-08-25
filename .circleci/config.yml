@@ -18,7 +18,7 @@ parameters:
     default: "~/repo"
   cache-version:
     type: string
-    default: "v5-dependencies"
+    default: "v6-dependencies"
 
 executors:
   testbed:
