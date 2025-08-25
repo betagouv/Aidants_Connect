@@ -1002,6 +1002,26 @@ class OrganisationModelTests(TestCase):
         )
         self.assertEqual({has_unregistered_hab}, set(actual))
 
+    def test_organisation_having_formation_unregistered_habilitation_requests_and_fne(
+        self,
+    ):  # noqa E501
+        has_fne_hab = OrganisationFactory()
+        HabilitationRequestFactory(
+            organisation=has_fne_hab,
+            created_by_fne=True,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
+        HabilitationRequestFactory(
+            organisation=has_fne_hab,
+            created_by_fne=True,
+            status=ReferentRequestStatuses.STATUS_VALIDATED,
+        )
+
+        self.assertEqual(
+            0,
+            Organisation.objects.having_formation_unregistered_habilitation_requests().count(),  # noqa E501
+        )
+
     def test_responsables_is_active(self):
         orga = OrganisationFactory()
         aid1 = AidantFactory()
