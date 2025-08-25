@@ -40,7 +40,9 @@ class AccessibilityTestCase(StaticLiveServerTestCase):
     async def _async_setup(cls):
         cls.playwright = await async_playwright().start()
         cls.browser = await cls.playwright.chromium.launch(
-            channel="chrome", headless=settings.HEADLESS_FUNCTIONAL_TESTS
+            channel="chrome",
+            headless=settings.HEADLESS_FUNCTIONAL_TESTS,
+            slow_mo=1500 if not settings.HEADLESS_FUNCTIONAL_TESTS else 0,
         )
 
     @classmethod

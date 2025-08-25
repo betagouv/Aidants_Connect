@@ -1,5 +1,5 @@
 {% extends 'layouts/main.html' %}
-{% load ac_common dsfr_tags static %}
+{% load ac_common dsfr_tags form_extras static %}
 
 {% block extracss %}
   <link href="{% static 'css/login.css' %}" rel="stylesheet">
@@ -32,40 +32,42 @@
                   id="login-1760-fieldset"
                   aria-labelledby="login-1760-fieldset-legend"
                 >
-                  <div class="flex width-100">
-                    <h3 class="fr-m-0 fr-p-0">Connectez-vous</h3>
+                  <legend class="flex width-100" id="login-1760-fieldset-legend">
+                    <h1 class="fr-h3 fr-m-0 fr-p-0">Connectez-vous</h1>
                     <div class="spacer"></div>
                     <div>
                       <a class="fr-btn fr-btn--secondary" aria-describedby="tooltip-2989" id="link-2990" href="#">
                         Guide
                       </a>
                       <span class="fr-tooltip fr-placement" id="tooltip-2989" role="tooltip" aria-hidden="true">
-                      <a
-                        href="{% static 'guides_aidants_connect/AC_Guide_Sauthentifier.pdf' %}"
-                        class="fr-link"
-                        target="_blank"
-                        rel="noreferrer noopener"
-                      >
-                        Sʼauthentifier sur Aidants Connect
-                      </a><span> - pdf</span>
-                    </span>
+                        <a
+                          href="{% static 'guides_aidants_connect/AC_Guide_Sauthentifier.pdf' %}"
+                          class="fr-link"
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
+                          Sʼauthentifier sur Aidants Connect
+                        </a><span> - pdf</span>
+                      </span>
                     </div>
-                  </div>
-
+                  </legend>
 
                   <div class="fr-fieldset__element fr-my-6v">
                     <p class="fr-text--sm">
                       Vous êtes un ou une aidante professionnelle et vous faites partie d’une structure habilitée
                       Aidants Connect ? Retrouvez votre espace en vous connectant ci-dessous.
                     </p>
+                    <p class="fr-text--sm">
+                      Sauf mention contraire, tous les champs sont obligatoires.
+                    </p>
                   </div>
                   <div class="fr-fieldset__element fr-my-6v">
                     <fieldset class="fr-fieldset fr-my-0" id="credentials">
                       <div class="fr-fieldset__element">
-                        {% dsfr_form_field form.email %}
+                        {% dsfr_form_field_no_asterisk form.email %}
                       </div>
                       <div class="fr-fieldset__element">
-                        {% dsfr_form_field OTP_form.otp_token %}
+                        {% dsfr_form_field_no_asterisk OTP_form.otp_token %}
                       </div>
                       <div class="fr-fieldset__element fr-my-0">
                         <p class="fr-m-0 fr-text--sm fr-info-text">
@@ -75,8 +77,8 @@
                       </div>
                     </fieldset>
                   </div>
-                  <div class="fr-fieldset__element fr-my-0">
-                    <ul class="fr-btns-group">
+                  <div class="fr-fieldset__element">
+                    <ul class="fr-btns-group fr-mb-6v">
                       <li>
                         <button type="submit" class="fr-btn">Se connecter</button>
                       </li>
@@ -88,23 +90,21 @@
               </form>
 
                 <div class="flex width-100">
-
-                    <h4 class="fr-m-0 fr-p-0">Première connexion référent</h4  >
-                    <div class="spacer"></div>
+                  <h2 class="fr-h4 fr-m-0 fr-p-0">Première connexion référent</h2>
+                  <div class="spacer"></div>
                 </div>
 
-                    <div class="fr-fieldset__element fr-my-6v">
-                    <p class="fr-text--sm">
-                      Si vous êtes référent Aidants Connect et qu’il s’agit de votre première connexion, un code dédié doit vous être envoyé par SMS.
-                    </p>
-                  </div>
+                <div class="fr-fieldset__element fr-my-6v">
+                  <p class="fr-text--sm">
+                    Si vous êtes référent Aidants Connect et qu’il s’agit de votre première connexion, un code dédié doit vous être envoyé par SMS.
+                  </p>
+                </div>
 
-                                  <div>
-                      <a class="fr-btn fr-btn--secondary"  href="{% url 'manager_first_login' %}">
-                        Obtenir un code de première connexion
-                      </a>
-                    </div>
-
+                <div>
+                  <a class="fr-btn fr-btn--secondary"  href="{% url 'manager_first_login' %}">
+                    Obtenir un code de première connexion
+                  </a>
+                </div>
 
             </div>
           </div>

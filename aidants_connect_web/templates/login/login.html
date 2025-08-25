@@ -1,5 +1,5 @@
 {% extends 'layouts/main.html' %}
-{% load ac_common dsfr_tags static %}
+{% load ac_common dsfr_tags form_extras static %}
 
 {% block extracss %}
   <link href="{% static 'css/login.css' %}" rel="stylesheet">
@@ -25,18 +25,24 @@
                   id="login-1760-fieldset"
                   aria-labelledby="login-1760-fieldset-legend"
                 >
-                  <legend class="flex width-100 fr-h1 fr-m-0 fr-p-0" id="login-1760-fieldset-legend">
-                    <h1 class="fr-m-0 fr-p-0">Connectez-vous</h1>
-                    <div class="spacer"></div>
+                <legend class="flex width-100" id="login-1760-fieldset-legend">
+                    <div class="flex width-100">
+                      <h1 class="fr-h3 fr-m-0 fr-p-0">Connectez-vous</h1>
+                      <div class="spacer"></div>
+                    </div>
                   </legend>
+
+                  <div class="fr-fieldset__element fr-my-6v">
+                    <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
+                  </div>
 
                   <div class="fr-fieldset__element fr-my-6v">
                     <fieldset class="fr-fieldset fr-my-0" id="credentials">
                       <div class="fr-fieldset__element">
-                        {% dsfr_form_field form.email %}
+                        {% dsfr_form_field_no_asterisk form.email %}
                       </div>
                       <div class="fr-fieldset__element">
-                        {% dsfr_form_field OTP_form.otp_token %}
+                        {% dsfr_form_field_no_asterisk OTP_form.otp_token %}
                       </div>
                     </fieldset>
                   </div>
@@ -61,12 +67,11 @@
               </form>
 
                 <div class="flex width-100">
-
-                    <h2 class="fr-h4 fr-m-0 fr-p-0 fr-mt-3w">Première connexion référent</h2  >
+                    <h2 class="fr-h4 fr-m-0 fr-p-0 fr-mt-3w">Première connexion référent</h2>
                     <div class="spacer"></div>
                 </div>
 
-                    <div class="fr-fieldset__element fr-my-6v">
+                  <div class="fr-fieldset__element fr-my-6v">
                     <p class="fr-text--sm">
                       Si vous êtes référent Aidants Connect et qu’il s’agit de votre première connexion, un code dédié doit vous être envoyé par SMS.
                     </p>
