@@ -178,7 +178,7 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
         user_email = super().clean_email()
         if not Aidant.objects.filter(email__iexact=user_email, is_active=True).exists():
             raise ValidationError(
-                "Votre compte existe mais il n’est pas actif. "
+                "Votre compte a été désactivé. "
                 "Si vous pensez que c’est une erreur, prenez contact avec votre "
                 "référent ou avec Aidants Connect."
             )
@@ -219,7 +219,7 @@ class ManagerFirstLoginForm(DsfrBaseForm):
 
         if aidant is None:
             raise ValidationError(
-                "Votre compte n'existe pas ou existe mais il n’est pas actif. "
+                "Votre compte a été désactivé. "
                 "Si vous pensez que c’est une erreur, prenez contact avec "
                 "Aidants Connect."
             )
