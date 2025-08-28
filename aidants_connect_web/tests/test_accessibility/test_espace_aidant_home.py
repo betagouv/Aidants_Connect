@@ -11,7 +11,6 @@ class EspaceAidantHomeAccessibilityTests(AccessibilityTestCase):
     def setUp(self):
         super().setUp()
         self.aidant = AidantFactory(post__with_otp_device=True)
-        # Récupérer le token de manière synchrone dans setUp
         self.otp_token = self.aidant.staticdevice_set.first().token_set.first().token
 
     @async_test

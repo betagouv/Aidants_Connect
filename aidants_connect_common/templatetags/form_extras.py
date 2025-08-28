@@ -103,7 +103,7 @@ def merge_html_attr_values(attr_value: str | Iterable) -> str:
     return " ".join(list(values))
 
 
-@register.inclusion_tag("forms/dsfr-input-snippet-no-asterisk.html")
-def dsfr_form_field_no_asterisk(field):
+@register.inclusion_tag("forms/aidantc-dsfr-input-snippet-no-asterisk.html")
+def aidantc_dsfr_form_field_no_asterisk(field):
     """Template tag DSFR sans astérisque"""
     return {"field": field}
