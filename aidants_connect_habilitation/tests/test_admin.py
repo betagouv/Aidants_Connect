@@ -90,7 +90,7 @@ class OrganisationRequestAdminTests(TestCase):
             acceptance_message.body,
         )
         self.assertIn(
-            "référent Aidants Connect de votre structure ? Assistez au webinaire",
+            "Pour mieux comprendre le rôle de référent et assister à une démonstration",
             acceptance_message.body,
         )
 
