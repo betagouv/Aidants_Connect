@@ -37,3 +37,11 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
             await expect(skip_link).to_be_attached()
             await skip_link.focus()
             await expect(skip_link).to_be_visible()
+
+    @async_test
+    async def test_required_fields_notice_is_present(self):
+        await self.navigate_to_new_mandat()
+
+        page_content = await self.page.content()
+        self.assertIn("sauf mention contraire", page_content.lower())
+        self.assertIn("champs sont obligatoires", page_content.lower())

@@ -17,6 +17,7 @@ from django_otp import match_token
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from dsfr.forms import DsfrBaseForm, DsfrDjangoTemplates
+from magicauth import settings as magicauth_settings
 from magicauth.forms import EmailForm as MagicAuthEmailForm
 from magicauth.otp_forms import OTPForm
 from pydantic import BaseModel
@@ -172,7 +173,9 @@ class AidantChangeForm(forms.ModelForm):
 
 
 class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
-    email = forms.EmailField(label="Adresse email")
+    email = forms.EmailField(
+        label="Adresse e-mail", help_text="Format attendu : prenom-nom@exemple.fr"
+    )
 
     def clean_email(self):
         user_email = super().clean_email()
@@ -186,17 +189,16 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
 
 
 class ManagerFirstLoginForm(DsfrBaseForm):
-    email = forms.EmailField(label="Adresse email")
+    email = forms.EmailField(
+        label="Adresse e-mail", help_text="Format attendu : prenom-nom@exemple.fr"
+    )
 
     mobile = AcPhoneNumberField(
         label="Numéro de téléphone mobile",
         label_suffix=" :",
         initial="",
+        help_text="Format attendu : 0601010101",
     )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["mobile"].widget.attrs.update({"placeholder": "Ex : 0601010101"})
 
     def clean(self):
         cleaned_data = super().clean()
@@ -236,10 +238,24 @@ class ManagerFirstLoginForm(DsfrBaseForm):
 
 
 class ManagerFirstLoginWithCodeForm(DsfrBaseForm):
-    code_otp = forms.CharField(label="Code de première connexion")
+    code_otp = forms.CharField(
+        label="Code de première connexion", help_text="Format attendu : 123456"
+    )
 
 
 class DsfrOtpForm(OTPForm, DsfrBaseForm):
+    OTP_NUM_DIGITS = magicauth_settings.OTP_NUM_DIGITS
+    otp_token = forms.CharField(
+        max_length=OTP_NUM_DIGITS,
+        min_length=OTP_NUM_DIGITS,
+        validators=[RegexValidator(r"^\d{6}$")],
+        label=_(
+            "Entrez le code à %(OTP_NUM_DIGITS)s chiffres généré par votre téléphone ou votre carte OTP"  # noqa
+        )
+        % {"OTP_NUM_DIGITS": OTP_NUM_DIGITS},
+        help_text="Format attendu : 123456",
+        widget=forms.TextInput(attrs={"autocomplete": "off"}),
+    )
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(user, *args, **kwargs)
@@ -322,7 +338,7 @@ class MandatForm(PatchedForm):
     )
 
     user_phone = AcPhoneNumberField(
-        label="Numéro de téléphone de la personne accompagnée",
+        label="Numéro de téléphone de la personne accompagnée (facultatif)",
         label_suffix=" :",
         initial="",
         required=False,
@@ -332,7 +348,7 @@ class MandatForm(PatchedForm):
         required=False,
         label=(
             "Je certifie avoir validé l’identité de l’usager répondant au numéro de "
-            "téléphone qui recevra la demande de consentement par SMS."
+            "téléphone qui recevra la demande de consentement par SMS (facultatif)."
         ),
         label_suffix="",
     )

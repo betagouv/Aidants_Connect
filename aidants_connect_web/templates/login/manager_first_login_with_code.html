@@ -1,5 +1,5 @@
 {% extends 'layouts/main.html' %}
-{% load ac_common dsfr_tags static %}
+{% load ac_common dsfr_tags form_extras static %}
 
 {% block extracss %}
   <link href="{% static 'css/login.css' %}" rel="stylesheet">
@@ -32,12 +32,14 @@
                   id="login-1760-fieldset"
                   aria-labelledby="login-1760-fieldset-legend"
                 >
-                  <div class="flex width-100">
-                    <h3 class="fr-m-0 fr-p-0">Première connexion référent</h3>
+                  <legend class="flex width-100" id="login-1760-fieldset-legend">
+                    <h1 class="fr-h3 fr-m-0 fr-p-0">Première connexion référent</h1>
                     <div class="spacer"></div>
+                  </legend>
 
+                  <div class="fr-fieldset__element fr-my-6v">
+                    <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
                   </div>
-
 
                   <div class="fr-fieldset__element fr-my-6v">
                     <p class="fr-text--sm">
@@ -47,7 +49,7 @@
                   <div class="fr-fieldset__element fr-my-6v">
                     <fieldset class="fr-fieldset fr-my-0" id="credentials">
                       <div class="fr-fieldset__element">
-                        {% dsfr_form_field form.code_otp %}
+                        {% aidantc_dsfr_form_field_no_asterisk form.code_otp %}
                       </div>
                       <div class="fr-fieldset__element fr-my-0">
                       </div>
