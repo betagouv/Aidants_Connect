@@ -25,7 +25,8 @@
                   class="margin-bottom-1rem"
                   for="{{ form.otp_token.id_for_label }}"
                 >
-                  Entrez le code à 6 chiffres fourni par votre carte.*
+                  Entrez le code à 6 chiffres fourni par votre carte.
+                  Sauf mention contraire, tous les champs sont obligatoires.
                 </label>
                 {{ form.otp_token }}
                 {% if form.errors.otp_token %}

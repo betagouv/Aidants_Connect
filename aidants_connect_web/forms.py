@@ -197,7 +197,7 @@ class ManagerFirstLoginForm(DsfrBaseForm):
         label="Numéro de téléphone mobile",
         label_suffix=" :",
         initial="",
-        help_text="Format attendu : 0601010101",
+        help_text="Format attendu : 10 chiffres",
     )
 
     def clean(self):
@@ -239,7 +239,7 @@ class ManagerFirstLoginForm(DsfrBaseForm):
 
 class ManagerFirstLoginWithCodeForm(DsfrBaseForm):
     code_otp = forms.CharField(
-        label="Code de première connexion", help_text="Format attendu : 123456"
+        label="Code de première connexion", help_text="Format attendu : 6 chiffres"
     )
 
 
@@ -253,7 +253,7 @@ class DsfrOtpForm(OTPForm, DsfrBaseForm):
             "Entrez le code à %(OTP_NUM_DIGITS)s chiffres généré par votre téléphone ou votre carte OTP"  # noqa
         )
         % {"OTP_NUM_DIGITS": OTP_NUM_DIGITS},
-        help_text="Format attendu : 123456",
+        help_text="Format attendu : 6 chiffres",
         widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )
 
@@ -419,14 +419,8 @@ class OTPForm(DsfrBaseForm):
         max_length=6,
         min_length=6,
         validators=[RegexValidator(r"^\d{6}$")],
-        label=(
-            "Entrez le code à 6 chiffres généré par votre téléphone "
-            "ou votre carte Aidants Connect"
-        ),
-        help_text=(
-            "Un nouveau code à 6 chiffres est généré toutes les minutes "
-            "par votre carte physique ou numérique."
-        ),
+        label=("Code temporaire"),
+        help_text=("Format attendu : 6 chiffres"),
         widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )
 
