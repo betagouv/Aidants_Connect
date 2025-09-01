@@ -15,6 +15,9 @@
             <p>Votre session a expiré<p>
           </div>
           <form method="post">
+          <div class="fr-my-6v">
+            <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
+          </div>
             {% aidantc_dsfr_form_field_no_asterisk form.otp_token %}
             {% csrf_token %}
             <button type="submit" class="fr-btn">Valider</button>
